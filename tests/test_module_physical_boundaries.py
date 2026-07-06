@@ -6,6 +6,9 @@ from pathlib import Path
 from uok.module_manifest_loader import load_module_manifests
 from uok.module_paths import ensure_module_backend_paths, module_backend_paths, modules_root, repo_root
 from uok.module_routers import load_module_routers
+from uok.module_commands import command_permissions, load_module_command_handlers
+from uok.module_policy import module_role_grants
+from uok.module_tables import declared_module_table_names
 from uok.modules import module_contracts
 
 KERNEL_MODULE_FACADE_FILES = {
@@ -40,6 +43,13 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert "ContactCreated" in manifests["contacts.core"]["events"]
     assert manifests["contacts.core"]["backend_path"] == "modules/contacts.core/backend"
     assert "/api/contacts" in manifests["contacts.core"]["api_prefixes"]
+    assert manifests["contacts.core"]["command_handlers"] == "uok_contacts_core.commands:command_handlers"
+    assert manifests["contacts.core"]["command_permissions"] == "uok_contacts_core.commands:command_permissions"
+    assert manifests["contacts.core"]["role_grants"] == "uok_contacts_core.policy:role_grants"
+    assert manifests["contacts.core"]["dashboard_provider"] == "uok_contacts_core.reports:dashboard_counts"
+    assert manifests["contacts.core"]["evidence_provider"] == "uok_contacts_core.reports:evidence"
+    assert manifests["contacts.core"]["model_exports"] == "uok_contacts_core.models:owned_models"
+    assert manifests["contacts.core"]["candidate_verifier_script"] == "modules/contacts.core/tests/verify/UokCandidateContacts.ps1"
     assert "contacts.manage" in manifests["contacts.core"]["permissions"]
 
 
@@ -64,6 +74,13 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["checks"]["required_modules"] == ["apps.manager"]
     assert extension_contract["checks"]["all_paths_module_scoped"] is True
     assert extension_contract["checks"]["api_routers_valid"] is True
+    assert extension_contract["checks"]["command_handlers_valid"] is True
+    assert extension_contract["checks"]["role_grants_valid"] is True
+    assert extension_contract["checks"]["dashboard_providers_valid"] is True
+    assert extension_contract["checks"]["evidence_providers_valid"] is True
+    assert extension_contract["checks"]["model_exports_valid"] is True
+    assert extension_contract["checks"]["candidate_verifiers_valid"] is True
+    assert extension_contract["checks"]["owned_tables_resolve_to_models"] is True
     assert extension_contract["violations"] == []
 
 
@@ -95,6 +112,21 @@ def test_module_routers_mount_from_manifest_declarations() -> None:
         assert router.routes
         for route in router.routes:
             assert any(route.path == prefix or route.path.startswith(prefix + "/") for prefix in prefixes)
+
+
+def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> None:
+    handlers = load_module_command_handlers()
+    permissions = command_permissions()
+    grants = module_role_grants()
+
+    assert "CreateContact" in handlers
+    assert "ImportContactsCsv" in handlers
+    assert permissions["CreateContact"] == "contacts.manage"
+    assert permissions["RestoreContact"] == "contacts.restore"
+    assert permissions["VerifyBaseline"] == "migration.verify"
+    assert "contacts.manage" in grants["ops_manager"]
+    assert "contacts.read" in grants["viewer"]
+    assert {"parties", "party_notes", "party_relationships", "contact_import_batches"}.issubset(declared_module_table_names())
 
 
 def test_app_composes_module_routes_without_kernel_module_references() -> None:

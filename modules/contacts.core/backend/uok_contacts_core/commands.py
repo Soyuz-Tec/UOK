@@ -19,7 +19,7 @@ from .facade import (
     touch_party,
     validate_contact_payload_lengths,
 )
-from uok.models import PartyNote, PartyRelationship, utcnow
+from .models import PartyNote, PartyRelationship, utcnow
 from uok.security import Actor
 from uok.util import dumps, loads
 
@@ -165,4 +165,17 @@ def command_handlers() -> dict[str, CommandHandler]:
         "AddContactNote": cmd_add_contact_note,
         "LinkContactRelationship": cmd_link_contact_relationship,
         "ImportContactsCsv": cmd_import_contacts_csv,
+    }
+
+
+def command_permissions() -> dict[str, str]:
+    return {
+        "CreateContact": "contacts.manage",
+        "UpdateContact": "contacts.manage",
+        "ArchiveContact": "contacts.manage",
+        "RestoreContact": "contacts.restore",
+        "PurgeContact": "contacts.purge",
+        "AddContactNote": "contacts.manage",
+        "LinkContactRelationship": "contacts.manage",
+        "ImportContactsCsv": "contacts.import",
     }

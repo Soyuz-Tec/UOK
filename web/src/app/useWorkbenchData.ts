@@ -6,6 +6,7 @@ import type {
   ModuleStatus,
   QualityReport
 } from "../shared/types";
+import { CONTACTS_MODULE_ID } from "../features/contacts/contactModule";
 
 export type CommandResponse = { result: ContactRecord; status: string; idempotent?: boolean };
 
@@ -46,7 +47,7 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
   const [busyAction, setBusyAction] = useState<string>("");
 
   const moduleRows = useMemo(() => Object.values(modules).sort((a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name)), [modules]);
-  const contactsModule = modules["contacts.core"];
+  const contactsModule = modules[CONTACTS_MODULE_ID];
   const contactsOperational = contactsModule?.status === "installed" || contactsModule?.status === "upgraded";
   const selectedContact = selectedDetail || contacts.find((row) => row.id === selectedContactId) || null;
 

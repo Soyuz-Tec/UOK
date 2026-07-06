@@ -10,7 +10,8 @@ from .. import APP_VERSION, TARGET_VERSION
 from ..db import get_db
 from ..evidence import baseline_evidence
 from ..migration_registry import verify_migration_discipline
-from ..models import CommandLog, EventRecord, ModuleRecord, Party
+from ..models import CommandLog, EventRecord, ModuleRecord
+from ..module_reports import module_dashboard_counts
 from ..quality import baseline_report, source_boundary_report
 from ..security import Actor, current_actor, require_permission
 
@@ -31,14 +32,13 @@ def health(db: Session = Depends(get_db)) -> dict[str, Any]:
 
 @router.get("/api/dashboard")
 def dashboard(actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    counts = {
+        "modules": db.scalar(select(func.count(ModuleRecord.id)).where(ModuleRecord.organization_id == actor.organization_id)) or 0,
+        "events": db.scalar(select(func.count(EventRecord.id)).where(EventRecord.organization_id == actor.organization_id)) or 0,
+    }
+    counts.update(module_dashboard_counts(db, actor))
     return {
-        "counts": {
-            "contacts": db.scalar(select(func.count(Party.id)).where(Party.organization_id == actor.organization_id, Party.party_type == "person", Party.status != "purged")) or 0,
-            "organizations": db.scalar(select(func.count(Party.id)).where(Party.organization_id == actor.organization_id, Party.party_type == "organization", Party.status != "purged")) or 0,
-            "review_queue": db.scalar(select(func.count(Party.id)).where(Party.organization_id == actor.organization_id, Party.review_state.in_(("needs_review", "possible_duplicate", "incomplete")), Party.status != "purged")) or 0,
-            "modules": db.scalar(select(func.count(ModuleRecord.id)).where(ModuleRecord.organization_id == actor.organization_id)) or 0,
-            "events": db.scalar(select(func.count(EventRecord.id)).where(EventRecord.organization_id == actor.organization_id)) or 0,
-        }
+        "counts": counts
     }
 
 

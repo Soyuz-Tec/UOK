@@ -59,6 +59,15 @@ Every module manifest must declare:
 | Field | Purpose |
 |---|---|
 | `api_router` | Import target in `<package.module>:<attribute>` form for the module's FastAPI router. UOK resolves it from the module backend package at startup and mounts it; every route must stay inside the module's declared `api_prefixes`, and the module must list the `api_router` extension point. Modules without an `api_router` entry expose no module-mounted API routes. |
+| `command_handlers` | Import target for a provider returning this module's command handler mapping. Every returned command must be declared in `commands`, and every declared command must have one handler. |
+| `command_permissions` | Import target for a provider returning command-to-permission mappings. Every mapped command must be declared in `commands`, and every mapped permission must be declared in `permissions`. |
+| `role_grants` | Import target for module-owned role permission grants. Grants extend kernel roles without hardcoding module permissions in `src/uok/security.py`. |
+| `dashboard_provider` | Import target for module-owned dashboard count fragments merged into `/api/dashboard`. |
+| `evidence_provider` | Import target for module-owned baseline evidence checks and counts merged into `/api/baseline-evidence`. |
+| `model_exports` | Import target for module-owned model/table exports used by migration and boundary validation while shared baseline tables remain in the kernel model registry. |
+| `candidate_verifier_script` | Safe relative path under `modules/<module_name>` for this module's PowerShell candidate verifier scenario. |
+| `candidate_verifier_function` | PowerShell function name invoked from `candidate_verifier_script`. |
+| `candidate_evidence_function` | Optional PowerShell evidence function invoked after the module verifier scenario returns its evidence payload. |
 
 ## Extension Points
 
@@ -68,6 +77,9 @@ UOK currently allows these module extension surfaces:
 - `backend_package`: module-owned Python package under `modules/<module>/backend`.
 - `command_handlers`: command handlers declared by manifest and dispatched by UOK.
 - `api_router`: FastAPI router composition through a declared route prefix, mounted by UOK from the manifest `api_router` import target instead of hardcoded kernel imports.
+- `dashboard_provider`: module-owned dashboard count fragments.
+- `evidence_provider`: module-owned baseline evidence checks and counts.
+- `model_exports`: module-owned model/table declarations used to validate shared baseline schema ownership.
 - `permissions`: explicit permission atoms checked at API or command boundary.
 - `events`: append-only events declared by manifest.
 - `migrations`: module-owned migration path and release gate.
@@ -90,7 +102,8 @@ New extension points require an architecture update and a failing validation tes
 - `apps.manager` is the required control module.
 - `contacts.core` is the first optional capability module.
 - `contacts.core` backend implementation now lives under `modules/contacts.core/backend/uok_contacts_core`.
-- Contacts UI, migrations, and tests are still bridged from top-level UOK folders. That is allowed for the current candidate only because the ownership paths are declared in the manifest and covered by tests.
+- `contacts.core` commands, command permissions, role grants, dashboard counts, evidence checks, model exports, API router, and candidate verifier scenario are manifest-declared module surfaces.
+- Contacts UI and migrations are still bridged from top-level UOK folders. That is allowed for the current candidate only because the ownership paths are declared in the manifest and covered by tests.
 
 ## Required Scans Before GitHub Push
 

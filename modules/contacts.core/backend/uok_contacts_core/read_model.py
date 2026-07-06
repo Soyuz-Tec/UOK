@@ -7,8 +7,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .access import readable_note_records, readable_party_filter, readable_relationship_records, relationship_is_readable
+from .models import ContactImportBatch, Party, PartyNote, PartyRelationship, utcnow
 from .validation import CONTACT_ATTR_FIELDS
-from uok.models import ContactImportBatch, Party, PartyNote, PartyRelationship, utcnow
 from uok.security import Actor
 from uok.util import loads, row_dict
 

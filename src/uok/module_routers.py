@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from importlib import import_module
 from typing import Any
 
 from fastapi import APIRouter, FastAPI
 
-from .module_contract_validation import API_ROUTER_SPEC_PATTERN
+from .module_imports import IMPORT_TARGET_SPEC_PATTERN, resolve_module_import
 from .module_manifest_loader import load_module_manifests
 from .module_paths import ensure_module_backend_paths
 
@@ -32,10 +31,9 @@ def mount_module_routers(app: FastAPI) -> list[str]:
 def _resolve_module_router(module_name: str, manifest: dict[str, Any], spec: str) -> APIRouter:
     if "api_router" not in manifest.get("extension_points", []):
         raise ValueError(f"module {module_name} declares api_router without the api_router extension point")
-    if not API_ROUTER_SPEC_PATTERN.fullmatch(spec):
+    if not IMPORT_TARGET_SPEC_PATTERN.fullmatch(spec):
         raise ValueError(f"module {module_name} api_router must use <package.module>:<attribute>")
-    target, _, attribute = spec.partition(":")
-    module_router = getattr(import_module(target), attribute, None)
+    module_router = resolve_module_import(module_name, manifest, "api_router")
     if not isinstance(module_router, APIRouter):
         raise ValueError(f"module {module_name} api_router {spec} is not an APIRouter")
     prefixes = [str(prefix) for prefix in manifest.get("api_prefixes", [])]

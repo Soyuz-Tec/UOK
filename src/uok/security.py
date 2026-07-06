@@ -18,24 +18,21 @@ from .db import get_db
 from .models import Membership, User
 
 
-ROLE_PERMISSIONS = {
+KERNEL_ROLE_PERMISSIONS = {
     "platform_admin": {"*"},
     "ops_manager": {
         "module.read",
-        "contacts.read",
-        "contacts.manage",
-        "contacts.import",
-        "contacts.restore",
         "evidence.read",
         "migration.verify",
         "architecture.read",
     },
-    "trader": {"module.read", "contacts.read", "evidence.read"},
-    "finance_manager": {"module.read", "contacts.read", "evidence.read"},
-    "viewer": {"module.read", "contacts.read", "evidence.read"},
+    "trader": {"module.read", "evidence.read"},
+    "finance_manager": {"module.read", "evidence.read"},
+    "viewer": {"module.read", "evidence.read"},
     "registered_user": {"module.read"},
     "pending_user": {"module.read"},
 }
+ROLE_PERMISSIONS = KERNEL_ROLE_PERMISSIONS
 
 WEAK_LOCAL_SECRETS = {"", "uok-local-secret", "change-me-local", "local-uok-change-me", "ci-uok-secret"}
 DEFAULT_TOKEN_TTL_SECONDS = 8 * 60 * 60
@@ -132,10 +129,19 @@ def current_actor(authorization: str | None = Header(default=None), db: Session 
 
 
 def has_permission(actor: Actor, permission: str) -> bool:
-    role_permissions = ROLE_PERMISSIONS.get(actor.role, set())
-    return "*" in role_permissions or permission in role_permissions
+    permissions = effective_role_permissions().get(actor.role, set())
+    return "*" in permissions or permission in permissions
 
 
 def require_permission(actor: Actor, permission: str) -> None:
     if not has_permission(actor, permission):
         raise PermissionError(permission)
+
+
+def effective_role_permissions() -> dict[str, set[str]]:
+    permissions = {role: set(values) for role, values in KERNEL_ROLE_PERMISSIONS.items()}
+    from .module_policy import module_role_grants
+
+    for role, grants in module_role_grants().items():
+        permissions.setdefault(role, set()).update(grants)
+    return permissions

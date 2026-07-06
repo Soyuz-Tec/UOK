@@ -185,3 +185,5 @@ export function useWorkbench() {
     importCsv: () => actions.importCsv(importFilename, importText)
   };
 }
+
+export type Workbench = ReturnType<typeof useWorkbench>;

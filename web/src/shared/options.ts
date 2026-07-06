@@ -1,7 +1,6 @@
 import type { ElementType } from "react";
 import {
   Archive,
-  ContactRound,
   Database,
   FileCheck2,
   Grid2X2,
@@ -18,12 +17,11 @@ import {
 
 import type { Appearance, ContactDetailPane, ContactsView, Section } from "./types";
 
-type Option<T extends string> = { id: T; label: string; icon: ElementType };
+export type Option<T extends string> = { id: T; label: string; icon: ElementType };
 
-export const sections: Array<Option<Section>> = [
+export const coreSections: Array<Option<Exclude<Section, "contacts">>> = [
   { id: "overview", label: "Overview", icon: Database },
   { id: "apps", label: "Apps Manager", icon: Store },
-  { id: "contacts", label: "Contacts", icon: ContactRound },
   { id: "evidence", label: "Evidence", icon: Archive },
   { id: "architecture", label: "Architecture", icon: ShieldCheck }
 ];

@@ -40,6 +40,15 @@ tests_path: modules/contacts.core/tests
 api_prefixes:
   - /api/contacts
 api_router: uok_contacts_core.api:router
+command_handlers: uok_contacts_core.commands:command_handlers
+command_permissions: uok_contacts_core.commands:command_permissions
+role_grants: uok_contacts_core.policy:role_grants
+dashboard_provider: uok_contacts_core.reports:dashboard_counts
+evidence_provider: uok_contacts_core.reports:evidence
+model_exports: uok_contacts_core.models:owned_models
+candidate_verifier_script: modules/contacts.core/tests/verify/UokCandidateContacts.ps1
+candidate_verifier_function: Invoke-UokContactsCandidateScenario
+candidate_evidence_function: Assert-UokCandidateEvidence
 permissions:
   - contacts.read
   - contacts.manage
@@ -58,6 +67,9 @@ extension_points:
   - backend_package
   - command_handlers
   - api_router
+  - dashboard_provider
+  - evidence_provider
+  - model_exports
   - permissions
   - events
   - migrations

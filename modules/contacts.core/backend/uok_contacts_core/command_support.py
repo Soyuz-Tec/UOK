@@ -17,7 +17,8 @@ from .facade import (
     review_state_for_payload,
     validate_contact_payload_lengths,
 )
-from uok.models import EventRecord, Party, PartyNote, PartyRelationship, utcnow
+from .models import Party, PartyNote, PartyRelationship, utcnow
+from uok.models import EventRecord
 from uok.security import Actor
 from uok.util import dumps
 

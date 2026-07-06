@@ -6,35 +6,22 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .contacts import clean_text
-from .contacts_commands import (
-    cmd_add_contact_note,
-    cmd_archive_contact,
-    cmd_create_contact,
-    cmd_import_contacts_csv,
-    cmd_link_contact_relationship,
-    cmd_purge_contact,
-    cmd_restore_contact,
-    cmd_update_contact,
-    command_handlers,
-)
+from .module_commands import command_permissions, load_module_command_handlers
 from .module_ops import ensure_command_module_operational
 from .models import CommandLog
 from .security import Actor, require_permission
 from .util import dumps, loads
 
-COMMAND_PERMISSIONS = {
-    "CreateContact": "contacts.manage",
-    "UpdateContact": "contacts.manage",
-    "ArchiveContact": "contacts.manage",
-    "RestoreContact": "contacts.restore",
-    "PurgeContact": "contacts.purge",
-    "AddContactNote": "contacts.manage",
-    "LinkContactRelationship": "contacts.manage",
-    "ImportContactsCsv": "contacts.import",
-    "VerifyBaseline": "migration.verify",
-}
+COMMAND_PERMISSIONS = command_permissions()
 MAX_IDEMPOTENCY_KEY_LENGTH = 180
+
+
+def clean_command_text(value: Any) -> str:
+    return str(value or "").strip()
+
+
+def command_handlers():
+    return load_module_command_handlers()
 
 
 def _log_denied_command(db: Session, actor: Actor, command_type: str, key: str, request_json: str, exc: PermissionError) -> None:
@@ -66,7 +53,7 @@ def _log_validation_error(db: Session, actor: Actor, command_type: str, key: str
 
 
 def _authorized_replay_or_none(db: Session, actor: Actor, command_type: str, payload: dict[str, Any], key: str, request_json: str) -> dict[str, Any] | None:
-    require_permission(actor, COMMAND_PERMISSIONS[command_type])
+    require_permission(actor, command_permissions()[command_type])
     ensure_command_module_operational(db, actor.organization_id, command_type)
     existing = db.scalar(select(CommandLog).where(CommandLog.organization_id == actor.organization_id, CommandLog.idempotency_key == key))
     if not existing or existing.status != "succeeded":
@@ -77,11 +64,11 @@ def _authorized_replay_or_none(db: Session, actor: Actor, command_type: str, pay
 
 
 def execute_command(db: Session, actor: Actor, command_type: str, payload: dict[str, Any], idempotency_key: str | None = None) -> dict[str, Any]:
-    command_type = clean_text(command_type)
+    command_type = clean_command_text(command_type)
     handler = command_handlers().get(command_type)
     if not handler:
         raise ValueError(f"Unknown command_type {command_type}")
-    key = clean_text(idempotency_key) if idempotency_key else f"{command_type}:{uuid4()}"
+    key = clean_command_text(idempotency_key) if idempotency_key else f"{command_type}:{uuid4()}"
     if len(key) > MAX_IDEMPOTENCY_KEY_LENGTH:
         raise ValueError(f"idempotency_key must be {MAX_IDEMPOTENCY_KEY_LENGTH} characters or fewer")
     request_json = dumps(payload)
@@ -116,14 +103,7 @@ def execute_command(db: Session, actor: Actor, command_type: str, payload: dict[
 __all__ = [
     "COMMAND_PERMISSIONS",
     "MAX_IDEMPOTENCY_KEY_LENGTH",
-    "cmd_add_contact_note",
-    "cmd_archive_contact",
-    "cmd_create_contact",
-    "cmd_import_contacts_csv",
-    "cmd_link_contact_relationship",
-    "cmd_purge_contact",
-    "cmd_restore_contact",
-    "cmd_update_contact",
+    "clean_command_text",
     "command_handlers",
     "execute_command",
 ]

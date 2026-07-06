@@ -122,6 +122,12 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
     assert review_queue.status_code == 200, review_queue.text
     assert any(row["source"] == "csv_import" for row in review_queue.json())
 
+    dashboard = client.get("/api/dashboard", headers=admin)
+    assert dashboard.status_code == 200, dashboard.text
+    assert dashboard.json()["counts"]["contacts"] >= 1
+    assert dashboard.json()["counts"]["organizations"] >= 1
+    assert dashboard.json()["counts"]["review_queue"] >= 1
+
     lifecycle = client.get("/api/modules/lifecycle", headers=admin)
     assert lifecycle.status_code == 200, lifecycle.text
     lifecycle_checks = lifecycle.json()["checks"]

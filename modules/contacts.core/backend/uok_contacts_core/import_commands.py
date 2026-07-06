@@ -14,7 +14,7 @@ from .facade import (
     clean_text,
 )
 from .command_support import _create_party, _emit_event
-from uok.models import ContactImportBatch
+from .models import ContactImportBatch
 from uok.security import Actor
 from uok.util import dumps
 

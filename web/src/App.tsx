@@ -3,13 +3,18 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useWorkbench } from "./app/useWorkbench";
 import { AppsManagerPanel } from "./features/apps/AppsManagerPanel";
 import { AuthScreen } from "./features/auth/AuthScreen";
-import { ContactsWorkspace } from "./features/contacts/ContactsWorkspace";
 import { AccountMenu } from "./features/layout/AccountMenu";
-import { sections } from "./shared/options";
+import { moduleSections, renderModuleSurface } from "./features/modules/moduleSurfaceRegistry";
+import { coreSections } from "./shared/options";
 import { JsonBlock, MetricGrid, Pane, StatusRow } from "./shared/ui";
 
 export function App() {
   const workbench = useWorkbench();
+  const sections = [
+    ...coreSections.slice(0, 2),
+    ...moduleSections,
+    ...coreSections.slice(2)
+  ];
 
   if (!workbench.token) {
     return (
@@ -106,56 +111,7 @@ export function App() {
           <AppsManagerPanel modules={workbench.moduleRows} busyAction={workbench.busyAction} onAction={workbench.moduleAction} />
         )}
 
-        {workbench.active === "contacts" && (
-          <ContactsWorkspace
-            token={workbench.token}
-            operational={workbench.contactsOperational}
-            module={workbench.contactsModule}
-            contacts={workbench.contacts}
-            reviewRows={workbench.reviewRows}
-            selectedContact={workbench.selectedContact}
-            selectedContactId={workbench.selectedContactId}
-            contactsView={workbench.contactsView}
-            detailPane={workbench.contactDetailPane}
-            query={workbench.query}
-            statusFilter={workbench.statusFilter}
-            reviewFilter={workbench.reviewFilter}
-            typeFilter={workbench.typeFilter}
-            draft={workbench.draft}
-            editing={workbench.editing}
-            noteText={workbench.noteText}
-            relationshipTarget={workbench.relationshipTarget}
-            relationshipType={workbench.relationshipType}
-            importFilename={workbench.importFilename}
-            importText={workbench.importText}
-            importBatches={workbench.importBatches}
-            busyAction={workbench.busyAction}
-            onInstall={() => workbench.moduleAction("contacts.core", "install")}
-            onViewChange={workbench.setContactsView}
-            onDetailPaneChange={workbench.setContactDetailPane}
-            onQueryChange={workbench.setQuery}
-            onStatusFilterChange={workbench.setStatusFilter}
-            onReviewFilterChange={workbench.setReviewFilter}
-            onTypeFilterChange={workbench.setTypeFilter}
-            onSelect={workbench.setSelectedContactId}
-            onCreate={workbench.startCreate}
-            onEdit={() => workbench.selectedContact && workbench.startEdit(workbench.selectedContact)}
-            onDraftChange={workbench.setDraft}
-            onSave={workbench.saveDraft}
-            onCancelEdit={() => workbench.setEditing(false)}
-            onArchive={workbench.archiveSelected}
-            onRestore={workbench.restoreSelected}
-            onPurge={workbench.purgeSelected}
-            onNoteTextChange={workbench.setNoteText}
-            onAddNote={workbench.addNote}
-            onRelationshipTargetChange={workbench.setRelationshipTarget}
-            onRelationshipTypeChange={workbench.setRelationshipType}
-            onLinkRelationship={workbench.linkRelationship}
-            onImportFilenameChange={workbench.setImportFilename}
-            onImportTextChange={workbench.setImportText}
-            onImport={workbench.importCsv}
-          />
-        )}
+        {renderModuleSurface(workbench.active, workbench)}
 
         {workbench.active === "evidence" && (
           <section aria-label="Evidence">

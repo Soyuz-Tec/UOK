@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .validation import choose_display_name, contact_attrs, normalize_match
-from uok.models import Party
+from .models import Party
 from uok.security import Actor
 from uok.util import loads
 

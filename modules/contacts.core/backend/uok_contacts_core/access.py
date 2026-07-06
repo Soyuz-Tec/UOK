@@ -3,7 +3,7 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from uok.models import Party, PartyNote, PartyRelationship
+from .models import Party, PartyNote, PartyRelationship
 from uok.security import Actor, has_permission
 
 
