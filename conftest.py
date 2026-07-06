@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 import pytest
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 
 os.environ["DATABASE_URL"] = "sqlite:///./data/test_uok_baseline.db"
 os.environ["DATA_DIR"] = "./data"

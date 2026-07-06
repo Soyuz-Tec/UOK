@@ -50,7 +50,7 @@ function Get-UokCandidateVerifierModules {
 }
 
 $health = Invoke-UokJson -Path "/health"
-if ($health.status -ne "ok" -or $health.version -ne "3.1.0-alpha.2") {
+if ($health.status -ne "ok" -or $health.version -ne "3.1.0-alpha.3") {
     throw "Unexpected health response: $($health | ConvertTo-Json -Depth 5)"
 }
 

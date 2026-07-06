@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
 
@@ -61,7 +61,7 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
             "party_id": contact_id,
             "phone": "+1 555 0100",
             "website": "https://example.test",
-            "note": "Updated during alpha.2 CRM slice verification.",
+            "note": "Updated during alpha.3 Contacts module verification.",
         },
         f"uok-update-contact-{suffix}",
     )
@@ -101,7 +101,7 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
         ops,
         "ImportContactsCsv",
         {
-            "filename": "contacts-alpha2.csv",
+            "filename": "contacts-alpha3.csv",
             "csv_text": "display_name,email,company,phone\nImported Contact,contact-{suffix}@example.test,Imported Account,+1 555 9999\n",
         },
         f"uok-import-contact-{suffix}",

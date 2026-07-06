@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
 
@@ -33,6 +33,50 @@ def test_optional_contacts_module_can_be_uninstalled_without_compromising_uok(cl
     )
     assert readable_before_uninstall.status_code == 200, readable_before_uninstall.text
     readable_contact_id = readable_before_uninstall.json()["result"]["contact_id"]
+
+    disabled = client.post("/api/modules/contacts.core/disable", headers=admin)
+    assert disabled.status_code == 200, disabled.text
+    assert disabled.json()["status"] == "disabled"
+
+    disabled_read = client.get(f"/api/contacts/{readable_contact_id}", headers=admin)
+    assert disabled_read.status_code == 400, disabled_read.text
+    assert "contacts.core" in disabled_read.json()["detail"]["error"]
+
+    disabled_command = command(
+        client,
+        ops,
+        "CreateContact",
+        {"display_name": f"Disabled Contact {suffix}", "company_name": "Disabled Account"},
+        f"uok-disabled-contact-{suffix}",
+    )
+    assert disabled_command.status_code == 400, disabled_command.text
+    assert "contacts.core" in disabled_command.json()["detail"]["error"]
+
+    enabled = client.post("/api/modules/contacts.core/enable", headers=admin)
+    assert enabled.status_code == 200, enabled.text
+    assert enabled.json()["status"] == "installed"
+
+    enabled_read = client.get(f"/api/contacts/{readable_contact_id}", headers=admin)
+    assert enabled_read.status_code == 200, enabled_read.text
+
+    archived = command(client, ops, "ArchiveContact", {"party_id": readable_contact_id}, f"uok-lifecycle-archive-{suffix}")
+    assert archived.status_code == 200, archived.text
+    assert archived.json()["result"]["status"] == "archived"
+
+    restored_by_admin = command(client, admin, "RestoreContact", {"party_id": readable_contact_id}, f"uok-lifecycle-restore-{suffix}")
+    assert restored_by_admin.status_code == 200, restored_by_admin.text
+    assert restored_by_admin.json()["result"]["status"] == "active"
+
+    purge_denied = command(client, ops, "PurgeContact", {"party_id": readable_contact_id}, f"uok-lifecycle-purge-denied-{suffix}")
+    assert purge_denied.status_code == 403, purge_denied.text
+
+    purged_by_admin = command(client, admin, "PurgeContact", {"party_id": readable_contact_id}, f"uok-lifecycle-purge-{suffix}")
+    assert purged_by_admin.status_code == 200, purged_by_admin.text
+    assert purged_by_admin.json()["result"]["status"] == "purged"
+
+    restore_purged = command(client, admin, "RestoreContact", {"party_id": readable_contact_id}, f"uok-lifecycle-restore-purged-{suffix}")
+    assert restore_purged.status_code == 400, restore_purged.text
+    assert "purged contacts cannot be restored" in restore_purged.text
 
     uninstalled = client.post("/api/modules/contacts.core/uninstall", headers=admin)
     assert uninstalled.status_code == 200, uninstalled.text

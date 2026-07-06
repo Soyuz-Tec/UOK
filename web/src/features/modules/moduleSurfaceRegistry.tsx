@@ -44,7 +44,7 @@ export const moduleSurfaces: ModuleSurface[] = [
         importText={workbench.importText}
         importBatches={workbench.importBatches}
         busyAction={workbench.busyAction}
-        onInstall={() => workbench.moduleAction(CONTACTS_MODULE_ID, "install")}
+        onActivate={() => workbench.moduleAction(CONTACTS_MODULE_ID, workbench.contactsModule?.status === "disabled" ? "enable" : "install")}
         onViewChange={workbench.setContactsView}
         onDetailPaneChange={workbench.setContactDetailPane}
         onQueryChange={workbench.setQuery}

@@ -33,6 +33,12 @@
   gap: var(--uok-space-3);
 }
 
+.form-hint {
+  margin: 0;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-callout);
+}
+
 .form-section {
   min-width: 0;
   margin: 0;

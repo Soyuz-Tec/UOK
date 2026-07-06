@@ -72,7 +72,14 @@ function Assert-UokCandidateEvidence {
     ) {
         throw "Baseline evidence failed: $($evidence | ConvertTo-Json -Depth 30)"
     }
-    if (-not $migration.ok -or -not $migration.checks.single_active_baseline -or -not $migration.checks.baseline_has_no_business_module_tables) {
+    if (
+        -not $migration.ok `
+        -or -not $migration.checks.single_active_baseline `
+        -or -not $migration.checks.baseline_has_no_business_module_tables `
+        -or -not $migration.checks.module_migration_directories_present `
+        -or -not $migration.checks.module_migration_files_scoped `
+        -or -not $migration.checks.contacts_core_module_migration_present
+    ) {
         throw "Migration discipline failed: $($migration | ConvertTo-Json -Depth 30)"
     }
     if (-not $verify.result.ok -or -not $verify.result.checks.module_neutral_baseline -or -not $verify.result.checks.module_lifecycle_ok) {

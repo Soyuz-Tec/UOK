@@ -2,9 +2,9 @@
 
 **Module:** `contacts.core`
 
-**Target:** `UOK-3.1.0-alpha.2`
+**Target:** `UOK-3.1.0-alpha.3`
 
-**Status:** Implemented for the alpha.2 module-extension baseline; future packaging work remains.
+**Status:** Alpha.3 in progress; module extension ownership and Contacts packaging hardening are active.
 
 **Source root:** `modules/contacts.core`
 
@@ -12,7 +12,7 @@
 
 `contacts.core` is the first independently developable UOK application module. It must remain installable, upgradable, disableable, uninstallable, maintainable, and portable without compromising UOK. Its backend implementation lives under `modules/contacts.core/backend/uok_contacts_core`; the `src/uok/contact*.py` files are compatibility facades for stable kernel imports.
 
-The alpha.2 module-extension baseline declares Contacts runtime surfaces in `modules/contacts.core/manifest.yaml`:
+The alpha.3 module-extension baseline declares Contacts runtime surfaces in `modules/contacts.core/manifest.yaml`:
 
 - API router;
 - command handlers;
@@ -45,7 +45,7 @@ This plan is based on UOK module policy, UOK UI policy, and these Apple referenc
 - Prioritize fast record work: search, create, edit, save, archive, restore, and quick switching.
 - Require at least one meaningful field before saving a party.
 - Warn but allow possible duplicates, especially for future offline/mobile workflows.
-- Prepare for offline but do not build full offline sync in alpha.2.
+- Prepare for offline but do not build full offline sync in alpha.3.
 - Use mixed permissions: role foundation, ownership, and team-ready fields.
 - User delete means archive; admin can restore or purge.
 - Notes are private internal timeline entries.
@@ -102,7 +102,7 @@ CSV import creates an import batch and records per-row results. Imported rows ma
 
 ## API Scope
 
-Required endpoints for alpha.2:
+Required endpoints for alpha.3:
 
 - List/search parties.
 - Read party detail.
@@ -163,7 +163,7 @@ The kernel owns the stable `/api/dashboard` and `/api/baseline-evidence` respons
 
 ## Acceptance Gates
 
-Before packaging `UOK-3.1.0-alpha.2`:
+Before packaging `UOK-3.1.0-alpha.3`:
 
 ```powershell
 python -m compileall -q src modules tests
@@ -186,5 +186,5 @@ Browser verification must confirm:
 ## Remaining Packaging Work
 
 - Move more Contacts React source under `modules/contacts.core/web` when the frontend build can preserve shared shell composition.
-- Move Contacts behavior pytest suites from top-level `tests/` into `modules/contacts.core/tests` when test discovery remains equivalent.
-- Add future Contacts schema migrations under `modules/contacts.core/migrations` instead of expanding the shared initial baseline.
+- Continue moving executable Contacts UI source toward module-root packaging when shared shell composition can preserve the same React + TypeScript build.
+- Keep future Contacts schema migrations under `modules/contacts.core/migrations` instead of expanding the shared initial baseline.

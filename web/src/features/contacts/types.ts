@@ -23,7 +23,7 @@ export type ContactsWorkspaceProps = {
   importText: string;
   importBatches: unknown[];
   busyAction: string;
-  onInstall: () => void;
+  onActivate: () => void;
   onViewChange: (value: ContactsView) => void;
   onDetailPaneChange: (value: ContactDetailPane) => void;
   onQueryChange: (value: string) => void;

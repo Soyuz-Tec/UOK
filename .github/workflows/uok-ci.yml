@@ -37,7 +37,7 @@ jobs:
         run: python -m pip install pip-audit==2.10.0 && python -m pip_audit -r requirements.txt
 
       - name: Compile Python
-        run: python -m compileall -q src modules tests
+        run: python -m compileall -q src modules tests conftest.py
 
       - name: Validate module extension contract
         env:
@@ -82,7 +82,7 @@ jobs:
           import sys
           from pathlib import Path
 
-          test_files = sorted(Path("tests").glob("test_*.py"))
+          test_files = sorted(Path("tests").glob("test_*.py")) + sorted(Path("modules").glob("*/tests/test_*.py"))
           if not test_files:
               raise SystemExit("No Python test files found.")
           for test_file in test_files:

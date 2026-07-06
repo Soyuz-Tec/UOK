@@ -1,6 +1,6 @@
 # UOK
 
-**Version:** `3.1.0-alpha.2`
+**Version:** `3.1.0-alpha.3`
 
 UOK is the short name for Unified Operating Kernel. This is the first real-development baseline rebuilt from the RC9 policies and lessons while removing active RC-era source history.
 
@@ -51,7 +51,7 @@ These credentials are only enabled by the local compose profile. The container i
 ## Verify
 
 ```powershell
-python -m compileall -q src modules tests
+python -m compileall -q src modules tests conftest.py
 python -m pytest -q
 npm --prefix web test
 npm --prefix web run build:static

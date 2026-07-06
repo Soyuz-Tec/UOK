@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 from sqlalchemy import select
 
 from uok.db import SessionLocal

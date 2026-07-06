@@ -1,8 +1,8 @@
 # UOK Architecture
 
-**Current candidate:** `UOK-3.1.0-alpha.2`
+**Current candidate:** `UOK-3.1.0-alpha.3`
 
-**Current baseline tag:** `UOK-3.1.0-alpha.2-module-extension-baseline`
+**Current baseline tag:** `UOK-3.1.0-alpha.2-module-extension-docs-baseline`
 
 ## Purpose
 
@@ -24,7 +24,7 @@ Operator browser
 | Container | Location | Responsibility |
 |---|---|---|
 | Backend kernel | `src/uok` | FastAPI composition, auth/session security, command bus, module registry, lifecycle APIs, static asset serving, baseline evidence, migration gates, compatibility facades. |
-| Module packages | `modules/<module_name>` | Module manifest, backend package, UI ownership marker, migrations ownership marker, tests, candidate verifier scenarios, module-owned behavior. |
+| Module packages | `modules/<module_name>` | Module manifest, backend package, UI ownership marker, module-owned migrations, tests, candidate verifier scenarios, module-owned behavior. |
 | Frontend shell | `web/src` | React + TypeScript + Vite workbench, navigation shell, shared controls, module surface registry, generated API contracts. |
 | Database baseline | `migrations/001_initial_baseline.sql` | Initial shared candidate schema plus schema-version evidence. Future schema changes must be migration-gated and module-owned where applicable. |
 | Candidate verification | `scripts/verify_uok_candidate.ps1`, `modules/*/tests/verify` | Release smoke and module-declared candidate scenarios. |
@@ -45,7 +45,7 @@ Operator browser
 - Product, cargo, CRM, accounting, inventory, document, and integration behavior must not be hardcoded into the kernel.
 - Shared baseline SQLAlchemy models currently remain in `src/uok/models.py`; module packages import their owned domain models through module-local facades and declare owned tables for validation.
 - Module-specific UI still lives in `web/src/features/<feature>` for this candidate, with ownership and composition expressed through the frontend module surface registry and module manifest `web_path`.
-- Contacts pytest suites still live in top-level `tests/`; the Contacts candidate verifier scenario now lives under `modules/contacts.core/tests/verify`.
+- Contacts pytest suites and the Contacts candidate verifier scenario now live under `modules/contacts.core/tests`.
 
 ## Key Decisions
 
@@ -60,7 +60,7 @@ Operator browser
 Before publishing a candidate, run:
 
 ```powershell
-python -m compileall -q src modules tests
+python -m compileall -q src modules tests conftest.py
 python -m pytest -q
 npm --prefix web test
 npm --prefix web run build:static

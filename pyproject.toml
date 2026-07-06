@@ -1,6 +1,6 @@
 [project]
 name = "uok"
-version = "3.1.0a2"
+version = "3.1.0a3"
 description = "UOK baseline for real development."
 requires-python = ">=3.14"
 dependencies = [
@@ -16,11 +16,11 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
   "pytest==9.1.1",
-  "httpx==0.28.1",
+  "httpx2==2.5.0",
   "pip-audit==2.10.0",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-testpaths = ["tests"]
+testpaths = ["tests", "modules/contacts.core/tests"]
 addopts = "-q"

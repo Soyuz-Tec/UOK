@@ -51,6 +51,7 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert manifests["contacts.core"]["model_exports"] == "uok_contacts_core.models:owned_models"
     assert manifests["contacts.core"]["candidate_verifier_script"] == "modules/contacts.core/tests/verify/UokCandidateContacts.ps1"
     assert "contacts.manage" in manifests["contacts.core"]["permissions"]
+    assert (root / "contacts.core" / "migrations" / "001_contacts_core_operational_indexes.sql").is_file()
 
 
 def test_contacts_core_backend_loads_from_physical_module_root() -> None:

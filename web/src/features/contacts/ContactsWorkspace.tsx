@@ -1,4 +1,5 @@
-import { Download, Search, Upload, UserPlus } from "lucide-react";
+import { Download, Power, Search, Upload, UserPlus } from "lucide-react";
+import type { KeyboardEvent } from "react";
 
 import { contactsViewOptions } from "../../shared/options";
 import { formatLabel } from "../../shared/format";
@@ -8,6 +9,13 @@ import { ContactList } from "./ContactList";
 import type { ContactsWorkspaceProps } from "./types";
 
 export function ContactsWorkspace(props: ContactsWorkspaceProps) {
+  const selectFromKeyboard = (event: KeyboardEvent, contactId: string) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      props.onSelect(contactId);
+    }
+  };
+
   if (!props.token) {
     return (
       <section className="contacts-workspace" aria-label="Contacts">
@@ -17,6 +25,11 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
   }
 
   if (!props.operational) {
+    const moduleStatus = props.module?.status || "available";
+    const activationLabel = moduleStatus === "disabled" ? "Enable" : "Install";
+    const ActivationIcon = moduleStatus === "disabled" ? Power : Download;
+    const activationAction = moduleStatus === "disabled" ? "enable" : "install";
+
     return (
       <section className="contacts-workspace" aria-label="Contacts">
         <Pane title="Contacts" description="Module state" wide>
@@ -29,7 +42,7 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
               <p className="module-meta">capability_module - {props.module?.version || "not loaded"}</p>
             </div>
             <div className="module-actions">
-              <CommandButton icon={Download} onClick={props.onInstall} loading={props.busyAction === "contacts.core:install"}>Install</CommandButton>
+              <CommandButton icon={ActivationIcon} onClick={props.onActivate} loading={props.busyAction === `contacts.core:${activationAction}`}>{activationLabel}</CommandButton>
             </div>
           </div>
         </Pane>
@@ -111,7 +124,14 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
             </thead>
             <tbody>
               {props.contacts.map((contact) => (
-                <tr key={contact.id} className={props.selectedContactId === contact.id ? "selected" : ""} onClick={() => props.onSelect(contact.id)}>
+                <tr
+                  key={contact.id}
+                  className={props.selectedContactId === contact.id ? "selected" : ""}
+                  tabIndex={0}
+                  aria-selected={props.selectedContactId === contact.id}
+                  onClick={() => props.onSelect(contact.id)}
+                  onKeyDown={(event) => selectFromKeyboard(event, contact.id)}
+                >
                   <td>{contact.display_name}</td>
                   <td>{formatLabel(contact.party_type)}</td>
                   <td>{contact.email || "-"}</td>

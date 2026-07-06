@@ -86,15 +86,21 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
     if (!activeToken) return;
     try {
       setBusyAction("refresh");
-      const [dash, contactRows, reviewQueue, batches, catalog, evidenceBody, alignmentBody] = await Promise.all([
+      const [dash, catalog, evidenceBody, alignmentBody] = await Promise.all([
         api<Dashboard>("/api/dashboard", {}, activeToken),
-        api<ContactRecord[]>(contactsPath(filters), {}, activeToken),
-        api<ContactRecord[]>("/api/contacts/review-queue", {}, activeToken),
-        api<unknown[]>("/api/contacts/import-batches", {}, activeToken),
         api<{ modules: Record<string, ModuleStatus> }>("/api/modules/catalog", {}, activeToken),
         api<QualityReport>("/api/baseline-evidence", {}, activeToken),
         api<QualityReport>("/api/architecture/alignment", {}, activeToken)
       ]);
+      const contactModuleStatus = catalog.modules[CONTACTS_MODULE_ID]?.status;
+      const contactsReady = contactModuleStatus === "installed" || contactModuleStatus === "upgraded";
+      const [contactRows, reviewQueue, batches] = contactsReady
+        ? await Promise.all([
+            api<ContactRecord[]>(contactsPath(filters), {}, activeToken),
+            api<ContactRecord[]>("/api/contacts/review-queue", {}, activeToken),
+            api<unknown[]>("/api/contacts/import-batches", {}, activeToken)
+          ])
+        : [[], [], []] as [ContactRecord[], ContactRecord[], unknown[]];
       setDashboard(dash);
       setContacts(contactRows);
       setReviewRows(reviewQueue);

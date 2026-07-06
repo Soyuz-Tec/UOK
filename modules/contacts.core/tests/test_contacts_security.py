@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 
 from tests.helpers import auth, command, user_id
 from uok.contacts import MAX_CONTACT_NOTE_LENGTH, MAX_CSV_IMPORT_BYTES

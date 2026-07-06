@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -90,6 +90,11 @@ class Party(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     purged_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    __table_args__ = (
+        Index("ix_contacts_core_parties_org_status_review", "organization_id", "status", "review_state"),
+        Index("ix_contacts_core_parties_org_display_name", "organization_id", "display_name"),
+        Index("ix_contacts_core_parties_org_owner", "organization_id", "owner_user_id"),
+    )
 
 
 class PartyRelationship(Base):
@@ -101,6 +106,10 @@ class PartyRelationship(Base):
     relationship_type: Mapped[str] = mapped_column(String(80))
     attrs_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    __table_args__ = (
+        Index("ix_contacts_core_party_relationships_from", "organization_id", "from_party_id"),
+        Index("ix_contacts_core_party_relationships_to", "organization_id", "to_party_id"),
+    )
 
 
 class PartyNote(Base):
@@ -112,6 +121,9 @@ class PartyNote(Base):
     body: Mapped[str] = mapped_column(Text)
     visibility_scope: Mapped[str] = mapped_column(String(40), default="internal")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    __table_args__ = (
+        Index("ix_contacts_core_party_notes_party_created", "party_id", "created_at"),
+    )
 
 
 class ContactImportBatch(Base):
@@ -125,6 +137,9 @@ class ContactImportBatch(Base):
     failed_count: Mapped[int] = mapped_column(Integer, default=0)
     attrs_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    __table_args__ = (
+        Index("ix_contacts_core_import_batches_org_created", "organization_id", "created_at"),
+    )
 
 
 class WorkflowInstance(Base):

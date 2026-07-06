@@ -11,8 +11,25 @@ export function ContactForm({ draft, onChange, onSave, onCancel, busy }: {
   busy: boolean;
 }) {
   const setField = (field: keyof ContactDraft, value: string) => onChange({ ...draft, [field]: value });
+  const hasMeaningfulValue = [
+    draft.display_name,
+    draft.given_name,
+    draft.family_name,
+    draft.organization_name,
+    draft.company_name,
+    draft.email,
+    draft.phone,
+    draft.website,
+    draft.address,
+    draft.title,
+    draft.note
+  ].some((value) => value.trim().length > 0);
+
   return (
-    <form className="contact-form" aria-label="Contact form" onSubmit={(event) => event.preventDefault()}>
+    <form className="contact-form" aria-label="Contact form" aria-describedby="contact-form-minimum" onSubmit={(event) => event.preventDefault()}>
+      <p id="contact-form-minimum" className="form-hint">
+        Enter at least one meaningful field before saving.
+      </p>
       <fieldset className="form-section">
         <legend>Identity</legend>
         <div className="form-field-grid">
@@ -51,7 +68,7 @@ export function ContactForm({ draft, onChange, onSave, onCancel, busy }: {
         <label className="field"><span>Note</span><textarea value={draft.note} onChange={(event) => setField("note", event.target.value)} rows={3} /></label>
       </fieldset>
       <div className="form-actions">
-        <CommandButton icon={Save} onClick={onSave} loading={busy} primary>Save</CommandButton>
+        <CommandButton icon={Save} onClick={onSave} loading={busy} disabled={!hasMeaningfulValue} primary>Save</CommandButton>
         <CommandButton icon={X} onClick={onCancel}>Close</CommandButton>
       </div>
     </form>

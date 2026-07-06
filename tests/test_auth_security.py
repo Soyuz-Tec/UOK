@@ -3,7 +3,7 @@ from __future__ import annotations
 from hashlib import sha256
 from uuid import uuid4
 
-from fastapi.testclient import TestClient
+from starlette.testclient import TestClient
 
 from tests.helpers import auth
 from uok.main import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth

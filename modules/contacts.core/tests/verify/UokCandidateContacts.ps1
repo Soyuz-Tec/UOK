@@ -81,7 +81,7 @@ function Invoke-UokContactsCandidateScenario {
             party_id = $contactId
             phone = "+1 555 0100"
             website = "https://example.test"
-            note = "Updated during UOK Contacts alpha.2 verification."
+            note = "Updated during UOK Contacts alpha.3 verification."
         }
         idempotency_key = "uok-update-contact-$Stamp"
     }
@@ -126,7 +126,7 @@ function Invoke-UokContactsCandidateScenario {
     }
 
     $imported = Invoke-UokJson -Method "POST" -Path "/api/contacts/import-csv" -Headers $OpsHeaders -Body @{
-        filename = "contacts-alpha2.csv"
+        filename = "contacts-alpha3.csv"
         csv_text = "display_name,email,company,phone`nImported Contact $Stamp,imported-$Stamp@example.test,Imported Account $Stamp,+1 555 9999`n"
     }
     if ($imported.imported_count -lt 1) {

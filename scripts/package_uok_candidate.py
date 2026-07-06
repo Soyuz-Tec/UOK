@@ -25,7 +25,7 @@ def should_include(path: Path, root: Path) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--version", default="3.1.0-alpha.2")
+    parser.add_argument("--version", default="3.1.0-alpha.3")
     parser.add_argument("--output-directory", default="..")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
