@@ -1,0 +1,83 @@
+.workflow-disclosure {
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+  overflow: hidden;
+}
+
+.workflow-disclosure summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--uok-space-3);
+  align-items: center;
+  min-height: 64px;
+  padding: var(--uok-space-4);
+  cursor: pointer;
+}
+
+.workflow-disclosure summary strong,
+.workflow-disclosure summary span {
+  display: block;
+}
+
+.workflow-disclosure[open] summary {
+  border-bottom: var(--uok-line);
+}
+
+.workflow-disclosure .contacts-utility-grid {
+  padding: var(--uok-space-4);
+}
+
+.contact-form {
+  display: grid;
+  gap: var(--uok-space-3);
+}
+
+.form-section {
+  min-width: 0;
+  margin: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-4);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.form-section legend {
+  padding: 0 var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 750;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.form-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: var(--uok-space-3);
+}
+
+.field-prominent,
+.field-wide {
+  grid-column: span 2;
+}
+
+.contact-form .field input,
+.contact-form .field select,
+.contact-form .field textarea,
+.contacts-utility-grid .field input,
+.contacts-utility-grid .field textarea {
+  width: 100%;
+}
+
+.wide-field,
+.form-actions {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--uok-space-2);
+  justify-content: flex-end;
+}

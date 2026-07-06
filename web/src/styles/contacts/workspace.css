@@ -1,0 +1,100 @@
+.contacts-workspace {
+  display: grid;
+  gap: var(--uok-space-4);
+}
+
+.contacts-controls,
+.review-strip,
+.contact-detail-header {
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+}
+
+.contact-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--uok-space-3);
+  min-height: 76px;
+  padding: var(--uok-space-4);
+}
+
+.contact-detail-header h3 {
+  margin: 0;
+  font-size: var(--uok-title-2);
+  letter-spacing: 0;
+}
+
+.contacts-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--uok-space-2);
+}
+
+.contacts-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) repeat(5, auto);
+  align-items: end;
+  gap: var(--uok-space-3);
+  padding: var(--uok-space-4);
+}
+
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--uok-space-2);
+  min-height: var(--uok-control-height);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-tertiary);
+  background: var(--uok-bg-elevated);
+}
+
+.search-field input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.review-strip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--uok-space-4);
+  align-items: center;
+  padding: var(--uok-space-4);
+}
+
+.review-strip strong {
+  display: block;
+  font-size: var(--uok-title-2);
+}
+
+.review-items {
+  display: flex;
+  gap: var(--uok-space-2);
+  overflow-x: auto;
+  padding-bottom: var(--uok-space-1);
+}
+
+.review-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-2);
+  min-width: max-content;
+  min-height: var(--uok-control-height);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+  cursor: pointer;
+}
+
+.muted {
+  color: var(--uok-text-tertiary);
+}

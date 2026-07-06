@@ -1,0 +1,79 @@
+.contacts-split {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: var(--uok-space-4);
+  align-items: start;
+}
+
+.contact-list,
+.contact-detail,
+.contacts-table-wrap,
+.contact-card-grid {
+  min-width: 0;
+}
+
+.contact-list {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.contact-list-row,
+.contact-card {
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
+}
+
+.contact-list-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--uok-space-3);
+  align-items: center;
+  min-height: 72px;
+  padding: var(--uok-space-3);
+  text-align: left;
+}
+
+.contact-list-row:hover,
+.contact-card:hover,
+.review-chip:hover,
+.contacts-table tbody tr:hover {
+  border-color: var(--uok-accent);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.contact-list-row.selected,
+.contact-card.selected,
+.contacts-table tbody tr.selected {
+  border-color: var(--uok-accent);
+  background: color-mix(in srgb, var(--uok-accent) 12%, var(--uok-bg-elevated));
+}
+
+.contact-list-row strong,
+.contact-list-row small,
+.contact-card strong,
+.contact-card span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.contact-list-row small,
+.contact-card span {
+  margin-top: var(--uok-space-1);
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-callout);
+}
+
+.contact-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--uok-bg-grouped-secondary);
+  color: var(--uok-accent);
+  font-weight: 800;
+}

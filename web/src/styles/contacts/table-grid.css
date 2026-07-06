@@ -1,0 +1,47 @@
+.contacts-table-wrap {
+  overflow: auto;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+}
+
+.contacts-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.contacts-table th,
+.contacts-table td {
+  height: 52px;
+  border-bottom: var(--uok-line);
+  padding: 0 var(--uok-space-3);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.contacts-table th {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+  text-transform: uppercase;
+}
+
+.contacts-table tbody tr {
+  cursor: pointer;
+}
+
+.contact-card-grid,
+.contacts-utility-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--uok-space-3);
+}
+
+.contact-card {
+  display: grid;
+  justify-items: start;
+  gap: var(--uok-space-2);
+  min-height: 168px;
+  padding: var(--uok-space-4);
+  text-align: left;
+}

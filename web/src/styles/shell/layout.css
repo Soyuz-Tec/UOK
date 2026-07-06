@@ -1,0 +1,43 @@
+@property --uok-active-sidebar-width {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 272px;
+}
+
+.shell {
+  --uok-active-sidebar-width: var(--uok-sidebar-width);
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--uok-active-sidebar-width) minmax(0, 1fr);
+  transition: --uok-active-sidebar-width 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.shell.sidebar-collapsed {
+  --uok-active-sidebar-width: var(--uok-sidebar-collapsed-width);
+}
+
+.workbench {
+  min-width: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: var(--uok-space-6);
+  background: var(--uok-bg-base);
+}
+
+.eyebrow {
+  margin: 0 0 var(--uok-space-1);
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.module-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--uok-space-2);
+  align-items: center;
+  justify-content: flex-end;
+}

@@ -1,0 +1,31 @@
+.session-user-trigger {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--uok-space-2);
+  width: 100%;
+  min-height: 56px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-2);
+  background: var(--uok-bg-elevated);
+  color: var(--uok-text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.session-user-trigger:hover {
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.session-user-trigger:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--uok-accent) 45%, transparent);
+  outline-offset: 3px;
+}
+
+.session-user-trigger .account-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--uok-radius-2);
+  font-size: var(--uok-callout);
+}

@@ -1,0 +1,39 @@
+name: apps.manager
+kind: control_module
+version: APP_VERSION
+description: "Required lightweight control panel for listing, installing, upgrading, disabling, and uninstalling optional modules."
+installable: true
+uninstallable: false
+updatable: true
+maintainable: true
+required: true
+lifecycle:
+  - installed
+  - upgraded
+commands: []
+events:
+  - ModuleInstalled
+  - ModuleUpgraded
+  - ModuleDisabled
+  - ModuleEnabled
+  - ModuleUninstalled
+dependencies: []
+backend_path: modules/apps.manager/backend
+web_path: modules/apps.manager/web
+migrations_path: modules/apps.manager/migrations
+tests_path: modules/apps.manager/tests
+api_prefixes:
+  - /api/modules
+permissions:
+  - module.read
+  - module.manage
+owned_tables:
+  - ModuleRecord
+  - EventRecord:Module
+extension_points:
+  - manifest
+  - api_router
+  - permissions
+  - events
+  - candidate_verifier
+data_retention_policy: "Required bootstrap control module; lifecycle records are retained as UOK governance evidence."

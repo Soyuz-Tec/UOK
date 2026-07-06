@@ -1,0 +1,103 @@
+.auth-screen {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: max(var(--uok-space-6), env(safe-area-inset-top)) max(var(--uok-space-4), env(safe-area-inset-right)) max(var(--uok-space-6), env(safe-area-inset-bottom)) max(var(--uok-space-4), env(safe-area-inset-left));
+  background: var(--uok-bg-base);
+}
+
+.auth-panel {
+  display: grid;
+  gap: var(--uok-space-4);
+  width: min(100%, 440px);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-6);
+  background: var(--uok-bg-elevated);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--uok-text-primary) 8%, transparent);
+}
+
+.auth-heading {
+  display: grid;
+  gap: var(--uok-space-2);
+  justify-items: center;
+  text-align: center;
+}
+
+.auth-heading h1 {
+  margin: 0;
+  font-size: var(--uok-title-2);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.auth-mark {
+  width: 56px;
+  height: 56px;
+  font-size: 1.35rem;
+}
+
+.auth-copy {
+  margin: 0 0 var(--uok-space-1);
+  max-width: 30ch;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-callout);
+}
+
+.auth-mode-control {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: 3px;
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.auth-mode-control button {
+  border: 1px solid transparent;
+  border-radius: var(--uok-radius-2);
+  color: var(--uok-text-secondary);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 700;
+  min-height: 38px;
+}
+
+.auth-mode-control button.selected {
+  color: var(--uok-bg-elevated);
+  border-color: var(--uok-accent);
+  background: var(--uok-accent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--uok-accent) 20%, transparent);
+}
+
+.auth-form {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.auth-form .field input,
+.auth-submit {
+  width: 100%;
+}
+
+.auth-form .field {
+  gap: 6px;
+}
+
+.auth-form .field input {
+  min-height: 42px;
+}
+
+.auth-submit {
+  margin-top: var(--uok-space-2);
+}
+
+.signin-error {
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+  color: var(--uok-status-danger);
+  background: var(--uok-bg-grouped-secondary);
+}

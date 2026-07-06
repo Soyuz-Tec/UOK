@@ -1,0 +1,46 @@
+.account-chip {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--uok-space-2);
+  align-items: center;
+  min-height: var(--uok-control-height);
+  min-width: 180px;
+  max-width: 280px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: 0 var(--uok-space-3) 0 var(--uok-space-2);
+  background: var(--uok-bg-elevated);
+}
+
+.account-avatar,
+.auth-mark,
+.signin-mark {
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-accent);
+  color: var(--uok-bg-elevated);
+  font-weight: 800;
+}
+
+.account-avatar {
+  width: 30px;
+  height: 30px;
+}
+
+.account-meta {
+  min-width: 0;
+}
+
+.account-meta strong,
+.account-meta small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-meta small {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}

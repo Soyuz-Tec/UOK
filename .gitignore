@@ -1,0 +1,16 @@
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.venv/
+data/
+node_modules/
+web/dist/
+web/tsconfig.tsbuildinfo
+src/uok/static/app/
+*.zip
+*.db
+*.sqlite
+*.sqlite3
+.env
+htmlcov/
+coverage/

@@ -1,0 +1,66 @@
+name: contacts.core
+kind: capability_module
+version: APP_VERSION
+description: "Optional reusable party, person, organization, note, relationship, review, and CSV import capability."
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - CreateContact
+  - UpdateContact
+  - ArchiveContact
+  - RestoreContact
+  - PurgeContact
+  - AddContactNote
+  - LinkContactRelationship
+  - ImportContactsCsv
+events:
+  - ContactCreated
+  - ContactUpdated
+  - ContactArchived
+  - ContactRestored
+  - ContactPurged
+  - ContactNoteAdded
+  - ContactRelationshipLinked
+  - ContactLinkedToOrganization
+  - ContactsImported
+dependencies: []
+backend_path: modules/contacts.core/backend
+web_path: modules/contacts.core/web
+migrations_path: modules/contacts.core/migrations
+tests_path: modules/contacts.core/tests
+api_prefixes:
+  - /api/contacts
+permissions:
+  - contacts.read
+  - contacts.manage
+  - contacts.restore
+  - contacts.purge
+  - contacts.import
+owned_tables:
+  - Party
+  - PartyNote
+  - PartyRelationship
+  - ContactImportBatch
+  - CommandLog:contacts.core
+  - EventRecord:Contact
+extension_points:
+  - manifest
+  - backend_package
+  - command_handlers
+  - api_router
+  - permissions
+  - events
+  - migrations
+  - web_surface
+  - tests
+  - candidate_verifier
+data_retention_policy: "User delete archives contacts; admin can restore or purge. Module uninstall disables access while retaining records for admin-controlled recovery unless a future purge workflow is explicitly executed."

@@ -1,0 +1,37 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--uok-bg-base);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--uok-font-family);
+  font-size: var(--uok-body);
+  line-height: 1.45;
+  background: var(--uok-bg-base);
+  color: var(--uok-text-primary);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: var(--uok-control-height);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--uok-focus-ring);
+  outline-offset: 2px;
+}

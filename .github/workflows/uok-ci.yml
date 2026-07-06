@@ -1,0 +1,145 @@
+name: Unified Operating Kernel CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  candidate-checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: uok
+          POSTGRES_USER: uok
+          POSTGRES_PASSWORD: uok_local_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U uok -d uok"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+      - name: Audit Python dependencies
+        run: python -m pip install pip-audit==2.10.0 && python -m pip_audit -r requirements.txt
+
+      - name: Compile Python
+        run: python -m compileall -q src modules tests
+
+      - name: Validate module extension contract
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          from uok.module_contract_validation import validate_module_extension_contracts
+
+          report = validate_module_extension_contracts()
+          assert report["ok"], report
+          PY
+
+      - name: Check source-size guardrail
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          roots = [Path("src"), Path("modules"), Path("web/src"), Path("tests"), Path("scripts"), Path("migrations")]
+          excluded_parts = {"node_modules", "static", "generated", "__pycache__", ".pytest_cache"}
+          checked_suffixes = {".py", ".ts", ".tsx", ".css", ".ps1", ".sql"}
+          violations = []
+          for root in roots:
+              if not root.exists():
+                  continue
+              for path in root.rglob("*"):
+                  if not path.is_file() or path.suffix not in checked_suffixes:
+                      continue
+                  if excluded_parts.intersection(path.parts):
+                      continue
+                  line_count = len(path.read_text(encoding="utf-8", errors="ignore").splitlines())
+                  if line_count > 300:
+                      violations.append(f"{path.as_posix()}: {line_count} lines")
+          assert not violations, "\n".join(violations)
+          PY
+
+      - name: Run Python tests file by file
+        env:
+          PYTHONPATH: src
+        run: |
+          python - <<'PY'
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          test_files = sorted(Path("tests").glob("test_*.py"))
+          if not test_files:
+              raise SystemExit("No Python test files found.")
+          for test_file in test_files:
+              print(f"::group::{test_file.as_posix()}")
+              subprocess.run([sys.executable, "-m", "pytest", "-q", str(test_file)], check=True)
+              print("::endgroup::")
+          PY
+
+      - name: Verify PostgreSQL 18 initial baseline
+        env:
+          PYTHONPATH: src
+          DATABASE_URL: postgresql+psycopg://uok:uok_local_password@127.0.0.1:5432/uok
+          UOK_SECRET: ci-uok-secret
+          UOK_ALLOW_INSECURE_LOCAL_DEFAULTS: "1"
+          UOK_AUTO_CREATE_SCHEMA: "1"
+          UOK_SEED_LOCAL_DATA: "1"
+          UOK_RESET_DEMO_PASSWORDS: "1"
+          UOK_SELF_REGISTRATION: "1"
+          DATA_DIR: ./data
+        run: |
+          python - <<'PY'
+          from uok.main import bootstrap
+          from uok.db import SessionLocal
+          from uok.migration_registry import verify_migration_discipline
+          from uok.module_contract_validation import validate_module_extension_contracts
+          from uok.quality import source_boundary_report
+
+          org_id = bootstrap()
+          with SessionLocal() as db:
+              migration = verify_migration_discipline(db)
+              assert migration["ok"], migration
+          module_contract = validate_module_extension_contracts()
+          assert module_contract["ok"], module_contract
+          source = source_boundary_report()
+          assert source["ok"], source
+          PY
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Audit frontend dependencies
+        working-directory: web
+        run: npm audit
+
+      - name: Run frontend tests
+        working-directory: web
+        run: npm run test
+
+      - name: Build frontend
+        working-directory: web
+        env:
+          PYTHONPATH: ../src
+        run: npm run build:static

@@ -1,0 +1,54 @@
+.logout-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--uok-space-4);
+  background: color-mix(in srgb, var(--uok-bg-base) 62%, transparent);
+  backdrop-filter: blur(6px);
+}
+
+.logout-dialog {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--uok-space-3);
+  width: min(100%, 380px);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-4);
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-2);
+}
+
+.logout-dialog h2,
+.logout-dialog p {
+  margin: 0;
+}
+
+.logout-dialog h2 {
+  font-size: var(--uok-title-2);
+  line-height: 1.2;
+}
+
+.logout-dialog p {
+  margin-top: var(--uok-space-1);
+  color: var(--uok-text-secondary);
+}
+
+.logout-dialog-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--uok-radius-3);
+  color: var(--uok-status-danger);
+  background: color-mix(in srgb, var(--uok-status-danger) 12%, var(--uok-bg-grouped-secondary));
+}
+
+.logout-dialog-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--uok-space-2);
+}

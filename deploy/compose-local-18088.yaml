@@ -1,0 +1,40 @@
+services:
+  db:
+    image: docker.io/library/postgres:18-alpine
+    environment:
+      POSTGRES_DB: uok
+      POSTGRES_USER: uok
+      POSTGRES_PASSWORD: uok_local_password
+    volumes:
+      - uok_pg18:/var/lib/postgresql:Z
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uok -d uok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://uok:uok_local_password@db:5432/uok
+      UOK_SECRET: local-uok-change-me
+      UOK_ALLOW_INSECURE_LOCAL_DEFAULTS: "1"
+      UOK_AUTO_CREATE_SCHEMA: "1"
+      UOK_SEED_LOCAL_DATA: "1"
+      UOK_RESET_DEMO_PASSWORDS: "1"
+      UOK_SELF_REGISTRATION: "1"
+      UOK_TOKEN_TTL_SECONDS: "28800"
+      DATA_DIR: /data
+    ports:
+      - "127.0.0.1:18088:8080"
+    volumes:
+      - uok_files:/data:Z
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  uok_pg18:
+  uok_files:

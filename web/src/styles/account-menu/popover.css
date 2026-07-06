@@ -1,0 +1,125 @@
+.account-menu-root {
+  position: relative;
+  z-index: 20;
+  margin-top: auto;
+  min-width: 0;
+}
+
+.session-popover {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + var(--uok-space-2));
+  display: grid;
+  gap: var(--uok-space-1);
+  width: min(300px, calc(100vw - (var(--uok-space-3) * 2)));
+  border: var(--uok-line);
+  border-radius: 14px;
+  padding: var(--uok-space-2);
+  background: color-mix(in srgb, var(--uok-bg-elevated) 94%, transparent);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--uok-shadow-2);
+  animation: account-menu-in 180ms ease-out;
+}
+
+.session-menu-divider {
+  height: 1px;
+  margin: var(--uok-space-1) 0;
+  background: var(--uok-border);
+}
+
+.session-menu-button {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--uok-space-2);
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-2);
+  background: transparent;
+  color: var(--uok-text-primary);
+  font-family: inherit;
+  font-size: var(--uok-footnote);
+  text-align: left;
+  cursor: pointer;
+}
+
+.session-menu-button svg {
+  color: var(--uok-text-tertiary);
+}
+
+.session-menu-button:hover,
+.session-menu-button:focus-visible {
+  background: var(--uok-bg-grouped-secondary);
+  outline: none;
+}
+
+.session-menu-button:active {
+  background: color-mix(in srgb, var(--uok-accent) 10%, var(--uok-bg-grouped-secondary));
+}
+
+.session-menu-button:disabled {
+  cursor: not-allowed;
+  color: var(--uok-text-placeholder);
+}
+
+.session-menu-button.destructive {
+  color: var(--uok-text-primary);
+}
+
+.session-menu-button.destructive:hover,
+.session-menu-button.destructive:focus-visible {
+  color: var(--uok-status-danger);
+}
+
+.session-menu-appearance {
+  display: grid;
+  gap: var(--uok-space-2);
+  padding: var(--uok-space-2);
+}
+
+.session-appearance-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.session-appearance-options button {
+  display: inline-flex;
+  place-items: center;
+  justify-content: center;
+  gap: var(--uok-space-1);
+  min-height: 32px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-1);
+  background: var(--uok-bg-grouped-secondary);
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.session-appearance-options button.selected {
+  border-color: color-mix(in srgb, var(--uok-accent) 45%, var(--uok-border));
+  background: color-mix(in srgb, var(--uok-accent) 12%, var(--uok-bg-grouped-secondary));
+  color: var(--uok-text-primary);
+}
+
+.session-appearance-options button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--uok-accent) 35%, transparent);
+  outline-offset: 2px;
+}
+
+@keyframes account-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
