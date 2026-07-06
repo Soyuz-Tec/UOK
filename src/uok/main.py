@@ -11,7 +11,6 @@ from . import APP_VERSION
 from .api.auth import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth
 from .api.auth import router as auth_router
 from .api.commands import router as commands_router
-from .api.contacts import router as contacts_router
 from .api.modules import router as modules_router
 from .api.system import router as system_router
 from .api.schemas import (
@@ -25,6 +24,7 @@ from .api.schemas import (
 )
 from .config import env_flag
 from .db import Base, SessionLocal, engine
+from .module_routers import mount_module_routers
 from .seed import seed
 
 APP_TITLE = "UOK"
@@ -66,9 +66,9 @@ def index() -> FileResponse:
 
 app.include_router(auth_router)
 app.include_router(commands_router)
-app.include_router(contacts_router)
 app.include_router(modules_router)
 app.include_router(system_router)
+mount_module_routers(app)
 
 __all__ = [
     "AUTH_ATTEMPTS",

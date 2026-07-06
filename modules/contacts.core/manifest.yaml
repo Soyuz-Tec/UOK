@@ -39,6 +39,7 @@ migrations_path: modules/contacts.core/migrations
 tests_path: modules/contacts.core/tests
 api_prefixes:
   - /api/contacts
+api_router: uok_contacts_core.api:router
 permissions:
   - contacts.read
   - contacts.manage

@@ -6,12 +6,13 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from ..api.schemas import ContactCsvImportRequest, ContactNoteRequest, ContactRelationshipRequest, ContactWriteRequest
-from ..commands import execute_command
-from ..contacts import get_party_or_error, import_batch_rows, list_parties, note_rows, relationship_rows, review_queue, serialize_party
-from ..db import get_db
-from ..module_ops import ensure_module_operational
-from ..security import Actor, current_actor, require_permission
+from uok.commands import execute_command
+from uok.db import get_db
+from uok.module_ops import ensure_module_operational
+from uok.security import Actor, current_actor, require_permission
+
+from .api_schemas import ContactCsvImportRequest, ContactNoteRequest, ContactRelationshipRequest, ContactWriteRequest
+from .facade import get_party_or_error, import_batch_rows, list_parties, note_rows, relationship_rows, review_queue, serialize_party
 
 router = APIRouter(prefix="/api/contacts", tags=["contacts"])
 

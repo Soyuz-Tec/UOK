@@ -24,6 +24,7 @@ UOK verifies:
 - required identity fields are present;
 - backend, web, migration, and test ownership paths are declared and module-scoped;
 - API prefixes, permissions, owned tables, extension points, and data-retention policy are declared;
+- optional `api_router` import targets resolve from the module backend package, require the `api_router` extension point, and stay inside declared API prefixes;
 - product modules declare stable product identity;
 - certification checks are declared;
 - module names are discoverable from file-backed manifests.

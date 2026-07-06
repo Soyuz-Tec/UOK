@@ -11,6 +11,7 @@ ALLOWED_MODULE_KINDS = {"control_module", "capability_module", "business_module"
 PATH_FIELDS = ("backend_path", "web_path", "migrations_path", "tests_path")
 LIST_FIELDS = ("lifecycle", "commands", "events", "dependencies", "api_prefixes", "permissions", "owned_tables", "extension_points")
 MODULE_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)+$")
+API_ROUTER_SPEC_PATTERN = re.compile(r"^[a-z_][a-z0-9_]*(?:\.[a-z_][a-z0-9_]*)+:[a-z_][a-z0-9_]*$")
 
 
 def validate_module_extension_contracts() -> dict[str, Any]:
@@ -25,6 +26,7 @@ def validate_module_extension_contracts() -> dict[str, Any]:
         _validate_manifest_paths(module_name, manifest, violations)
         _validate_manifest_lists(module_name, manifest, violations)
         _validate_api_prefixes(module_name, manifest, violations)
+        _validate_api_router(module_name, manifest, violations)
         _collect_unique_owners(module_name, manifest, "commands", command_owners, violations)
         _collect_unique_owners(module_name, manifest, "events", event_owners, violations)
 
@@ -46,6 +48,7 @@ def validate_module_extension_contracts() -> dict[str, Any]:
             "all_paths_module_scoped": not any(v["field"] in PATH_FIELDS for v in violations),
             "commands_unique": not any(v["field"] == "commands" for v in violations),
             "events_unique": not any(v["field"] == "events" for v in violations),
+            "api_routers_valid": not any(v["field"] == "api_router" for v in violations),
         },
         "violations": violations,
     }
@@ -87,6 +90,23 @@ def _validate_api_prefixes(module_name: str, manifest: dict[str, Any], violation
     for prefix in manifest.get("api_prefixes", []):
         if not isinstance(prefix, str) or not prefix.startswith("/api/"):
             violations.append({"module": module_name, "field": "api_prefixes", "reason": "API prefixes must start with /api/"})
+
+
+def _validate_api_router(module_name: str, manifest: dict[str, Any], violations: list[dict[str, str]]) -> None:
+    spec = manifest.get("api_router")
+    if spec is None:
+        return
+    if not isinstance(spec, str) or not API_ROUTER_SPEC_PATTERN.fullmatch(spec):
+        violations.append({"module": module_name, "field": "api_router", "reason": "api_router must use <package.module>:<attribute>"})
+        return
+    if "api_router" not in manifest.get("extension_points", []):
+        violations.append({"module": module_name, "field": "api_router", "reason": "api_router requires the api_router extension point"})
+    if not manifest.get("api_prefixes"):
+        violations.append({"module": module_name, "field": "api_router", "reason": "api_router requires declared api_prefixes"})
+    backend_package = spec.partition(":")[0].split(".")[0]
+    backend_path = Path(str(manifest.get("backend_path", "")))
+    if not (repo_root() / backend_path / backend_package / "__init__.py").is_file():
+        violations.append({"module": module_name, "field": "api_router", "reason": "api_router must resolve from the module backend package"})
 
 
 def _collect_unique_owners(

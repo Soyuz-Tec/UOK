@@ -1,10 +1,24 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from uok.module_manifest_loader import load_module_manifests
-from uok.module_paths import ensure_module_backend_paths, modules_root
+from uok.module_paths import ensure_module_backend_paths, module_backend_paths, modules_root, repo_root
+from uok.module_routers import load_module_routers
 from uok.modules import module_contracts
+
+KERNEL_MODULE_FACADE_FILES = {
+    "src/uok/contacts.py",
+    "src/uok/contacts_commands.py",
+    "src/uok/contact_access.py",
+    "src/uok/contact_api_schemas.py",
+    "src/uok/contact_command_support.py",
+    "src/uok/contact_duplicates.py",
+    "src/uok/contact_import_commands.py",
+    "src/uok/contact_read_model.py",
+    "src/uok/contact_validation.py",
+}
 
 
 def test_file_backed_module_manifests_define_baseline_catalog() -> None:
@@ -49,4 +63,46 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["ok"] is True
     assert extension_contract["checks"]["required_modules"] == ["apps.manager"]
     assert extension_contract["checks"]["all_paths_module_scoped"] is True
+    assert extension_contract["checks"]["api_routers_valid"] is True
     assert extension_contract["violations"] == []
+
+
+def test_kernel_imports_module_backends_only_in_declared_facades() -> None:
+    package_names = set()
+    for backend_dir in module_backend_paths():
+        for child in sorted(backend_dir.iterdir()):
+            if child.is_dir() and (child / "__init__.py").is_file():
+                package_names.add(child.name)
+    assert "uok_contacts_core" in package_names
+
+    import_pattern = re.compile(rf"^\s*(?:from|import)\s+(?:{'|'.join(sorted(package_names))})\b", re.MULTILINE)
+    offenders = sorted(
+        path.relative_to(repo_root()).as_posix()
+        for path in (repo_root() / "src" / "uok").rglob("*.py")
+        if import_pattern.search(path.read_text(encoding="utf-8"))
+        and path.relative_to(repo_root()).as_posix() not in KERNEL_MODULE_FACADE_FILES
+    )
+    assert offenders == []
+
+
+def test_module_routers_mount_from_manifest_declarations() -> None:
+    manifests = load_module_manifests()
+    routers = load_module_routers()
+
+    assert [module_name for module_name, _ in routers] == ["contacts.core"]
+    for module_name, router in routers:
+        prefixes = manifests[module_name]["api_prefixes"]
+        assert router.routes
+        for route in router.routes:
+            assert any(route.path == prefix or route.path.startswith(prefix + "/") for prefix in prefixes)
+
+
+def test_app_composes_module_routes_without_kernel_module_references() -> None:
+    from uok.main import app
+
+    app_paths = set(app.openapi()["paths"])
+    assert "/api/contacts" in app_paths
+    assert "/api/contacts/review-queue" in app_paths
+
+    main_source = (repo_root() / "src" / "uok" / "main.py").read_text(encoding="utf-8")
+    assert "contacts" not in main_source.lower()
