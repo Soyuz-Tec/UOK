@@ -83,7 +83,7 @@ UOK currently allows these module extension surfaces:
 - `permissions`: explicit permission atoms checked at API or command boundary.
 - `events`: append-only events declared by manifest.
 - `migrations`: module-owned migration path and release gate.
-- `web_surface`: module-owned UI source or current shell bridge.
+- `web_surface`: module-owned UI source or current compile-time shell registry bridge.
 - `tests`: module-specific behavior tests.
 - `candidate_verifier`: release verification scenarios.
 
@@ -103,7 +103,7 @@ New extension points require an architecture update and a failing validation tes
 - `contacts.core` is the first optional capability module.
 - `contacts.core` backend implementation now lives under `modules/contacts.core/backend/uok_contacts_core`.
 - `contacts.core` commands, command permissions, role grants, dashboard counts, evidence checks, model exports, API router, and candidate verifier scenario are manifest-declared module surfaces.
-- Contacts UI and migrations are still bridged from top-level UOK folders. That is allowed for the current candidate only because the ownership paths are declared in the manifest and covered by tests.
+- Contacts UI and migrations are still bridged from top-level UOK folders. Contacts behavior tests remain in top-level `tests/`, while the module candidate verifier scenario lives under `modules/contacts.core/tests/verify`. That is allowed for the current candidate only because the ownership paths are declared in the manifest and covered by tests.
 
 ## Required Scans Before GitHub Push
 

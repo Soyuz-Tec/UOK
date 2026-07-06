@@ -8,7 +8,7 @@ This chart is a code-level architecture comparison, not a feature checklist and 
 
 ## Method
 
-UOK was measured from the local source tree after the maintainability split. Peer size and folder-structure data were collected from public GitHub repository metadata and root repository listings. GitHub language byte counts are used as a source-size proxy because they are available consistently across open-source repositories. They are not exact executable kernel size.
+UOK was measured from the local source tree after the module-extension baseline. Peer size and folder-structure data were collected from public GitHub repository metadata and root repository listings. GitHub language byte counts are used as a source-size proxy because they are available consistently across open-source repositories. They are not exact executable kernel size.
 
 The rating scale is `0-100`:
 
@@ -22,13 +22,13 @@ The rating scale is `0-100`:
 
 | Metric | Current UOK |
 |---|---:|
-| Non-generated source files scanned | `128` |
-| Non-generated source lines scanned | `9,610` |
-| Non-generated source bytes | `0.360 MB` |
-| Largest non-generated implementation file | `188` lines |
-| Largest documentation artifact | `459` lines |
+| Non-generated source files scanned | `144` |
+| Non-generated source lines scanned | `8,847` |
+| Non-generated source bytes | `0.404 MB` |
+| Largest non-generated implementation file | `176` lines |
+| Largest documentation artifact | `405` lines |
 | Main source roots | `src/uok`, `modules`, `web/src`, `tests`, `scripts`, `docs`, `migrations` |
-| Current kernel module posture | `apps.manager` required, `contacts.core` optional/installable with file-backed manifests |
+| Current kernel module posture | `apps.manager` required, `contacts.core` optional/installable with file-backed manifests and manifest-declared runtime surfaces |
 
 This is excellent for reviewability, but it also means UOK is still an early kernel. The score must therefore separate **size discipline** from **platform maturity**.
 
@@ -39,7 +39,7 @@ xychart-beta
   title "Open-Source ERP/Application Kernel Quality Posture"
   x-axis ["UOK", "Odoo", "Frappe+ERPNext", "OFBiz", "Dolibarr", "Tryton", "iDempiere", "metasfresh", "ERP5"]
   y-axis "Rating" 0 --> 100
-  bar [68, 86, 83, 76, 68, 77, 78, 75, 72]
+  bar [70, 86, 83, 76, 68, 77, 78, 75, 72]
 ```
 
 ## Source Size Comparison
@@ -51,14 +51,14 @@ xychart-beta
   title "Source Size Proxy: GitHub Language Bytes"
   x-axis ["UOK", "Odoo", "Frappe+ERPNext", "OFBiz", "Dolibarr", "Tryton", "iDempiere", "metasfresh", "ERP5"]
   y-axis "MB" 0 --> 140
-  bar [0.36, 97.7, 24.6, 22.7, 81.1, 11.6, 53.8, 138.3, 92.0]
+  bar [0.40, 97.7, 24.6, 22.7, 81.1, 11.6, 53.8, 138.3, 92.0]
 ```
 
 ## Comparable Rating Table
 
 | System | Source-level access | Source size proxy | Folder / kernel shape | Strongest qualities | Main weakness compared with ideal UOK target | Rating |
 |---|---:|---:|---|---|---|---:|
-| UOK | Local full source | `0.36 MB`, `9.6k LOC` | `src/uok` kernel, top-level `modules/`, `web/src`, `tests`, `scripts`, focused implementation files under `200` lines | Very clean current size, explicit language policy, file-backed module manifests, module extension contract, Apps Manager, optional Contacts module, local verifier, PostgreSQL 18 runtime | Early maturity, only one capability module, module-specific UI/migrations/tests still partly top-level, limited production IAM and multi-tenant hardening | `68` |
+| UOK | Local full source | `0.40 MB`, `8.8k LOC` | `src/uok` kernel, top-level `modules/`, `web/src`, `tests`, `scripts`, focused implementation files under `200` lines | Very clean current size, explicit language policy, file-backed module manifests, manifest-declared runtime extension surfaces, Apps Manager, optional Contacts module, local verifier, PostgreSQL 18 runtime | Early maturity, only one capability module, module-specific React source/migrations/pytest suites still partly top-level, limited production IAM and multi-tenant hardening | `70` |
 | Odoo | Public source | `97.7 MB` | `odoo/` core plus large `addons/` app ecosystem | Best open-source example of installable business apps that can work standalone and together | Very large codebase, high upgrade/customization discipline required | `86` |
 | Frappe + ERPNext | Public source | `24.6 MB` combined | `frappe/` framework plus `erpnext/` application suite | Metadata-driven framework, strong app model, good developer ergonomics, ERPNext business depth | Framework and app suite are split across repos; deep customization can become metadata-heavy | `83` |
 | Apache OFBiz | Public source | `22.7 MB` | `framework/`, `applications/`, `themes/`, service/entity/widget model | Strong separation of framework and enterprise applications; mature service/entity concepts | Java/XML/Groovy stack is heavier and harder for modern UI iteration | `76` |
@@ -72,7 +72,7 @@ xychart-beta
 
 | System | Size discipline | Architecture design | Folder clarity | Module model | Verification / ops | Security / governance | Maturity | Overall |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| UOK | `9.5` | `7.2` | `8.7` | `7.0` | `7.0` | `6.0` | `3.0` | `68` |
+| UOK | `9.5` | `7.4` | `8.8` | `7.6` | `7.2` | `6.1` | `3.0` | `70` |
 | Odoo | `5.5` | `9.0` | `8.0` | `9.5` | `8.0` | `8.0` | `9.5` | `86` |
 | Frappe + ERPNext | `7.0` | `8.5` | `8.0` | `8.5` | `8.0` | `8.0` | `8.5` | `83` |
 | Apache OFBiz | `6.5` | `8.0` | `7.5` | `8.0` | `7.5` | `7.0` | `8.0` | `76` |
@@ -88,7 +88,7 @@ UOK is not yet competitive with Odoo, Frappe/ERPNext, OFBiz, Tryton, iDempiere, 
 
 The gap is clear:
 
-1. UOK has the right architectural direction: modular monolith, installable modules, product-neutral core, explicit language policy, generated API contracts, and local verification.
+1. UOK has the right architectural direction: modular monolith, installable modules, product-neutral core, explicit language policy, generated API contracts, manifest-declared runtime surfaces, and local verification.
 2. UOK lacks mature ERP depth: accounting, inventory, procurement, sales, workflow, documents, reporting, audit dashboards, module marketplace, and production-grade tenant/security model.
 3. UOK should not copy peer code. It should adopt peer-proven patterns:
    - Odoo: installable app catalog, manifest discipline, broad module ecosystem.
@@ -103,7 +103,7 @@ The gap is clear:
 
 | Target stage | Expected rating | Required evidence |
 |---|---:|---|
-| Current local candidate | `68` | Apps Manager, Contacts, source under `200` lines, file-backed module manifests, verifier passing |
+| Current local candidate | `70` | Apps Manager, Contacts, source under `200` lines, file-backed module manifests, manifest-declared runtime surfaces, verifier passing |
 | After Contacts + CRM Basic + Products + Cargo Transactions | `72-75` | Real module relationships, reusable product/cargo separation, install/uninstall/upgrade evidence |
 | After accounting-lite, inventory-lite, documents, workflow, reporting | `78-82` | Multi-module ERP transaction coverage and repeatable migrations |
 | After production IAM, tenant isolation, restore drills, CI, module marketplace | `83-86` | Comparable kernel governance to mature open-source peers |
@@ -111,7 +111,7 @@ The gap is clear:
 
 ## Design Conclusion
 
-UOK should continue as a **small, strict modular monolith kernel** and avoid becoming a large ERP monolith too early. Mature systems prove that module ecosystems win, but they also show how quickly platform code becomes hard to govern. UOK's advantage is that it can adopt the best patterns while keeping file size, folder boundaries, language stack, module manifests, and verification gates disciplined from the beginning.
+UOK should continue as a **small, strict modular monolith kernel** and avoid becoming a large ERP monolith too early. Mature systems prove that module ecosystems win, but they also show how quickly platform code becomes hard to govern. UOK's advantage is that it can adopt the best patterns while keeping file size, folder boundaries, language stack, module manifests, extension surfaces, and verification gates disciplined from the beginning.
 
 ## Sources
 

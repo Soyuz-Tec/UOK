@@ -25,7 +25,7 @@ Use the lowercase form `uok` only where files, Python packages, databases, volum
 | Product code | Stable business/product code | `PRODUCT-CODE` |
 | Canonical name | Formal product name | `Reference product` |
 | Display label | Human-facing UI label | `Reference Product` |
-| Module kind | Architectural classification | `capability_module`, `product_module` |
+| Module kind | Architectural classification | `capability_module`, `business_module` |
 
 ## Rules
 
@@ -33,7 +33,7 @@ Use the lowercase form `uok` only where files, Python packages, databases, volum
 - Capability modules use functional names such as `contacts.core`.
 - Product modules use domain-prefixed dotted names such as `commodity.reference_product`.
 - Product codes are uppercase, stable, and hyphenated.
-- Product modules must declare `code`, `stable_code`, `canonical_name`, `display_label`, `category`, and `reference_product_module`.
+- Future product/business modules must declare stable identity, display labels, category, and dependency metadata through manifest-compatible fields before they are promoted beyond prototype status.
 - UI labels are separate from internal IDs and business codes.
 - Physical module packages stay under top-level `modules/<module_name>`.
 

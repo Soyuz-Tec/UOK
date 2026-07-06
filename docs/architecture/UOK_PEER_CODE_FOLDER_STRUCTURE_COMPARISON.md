@@ -44,6 +44,7 @@ UOK/
     src/
       app/
       features/
+        modules/
       generated/
       shared/
       styles/
@@ -60,11 +61,13 @@ Important current qualities:
 - Docs contain active architecture, design, module, rating, and policy guardrails.
 - File-backed module manifests now live under top-level `modules/<module_name>`.
 - `contacts.core` backend implementation now lives under `modules/contacts.core/backend/uok_contacts_core`.
-- The module extension contract now validates ownership paths, API prefixes, permissions, owned tables, extension points, and data-retention policy.
+- The module extension contract now validates ownership paths, API prefixes, permissions, owned tables, extension points, data-retention policy, backend import targets, owned model exports, and module-declared candidate verifier scripts.
+- `contacts.core` commands, command permissions, role grants, dashboard counts, baseline evidence checks, model exports, API router, and candidate verifier scenario are manifest-declared runtime surfaces.
+- The frontend shell now has a compile-time module surface registry under `web/src/features/modules`.
 
 Important current limitation:
 
-- UOK now has an initial physical module source root, but module-specific UI, migrations, and tests are still bridged from top-level folders. The next maturity step is moving those module-specific assets behind each module root while keeping shared shell/kernel code in shared locations.
+- UOK now has a physical module source root and manifest-declared backend runtime surfaces. Module-specific React source and pytest suites are still partly bridged from top-level folders; the next maturity step is moving more UI, migrations, and behavior tests behind each module root while keeping shared shell/kernel code in shared locations.
 
 ## Peer Folder Patterns
 
@@ -85,7 +88,7 @@ Scores are structural only, not total platform maturity.
 
 | System | Core isolation | Module/app isolation | Frontend/backend separation | Test/ops separation | Contributor clarity | Structure score |
 |---|---:|---:|---:|---:|---:|---:|
-| UOK current | `8` | `7` | `8` | `8` | `9` | `80` |
+| UOK current | `8` | `8` | `8` | `8` | `9` | `82` |
 | Odoo | `9` | `10` | `7` | `8` | `8` | `84` |
 | Frappe + ERPNext | `9` | `8` | `8` | `8` | `8` | `82` |
 | Apache OFBiz | `9` | `8` | `6` | `8` | `7` | `76` |
@@ -100,7 +103,7 @@ xychart-beta
   title "Code Folder Structure Quality"
   x-axis ["UOK", "Odoo", "Frappe+ERPNext", "OFBiz", "Dolibarr", "Tryton", "iDempiere", "metasfresh", "ERP5"]
   y-axis "Structure score" 0 --> 100
-  bar [80, 84, 82, 76, 64, 82, 72, 82, 68]
+  bar [82, 84, 82, 76, 64, 82, 72, 82, 68]
 ```
 
 ## UOK Compared Directly With Odoo
@@ -130,8 +133,8 @@ UOK/
 The difference is important:
 
 - Odoo has a mature physical add-on boundary.
-- UOK now has an initial physical module boundary and manifest loader.
-- UOK should deepen that boundary by moving module-owned UI, migrations, and tests behind each module before adding many more modules.
+- UOK now has a physical module boundary, manifest loader, manifest-declared backend runtime surfaces, and a frontend module surface registry.
+- UOK should deepen that boundary by moving more module-owned UI, migrations, and behavior tests behind each module before adding many more modules.
 
 ## Recommended UOK Target Structure
 
@@ -196,7 +199,7 @@ The core idea:
 
 - `src/uok` should become kernel-only.
 - `modules/<module_name>` should hold installable business capabilities.
-- Each module should own its manifest, backend handlers, UI surface, migrations, and tests.
+- Each module should own its manifest, backend handlers, permissions, role grants, dashboard/evidence providers, model/table declarations, UI surface, migrations, tests, and candidate verifier scenarios.
 - Shared UI and shared backend contracts should stay in kernel/shared folders only when genuinely reusable.
 - Product-specific modules must not enter the kernel.
 
@@ -237,9 +240,9 @@ The core idea:
 
 ## Conclusion
 
-UOK's current folder structure is cleaner and easier to review than most mature ERP repositories because it is still small. The main structural improvement from this pass is that UOK now has a physical module source root with file-backed manifests.
+UOK's current folder structure is cleaner and easier to review than most mature ERP repositories because it is still small. The main structural improvement from this pass is that UOK now has a physical module source root with file-backed manifests and manifest-declared module runtime surfaces.
 
-Before UOK adds CRM Basic, Products, Cargo Transactions, Accounting, Inventory, or Documents, the kernel should keep enforcing `modules/<module_name>` packaging and move module-specific UI, migrations, and tests under those module roots. That keeps UOK moving from a small modular monolith toward a mature ERP/application kernel without turning the core into a large mixed-responsibility monolith.
+Before UOK adds CRM Basic, Products, Cargo Transactions, Accounting, Inventory, or Documents, the kernel should keep enforcing `modules/<module_name>` packaging and move more module-specific UI, migrations, and behavior tests under those module roots. That keeps UOK moving from a small modular monolith toward a mature ERP/application kernel without turning the core into a large mixed-responsibility monolith.
 
 ## Sources
 

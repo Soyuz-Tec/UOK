@@ -22,9 +22,9 @@ UOK must not treat product and cargo as the same concept.
 - CRM opportunities may reference products or intended cargo transactions, but must not duplicate Contacts or Product Master records.
 - Products, Cargo Transactions, and CRM must be installable and separately updatable modules with explicit dependencies.
 
-## Baseline Implication
+## Future Module Implication
 
-The UOK baseline must model:
+The product/cargo expansion path must model these as separate module-owned concepts:
 
 - `ProductDefinition` for product master.
 - `CargoTransaction` for cargo lots, workflow state, transaction parties, and evidence.

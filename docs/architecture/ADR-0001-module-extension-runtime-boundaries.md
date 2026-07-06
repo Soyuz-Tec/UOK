@@ -2,6 +2,8 @@
 
 **Status:** Accepted
 
+**Baseline:** `UOK-3.1.0-alpha.2-module-extension-baseline`
+
 ## Context
 
 UOK already loads module API routers from `manifest.yaml`, but several Contacts-owned runtime surfaces were still wired directly in `src/uok`: command handlers, command permissions, role grants, dashboard counts, baseline evidence checks, and candidate verifier scenarios. That made the first optional module work, but it would force kernel edits for each future capability module.

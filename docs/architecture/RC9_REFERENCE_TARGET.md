@@ -2,6 +2,8 @@
 
 **Target version:** `UOK-3.0.0-rc9`
 
+**Status:** Historical reference. Current architecture work is governed by `docs/ARCHITECTURE.md` and the `UOK-3.1.0-alpha.2-module-extension-baseline` tag.
+
 RC9 is the production-readiness hardening candidate. It keeps the RC8 React + TypeScript + Vite foundation and adds executable release evidence around migrations, PostgreSQL 18, transaction proof, and the first CRM business-module slice.
 
 ## Objective

@@ -4,13 +4,24 @@
 
 **Target:** `UOK-3.1.0-alpha.2`
 
-**Status:** Approved for implementation
+**Status:** Implemented for the alpha.2 module-extension baseline; future packaging work remains.
 
 **Source root:** `modules/contacts.core`
 
 ## Purpose
 
 `contacts.core` is the first independently developable UOK application module. It must remain installable, upgradable, disableable, uninstallable, maintainable, and portable without compromising UOK. Its backend implementation lives under `modules/contacts.core/backend/uok_contacts_core`; the `src/uok/contact*.py` files are compatibility facades for stable kernel imports.
+
+The alpha.2 module-extension baseline declares Contacts runtime surfaces in `modules/contacts.core/manifest.yaml`:
+
+- API router;
+- command handlers;
+- command permissions;
+- role grants;
+- dashboard count provider;
+- baseline evidence provider;
+- model/table exports;
+- candidate verifier scenario under `modules/contacts.core/tests/verify`.
 
 The first release builds a Contacts Full CRM Slice that starts with practical CRM work and leaves a clear path toward Enterprise MDM.
 
@@ -108,6 +119,8 @@ Required endpoints for alpha.2:
 
 All public API contracts must be OpenAPI-compatible and reflected in the generated TypeScript client.
 
+The command bus must discover Contacts commands through the manifest `command_handlers` provider instead of importing Contacts handlers directly into `src/uok/commands.py`.
+
 ## UI Scope
 
 The Contacts UI must be human-friendly and policy-aligned:
@@ -125,6 +138,8 @@ The Contacts UI must be human-friendly and policy-aligned:
 - Module disabled/uninstalled states are clear and route users back to Apps Manager actions.
 - Light, dark, and system appearances remain supported.
 
+Current UI source remains in `web/src/features/contacts` and is composed through `web/src/features/modules/moduleSurfaceRegistry.tsx`. The module root `modules/contacts.core/web` remains the ownership marker until a future packaging step moves executable module UI behind the module root.
+
 ## Permission Scope
 
 Initial permission behavior:
@@ -135,15 +150,27 @@ Initial permission behavior:
 
 Ownership and team fields must exist in the data/API shape even if full team enforcement matures later.
 
+Role grants are declared by `uok_contacts_core.policy:role_grants` and merged into kernel permissions at authorization time. Contacts permission atoms must not be hardcoded in `src/uok/security.py`.
+
+## Evidence And Dashboard Scope
+
+Contacts dashboard counts and baseline evidence checks are module-owned providers:
+
+- `uok_contacts_core.reports:dashboard_counts`
+- `uok_contacts_core.reports:evidence`
+
+The kernel owns the stable `/api/dashboard` and `/api/baseline-evidence` response shapes, while Contacts owns its module-specific fragments.
+
 ## Acceptance Gates
 
 Before packaging `UOK-3.1.0-alpha.2`:
 
 ```powershell
-python -m compileall -q src
+python -m compileall -q src modules tests
 python -m pytest -q
-cd .\web; npm run test; npm run build:static; cd ..
-powershell -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+npm --prefix web test
+npm --prefix web run build:static
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
 ```
 
 Browser verification must confirm:
@@ -155,3 +182,9 @@ Browser verification must confirm:
 - no retired UOK names appear
 - no product-specific labels appear
 - no console errors appear
+
+## Remaining Packaging Work
+
+- Move more Contacts React source under `modules/contacts.core/web` when the frontend build can preserve shared shell composition.
+- Move Contacts behavior pytest suites from top-level `tests/` into `modules/contacts.core/tests` when test discovery remains equivalent.
+- Add future Contacts schema migrations under `modules/contacts.core/migrations` instead of expanding the shared initial baseline.

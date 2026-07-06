@@ -4,11 +4,15 @@
 
 UOK is the short name for Unified Operating Kernel. This is the first real-development baseline rebuilt from the RC9 policies and lessons while removing active RC-era source history.
 
+Architecture entry point: `docs/ARCHITECTURE.md`.
+
 ## Key Discipline
 
 - `apps.manager` is the only required starter module.
 - Apps Manager lists and operates optional modules for system setup with minimal baseline load.
 - `contacts.core` is the first optional module and is installed only when the user chooses it.
+- Module runtime extension surfaces are manifest-declared. API routers, command handlers, command permissions, role grants, dashboard counts, baseline evidence providers, model exports, and candidate verifier scenarios now resolve from module-owned declarations.
+- The React shell composes module UI through `web/src/features/modules/moduleSurfaceRegistry.tsx`; this is a compile-time registry, not runtime code loading from YAML.
 - Domain and business capabilities are future separately installable modules, not hard-coded baseline features.
 - One active initial migration baseline: `migrations/001_initial_baseline.sql`.
 - Durable UI stack: React + TypeScript + Vite.
@@ -47,13 +51,11 @@ These credentials are only enabled by the local compose profile. The container i
 ## Verify
 
 ```powershell
-python -m compileall -q src
+python -m compileall -q src modules tests
 python -m pytest -q
-cd web
-npm run test
-npm run build:static
-cd ..
-powershell -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+npm --prefix web test
+npm --prefix web run build:static
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
 ```
 
 Dependency checks expected before GitHub publication:

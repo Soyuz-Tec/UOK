@@ -31,7 +31,7 @@ The policy intentionally uses concepts from these sources, not copied vendor exa
 
 | Layer | Mandatory stack | Current UOK location | Role |
 |---|---|---|---|
-| UOK backend | Python `>=3.14`, current container runtime Python `3.14` | `src/uok/` | API, commands, module registry, workflow contracts, governance, reports, verification, local runtime |
+| UOK backend | Python `>=3.14`, current container runtime Python `3.14` | `src/uok/`, `modules/<module>/backend` | API, command bus, module registry, workflow contracts, governance, reports, verification, local runtime, module-owned backend providers |
 | API framework | FastAPI `0.139.0` | `src/uok/main.py` | REST, WebSocket, OpenAPI surface, dependency boundaries |
 | API/data validation | Pydantic `2.13.4` and Python type hints | request/response schemas, command payload validation | Typed API contracts, JSON-compatible payload discipline |
 | Persistence access | SQLAlchemy `2.0.51` | `src/uok/models.py`, persistence modules | ORM mapping, transactional unit of work, SQL abstraction where appropriate |
@@ -44,7 +44,8 @@ The policy intentionally uses concepts from these sources, not copied vendor exa
 ## Mandatory Principles
 
 1. One production stack
-   - New durable backend work belongs in Python under `src/uok/`.
+   - New durable kernel work belongs in Python under `src/uok/`.
+   - New durable module backend work belongs in Python under `modules/<module>/backend`.
    - New durable frontend work belongs in TypeScript under `web/src/`.
    - New frameworks or production languages require an architecture decision record, policy update, verifier update, and migration plan.
 
@@ -68,11 +69,12 @@ The policy intentionally uses concepts from these sources, not copied vendor exa
    - Use SQLAlchemy for ORM-backed persistence and transaction management.
    - Raw SQL is allowed for migrations, projections, RLS policy work, and database-specific verification when it is clearer than ORM abstraction.
    - Product modules must not bypass declared persistence boundaries to write UOK-owned internal tables directly.
+   - Modules that use shared baseline tables must declare owned tables or shared-table scopes in their manifests.
 
 6. React + TypeScript owns durable UI
    - Durable UI features must be React components written in TypeScript.
    - Plain JavaScript screens are not allowed for executable durable UI.
-   - Module/product UI must be driven by backend manifests, registries, workflow contracts, permissions, and product metadata.
+   - Module/product UI must be driven by backend manifests, frontend module surface registries, workflow contracts, permissions, and product metadata.
    - The core UI shell must not hardcode product-specific names; selected product labels come from product manifests.
 
 7. Vite owns frontend builds
@@ -152,11 +154,12 @@ This restriction applies to UOK production code. It does not prohibit one-off lo
 
 ### Python Backend
 
-- Use Python modules under `src/uok/` for UOK capabilities.
+- Use Python modules under `src/uok/` for kernel capabilities and shared contracts.
+- Use Python packages under `modules/<module>/backend` for module-owned behavior.
 - Keep command handlers explicit and testable.
 - Use type hints for public functions, command payload structures, registry records, verification outputs, and module contracts.
 - Use Pydantic for API models where request/response schema clarity matters.
-- Keep module boundaries explicit: core modules expose public APIs; product modules extend through manifests, commands, events, registry metadata, and declared extension surfaces.
+- Keep module boundaries explicit: modules extend through manifests, API routers, commands, command permissions, role grants, events, registry metadata, model/table declarations, dashboard/evidence providers, candidate verifier scenarios, and declared extension surfaces.
 - Do not move product-specific behavior into the UOK core.
 - Do not use dynamic monkey patching, runtime import hacks, or hidden global state for product behavior.
 
@@ -182,7 +185,7 @@ This restriction applies to UOK production code. It does not prohibit one-off lo
 - Keep `allowJs: false` and `strict: true` in the durable frontend.
 - Represent API responses with interfaces or types at the use boundary.
 - UI state should be explicit, not inferred from untyped `any` except for temporary compatibility surfaces that must be narrowed later.
-- Product/workflow labels must come from backend module/product metadata.
+- Product/workflow labels must come from backend module/product metadata or the frontend module surface registry where the current Vite bundle requires compile-time composition.
 - Use reusable components for shell, toolbar, navigation, command buttons, status pills, panels, tables/lists, forms, and workflow steppers.
 - Split hooks and components before they become mixed-responsibility files. API/client orchestration, stored session state, module actions, Contacts workflows, and form drafting should remain independently reviewable.
 
@@ -223,10 +226,11 @@ A candidate is not acceptable if it:
 Before packaging a candidate, developers must run or preserve equivalent evidence for:
 
 ```powershell
-python -m compileall -q src
-cd .\web; npm ci; npm run build:static; cd ..
+python -m compileall -q src modules tests
 $env:PYTHONPATH='src'; python -m pytest -q
-powershell -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+npm --prefix web test
+npm --prefix web run build:static
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
 ```
 
 ## Policy Change Process
@@ -242,7 +246,7 @@ Changing this stack requires:
 
 ## Current Decision
 
-For UOK V3.0.0-rc9 and the next local production-candidate iterations, the approved stack is:
+For `UOK-3.1.0-alpha.2` and the next local production-candidate iterations, the approved stack is:
 
 ```text
 Backend:  Python + FastAPI + Pydantic + SQLAlchemy + PostgreSQL

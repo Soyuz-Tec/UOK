@@ -21,11 +21,11 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | Module | Type | Status | Current target | Plan |
 |---|---|---|---|---|
 | `apps.manager` | control module | required baseline module | `UOK-3.1.0-alpha.2` | UOK bootstrap control module |
-| `contacts.core` | capability module | approved for full CRM slice | `UOK-3.1.0-alpha.2` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
+| `contacts.core` | capability module | full CRM slice implemented; module-extension baseline accepted | `UOK-3.1.0-alpha.2` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
 
 ## Current Target
 
-`UOK-3.1.0-alpha.2` focuses on turning `contacts.core` into a real independently managed Contacts app:
+`UOK-3.1.0-alpha.2` turns `contacts.core` into a real independently managed Contacts app and hardens the module-extension boundary:
 
 - party model for people and organizations
 - three UI views
@@ -36,7 +36,15 @@ Architecture documents only track UOK-level governance, release targets, and mod
 - warning-based duplicate handling
 - owner/team-ready permission fields
 - archive, restore, and admin purge
+- manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier scenario
+- frontend module surface registry for Contacts composition
 
 ## Governance Rule
 
-New modules must not add product-specific behavior to the UOK core. They must expose their contracts through module manifests, typed APIs, migrations, tests, and candidate verification.
+New modules must not add product-specific behavior to the UOK core. They must expose their contracts through module manifests, typed APIs, command handlers, command permissions, role grants, owned table declarations, migrations, tests, dashboard/evidence providers where applicable, and candidate verification.
+
+## Next Boundary Work
+
+- Move more module-specific React source under module roots while keeping shared shell and controls in `web/src`.
+- Move Contacts behavior pytest suites under `modules/contacts.core/tests` when test discovery can preserve the full UOK gate.
+- Introduce module-owned migrations for future schema changes instead of expanding the shared initial baseline.

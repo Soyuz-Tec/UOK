@@ -4,7 +4,7 @@
 
 **Status:** Mandatory for current and durable UOK UI work.
 
-**Applies to:** The current `web/` React + TypeScript + Vite UI and UOK module-testing screens.
+**Applies to:** The current `web/` React + TypeScript + Vite UI, UOK module-testing screens, and module surface registry entries.
 
 This is a policy, not a recommendation. Current UI implementation and new durable UI code must follow this document unless an architecture decision record explicitly replaces it.
 
@@ -102,6 +102,7 @@ All durable UI work must use:
 - Shared design tokens
 - Reusable UI components
 - A consistent icon component system
+- The frontend module surface registry for module-owned workbench composition
 - Layout tokens for spacing, control target size, content max width, and safe-area-aware shell padding
 - No executable durable UI outside the React + TypeScript source tree
 - `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md` for component state, interaction, accessibility, and verification decisions
@@ -110,6 +111,7 @@ The next UI iteration must introduce or preserve:
 
 - `web/src/design-tokens.css` or equivalent token module
 - Shared shell components: app shell, sidebar, toolbar, panel, table/list, status pill, workflow stepper, command button, icon-bearing navigation/control patterns
+- Module surface registry entries that keep module navigation and rendering out of the generic shell component
 - Shared component states: default, hover, focus-visible, pressed, selected/on, expanded/open, disabled, loading, invalid, destructive, and primary
 - Light and dark mode foundations
 - Consistent layout grid behavior for wide desktop, desktop, tablet, and narrow browser widths
@@ -133,6 +135,7 @@ A UI change is not acceptable if it:
 - Adds one-off spacing or layout rules outside the token system.
 - Allows text, controls, rows, panels, or workflow steps to overlap at supported widths.
 - Places unrelated workflow regions inconsistently across modules.
+- Hardcodes module-specific rendering directly in the shell when it belongs in the module surface registry.
 - Uses media, chart, or image sizing that distorts aspect ratio.
 - Bypasses the mandatory technical reference for UI state, layout, accessibility, interaction, appearance, or verification decisions.
 
