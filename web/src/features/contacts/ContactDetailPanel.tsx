@@ -2,12 +2,13 @@ import { Archive, FileCheck2, Link2, Pencil, RotateCcw, Trash2 } from "lucide-re
 
 import { contactDetailPaneOptions } from "../../shared/options";
 import { formatLabel } from "../../shared/format";
-import { CommandButton, DetailItem, EmptyState, SegmentedControl } from "../../shared/ui";
+import { CommandButton, DetailItem, EmptyState, SegmentedControl, StatusPill } from "../../shared/ui";
 import { ContactForm } from "./ContactForm";
 import type { ContactsWorkspaceProps } from "./types";
 
 export function ContactDetailPanel(props: ContactsWorkspaceProps) {
   const contact = props.selectedContact;
+  const profile = contact?.business_profile;
   return (
     <div className="contact-detail" aria-label="Contact detail">
       <div className="contact-detail-header">
@@ -41,6 +42,34 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
               <DetailItem label="Review" value={formatLabel(contact.review_state)} />
               <DetailItem label="Source" value={formatLabel(contact.source)} />
               {contact.duplicate_candidates?.length ? <DetailItem label="Duplicates" value={contact.duplicate_candidates.map((item) => item.display_name).join(", ")} /> : null}
+            </div>
+          )}
+          {props.detailPane === "intelligence" && (
+            <div className="detail-section pane-section">
+              <p className="eyebrow">Business Intelligence Profile</p>
+              {profile ? (
+                <>
+                  <div className="detail-grid">
+                    <DetailItem label="Summary" value={profile.summary || "No profile summary yet."} />
+                    <DetailItem label="Confidence" value={formatLabel(profile.confidence || "unknown")} />
+                    <DetailItem label="Sources" value={String(profile.source_count ?? 0)} />
+                    <DetailItem label="Profile health" value={profile.scores?.profile_health !== undefined ? `${profile.scores.profile_health}%` : "-"} />
+                    <DetailItem label="Completeness" value={profile.scores?.completeness !== undefined ? `${profile.scores.completeness}%` : "-"} />
+                    <DetailItem label="Updated" value={profile.updated_at || "-"} />
+                  </div>
+                  <div className="record-list">
+                    {profile.tags?.length ? (
+                      <div className="record-row">Tags: {profile.tags.map((tag) => formatLabel(tag)).join(", ")}</div>
+                    ) : null}
+                    {profile.risk_flags?.length ? (
+                      <div className="record-row">Risk flags: {profile.risk_flags.map((flag) => formatLabel(flag)).join(", ")}</div>
+                    ) : null}
+                    <div className="record-row"><StatusPill label="Normalized facts only" tone="info" /> Source evidence is stored with confidence and allowed-use metadata.</div>
+                  </div>
+                </>
+              ) : (
+                <EmptyState text="No business intelligence profile yet." />
+              )}
             </div>
           )}
           {props.detailPane === "activity" && (
