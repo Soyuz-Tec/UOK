@@ -37,6 +37,7 @@ Operator browser
 - Backend runtime extension points are declared in manifests and resolved from module backend packages.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
 - The frontend uses a compile-time module surface registry in `web/src/features/modules`; this is intentionally not runtime code loading from YAML yet.
+- Contact business intelligence profiles are owned by `contacts.core`, declared in the module manifest, and documented in the Contacts module docs and architecture notes.
 
 ## Boundaries
 
@@ -46,6 +47,7 @@ Operator browser
 - Shared baseline SQLAlchemy models currently remain in `src/uok/models.py`; module packages import their owned domain models through module-local facades and declare owned tables for validation.
 - Module-specific UI still lives in `web/src/features/<feature>` for this candidate, with ownership and composition expressed through the frontend module surface registry and module manifest `web_path`.
 - Contacts pytest suites still live in top-level `tests/`; the Contacts candidate verifier scenario now lives under `modules/contacts.core/tests/verify`.
+- Profile enrichment providers must be module adapters under `contacts.core` or future integration modules, not kernel services.
 
 ## Key Decisions
 
@@ -54,10 +56,13 @@ Operator browser
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
+- Contact business intelligence profile architecture: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
+- Contact BI developer handoff plan: `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`
+- Contact BI audit checklist: `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`
 
 ## Verification
 
-Before publishing a candidate, run:
+Before publishing a candidate or moving the contact BI profile PR out of draft, run:
 
 ```powershell
 python -m compileall -q src modules tests
@@ -67,4 +72,4 @@ npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
 ```
 
-Also review source size, module contract validation, source-boundary checks, naming checks, dependency audits, and the Podman compose local candidate smoke before promoting a baseline.
+Also review source size, module contract validation, source-boundary checks, naming checks, dependency audits, and the Podman compose local candidate smoke before promoting a baseline. For contact BI profiles, also complete `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md` with API smoke, browser QA, permission checks, and privacy/governance review evidence.
