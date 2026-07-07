@@ -11,8 +11,17 @@ from uok.db import get_db
 from uok.module_ops import ensure_module_operational
 from uok.security import Actor, current_actor, require_permission
 
-from .api_schemas import ContactCsvImportRequest, ContactNoteRequest, ContactRelationshipRequest, ContactWriteRequest
+from .api_schemas import (
+    ContactCsvImportRequest,
+    ContactNoteRequest,
+    ContactProfileEvidenceRequest,
+    ContactProfileRebuildRequest,
+    ContactProfileWriteRequest,
+    ContactRelationshipRequest,
+    ContactWriteRequest,
+)
 from .facade import get_party_or_error, import_batch_rows, list_parties, note_rows, relationship_rows, review_queue, serialize_party
+from .profile_service import business_profile_detail, evidence_rows
 
 router = APIRouter(prefix="/api/contacts", tags=["contacts"])
 
@@ -131,3 +140,48 @@ def contact_relationships(party_id: str, actor: Actor = Depends(current_actor), 
 @router.post("/relationships")
 def add_contact_relationship(req: ContactRelationshipRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
     return run_contact_command(db, actor, "LinkContactRelationship", req.model_dump(exclude_none=True))
+
+
+@router.get("/{party_id}/profile")
+def contact_business_profile(party_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    require_permission(actor, "contacts.read")
+    require_contacts_module_operational(db, actor)
+    try:
+        return business_profile_detail(get_party_or_error(db, actor, party_id))
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.patch("/{party_id}/profile")
+def update_contact_business_profile(party_id: str, req: ContactProfileWriteRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["party_id"] = party_id
+    return run_contact_command(db, actor, "UpdateContactProfile", payload)
+
+
+@router.post("/{party_id}/profile/evidence")
+def record_contact_profile_evidence(party_id: str, req: ContactProfileEvidenceRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["party_id"] = party_id
+    return run_contact_command(db, actor, "RecordContactProfileEvidence", payload)
+
+
+@router.get("/{party_id}/profile/evidence")
+def contact_profile_evidence(party_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
+    require_permission(actor, "contacts.read")
+    require_contacts_module_operational(db, actor)
+    try:
+        return evidence_rows(get_party_or_error(db, actor, party_id))
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/{party_id}/profile/rebuild")
+def rebuild_contact_business_profile(party_id: str, req: ContactProfileRebuildRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["party_id"] = party_id
+    return run_contact_command(db, actor, "RebuildContactProfile", payload)
