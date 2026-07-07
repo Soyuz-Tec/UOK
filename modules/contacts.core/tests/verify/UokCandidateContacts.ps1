@@ -89,6 +89,58 @@ function Invoke-UokContactsCandidateScenario {
         throw "Contact update failed: $($updated | ConvertTo-Json -Depth 20)"
     }
 
+    Assert-UokHttpFailure -StatusCode 403 -UnexpectedSuccessMessage "Viewer profile update unexpectedly succeeded" -Action {
+        Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $ViewerHeaders -Body @{
+            command_type = "UpdateContactProfile"
+            payload = @{ party_id = $contactId; summary = "Denied profile update." }
+            idempotency_key = "uok-denied-profile-$Stamp"
+        }
+    }
+
+    $profileEvidence = Invoke-UokJson -Method "POST" -Path "/api/contacts/$contactId/profile/evidence" -Headers $OpsHeaders -Body @{
+        source = @{
+            provider = "candidate-verifier"
+            source_type = "manual_review"
+            confidence = "high"
+            fields = @("summary", "tags", "person")
+        }
+        normalized_facts = @{
+            summary = "Candidate verified business profile for UOK Contact $Stamp."
+            tags = @("candidate_verified", "profiled")
+            person = @{
+                current_title = "Verification Lead"
+                current_company = "UOK Account $Stamp"
+                decision_role = "evaluator"
+            }
+        }
+        merge_into_profile = $true
+    }
+    if ($profileEvidence.evidence_count -lt 1 -or $profileEvidence.profile.confidence -ne "high") {
+        throw "Profile evidence record failed: $($profileEvidence | ConvertTo-Json -Depth 20)"
+    }
+
+    $profile = Invoke-UokJson -Method "GET" -Path "/api/contacts/$contactId/profile" -Headers $OpsHeaders
+    if ($profile.summary -notlike "Candidate verified business profile*") {
+        throw "Profile retrieval failed: $($profile | ConvertTo-Json -Depth 20)"
+    }
+    if ($profile.scores.profile_health -lt 1) {
+        throw "Profile scoring failed: $($profile | ConvertTo-Json -Depth 20)"
+    }
+
+    $rebuiltProfile = Invoke-UokJson -Method "POST" -Path "/api/contacts/$contactId/profile/rebuild" -Headers $OpsHeaders -Body @{
+        include_notes = $true
+        include_relationships = $true
+        source = @{
+            provider = "candidate-verifier"
+            source_type = "contact_record_rebuild"
+            confidence = "verified"
+            fields = @("display_name", "attrs_json", "relationships")
+        }
+    }
+    if ($rebuiltProfile.confidence -ne "verified") {
+        throw "Profile rebuild failed: $($rebuiltProfile | ConvertTo-Json -Depth 20)"
+    }
+
     $note = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
         command_type = "AddContactNote"
         payload = @{ party_id = $contactId; body = "Private internal note for candidate verification." }
