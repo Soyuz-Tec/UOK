@@ -2,6 +2,11 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from .profile_schemas import (  # noqa: F401
+    ContactProfileEvidenceRequest,
+    ContactProfileRebuildRequest,
+    ContactProfileWriteRequest,
+)
 from .validation import (
     MAX_CONTACT_ADDRESS_LENGTH,
     MAX_CONTACT_DISPLAY_NAME_LENGTH,
