@@ -11,6 +11,7 @@
 | Artifact | Purpose |
 |---|---|
 | `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md` | Developer end-to-end plan, implementation tasks, data contract, acceptance criteria, future enrichment phases. |
+| `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md` | Peer-report analysis and comprehensive data-point catalogue for aliases, identifiers, contact points, ownership, AML/KYC, sanctions, fraud, scam, and adverse-media signals. |
 | `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md` | Verification/audit checklist, commands, permission checks, API smoke tests, reviewer sign-off template. |
 | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` | Broader Contacts app plan with the BI profile extension linked into the module roadmap. |
 | `modules/contacts.core/manifest.yaml` | Declares profile commands, events, API prefix, owned data slices, permissions, and candidate verifier. |
@@ -53,6 +54,20 @@ Patterns reviewed:
 | CiviCRM | Constituent/contact model supports multiple host applications and nonprofit-specific relationship management. | Keep the profile schema broad enough for people and organizations without assuming a sales-only workflow. |
 | Frappe CRM | Simple, customizable, open-source CRM for leads, deals, notes, tasks, views, and communications. | Preserve UOK's lightweight contact workflow and add intelligence without turning contacts into a full pipeline module. |
 | Krayin | Modular CRM framework with custom attributes and lifecycle features. | Store profile data through a module-owned extension point and declare ownership explicitly in the manifest. |
+
+## Business intelligence report benchmark
+
+Peer report formats converge on a fact graph rather than a flat contact card. UOK should model these data groups over time:
+
+- multiple names, aliases, former names, trade names, transliterations, and native-script names;
+- multiple emails, phones, websites, social profiles, and addresses with type, active/historical status, first/last seen, source count, and confidence;
+- legal identifiers, registry IDs, LEI/D-U-N-S/CIK/ticker/MIC/tax IDs, and provider IDs;
+- person employment, officer, director, stakeholder, board, and beneficial-owner roles;
+- organization registration, jurisdiction, status, legal form, filings, locations, industries, scale, funding, public-company metadata, parent/subsidiary/affiliate graph;
+- sanctions, PEP/RCA, adverse-media, enforcement, debarment, scam, and fraud screening facts;
+- source evidence, allowed use, retention, confidence, reviewer disposition, and next review dates.
+
+The authoritative catalogue and implementation guidance are maintained in `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md`.
 
 ## Target architecture
 
@@ -136,10 +151,11 @@ The developer must use `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md` 
 
 1. Confirm schema/service/command/API/read-model/UI implementation matches the plan.
 2. Add or adjust tests for profile schemas, profile service, API routes, permissions, search, and UI types.
-3. Run all automated verification commands.
-4. Exercise browser QA for the Contacts Intelligence pane.
-5. Fill out `CONTACT_BI_PROFILES_AUDIT.md` with evidence and reviewer notes.
-6. Keep PR `#1` draft until gates pass.
+3. Use `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md` as the source for future multi-valued data-point and risk-signal modelling.
+4. Run all automated verification commands.
+5. Exercise browser QA for the Contacts Intelligence pane.
+6. Fill out `CONTACT_BI_PROFILES_AUDIT.md` with evidence and reviewer notes.
+7. Keep PR `#1` draft until gates pass.
 
 ## Verification and audit plan
 
@@ -162,6 +178,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candida
 5. **Sensitive data exclusion:** the schema defaults `sensitive_fields_excluded` to true and should not store protected-class, precise location, health, biometric, or unrelated personal-life data.
 6. **Operator control:** contacts can set `do_not_enrich` in the governance section before future automated enrichment runs.
 7. **Retention:** the manifest declares profile and evidence retention behavior; a later normalized-table migration should add field-level purge support.
+8. **Fraud/AML/KYC separation:** general business profiles must stay separate from restricted compliance artifacts such as government identifiers, sanctions dispositions, SAR/STR references, and source-of-funds/source-of-wealth evidence.
 
 ## Release phases
 
@@ -176,7 +193,7 @@ Included in the current branch:
 - contact list/search summary integration;
 - Contacts UI Intelligence pane;
 - candidate verifier profile scenario;
-- architecture, developer plan, and audit artifacts.
+- architecture, developer plan, report data-point catalogue, and audit artifacts.
 
 ### Phase 2 — External enrichment adapters
 
@@ -187,16 +204,25 @@ Add after Phase 1 passes audit:
 - rate limiting and retry queues;
 - provider-specific terms metadata on evidence;
 - `do_not_enrich` enforcement before adapter calls;
-- optional review queue for low-confidence or conflicting facts.
+- optional review queue for low-confidence or conflicting facts;
+- multi-valued aliases, contact points, identifiers, risk signals, and screening summaries as described in the report data-point catalogue.
 
 ### Phase 3 — Normalized profile tables
 
-Move from JSON slices to indexed tables when UOK needs cross-contact segmentation, large evidence histories, deletion/purge granularity, or dashboard-level analytics:
+Move from JSON slices to indexed tables when UOK needs cross-contact segmentation, large evidence histories, deletion/purge granularity, AML/KYC access separation, or dashboard-level analytics:
 
 - `contact_profiles`
 - `contact_profile_evidence`
 - `contact_profile_scores`
 - `contact_profile_jobs`
+- `party_aliases`
+- `party_contact_points`
+- `party_identifiers`
+- `party_locations`
+- `party_screening_runs`
+- `party_screening_hits`
+- `party_risk_signals`
+- `party_risk_reviews`
 
 ## Source references
 
@@ -206,8 +232,12 @@ Move from JSON slices to indexed tables when UOK needs cross-contact segmentatio
 - CiviCRM: https://github.com/civicrm/civicrm-core
 - Frappe CRM: https://github.com/frappe/crm
 - Krayin CRM: https://github.com/krayin/laravel-crm
-- NIST Privacy Framework: https://www.nist.gov/privacy-framework
-- GDPR Article 5: https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng
+- People Data Labs Person and Company Schema: https://docs.peopledatalabs.com/
+- OpenCorporates API reference: https://api.opencorporates.com/documentation/API-Reference
+- GLEIF Legal Entity Identifier overview: https://www.gleif.org/en/organizational-identity/lei-vlei/the-legal-entity-identifier-lei
+- FATF Recommendations: https://www.fatf-gafi.org/en/publications/Fatfrecommendations/Fatf-recommendations.html
+- FFIEC BSA/AML Beneficial Ownership Requirements: https://bsaaml.ffiec.gov/manual/AssessingComplianceWithBSARegulatoryRequirements/03
+- OpenSanctions entity model: https://www.opensanctions.org/docs/entities/
+- FBI IC3 Business Email Compromise guidance: https://www.ic3.gov/CrimeInfo/BEC
+- FTC scam guidance: https://consumer.ftc.gov/articles/how-avoid-scam
 - OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
-- People Data Labs docs: https://docs.peopledatalabs.com/
-- Apollo API docs: https://docs.apollo.io/
