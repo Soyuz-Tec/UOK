@@ -48,6 +48,7 @@ Operator browser
 - Module-specific UI still lives in `web/src/features/<feature>` for this candidate, with ownership and composition expressed through the frontend module surface registry and module manifest `web_path`.
 - Contacts pytest suites still live in top-level `tests/`; the Contacts candidate verifier scenario now lives under `modules/contacts.core/tests/verify`.
 - Profile enrichment providers must be module adapters under `contacts.core` or future integration modules, not kernel services.
+- Fraud, AML/KYC, sanctions, adverse-media, and scam-risk data must be treated as evidence-backed, permissioned data points rather than uncontrolled free text in the general contact profile.
 
 ## Key Decisions
 
@@ -58,6 +59,7 @@ Operator browser
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
 - Contact business intelligence profile architecture: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 - Contact BI developer handoff plan: `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`
+- Contact BI report data-point catalogue: `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md`
 - Contact BI audit checklist: `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`
 
 ## Verification
@@ -72,4 +74,4 @@ npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
 ```
 
-Also review source size, module contract validation, source-boundary checks, naming checks, dependency audits, and the Podman compose local candidate smoke before promoting a baseline. For contact BI profiles, also complete `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md` with API smoke, browser QA, permission checks, and privacy/governance review evidence.
+Also review source size, module contract validation, source-boundary checks, naming checks, dependency audits, and the Podman compose local candidate smoke before promoting a baseline. For contact BI profiles, also complete `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md` with API smoke, browser QA, permission checks, and privacy/governance review evidence. Use `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md` to audit multi-valued names, contact points, identifiers, ownership/control facts, fraud indicators, AML/KYC fields, sanctions screening, and scam-risk signals.
