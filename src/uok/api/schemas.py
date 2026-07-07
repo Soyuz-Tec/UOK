@@ -8,6 +8,9 @@ from ..commands import MAX_IDEMPOTENCY_KEY_LENGTH
 from ..contact_api_schemas import (  # noqa: F401
     ContactCsvImportRequest,
     ContactNoteRequest,
+    ContactProfileEvidenceRequest,
+    ContactProfileRebuildRequest,
+    ContactProfileWriteRequest,
     ContactRelationshipRequest,
     ContactWriteRequest,
 )
