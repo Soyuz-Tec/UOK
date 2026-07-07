@@ -8,6 +8,8 @@
 
 **Plan document:** `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`
 
+**Data-point catalogue:** `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md`
+
 **Status:** Use this checklist before the PR is moved out of draft and again before merge.
 
 ## 1. Audit objective
@@ -20,7 +22,7 @@ The audit must answer five questions:
 2. **Is it native to UOK?** The feature is implemented through module-owned extension points and Contacts UI surfaces.
 3. **Is it secure?** Permissions, validation, rate limits for future adapters, and command/event auditing are in place.
 4. **Is it privacy-aware?** Data is minimized, sourced, governed, and excludes sensitive categories by default.
-5. **Can a future developer extend it safely?** The provider adapter and normalized-table phases are documented and bounded.
+5. **Can a future developer extend it safely?** The provider adapter, data-point catalogue, risk-signal model, and normalized-table phases are documented and bounded.
 
 ## 2. Evidence to collect
 
@@ -35,6 +37,7 @@ The audit must answer five questions:
 | Candidate verifier | output from `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1` |
 | Browser QA | screenshots or notes for the Contacts Intelligence pane, empty profile state, and permission failure scenario |
 | API QA | request/response samples for profile read, evidence write, rebuild, and permission failure |
+| Data catalogue review | sign-off that aliases, contact points, identifiers, ownership/control, fraud, AML/KYC, sanctions, scam-risk, and adverse-media data points have been reviewed for first-release/future-release scope |
 | Security/privacy review | completed checklist in sections 5 and 6 |
 
 ## 3. Automated verification commands
@@ -71,6 +74,7 @@ Reviewer:
 | Runtime extension model | Commands, command permissions, API router, events, and owned surfaces are declared through manifest/module extension points. | manifest + command files |
 | Storage decision documented | JSON slices are explicitly first-slice storage with a migration path to module tables. | architecture + plan docs |
 | Provider phase isolated | External enrichment is not required for the first PR and is documented as a future adapter phase. | plan doc |
+| Data-point scope documented | Peer report data points and future normalized tables are documented separately from the first PR implementation. | `CONTACT_BI_REPORT_DATA_POINTS.md` |
 
 ## 5. Security and permissions audit
 
@@ -85,6 +89,7 @@ Reviewer:
 | Validation | Pydantic and service bounds reject or cap oversized summaries, lists, source fields, and confidence values. | unit tests |
 | Error hygiene | Permission/validation failures do not leak internal stack traces. | API tests |
 | No secrets | No provider credentials, tokens, or raw API responses are committed. | secret scan/manual review |
+| Restricted data separation | AML/KYC, government IDs, source-of-funds/source-of-wealth, SAR/STR, and sanctions disposition artifacts are not exposed in the general contact profile. | code/data review |
 
 ## 6. Privacy and governance audit
 
@@ -99,6 +104,8 @@ Reviewer:
 | Accuracy/freshness | Profile has `updated_at`, confidence, source count, and health scoring. | API sample + UI screenshot |
 | Retention behavior | Manifest states profile/evidence retention behavior. | manifest review |
 | Human review path | Low-confidence or conflicting facts are documented for future review queue handling. | plan doc |
+| Alias/contact-point policy | Multiple aliases, emails, phones, domains, addresses, and identifiers are treated as normal multi-valued evidence, not automatic fraud. | data-point catalogue review |
+| Fraud signal policy | Fraud/scam indicators are stored as signals with severity, confidence, evidence, and disposition rather than confirmed accusations unless verified. | data-point catalogue review |
 
 ## 7. Backend code audit
 
@@ -111,6 +118,7 @@ Reviewer:
 | `read_model.py` | Summaries/search integrate profile data without leaking evidence rows or non-readable contacts. |
 | `api_schemas.py` and facades | Schema imports are stable and avoid deep kernel coupling. |
 | `manifest.yaml` | Commands/events/owned data slices are declared. |
+| Future normalized tables | Confirm future data-point tables remain module-owned and migration-gated. |
 
 ## 8. Frontend code audit
 
@@ -123,6 +131,7 @@ Reviewer:
 | Accessibility | Pane labels, buttons, and controls remain keyboard-accessible. |
 | Theme compatibility | Light, dark, and system modes remain usable. |
 | No provider assumptions | UI does not imply a provider is configured when enrichment is disabled. |
+| No restricted AML/KYC exposure | Restricted compliance details do not appear in general Contacts UI unless separate role-gated UI is implemented. |
 
 ## 9. API smoke tests
 
@@ -229,7 +238,19 @@ Expected:
 | Archive/restore | Archive and restore profiled contact. | Profile remains visible after restore. |
 | Disabled module | Disable/uninstall module if supported locally. | Contacts/profile surfaces are blocked or route to module status handling. |
 
-## 11. Database/event audit queries
+## 11. Data-point and risk-signal audit scenarios
+
+| Scenario | Expected result |
+|---|---|
+| Multiple names | Alias, former name, DBA, trade name, and transliteration are modelled as separate evidence-backed facts. |
+| Multiple emails/phones | Contact points can store type, active/historical status, first/last seen, source count, confidence, and risk flags. |
+| Multiple identifiers | Registry ID, LEI, D-U-N-S, CIK, ticker, tax ID, and provider IDs have type, jurisdiction, source, and sensitivity classification. |
+| Ownership graph | Parent/subsidiary/affiliate/officer/director/beneficial owner/control-person relationships are represented as edges with evidence. |
+| Sanctions hit | Screening result stores matched fields, list/source, score, disposition, reviewer, and timestamp. |
+| Scam signal | BEC, impersonation, fake invoice, payment-method pressure, domain mismatch, and payment-instruction-change signals are stored as reviewable signals, not as unverified conclusions. |
+| Restricted KYC | DOB, government ID, source-of-funds/source-of-wealth, SAR/STR references, and sanctions dispositions are not exposed in the general profile. |
+
+## 12. Database/event audit queries
 
 Adapt table and JSON syntax for the active database engine.
 
@@ -258,7 +279,7 @@ where attrs_json like '%raw_payload%'
    or attrs_json like '%access_token%';
 ```
 
-## 12. Merge readiness decision
+## 13. Merge readiness decision
 
 The PR may move from draft to ready for review when all boxes below are checked.
 
@@ -271,6 +292,9 @@ The PR may move from draft to ready for review when all boxes below are checked.
 [ ] Browser QA passed.
 [ ] Permission failure path verified.
 [ ] Evidence/provenance path verified.
+[ ] Data-point catalogue reviewed.
+[ ] Alias/contact-point/identifier multiplicity reviewed.
+[ ] Fraud/AML/KYC/scam-risk treatment reviewed.
 [ ] No raw provider payloads stored.
 [ ] No provider credentials or secrets committed.
 [ ] Architecture docs updated.
@@ -278,7 +302,7 @@ The PR may move from draft to ready for review when all boxes below are checked.
 [ ] Audit checklist completed.
 ```
 
-## 13. Reviewer sign-off template
+## 14. Reviewer sign-off template
 
 ```text
 Reviewer:
@@ -286,15 +310,17 @@ Date:
 Commit SHA reviewed:
 Verification logs reviewed:
 Manual QA evidence reviewed:
+Data-point catalogue reviewed:
 Security/privacy notes:
 Open blockers:
 Decision: approve / changes requested / keep draft
 ```
 
-## 14. External reference baseline
+## 15. External reference baseline
 
 Use these as audit references, not as legal advice:
 
 - NIST Privacy Framework: https://www.nist.gov/privacy-framework
 - GDPR Article 5 principles: https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng
 - OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
+- Contact BI data-point catalogue: `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md`
