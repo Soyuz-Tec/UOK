@@ -40,6 +40,7 @@ Business intelligence profile references and audit standards are maintained in:
 
 - `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 - `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`
+- `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md`
 - `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`
 
 ## User Decisions
@@ -59,6 +60,7 @@ Business intelligence profile references and audit standards are maintained in:
 - Users can import CSV and correct records; normal users cannot bulk export.
 - Imported, incomplete, uncertain, and possible duplicate records appear in a review queue.
 - Every contact should be able to expose a native business intelligence profile with normalized facts, source evidence, confidence, governance metadata, and profile-health scoring.
+- Future releases should support multi-valued aliases, contact points, identifiers, ownership/control facts, and risk signals without implying that aliases or shared contact points are fraudulent by themselves.
 
 ## Domain Model
 
@@ -126,7 +128,9 @@ The profile includes:
 - risk flags;
 - computed scores.
 
-The developer handoff and acceptance gates live in `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`. The audit checklist lives in `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`.
+The developer handoff and acceptance gates live in `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`. The peer report data-point catalogue lives in `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md`. The audit checklist lives in `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`.
+
+Future profile storage should model aliases, contact points, identifiers, addresses, roles, ownership/control, screening hits, and risk signals as separate evidence-backed facts. Restricted AML/KYC, sanctions disposition, source-of-funds/source-of-wealth, government ID, fraud investigation, and SAR/STR-style artifacts must not appear in the general Contacts profile without separate role gates and compliance controls.
 
 ## API Scope
 
@@ -175,6 +179,7 @@ The Contacts UI must be human-friendly and policy-aligned:
 - Light, dark, and system appearances remain supported.
 - Detail pane includes Overview, Intelligence, Activity, and Relationships.
 - Intelligence pane renders profile summary, confidence, source count, profile health, completeness, tags, risk flags, update timestamp, and normalized-facts-only status.
+- General Contacts UI does not expose restricted compliance artifacts by default.
 
 Current UI source remains in `web/src/features/contacts` and is composed through `web/src/features/modules/moduleSurfaceRegistry.tsx`. The module root `modules/contacts.core/web` remains the ownership marker until a future packaging step moves executable module UI behind the module root.
 
@@ -228,11 +233,12 @@ Browser verification must confirm:
 - Intelligence pane appears in contact detail
 - profile summary and scores render after evidence is recorded
 - viewer can read allowed profiles but cannot write profile evidence
+- no restricted AML/KYC or fraud-investigation artifact appears in the general Contacts UI
 - no retired UOK names appear
 - no product-specific labels appear
 - no console errors appear
 
-Profile audit must also complete `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`.
+Profile audit must also complete `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md` and review `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md`.
 
 ## Remaining Packaging Work
 
@@ -241,3 +247,4 @@ Profile audit must also complete `docs/modules/contacts.core/CONTACT_BI_PROFILES
 - Add future Contacts schema migrations under `modules/contacts.core/migrations` instead of expanding the shared initial baseline.
 - Add external enrichment adapters only after the profile foundation passes audit and deployment policy configures credentials, allowed use, rate limits, retention, and `do_not_enrich` enforcement.
 - Move profiles to normalized module-owned tables when query volume, field-level purge, or analytics require it.
+- Add restricted compliance storage only after role gates, retention policy, encryption/tokenization, audit logging, and legal/compliance approval are defined.
