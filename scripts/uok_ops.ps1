@@ -1,11 +1,13 @@
 param(
-    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "Verify", "Rebuild", "Health", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight")]
+    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "Verify", "Rebuild", "Health", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
     [string]$Action = "Audit",
     [string]$BaseUrl = "http://127.0.0.1:18088",
     [string]$ProjectName = "uok",
     [string]$ComposeFile = "deploy\compose-local-18088.yaml",
     [string]$BackupPath = "",
     [switch]$ConfirmRestore,
+    [int]$PullRequestNumber = 0,
+    [switch]$WatchChecks,
     [string]$IncidentReason = "manual ASUH test",
     [ValidateSet("info", "warning", "critical")]
     [string]$IncidentSeverity = "warning"
@@ -262,6 +264,18 @@ function Invoke-UokGithubPreflight {
     }
 }
 
+function Invoke-UokGithubOperation {
+    param([string]$GithubAction)
+    $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_github_ops.ps1", "-Action", $GithubAction)
+    if ($PullRequestNumber -gt 0) {
+        $arguments += @("-PullRequestNumber", "$PullRequestNumber")
+    }
+    if ($WatchChecks) {
+        $arguments += "-WatchChecks"
+    }
+    Invoke-PowerShellScript $arguments
+}
+
 switch ($Action) {
     "Audit" { Invoke-UokAudit }
     "TechnologyAudit" { Invoke-UokTechnologyAudit }
@@ -273,4 +287,7 @@ switch ($Action) {
     "RestoreDb" { Invoke-UokRestoreDb }
     "AsuhTest" { Invoke-UokAsuhTest }
     "GithubPreflight" { Invoke-UokGithubPreflight }
+    "GithubReadiness" { Invoke-UokGithubOperation "Readiness" }
+    "GithubSecuritySetup" { Invoke-UokGithubOperation "SecuritySetup" }
+    "GithubPrChecks" { Invoke-UokGithubOperation "PrChecks" }
 }

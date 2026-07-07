@@ -37,6 +37,7 @@ For normal UOK development:
 3. Commit and push completed verified work when publication is safe, instead of waiting for a repeated reminder.
 4. Do not publish local-only evidence under `var/`, secrets, personal data, incomplete work, failing verification, or changes that need upstream reconciliation.
 5. If the GitHub branch moved, reconcile by pull, rebase, or a reviewable branch before publishing.
+6. Use `GithubReadiness`, `GithubSecuritySetup`, and `GithubPrChecks` for repeatable GitHub verification instead of manually retyping `gh` commands.
 
 ## Development Loop
 
@@ -93,6 +94,7 @@ These accepted lessons must guide future implementation:
 | Local runtime evidence matters | HTTP checks and candidate verifier output are stronger than visual assumptions | `scripts/verify_uok_candidate.ps1` |
 | Repeatable operations matter | Verification, audit, backup, restore, rebuild, GitHub preflight, and ASUH drills use standardized commands | `docs/operations/UOK_STANDARD_OPERATIONS.md` |
 | GitHub is the shared source of truth | Completed verified work is synchronized through GitHub unless explicitly local-only or blocked by verification, upstream divergence, or unsafe artifacts | `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md` |
+| GitHub checks are automated | Readiness, security setup, and PR check watching use wrapper actions instead of ad hoc `gh` command sequences | `scripts/uok_github_ops.ps1` |
 | Markdown guardrails are active | Recently created policy, architecture, design, roadmap, target, and module-plan docs must be checked before implementation expands | This document |
 
 ## Markdown Ownership Matrix

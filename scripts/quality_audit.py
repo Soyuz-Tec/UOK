@@ -53,6 +53,7 @@ def check_required_artifacts() -> CheckResult:
         "docs/operations/UOK_ASUH_TEST_EVENTS.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
         "scripts/engineering_evidence.py",
+        "scripts/uok_github_ops.ps1",
         ".github/CODEOWNERS",
         ".github/copilot-instructions.md",
         ".github/dependabot.yml",
@@ -177,6 +178,9 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("standard operations runbook must document TechnologyAudit")
     if "EngineeringEvidence" not in runbook:
         problems.append("standard operations runbook must document EngineeringEvidence")
+    for action in ("GithubReadiness", "GithubSecuritySetup", "GithubPrChecks"):
+        if action not in runbook:
+            problems.append(f"standard operations runbook must document {action}")
     if "GitHub is the shared UOK source of truth" not in runbook:
         problems.append("standard operations runbook must define GitHub source-of-truth policy")
     if "GitHub Synchronization Policy" not in continuity:
@@ -233,11 +237,7 @@ def check_internal_engineering_system() -> CheckResult:
         problems.append("architecture must link internal engineering system")
     if "UOK Internal Engineering System" not in pr_template:
         problems.append("PR template must ask for internal engineering system impact")
-    return CheckResult(
-        "internal_engineering_system",
-        not problems,
-        "; ".join(problems) or "mapped",
-    )
+    return CheckResult("internal_engineering_system", not problems, "; ".join(problems) or "mapped")
 
 
 def check_github_guardrails() -> CheckResult:

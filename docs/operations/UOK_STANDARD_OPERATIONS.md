@@ -32,6 +32,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `RestoreDb` | Restore a local dump into the local stack, guarded by explicit confirmation | `.\scripts\uok_ops.ps1 -Action RestoreDb -BackupPath <dump> -ConfirmRestore` |
 | `AsuhTest` | Create a local ASUH incident event and run health plus candidate verifier | `.\scripts\uok_ops.ps1 -Action AsuhTest -IncidentReason "reason"` |
 | `GithubPreflight` | Show branch, remote, latest commit, diff hygiene, and changed files before commit/push/PR | `.\scripts\uok_ops.ps1 -Action GithubPreflight` |
+| `GithubReadiness` | Check GitHub auth, repo metadata, upstream sync, latest branch runs, current PR status, Dependabot alerts, and enforcement availability | `.\scripts\uok_ops.ps1 -Action GithubReadiness` |
+| `GithubSecuritySetup` | Enable Dependabot alerts/security updates, configure merge hygiene, and report branch-protection/ruleset availability | `.\scripts\uok_ops.ps1 -Action GithubSecuritySetup` |
+| `GithubPrChecks` | Show or watch PR checks for the current branch or a supplied PR number | `.\scripts\uok_ops.ps1 -Action GithubPrChecks -PullRequestNumber <number> -WatchChecks` |
 
 The script is a convenience wrapper. The underlying commands remain visible and may be run directly when debugging.
 
@@ -96,6 +99,7 @@ Before substantial work, inspect the target branch and upstream state:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubPreflight
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubReadiness
 ```
 
 Before commit, push, or PR:
@@ -104,6 +108,7 @@ Before commit, push, or PR:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubPreflight
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action EngineeringEvidence
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubReadiness
 ```
 
 GitHub publication should include:
@@ -117,10 +122,34 @@ GitHub publication should include:
 - Python and frontend dependency audits clean;
 - candidate verifier clean;
 - PR description covering scope, architecture impact, tests, risk, and rollback.
+- PR checks passing through `GithubPrChecks` or GitHub Actions.
 
 The GitHub Actions workflow `.github/workflows/uok-ci.yml` remains the remote verification baseline.
 
 GitHub-facing controls are detailed in `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`.
+
+### GitHub Readiness And PR Check Commands
+
+Use this after pushing a branch or before reviewing a PR:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubPrChecks -PullRequestNumber 2
+```
+
+Use this when a PR is actively running checks:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubPrChecks -PullRequestNumber 2 -WatchChecks
+```
+
+Use this when preparing a repository or rechecking GitHub settings:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubSecuritySetup
+```
+
+`GithubSecuritySetup` is intentionally idempotent for Dependabot alerts, Dependabot security updates, and merge hygiene. If GitHub blocks private-repo branch protection or repository rulesets on the current plan, the command reports the blocker and leaves issue tracking as the fallback.
 
 ## PostgreSQL Backup
 

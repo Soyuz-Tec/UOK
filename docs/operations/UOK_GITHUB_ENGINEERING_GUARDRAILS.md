@@ -29,6 +29,22 @@ Before substantial work and before publication, `GithubPreflight` must inspect t
 | `.github/pull_request_template.md` | PR checklist for scope, architecture impact, verification, review rules, risk, and rollback |
 | `.github/copilot-instructions.md` | GitHub-native coding-agent instructions aligned with `AGENTS.md` |
 
+## Repeatable GitHub Operations
+
+UOK automates the GitHub operations that were previously manual:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubSecuritySetup
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubPrChecks -PullRequestNumber <number> -WatchChecks
+```
+
+`GithubReadiness` checks authentication, repo metadata, upstream sync, latest branch runs, PR status, Dependabot alerts, and whether branch protection or rulesets are available.
+
+`GithubSecuritySetup` enables Dependabot vulnerability alerts, enables Dependabot security updates, configures merge hygiene, and reports whether protected-branch enforcement can be applied.
+
+`GithubPrChecks` shows or watches PR checks so CI and Scorecard status can be verified without manually opening GitHub.
+
 ## Required GitHub Settings
 
 Apply these in GitHub repository settings after the current branch is pushed:
@@ -44,6 +60,8 @@ Apply these in GitHub repository settings after the current branch is pushed:
 
 These are repository-admin settings; they cannot be fully enforced by local files alone.
 
+For private repositories on plans that do not expose branch protection or repository rulesets, keep a GitHub issue open for the enforcement gap and use PR discipline plus passing `GithubPrChecks` as the fallback until the feature becomes available.
+
 ## Required Local Preflight
 
 Before commit, push, or pull request:
@@ -52,6 +70,7 @@ Before commit, push, or pull request:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubPreflight
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Audit
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action GithubReadiness
 ```
 
 Before candidate handoff:
@@ -82,6 +101,8 @@ Before release or candidate promotion, preserve:
 
 - CI result for `.github/workflows/uok-ci.yml`;
 - OpenSSF Scorecard result;
+- `GithubReadiness` output;
+- `GithubPrChecks` output for the integration PR;
 - local `TechnologyAudit` output;
 - local `Audit` output;
 - local `Verify` output;
