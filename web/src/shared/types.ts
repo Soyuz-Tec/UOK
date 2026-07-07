@@ -3,7 +3,7 @@ export type Appearance = "system" | "light" | "dark";
 export type AuthMode = "signin" | "register";
 export type ModuleAction = "install" | "uninstall" | "disable" | "enable" | "upgrade";
 export type ContactsView = "split" | "table" | "cards";
-export type ContactDetailPane = "overview" | "activity" | "relationships";
+export type ContactDetailPane = "overview" | "intelligence" | "activity" | "relationships";
 
 export type SessionUser = {
   username: string;
@@ -45,6 +45,17 @@ export type ContactAttrs = {
   duplicate_candidates?: Array<{ id: string; display_name: string; reason: string }>;
 };
 
+export type ContactBusinessProfile = {
+  profile_type?: string;
+  summary?: string;
+  tags?: string[];
+  scores?: Record<string, number>;
+  confidence?: string;
+  risk_flags?: string[];
+  updated_at?: string | null;
+  source_count?: number;
+};
+
 export type ContactRecord = {
   id: string;
   contact_id?: string;
@@ -66,6 +77,7 @@ export type ContactRecord = {
   family_name?: string;
   organization_name?: string;
   title?: string;
+  business_profile?: ContactBusinessProfile;
   notes?: Array<{ id: string; body: string; created_at: string }>;
   relationships?: Array<{ id: string; from_party_id: string; to_party_id: string; relationship_type: string }>;
   duplicate_candidates?: Array<{ id: string; display_name: string; reason: string }>;
