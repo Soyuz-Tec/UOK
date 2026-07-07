@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from .access import readable_note_records, readable_party_filter, readable_relationship_records, relationship_is_readable
 from .models import ContactImportBatch, Party, PartyNote, PartyRelationship, utcnow
+from .profile_service import business_profile_summary
 from .validation import CONTACT_ATTR_FIELDS
 from uok.security import Actor
 from uok.util import loads, row_dict
@@ -21,6 +22,12 @@ def _party_search_text(party: Party, notes: list[PartyNote] | None = None, relat
     attrs = _party_attrs(party)
     parts = [party.display_name, party.party_type, party.status, party.review_state, party.source]
     parts.extend(str(attrs.get(field, "")) for field in CONTACT_ATTR_FIELDS)
+    profile = business_profile_summary(party)
+    parts.extend([
+        profile.get("summary", ""),
+        " ".join(profile.get("tags", [])),
+        " ".join(profile.get("risk_flags", [])),
+    ])
     for note in notes or []:
         parts.append(note.body)
     for relationship in relationships or []:
@@ -119,6 +126,7 @@ def serialize_party(db: Session, party: Party, include_detail: bool = False, act
         "organization_name": attrs.get("organization_name", ""),
         "title": attrs.get("title", ""),
         "duplicate_candidates": attrs.get("duplicate_candidates", []),
+        "business_profile": business_profile_summary(party),
     })
     if include_detail:
         data["notes"] = note_rows(db, party.id, actor)
