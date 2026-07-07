@@ -1,4 +1,5 @@
 import type { ColumnWidthMap, DataTableColumn } from "./types";
+import { browserStorage } from "../storage";
 
 const storagePrefix = "uok_column_widths:";
 
@@ -58,5 +59,5 @@ function isColumnWidthMap(value: unknown): value is ColumnWidthMap {
 }
 
 function localColumnStorage() {
-  return typeof window === "undefined" ? null : window.localStorage;
+  return browserStorage("local");
 }

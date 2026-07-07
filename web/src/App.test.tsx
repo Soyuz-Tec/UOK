@@ -2,47 +2,14 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import "@testing-library/jest-dom/vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
-
-const createMemoryStorage = (): Storage => {
-  let entries = new Map<string, string>();
-
-  return {
-    get length() {
-      return entries.size;
-    },
-    clear() {
-      entries = new Map<string, string>();
-    },
-    getItem(key: string) {
-      return entries.get(key) ?? null;
-    },
-    key(index: number) {
-      return Array.from(entries.keys())[index] ?? null;
-    },
-    removeItem(key: string) {
-      entries.delete(key);
-    },
-    setItem(key: string, value: string) {
-      entries.set(key, value);
-    }
-  };
-};
-
-const ensureBrowserStorage = () => {
-  if (typeof globalThis.localStorage === "undefined") {
-    vi.stubGlobal("localStorage", createMemoryStorage());
-  }
-
-  if (typeof globalThis.sessionStorage === "undefined") {
-    vi.stubGlobal("sessionStorage", createMemoryStorage());
-  }
-};
+import { createMemoryStorage } from "./shared/storage";
 
 describe("UOK app", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    ensureBrowserStorage();
+    vi.stubGlobal("localStorage", createMemoryStorage());
+    vi.stubGlobal("sessionStorage", createMemoryStorage());
     localStorage.clear();
     sessionStorage.clear();
   });

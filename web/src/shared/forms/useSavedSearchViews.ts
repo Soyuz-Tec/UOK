@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import { browserStorage } from "../storage";
 import type { SavedSearchView } from "./SearchWorkspace.types";
 
 export function useSavedSearchViews(storageKey: string) {
@@ -21,19 +22,25 @@ export function useSavedSearchViews(storageKey: string) {
 }
 
 function readSavedViews(storageKey: string): SavedSearchView[] {
+  const storage = browserStorage("local");
+  if (!storage) return [];
+
   try {
-    const raw = localStorage.getItem(storageKey);
+    const raw = storage.getItem(storageKey);
     const views = raw ? JSON.parse(raw) as SavedSearchView[] : [];
     return views.filter((view) => view.name.trim() && view.name !== "Working view");
   } catch {
-    localStorage.removeItem(storageKey);
+    storage.removeItem(storageKey);
     return [];
   }
 }
 
 function writeSavedViews(storageKey: string, views: SavedSearchView[]) {
+  const storage = browserStorage("local");
+  if (!storage) return;
+
   try {
-    localStorage.setItem(storageKey, JSON.stringify(views));
+    storage.setItem(storageKey, JSON.stringify(views));
   } catch {
     // Saved searches are a convenience layer; search itself must keep working.
   }

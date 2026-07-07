@@ -5,7 +5,9 @@ on:
   push:
     branches:
       - main
-      - contacts-alpha3
+  pull_request:
+    branches:
+      - main
   schedule:
     - cron: "17 6 * * 1"
   workflow_dispatch:
