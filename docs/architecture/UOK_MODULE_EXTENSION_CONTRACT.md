@@ -103,7 +103,7 @@ New extension points require an architecture update and a failing validation tes
 - `contacts.core` is the first optional capability module.
 - `contacts.core` backend implementation now lives under `modules/contacts.core/backend/uok_contacts_core`.
 - `contacts.core` commands, command permissions, role grants, dashboard counts, evidence checks, model exports, API router, and candidate verifier scenario are manifest-declared module surfaces.
-- Contacts UI and migrations are still bridged from top-level UOK folders. Contacts behavior tests remain in top-level `tests/`, while the module candidate verifier scenario lives under `modules/contacts.core/tests/verify`. That is allowed for the current candidate only because the ownership paths are declared in the manifest and covered by tests.
+- Contacts behavior tests, migrations, and the module candidate verifier scenario now live under `modules/contacts.core`. Module-specific React source is still composed through the top-level frontend shell for this candidate; that bridge is allowed only because ownership paths are declared in the manifest and covered by tests.
 
 ## Required Scans Before GitHub Push
 

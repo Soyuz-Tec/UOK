@@ -2,8 +2,33 @@ export type Section = "overview" | "apps" | "contacts" | "evidence" | "architect
 export type Appearance = "system" | "light" | "dark";
 export type AuthMode = "signin" | "register";
 export type ModuleAction = "install" | "uninstall" | "disable" | "enable" | "upgrade";
-export type ContactsView = "split" | "table" | "cards";
+export type ContactsView = "split" | "table" | "cards" | "quality";
+export type ContactGroupBy = "none" | "type" | "review_state" | "source" | "organization";
 export type ContactDetailPane = "overview" | "activity" | "relationships";
+export type ContactSortBy = "display_name" | "updated_at" | "created_at" | "status" | "review_state" | "party_type" | "source";
+export type ContactSortDir = "asc" | "desc";
+
+export type ContactGroupRecord = {
+  id: string;
+  name: string;
+  description?: string;
+  kind: string;
+  visibility_scope: string;
+  owner_user_id?: string | null;
+  team_id?: string | null;
+  status: string;
+  member_count: number;
+  active_member_count?: number;
+};
+
+export type ContactGroupMembership = {
+  id: string;
+  name: string;
+  description?: string;
+  visibility_scope: string;
+  member_id: string;
+  created_at: string;
+};
 
 export type SessionUser = {
   username: string;
@@ -67,7 +92,19 @@ export type ContactRecord = {
   organization_name?: string;
   title?: string;
   notes?: Array<{ id: string; body: string; created_at: string }>;
-  relationships?: Array<{ id: string; from_party_id: string; to_party_id: string; relationship_type: string }>;
+  relationships?: Array<{
+    id: string;
+    from_party_id: string;
+    to_party_id: string;
+    relationship_type: string;
+    direction?: "outbound" | "inbound" | string;
+    related_party_id?: string;
+    related_party_name?: string;
+    related_party_type?: string;
+    related_party_email?: string;
+    related_party_phone?: string;
+  }>;
+  groups?: ContactGroupMembership[];
   duplicate_candidates?: Array<{ id: string; display_name: string; reason: string }>;
 };
 

@@ -88,4 +88,15 @@ function Assert-UokCandidateEvidence {
     if ($ui.Content -notmatch "UOK" -or $ui.Content -match $forbiddenRetiredUokName -or $ui.Content -notmatch "Apps Manager" -or $ui.Content -notmatch "Contacts" -or $ui.Content -match $forbiddenSpecificCargoName -or $ui.Content -match $forbiddenCombinedLabel) {
         throw "UI marker check failed"
     }
+
+    $artifacts = Invoke-UokJson -Path "/api/contacts?query=$Stamp&status=active" -Headers $Headers
+    foreach ($artifact in $artifacts) {
+        if ($artifact.display_name -match "^(UOK Contact|UOK Account|Imported Contact) $Stamp$") {
+            Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+                command_type = "ArchiveContact"
+                payload = @{ party_id = $artifact.id }
+                idempotency_key = "uok-cleanup-contact-$($artifact.id)-$Stamp"
+            } | Out-Null
+        }
+    }
 }

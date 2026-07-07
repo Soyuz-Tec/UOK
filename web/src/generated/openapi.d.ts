@@ -158,6 +158,76 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/contacts/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Contact Groups */
+        get: operations["contact_groups_api_contacts_groups_get"];
+        put?: never;
+        /** Create Contact Group */
+        post: operations["create_contact_group_api_contacts_groups_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/groups/{group_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Archive Contact Group */
+        delete: operations["archive_contact_group_api_contacts_groups__group_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Contact Group */
+        patch: operations["update_contact_group_api_contacts_groups__group_id__patch"];
+        trace?: never;
+    };
+    "/api/contacts/groups/{group_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Contacts To Group */
+        post: operations["add_contacts_to_group_api_contacts_groups__group_id__members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/groups/{group_id}/members/{party_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Contact From Group */
+        delete: operations["remove_contact_from_group_api_contacts_groups__group_id__members__party_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/contacts/import-batches": {
         parameters: {
             query?: never;
@@ -207,6 +277,24 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/relationships/{relationship_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Contact Relationship */
+        delete: operations["remove_contact_relationship_api_contacts_relationships__relationship_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Contact Relationship */
+        patch: operations["update_contact_relationship_api_contacts_relationships__relationship_id__patch"];
         trace?: never;
     };
     "/api/contacts/review-queue": {
@@ -576,6 +664,33 @@ export interface components {
             /** Filename */
             filename?: string | null;
         };
+        /** ContactGroupMembersRequest */
+        ContactGroupMembersRequest: {
+            /** Party Ids */
+            party_ids: string[];
+        };
+        /** ContactGroupUpdateRequest */
+        ContactGroupUpdateRequest: {
+            /** Description */
+            description?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Team Id */
+            team_id?: string | null;
+            /** Visibility Scope */
+            visibility_scope?: string | null;
+        };
+        /** ContactGroupWriteRequest */
+        ContactGroupWriteRequest: {
+            /** Description */
+            description?: string | null;
+            /** Name */
+            name: string;
+            /** Team Id */
+            team_id?: string | null;
+            /** Visibility Scope */
+            visibility_scope?: string | null;
+        };
         /** ContactNoteRequest */
         ContactNoteRequest: {
             /** Body */
@@ -593,6 +708,17 @@ export interface components {
             relationship_type: string;
             /** To Party Id */
             to_party_id: string;
+        };
+        /** ContactRelationshipUpdateRequest */
+        ContactRelationshipUpdateRequest: {
+            /** Description */
+            description?: string | null;
+            /** From Party Id */
+            from_party_id?: string | null;
+            /** Relationship Type */
+            relationship_type?: string | null;
+            /** To Party Id */
+            to_party_id?: string | null;
         };
         /** ContactWriteRequest */
         ContactWriteRequest: {
@@ -941,9 +1067,14 @@ export interface operations {
         parameters: {
             query?: {
                 query?: string;
+                group_id?: string;
                 status?: string;
                 review_state?: string;
                 party_type?: string;
+                limit?: number;
+                offset?: number;
+                sort_by?: string;
+                sort_dir?: string;
             };
             header?: {
                 authorization?: string | null;
@@ -989,6 +1120,225 @@ export interface operations {
                 "application/json": components["schemas"]["ContactWriteRequest"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contact_groups_api_contacts_groups_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_contact_group_api_contacts_groups_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactGroupWriteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_contact_group_api_contacts_groups__group_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_contact_group_api_contacts_groups__group_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactGroupUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_contacts_to_group_api_contacts_groups__group_id__members_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactGroupMembersRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_contact_from_group_api_contacts_groups__group_id__members__party_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                group_id: string;
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -1094,6 +1444,80 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["ContactRelationshipRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_contact_relationship_api_contacts_relationships__relationship_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                relationship_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_contact_relationship_api_contacts_relationships__relationship_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                relationship_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactRelationshipUpdateRequest"];
             };
         };
         responses: {

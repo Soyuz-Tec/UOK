@@ -6,6 +6,8 @@ from .validation import (
     MAX_CONTACT_ADDRESS_LENGTH,
     MAX_CONTACT_DISPLAY_NAME_LENGTH,
     MAX_CONTACT_EMAIL_LENGTH,
+    MAX_CONTACT_GROUP_DESCRIPTION_LENGTH,
+    MAX_CONTACT_GROUP_NAME_LENGTH,
     MAX_CONTACT_ID_LENGTH,
     MAX_CONTACT_NAME_LENGTH,
     MAX_CONTACT_NOTE_LENGTH,
@@ -45,10 +47,35 @@ class ContactNoteRequest(BaseModel):
     visibility_scope: str | None = Field(default=None, max_length=MAX_CONTACT_STATUS_LENGTH)
 
 
+class ContactGroupWriteRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=MAX_CONTACT_GROUP_NAME_LENGTH)
+    description: str | None = Field(default=None, max_length=MAX_CONTACT_GROUP_DESCRIPTION_LENGTH)
+    visibility_scope: str | None = Field(default=None, max_length=MAX_CONTACT_STATUS_LENGTH)
+    team_id: str | None = Field(default=None, max_length=MAX_CONTACT_ID_LENGTH)
+
+
+class ContactGroupUpdateRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=MAX_CONTACT_GROUP_NAME_LENGTH)
+    description: str | None = Field(default=None, max_length=MAX_CONTACT_GROUP_DESCRIPTION_LENGTH)
+    visibility_scope: str | None = Field(default=None, max_length=MAX_CONTACT_STATUS_LENGTH)
+    team_id: str | None = Field(default=None, max_length=MAX_CONTACT_ID_LENGTH)
+
+
+class ContactGroupMembersRequest(BaseModel):
+    party_ids: list[str] = Field(..., min_length=1, max_length=200)
+
+
 class ContactRelationshipRequest(BaseModel):
     from_party_id: str = Field(..., max_length=MAX_CONTACT_ID_LENGTH)
     to_party_id: str = Field(..., max_length=MAX_CONTACT_ID_LENGTH)
     relationship_type: str = Field(..., min_length=1, max_length=MAX_CONTACT_STATUS_LENGTH)
+    description: str | None = Field(default=None, max_length=MAX_CONTACT_WEBSITE_LENGTH)
+
+
+class ContactRelationshipUpdateRequest(BaseModel):
+    from_party_id: str | None = Field(default=None, max_length=MAX_CONTACT_ID_LENGTH)
+    to_party_id: str | None = Field(default=None, max_length=MAX_CONTACT_ID_LENGTH)
+    relationship_type: str | None = Field(default=None, min_length=1, max_length=MAX_CONTACT_STATUS_LENGTH)
     description: str | None = Field(default=None, max_length=MAX_CONTACT_WEBSITE_LENGTH)
 
 

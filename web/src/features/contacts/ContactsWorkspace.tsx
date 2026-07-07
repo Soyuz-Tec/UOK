@@ -1,19 +1,47 @@
-import { Download, Power, Search, Upload, UserPlus } from "lucide-react";
-import type { KeyboardEvent } from "react";
+import { useEffect, useState } from "react";
+import { Download, Power } from "lucide-react";
 
-import { contactsViewOptions } from "../../shared/options";
-import { formatLabel } from "../../shared/format";
-import { CommandButton, EmptyState, JsonBlock, Pane, SegmentedControl, StatusPill } from "../../shared/ui";
+import { EmptyState, StatusPill } from "../../shared/data-display";
+import { Pane, WorkflowSplitView } from "../../shared/layout";
+import { WorkspaceEditorPopup } from "../../shared/overlays";
+import { CommandButton } from "../../shared/primitives";
 import { ContactDetailPanel } from "./ContactDetailPanel";
-import { ContactList } from "./ContactList";
+import { ContactGroupsPanel } from "./ContactGroupsPanel";
+import { ContactQualityWorkspace } from "./ContactQualityWorkspace";
+import { ContactResultsPanel } from "./ContactResultsPanel";
+import { ContactsToolbar } from "./ContactsToolbar";
 import type { ContactsWorkspaceProps } from "./types";
 
 export function ContactsWorkspace(props: ContactsWorkspaceProps) {
-  const selectFromKeyboard = (event: KeyboardEvent, contactId: string) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      props.onSelect(contactId);
-    }
+  const popupMode = props.contactsView === "table" || props.contactsView === "cards" || props.contactsView === "quality";
+  const [detailPopupOpen, setDetailPopupOpen] = useState(false);
+
+  useEffect(() => {
+    if (!popupMode) setDetailPopupOpen(false);
+  }, [popupMode]);
+
+  useEffect(() => {
+    if (!props.selectedContact && !props.editing) setDetailPopupOpen(false);
+  }, [props.editing, props.selectedContact]);
+
+  const selectContact = (id: string) => {
+    props.onSelect(id);
+    if (popupMode) setDetailPopupOpen(true);
+  };
+
+  const createContact = () => {
+    props.onCreate();
+    if (popupMode) setDetailPopupOpen(true);
+  };
+
+  const changeView = (value: ContactsWorkspaceProps["contactsView"]) => {
+    setDetailPopupOpen(false);
+    props.onViewChange(value);
+  };
+
+  const closeDetailPopup = () => {
+    if (props.editing) props.onCancelEdit();
+    setDetailPopupOpen(false);
   };
 
   if (!props.token) {
@@ -51,137 +79,78 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
   }
 
   return (
-    <section className="contacts-workspace" aria-label="Contacts">
-      <div className="contacts-controls">
-        <label className="search-field">
-          <Search size={16} aria-hidden="true" />
-          <input value={props.query} onChange={(event) => props.onQueryChange(event.target.value)} placeholder="Search contacts" />
-        </label>
-        <CommandButton icon={UserPlus} onClick={props.onCreate}>Add new</CommandButton>
-        <SegmentedControl value={props.contactsView} onChange={props.onViewChange} options={contactsViewOptions} label="Contacts view" />
-        <label className="field compact">
-          <span>Status</span>
-          <select value={props.statusFilter} onChange={(event) => props.onStatusFilterChange(event.target.value)}>
-            <option value="active">Active</option>
-            <option value="archived">Archived</option>
-            <option value="all">All</option>
-          </select>
-        </label>
-        <label className="field compact">
-          <span>Review</span>
-          <select value={props.reviewFilter} onChange={(event) => props.onReviewFilterChange(event.target.value)}>
-            <option value="all">All</option>
-            <option value="ready">Ready</option>
-            <option value="needs_review">Needs review</option>
-            <option value="possible_duplicate">Possible duplicate</option>
-            <option value="incomplete">Incomplete</option>
-          </select>
-        </label>
-        <label className="field compact">
-          <span>Type</span>
-          <select value={props.typeFilter} onChange={(event) => props.onTypeFilterChange(event.target.value)}>
-            <option value="all">All</option>
-            <option value="person">Person</option>
-            <option value="organization">Organization</option>
-          </select>
-        </label>
+    <section className={`contacts-workspace contacts-view-${props.contactsView}`} aria-label="Contacts">
+      <ContactsToolbar
+        query={props.query}
+        statusFilter={props.statusFilter}
+        reviewFilter={props.reviewFilter}
+        typeFilter={props.typeFilter}
+        contactGroups={props.contactGroups}
+        contactGroupId={props.contactGroupId}
+        contactPage={props.contactPage}
+        contactPageSize={props.contactPageSize}
+        contactHasNext={props.contactHasNext}
+        contactTotalCount={props.contactTotalCount}
+        visibleCount={props.contacts.length}
+        contactSortBy={props.contactSortBy}
+        contactSortDir={props.contactSortDir}
+        contactsView={props.contactsView}
+        contactGroupBy={props.contactGroupBy}
+        onQueryChange={props.onQueryChange}
+        onStatusFilterChange={props.onStatusFilterChange}
+        onReviewFilterChange={props.onReviewFilterChange}
+        onTypeFilterChange={props.onTypeFilterChange}
+        onContactGroupChange={props.onContactGroupChange}
+        onContactGroupByChange={props.onContactGroupByChange}
+        onClearFilters={props.onClearFilters}
+        onContactPageChange={props.onContactPageChange}
+        onContactPageSizeChange={props.onContactPageSizeChange}
+        onContactSortByChange={props.onContactSortByChange}
+        onContactSortDirChange={props.onContactSortDirChange}
+        onViewChange={changeView}
+        onCreate={createContact}
+      />
+      <div className="contacts-workspace-body">
+        <ContactGroupsPanel
+          groups={props.contactGroups}
+          selectedGroupId={props.contactGroupId}
+          newGroupName={props.newGroupName}
+          onGroupChange={props.onContactGroupChange}
+          onNewGroupNameChange={props.onNewGroupNameChange}
+          onCreateGroup={props.onCreateGroup}
+          onGroupContactsByBusinessDomain={props.onGroupContactsByBusinessDomain}
+          onArchiveGroup={props.onArchiveGroup}
+          domainGroupingBusy={props.busyAction === "GroupContactsByBusinessEmailDomain"}
+        />
+        <div className="contacts-workspace-main">
+          {props.contactsView === "quality" ? (
+            <ContactQualityWorkspace {...props} onOpenEditor={() => setDetailPopupOpen(true)} />
+          ) : props.contactsView === "split" ? (
+            <WorkflowSplitView
+              primaryLabel="Contact results"
+              secondaryLabel="Contact inspector"
+              primary={<ContactResultsPanel contacts={props.contacts} contactsView={props.contactsView} selectedContactId={props.selectedContactId} contactGroupBy={props.contactGroupBy} onSelect={props.onSelect} />}
+              secondary={<ContactDetailPanel {...props} />}
+            />
+          ) : (
+            <section className="contacts-results-workspace" aria-label="Contact results">
+              <ContactResultsPanel contacts={props.contacts} contactsView={props.contactsView} selectedContactId={props.selectedContactId} contactGroupBy={props.contactGroupBy} onSelect={selectContact} />
+            </section>
+          )}
+        </div>
       </div>
-
-      <div className="review-strip" aria-label="Review Queue">
-        <div>
-          <p className="eyebrow">Review Queue</p>
-          <strong>{props.reviewRows.length}</strong>
-        </div>
-        <div className="review-items">
-          {props.reviewRows.length ? props.reviewRows.slice(0, 4).map((row) => (
-            <button key={row.id} type="button" className="review-chip" onClick={() => props.onSelect(row.id)}>
-              {row.display_name}
-              <StatusPill label={formatLabel(row.review_state)} tone="warning" />
-            </button>
-          )) : <span className="muted">No queued records</span>}
-        </div>
-      </div>
-
-      {props.contactsView === "split" && (
-        <div className="contacts-split">
-          <ContactList contacts={props.contacts} selectedId={props.selectedContactId} onSelect={props.onSelect} />
-          <ContactDetailPanel {...props} />
-        </div>
-      )}
-
-      {props.contactsView === "table" && (
-        <div className="contacts-table-wrap">
-          <table className="contacts-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Status</th>
-                <th>Review</th>
-              </tr>
-            </thead>
-            <tbody>
-              {props.contacts.map((contact) => (
-                <tr
-                  key={contact.id}
-                  className={props.selectedContactId === contact.id ? "selected" : ""}
-                  tabIndex={0}
-                  aria-selected={props.selectedContactId === contact.id}
-                  onClick={() => props.onSelect(contact.id)}
-                  onKeyDown={(event) => selectFromKeyboard(event, contact.id)}
-                >
-                  <td>{contact.display_name}</td>
-                  <td>{formatLabel(contact.party_type)}</td>
-                  <td>{contact.email || "-"}</td>
-                  <td>{contact.phone || "-"}</td>
-                  <td>{formatLabel(contact.status)}</td>
-                  <td>{formatLabel(contact.review_state)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {props.contactsView === "cards" && (
-        <div className="contact-card-grid">
-          {props.contacts.map((contact) => (
-            <button key={contact.id} type="button" className={props.selectedContactId === contact.id ? "contact-card selected" : "contact-card"} onClick={() => props.onSelect(contact.id)}>
-              <span className="contact-avatar">{contact.display_name.slice(0, 1).toUpperCase()}</span>
-              <strong>{contact.display_name}</strong>
-              <span>{contact.email || contact.phone || formatLabel(contact.party_type)}</span>
-              <StatusPill label={formatLabel(contact.review_state)} tone={contact.review_state === "ready" ? "success" : "warning"} />
-            </button>
-          ))}
-        </div>
-      )}
-
-      {(props.contactsView === "table" || props.contactsView === "cards") && <ContactDetailPanel {...props} />}
-
-      <details className="workflow-disclosure">
-        <summary>
-          <strong>CSV Import</strong>
-          <Upload size={18} aria-hidden="true" />
-        </summary>
-        <div className="contacts-utility-grid">
-          <Pane description="CSV import form">
-            <label className="field">
-              <span>Filename</span>
-              <input value={props.importFilename} onChange={(event) => props.onImportFilenameChange(event.target.value)} />
-            </label>
-            <label className="field">
-              <span>CSV</span>
-              <textarea value={props.importText} onChange={(event) => props.onImportTextChange(event.target.value)} rows={5} />
-            </label>
-            <CommandButton icon={Upload} onClick={props.onImport} loading={props.busyAction === "ImportContactsCsv"}>Import</CommandButton>
-          </Pane>
-          <Pane title="Import Batches" description="Recent">
-            <JsonBlock value={props.importBatches} />
-          </Pane>
-        </div>
-      </details>
+      <WorkspaceEditorPopup
+        open={popupMode && detailPopupOpen && Boolean(props.selectedContact || props.editing)}
+        label={props.editing ? "Create or edit contact" : "Contact details"}
+        title={props.editing ? "Contact editor" : "Contact workspace"}
+        description={props.editing ? "Add only the details you have now. More sections can be added when needed." : "Review and update contact details without leaving the workspace."}
+        onClose={closeDetailPopup}
+        size="wide"
+        chrome="minimal"
+        className="contacts-detail-popup"
+      >
+        <ContactDetailPanel {...props} onCreate={createContact} />
+      </WorkspaceEditorPopup>
     </section>
   );
 }

@@ -1,7 +1,9 @@
 import { Download, FileCheck2, Power, Wrench } from "lucide-react";
 
 import type { ModuleAction, ModuleStatus } from "../../shared/types";
-import { CommandButton, EmptyState, Pane, StatusPill } from "../../shared/ui";
+import { EmptyState, StatusPill } from "../../shared/data-display";
+import { Pane } from "../../shared/layout";
+import { CommandButton } from "../../shared/primitives";
 
 export function AppsManagerPanel({ modules, busyAction, onAction }: {
   modules: ModuleStatus[];

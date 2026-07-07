@@ -106,6 +106,81 @@ function Invoke-UokContactsCandidateScenario {
     if (-not $linked.result.relationship_id) {
         throw "Contact relationship failed: $($linked | ConvertTo-Json -Depth 20)"
     }
+    $relationshipId = $linked.result.relationship_id
+
+    $relationshipUpdated = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "UpdateContactRelationship"
+        payload = @{ relationship_id = $relationshipId; from_party_id = $contactId; to_party_id = $companyId; relationship_type = "billing_contact" }
+        idempotency_key = "uok-update-relationship-$Stamp"
+    }
+    if ($relationshipUpdated.result.updated_count -lt 1) {
+        throw "Contact relationship update failed: $($relationshipUpdated | ConvertTo-Json -Depth 20)"
+    }
+
+    $relationshipRemoved = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "RemoveContactRelationship"
+        payload = @{ relationship_id = $relationshipId }
+        idempotency_key = "uok-remove-relationship-$Stamp"
+    }
+    if ($relationshipRemoved.result.removed_count -lt 1) {
+        throw "Contact relationship unlink failed: $($relationshipRemoved | ConvertTo-Json -Depth 20)"
+    }
+
+    $relinked = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "LinkContactRelationship"
+        payload = @{ from_party_id = $contactId; to_party_id = $companyId; relationship_type = "primary_contact" }
+        idempotency_key = "uok-relink-contact-$Stamp"
+    }
+    if (-not $relinked.result.relationship_id) {
+        throw "Contact relationship relink failed: $($relinked | ConvertTo-Json -Depth 20)"
+    }
+
+    $group = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "CreateContactGroup"
+        payload = @{ name = "Operations Contacts $Stamp"; description = "Candidate verification contact group." }
+        idempotency_key = "uok-contact-group-$Stamp"
+    }
+    if (-not $group.result.id) {
+        throw "Contact group creation failed: $($group | ConvertTo-Json -Depth 20)"
+    }
+    $groupId = $group.result.id
+
+    $grouped = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "AddContactsToGroup"
+        payload = @{ group_id = $groupId; party_ids = @($contactId) }
+        idempotency_key = "uok-contact-group-add-$Stamp"
+    }
+    if ($grouped.result.added_count -lt 1) {
+        throw "Contact group membership add failed: $($grouped | ConvertTo-Json -Depth 20)"
+    }
+
+    $groupRows = Invoke-UokJson -Method "GET" -Path "/api/contacts/groups" -Headers $OpsHeaders
+    if (-not ($groupRows | Where-Object { $_.id -eq $groupId -and $_.member_count -ge 1 })) {
+        throw "Contact group list did not include membership count: $($groupRows | ConvertTo-Json -Depth 20)"
+    }
+
+    $groupFilteredRows = Invoke-UokJson -Method "GET" -Path "/api/contacts?status=all&group_id=$groupId" -Headers $OpsHeaders
+    if (-not ($groupFilteredRows | Where-Object { $_.id -eq $contactId })) {
+        throw "Contact group filter did not return grouped contact: $($groupFilteredRows | ConvertTo-Json -Depth 20)"
+    }
+
+    $ungrouped = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "RemoveContactFromGroup"
+        payload = @{ group_id = $groupId; party_id = $contactId }
+        idempotency_key = "uok-contact-group-remove-$Stamp"
+    }
+    if ($ungrouped.result.removed_count -lt 1) {
+        throw "Contact group membership remove failed: $($ungrouped | ConvertTo-Json -Depth 20)"
+    }
+
+    $regrouped = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "AddContactsToGroup"
+        payload = @{ group_id = $groupId; party_ids = @($contactId) }
+        idempotency_key = "uok-contact-group-readd-$Stamp"
+    }
+    if ($regrouped.result.added_count -lt 1) {
+        throw "Contact group membership re-add failed: $($regrouped | ConvertTo-Json -Depth 20)"
+    }
 
     $archived = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
         command_type = "ArchiveContact"

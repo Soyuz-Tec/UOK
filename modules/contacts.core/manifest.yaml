@@ -15,21 +15,37 @@ lifecycle:
   - uninstalled
 commands:
   - CreateContact
+  - CreateContactGroup
   - UpdateContact
+  - UpdateContactGroup
   - ArchiveContact
+  - ArchiveContactGroup
   - RestoreContact
   - PurgeContact
   - AddContactNote
+  - AddContactsToGroup
+  - RemoveContactFromGroup
+  - GroupContactsByBusinessEmailDomain
   - LinkContactRelationship
+  - UpdateContactRelationship
+  - RemoveContactRelationship
   - ImportContactsCsv
 events:
   - ContactCreated
+  - ContactGroupCreated
+  - ContactGroupUpdated
+  - ContactGroupArchived
+  - ContactAddedToGroup
+  - ContactRemovedFromGroup
+  - ContactsGroupedByBusinessEmailDomain
   - ContactUpdated
   - ContactArchived
   - ContactRestored
   - ContactPurged
   - ContactNoteAdded
   - ContactRelationshipLinked
+  - ContactRelationshipUpdated
+  - ContactRelationshipRemoved
   - ContactLinkedToOrganization
   - ContactsImported
 dependencies: []
@@ -56,6 +72,8 @@ permissions:
   - contacts.purge
   - contacts.import
 owned_tables:
+  - ContactGroup
+  - ContactGroupMember
   - Party
   - PartyNote
   - PartyRelationship

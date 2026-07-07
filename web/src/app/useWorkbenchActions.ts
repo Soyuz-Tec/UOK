@@ -33,21 +33,7 @@ export function useWorkbenchActions(data: WorkbenchData) {
     }
   }
 
-  async function importCsv(filename: string, csvText: string) {
-    try {
-      data.setBusyAction("ImportContactsCsv");
-      const response = await data.api<unknown>("/api/contacts/import-csv", {
-        method: "POST",
-        body: JSON.stringify({ filename, csv_text: csvText })
-      });
-      data.setOut(response);
-      await data.refresh();
-    } catch (error) {
-      data.setOut(error);
-    } finally {
-      data.setBusyAction("");
-    }
-  }
-
-  return { command, importCsv, moduleAction };
+  return { command, moduleAction };
 }
+
+export type WorkbenchActions = ReturnType<typeof useWorkbenchActions>;

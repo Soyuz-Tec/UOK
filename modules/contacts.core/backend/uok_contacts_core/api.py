@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from uok.commands import execute_command
@@ -11,8 +11,18 @@ from uok.db import get_db
 from uok.module_ops import ensure_module_operational
 from uok.security import Actor, current_actor, require_permission
 
-from .api_schemas import ContactCsvImportRequest, ContactNoteRequest, ContactRelationshipRequest, ContactWriteRequest
-from .facade import get_party_or_error, import_batch_rows, list_parties, note_rows, relationship_rows, review_queue, serialize_party
+from .api_schemas import (
+    ContactCsvImportRequest,
+    ContactGroupMembersRequest,
+    ContactGroupUpdateRequest,
+    ContactGroupWriteRequest,
+    ContactNoteRequest,
+    ContactRelationshipRequest,
+    ContactRelationshipUpdateRequest,
+    ContactWriteRequest,
+)
+from .facade import count_parties, get_party_or_error, import_batch_rows, list_parties, note_rows, relationship_rows, review_queue, serialize_party
+from .group_read_model import contact_group_rows
 
 router = APIRouter(prefix="/api/contacts", tags=["contacts"])
 
@@ -35,16 +45,48 @@ def require_contacts_module_operational(db: Session, actor: Actor) -> None:
 
 @router.get("")
 def contacts(
+    response: Response,
     query: str = "",
+    group_id: str = "",
     status: str = "active",
     review_state: str = "",
     party_type: str = "",
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    sort_by: str = Query(default="updated_at", pattern="^(display_name|updated_at|created_at|status|review_state|party_type|source)$"),
+    sort_dir: str = Query(default="desc", pattern="^(asc|desc)$"),
     actor: Actor = Depends(current_actor),
     db: Session = Depends(get_db),
 ) -> list[dict[str, Any]]:
     require_permission(actor, "contacts.read")
     require_contacts_module_operational(db, actor)
-    return list_parties(db, actor, query=query, status=status, review_state=review_state, party_type=party_type)
+    try:
+        response.headers["X-Total-Count"] = str(count_parties(
+            db,
+            actor,
+            query=query,
+            group_id=group_id,
+            status=status,
+            review_state=review_state,
+            party_type=party_type,
+        ))
+        return list_parties(
+            db,
+            actor,
+            query=query,
+            group_id=group_id,
+            status=status,
+            review_state=review_state,
+            party_type=party_type,
+            limit=limit,
+            offset=offset,
+            sort_by=sort_by,
+            sort_dir=sort_dir,
+        )
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
 
 @router.post("")
@@ -69,6 +111,42 @@ def contacts_import_batches(actor: Actor = Depends(current_actor), db: Session =
 @router.post("/import-csv")
 def import_contacts_csv(req: ContactCsvImportRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
     return run_contact_command(db, actor, "ImportContactsCsv", req.model_dump(exclude_none=True))
+
+
+@router.get("/groups")
+def contact_groups(actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
+    require_permission(actor, "contacts.read")
+    require_contacts_module_operational(db, actor)
+    return contact_group_rows(db, actor)
+
+
+@router.post("/groups")
+def create_contact_group(req: ContactGroupWriteRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    return run_contact_command(db, actor, "CreateContactGroup", req.model_dump(exclude_none=True))
+
+
+@router.patch("/groups/{group_id}")
+def update_contact_group(group_id: str, req: ContactGroupUpdateRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["group_id"] = group_id
+    return run_contact_command(db, actor, "UpdateContactGroup", payload)
+
+
+@router.delete("/groups/{group_id}")
+def archive_contact_group(group_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    return run_contact_command(db, actor, "ArchiveContactGroup", {"group_id": group_id})
+
+
+@router.post("/groups/{group_id}/members")
+def add_contacts_to_group(group_id: str, req: ContactGroupMembersRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["group_id"] = group_id
+    return run_contact_command(db, actor, "AddContactsToGroup", payload)
+
+
+@router.delete("/groups/{group_id}/members/{party_id}")
+def remove_contact_from_group(group_id: str, party_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    return run_contact_command(db, actor, "RemoveContactFromGroup", {"group_id": group_id, "party_id": party_id})
 
 
 @router.get("/{party_id}")
@@ -131,3 +209,15 @@ def contact_relationships(party_id: str, actor: Actor = Depends(current_actor), 
 @router.post("/relationships")
 def add_contact_relationship(req: ContactRelationshipRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
     return run_contact_command(db, actor, "LinkContactRelationship", req.model_dump(exclude_none=True))
+
+
+@router.patch("/relationships/{relationship_id}")
+def update_contact_relationship(relationship_id: str, req: ContactRelationshipUpdateRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["relationship_id"] = relationship_id
+    return run_contact_command(db, actor, "UpdateContactRelationship", payload)
+
+
+@router.delete("/relationships/{relationship_id}")
+def remove_contact_relationship(relationship_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    return run_contact_command(db, actor, "RemoveContactRelationship", {"relationship_id": relationship_id})

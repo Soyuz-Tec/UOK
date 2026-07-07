@@ -1,0 +1,76 @@
+.command-button {
+  background: var(--uok-bg-elevated);
+  border-color: var(--uok-separator);
+  white-space: nowrap;
+}
+
+.icon-button {
+  width: var(--uok-control-height);
+  min-width: var(--uok-control-height);
+  padding: 0;
+  background: var(--uok-bg-elevated);
+  border-color: var(--uok-separator);
+}
+
+.command-button.primary {
+  background: var(--uok-accent);
+  border-color: var(--uok-accent);
+  color: var(--uok-bg-elevated);
+  font-weight: 700;
+}
+
+.icon-button.primary {
+  background: var(--uok-accent);
+  border-color: var(--uok-accent);
+  color: var(--uok-bg-elevated);
+}
+
+.icon-button.selected {
+  color: var(--uok-accent);
+  border-color: var(--uok-accent);
+  background: color-mix(in srgb, var(--uok-accent) 10%, var(--uok-bg-grouped-secondary));
+}
+
+.command-button.destructive {
+  color: var(--uok-status-danger);
+}
+
+.command-button:disabled,
+.icon-button:disabled {
+  cursor: not-allowed;
+  color: var(--uok-text-placeholder);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.segmented-control {
+  display: inline-grid;
+  grid-template-columns: repeat(3, minmax(82px, 1fr));
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-1);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.segmented-control.icon-only {
+  grid-template-columns: repeat(4, var(--uok-control-height));
+}
+
+.segment {
+  min-height: 36px;
+  font-size: var(--uok-callout);
+}
+
+.segmented-control.icon-only .segment {
+  width: var(--uok-control-height);
+  padding: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

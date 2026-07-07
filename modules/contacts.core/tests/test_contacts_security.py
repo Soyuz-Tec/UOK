@@ -87,6 +87,68 @@ def test_contact_visibility_metadata_is_enforced_on_reads(client: TestClient) ->
     assert public_notes.json() == []
 
 
+def test_contacts_list_supports_bounded_pagination_and_sorting(client: TestClient) -> None:
+    suffix = str(uuid4())
+    admin = auth(client, "admin", "admin")
+    ops = auth(client, "ops", "ops123")
+
+    install = client.post("/api/modules/contacts.core/install", headers=admin)
+    assert install.status_code == 200, install.text
+
+    names = [
+        f"Zeta Page Contact {suffix}",
+        f"Alpha Page Contact {suffix}",
+        f"Gamma Page Contact {suffix}",
+    ]
+    for index, name in enumerate(names):
+        created = command(
+            client,
+            ops,
+            "CreateContact",
+            {"display_name": name},
+            f"uok-page-contact-{suffix}-{index}",
+        )
+        assert created.status_code == 200, created.text
+
+    first_page = client.get(
+        "/api/contacts",
+        headers=admin,
+        params={
+            "query": f"Page Contact {suffix}",
+            "status": "all",
+            "limit": 2,
+            "offset": 0,
+            "sort_by": "display_name",
+            "sort_dir": "asc",
+        },
+    )
+    assert first_page.status_code == 200, first_page.text
+    assert first_page.headers["x-total-count"] == "3"
+    assert [row["display_name"] for row in first_page.json()] == [names[1], names[2]]
+
+    second_page = client.get(
+        "/api/contacts",
+        headers=admin,
+        params={
+            "query": f"Page Contact {suffix}",
+            "status": "all",
+            "limit": 2,
+            "offset": 2,
+            "sort_by": "display_name",
+            "sort_dir": "asc",
+        },
+    )
+    assert second_page.status_code == 200, second_page.text
+    assert second_page.headers["x-total-count"] == "3"
+    assert [row["display_name"] for row in second_page.json()] == [names[0]]
+
+    invalid_limit = client.get("/api/contacts?limit=0", headers=admin)
+    assert invalid_limit.status_code == 422, invalid_limit.text
+
+    invalid_sort = client.get("/api/contacts?sort_by=attrs_json", headers=admin)
+    assert invalid_sort.status_code == 422, invalid_sort.text
+
+
 def test_idempotency_replay_requires_permission_and_matching_payload(client: TestClient) -> None:
     suffix = str(uuid4())
     key = f"uok-idempotency-{suffix}"

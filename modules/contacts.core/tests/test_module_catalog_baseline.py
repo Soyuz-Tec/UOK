@@ -87,6 +87,76 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
     )
     assert linked.status_code == 200, linked.text
     assert linked.json()["result"]["relationship_id"]
+    relationship_id = linked.json()["result"]["relationship_id"]
+
+    relationship_updated = command(
+        client,
+        ops,
+        "UpdateContactRelationship",
+        {"relationship_id": relationship_id, "from_party_id": contact_id, "to_party_id": company_id, "relationship_type": "billing_contact"},
+        f"uok-update-relationship-{suffix}",
+    )
+    assert relationship_updated.status_code == 200, relationship_updated.text
+    assert relationship_updated.json()["result"]["updated_count"] >= 1
+
+    relationship_removed = command(
+        client,
+        ops,
+        "RemoveContactRelationship",
+        {"relationship_id": relationship_id},
+        f"uok-remove-relationship-{suffix}",
+    )
+    assert relationship_removed.status_code == 200, relationship_removed.text
+    assert relationship_removed.json()["result"]["removed_count"] >= 1
+
+    relinked = command(
+        client,
+        ops,
+        "LinkContactRelationship",
+        {"from_party_id": contact_id, "to_party_id": company_id, "relationship_type": "primary_contact"},
+        f"uok-relink-contact-{suffix}",
+    )
+    assert relinked.status_code == 200, relinked.text
+    assert relinked.json()["result"]["relationship_id"]
+
+    contact_group = command(
+        client,
+        ops,
+        "CreateContactGroup",
+        {"name": f"Operations Contacts {suffix}", "description": "Baseline evidence contact group."},
+        f"uok-contact-group-{suffix}",
+    )
+    assert contact_group.status_code == 200, contact_group.text
+    contact_group_id = contact_group.json()["result"]["id"]
+
+    grouped = command(
+        client,
+        ops,
+        "AddContactsToGroup",
+        {"group_id": contact_group_id, "party_ids": [contact_id]},
+        f"uok-contact-group-add-{suffix}",
+    )
+    assert grouped.status_code == 200, grouped.text
+    assert grouped.json()["result"]["added_count"] == 1
+
+    ungrouped = command(
+        client,
+        ops,
+        "RemoveContactFromGroup",
+        {"group_id": contact_group_id, "party_id": contact_id},
+        f"uok-contact-group-remove-{suffix}",
+    )
+    assert ungrouped.status_code == 200, ungrouped.text
+    assert ungrouped.json()["result"]["removed_count"] == 1
+
+    regrouped = command(
+        client,
+        ops,
+        "AddContactsToGroup",
+        {"group_id": contact_group_id, "party_ids": [contact_id]},
+        f"uok-contact-group-readd-{suffix}",
+    )
+    assert regrouped.status_code == 200, regrouped.text
 
     archived = command(client, ops, "ArchiveContact", {"party_id": contact_id}, f"uok-archive-contact-{suffix}")
     assert archived.status_code == 200, archived.text
@@ -117,6 +187,7 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
     assert detail.status_code == 200, detail.text
     assert detail.json()["notes"]
     assert detail.json()["relationships"]
+    assert detail.json()["groups"]
 
     review_queue = client.get("/api/contacts/review-queue", headers=admin)
     assert review_queue.status_code == 200, review_queue.text
@@ -149,6 +220,8 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
     assert checks["contact_full_crm_events_present"] is True
     assert checks["private_notes_available"] is True
     assert checks["relationships_available"] is True
+    assert checks["contact_groups_available"] is True
+    assert checks["contact_group_members_available"] is True
     assert checks["import_batches_available"] is True
     assert checks["review_queue_available"] is True
     assert checks["role_denials_recorded"] is True

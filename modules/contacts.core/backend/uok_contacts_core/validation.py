@@ -21,6 +21,8 @@ MAX_CONTACT_PHONE_LENGTH = 64
 MAX_CONTACT_WEBSITE_LENGTH = 512
 MAX_CONTACT_ADDRESS_LENGTH = 1000
 MAX_CONTACT_TITLE_LENGTH = 120
+MAX_CONTACT_GROUP_NAME_LENGTH = 120
+MAX_CONTACT_GROUP_DESCRIPTION_LENGTH = 500
 MAX_CONTACT_NOTE_LENGTH = 4000
 MAX_CONTACT_REFERENCE_LENGTH = 120
 MAX_CONTACT_SOURCE_LENGTH = 80
@@ -30,13 +32,16 @@ MAX_CSV_IMPORT_BYTES = 1_000_000
 MAX_CSV_IMPORT_ROWS = 1000
 MAX_IMPORT_RESULT_ITEMS = 100
 VALID_CONTACT_VISIBILITY_SCOPES = {"organization", "team", "private"}
+VALID_CONTACT_GROUP_KINDS = {"business_domain", "manual"}
 VALID_NOTE_VISIBILITY_SCOPES = {"internal", "organization", "private"}
 
 CONTACT_FIELD_LIMITS = {
     "party_id": MAX_CONTACT_ID_LENGTH,
     "contact_id": MAX_CONTACT_ID_LENGTH,
+    "group_id": MAX_CONTACT_ID_LENGTH,
     "company_party_id": MAX_CONTACT_ID_LENGTH,
     "import_batch_id": MAX_CONTACT_ID_LENGTH,
+    "relationship_id": MAX_CONTACT_ID_LENGTH,
     "filename": 240,
     "party_type": MAX_CONTACT_STATUS_LENGTH,
     "display_name": MAX_CONTACT_DISPLAY_NAME_LENGTH,
@@ -49,6 +54,9 @@ CONTACT_FIELD_LIMITS = {
     "website": MAX_CONTACT_WEBSITE_LENGTH,
     "address": MAX_CONTACT_ADDRESS_LENGTH,
     "title": MAX_CONTACT_TITLE_LENGTH,
+    "name": MAX_CONTACT_GROUP_NAME_LENGTH,
+    "group_name": MAX_CONTACT_GROUP_NAME_LENGTH,
+    "group_description": MAX_CONTACT_GROUP_DESCRIPTION_LENGTH,
     "note": MAX_CONTACT_NOTE_LENGTH,
     "body": MAX_CONTACT_NOTE_LENGTH,
     "owner_user_id": MAX_CONTACT_ID_LENGTH,
@@ -60,6 +68,7 @@ CONTACT_FIELD_LIMITS = {
     "source": MAX_CONTACT_SOURCE_LENGTH,
     "relationship_type": MAX_CONTACT_STATUS_LENGTH,
     "description": MAX_CONTACT_WEBSITE_LENGTH,
+    "kind": MAX_CONTACT_STATUS_LENGTH,
 }
 
 
@@ -79,6 +88,20 @@ def contact_visibility_scope(value: Any) -> str:
     scope = bounded_text(value, "visibility_scope") or "organization"
     if scope not in VALID_CONTACT_VISIBILITY_SCOPES:
         raise ValueError("visibility_scope must be one of: organization, private, team")
+    return scope
+
+
+def contact_group_kind(value: Any) -> str:
+    kind = bounded_text(value, "kind").lower() or "manual"
+    if kind not in VALID_CONTACT_GROUP_KINDS:
+        raise ValueError("contact group kind must be one of: business_domain, manual")
+    return kind
+
+
+def contact_group_visibility_scope(value: Any) -> str:
+    scope = bounded_text(value, "visibility_scope") or "organization"
+    if scope not in VALID_CONTACT_VISIBILITY_SCOPES:
+        raise ValueError("contact group visibility_scope must be one of: organization, private, team")
     return scope
 
 

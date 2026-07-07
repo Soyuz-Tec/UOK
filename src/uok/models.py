@@ -97,6 +97,45 @@ class Party(Base):
     )
 
 
+class ContactGroup(Base):
+    __tablename__ = "contact_groups"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(Text, default="")
+    kind: Mapped[str] = mapped_column(String(40), default="manual")
+    visibility_scope: Mapped[str] = mapped_column(String(40), default="organization")
+    owner_user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    team_id: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    status: Mapped[str] = mapped_column(String(40), default="active")
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    attrs_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    __table_args__ = (
+        UniqueConstraint("organization_id", "name"),
+        Index("ix_contacts_core_contact_groups_org_status", "organization_id", "status"),
+        Index("ix_contacts_core_contact_groups_org_owner", "organization_id", "owner_user_id"),
+    )
+
+
+class ContactGroupMember(Base):
+    __tablename__ = "contact_group_members"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"))
+    group_id: Mapped[str] = mapped_column(ForeignKey("contact_groups.id"))
+    party_id: Mapped[str] = mapped_column(ForeignKey("parties.id"))
+    added_by_user_id: Mapped[str] = mapped_column(ForeignKey("users.id"))
+    attrs_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    __table_args__ = (
+        UniqueConstraint("organization_id", "group_id", "party_id"),
+        Index("ix_contacts_core_group_members_group", "organization_id", "group_id"),
+        Index("ix_contacts_core_group_members_party", "organization_id", "party_id"),
+    )
+
+
 class PartyRelationship(Base):
     __tablename__ = "party_relationships"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)

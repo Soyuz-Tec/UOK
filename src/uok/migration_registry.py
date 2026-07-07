@@ -49,6 +49,7 @@ def verify_migration_discipline(db: Session | None = None) -> dict[str, Any]:
     manifests = load_module_manifests()
     declared_tables = sorted(declared_module_table_names())
     module_files = module_migration_files()
+    module_text = _module_migration_text()
     module_scope_violations = _module_migration_scope_violations()
     applied_versions: list[str] = []
     if db is not None:
@@ -59,7 +60,7 @@ def verify_migration_discipline(db: Session | None = None) -> dict[str, Any]:
         "baseline_file_present": path.exists(),
         "baseline_declares_target_version": TARGET_VERSION in text,
         "baseline_has_uok_tables": all(name in text for name in ("organizations", "users", "modules", "command_logs", "events")),
-        "baseline_has_declared_module_tables": all(name in text for name in declared_tables),
+        "baseline_has_declared_module_tables": all(name in f"{text}\n{module_text}" for name in declared_tables),
         "baseline_has_contacts_tables": all(name in text for name in ("parties", "party_relationships", "party_notes", "contact_import_batches")),
         "baseline_has_no_business_module_tables": all(name not in text for name in FORBIDDEN_BUSINESS_TABLES),
         "module_migration_directories_present": all((repo_root() / str(manifest["migrations_path"])).is_dir() for manifest in manifests.values()),
@@ -91,6 +92,16 @@ def _declared_tables_for_module(manifest: dict[str, Any]) -> set[str]:
         if table_name:
             tables.add(table_name)
     return tables
+
+
+def _module_migration_text() -> str:
+    root = repo_root()
+    chunks: list[str] = []
+    for manifest in load_module_manifests().values():
+        migrations_path = root / str(manifest["migrations_path"])
+        sql_files = sorted(migrations_path.glob("*.sql")) if migrations_path.exists() else []
+        chunks.extend(path.read_text(encoding="utf-8") for path in sql_files)
+    return "\n".join(chunks)
 
 
 def _module_migration_scope_violations() -> list[dict[str, str]]:

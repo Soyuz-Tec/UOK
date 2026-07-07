@@ -7,6 +7,19 @@ CREATE INDEX IF NOT EXISTS ix_contacts_core_parties_org_status_review
 CREATE INDEX IF NOT EXISTS ix_contacts_core_parties_org_display_name
     ON parties (organization_id, display_name);
 
+CREATE INDEX IF NOT EXISTS ix_contacts_core_parties_search_vector
+    ON parties USING GIN (
+        to_tsvector(
+            'simple',
+            coalesce(display_name, '') || ' ' ||
+            coalesce(party_type, '') || ' ' ||
+            coalesce(status, '') || ' ' ||
+            coalesce(review_state, '') || ' ' ||
+            coalesce(source, '') || ' ' ||
+            coalesce(attrs_json, '')
+        )
+    );
+
 CREATE INDEX IF NOT EXISTS ix_contacts_core_parties_org_owner
     ON parties (organization_id, owner_user_id);
 

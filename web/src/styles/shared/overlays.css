@@ -1,0 +1,95 @@
+.workspace-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  overflow: auto;
+  padding: max(var(--uok-space-6), env(safe-area-inset-top)) max(var(--uok-space-6), env(safe-area-inset-right)) max(var(--uok-space-6), env(safe-area-inset-bottom)) max(var(--uok-space-6), env(safe-area-inset-left));
+  background: color-mix(in srgb, var(--uok-bg-canvas) 46%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.workspace-popup {
+  position: relative;
+  width: min(720px, 100%);
+  max-height: calc(100vh - (var(--uok-space-6) * 2));
+  overflow: auto;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-2);
+}
+
+.workspace-popup-compact {
+  width: min(480px, 100%);
+}
+
+.workspace-popup-wide {
+  width: min(920px, 100%);
+}
+
+.workspace-popup-close {
+  position: absolute;
+  top: var(--uok-space-3);
+  right: var(--uok-space-3);
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: var(--uok-line);
+  border-radius: 999px;
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+}
+
+.workspace-popup-close:hover {
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.workspace-popup-close:focus-visible {
+  outline: 3px solid var(--uok-focus-ring);
+  outline-offset: 2px;
+}
+
+.workspace-popup-content {
+  min-width: 0;
+}
+
+.workspace-editor-popup-header {
+  display: grid;
+  gap: var(--uok-space-1);
+  padding: var(--uok-space-5) calc(var(--uok-space-5) + 44px) var(--uok-space-4) var(--uok-space-5);
+  border-bottom: var(--uok-line);
+  background: var(--uok-bg-elevated);
+}
+
+.workspace-editor-popup-header h2,
+.workspace-editor-popup-header p {
+  margin: 0;
+}
+
+.workspace-editor-popup-header h2 {
+  font-size: var(--uok-title-2);
+  letter-spacing: 0;
+}
+
+.workspace-editor-popup-header > p:last-child {
+  color: var(--uok-text-tertiary);
+}
+
+.workspace-editor-popup-body {
+  min-width: 0;
+}
+
+.workspace-editor-popup-minimal .workspace-editor-popup-body {
+  padding-top: 0;
+}
+
+.workspace-editor-popup-minimal .workspace-popup-close {
+  top: var(--uok-space-4);
+  right: var(--uok-space-4);
+}

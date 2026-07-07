@@ -50,6 +50,8 @@ This plan is based on UOK module policy, UOK UI policy, and these Apple referenc
 - User delete means archive; admin can restore or purge.
 - Notes are private internal timeline entries.
 - Search is layered: simple default search plus filters for power users.
+- Contacts can be organized into user-managed groups without changing the core party model.
+- Contacts can be grouped automatically by business email domain; group names should prefer the related company label, while personal/free-mail and test/demo domains are excluded so the group rail remains useful.
 - Users can import CSV and correct records; normal users cannot bulk export.
 - Imported, incomplete, uncertain, and possible duplicate records appear in a review queue.
 
@@ -96,6 +98,18 @@ Examples:
 
 Notes are private internal timeline entries, stored separately from the editable party profile and included in audit/event evidence.
 
+### Groups
+
+Groups are user-managed contact lists owned by `contacts.core`.
+
+Required concepts:
+
+- `ContactGroup`: name, optional description, kind, visibility scope, owner, team-ready field, status, and timestamps.
+- `ContactGroupMember`: many-to-many membership between a group and a party.
+- Groups must not duplicate contact facts or replace relationships. A group answers "which contacts belong in this working set"; a relationship answers "how two parties are connected."
+- Business-domain groups are generated from contact email domains as repeatable `business_domain` groups. Their identity is the email domain, but their display name should come from the best related company signal: linked organization relationships first, then organization records, then a readable domain fallback. They remain normal group records after creation and can be selected, archived, and used to filter contacts.
+- Group schema changes stay in `modules/contacts.core/migrations`; they must not expand the shared UOK baseline.
+
 ### Import Batches
 
 CSV import creates an import batch and records per-row results. Imported rows may create parties in `needs_review`, `possible_duplicate`, or `incomplete` review states.
@@ -113,6 +127,9 @@ Required endpoints for alpha.3:
 - Purge party, admin only.
 - List/add notes.
 - List/add relationships.
+- List/create/update/archive groups.
+- Add/remove contacts from groups.
+- Filter parties by group.
 - Import CSV rows.
 - List review queue.
 - Read module readiness/evidence.
@@ -129,8 +146,13 @@ The Contacts UI must be human-friendly and policy-aligned:
 - Last selected view persists per browser.
 - Search box is always available.
 - Filters are available without overwhelming simple users.
+- The unified search surface includes a `Group` filter for persistent contact groups.
+- Visual result sectioning uses `Section by`, not `Group`, to avoid confusing it with persistent contact groups.
+- A compact Contacts group rail supports all contacts, saved groups, group creation, and archive actions.
+- The group rail includes a repeatable business-domain action that creates or updates persistent groups from eligible contact email domains without duplicating memberships; reruns may improve generated group names as better company relationships are added.
+- Contact detail shows current group memberships and supports add/remove without leaving the workspace.
 - List + Detail is the fallback default.
-- Table supports dense review and correction.
+- Table supports dense review and correction with persisted, accessible resizable columns from the shared UOK table primitive.
 - Cards support recognition-focused browsing.
 - Review Queue is visible and actionable.
 - Create/edit form supports minimal save with at least one meaningful field.
@@ -161,6 +183,8 @@ Contacts dashboard counts and baseline evidence checks are module-owned provider
 
 The kernel owns the stable `/api/dashboard` and `/api/baseline-evidence` response shapes, while Contacts owns its module-specific fragments.
 
+Group evidence must prove that group tables exist, group membership exists, group commands emit events, and group-filtered contacts can be read through the Contacts API.
+
 ## Acceptance Gates
 
 Before packaging `UOK-3.1.0-alpha.3`:
@@ -177,6 +201,7 @@ Browser verification must confirm:
 
 - title and main heading use `UOK`
 - Contacts app exposes the three views
+- Contacts groups can be selected, created, and used to filter records
 - Review Queue appears
 - CSV import UI appears
 - no retired UOK names appear

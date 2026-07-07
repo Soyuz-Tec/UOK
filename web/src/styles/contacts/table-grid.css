@@ -1,47 +1,66 @@
-.contacts-table-wrap {
-  overflow: auto;
-  border: var(--uok-line);
-  border-radius: var(--uok-radius-3);
-  background: var(--uok-bg-elevated);
+.contacts-table .contacts-table-group-row th {
+  height: 38px;
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-grouped-secondary);
 }
 
-.contacts-table {
-  width: 100%;
-  min-width: 760px;
-  border-collapse: collapse;
+.contacts-table .initial-cell {
+  padding-right: 0;
+  text-align: center;
 }
 
-.contacts-table th,
-.contacts-table td {
-  height: 52px;
-  border-bottom: var(--uok-line);
-  padding: 0 var(--uok-space-3);
-  text-align: left;
-  overflow-wrap: anywhere;
+.contacts-table tbody tr.selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--uok-accent);
 }
 
-.contacts-table th {
-  color: var(--uok-text-tertiary);
-  font-size: var(--uok-caption);
-  text-transform: uppercase;
+.contact-table-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-grouped-secondary);
+  color: var(--uok-accent);
+  font-size: var(--uok-callout);
+  font-weight: 760;
 }
 
-.contacts-table tbody tr {
-  cursor: pointer;
-}
-
-.contact-card-grid,
-.contacts-utility-grid {
+.contact-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   gap: var(--uok-space-3);
 }
 
 .contact-card {
   display: grid;
-  justify-items: start;
-  gap: var(--uok-space-2);
-  min-height: 168px;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--uok-space-3);
+  min-height: 148px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
   padding: var(--uok-space-4);
   text-align: left;
+}
+
+.contact-card-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-grouped-secondary);
+  color: var(--uok-accent);
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.contact-card-body {
+  display: grid;
+  gap: var(--uok-space-2);
+  min-width: 0;
+}
+
+.contact-card .contact-name-stack strong {
+  font-size: var(--uok-headline);
 }

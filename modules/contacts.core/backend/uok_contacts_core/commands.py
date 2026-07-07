@@ -19,7 +19,20 @@ from .facade import (
     touch_party,
     validate_contact_payload_lengths,
 )
-from .models import PartyNote, PartyRelationship, utcnow
+from .models import PartyNote, utcnow
+from .group_commands import (
+    cmd_add_contacts_to_group,
+    cmd_archive_contact_group,
+    cmd_create_contact_group,
+    cmd_group_contacts_by_business_email_domain,
+    cmd_remove_contact_from_group,
+    cmd_update_contact_group,
+)
+from .relationship_commands import (
+    cmd_link_contact_relationship,
+    cmd_remove_contact_relationship,
+    cmd_update_contact_relationship,
+)
 from uok.security import Actor
 from uok.util import dumps, loads
 
@@ -122,33 +135,6 @@ def cmd_add_contact_note(db: Session, actor: Actor, payload: dict[str, Any], com
     return {"note_id": note.id, "party": serialize_party(db, party, include_detail=True, actor=actor)}
 
 
-def cmd_link_contact_relationship(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
-    validate_contact_payload_lengths(payload)
-    from_party = _party(db, actor, bounded_text(payload.get("from_party_id"), "party_id"), "from_party_id")
-    to_party = _party(db, actor, bounded_text(payload.get("to_party_id"), "party_id"), "to_party_id")
-    relationship_type = bounded_text(payload.get("relationship_type"), "relationship_type")
-    if not relationship_type:
-        raise ValueError("relationship_type is required")
-    rel = PartyRelationship(
-        organization_id=actor.organization_id,
-        from_party_id=from_party.id,
-        to_party_id=to_party.id,
-        relationship_type=relationship_type,
-        attrs_json=dumps({"description": bounded_text(payload.get("description"), "description")}),
-        created_at=utcnow(),
-    )
-    db.add(rel)
-    touch_party(from_party)
-    touch_party(to_party)
-    db.flush()
-    _emit_event(db, actor, "ContactRelationshipLinked", "PartyRelationship", rel.id, {
-        "from_party_id": from_party.id,
-        "to_party_id": to_party.id,
-        "relationship_type": relationship_type,
-    })
-    return {"relationship_id": rel.id, "from_party": serialize_party(db, from_party), "to_party": serialize_party(db, to_party)}
-
-
 def cmd_import_contacts_csv(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     from .import_commands import cmd_import_contacts_csv as import_handler
 
@@ -157,25 +143,41 @@ def cmd_import_contacts_csv(db: Session, actor: Actor, payload: dict[str, Any], 
 
 def command_handlers() -> dict[str, CommandHandler]:
     return {
+        "AddContactsToGroup": cmd_add_contacts_to_group,
+        "ArchiveContactGroup": cmd_archive_contact_group,
         "CreateContact": cmd_create_contact,
+        "CreateContactGroup": cmd_create_contact_group,
+        "GroupContactsByBusinessEmailDomain": cmd_group_contacts_by_business_email_domain,
         "UpdateContact": cmd_update_contact,
+        "UpdateContactGroup": cmd_update_contact_group,
         "ArchiveContact": cmd_archive_contact,
         "RestoreContact": cmd_restore_contact,
         "PurgeContact": cmd_purge_contact,
         "AddContactNote": cmd_add_contact_note,
+        "RemoveContactFromGroup": cmd_remove_contact_from_group,
         "LinkContactRelationship": cmd_link_contact_relationship,
+        "UpdateContactRelationship": cmd_update_contact_relationship,
+        "RemoveContactRelationship": cmd_remove_contact_relationship,
         "ImportContactsCsv": cmd_import_contacts_csv,
     }
 
 
 def command_permissions() -> dict[str, str]:
     return {
+        "AddContactsToGroup": "contacts.manage",
+        "ArchiveContactGroup": "contacts.manage",
         "CreateContact": "contacts.manage",
+        "CreateContactGroup": "contacts.manage",
+        "GroupContactsByBusinessEmailDomain": "contacts.manage",
         "UpdateContact": "contacts.manage",
+        "UpdateContactGroup": "contacts.manage",
         "ArchiveContact": "contacts.manage",
         "RestoreContact": "contacts.restore",
         "PurgeContact": "contacts.purge",
         "AddContactNote": "contacts.manage",
+        "RemoveContactFromGroup": "contacts.manage",
         "LinkContactRelationship": "contacts.manage",
+        "UpdateContactRelationship": "contacts.manage",
+        "RemoveContactRelationship": "contacts.manage",
         "ImportContactsCsv": "contacts.import",
     }

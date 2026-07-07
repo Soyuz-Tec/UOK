@@ -12,7 +12,8 @@ import {
   ShieldCheck,
   Store,
   Sun,
-  Table2
+  Table2,
+  WandSparkles
 } from "lucide-react";
 
 import type { Appearance, ContactDetailPane, ContactsView, Section } from "./types";
@@ -35,11 +36,12 @@ export const appearanceOptions: Array<Option<Appearance>> = [
 export const contactsViewOptions: Array<Option<ContactsView>> = [
   { id: "split", label: "List + Detail", icon: ListIcon },
   { id: "table", label: "Table", icon: Table2 },
-  { id: "cards", label: "Cards", icon: Grid2X2 }
+  { id: "cards", label: "Cards", icon: Grid2X2 },
+  { id: "quality", label: "Quality", icon: WandSparkles }
 ];
 
 export const contactDetailPaneOptions: Array<Option<ContactDetailPane>> = [
-  { id: "overview", label: "Overview", icon: Info },
+  { id: "overview", label: "Details", icon: Info },
   { id: "activity", label: "Activity", icon: FileCheck2 },
   { id: "relationships", label: "Relationships", icon: Link2 }
 ];

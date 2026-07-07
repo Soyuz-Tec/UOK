@@ -6,7 +6,8 @@ import { AuthScreen } from "./features/auth/AuthScreen";
 import { AccountMenu } from "./features/layout/AccountMenu";
 import { moduleSections, renderModuleSurface } from "./features/modules/moduleSurfaceRegistry";
 import { coreSections } from "./shared/options";
-import { JsonBlock, MetricGrid, Pane, StatusRow } from "./shared/ui";
+import { JsonBlock, MetricGrid, StatusRow } from "./shared/data-display";
+import { Pane } from "./shared/layout";
 
 export function App() {
   const workbench = useWorkbench();
@@ -129,9 +130,6 @@ export function App() {
           </section>
         )}
 
-        <Pane title="Last Result" description="Latest command or API response" wide>
-          <JsonBlock value={workbench.out} />
-        </Pane>
       </main>
     </div>
   );

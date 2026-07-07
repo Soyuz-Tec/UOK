@@ -32,13 +32,14 @@ Architecture documents only track UOK-level governance, release targets, and mod
 - review queue
 - private internal notes
 - relationships
+- persistent user-managed contact groups
 - CSV import
 - warning-based duplicate handling
 - owner/team-ready permission fields
 - archive, restore, and admin purge
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier scenario
 - module-owned behavior tests under `modules/contacts.core/tests`
-- module-owned operational index migration under `modules/contacts.core/migrations`
+- module-owned operational index and contact group migrations under `modules/contacts.core/migrations`
 - frontend module surface registry for Contacts composition
 
 ## Governance Rule

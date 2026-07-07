@@ -1,0 +1,99 @@
+.contact-fact-list {
+  display: grid;
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+}
+
+.contact-fact-list.compact {
+  gap: var(--uok-space-1);
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.contact-fact-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: var(--uok-space-3);
+  align-items: start;
+  min-height: 58px;
+  border-bottom: var(--uok-line);
+  padding: var(--uok-space-3);
+}
+
+.contact-fact-row:last-child {
+  border-bottom: 0;
+}
+
+.contact-fact-list.compact .contact-fact-row {
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--uok-space-2);
+  min-height: 0;
+  border-bottom: 0;
+  padding: 0;
+}
+
+.contact-fact-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--uok-accent);
+  background: color-mix(in srgb, var(--uok-accent) 10%, transparent);
+}
+
+.contact-fact-list.compact .contact-fact-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--uok-text-secondary);
+  background: transparent;
+}
+
+.contact-fact-copy {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-width: 0;
+}
+
+.contact-fact-copy span {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.contact-fact-copy strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-callout);
+  font-weight: 650;
+}
+
+.contact-fact-list.compact .contact-fact-copy {
+  display: block;
+}
+
+.contact-fact-list.compact .contact-fact-copy span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.contact-fact-list.compact .contact-fact-copy strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-fact-empty {
+  margin: 0;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-callout);
+}

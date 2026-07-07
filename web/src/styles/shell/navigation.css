@@ -6,6 +6,7 @@
 
 .nav-item,
 .command-button,
+.icon-button,
 .segment {
   border: 1px solid transparent;
   border-radius: var(--uok-radius-3);
@@ -32,7 +33,8 @@
 
 .nav-item:hover,
 .segment:hover,
-.command-button:hover {
+.command-button:hover,
+.icon-button:hover {
   background: var(--uok-bg-grouped-secondary);
   border-color: var(--uok-separator);
 }

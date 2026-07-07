@@ -1,13 +1,13 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
-import { draftFromContact, nonEmptyDraftPayload } from "./contactDraft";
 import { useAuthState } from "./useAuthState";
 import { useAuthWorkflows } from "./useAuthWorkflows";
+import { useContactCommands } from "./useContactCommands";
+import { useContactWorkspaceState } from "./useContactWorkspaceState";
 import { useWorkbenchActions } from "./useWorkbenchActions";
 import { useWorkbenchData } from "./useWorkbenchData";
 import { useWorkbenchPreferences } from "./useWorkbenchPreferences";
-import type { ContactDetailPane, ContactDraft, ContactRecord, Section } from "../shared/types";
-import { emptyDraft } from "../shared/types";
+import type { Section } from "../shared/types";
 
 export function useWorkbench() {
   const [active, setActive] = useState<Section>("apps");
@@ -32,78 +32,31 @@ export function useWorkbench() {
     token,
     username
   } = auth;
-  const [draft, setDraft] = useState<ContactDraft>(emptyDraft);
-  const [editing, setEditing] = useState(false);
-  const [contactDetailPane, setContactDetailPane] = useState<ContactDetailPane>("overview");
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("active");
-  const [reviewFilter, setReviewFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [noteText, setNoteText] = useState("");
-  const [relationshipTarget, setRelationshipTarget] = useState("");
-  const [relationshipType, setRelationshipType] = useState("primary_contact");
-  const [importFilename, setImportFilename] = useState("contacts.csv");
-  const [importText, setImportText] = useState("display_name,email,company,phone\n");
-
-  const filters = useMemo(() => ({ query, statusFilter, reviewFilter, typeFilter }), [query, reviewFilter, statusFilter, typeFilter]);
-  const data = useWorkbenchData(token, filters, clearAuthState);
-  const authWorkflows = useAuthWorkflows(auth, data, () => setEditing(false));
+  const contactsState = useContactWorkspaceState(preferences);
+  const data = useWorkbenchData(token, contactsState.filters, clearAuthState);
+  const authWorkflows = useAuthWorkflows(auth, data, contactsState.cancelEdit);
   const actions = useWorkbenchActions(data);
-  const { command } = actions;
+  const contactCommands = useContactCommands({
+    command: actions.command,
+    creating: contactsState.creating,
+    data,
+    draft: contactsState.draft,
+    newGroupName: contactsState.newGroupName,
+    noteText: contactsState.noteText,
+    relationshipTarget: contactsState.relationshipTarget,
+    relationshipType: contactsState.relationshipType,
+    setContactDetailPane: contactsState.setContactDetailPane,
+    setCreating: contactsState.setCreating,
+    setDraft: contactsState.setDraft,
+    setEditing: contactsState.setEditing,
+    setNewGroupName: contactsState.setNewGroupName,
+    setNoteText: contactsState.setNoteText,
+    setRelationshipTarget: contactsState.setRelationshipTarget
+  });
 
-  function startCreate() {
-    setDraft(emptyDraft);
-    data.setSelectedContactId("");
-    setContactDetailPane("overview");
-    setEditing(true);
-  }
-
-  function startEdit(contact: ContactRecord) {
-    setDraft(draftFromContact(contact));
-    setContactDetailPane("overview");
-    setEditing(true);
-  }
-
-  async function saveDraft() {
-    const payload = nonEmptyDraftPayload(draft);
-    const result = data.selectedContactId
-      ? await command("UpdateContact", { ...payload, party_id: data.selectedContactId }, "contact-update")
-      : await command("CreateContact", payload, "contact-create");
-    const resultId = result?.result?.id || result?.result?.contact_id;
-    if (resultId) data.setSelectedContactId(resultId);
-    setContactDetailPane("overview");
-    setEditing(false);
-    setDraft(emptyDraft);
-  }
-
-  async function archiveSelected() {
-    if (data.selectedContactId) await command("ArchiveContact", { party_id: data.selectedContactId }, "contact-archive");
-  }
-
-  async function restoreSelected() {
-    if (data.selectedContactId) await command("RestoreContact", { party_id: data.selectedContactId }, "contact-restore");
-  }
-
-  async function purgeSelected() {
-    if (data.selectedContactId) await command("PurgeContact", { party_id: data.selectedContactId }, "contact-purge");
-  }
-
-  async function addNote() {
-    if (!data.selectedContactId || !noteText.trim()) return;
-    await command("AddContactNote", { party_id: data.selectedContactId, body: noteText }, "contact-note");
-    setNoteText("");
-    await data.loadContactDetail(data.selectedContactId);
-  }
-
-  async function linkRelationship() {
-    if (!data.selectedContactId || !relationshipTarget) return;
-    await command("LinkContactRelationship", {
-      from_party_id: data.selectedContactId,
-      to_party_id: relationshipTarget,
-      relationship_type: relationshipType
-    }, "contact-relationship");
-    setRelationshipTarget("");
-    await data.loadContactDetail(data.selectedContactId);
+  function selectContact(id: string) {
+    contactsState.clearSelectionState();
+    data.setSelectedContactId(id);
   }
 
   return {
@@ -111,6 +64,8 @@ export function useWorkbench() {
     setActive,
     appearance: preferences.appearance,
     setAppearance: preferences.setAppearance,
+    contactGroupBy: preferences.contactGroupBy,
+    setContactGroupBy: contactsState.setContactGroupBy,
     contactsView: preferences.contactsView,
     setContactsView: preferences.setContactsView,
     sidebarCollapsed: preferences.sidebarCollapsed,
@@ -134,35 +89,46 @@ export function useWorkbench() {
     out: data.out,
     dashboard: data.dashboard,
     contacts: data.contacts,
-    reviewRows: data.reviewRows,
-    importBatches: data.importBatches,
-    selectedContactId: data.selectedContactId,
-    setSelectedContactId: data.setSelectedContactId,
-    selectedContact: data.selectedContact,
-    draft,
-    setDraft,
-    editing,
-    setEditing,
-    contactDetailPane,
-    setContactDetailPane,
-    query,
-    setQuery,
-    statusFilter,
-    setStatusFilter,
-    reviewFilter,
-    setReviewFilter,
-    typeFilter,
-    setTypeFilter,
-    noteText,
-    setNoteText,
-    relationshipTarget,
-    setRelationshipTarget,
-    relationshipType,
-    setRelationshipType,
-    importFilename,
-    setImportFilename,
-    importText,
-    setImportText,
+    contactGroups: data.contactGroups,
+    contactGroupId: contactsState.contactGroupId,
+    setContactGroupId: contactsState.setContactGroupId,
+    selectedContactId: contactsState.creating ? "" : data.selectedContactId,
+    setSelectedContactId: selectContact,
+    selectedContact: contactsState.creating ? null : data.selectedContact,
+    draft: contactsState.draft,
+    setDraft: contactsState.setDraft,
+    editing: contactsState.editing,
+    setEditing: contactsState.setEditing,
+    creating: contactsState.creating,
+    contactDetailPane: contactsState.contactDetailPane,
+    setContactDetailPane: contactsState.setContactDetailPane,
+    query: contactsState.query,
+    setQuery: contactsState.setQuery,
+    statusFilter: contactsState.statusFilter,
+    setStatusFilter: contactsState.setStatusFilter,
+    reviewFilter: contactsState.reviewFilter,
+    setReviewFilter: contactsState.setReviewFilter,
+    typeFilter: contactsState.typeFilter,
+    setTypeFilter: contactsState.setTypeFilter,
+    contactPage: contactsState.contactPage,
+    setContactPage: contactsState.setContactPage,
+    contactPageSize: contactsState.contactPageSize,
+    setContactPageSize: contactsState.setContactPageSize,
+    contactSortBy: contactsState.contactSortBy,
+    setContactSortBy: contactsState.setContactSortBy,
+    contactSortDir: contactsState.contactSortDir,
+    setContactSortDir: contactsState.setContactSortDir,
+    contactHasNext: data.contactHasNext,
+    contactTotalCount: data.contactTotalCount,
+    clearContactFilters: contactsState.clearContactFilters,
+    noteText: contactsState.noteText,
+    setNoteText: contactsState.setNoteText,
+    newGroupName: contactsState.newGroupName,
+    setNewGroupName: contactsState.setNewGroupName,
+    relationshipTarget: contactsState.relationshipTarget,
+    setRelationshipTarget: contactsState.setRelationshipTarget,
+    relationshipType: contactsState.relationshipType,
+    setRelationshipType: contactsState.setRelationshipType,
     moduleRows: data.moduleRows,
     contactsModule: data.contactsModule,
     contactsOperational: data.contactsOperational,
@@ -174,15 +140,24 @@ export function useWorkbench() {
     login: authWorkflows.login,
     register: authWorkflows.register,
     moduleAction: actions.moduleAction,
-    startCreate,
-    startEdit,
-    saveDraft,
-    archiveSelected,
-    restoreSelected,
-    purgeSelected,
-    addNote,
-    linkRelationship,
-    importCsv: () => actions.importCsv(importFilename, importText)
+    startCreate: contactsState.startCreate,
+    startEdit: contactsState.startEdit,
+    cancelEdit: contactsState.cancelEdit,
+    updateSelectedContactField: contactCommands.updateSelectedContactField,
+    saveDraft: contactCommands.saveDraft,
+    archiveSelected: contactCommands.archiveSelected,
+    restoreSelected: contactCommands.restoreSelected,
+    purgeSelected: contactCommands.purgeSelected,
+    markSelectedReady: contactCommands.markSelectedReady,
+    addNote: contactCommands.addNote,
+    createGroup: contactCommands.createGroup,
+    groupContactsByBusinessDomain: contactCommands.groupContactsByBusinessDomain,
+    archiveGroup: contactCommands.archiveGroup,
+    addSelectedContactToGroup: contactCommands.addSelectedContactToGroup,
+    removeSelectedContactFromGroup: contactCommands.removeSelectedContactFromGroup,
+    linkRelationship: contactCommands.linkRelationship,
+    updateRelationship: contactCommands.updateRelationship,
+    removeRelationship: contactCommands.removeRelationship
   };
 }
 

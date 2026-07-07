@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type {
   ContactRecord,
+  ContactGroupRecord,
+  ContactSortBy,
+  ContactSortDir,
   Dashboard,
   ModuleStatus,
   QualityReport
@@ -12,9 +15,14 @@ export type CommandResponse = { result: ContactRecord; status: string; idempoten
 
 type WorkbenchFilters = {
   query: string;
+  contactGroupId: string;
   statusFilter: string;
   reviewFilter: string;
   typeFilter: string;
+  contactPage: number;
+  contactPageSize: number;
+  contactSortBy: ContactSortBy;
+  contactSortDir: ContactSortDir;
 };
 
 function requestHeaders(token: string, overrideToken?: string) {
@@ -24,12 +32,17 @@ function requestHeaders(token: string, overrideToken?: string) {
   return value;
 }
 
-function contactsPath({ query, statusFilter, reviewFilter, typeFilter }: WorkbenchFilters) {
+function contactsPath({ query, contactGroupId, statusFilter, reviewFilter, typeFilter, contactPage, contactPageSize, contactSortBy, contactSortDir }: WorkbenchFilters) {
   const params = new URLSearchParams();
   if (query) params.set("query", query);
+  if (contactGroupId) params.set("group_id", contactGroupId);
   if (statusFilter) params.set("status", statusFilter);
   if (reviewFilter !== "all") params.set("review_state", reviewFilter);
   if (typeFilter !== "all") params.set("party_type", typeFilter);
+  params.set("limit", String(contactPageSize + 1));
+  params.set("offset", String(contactPage * contactPageSize));
+  params.set("sort_by", contactSortBy);
+  params.set("sort_dir", contactSortDir);
   return `/api/contacts?${params.toString()}`;
 }
 
@@ -37,8 +50,9 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
   const [out, setOut] = useState<unknown>("Log in to begin.");
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
-  const [reviewRows, setReviewRows] = useState<ContactRecord[]>([]);
-  const [importBatches, setImportBatches] = useState<unknown[]>([]);
+  const [contactGroups, setContactGroups] = useState<ContactGroupRecord[]>([]);
+  const [contactHasNext, setContactHasNext] = useState(false);
+  const [contactTotalCount, setContactTotalCount] = useState(0);
   const [selectedContactId, setSelectedContactId] = useState("");
   const [selectedDetail, setSelectedDetail] = useState<ContactRecord | null>(null);
   const [modules, setModules] = useState<Record<string, ModuleStatus>>({});
@@ -49,13 +63,18 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
   const moduleRows = useMemo(() => Object.values(modules).sort((a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name)), [modules]);
   const contactsModule = modules[CONTACTS_MODULE_ID];
   const contactsOperational = contactsModule?.status === "installed" || contactsModule?.status === "upgraded";
-  const selectedContact = selectedDetail || contacts.find((row) => row.id === selectedContactId) || null;
+  const selectedContact = selectedContactId
+    ? selectedDetail?.id === selectedContactId
+      ? selectedDetail
+      : contacts.find((row) => row.id === selectedContactId) || null
+    : null;
 
   const clearData = useCallback((message = "Signed out.") => {
     setDashboard(null);
     setContacts([]);
-    setReviewRows([]);
-    setImportBatches([]);
+    setContactGroups([]);
+    setContactHasNext(false);
+    setContactTotalCount(0);
     setModules({});
     setEvidence(null);
     setAlignment(null);
@@ -65,7 +84,7 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
     setOut(message);
   }, []);
 
-  const api = useCallback(async <T,>(path: string, options: RequestInit = {}, overrideToken?: string): Promise<T> => {
+  const apiResponse = useCallback(async <T,>(path: string, options: RequestInit = {}, overrideToken?: string): Promise<{ data: T; response: Response }> => {
     const res = await fetch(path, {
       ...options,
       headers: { ...requestHeaders(token, overrideToken), ...(options.headers || {}) }
@@ -78,8 +97,12 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
       }
       throw data;
     }
-    return data as T;
+    return { data: data as T, response: res };
   }, [clearData, onUnauthorized, token]);
+
+  const api = useCallback(async <T,>(path: string, options: RequestInit = {}, overrideToken?: string): Promise<T> => {
+    return (await apiResponse<T>(path, options, overrideToken)).data;
+  }, [apiResponse]);
 
   const refresh = useCallback(async (overrideToken?: string) => {
     const activeToken = overrideToken ?? token;
@@ -94,17 +117,22 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
       ]);
       const contactModuleStatus = catalog.modules[CONTACTS_MODULE_ID]?.status;
       const contactsReady = contactModuleStatus === "installed" || contactModuleStatus === "upgraded";
-      const [contactRows, reviewQueue, batches] = contactsReady
-        ? await Promise.all([
-            api<ContactRecord[]>(contactsPath(filters), {}, activeToken),
-            api<ContactRecord[]>("/api/contacts/review-queue", {}, activeToken),
-            api<unknown[]>("/api/contacts/import-batches", {}, activeToken)
-          ])
-        : [[], [], []] as [ContactRecord[], ContactRecord[], unknown[]];
+      const contactResult = contactsReady
+        ? await apiResponse<ContactRecord[]>(contactsPath(filters), {}, activeToken)
+        : null;
+      const groupRows = contactsReady
+        ? await api<ContactGroupRecord[]>("/api/contacts/groups", {}, activeToken)
+        : [];
+      const contactRows = contactResult?.data || [];
+      const visibleRows = contactRows.slice(0, filters.contactPageSize);
+      const contactTotal = contactResult
+        ? contactTotalFromHeader(contactResult.response.headers?.get?.("X-Total-Count") ?? null, contactRows.length)
+        : 0;
       setDashboard(dash);
-      setContacts(contactRows);
-      setReviewRows(reviewQueue);
-      setImportBatches(batches);
+      setContactHasNext(contactTotal > filters.contactPage * filters.contactPageSize + visibleRows.length || contactRows.length > filters.contactPageSize);
+      setContactTotalCount(contactTotal);
+      setContacts(visibleRows);
+      setContactGroups(groupRows);
       setModules(catalog.modules);
       setEvidence(evidenceBody);
       setAlignment(alignmentBody);
@@ -114,7 +142,7 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
     } finally {
       setBusyAction("");
     }
-  }, [api, filters, token]);
+  }, [api, apiResponse, filters, token]);
 
   const loadContactDetail = useCallback(async (partyId: string) => {
     if (!token || !partyId) {
@@ -132,7 +160,7 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
   useEffect(() => {
     if (!token) return;
     void refresh();
-  }, [refresh, token]);
+  }, [token]);
 
   useEffect(() => {
     if (!token) return;
@@ -160,16 +188,17 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
     busyAction,
     clearData,
     contacts,
+    contactGroups,
+    contactHasNext,
+    contactTotalCount,
     contactsModule,
     contactsOperational,
     dashboard,
     evidence,
-    importBatches,
     loadContactDetail,
     moduleRows,
     out,
     refresh,
-    reviewRows,
     selectedContact,
     selectedContactId,
     setBusyAction,
@@ -179,3 +208,8 @@ export function useWorkbenchData(token: string, filters: WorkbenchFilters, onUna
 }
 
 export type WorkbenchData = ReturnType<typeof useWorkbenchData>;
+
+function contactTotalFromHeader(value: string | null, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}

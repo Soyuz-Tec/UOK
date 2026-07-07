@@ -142,7 +142,8 @@ describe("UOK app", () => {
     fireEvent.click(screen.getByRole("button", { name: "Contacts" }));
     expect(screen.queryByText("Data workflow")).not.toBeInTheDocument();
     expect(container.querySelector(".contacts-header")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add new" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add new" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "New contact" }).length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: "New" })).not.toBeInTheDocument();
   });
 });

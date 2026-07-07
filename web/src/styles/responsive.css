@@ -20,11 +20,22 @@
     min-width: max-content;
   }
 
-  .contacts-controls,
-  .contacts-split,
-  .review-strip,
+  .workflow-header,
+  .contacts-toolbar,
+  .search-workspace-panel,
+  .search-group,
+  .contact-quality-workspace,
+  .duplicate-comparison-grid,
+  .workflow-split-view,
+  .contacts-view-split .workflow-split-view,
+  .inline-edit-form,
   .form-field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .contacts-view-split .workflow-primary-region {
+    border-right: 0;
+    border-bottom: var(--uok-line);
   }
 
   .field-prominent,
@@ -32,7 +43,12 @@
     grid-column: auto;
   }
 
-  .contacts-controls .segmented-control {
+  .contacts-toolbar .segmented-control,
+  .contact-page-controls,
+  .contact-page-stepper,
+  .search-workspace-menu,
+  .toolbar-group,
+  .search-field {
     width: 100%;
   }
 
@@ -47,6 +63,10 @@
   .account-menu-root .session-popover {
     top: calc(100% + var(--uok-space-2));
     bottom: auto;
+  }
+
+  .workflow-secondary-region {
+    position: static;
   }
 }
 
@@ -68,12 +88,21 @@
   .field input,
   .field select,
   .field textarea,
+  .contact-page-control,
+  .contact-page-control select,
+  .search-workspace-select,
+  .search-workspace-select select,
+  .search-workspace-save-field,
+  .search-workspace-save-field input,
+  .search-workspace-order,
   .command-button,
   .account-chip,
   .module-actions,
   .contacts-actions,
+  .contact-inspector-actions,
   .note-composer,
-  .relationship-composer {
+  .relationship-composer,
+  .inline-edit-actions {
     width: 100%;
   }
 
@@ -83,9 +112,39 @@
     justify-content: center;
   }
 
+  .workflow-header-actions,
+  .contact-page-controls,
+  .contact-page-stepper,
+  .view-group,
+  .primary-group,
+  .contact-inspector-actions,
+  .inline-edit-actions {
+    justify-content: flex-start;
+  }
+
+  .contact-manage-disclosure,
+  .contact-manage-disclosure summary {
+    width: 100%;
+  }
+
+  .contact-manage-actions {
+    position: static;
+    margin-top: var(--uok-space-2);
+    box-shadow: none;
+  }
+
   .session-popover {
     max-height: calc(100vh - 96px);
     overflow: auto;
+  }
+
+  .workspace-popup-backdrop {
+    padding: var(--uok-space-3);
+  }
+
+  .workspace-popup {
+    width: 100%;
+    max-height: calc(100vh - (var(--uok-space-3) * 2));
   }
 
   .logout-dialog-actions {
@@ -98,14 +157,54 @@
     flex-direction: column;
   }
 
+  .contact-detail-identity {
+    align-items: flex-start;
+  }
+
+  .contact-card {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .contact-card-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 36px;
+  }
+
   .note-composer {
     grid-template-columns: 1fr;
   }
 
-  .workflow-disclosure .contacts-utility-grid,
+  .quality-note-composer {
+    grid-template-columns: 1fr;
+  }
+
   .form-section,
   .pane-section {
     padding: var(--uok-space-3);
+  }
+
+  .search-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .search-workspace-menu summary {
+    border-top: var(--uok-line);
+    border-left: 0;
+  }
+
+  .search-workspace-panel {
+    position: static;
+    width: 100%;
+    margin-top: var(--uok-space-2);
+    box-shadow: none;
+  }
+
+  .search-workspace-section + .search-workspace-section {
+    border-left: 0;
+    border-top: var(--uok-line);
+    padding-top: var(--uok-space-3);
+    padding-left: 0;
   }
 }
 
