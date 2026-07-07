@@ -64,7 +64,7 @@ def clean_list(values: list[Any] | None, *, item_limit: int = MAX_PROFILE_LIST_I
 
 def empty_business_profile(party: Party) -> ContactBusinessProfile:
     attrs = load_party_attrs(party)
-    profile = ContactBusinessProfile(profile_type=party_profile_type(party), updated_at=utc_iso())
+    profile = ContactBusinessProfile(profile_type=party_profile_type(party))
     profile.relationship.owner_user_id = party.owner_user_id
     if party.party_type == "person":
         profile.person.current_title = attrs.get("title") or None
