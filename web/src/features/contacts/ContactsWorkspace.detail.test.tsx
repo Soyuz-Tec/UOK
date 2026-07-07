@@ -38,6 +38,18 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(dialog).getByText("Technical details")).toBeInTheDocument();
   });
 
+  it("shows the business intelligence profile pane in the contact inspector", () => {
+    renderContactsWorkspace("split");
+
+    fireEvent.click(screen.getByRole("button", { name: /Example Contact/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Intelligence" }));
+
+    const inspector = screen.getByLabelText("Contact inspector");
+    expect(within(inspector).getByLabelText("Business intelligence profile")).toBeInTheDocument();
+    expect(within(inspector).getByText("Ready contact")).toBeInTheDocument();
+    expect(within(inspector).getByText("Signals")).toBeInTheDocument();
+  });
+
   it("opens contact detail in the same popup primitive from cards view", () => {
     renderContactsWorkspace("cards");
 

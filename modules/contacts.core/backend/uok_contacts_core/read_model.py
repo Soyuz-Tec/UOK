@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .read_model_rows import (
+    business_intelligence_profile,
     import_batch_rows,
     iso_or_none,
     note_rows,
@@ -11,6 +12,7 @@ from .read_model_rows import (
 from .read_model_search import count_parties, list_parties, review_queue
 
 __all__ = [
+    "business_intelligence_profile",
     "count_parties",
     "import_batch_rows",
     "iso_or_none",

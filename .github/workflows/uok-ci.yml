@@ -39,6 +39,12 @@ jobs:
       - name: Compile Python
         run: python -m compileall -q src modules tests conftest.py
 
+      - name: Run technology and code-quality audit
+        run: python scripts/quality_audit.py
+
+      - name: Generate engineering evidence
+        run: python scripts/engineering_evidence.py --stdout
+
       - name: Validate module extension contract
         env:
           PYTHONPATH: src

@@ -4,7 +4,7 @@ export type AuthMode = "signin" | "register";
 export type ModuleAction = "install" | "uninstall" | "disable" | "enable" | "upgrade";
 export type ContactsView = "split" | "table" | "cards" | "quality";
 export type ContactGroupBy = "none" | "type" | "review_state" | "source" | "organization";
-export type ContactDetailPane = "overview" | "activity" | "relationships";
+export type ContactDetailPane = "overview" | "intelligence" | "activity" | "relationships";
 export type ContactSortBy = "display_name" | "updated_at" | "created_at" | "status" | "review_state" | "party_type" | "source";
 export type ContactSortDir = "asc" | "desc";
 
@@ -21,11 +21,35 @@ export type ContactGroupRecord = {
   active_member_count?: number;
 };
 
+export type ContactBusinessIntelligenceProfile = {
+  profile_type: "person" | "organization" | "unknown";
+  headline: string;
+  summary: string;
+  confidence: "unknown" | "low" | "medium" | "high" | "verified";
+  readiness: "ready" | "needs_review" | "possible_duplicate" | "incomplete" | "archived" | "purged";
+  signal_count: number;
+  fact_count: number;
+  note_count: number;
+  relationship_count: number;
+  group_count: number;
+  business_domain_group_count: number;
+  duplicate_candidate_count: number;
+  primary_organization_name?: string;
+  recent_note?: string;
+  updated_at?: string | null;
+  tags: string[];
+  risk_flags: string[];
+  group_names: string[];
+  relationship_names: string[];
+};
+
 export type ContactGroupMembership = {
   id: string;
   name: string;
   description?: string;
+  kind?: string;
   visibility_scope: string;
+  status?: string;
   member_id: string;
   created_at: string;
 };
@@ -83,6 +107,10 @@ export type ContactRecord = {
   source: string;
   sync_state: string;
   attrs: ContactAttrs;
+  created_at?: string;
+  updated_at?: string | null;
+  archived_at?: string | null;
+  purged_at?: string | null;
   email?: string;
   phone?: string;
   website?: string;
@@ -92,6 +120,7 @@ export type ContactRecord = {
   organization_name?: string;
   title?: string;
   notes?: Array<{ id: string; body: string; created_at: string }>;
+  business_intelligence_profile?: ContactBusinessIntelligenceProfile;
   relationships?: Array<{
     id: string;
     from_party_id: string;

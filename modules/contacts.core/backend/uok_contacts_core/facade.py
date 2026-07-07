@@ -20,6 +20,7 @@ from .group_read_model import (
     serialize_contact_group,
 )
 from .read_model import (
+    business_intelligence_profile,
     count_parties,
     import_batch_rows,
     iso_or_none,
@@ -98,6 +99,7 @@ __all__ = [
     "can_read_contact_group",
     "can_read_note",
     "can_read_party",
+    "business_intelligence_profile",
     "choose_display_name",
     "choose_party_type",
     "clean_text",

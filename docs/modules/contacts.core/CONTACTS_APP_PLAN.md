@@ -29,6 +29,7 @@ The first release builds a Contacts Full CRM Slice that starts with practical CR
 
 This plan is based on UOK module policy, UOK UI policy, and these Apple references:
 
+- Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 - Apple Contacts documentation: https://developer.apple.com/documentation/contacts
 - Apple Contacts access workflow: https://developer.apple.com/videos/play/wwdc2024/10121/
 - Apple Human Interface Guidelines: https://developer.apple.com/design/human-interface-guidelines/

@@ -27,6 +27,8 @@ This policy is based on the current UOK implementation and the following primary
 
 The policy intentionally uses concepts from these sources, not copied vendor examples. UOK implementation decisions must be validated against the current local codebase, the executable `/api/architecture/language-stack` contract, and candidate verification scripts.
 
+Code quality, line-of-code integrity, source-size gates, and technology-audit execution are owned by `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`.
+
 ## Selected Stack
 
 | Layer | Mandatory stack | Current UOK location | Role |

@@ -49,11 +49,19 @@ Operator browser
 
 ## Key Decisions
 
+- Documentation index: `docs/DOCUMENTATION_INDEX.md`
+- Development continuity system: `docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md`
+- Internal engineering system: `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`
+- Code quality and technology audit standard: `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
 - ADR-0001: `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
+- Standard operations: `docs/operations/UOK_STANDARD_OPERATIONS.md`
+- ASUH test events: `docs/operations/UOK_ASUH_TEST_EVENTS.md`
+- GitHub engineering guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
+- Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 
 ## Verification
 
@@ -68,3 +76,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candida
 ```
 
 Also review source size, module contract validation, source-boundary checks, naming checks, dependency audits, and the Podman compose local candidate smoke before promoting a baseline.
+
+For standardized local operations, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
+```
+
+For the focused quality and technology audit gate, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
+```

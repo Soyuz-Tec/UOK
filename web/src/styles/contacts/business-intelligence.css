@@ -1,0 +1,51 @@
+.contact-business-intelligence {
+  gap: var(--uok-space-3);
+}
+
+.contact-business-intelligence-summary {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.contact-business-intelligence-summary p,
+.contact-business-intelligence-note p,
+.contact-business-intelligence-list p {
+  margin: 0;
+  color: var(--uok-text-secondary);
+}
+
+.contact-business-intelligence-grid {
+  background: var(--uok-bg-elevated);
+}
+
+.contact-business-intelligence-tags,
+.contact-business-intelligence-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--uok-space-2);
+}
+
+.contact-business-intelligence-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--uok-control-height);
+  border: var(--uok-line);
+  border-radius: 999px;
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+}
+
+.contact-business-intelligence-risks,
+.contact-business-intelligence-note,
+.contact-business-intelligence-list {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.contact-business-intelligence-risks strong,
+.contact-business-intelligence-note strong,
+.contact-business-intelligence-list strong {
+  color: var(--uok-text-primary);
+  font-size: var(--uok-callout);
+}

@@ -6,6 +6,18 @@ UOK is the short name for Unified Operating Kernel. This is the first real-devel
 
 Architecture entry point: `docs/ARCHITECTURE.md`.
 
+Documentation index: `docs/DOCUMENTATION_INDEX.md`.
+
+Standard operations runbook: `docs/operations/UOK_STANDARD_OPERATIONS.md`.
+
+GitHub engineering guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`.
+
+Internal engineering system: `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`.
+
+Code quality and technology audit standard: `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`.
+
+GitHub is the shared source of truth for UOK code, documentation, tests, workflows, deployment definitions, and team synchronization. Local runtime state and local evidence remain disposable until deliberately promoted into versioned source.
+
 ## Key Discipline
 
 - `apps.manager` is the only required starter module.
@@ -56,6 +68,18 @@ python -m pytest -q
 npm --prefix web test
 npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+```
+
+Focused technology and code-quality audit:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
+```
+
+Standard wrapper:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```
 
 Dependency checks expected before GitHub publication:

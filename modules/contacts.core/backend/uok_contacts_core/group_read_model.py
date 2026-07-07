@@ -101,7 +101,9 @@ def party_contact_group_rows(db: Session, actor: Actor, party_id: str) -> list[d
             "id": group.id,
             "name": group.name,
             "description": group.description,
+            "kind": group.kind,
             "visibility_scope": group.visibility_scope,
+            "status": group.status,
             "member_id": member.id,
             "created_at": member.created_at,
         })

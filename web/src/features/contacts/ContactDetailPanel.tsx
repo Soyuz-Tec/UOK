@@ -4,6 +4,7 @@ import { contactDetailPaneOptions } from "../../shared/options";
 import { formatLabel } from "../../shared/format";
 import { DetailItem, EmptyState } from "../../shared/data-display";
 import { CommandButton, IconButton, SegmentedControl } from "../../shared/primitives";
+import { ContactBusinessIntelligenceProfilePanel } from "./ContactBusinessIntelligenceProfile";
 import { ContactFactRows } from "./ContactFactRows";
 import { ContactForm } from "./ContactForm";
 import { ContactGroupMembership } from "./ContactGroupMembership";
@@ -61,6 +62,9 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
                 </div>
               </details>
             </>
+          )}
+          {props.detailPane === "intelligence" && contact && (
+            <ContactBusinessIntelligenceProfilePanel contact={contact} />
           )}
           {props.detailPane === "activity" && (
             <div className="detail-section pane-section">

@@ -1,6 +1,7 @@
 @import "./contacts/workspace.css";
 @import "./contacts/list.css";
 @import "./contacts/detail.css";
+@import "./contacts/business-intelligence.css";
 @import "./contacts/fact-rows.css";
 @import "./contacts/groups.css";
 @import "./contacts/table-grid.css";
