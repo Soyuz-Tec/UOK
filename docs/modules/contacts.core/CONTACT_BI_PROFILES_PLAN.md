@@ -10,6 +10,8 @@
 
 **Companion audit checklist:** `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`
 
+**Companion report data-point catalogue:** `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md`
+
 ## 1. Outcome
 
 UOK should provide a native business intelligence profile for every contact record. A contact can be a person or an organization. The profile must help operators understand who the contact is, why the relationship matters, how complete/trusted the profile is, and what evidence supports each enriched fact.
@@ -21,6 +23,7 @@ The implementation must remain native to UOK:
 - The manifest declares all commands, events, API routes, permissions, and owned data surfaces.
 - Profile facts are auditable, permissioned, and minimised.
 - External enrichment is adapter-based and disabled unless deployment policy explicitly enables it.
+- Peer-report data points for multi-valued names, emails, phones, identifiers, ownership, fraud, AML/KYC, sanctions, adverse media, and scam-risk signals are catalogued separately so the first release can stay small while future releases have a complete target model.
 
 ## 2. Design principles
 
@@ -34,6 +37,8 @@ The implementation must remain native to UOK:
 | Command/event auditability | All mutations must flow through the UOK command bus and emit contact profile events. |
 | Incremental storage | Use `Party.attrs_json` slices for the first release; graduate to module-owned profile tables when query scale, purge granularity, or analytics require it. |
 | Provider independence | Provider adapters return a UOK-normalized evidence object. No provider schema should leak into core contact records. |
+| Multi-value fact model | Names, emails, phones, addresses, domains, identifiers, ownership, screening hits, and risk signals must be modelled as evidence-backed collections, not as single overwritten fields. |
+| Restricted compliance separation | AML/KYC, government identifiers, source-of-funds/source-of-wealth, sanctions dispositions, SAR/STR references, and scam/fraud investigation notes require restricted permissions and should not appear in the general Contacts profile by default. |
 
 ## 3. Current implementation map
 
@@ -51,6 +56,7 @@ The first slice is expected to exist on `feature/contact-bi-profiles`:
 | UI | `web/src/shared/types.ts`, `web/src/shared/options.ts`, `web/src/features/contacts/ContactDetailPanel.tsx` | Adds an Intelligence pane and profile summary rendering. |
 | Candidate verifier | `modules/contacts.core/tests/verify/UokCandidateContacts.ps1` | Exercises evidence recording, profile read, rebuild, scoring, and permission failures. |
 | Architecture note | `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` | Records high-level architecture, decisions, source basis, and phase plan. |
+| Report data-point catalogue | `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md` | Records peer report formats and comprehensive data points for multi-valued identity/contact facts, ownership/control, fraud, AML/KYC, sanctions, scam-risk, adverse media, evidence, and future tables. |
 
 ## 4. End-to-end build plan
 
@@ -91,6 +97,7 @@ git diff --name-only origin/main...HEAD
    - `do_not_enrich`
    - `sensitive_fields_excluded`
 5. Confirm bounded text/list sizes prevent unbounded JSON growth.
+6. Use the report data-point catalogue to keep future aliases/contact points/identifiers/risk signals compatible with the first-release evidence model.
 
 **Acceptance criteria**
 
@@ -210,6 +217,7 @@ git diff --name-only origin/main...HEAD
 5. Confirm empty profile state is helpful.
 6. Confirm light, dark, and system themes remain usable.
 7. Confirm no direct provider branding appears unless a provider is actually configured.
+8. Confirm restricted AML/KYC, sanctions disposition, fraud investigation, and SAR/STR-style details are not exposed in the general Contacts UI.
 
 **Acceptance criteria**
 
@@ -226,6 +234,7 @@ git diff --name-only origin/main...HEAD
 2. Add/confirm API tests for profile read/write/evidence/rebuild routes.
 3. Extend candidate verifier with the profile happy path and permission path.
 4. Confirm profile tests run under the existing candidate verification script.
+5. Add/confirm tests or audit notes for multi-valued data-point handling and restricted compliance separation.
 
 **Minimum test scenarios**
 
@@ -239,6 +248,8 @@ git diff --name-only origin/main...HEAD
 | Purged contact profile write | Fails. |
 | Search by profile tag | Returns only readable matching contacts. |
 | Oversized summary/list/tag | Validation failure or truncation according to schema/service rules. |
+| Multiple names/contact points future compatibility | Documented in data-point catalogue and not blocked by first-release schema. |
+| Restricted compliance fields | Not exposed in general UI/API summary. |
 
 ### D8 — Generate/update API client if applicable
 
@@ -282,6 +293,7 @@ class ContactEnrichmentAdapter(Protocol):
 5. Add rate limits, retries, backoff, and provider timeout budgets.
 6. Add source terms metadata to every evidence record.
 7. Add review handling for low-confidence or conflicting facts.
+8. Normalize provider output into the data-point families documented in `CONTACT_BI_REPORT_DATA_POINTS.md`; do not expose provider-native schemas directly.
 
 **Acceptance criteria for adapter phase**
 
@@ -303,6 +315,12 @@ Move from JSON slices to module-owned profile tables when UOK needs cross-contac
 | `contact_profile_evidence` | Source/evidence rows with source type, provider, confidence, normalized facts, capture time, retention policy. |
 | `contact_profile_scores` | Optional historical score snapshots. |
 | `contact_profile_jobs` | Enrichment/rebuild job state, retry metadata, adapter name, error summaries. |
+| `party_aliases` | Multi-valued names, aliases, previous names, transliterations, active dates, source evidence. |
+| `party_contact_points` | Emails, phones, websites, social profiles, payment handles, contact preferences, first/last seen. |
+| `party_identifiers` | Registry IDs, LEI, D-U-N-S, CIK, ticker, tax IDs, provider IDs, hashed restricted identifiers. |
+| `party_locations` | Registered, HQ, branch, mailing, billing, residential, and historical addresses. |
+| `party_screening_hits` | Sanctions/PEP/adverse-media hits with match explanation and disposition. |
+| `party_risk_signals` | Fraud/scam/AML risk signals with severity, confidence, evidence, and review status. |
 
 **Migration rules**
 
@@ -401,6 +419,7 @@ Also perform the manual browser gate:
 6. Confirm the viewer role cannot write profile evidence.
 7. Archive/restore the contact and confirm profile remains intact.
 8. Purge the contact and confirm profile write routes reject it.
+9. Review the data-point catalogue and confirm future AML/KYC/fraud/scam fields are not accidentally exposed in the first-release general profile.
 
 ## 7. Audit readiness checklist
 
@@ -413,6 +432,8 @@ The feature is audit-ready when:
 - No raw provider payloads or credentials are stored.
 - `do_not_enrich` exists before adapter work begins.
 - Sensitive categories are excluded by schema policy and tests.
+- Peer-report data points are documented in `CONTACT_BI_REPORT_DATA_POINTS.md`.
+- Fraud/AML/KYC/scam fields are separated from general profile fields and future restricted storage is planned.
 - Verification commands pass.
 - Browser QA passes.
 - `CONTACT_BI_PROFILES_AUDIT.md` is completed with commit hashes, run logs, and reviewer sign-off.
