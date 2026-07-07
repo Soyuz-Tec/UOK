@@ -14,12 +14,16 @@ from .facade import (
     find_duplicate_candidates,
     has_meaningful_contact_value,
     note_visibility_scope,
+    readable_note_records,
+    readable_party_filter,
+    readable_relationship_records,
     review_state_for_payload,
     serialize_party,
     touch_party,
     validate_contact_payload_lengths,
 )
 from .models import PartyNote, PartyRelationship, utcnow
+from .profile_service import apply_profile_write, record_profile_evidence, rebuild_business_profile
 from uok.security import Actor
 from uok.util import dumps, loads
 
@@ -155,6 +159,56 @@ def cmd_import_contacts_csv(db: Session, actor: Actor, payload: dict[str, Any], 
     return import_handler(db, actor, payload, command_id)
 
 
+def cmd_update_contact_profile(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
+    party = _profile_party(db, actor, payload)
+    result = apply_profile_write(party, _profile_payload(payload))
+    touch_party(party)
+    _emit_event(db, actor, "ContactProfileUpdated", "Party", party.id, {
+        "display_name": party.display_name,
+        "profile_health": result.get("scores", {}).get("profile_health"),
+        "confidence": result.get("confidence"),
+    })
+    return result
+
+
+def cmd_record_contact_profile_evidence(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
+    party = _profile_party(db, actor, payload)
+    result = record_profile_evidence(party, _profile_payload(payload))
+    touch_party(party)
+    _emit_event(db, actor, "ContactProfileEvidenceRecorded", "Party", party.id, {
+        "display_name": party.display_name,
+        "evidence_count": result.get("evidence_count"),
+        "confidence": result.get("profile", {}).get("confidence"),
+    })
+    return result
+
+
+def cmd_rebuild_contact_profile(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
+    party = _profile_party(db, actor, payload)
+    allowed = readable_party_filter(actor)
+    notes = readable_note_records(db, party.id, actor)
+    relationships = readable_relationship_records(db, actor, party.id, allowed)
+    result = rebuild_business_profile(party, _profile_payload(payload), notes=list(notes), relationships=list(relationships))
+    touch_party(party)
+    _emit_event(db, actor, "ContactProfileRebuilt", "Party", party.id, {
+        "display_name": party.display_name,
+        "profile_health": result.get("scores", {}).get("profile_health"),
+        "confidence": result.get("confidence"),
+    })
+    return result
+
+
+def _profile_party(db: Session, actor: Actor, payload: dict[str, Any]):
+    party = _party(db, actor, bounded_text(payload.get("party_id") or payload.get("contact_id"), "party_id"), "party_id")
+    if party.status == "purged":
+        raise ValueError("purged contacts cannot be profiled")
+    return party
+
+
+def _profile_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in payload.items() if key not in {"party_id", "contact_id"}}
+
+
 def command_handlers() -> dict[str, CommandHandler]:
     return {
         "CreateContact": cmd_create_contact,
@@ -165,6 +219,9 @@ def command_handlers() -> dict[str, CommandHandler]:
         "AddContactNote": cmd_add_contact_note,
         "LinkContactRelationship": cmd_link_contact_relationship,
         "ImportContactsCsv": cmd_import_contacts_csv,
+        "UpdateContactProfile": cmd_update_contact_profile,
+        "RecordContactProfileEvidence": cmd_record_contact_profile_evidence,
+        "RebuildContactProfile": cmd_rebuild_contact_profile,
     }
 
 
@@ -178,4 +235,7 @@ def command_permissions() -> dict[str, str]:
         "AddContactNote": "contacts.manage",
         "LinkContactRelationship": "contacts.manage",
         "ImportContactsCsv": "contacts.import",
+        "UpdateContactProfile": "contacts.manage",
+        "RecordContactProfileEvidence": "contacts.manage",
+        "RebuildContactProfile": "contacts.manage",
     }
