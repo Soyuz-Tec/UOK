@@ -19,6 +19,7 @@ from .profile_schemas import (
     ProfileSource,
     RelationshipIntelligence,
 )
+from .profile_summaries import domain_from_website, organization_summary, person_summary
 from uok.util import dumps, loads
 
 CONFIDENCE_SCORE = {
@@ -73,7 +74,7 @@ def empty_business_profile(party: Party) -> ContactBusinessProfile:
         profile.organization.legal_name = attrs.get("organization_name") or party.display_name
         website = attrs.get("website")
         if website:
-            profile.organization.domains = clean_list([_domain_from_website(website)])
+            profile.organization.domains = clean_list([domain_from_website(website)])
     return profile
 
 
@@ -186,12 +187,12 @@ def rebuild_business_profile(
     if party.party_type == "person":
         profile.person.current_title = attrs.get("title") or profile.person.current_title
         profile.person.current_company = attrs.get("organization_name") or attrs.get("company_name") or profile.person.current_company
-        profile.summary = profile.summary or _person_summary(party, attrs)
+        profile.summary = profile.summary or person_summary(party, attrs)
     elif party.party_type == "organization":
         profile.organization.legal_name = attrs.get("organization_name") or profile.organization.legal_name or party.display_name
         if attrs.get("website"):
-            profile.organization.domains = clean_list([*profile.organization.domains, _domain_from_website(attrs["website"])])
-        profile.summary = profile.summary or _organization_summary(party, attrs)
+            profile.organization.domains = clean_list([*profile.organization.domains, domain_from_website(attrs["website"])])
+        profile.summary = profile.summary or organization_summary(party, attrs)
     else:
         profile.summary = profile.summary or f"{party.display_name} is a contact in UOK."
     if request.include_notes and notes:
@@ -291,28 +292,3 @@ def _has_value(value: Any) -> bool:
     if isinstance(value, list | tuple | set):
         return bool(value)
     return value not in (None, "", {})
-
-
-def _person_summary(party: Party, attrs: dict[str, Any]) -> str:
-    title = attrs.get("title")
-    company = attrs.get("organization_name") or attrs.get("company_name")
-    if title and company:
-        return f"{party.display_name} is listed as {title} at {company}."
-    if title:
-        return f"{party.display_name} is listed as {title}."
-    if company:
-        return f"{party.display_name} is associated with {company}."
-    return f"{party.display_name} is a person contact in UOK."
-
-
-def _organization_summary(party: Party, attrs: dict[str, Any]) -> str:
-    website = attrs.get("website")
-    if website:
-        return f"{party.display_name} is an organization contact with website {website}."
-    return f"{party.display_name} is an organization contact in UOK."
-
-
-def _domain_from_website(website: str) -> str:
-    text = str(website).strip().lower()
-    text = text.removeprefix("https://").removeprefix("http://").removeprefix("www.")
-    return text.split("/", 1)[0]

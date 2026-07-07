@@ -29,7 +29,7 @@ This keeps the first release small, avoids expanding the shared baseline migrati
 
 1. Give operators a concise business profile for every person and organization contact.
 2. Make profile facts explainable through source evidence, confidence, allowed-use metadata, and freshness indicators.
-3. Keep all profile behavior owned by `contacts.core` rather than the UOK kernel.
+3. Keep all profile behavior owned by `contacts.core` rather than the core UOK platform.
 4. Support future enrichment providers without binding UOK to any provider's schema.
 5. Make verification and audit possible through command/event trails, candidate verifier steps, and a dedicated audit checklist.
 

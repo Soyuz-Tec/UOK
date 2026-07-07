@@ -14,7 +14,7 @@
 
 ## 1. Audit objective
 
-Verify that UOK's contact business intelligence profile feature is complete, maintainable, permission-safe, privacy-aware, and natively integrated into Contacts without leaking product-specific behavior into the UOK kernel.
+Verify that UOK's contact business intelligence profile feature is complete, maintainable, permission-safe, privacy-aware, and natively integrated into Contacts without leaking product-specific behavior into the core UOK platform.
 
 The audit must answer five questions:
 
