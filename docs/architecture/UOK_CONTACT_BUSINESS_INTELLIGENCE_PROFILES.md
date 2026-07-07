@@ -1,17 +1,45 @@
 # UOK Contact Business Intelligence Profiles
 
-**Status:** Draft implementation plan with first backend/UI slice in `contacts.core`.
+**Status:** Architecture decision and implementation handoff for the native `contacts.core` business intelligence profile slice.
 
-## Goal
+**Feature branch:** `feature/contact-bi-profiles`
 
-UOK needs a native profile layer for every contact. The profile should turn raw people and organization records into useful business intelligence while staying consistent with UOK's modular-monolith rules: business behavior belongs in modules, contacts behavior belongs in `contacts.core`, and the kernel stays product-neutral.
+**Primary PR:** `#1` — `Add native contact business intelligence profiles`
 
-The first implementation slice stores normalized profile facts inside the existing `Party.attrs_json` document under two declared module-owned slices:
+## Artifact map
+
+| Artifact | Purpose |
+|---|---|
+| `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md` | Developer end-to-end plan, implementation tasks, data contract, acceptance criteria, future enrichment phases. |
+| `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md` | Verification/audit checklist, commands, permission checks, API smoke tests, reviewer sign-off template. |
+| `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` | Broader Contacts app plan with the BI profile extension linked into the module roadmap. |
+| `modules/contacts.core/manifest.yaml` | Declares profile commands, events, API prefix, owned data slices, permissions, and candidate verifier. |
+
+## Decision summary
+
+UOK will profile every contact through a native Contacts business intelligence profile layer. The first release stores normalized profile facts in the existing `Party.attrs_json` document under two manifest-declared module-owned slices:
 
 - `business_profile`
 - `business_profile_evidence`
 
-This avoids a schema migration for the first release while preserving a forward path to module-owned profile tables if query volume, reporting, or retention controls require normalization later.
+This keeps the first release small, avoids expanding the shared baseline migration, and preserves a clear migration path to module-owned profile tables when cross-contact analytics, purge granularity, or evidence volume require relational storage.
+
+## Goals
+
+1. Give operators a concise business profile for every person and organization contact.
+2. Make profile facts explainable through source evidence, confidence, allowed-use metadata, and freshness indicators.
+3. Keep all profile behavior owned by `contacts.core` rather than the UOK kernel.
+4. Support future enrichment providers without binding UOK to any provider's schema.
+5. Make verification and audit possible through command/event trails, candidate verifier steps, and a dedicated audit checklist.
+
+## Non-goals for the first PR
+
+- No live external enrichment calls.
+- No provider credentials.
+- No raw provider payload storage.
+- No normalized profile tables yet.
+- No automated scoring beyond deterministic local profile-health/completeness/confidence/provenance/relationship scores.
+- No sales-pipeline-specific assumptions.
 
 ## Open-source CRM benchmark
 
@@ -25,6 +53,31 @@ Patterns reviewed:
 | CiviCRM | Constituent/contact model supports multiple host applications and nonprofit-specific relationship management. | Keep the profile schema broad enough for people and organizations without assuming a sales-only workflow. |
 | Frappe CRM | Simple, customizable, open-source CRM for leads, deals, notes, tasks, views, and communications. | Preserve UOK's lightweight contact workflow and add intelligence without turning contacts into a full pipeline module. |
 | Krayin | Modular CRM framework with custom attributes and lifecycle features. | Store profile data through a module-owned extension point and declare ownership explicitly in the manifest. |
+
+## Target architecture
+
+```text
+Contact record
+  -> identity and relationship context
+  -> profile service
+  -> normalized profile facts
+  -> evidence/source records
+  -> profile scoring
+  -> command/event audit
+  -> Contacts read model/search
+  -> Contacts Intelligence pane
+```
+
+Future external enrichment adds one step before evidence persistence:
+
+```text
+Contact identity keys
+  -> provider adapter
+  -> normalized evidence request
+  -> policy checks: do_not_enrich, allowed use, retention, rate limit
+  -> evidence record
+  -> profile merge/review
+```
 
 ## Profile schema
 
@@ -77,30 +130,28 @@ The implementation exposes these REST endpoints under the module-owned `/api/con
 
 Read access uses `contacts.read`. Write/rebuild/evidence actions flow through the UOK command bus and require `contacts.manage`.
 
-## Enrichment architecture
+## Developer completion plan
 
-Recommended provider abstraction:
+The developer must use `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md` as the authoritative handoff checklist. At minimum, completion requires:
 
-```text
-Contact -> identity keys -> enrichment adapter -> normalized facts -> evidence record -> profile merge -> score -> event
+1. Confirm schema/service/command/API/read-model/UI implementation matches the plan.
+2. Add or adjust tests for profile schemas, profile service, API routes, permissions, search, and UI types.
+3. Run all automated verification commands.
+4. Exercise browser QA for the Contacts Intelligence pane.
+5. Fill out `CONTACT_BI_PROFILES_AUDIT.md` with evidence and reviewer notes.
+6. Keep PR `#1` draft until gates pass.
+
+## Verification and audit plan
+
+The audit checklist defines automated commands, API smoke tests, browser QA, security/privacy checks, database/event queries, and reviewer sign-off. The PR should not be marked ready until these commands pass:
+
+```powershell
+python -m compileall -q src modules tests
+python -m pytest -q
+npm --prefix web test
+npm --prefix web run build:static
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
 ```
-
-Adapters should be provider-specific and return a common normalized payload:
-
-```python
-class EnrichmentAdapter(Protocol):
-    def enrich_person(self, keys: ProfileIdentityKeys) -> ProfileEvidence: ...
-    def enrich_organization(self, keys: ProfileIdentityKeys) -> ProfileEvidence: ...
-```
-
-Recommended provider categories:
-
-- People/company enrichment: People Data Labs, Apollo, FullContact, Clearbit/HubSpot-style enrichment.
-- Company/funding data: Crunchbase-style organization enrichment.
-- Internal UOK data: notes, relationships, import source, ownership, review state, and future meeting/email modules.
-- Manual analyst input: high-confidence source when an operator reviews and approves facts.
-
-Provider selection should remain configuration-driven and disabled by default until consent, terms, and deployment policies are explicitly configured.
 
 ## Privacy, safety, and compliance controls
 
@@ -114,33 +165,38 @@ Provider selection should remain configuration-driven and disabled by default un
 
 ## Release phases
 
-### Phase 1: Native profile foundation — implemented on this branch
+### Phase 1 — Native profile foundation
 
-- Typed profile schemas.
-- Profile service for create/read/merge/rebuild/score.
-- Command handlers and permissions through `contacts.core`.
-- REST API routes.
-- Contact list/search summary integration.
-- Contacts UI Intelligence pane.
-- Candidate verifier profile scenario.
+Included in the current branch:
 
-### Phase 2: External enrichment adapters
+- typed profile schemas;
+- profile service for create/read/merge/rebuild/score;
+- command handlers and permissions through `contacts.core`;
+- REST API routes;
+- contact list/search summary integration;
+- Contacts UI Intelligence pane;
+- candidate verifier profile scenario;
+- architecture, developer plan, and audit artifacts.
 
-- Provider registry and adapter protocol.
-- Configuration for provider credentials.
-- Rate limiting and retry queues.
-- Provider-specific terms metadata on evidence.
-- `do_not_enrich` enforcement before adapter calls.
-- Optional review queue for low-confidence or conflicting facts.
+### Phase 2 — External enrichment adapters
 
-### Phase 3: Normalized profile tables
+Add after Phase 1 passes audit:
+
+- provider registry and adapter protocol;
+- configuration for provider credentials;
+- rate limiting and retry queues;
+- provider-specific terms metadata on evidence;
+- `do_not_enrich` enforcement before adapter calls;
+- optional review queue for low-confidence or conflicting facts.
+
+### Phase 3 — Normalized profile tables
+
+Move from JSON slices to indexed tables when UOK needs cross-contact segmentation, large evidence histories, deletion/purge granularity, or dashboard-level analytics:
 
 - `contact_profiles`
 - `contact_profile_evidence`
 - `contact_profile_scores`
 - `contact_profile_jobs`
-
-Move from JSON slices to indexed tables when UOK needs cross-contact segmentation, large evidence histories, deletion/purge granularity, or dashboard-level analytics.
 
 ## Source references
 
@@ -152,5 +208,6 @@ Move from JSON slices to indexed tables when UOK needs cross-contact segmentatio
 - Krayin CRM: https://github.com/krayin/laravel-crm
 - NIST Privacy Framework: https://www.nist.gov/privacy-framework
 - GDPR Article 5: https://eur-lex.europa.eu/eli/reg/2016/679/oj/eng
+- OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
 - People Data Labs docs: https://docs.peopledatalabs.com/
 - Apollo API docs: https://docs.apollo.io/
