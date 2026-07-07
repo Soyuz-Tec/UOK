@@ -1,7 +1,7 @@
 name: contacts.core
 kind: capability_module
 version: APP_VERSION
-description: "Optional reusable party, person, organization, note, relationship, review, and CSV import capability."
+description: "Optional reusable party, person, organization, profile, note, relationship, review, and CSV import capability."
 installable: true
 uninstallable: true
 updatable: true
@@ -22,6 +22,9 @@ commands:
   - AddContactNote
   - LinkContactRelationship
   - ImportContactsCsv
+  - UpdateContactProfile
+  - RecordContactProfileEvidence
+  - RebuildContactProfile
 events:
   - ContactCreated
   - ContactUpdated
@@ -32,6 +35,9 @@ events:
   - ContactRelationshipLinked
   - ContactLinkedToOrganization
   - ContactsImported
+  - ContactProfileUpdated
+  - ContactProfileEvidenceRecorded
+  - ContactProfileRebuilt
 dependencies: []
 backend_path: modules/contacts.core/backend
 web_path: modules/contacts.core/web
@@ -62,6 +68,8 @@ owned_tables:
   - ContactImportBatch
   - CommandLog:contacts.core
   - EventRecord:Contact
+  - Party.attrs_json:business_profile
+  - Party.attrs_json:business_profile_evidence
 extension_points:
   - manifest
   - backend_package
@@ -76,4 +84,4 @@ extension_points:
   - web_surface
   - tests
   - candidate_verifier
-data_retention_policy: "User delete archives contacts; admin can restore or purge. Module uninstall disables access while retaining records for admin-controlled recovery unless a future purge workflow is explicitly executed."
+data_retention_policy: "User delete archives contacts and their business profile data; admin can restore or purge. Module uninstall disables access while retaining records and profile evidence for admin-controlled recovery unless a future purge workflow is explicitly executed. Profile enrichment stores normalized facts with source metadata, confidence, allowed-use, and retention hints rather than unbounded raw provider payloads."
