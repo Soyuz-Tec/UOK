@@ -4,7 +4,7 @@
 
 **Target:** `UOK-3.1.0-alpha.2`
 
-**Status:** Implemented for the alpha.2 module-extension baseline; future packaging work remains.
+**Status:** Implemented for the alpha.2 module-extension baseline; business intelligence profile hardening and audit now continue on `feature/contact-bi-profiles`.
 
 **Source root:** `modules/contacts.core`
 
@@ -23,7 +23,7 @@ The alpha.2 module-extension baseline declares Contacts runtime surfaces in `mod
 - model/table exports;
 - candidate verifier scenario under `modules/contacts.core/tests/verify`.
 
-The first release builds a Contacts Full CRM Slice that starts with practical CRM work and leaves a clear path toward Enterprise MDM.
+The first release builds a Contacts Full CRM Slice that starts with practical CRM work and leaves a clear path toward Enterprise MDM. The business intelligence profile extension adds native profile facts, evidence, scoring, and an Intelligence pane without turning UOK into a generic CRM object engine.
 
 ## Source Basis
 
@@ -35,6 +35,12 @@ This plan is based on UOK module policy, UOK UI policy, and these Apple referenc
 - Apple layout guidance: https://developer.apple.com/design/human-interface-guidelines/layout-and-organization
 - Apple lists and tables guidance: https://developer.apple.com/design/human-interface-guidelines/lists-and-tables
 - Apple split views guidance: https://developer.apple.com/design/human-interface-guidelines/split-views
+
+Business intelligence profile references and audit standards are maintained in:
+
+- `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
+- `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`
+- `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`
 
 ## User Decisions
 
@@ -52,6 +58,7 @@ This plan is based on UOK module policy, UOK UI policy, and these Apple referenc
 - Search is layered: simple default search plus filters for power users.
 - Users can import CSV and correct records; normal users cannot bulk export.
 - Imported, incomplete, uncertain, and possible duplicate records appear in a review queue.
+- Every contact should be able to expose a native business intelligence profile with normalized facts, source evidence, confidence, governance metadata, and profile-health scoring.
 
 ## Domain Model
 
@@ -100,6 +107,27 @@ Notes are private internal timeline entries, stored separately from the editable
 
 CSV import creates an import batch and records per-row results. Imported rows may create parties in `needs_review`, `possible_duplicate`, or `incomplete` review states.
 
+### Business Intelligence Profile
+
+The profile extension stores module-owned JSON slices on `Party.attrs_json` for the first release:
+
+- `business_profile`
+- `business_profile_evidence`
+
+The profile includes:
+
+- concise summary;
+- person intelligence;
+- organization intelligence;
+- relationship intelligence;
+- governance controls;
+- source provenance;
+- confidence;
+- risk flags;
+- computed scores.
+
+The developer handoff and acceptance gates live in `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`. The audit checklist lives in `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`.
+
 ## API Scope
 
 Required endpoints for alpha.2:
@@ -117,7 +145,15 @@ Required endpoints for alpha.2:
 - List review queue.
 - Read module readiness/evidence.
 
-All public API contracts must be OpenAPI-compatible and reflected in the generated TypeScript client.
+Business intelligence profile endpoints for the profile branch:
+
+- `GET /api/contacts/{party_id}/profile`
+- `PATCH /api/contacts/{party_id}/profile`
+- `POST /api/contacts/{party_id}/profile/evidence`
+- `GET /api/contacts/{party_id}/profile/evidence`
+- `POST /api/contacts/{party_id}/profile/rebuild`
+
+All public API contracts must be OpenAPI-compatible and reflected in the generated TypeScript client when client generation is part of the current build process.
 
 The command bus must discover Contacts commands through the manifest `command_handlers` provider instead of importing Contacts handlers directly into `src/uok/commands.py`.
 
@@ -137,6 +173,8 @@ The Contacts UI must be human-friendly and policy-aligned:
 - Validation errors are specific and close to the affected fields.
 - Module disabled/uninstalled states are clear and route users back to Apps Manager actions.
 - Light, dark, and system appearances remain supported.
+- Detail pane includes Overview, Intelligence, Activity, and Relationships.
+- Intelligence pane renders profile summary, confidence, source count, profile health, completeness, tags, risk flags, update timestamp, and normalized-facts-only status.
 
 Current UI source remains in `web/src/features/contacts` and is composed through `web/src/features/modules/moduleSurfaceRegistry.tsx`. The module root `modules/contacts.core/web` remains the ownership marker until a future packaging step moves executable module UI behind the module root.
 
@@ -145,12 +183,14 @@ Current UI source remains in `web/src/features/contacts` and is composed through
 Initial permission behavior:
 
 - `platform_admin`: full module and record management, restore, purge, reassignment.
-- `ops_manager`: create, edit, archive, restore permitted records, import CSV, manage notes and relationships.
-- `viewer`, `trader`, `finance_manager`: read permitted records.
+- `ops_manager`: create, edit, archive, restore permitted records, import CSV, manage notes, relationships, and business profiles.
+- `viewer`, `trader`, `finance_manager`: read permitted records and readable profile summaries/details.
 
 Ownership and team fields must exist in the data/API shape even if full team enforcement matures later.
 
 Role grants are declared by `uok_contacts_core.policy:role_grants` and merged into kernel permissions at authorization time. Contacts permission atoms must not be hardcoded in `src/uok/security.py`.
+
+Profile write/evidence/rebuild commands require `contacts.manage`; profile reads require `contacts.read` and normal readable-party checks.
 
 ## Evidence And Dashboard Scope
 
@@ -161,9 +201,15 @@ Contacts dashboard counts and baseline evidence checks are module-owned provider
 
 The kernel owns the stable `/api/dashboard` and `/api/baseline-evidence` response shapes, while Contacts owns its module-specific fragments.
 
+Profile mutation evidence is emitted through:
+
+- `ContactProfileUpdated`
+- `ContactProfileEvidenceRecorded`
+- `ContactProfileRebuilt`
+
 ## Acceptance Gates
 
-Before packaging `UOK-3.1.0-alpha.2`:
+Before packaging `UOK-3.1.0-alpha.2` or moving the profile PR out of draft:
 
 ```powershell
 python -m compileall -q src modules tests
@@ -179,12 +225,19 @@ Browser verification must confirm:
 - Contacts app exposes the three views
 - Review Queue appears
 - CSV import UI appears
+- Intelligence pane appears in contact detail
+- profile summary and scores render after evidence is recorded
+- viewer can read allowed profiles but cannot write profile evidence
 - no retired UOK names appear
 - no product-specific labels appear
 - no console errors appear
+
+Profile audit must also complete `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md`.
 
 ## Remaining Packaging Work
 
 - Move more Contacts React source under `modules/contacts.core/web` when the frontend build can preserve shared shell composition.
 - Move Contacts behavior pytest suites from top-level `tests/` into `modules/contacts.core/tests` when test discovery remains equivalent.
 - Add future Contacts schema migrations under `modules/contacts.core/migrations` instead of expanding the shared initial baseline.
+- Add external enrichment adapters only after the profile foundation passes audit and deployment policy configures credentials, allowed use, rate limits, retention, and `do_not_enrich` enforcement.
+- Move profiles to normalized module-owned tables when query volume, field-level purge, or analytics require it.
