@@ -21,7 +21,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | Module | Type | Status | Current target | Plan |
 |---|---|---|---|---|
 | `apps.manager` | control module | required baseline module | `UOK-3.1.0-alpha.2` | UOK bootstrap control module |
-| `contacts.core` | capability module | full CRM slice implemented; business intelligence profile branch in draft audit | `UOK-3.1.0-alpha.2` + profile hardening | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md`; `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`; `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md` |
+| `contacts.core` | capability module | full CRM slice implemented; business intelligence profile branch in draft audit | `UOK-3.1.0-alpha.2` + profile hardening | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md`; `docs/modules/contacts.core/CONTACT_BI_PROFILES_PLAN.md`; `docs/modules/contacts.core/CONTACT_BI_REPORT_DATA_POINTS.md`; `docs/modules/contacts.core/CONTACT_BI_PROFILES_AUDIT.md` |
 
 ## Current Target
 
@@ -48,6 +48,7 @@ The `feature/contact-bi-profiles` branch extends this target with a native profi
 - Contacts read-model/search integration
 - Contacts Intelligence pane
 - developer handoff and audit artifacts
+- peer-report data point catalogue covering aliases, contact points, identifiers, ownership, fraud, AML/KYC, sanctions, scam-risk signals, and future normalized tables
 
 ## Governance Rule
 
@@ -59,4 +60,5 @@ New modules must not add product-specific behavior to the UOK core. They must ex
 - Move Contacts behavior pytest suites under `modules/contacts.core/tests` when test discovery can preserve the full UOK gate.
 - Introduce module-owned migrations for future schema changes instead of expanding the shared initial baseline.
 - Move contact business intelligence profiles from JSON slices to module-owned profile tables when analytics, evidence volume, or purge granularity require it.
-- Add enrichment provider adapters only after audit confirms normalized evidence storage, `do_not_enrich` enforcement, rate limits, credentials handling, and source terms metadata.
+- Add enrichment provider adapters only after audit confirms normalized evidence storage, `do_not_enrich` enforcement, rate limits, credentials handling, source terms metadata, and multi-valued data modelling.
+- Keep AML/KYC, sanctions, adverse-media, scam/fraud, source-of-funds/source-of-wealth, government ID, and SAR/STR artifacts out of the general contact profile unless restricted permissions, retention, encryption/tokenization, and legal/compliance approvals are in place.
