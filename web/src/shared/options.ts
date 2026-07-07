@@ -40,6 +40,7 @@ export const contactsViewOptions: Array<Option<ContactsView>> = [
 
 export const contactDetailPaneOptions: Array<Option<ContactDetailPane>> = [
   { id: "overview", label: "Overview", icon: Info },
+  { id: "intelligence", label: "Intelligence", icon: Database },
   { id: "activity", label: "Activity", icon: FileCheck2 },
   { id: "relationships", label: "Relationships", icon: Link2 }
 ];
