@@ -46,6 +46,11 @@
     border-bottom: var(--uok-line);
   }
 
+  .contacts-view-split .contact-list {
+    max-height: none;
+    overflow: visible;
+  }
+
   .field-prominent,
   .field-wide {
     grid-column: auto;

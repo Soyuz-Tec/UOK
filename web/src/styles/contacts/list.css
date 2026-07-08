@@ -47,6 +47,13 @@
   background: var(--uok-bg-elevated);
 }
 
+.contacts-view-split .contact-list-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: color-mix(in srgb, var(--uok-bg-elevated) 94%, var(--uok-bg-grouped-secondary));
+}
+
 .contact-list-header span {
   min-width: 0;
   overflow: hidden;

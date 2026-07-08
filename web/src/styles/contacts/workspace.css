@@ -22,6 +22,11 @@
   border-radius: 0;
 }
 
+.contacts-view-split .contact-list {
+  max-height: calc(100vh - 174px);
+  overflow: auto;
+}
+
 .contacts-view-split .contact-detail {
   min-height: 100%;
 }
