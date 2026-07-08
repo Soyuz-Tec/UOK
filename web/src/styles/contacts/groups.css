@@ -12,24 +12,38 @@
 
 .contacts-group-sidebar {
   display: grid;
-  gap: var(--uok-space-3);
+  align-content: start;
+  gap: 0;
   position: sticky;
   top: var(--uok-space-3);
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
-  padding: var(--uok-space-3);
   background: var(--uok-bg-elevated);
+  overflow: hidden;
+}
+
+.contacts-group-sidebar .section-heading {
+  min-height: 50px;
+  border-radius: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--uok-separator) 72%, transparent);
+  padding: 0 var(--uok-space-3);
+  background: var(--uok-bg-grouped-tertiary);
 }
 
 .contact-group-list {
   display: grid;
-  gap: var(--uok-space-1);
+  gap: 0;
 }
 
 .contact-group-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--uok-space-1);
+  gap: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--uok-separator) 72%, transparent);
+}
+
+.contact-group-list > .contact-group-button {
+  border-bottom: 1px solid color-mix(in srgb, var(--uok-separator) 72%, transparent);
 }
 
 .contact-group-button {
@@ -37,11 +51,11 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--uok-space-2);
-  min-height: 36px;
+  min-height: 50px;
   min-width: 0;
   border: 0;
-  border-radius: var(--uok-radius-2);
-  padding: 0 var(--uok-space-2);
+  border-radius: 0;
+  padding: 0 var(--uok-space-3);
   color: var(--uok-text-secondary);
   background: transparent;
   font: inherit;
@@ -75,6 +89,8 @@
   min-width: 36px;
   width: 36px;
   height: 36px;
+  align-self: center;
+  margin-right: var(--uok-space-1);
   color: var(--uok-text-tertiary);
   opacity: 0;
   transition: opacity 120ms ease, background 120ms ease, color 120ms ease;
