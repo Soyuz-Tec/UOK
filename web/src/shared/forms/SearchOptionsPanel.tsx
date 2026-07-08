@@ -113,9 +113,11 @@ export function SearchOptionsPanel({
           {savedViews.length ? savedViews.map((view) => (
             <div key={view.id} className="search-workspace-saved-row">
               <button type="button" onClick={() => onApplyView(view)}>Apply {view.name}</button>
-              <button type="button" aria-label={`Delete ${view.name}`} onClick={() => onDeleteView(view.id)}>
-                <X size={15} aria-hidden="true" />
-              </button>
+              {view.locked ? <span aria-hidden="true" /> : (
+                <button type="button" aria-label={`Delete ${view.name}`} onClick={() => onDeleteView(view.id)}>
+                  <X size={15} aria-hidden="true" />
+                </button>
+              )}
             </div>
           )) : <p>No saved searches yet.</p>}
         </div>

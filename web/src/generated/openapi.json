@@ -321,6 +321,30 @@
             ],
             "title": "Address"
           },
+          "allowed_use": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Use"
+          },
+          "birthday": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Birthday"
+          },
           "client_reference": {
             "anyOf": [
               {
@@ -356,6 +380,30 @@
               }
             ],
             "title": "Company Party Id"
+          },
+          "confidence_level": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Level"
+          },
+          "consent_status": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consent Status"
           },
           "display_name": {
             "anyOf": [
@@ -404,6 +452,30 @@
               }
             ],
             "title": "Given Name"
+          },
+          "important_date": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Important Date"
+          },
+          "instant_message": {
+            "anyOf": [
+              {
+                "maxLength": 254,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instant Message"
           },
           "note": {
             "anyOf": [
@@ -477,6 +549,18 @@
             ],
             "title": "Review State"
           },
+          "source": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
           "sync_state": {
             "anyOf": [
               {
@@ -488,6 +572,18 @@
               }
             ],
             "title": "Sync State"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "maxLength": 512,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
           },
           "team_id": {
             "anyOf": [
@@ -1070,6 +1166,28 @@
             "schema": {
               "default": "",
               "title": "Party Type",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "maxLength": 80,
+              "title": "Source",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "quality",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "pattern": "^(all|no_company|duplicate_risk)$",
+              "title": "Quality",
               "type": "string"
             }
           },

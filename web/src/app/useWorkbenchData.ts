@@ -19,6 +19,8 @@ type WorkbenchFilters = {
   statusFilter: string;
   reviewFilter: string;
   typeFilter: string;
+  sourceFilter: string;
+  qualityFilter: string;
   contactPage: number;
   contactPageSize: number;
   contactSortBy: ContactSortBy;
@@ -32,13 +34,15 @@ function requestHeaders(token: string, overrideToken?: string) {
   return value;
 }
 
-function contactsPath({ query, contactGroupId, statusFilter, reviewFilter, typeFilter, contactPage, contactPageSize, contactSortBy, contactSortDir }: WorkbenchFilters) {
+function contactsPath({ query, contactGroupId, statusFilter, reviewFilter, typeFilter, sourceFilter, qualityFilter, contactPage, contactPageSize, contactSortBy, contactSortDir }: WorkbenchFilters) {
   const params = new URLSearchParams();
   if (query) params.set("query", query);
   if (contactGroupId) params.set("group_id", contactGroupId);
   if (statusFilter) params.set("status", statusFilter);
   if (reviewFilter !== "all") params.set("review_state", reviewFilter);
   if (typeFilter !== "all") params.set("party_type", typeFilter);
+  if (sourceFilter !== "all") params.set("source", sourceFilter);
+  if (qualityFilter !== "all") params.set("quality", qualityFilter);
   params.set("limit", String(contactPageSize + 1));
   params.set("offset", String(contactPage * contactPageSize));
   params.set("sort_by", contactSortBy);

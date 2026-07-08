@@ -41,4 +41,5 @@ export type SavedSearchView = {
   groupBy: string;
   sortBy?: string;
   sortDir?: SearchWorkspaceSortDirection;
+  locked?: boolean;
 };

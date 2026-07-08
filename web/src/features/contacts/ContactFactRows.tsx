@@ -1,10 +1,11 @@
-import { Building2, Globe, Mail, MapPin, Phone } from "lucide-react";
+import { Building2, Globe, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
 
 import type { ContactFact, ContactFactKind } from "./contactPresentation";
 
 const factIcons: Record<ContactFactKind, typeof Phone> = {
   address: MapPin,
   email: Mail,
+  governance: ShieldCheck,
   organization: Building2,
   phone: Phone,
   website: Globe

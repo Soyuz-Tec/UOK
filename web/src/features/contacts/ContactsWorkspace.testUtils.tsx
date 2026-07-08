@@ -3,7 +3,7 @@ import { cleanup, render } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { emptyDraft } from "../../shared/types";
-import type { ContactDetailPane, ContactGroupBy, ContactGroupRecord, ContactRecord, ContactSortBy, ContactSortDir, ContactsView } from "../../shared/types";
+import type { ContactDetailPane, ContactGroupBy, ContactGroupRecord, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "../../shared/types";
 import { ContactsWorkspace } from "./ContactsWorkspace";
 import type { ContactsWorkspaceProps } from "./types";
 
@@ -106,6 +106,8 @@ export function renderContactsWorkspace(initialView: ContactsView, records: Cont
     const [statusFilter, setStatusFilter] = useState("active");
     const [reviewFilter, setReviewFilter] = useState("all");
     const [typeFilter, setTypeFilter] = useState("all");
+    const [sourceFilter, setSourceFilter] = useState<ContactSourceFilter>("all");
+    const [qualityFilter, setQualityFilter] = useState<ContactQualityFilter>("all");
     const [contactGroupId, setContactGroupId] = useState("");
     const [newGroupName, setNewGroupName] = useState("");
     const [contactPage, setContactPage] = useState(0);
@@ -130,6 +132,8 @@ export function renderContactsWorkspace(initialView: ContactsView, records: Cont
       statusFilter,
       reviewFilter,
       typeFilter,
+      sourceFilter,
+      qualityFilter,
       contactPage,
       contactPageSize,
       contactHasNext: records.length > contactPageSize,
@@ -151,12 +155,16 @@ export function renderContactsWorkspace(initialView: ContactsView, records: Cont
       onStatusFilterChange: setStatusFilter,
       onReviewFilterChange: setReviewFilter,
       onTypeFilterChange: setTypeFilter,
+      onSourceFilterChange: setSourceFilter,
+      onQualityFilterChange: setQualityFilter,
       onClearFilters: () => {
         setQuery("");
         setContactGroupId("");
         setStatusFilter("active");
         setReviewFilter("all");
         setTypeFilter("all");
+        setSourceFilter("all");
+        setQualityFilter("all");
       },
       onContactPageChange: setContactPage,
       onContactPageSizeChange: setContactPageSize,

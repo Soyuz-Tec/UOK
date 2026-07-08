@@ -1,4 +1,4 @@
-import type { ContactDetailPane, ContactDraft, ContactGroupBy, ContactGroupRecord, ContactMergeFieldChoices, ContactRecord, ContactSortBy, ContactSortDir, ContactsView, ModuleStatus } from "../../shared/types";
+import type { ContactDetailPane, ContactDraft, ContactGroupBy, ContactGroupRecord, ContactMergeFieldChoices, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView, ModuleStatus } from "../../shared/types";
 
 export type ContactsWorkspaceProps = {
   token: string;
@@ -17,6 +17,8 @@ export type ContactsWorkspaceProps = {
   statusFilter: string;
   reviewFilter: string;
   typeFilter: string;
+  sourceFilter: ContactSourceFilter;
+  qualityFilter: ContactQualityFilter;
   contactPage: number;
   contactPageSize: number;
   contactHasNext: boolean;
@@ -38,6 +40,8 @@ export type ContactsWorkspaceProps = {
   onStatusFilterChange: (value: string) => void;
   onReviewFilterChange: (value: string) => void;
   onTypeFilterChange: (value: string) => void;
+  onSourceFilterChange: (value: ContactSourceFilter) => void;
+  onQualityFilterChange: (value: ContactQualityFilter) => void;
   onClearFilters: () => void;
   onContactPageChange: (value: number) => void;
   onContactPageSizeChange: (value: number) => void;

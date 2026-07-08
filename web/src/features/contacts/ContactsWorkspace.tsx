@@ -85,6 +85,8 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
         statusFilter={props.statusFilter}
         reviewFilter={props.reviewFilter}
         typeFilter={props.typeFilter}
+        sourceFilter={props.sourceFilter}
+        qualityFilter={props.qualityFilter}
         contactGroups={props.contactGroups}
         contactGroupId={props.contactGroupId}
         contactPage={props.contactPage}
@@ -100,6 +102,8 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
         onStatusFilterChange={props.onStatusFilterChange}
         onReviewFilterChange={props.onReviewFilterChange}
         onTypeFilterChange={props.onTypeFilterChange}
+        onSourceFilterChange={props.onSourceFilterChange}
+        onQualityFilterChange={props.onQualityFilterChange}
         onContactGroupChange={props.onContactGroupChange}
         onContactGroupByChange={props.onContactGroupByChange}
         onClearFilters={props.onClearFilters}

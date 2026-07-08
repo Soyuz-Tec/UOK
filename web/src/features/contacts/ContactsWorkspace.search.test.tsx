@@ -96,4 +96,29 @@ describe("ContactsWorkspace search and paging", () => {
 
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Group: Important contacts");
   });
+
+  it("applies pinned Contacts saved views for common cleanup workflows", () => {
+    const { container } = renderContactsWorkspace("table", [contact, importedContact, duplicateContact]);
+    const menu = container.querySelector(".search-workspace-menu") as HTMLDetailsElement;
+    menu.open = true;
+
+    for (const viewName of ["All records", "Needs review", "Organizations", "People", "No company", "Imported from Gmail", "Duplicate risk", "Recently updated"]) {
+      expect(screen.getByRole("button", { name: `Apply ${viewName}` })).toBeInTheDocument();
+    }
+    expect(screen.queryByRole("button", { name: "Delete No company" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Apply No company" }));
+    expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Type: Person");
+    expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Quality: No company");
+    expect(menu.open).toBe(false);
+
+    menu.open = true;
+    fireEvent.click(screen.getByRole("button", { name: "Apply Imported from Gmail" }));
+    expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Source: Gmail");
+    expect(screen.queryByText("Quality: No company")).not.toBeInTheDocument();
+
+    menu.open = true;
+    fireEvent.click(screen.getByRole("button", { name: "Apply Duplicate risk" }));
+    expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Quality: Duplicate risk");
+  });
 });

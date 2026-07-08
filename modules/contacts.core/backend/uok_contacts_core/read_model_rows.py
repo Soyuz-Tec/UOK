@@ -46,21 +46,8 @@ def import_batch_rows(db: Session, actor: Actor) -> list[dict[str, Any]]:
 def serialize_party(db: Session, party: Party, include_detail: bool = False, actor: Actor | None = None) -> dict[str, Any]:
     data = row_dict(party)
     attrs = data.get("attrs", {})
-    data.update({
-        "email": attrs.get("email", ""),
-        "phone": attrs.get("phone", ""),
-        "website": attrs.get("website", ""),
-        "address": attrs.get("address", ""),
-        "given_name": attrs.get("given_name", ""),
-        "family_name": attrs.get("family_name", ""),
-        "organization_name": attrs.get("organization_name", ""),
-        "title": attrs.get("title", ""),
-        "birthday": attrs.get("birthday", ""),
-        "important_date": attrs.get("important_date", ""),
-        "instant_message": attrs.get("instant_message", ""),
-        "tags": attrs.get("tags", ""),
-        "duplicate_candidates": attrs.get("duplicate_candidates", []),
-    })
+    data.update({field: attrs.get(field, "") for field in CONTACT_ATTR_FIELDS})
+    data["duplicate_candidates"] = attrs.get("duplicate_candidates", [])
     data["business_intelligence_profile"] = business_intelligence_profile(
         party,
         attrs=attrs,

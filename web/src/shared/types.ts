@@ -7,6 +7,8 @@ export type ContactGroupBy = "none" | "type" | "review_state" | "source" | "orga
 export type ContactDetailPane = "overview" | "intelligence" | "activity" | "relationships";
 export type ContactSortBy = "display_name" | "updated_at" | "created_at" | "status" | "review_state" | "party_type" | "source";
 export type ContactSortDir = "asc" | "desc";
+export type ContactSourceFilter = "all" | "contacts" | "gmail" | "csv_import" | "email" | "manual";
+export type ContactQualityFilter = "all" | "no_company" | "duplicate_risk";
 export type ContactMergeField = "given_name" | "family_name" | "organization_name" | "email" | "phone" | "website" | "address" | "title";
 export type ContactMergeFieldChoices = Partial<Record<ContactMergeField, "primary" | "duplicate">>;
 
@@ -97,6 +99,9 @@ export type ContactAttrs = {
   important_date?: string;
   instant_message?: string;
   tags?: string;
+  consent_status?: string;
+  allowed_use?: string;
+  confidence_level?: string;
   duplicate_candidates?: Array<{ id: string; display_name: string; reason: string }>;
   merge_history?: Array<{
     merge_id: string;
@@ -137,6 +142,9 @@ export type ContactRecord = {
   important_date?: string;
   instant_message?: string;
   tags?: string;
+  consent_status?: string;
+  allowed_use?: string;
+  confidence_level?: string;
   notes?: Array<{ id: string; body: string; created_at: string }>;
   business_intelligence_profile?: ContactBusinessIntelligenceProfile;
   relationships?: Array<{
@@ -171,6 +179,9 @@ export type ContactDraft = {
   important_date: string;
   instant_message: string;
   tags: string;
+  consent_status: string;
+  allowed_use: string;
+  confidence_level: string;
   note: string;
   source: string;
   client_reference: string;
@@ -193,6 +204,9 @@ export const emptyDraft: ContactDraft = {
   important_date: "",
   instant_message: "",
   tags: "",
+  consent_status: "",
+  allowed_use: "",
+  confidence_level: "",
   note: "",
   source: "",
   client_reference: "",

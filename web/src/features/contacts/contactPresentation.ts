@@ -2,7 +2,7 @@ import { formatLabel } from "../../shared/format";
 import type { ContactRecord } from "../../shared/types";
 
 export type StatusTone = "success" | "warning" | "danger" | "info";
-export type ContactFactKind = "email" | "phone" | "website" | "address" | "organization";
+export type ContactFactKind = "email" | "phone" | "website" | "address" | "organization" | "governance";
 
 export type ContactFact = {
   kind: ContactFactKind;
@@ -20,12 +20,18 @@ export function contactSubtitle(contact: ContactRecord) {
 
 export function contactFacts(contact: ContactRecord): ContactFact[] {
   const organization = [contact.title, contact.organization_name].filter(Boolean).join(", ");
+  const governance = [
+    contact.allowed_use ? `Use: ${formatLabel(contact.allowed_use)}` : "",
+    contact.consent_status ? `Consent: ${formatLabel(contact.consent_status)}` : "",
+    contact.confidence_level ? `Confidence: ${formatLabel(contact.confidence_level)}` : ""
+  ].filter(Boolean).join(" | ");
   return [
     contact.phone ? { kind: "phone", label: "Phone", value: contact.phone } : undefined,
     contact.email ? { kind: "email", label: "Email", value: contact.email } : undefined,
     contact.website ? { kind: "website", label: "Website", value: contact.website } : undefined,
     contact.address ? { kind: "address", label: "Address", value: contact.address } : undefined,
-    organization ? { kind: "organization", label: "Organization", value: organization } : undefined
+    organization ? { kind: "organization", label: "Organization", value: organization } : undefined,
+    governance ? { kind: "governance", label: "Governance", value: governance } : undefined
   ].filter((fact): fact is ContactFact => Boolean(fact));
 }
 

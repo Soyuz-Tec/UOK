@@ -51,6 +51,8 @@ This plan is based on UOK module policy, UOK UI policy, and these Apple referenc
 - User delete means archive; admin can restore or purge.
 - Notes are private internal timeline entries.
 - Search is layered: simple default search plus filters for power users.
+- Saved Contacts searches include pinned system views for all records, records needing review, organizations, people, contacts without company context, Gmail-imported contacts, duplicate risk, and recently updated records. Users may also save their own searches.
+- Contact search uses PostgreSQL-native text search when the runtime database is PostgreSQL and keeps a Python fallback for test and local compatibility paths.
 - Contacts can be organized into user-managed groups without changing the core party model.
 - Contacts can be grouped automatically by business email domain; group names should prefer the related company label, while personal/free-mail and test/demo domains are excluded so the group rail remains useful.
 - Contacts can be grouped automatically by smart rules for company, country, contact type, review state, and source. These smart-rule outputs are materialized as normal contact groups so users can select, archive, and adjust them through the same group workflow.
@@ -81,7 +83,7 @@ Required concepts:
 
 ### Contact Facts And Methods
 
-The first release may store email, phone, website, address, birthday, important date, instant message, and tags inside module-owned JSON attributes as long as API contracts expose typed fields. Source and client reference stay on the party record. Future releases may split repeated values into dedicated tables if validation, dedupe, multiple values per field, or sync needs stronger relational behavior.
+The first release may store email, phone, website, address, birthday, important date, instant message, tags, consent status, allowed use, and confidence level inside module-owned JSON attributes as long as API contracts expose typed fields. Source and client reference stay on the party record. Future releases may split repeated values into dedicated tables if validation, dedupe, multiple values per field, consent history, or sync needs stronger relational behavior.
 
 ### Relationships
 
@@ -106,6 +108,8 @@ Notes are private internal timeline entries, stored separately from the editable
 
 The Activity pane must present a unified contact timeline rather than a raw note list. It should answer "why does this contact exist?" with source/import context, purpose notes, relationship links, group membership, duplicate candidates, and duplicate merge history while keeping the note composer available for human cleanup work.
 
+Contacts commands emit actor-stamped events so create, update, archive, restore, purge, relationship, group, import, and merge actions can answer who changed what during review and admin recovery.
+
 ### Groups
 
 Groups are user-managed contact lists owned by `contacts.core`.
@@ -121,7 +125,7 @@ Required concepts:
 
 ### Import Batches
 
-CSV import creates an import batch and records per-row results. Imported rows may create parties in `needs_review`, `possible_duplicate`, or `incomplete` review states.
+CSV import creates an import batch and records per-row results. Imported rows enter review-first states such as `needs_review`, `possible_duplicate`, or `incomplete`, keep row-level source evidence on the party, and reject obvious automated marketing contacts instead of polluting normal contact records.
 
 ### Duplicate Merge
 
@@ -164,6 +168,7 @@ The Contacts UI must be human-friendly and policy-aligned:
 - Search box is always available.
 - Filters are available without overwhelming simple users.
 - The unified search surface includes a `Group` filter for persistent contact groups.
+- The unified search surface also owns status, review, type, source, quality, sort, sectioning, pinned saved searches, and user-saved searches so filters do not appear as duplicate controls.
 - Visual result sectioning uses `Section by`, not `Group`, to avoid confusing it with persistent contact groups.
 - A compact Contacts group rail supports all contacts, saved groups, group creation, and archive actions.
 - The group rail includes a repeatable business-domain action that creates or updates persistent groups from eligible contact email domains without duplicating memberships; reruns may improve generated group names as better company relationships are added.
@@ -175,7 +180,7 @@ The Contacts UI must be human-friendly and policy-aligned:
 - The quality workspace must separate possible duplicates, email-only records, placeholder names, missing company context, missing purpose notes, imported review records, incomplete records, and ready records into guided queues with direct suggested actions.
 - Review Queue is visible and actionable.
 - Review Queue includes duplicate comparison and merge actions that let users choose which record remains authoritative without leaving the workspace.
-- Create/edit form supports minimal save with at least one meaningful field and addable sections for person details, organization details, dates, messaging and tags, source/reference, website, address, and notes.
+- Create/edit form supports minimal save with at least one meaningful field and addable sections for person details, organization details, dates, messaging and tags, governance source/reference/consent/allowed-use/confidence details, website, address, and notes.
 - Validation errors are specific and close to the affected fields.
 - Module disabled/uninstalled states are clear and route users back to Apps Manager actions.
 - Light, dark, and system appearances remain supported.

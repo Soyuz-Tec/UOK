@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from .access import can_manage_contacts, readable_note_records, readable_party_filter, readable_relationship_records
 from .group_read_model import readable_group_party_ids
 from .models import ContactGroupMember, Party, PartyNote, PartyRelationship
+from .read_model_filters import apply_contact_extra_filters, party_matches_extra_filters, validated_quality_filter
 from .read_model_rows import _party_attrs, serialize_party
 from .validation import CONTACT_ATTR_FIELDS
 from uok.security import Actor, has_permission
@@ -31,14 +32,17 @@ def list_parties(
     status: str = "active",
     review_state: str = "",
     party_type: str = "",
+    source: str = "all",
+    quality: str = "all",
     limit: int = 200,
     offset: int = 0,
     sort_by: str = "updated_at",
     sort_dir: str = "desc",
 ) -> list[dict[str, Any]]:
+    quality = validated_quality_filter(quality)
     if _is_postgres(db):
-        return _list_parties_postgres(db, actor, query, group_id, status, review_state, party_type, limit, offset, sort_by, sort_dir)
-    return _list_parties_python(db, actor, query, group_id, status, review_state, party_type, limit, offset, sort_by, sort_dir)
+        return _list_parties_postgres(db, actor, query, group_id, status, review_state, party_type, source, quality, limit, offset, sort_by, sort_dir)
+    return _list_parties_python(db, actor, query, group_id, status, review_state, party_type, source, quality, limit, offset, sort_by, sort_dir)
 
 
 def count_parties(
@@ -49,11 +53,14 @@ def count_parties(
     status: str = "active",
     review_state: str = "",
     party_type: str = "",
+    source: str = "all",
+    quality: str = "all",
 ) -> int:
+    quality = validated_quality_filter(quality)
     if _is_postgres(db):
-        stmt = _filtered_postgres_party_statement(db, actor, query, group_id, status, review_state, party_type)
+        stmt = _filtered_postgres_party_statement(db, actor, query, group_id, status, review_state, party_type, source, quality)
         return int(db.scalar(select(func.count()).select_from(stmt.subquery())) or 0)
-    return len(_filtered_python_parties(db, actor, query, group_id, status, review_state, party_type))
+    return len(_filtered_python_parties(db, actor, query, group_id, status, review_state, party_type, source, quality))
 
 
 def review_queue(db: Session, actor: Actor) -> list[dict[str, Any]]:
@@ -78,6 +85,8 @@ def _list_parties_python(
     status: str,
     review_state: str,
     party_type: str,
+    source: str,
+    quality: str,
     limit: int,
     offset: int,
     sort_by: str,
@@ -85,7 +94,7 @@ def _list_parties_python(
 ) -> list[dict[str, Any]]:
     page_limit = _bounded_limit(limit)
     page_offset = _bounded_offset(offset)
-    result = _filtered_python_parties(db, actor, query, group_id, status, review_state, party_type, sort_by, sort_dir)
+    result = _filtered_python_parties(db, actor, query, group_id, status, review_state, party_type, source, quality, sort_by, sort_dir)
     return result[page_offset:page_offset + page_limit]
 
 
@@ -97,6 +106,8 @@ def _filtered_python_parties(
     status: str,
     review_state: str,
     party_type: str,
+    source: str = "all",
+    quality: str = "all",
     sort_by: str = "updated_at",
     sort_dir: str = "desc",
 ) -> list[dict[str, Any]]:
@@ -114,6 +125,8 @@ def _filtered_python_parties(
             continue
         if not _party_matches_filters(party, allowed, status, review_state, party_type):
             continue
+        if not party_matches_extra_filters(db, actor, party, source, quality):
+            continue
         notes = readable_note_records(db, party.id, actor)
         relationships = readable_relationship_records(db, actor, party.id, allowed)
         if query_value and query_value not in _party_search_text(party, notes, relationships):
@@ -130,12 +143,14 @@ def _list_parties_postgres(
     status: str,
     review_state: str,
     party_type: str,
+    source: str,
+    quality: str,
     limit: int,
     offset: int,
     sort_by: str,
     sort_dir: str,
 ) -> list[dict[str, Any]]:
-    stmt = _filtered_postgres_party_statement(db, actor, query, group_id, status, review_state, party_type)
+    stmt = _filtered_postgres_party_statement(db, actor, query, group_id, status, review_state, party_type, source, quality)
     if query.strip():
         search_query = func.websearch_to_tsquery("simple", query.strip())
         stmt = stmt.order_by(func.ts_rank_cd(_postgres_contact_search_vector(), search_query).desc(), *_contact_ordering(sort_by, sort_dir))
@@ -145,7 +160,7 @@ def _list_parties_postgres(
     return [serialize_party(db, row) for row in rows]
 
 
-def _filtered_postgres_party_statement(db: Session, actor: Actor, query: str, group_id: str, status: str, review_state: str, party_type: str):
+def _filtered_postgres_party_statement(db: Session, actor: Actor, query: str, group_id: str, status: str, review_state: str, party_type: str, source: str, quality: str):
     stmt = _readable_party_statement(select(Party).where(Party.organization_id == actor.organization_id), actor)
     if group_id:
         group_party_ids = readable_group_party_ids(db, actor, group_id)
@@ -162,6 +177,7 @@ def _filtered_postgres_party_statement(db: Session, actor: Actor, query: str, gr
         stmt = stmt.where(Party.review_state == review_state)
     if party_type and party_type != "all":
         stmt = stmt.where(Party.party_type == party_type)
+    stmt = apply_contact_extra_filters(stmt, actor, source, quality)
     if query.strip():
         stmt = stmt.where(_postgres_contact_search_vector().op("@@")(func.websearch_to_tsquery("simple", query.strip())))
     return stmt

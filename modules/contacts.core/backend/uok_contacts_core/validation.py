@@ -15,6 +15,9 @@ CONTACT_ATTR_FIELDS = (
     "important_date",
     "instant_message",
     "tags",
+    "consent_status",
+    "allowed_use",
+    "confidence_level",
 )
 
 MEANINGFUL_FIELDS = CONTACT_ATTR_FIELDS + ("display_name", "note")
@@ -62,6 +65,9 @@ CONTACT_FIELD_LIMITS = {
     "important_date": MAX_CONTACT_STATUS_LENGTH,
     "instant_message": MAX_CONTACT_EMAIL_LENGTH,
     "tags": MAX_CONTACT_WEBSITE_LENGTH,
+    "consent_status": MAX_CONTACT_STATUS_LENGTH,
+    "allowed_use": MAX_CONTACT_STATUS_LENGTH,
+    "confidence_level": MAX_CONTACT_STATUS_LENGTH,
     "name": MAX_CONTACT_GROUP_NAME_LENGTH,
     "group_name": MAX_CONTACT_GROUP_NAME_LENGTH,
     "group_description": MAX_CONTACT_GROUP_DESCRIPTION_LENGTH,

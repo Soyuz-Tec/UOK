@@ -19,6 +19,7 @@ export function SearchWorkspace({
   groupDefaultValue = "none",
   defaultSummaryLabel = "All records",
   savedViewsStorageKey,
+  presetViews = [],
   onChange,
   onGroupByChange,
   onClear
@@ -33,6 +34,7 @@ export function SearchWorkspace({
   groupDefaultValue?: string;
   defaultSummaryLabel?: string;
   savedViewsStorageKey: string;
+  presetViews?: SavedSearchView[];
   onChange: (value: string) => void;
   onGroupByChange: (value: string) => void;
   onClear: () => void;
@@ -42,6 +44,7 @@ export function SearchWorkspace({
   const groupingEnabled = groupOptions.length > 0;
   const sortingEnabled = Boolean(sort);
   const { savedViews, upsertSavedView, deleteSavedView } = useSavedSearchViews(savedViewsStorageKey);
+  const availableSavedViews = [...presetViews, ...savedViews];
   const { activeChips, effectiveGroupBy, filterValues, summary, summaryLabel } = useSearchRefinements({
     value,
     filters,
@@ -142,7 +145,7 @@ export function SearchWorkspace({
           filters={filters}
           groupOptions={groupOptions}
           groupingEnabled={groupingEnabled}
-          savedViews={savedViews}
+          savedViews={availableSavedViews}
           sort={sort}
           viewName={viewName}
           onApplyView={applyView}

@@ -1,8 +1,9 @@
 import { UserPlus } from "lucide-react";
 
 import { contactsViewOptions } from "../../shared/options";
-import type { ContactGroupBy, ContactGroupRecord, ContactSortBy, ContactSortDir, ContactsView } from "../../shared/types";
+import type { ContactGroupBy, ContactGroupRecord, ContactQualityFilter, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "../../shared/types";
 import { SearchWorkspace } from "../../shared/forms";
+import type { SavedSearchView } from "../../shared/forms";
 import { IconButton, SegmentedControl } from "../../shared/primitives";
 import { ContactPagingControls } from "./ContactPagingControls";
 
@@ -28,6 +29,21 @@ const typeOptions = [
   { value: "organization", label: "Organization" }
 ];
 
+const sourceOptions: Array<{ value: ContactSourceFilter; label: string }> = [
+  { value: "all", label: "All sources" },
+  { value: "contacts", label: "Contacts" },
+  { value: "gmail", label: "Gmail" },
+  { value: "csv_import", label: "CSV import" },
+  { value: "email", label: "Email" },
+  { value: "manual", label: "Manual" }
+];
+
+const qualityOptions: Array<{ value: ContactQualityFilter; label: string }> = [
+  { value: "all", label: "All quality states" },
+  { value: "no_company", label: "No company" },
+  { value: "duplicate_risk", label: "Duplicate risk" }
+];
+
 const groupOptions = [
   { value: "none", label: "No grouping" },
   { value: "type", label: "Type" },
@@ -46,11 +62,24 @@ const sortOptions: Array<{ value: ContactSortBy; label: string }> = [
   { value: "source", label: "Source" }
 ];
 
+const presetSavedViews: SavedSearchView[] = [
+  contactPreset("all-records", "All records", { status: "all" }, "none", "updated_at", "desc"),
+  contactPreset("needs-review", "Needs review", { review: "needs_review" }, "none", "updated_at", "desc"),
+  contactPreset("organizations", "Organizations", { type: "organization" }, "none", "display_name", "asc"),
+  contactPreset("people", "People", { type: "person" }, "none", "display_name", "asc"),
+  contactPreset("no-company", "No company", { quality: "no_company", type: "person" }, "none", "updated_at", "desc"),
+  contactPreset("imported-from-gmail", "Imported from Gmail", { source: "gmail" }, "none", "updated_at", "desc"),
+  contactPreset("duplicate-risk", "Duplicate risk", { quality: "duplicate_risk" }, "none", "updated_at", "desc"),
+  contactPreset("recently-updated", "Recently updated", {}, "none", "updated_at", "desc")
+];
+
 export function ContactsToolbar({
   query,
   statusFilter,
   reviewFilter,
   typeFilter,
+  sourceFilter,
+  qualityFilter,
   contactGroups,
   contactGroupId,
   contactPage,
@@ -66,6 +95,8 @@ export function ContactsToolbar({
   onStatusFilterChange,
   onReviewFilterChange,
   onTypeFilterChange,
+  onSourceFilterChange,
+  onQualityFilterChange,
   onContactGroupChange,
   onContactGroupByChange,
   onClearFilters,
@@ -80,6 +111,8 @@ export function ContactsToolbar({
   statusFilter: string;
   reviewFilter: string;
   typeFilter: string;
+  sourceFilter: ContactSourceFilter;
+  qualityFilter: ContactQualityFilter;
   contactGroups: ContactGroupRecord[];
   contactGroupId: string;
   contactPage: number;
@@ -95,6 +128,8 @@ export function ContactsToolbar({
   onStatusFilterChange: (value: string) => void;
   onReviewFilterChange: (value: string) => void;
   onTypeFilterChange: (value: string) => void;
+  onSourceFilterChange: (value: ContactSourceFilter) => void;
+  onQualityFilterChange: (value: ContactQualityFilter) => void;
   onContactGroupChange: (value: string) => void;
   onContactGroupByChange: (value: ContactGroupBy) => void;
   onClearFilters: () => void;
@@ -124,7 +159,9 @@ export function ContactsToolbar({
             { id: "contact-group", label: "Group", value: contactGroupId || "all", defaultValue: "all", options: contactGroupFilterOptions, onChange: (value) => onContactGroupChange(value === "all" ? "" : value) },
             { id: "status", label: "Status", value: statusFilter, defaultValue: "active", options: statusOptions, onChange: onStatusFilterChange },
             { id: "review", label: "Review", value: reviewFilter, defaultValue: "all", options: reviewOptions, onChange: onReviewFilterChange },
-            { id: "type", label: "Type", value: typeFilter, defaultValue: "all", options: typeOptions, onChange: onTypeFilterChange }
+            { id: "type", label: "Type", value: typeFilter, defaultValue: "all", options: typeOptions, onChange: onTypeFilterChange },
+            { id: "source", label: "Source", value: sourceFilter, defaultValue: "all", options: sourceOptions, onChange: (value) => onSourceFilterChange(value as ContactSourceFilter) },
+            { id: "quality", label: "Quality", value: qualityFilter, defaultValue: "all", options: qualityOptions, onChange: (value) => onQualityFilterChange(value as ContactQualityFilter) }
           ]}
           sort={{
             label: "Contact sort field",
@@ -141,6 +178,7 @@ export function ContactsToolbar({
           groupBy={groupingEnabled ? contactGroupBy : "none"}
           groupOptions={groupingEnabled ? groupOptions : []}
           savedViewsStorageKey={contactsSavedViewsKey}
+          presetViews={presetSavedViews}
           onGroupByChange={(value) => onContactGroupByChange(groupingEnabled ? value as ContactGroupBy : "none")}
           onClear={onClearFilters}
         />
@@ -164,4 +202,32 @@ export function ContactsToolbar({
       </div>
     </div>
   );
+}
+
+function contactPreset(
+  id: string,
+  name: string,
+  filters: Partial<Record<string, string>>,
+  groupBy: ContactGroupBy,
+  sortBy: ContactSortBy,
+  sortDir: ContactSortDir
+): SavedSearchView {
+  return {
+    id: `contacts-preset-${id}`,
+    name,
+    query: "",
+    filters: {
+      "contact-group": "all",
+      status: "active",
+      review: "all",
+      type: "all",
+      source: "all",
+      quality: "all",
+      ...filters
+    },
+    groupBy,
+    sortBy,
+    sortDir,
+    locked: true
+  };
 }

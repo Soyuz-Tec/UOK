@@ -51,6 +51,8 @@ def contacts(
     status: str = "active",
     review_state: str = "",
     party_type: str = "",
+    source: str = Query(default="all", max_length=80),
+    quality: str = Query(default="all", pattern="^(all|no_company|duplicate_risk)$"),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     sort_by: str = Query(default="updated_at", pattern="^(display_name|updated_at|created_at|status|review_state|party_type|source)$"),
@@ -69,6 +71,8 @@ def contacts(
             status=status,
             review_state=review_state,
             party_type=party_type,
+            source=source,
+            quality=quality,
         ))
         return list_parties(
             db,
@@ -78,6 +82,8 @@ def contacts(
             status=status,
             review_state=review_state,
             party_type=party_type,
+            source=source,
+            quality=quality,
             limit=limit,
             offset=offset,
             sort_by=sort_by,

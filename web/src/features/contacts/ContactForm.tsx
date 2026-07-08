@@ -13,7 +13,7 @@ const addableSections: Array<{ id: AddableSection; label: string; description: s
   { id: "organization", label: "Organization details", description: "Company, title, and team", icon: Building2 },
   { id: "dates", label: "Dates", description: "Birthday and important date", icon: CalendarDays },
   { id: "messaging", label: "Messaging and tags", description: "Instant message and tags", icon: MessageCircle },
-  { id: "source", label: "Source details", description: "Source and reference", icon: ShieldCheck },
+  { id: "source", label: "Governance details", description: "Source, consent, and allowed use", icon: ShieldCheck },
   { id: "more", label: "More details", description: "Website, address, and note", icon: FileText }
 ];
 
@@ -43,6 +43,9 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
     draft.important_date,
     draft.instant_message,
     draft.tags,
+    draft.consent_status,
+    draft.allowed_use,
+    draft.confidence_level,
     draft.note
   ].some((value) => value.trim().length > 0);
   const canSave = hasMeaningfulValue && !emailError && !websiteError;
@@ -50,7 +53,7 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
   const hasOrganizationDetails = [draft.organization_name, draft.company_name, draft.title, draft.team_id].some((value) => value.trim().length > 0);
   const hasDateDetails = [draft.birthday, draft.important_date].some((value) => value.trim().length > 0);
   const hasMessagingDetails = [draft.instant_message, draft.tags].some((value) => value.trim().length > 0);
-  const hasSourceDetails = [draft.source, draft.client_reference].some((value) => value.trim().length > 0);
+  const hasSourceDetails = [draft.source, draft.client_reference, draft.consent_status, draft.allowed_use, draft.confidence_level].some((value) => value.trim().length > 0);
   const hasMoreContactDetails = [draft.website, draft.address, draft.note].some((value) => value.trim().length > 0);
   const [addedSections, setAddedSections] = useState<Record<AddableSection, boolean>>({
     person: false,
@@ -152,7 +155,7 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
         </ContactFormDisclosure>
       )}
       {visibleSections.source && (
-        <ContactFormDisclosure title="Source details" summary="Origin and reference" defaultOpen>
+        <ContactFormDisclosure title="Governance details" summary="Origin, consent, allowed use, and confidence" defaultOpen>
           <label className="field">
             <span>Source</span>
             <select value={draft.source} onChange={(event) => setField("source", event.target.value)}>
@@ -165,6 +168,35 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
             </select>
           </label>
           <label className="field"><span>Reference</span><input value={draft.client_reference} onChange={(event) => setField("client_reference", event.target.value)} /></label>
+          <label className="field">
+            <span>Consent</span>
+            <select value={draft.consent_status} onChange={(event) => setField("consent_status", event.target.value)}>
+              <option value="">Unknown</option>
+              <option value="business_contact">Business contact</option>
+              <option value="consented">Consented</option>
+              <option value="restricted">Restricted</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Allowed use</span>
+            <select value={draft.allowed_use} onChange={(event) => setField("allowed_use", event.target.value)}>
+              <option value="">Not set</option>
+              <option value="operations">Operations</option>
+              <option value="crm">CRM</option>
+              <option value="restricted">Restricted</option>
+              <option value="do_not_contact">Do not contact</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Confidence</span>
+            <select value={draft.confidence_level} onChange={(event) => setField("confidence_level", event.target.value)}>
+              <option value="">Unknown</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="verified">Verified</option>
+            </select>
+          </label>
         </ContactFormDisclosure>
       )}
       {visibleSections.more && (

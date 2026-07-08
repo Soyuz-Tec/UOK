@@ -724,6 +724,8 @@ export interface components {
         ContactWriteRequest: {
             /** Address */
             address?: string | null;
+            /** Allowed Use */
+            allowed_use?: string | null;
             /** Birthday */
             birthday?: string | null;
             /** Client Reference */
@@ -732,6 +734,10 @@ export interface components {
             company_name?: string | null;
             /** Company Party Id */
             company_party_id?: string | null;
+            /** Confidence Level */
+            confidence_level?: string | null;
+            /** Consent Status */
+            consent_status?: string | null;
             /** Display Name */
             display_name?: string | null;
             /** Email */
@@ -1081,6 +1087,8 @@ export interface operations {
                 status?: string;
                 review_state?: string;
                 party_type?: string;
+                source?: string;
+                quality?: string;
                 limit?: number;
                 offset?: number;
                 sort_by?: string;

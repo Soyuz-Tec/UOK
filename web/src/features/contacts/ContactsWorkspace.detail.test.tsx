@@ -229,7 +229,7 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(dialog).getByRole("button", { name: /Organization details/i })).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: /Dates/i })).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: /Messaging and tags/i })).toBeInTheDocument();
-    expect(within(dialog).getByRole("button", { name: /Source details/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /Governance details/i })).toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByRole("button", { name: /More details/i }));
     expect(within(dialog).getByLabelText("Website")).toBeInTheDocument();
@@ -237,8 +237,9 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(dialog).getByLabelText("Birthday")).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole("button", { name: /Messaging and tags/i }));
     expect(within(dialog).getByLabelText("Tags")).toBeInTheDocument();
-    fireEvent.click(within(dialog).getByRole("button", { name: /Source details/i }));
+    fireEvent.click(within(dialog).getByRole("button", { name: /Governance details/i }));
     expect(within(dialog).getByLabelText("Source")).toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Consent")).toBeInTheDocument();
   });
 
   it("runs smart contact grouping from the group rail", async () => {

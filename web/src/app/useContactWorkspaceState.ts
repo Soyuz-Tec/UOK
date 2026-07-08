@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 import { draftFromContact } from "./contactDraft";
 import type { WorkbenchPreferences } from "./useWorkbenchPreferences";
-import type { ContactDetailPane, ContactDraft, ContactRecord, ContactSortBy, ContactSortDir } from "../shared/types";
+import type { ContactDetailPane, ContactDraft, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter } from "../shared/types";
 import { emptyDraft } from "../shared/types";
 
 export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
@@ -15,6 +15,8 @@ export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
   const [statusFilter, setStatusFilter] = useState("active");
   const [reviewFilter, setReviewFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState<ContactSourceFilter>("all");
+  const [qualityFilter, setQualityFilter] = useState<ContactQualityFilter>("all");
   const [contactPage, setContactPage] = useState(0);
   const [contactPageSize, setContactPageSize] = useState(25);
   const [contactSortBy, setContactSortBy] = useState<ContactSortBy>("updated_at");
@@ -30,11 +32,13 @@ export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
     statusFilter,
     reviewFilter,
     typeFilter,
+    sourceFilter,
+    qualityFilter,
     contactPage,
     contactPageSize,
     contactSortBy,
     contactSortDir
-  }), [contactGroupId, contactPage, contactPageSize, contactSortBy, contactSortDir, query, reviewFilter, statusFilter, typeFilter]);
+  }), [contactGroupId, contactPage, contactPageSize, contactSortBy, contactSortDir, qualityFilter, query, reviewFilter, sourceFilter, statusFilter, typeFilter]);
 
   function startCreate() {
     setCreating(true);
@@ -88,6 +92,16 @@ export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
     setTypeFilter(value);
   }
 
+  function changeSourceFilter(value: ContactSourceFilter) {
+    setContactPage(0);
+    setSourceFilter(value);
+  }
+
+  function changeQualityFilter(value: ContactQualityFilter) {
+    setContactPage(0);
+    setQualityFilter(value);
+  }
+
   function changeContactPageSize(value: number) {
     setContactPage(0);
     setContactPageSize(value);
@@ -109,6 +123,8 @@ export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
     setStatusFilter("active");
     setReviewFilter("all");
     setTypeFilter("all");
+    setSourceFilter("all");
+    setQualityFilter("all");
     setContactSortBy("updated_at");
     setContactSortDir("desc");
     setContactPage(0);
@@ -141,6 +157,8 @@ export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
     relationshipTarget,
     relationshipType,
     reviewFilter,
+    sourceFilter,
+    qualityFilter,
     setContactDetailPane,
     setContactPage,
     setCreating,
@@ -153,6 +171,8 @@ export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
     setReviewFilter: changeReviewFilter,
     setStatusFilter: changeStatusFilter,
     setTypeFilter: changeTypeFilter,
+    setSourceFilter: changeSourceFilter,
+    setQualityFilter: changeQualityFilter,
     setQuery: changeQuery,
     setContactGroupId: changeContactGroupId,
     setContactPageSize: changeContactPageSize,

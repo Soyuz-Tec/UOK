@@ -5,6 +5,7 @@ export type {
   SearchWorkspaceFilter,
   SearchWorkspaceOption,
   SearchWorkspaceSort,
-  SearchWorkspaceSortDirection
+  SearchWorkspaceSortDirection,
+  SavedSearchView
 } from "./SearchWorkspace.types";
 export { SearchField } from "./SearchField";
