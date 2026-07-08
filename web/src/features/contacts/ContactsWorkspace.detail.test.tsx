@@ -167,7 +167,10 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     const inspector = screen.getByLabelText("Contact inspector");
     const relationshipRow = within(inspector).getByText(contact.email || "").closest(".relationship-row") as HTMLElement;
     fireEvent.click(within(relationshipRow).getByLabelText("Edit relationship with Example Contact"));
-    fireEvent.change(within(relationshipRow).getByLabelText("Relationship"), { target: { value: "billing_contact" } });
+    const relationshipSelector = within(relationshipRow).getByLabelText("Relationship");
+    expect(within(relationshipSelector).getByRole("option", { name: "Finance contact" })).toBeInTheDocument();
+    expect(within(relationshipSelector).getByRole("option", { name: "Supplier contact" })).toBeInTheDocument();
+    fireEvent.change(relationshipSelector, { target: { value: "billing_contact" } });
     fireEvent.click(within(relationshipRow).getByLabelText("Save relationship"));
 
     await waitFor(() => expect(onUpdateRelationship).toHaveBeenCalledWith("relationship-1", contact.id, organizationContact.id, "billing_contact"));

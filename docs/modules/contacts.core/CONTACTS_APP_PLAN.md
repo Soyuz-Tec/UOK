@@ -93,8 +93,11 @@ Examples:
 - `primary_contact`
 - `billing_contact`
 - `decision_maker`
+- `finance_contact`
+- `operations_contact`
 - `advisor`
 - `supplier`
+- `supplier_contact`
 - `customer`
 
 ### Notes

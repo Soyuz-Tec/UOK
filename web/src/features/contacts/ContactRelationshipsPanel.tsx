@@ -148,9 +148,12 @@ const relationshipTypeOptions = [
   { id: "works_for", label: "Works for" },
   { id: "billing_contact", label: "Billing contact" },
   { id: "decision_maker", label: "Decision maker" },
+  { id: "finance_contact", label: "Finance contact" },
+  { id: "operations_contact", label: "Operations contact" },
   { id: "advisor", label: "Advisor" },
   { id: "customer", label: "Customer" },
-  { id: "supplier", label: "Supplier" }
+  { id: "supplier", label: "Supplier" },
+  { id: "supplier_contact", label: "Supplier contact" }
 ];
 
 function relatedPartyFallback(rel: ContactRelationship) {
