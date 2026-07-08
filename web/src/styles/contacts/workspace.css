@@ -116,7 +116,7 @@
   grid-template-areas:
     "search page view primary";
   align-items: center;
-  gap: var(--uok-space-2);
+  column-gap: var(--uok-space-2);
   padding: var(--uok-space-3);
 }
 
@@ -125,7 +125,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--uok-space-2);
+  gap: var(--uok-space-3);
   min-width: 0;
   border: 0;
   border-radius: 0;
@@ -134,9 +134,9 @@
 }
 
 .contact-page-control {
-  display: grid;
-  gap: var(--uok-space-1);
-  min-width: 108px;
+  display: flex;
+  align-items: center;
+  min-width: 96px;
 }
 
 .contact-page-control span {
@@ -146,6 +146,7 @@
 }
 
 .contact-page-control select {
+  height: var(--uok-control-height);
   min-height: var(--uok-control-height);
   border: var(--uok-line);
   border-radius: var(--uok-radius-2);
@@ -159,14 +160,15 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--uok-space-2);
-  min-width: 280px;
+  gap: var(--uok-space-3);
+  min-width: 264px;
 }
 
 .contact-page-status {
-  min-width: 132px;
+  min-width: 124px;
   color: var(--uok-text-secondary);
   font-weight: 700;
+  line-height: var(--uok-control-height);
   text-align: center;
   white-space: nowrap;
 }
@@ -196,6 +198,7 @@
 .view-group,
 .primary-group {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
 }
 

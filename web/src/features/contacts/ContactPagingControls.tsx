@@ -28,7 +28,7 @@ export function ContactPagingControls({
   return (
     <div className="contact-page-controls" aria-label="Contact paging">
       <label className="contact-page-control">
-        <span>Rows</span>
+        <span className="visually-hidden">Rows</span>
         <select aria-label="Contacts page size" value={pageSize} onChange={(event) => onPageSizeChange(Number(event.target.value))}>
           {pageSizeOptions.map((option) => (
             <option key={option} value={option}>{option}</option>
