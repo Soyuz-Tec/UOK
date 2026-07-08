@@ -65,6 +65,7 @@ The alpha.3 baseline currently includes:
 - List + Detail, Table, and Cards views;
 - saved search presets and user-saved searches;
 - shared resizable table column behavior;
+- shared user-configurable table column visibility for optional contact data points;
 - local candidate verifier coverage.
 
 ## Domain Model
@@ -197,6 +198,7 @@ Current UI responsibilities:
 - use a global workspace popup primitive for table/cards detail editing;
 - keep New Contact clean and independent from any previously selected contact;
 - keep table review workflows compact, with explicit row-level open-detail affordances in addition to row click and keyboard activation;
+- let users add or remove optional Table view data points without changing the default low-distraction view;
 - keep create/edit forms progressive, with essentials first and optional addable sections;
 - keep validation messages specific and near the affected fields;
 - support light, dark, and system appearance through design tokens.

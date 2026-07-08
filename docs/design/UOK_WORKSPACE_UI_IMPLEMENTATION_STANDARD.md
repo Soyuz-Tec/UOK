@@ -101,6 +101,7 @@ Required shared primitives include:
 - search and filter workspace
 - saved views
 - data table with accessible resizable columns
+- data table column visibility for optional data points
 - pagination controls
 - inline editable field
 - workspace popup or sheet

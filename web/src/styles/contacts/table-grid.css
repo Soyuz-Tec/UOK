@@ -1,3 +1,14 @@
+.contacts-table-stack {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.contacts-table-control-bar {
+  display: flex;
+  justify-content: flex-end;
+  min-height: var(--uok-control-height);
+}
+
 .contacts-table .contacts-table-group-row th {
   height: 38px;
   color: var(--uok-text-secondary);
