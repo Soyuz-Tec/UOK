@@ -100,12 +100,16 @@ def check_frontend_stack() -> CheckResult:
         problems.append("frontend test script missing")
     if package.get("scripts", {}).get("build:static") is None:
         problems.append("frontend static build script missing")
+    if package.get("scripts", {}).get("test:ui-proof") is None:
+        problems.append("frontend UI proof script missing")
     if compiler_options.get("strict") is not True:
         problems.append("TypeScript strict mode must stay enabled")
     if compiler_options.get("allowJs") is not False:
         problems.append("TypeScript allowJs must stay false")
     if not (REPO_ROOT / "web/package-lock.json").exists():
         problems.append("web/package-lock.json missing")
+    if not (REPO_ROOT / "web/playwright.config.ts").exists():
+        problems.append("Playwright UI proof config missing")
     durable_js = [
         path.as_posix()
         for path in (REPO_ROOT / "web/src").rglob("*.js")
@@ -160,6 +164,8 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("standard operations runbook must document TechnologyAudit")
     if "EngineeringEvidence" not in runbook:
         problems.append("standard operations runbook must document EngineeringEvidence")
+    if "UiProof" not in runbook:
+        problems.append("standard operations runbook must document UiProof")
     for action in ("GithubReadiness", "GithubSecuritySetup", "GithubPrChecks"):
         if action not in runbook:
             problems.append(f"standard operations runbook must document {action}")

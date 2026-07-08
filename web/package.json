@@ -11,17 +11,20 @@
     "generate:client": "openapi-typescript src/generated/openapi.json -o src/generated/openapi.d.ts",
     "generate:api": "python ../scripts/export_openapi_schema.py && npm run generate:client",
     "test": "vitest run",
+    "test:ui-proof": "playwright test",
     "build:client": "tsc -b && vite build --base=/static/app/",
     "build": "npm run generate:api && npm run build:client",
     "build:static": "npm run generate:api && npm run build:client -- --outDir ../src/uok/static/app --emptyOutDir",
     "dev": "vite --host 127.0.0.1 --port 5187"
   },
   "dependencies": {
+    "@svar-ui/react-gantt": "2.7.1",
     "lucide-react": "1.23.0",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },
   "devDependencies": {
+    "@playwright/test": "1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "26.1.0",

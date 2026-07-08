@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "Verify", "Rebuild", "Health", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
+    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
     [string]$Action = "Audit",
     [string]$BaseUrl = "http://127.0.0.1:18088",
     [string]$ProjectName = "uok",
@@ -131,6 +131,15 @@ function Invoke-UokEngineeringEvidence {
     }
 }
 
+function Invoke-UokUiProof {
+    Push-Location web
+    try {
+        Invoke-UokStep "UI proof automation" { Invoke-Native "npm" @("run", "test:ui-proof") }
+    } finally {
+        Pop-Location
+    }
+}
+
 function Invoke-UokVerify {
     Invoke-UokAudit
     Push-Location web
@@ -140,6 +149,7 @@ function Invoke-UokVerify {
     } finally {
         Pop-Location
     }
+    Invoke-UokUiProof
     Invoke-UokStep "Candidate verifier" {
         Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate.ps1", "-BaseUrl", $BaseUrl)
     }
@@ -217,6 +227,7 @@ switch ($Action) {
     "Audit" { Invoke-UokAudit }
     "TechnologyAudit" { Invoke-UokTechnologyAudit }
     "EngineeringEvidence" { Invoke-UokEngineeringEvidence }
+    "UiProof" { Invoke-UokUiProof }
     "Verify" { Invoke-UokVerify }
     "Rebuild" { Invoke-UokRebuild }
     "Health" { Invoke-UokHealth }

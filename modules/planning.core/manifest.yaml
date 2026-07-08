@@ -1,0 +1,70 @@
+name: planning.core
+kind: capability_module
+version: APP_VERSION
+description: "Optional project planning, task scheduling, dependency, baseline, calendar, and Gantt capability."
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - CreatePlanningProject
+  - CreatePlanningTask
+  - UpdatePlanningTask
+  - LinkPlanningTasks
+events:
+  - PlanningProjectCreated
+  - PlanningTaskCreated
+  - PlanningTaskUpdated
+  - PlanningTaskLinked
+dependencies: []
+backend_path: modules/planning.core/backend
+web_path: modules/planning.core/web
+migrations_path: modules/planning.core/migrations
+tests_path: modules/planning.core/tests
+api_prefixes:
+  - /api/planning
+api_router: uok_planning_core.api:router
+command_handlers: uok_planning_core.commands:command_handlers
+command_permissions: uok_planning_core.commands:command_permissions
+role_grants: uok_planning_core.policy:role_grants
+dashboard_provider: uok_planning_core.reports:dashboard_counts
+evidence_provider: uok_planning_core.reports:evidence
+model_exports: uok_planning_core.models:owned_models
+candidate_verifier_script: modules/planning.core/tests/verify/UokCandidatePlanning.ps1
+candidate_verifier_function: Invoke-UokPlanningCandidateScenario
+permissions:
+  - planning.read
+  - planning.manage
+owned_tables:
+  - PlanningProject
+  - PlanningTask
+  - PlanningTaskDependency
+  - PlanningCalendar
+  - PlanningResource
+  - PlanningAssignment
+  - PlanningBaseline
+  - PlanningScheduleEvent
+  - CommandLog:planning.core
+  - EventRecord:Planning
+extension_points:
+  - manifest
+  - backend_package
+  - command_handlers
+  - api_router
+  - dashboard_provider
+  - evidence_provider
+  - model_exports
+  - permissions
+  - events
+  - migrations
+  - web_surface
+  - tests
+  - candidate_verifier
+data_retention_policy: "User delete archives or disables planning access; schedule records, baselines, and audit events are retained for admin-controlled recovery unless a future purge workflow is explicitly executed."

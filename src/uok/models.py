@@ -181,6 +181,18 @@ class ContactImportBatch(Base):
     )
 
 
+from .planning_models import (  # noqa: E402
+    PlanningAssignment,
+    PlanningBaseline,
+    PlanningCalendar,
+    PlanningProject,
+    PlanningResource,
+    PlanningScheduleEvent,
+    PlanningTask,
+    PlanningTaskDependency,
+)
+
+
 class WorkflowInstance(Base):
     __tablename__ = "workflow_instances"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)

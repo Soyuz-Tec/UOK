@@ -20,7 +20,7 @@ import type { Appearance, ContactDetailPane, ContactsView, Section } from "./typ
 
 export type Option<T extends string> = { id: T; label: string; icon: ElementType };
 
-export const coreSections: Array<Option<Exclude<Section, "contacts">>> = [
+export const coreSections: Array<Option<Exclude<Section, "contacts" | "planning">>> = [
   { id: "overview", label: "Overview", icon: Database },
   { id: "apps", label: "Apps Manager", icon: Store },
   { id: "evidence", label: "Evidence", icon: Archive },

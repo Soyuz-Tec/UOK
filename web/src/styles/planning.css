@@ -1,0 +1,85 @@
+.planning-workspace {
+  display: grid;
+  gap: var(--uok-space-4);
+  min-width: 0;
+}
+
+.planning-gantt-shell {
+  min-width: 0;
+  height: clamp(420px, 62vh, 720px);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  overflow: hidden;
+  background: var(--uok-bg-elevated);
+}
+
+.planning-gantt-shell .wx-gantt {
+  min-height: 100%;
+}
+
+.planning-gantt-critical {
+  --wx-gantt-task-color: var(--uok-status-danger);
+  --wx-gantt-task-fill: color-mix(in srgb, var(--uok-status-danger) 86%, var(--uok-bg-elevated));
+}
+
+.planning-task-grid {
+  width: 100%;
+  min-width: 520px;
+}
+
+.planning-task-grid tr[aria-selected="true"] {
+  background: color-mix(in srgb, var(--uok-accent) 12%, var(--uok-bg-elevated));
+}
+
+.planning-task-title {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--uok-text-primary);
+  font-weight: 700;
+  text-overflow: ellipsis;
+}
+
+.planning-selected-task {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--uok-space-2);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-selected-task strong,
+.planning-selected-task span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-selected-task svg {
+  color: var(--uok-accent);
+}
+
+.planning-status {
+  max-height: 220px;
+  margin: 0;
+  overflow: auto;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-grouped-tertiary);
+  font-size: var(--uok-caption);
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 680px) {
+  .planning-gantt-shell {
+    height: 480px;
+  }
+}

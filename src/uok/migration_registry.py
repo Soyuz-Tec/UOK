@@ -66,6 +66,7 @@ def verify_migration_discipline(db: Session | None = None) -> dict[str, Any]:
         "module_migration_directories_present": all((repo_root() / str(manifest["migrations_path"])).is_dir() for manifest in manifests.values()),
         "module_migration_files_scoped": not module_scope_violations,
         "contacts_core_module_migration_present": any(item["module"] == "contacts.core" for item in module_files),
+        "planning_core_module_migration_present": any(item["module"] == "planning.core" for item in module_files),
         "target_schema_version_applied": not db or TARGET_VERSION in applied_versions,
     }
     return {

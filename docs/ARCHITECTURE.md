@@ -27,12 +27,13 @@ Operator browser
 | Module packages | `modules/<module_name>` | Module manifest, backend package, UI ownership marker, module-owned migrations, tests, candidate verifier scenarios, module-owned behavior. |
 | Frontend shell | `web/src` | React + TypeScript + Vite workbench, navigation shell, shared controls, module surface registry, generated API contracts. |
 | Database baseline | `migrations/001_initial_baseline.sql` | Initial shared candidate schema plus schema-version evidence. Future schema changes must be migration-gated and module-owned where applicable. |
-| Candidate verification | `scripts/verify_uok_candidate.ps1`, `modules/*/tests/verify` | Release smoke and module-declared candidate scenarios. |
+| Candidate verification | `scripts/verify_uok_candidate.ps1`, `modules/*/tests/verify`, `web/e2e` | Release smoke, module-declared candidate scenarios, and Playwright UI proof automation. |
 
 ## Current Module Model
 
 - `apps.manager` is the only required control module.
 - `contacts.core` is the first optional capability module.
+- `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - Module metadata is read from `modules/<module_name>/manifest.yaml`.
 - Backend runtime extension points are declared in manifests and resolved from module backend packages.
@@ -47,6 +48,7 @@ Operator browser
 - Shared baseline SQLAlchemy models currently remain in `src/uok/models.py`; module packages import their owned domain models through module-local facades and declare owned tables for validation.
 - Module-specific UI still lives in `web/src/features/<feature>` for this candidate, with ownership and composition expressed through the frontend module surface registry and module manifest `web_path`.
 - Contacts pytest suites and the Contacts candidate verifier scenario now live under `modules/contacts.core/tests`.
+- Planning behavior tests and the Planning candidate verifier scenario live under `modules/planning.core/tests`.
 
 ## Key Decisions
 
@@ -55,6 +57,7 @@ Operator browser
 - Internal engineering system: `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`
 - Code quality and technology audit standard: `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
 - ADR-0001: `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
+- ADR-0002: `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -64,6 +67,7 @@ Operator browser
 - AI operations kernel architecture: `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md`
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
 - Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
+- Planning Core module plan: `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
 
 ## Verification
 
@@ -73,6 +77,7 @@ Before publishing a candidate, run:
 python -m compileall -q src modules tests conftest.py
 python -m pytest -q
 npm --prefix web test
+npm --prefix web run test:ui-proof
 npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
 ```

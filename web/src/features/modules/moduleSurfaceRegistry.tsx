@@ -1,4 +1,4 @@
-import { ContactRound } from "lucide-react";
+import { CalendarRange, ContactRound } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { Workbench } from "../../app/useWorkbench";
@@ -6,8 +6,10 @@ import type { Option } from "../../shared/options";
 import type { Section } from "../../shared/types";
 import { CONTACTS_MODULE_ID, CONTACTS_SECTION_ID } from "../contacts/contactModule";
 import { ContactsWorkspace } from "../contacts/ContactsWorkspace";
+import { PLANNING_MODULE_ID, PLANNING_SECTION_ID } from "../planning/planningModule";
+import { PlanningWorkspace } from "../planning/PlanningWorkspace";
 
-type ModuleSection = Extract<Section, "contacts">;
+type ModuleSection = Extract<Section, "contacts" | "planning">;
 
 type ModuleSurface = Option<ModuleSection> & {
   moduleName: string;
@@ -96,6 +98,24 @@ export const moduleSurfaces: ModuleSurface[] = [
         onMergeDuplicate={workbench.mergeDuplicate}
       />
     )
+  },
+  {
+    id: PLANNING_SECTION_ID,
+    label: "Planning",
+    icon: CalendarRange,
+    moduleName: PLANNING_MODULE_ID,
+    render: (workbench) => {
+      const planningModule = workbench.moduleRows.find((row) => row.name === PLANNING_MODULE_ID);
+      return (
+        <PlanningWorkspace
+          token={workbench.token}
+          appearance={workbench.appearance}
+          module={planningModule}
+          busyAction={workbench.busyAction}
+          onActivate={() => workbench.moduleAction(PLANNING_MODULE_ID, planningModule?.status === "disabled" ? "enable" : "install")}
+        />
+      );
+    }
   }
 ];
 

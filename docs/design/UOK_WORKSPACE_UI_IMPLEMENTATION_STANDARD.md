@@ -127,6 +127,7 @@ Run the relevant gates before UI work is complete:
 
 ```powershell
 npm --prefix web test
+npm --prefix web run test:ui-proof
 npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
 ```
@@ -140,6 +141,12 @@ When runtime UI behavior changes, also verify:
 - critical text fits at desktop, tablet, and narrow widths;
 - selected, hover, focus, disabled, loading, invalid, and destructive states remain visible;
 - the workflow has no duplicate or contradictory controls.
+
+The standardized wrapper is:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action UiProof
+```
 
 For meaningful feature work, generate engineering evidence:
 

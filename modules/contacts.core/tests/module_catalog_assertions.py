@@ -6,6 +6,8 @@ def assert_baseline_evidence_checks(checks: dict[str, bool]) -> None:
         "apps_manager_operational",
         "contacts_module_available_to_install",
         "contacts_module_operational",
+        "planning_module_available_to_install",
+        "planning_module_operational",
         "module_lifecycle_events_present",
         "contact_full_crm_events_present",
         "private_notes_available",
@@ -35,12 +37,15 @@ def assert_module_lifecycle_and_evidence(client, admin: dict[str, str]) -> None:
         "apps_manager_declared",
         "agents_declared_as_available_module",
         "contacts_declared_as_available_module",
+        "planning_declared_as_available_module",
         "only_apps_manager_required",
         "no_business_modules_declared",
         "agents_installable",
         "agents_uninstallable",
         "contacts_installable",
         "contacts_uninstallable",
+        "planning_installable",
+        "planning_uninstallable",
     ):
         assert lifecycle_checks[key] is True
 

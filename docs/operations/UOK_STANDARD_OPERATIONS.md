@@ -4,7 +4,7 @@
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
-**Applies to:** local verification, audits, folder organization checks, GitHub preparation, PostgreSQL backup and restore, Podman rebuilds, and repeatable incident drills.
+**Applies to:** local verification, audits, UI proof automation, folder organization checks, GitHub preparation, PostgreSQL backup and restore, Podman rebuilds, and repeatable incident drills.
 
 ## Purpose
 
@@ -24,8 +24,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 |---|---|---|
 | `TechnologyAudit` | Focused code-quality, line-of-code, stack, dependency, module-shape, and operations hygiene audit | `.\scripts\uok_ops.ps1 -Action TechnologyAudit` |
 | `EngineeringEvidence` | Generate local engineering-system evidence and quality scorecard under `var/evidence/engineering` | `.\scripts\uok_ops.ps1 -Action EngineeringEvidence` |
+| `UiProof` | Run the Playwright UI proof gate against the Vite workspace, including Planning Gantt layout, keyboard, appearance, responsive, screenshot, and console checks | `.\scripts\uok_ops.ps1 -Action UiProof` |
 | `Audit` | Code, dependency, source-size, naming, module contract, and folder organization checks | `.\scripts\uok_ops.ps1 -Action Audit` |
-| `Verify` | Full audit plus frontend tests, static build, and candidate verifier | `.\scripts\uok_ops.ps1 -Action Verify` |
+| `Verify` | Full audit plus frontend tests, static build, UI proof, and candidate verifier | `.\scripts\uok_ops.ps1 -Action Verify` |
 | `Rebuild` | Rebuild and start local Podman stack on `127.0.0.1:18088` | `.\scripts\uok_ops.ps1 -Action Rebuild` |
 | `Health` | Check local candidate `/health` | `.\scripts\uok_ops.ps1 -Action Health` |
 | `BackupDb` | Create local PostgreSQL 18 custom-format dump | `.\scripts\uok_ops.ps1 -Action BackupDb` |
@@ -57,6 +58,12 @@ Use before local candidate handoff or GitHub publication:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
+```
+
+Use this focused gate when the frontend shell or module workspace changes:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action UiProof
 ```
 
 ### Live Runtime Check
@@ -120,6 +127,7 @@ GitHub publication should include:
 - module contract clean;
 - source-boundary and naming clean;
 - Python and frontend dependency audits clean;
+- Playwright UI proof clean when frontend behavior changed;
 - candidate verifier clean;
 - engineering evidence includes a quality scorecard with no unreviewed category drift;
 - PR description covering scope, architecture impact, tests, risk, and rollback.

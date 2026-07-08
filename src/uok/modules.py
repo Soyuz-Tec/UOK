@@ -41,6 +41,7 @@ def module_lifecycle_report() -> dict[str, Any]:
         "apps_manager_declared": "apps.manager" in modules,
         "agents_declared_as_available_module": "agents.core" in modules,
         "contacts_declared_as_available_module": "contacts.core" in modules,
+        "planning_declared_as_available_module": "planning.core" in modules,
         "only_apps_manager_required": sorted(name for name, module in modules.items() if module.get("required")) == ["apps.manager"],
         "no_business_modules_declared": all(module["kind"] != "business_module" for module in modules.values()),
         "apps_manager_installable": modules["apps.manager"]["installable"] is True,
@@ -61,5 +62,11 @@ def module_lifecycle_report() -> dict[str, Any]:
         "contacts_separately_updatable": modules["contacts.core"]["updatable"] is True,
         "contacts_maintainable": modules["contacts.core"]["maintainable"] is True,
         "contacts_has_no_dependencies": modules["contacts.core"]["dependencies"] == [],
+        "planning_installable": modules["planning.core"]["installable"] is True,
+        "planning_optional": modules["planning.core"].get("required") is False,
+        "planning_uninstallable": modules["planning.core"]["uninstallable"] is True,
+        "planning_separately_updatable": modules["planning.core"]["updatable"] is True,
+        "planning_maintainable": modules["planning.core"]["maintainable"] is True,
+        "planning_has_no_dependencies": modules["planning.core"]["dependencies"] == [],
     }
     return {"ok": all(checks.values()), "checks": checks, "modules": modules}

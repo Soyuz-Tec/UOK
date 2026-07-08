@@ -23,6 +23,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `apps.manager` | control module | required baseline module | `UOK-3.1.0-alpha.3` | UOK bootstrap control module |
 | `agents.core` | capability module | planned scaffold for governed agent operations | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | `contacts.core` | capability module | Contacts MVP hardening in progress | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
+| `planning.core` | capability module | integrated Gantt MVP in progress | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
 
 ## Current Target
 
@@ -50,6 +51,16 @@ It also introduces the `agents.core` scaffold as the next capability boundary fo
 - human approval gates for high-impact actions
 - compliance evidence for agent runs
 - future Contacts pilot for enrichment and duplicate-cleanup recommendations
+
+It also introduces `planning.core` as the integrated planning and Gantt capability:
+
+- project list and project schedule read model
+- task grid and Gantt timeline workspace
+- milestone-ready task model
+- finish-to-start dependencies
+- drag-style reschedule API path through Python validation
+- planning audit events and candidate verifier scenario
+- Playwright UI proof automation for Gantt rendering, keyboard, appearance, responsive layout, and console cleanliness
 
 ## Governance Rule
 
