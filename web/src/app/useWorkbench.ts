@@ -157,7 +157,8 @@ export function useWorkbench() {
     removeSelectedContactFromGroup: contactCommands.removeSelectedContactFromGroup,
     linkRelationship: contactCommands.linkRelationship,
     updateRelationship: contactCommands.updateRelationship,
-    removeRelationship: contactCommands.removeRelationship
+    removeRelationship: contactCommands.removeRelationship,
+    mergeDuplicate: contactCommands.mergeDuplicate
   };
 }
 

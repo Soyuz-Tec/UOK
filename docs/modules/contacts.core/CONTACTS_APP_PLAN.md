@@ -55,6 +55,7 @@ This plan is based on UOK module policy, UOK UI policy, and these Apple referenc
 - Contacts can be grouped automatically by business email domain; group names should prefer the related company label, while personal/free-mail and test/demo domains are excluded so the group rail remains useful.
 - Users can import CSV and correct records; normal users cannot bulk export.
 - Imported, incomplete, uncertain, and possible duplicate records appear in a review queue.
+- Possible duplicates can be compared and merged from the guided quality workflow. The merge keeps one selected authoritative party, fills missing facts from the duplicate, moves notes, group memberships, and relationships, archives the duplicate for recovery/audit, and emits module-owned merge evidence.
 
 ## Domain Model
 
@@ -115,6 +116,10 @@ Required concepts:
 
 CSV import creates an import batch and records per-row results. Imported rows may create parties in `needs_review`, `possible_duplicate`, or `incomplete` review states.
 
+### Duplicate Merge
+
+Duplicate merge is a Contacts command, not a destructive delete. It archives the duplicate and records `merged_into_party_id` in module-owned attributes so administrators can audit or recover the original record.
+
 ## API Scope
 
 Required endpoints for alpha.3:
@@ -156,6 +161,7 @@ The Contacts UI must be human-friendly and policy-aligned:
 - Table supports dense review and correction with persisted, accessible resizable columns from the shared UOK table primitive.
 - Cards support recognition-focused browsing.
 - Review Queue is visible and actionable.
+- Review Queue includes duplicate comparison and merge actions that let users choose which record remains authoritative without leaving the workspace.
 - Create/edit form supports minimal save with at least one meaningful field.
 - Validation errors are specific and close to the affected fields.
 - Module disabled/uninstalled states are clear and route users back to Apps Manager actions.

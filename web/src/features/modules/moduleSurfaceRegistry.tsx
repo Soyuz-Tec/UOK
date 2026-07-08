@@ -88,6 +88,7 @@ export const moduleSurfaces: ModuleSurface[] = [
         onLinkRelationship={workbench.linkRelationship}
         onUpdateRelationship={workbench.updateRelationship}
         onRemoveRelationship={workbench.removeRelationship}
+        onMergeDuplicate={workbench.mergeDuplicate}
       />
     )
   }

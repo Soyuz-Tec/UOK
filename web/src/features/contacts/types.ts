@@ -67,4 +67,5 @@ export type ContactsWorkspaceProps = {
   onLinkRelationship: () => void;
   onUpdateRelationship: (relationshipId: string, fromPartyId: string, toPartyId: string, relationshipType: string) => Promise<void>;
   onRemoveRelationship: (relationshipId: string) => Promise<void>;
+  onMergeDuplicate: (primaryContactId: string, duplicateContactId: string) => Promise<void>;
 };

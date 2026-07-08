@@ -11,13 +11,17 @@ export function ContactDuplicateComparisonPopup({
   open,
   contact,
   matches,
+  mergeBusy,
   onClose,
+  onMerge,
   onOpenMatch
 }: {
   open: boolean;
   contact: ContactRecord | null;
   matches: ContactRecord[];
+  mergeBusy: boolean;
   onClose: () => void;
+  onMerge: (primaryContactId: string, duplicateContactId: string) => void;
   onOpenMatch: (id: string) => void;
 }) {
   return (
@@ -37,6 +41,12 @@ export function ContactDuplicateComparisonPopup({
             {matches.length ? matches.map((match) => (
               <DuplicateCard contact={match} heading="Possible match" key={match.id}>
                 <CommandButton icon={ArrowRight} onClick={() => onOpenMatch(match.id)}>Open this contact</CommandButton>
+                {contact ? (
+                  <>
+                    <CommandButton icon={GitMerge} onClick={() => onMerge(contact.id, match.id)} disabled={mergeBusy}>Keep selected</CommandButton>
+                    <CommandButton icon={GitMerge} onClick={() => onMerge(match.id, contact.id)} disabled={mergeBusy} primary>Keep this match</CommandButton>
+                  </>
+                ) : null}
               </DuplicateCard>
             )) : (
               <div className="duplicate-card empty">

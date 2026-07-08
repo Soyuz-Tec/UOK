@@ -27,6 +27,7 @@ commands:
   - RemoveContactFromGroup
   - GroupContactsByBusinessEmailDomain
   - LinkContactRelationship
+  - MergeDuplicateContact
   - UpdateContactRelationship
   - RemoveContactRelationship
   - ImportContactsCsv
@@ -44,6 +45,7 @@ events:
   - ContactPurged
   - ContactNoteAdded
   - ContactRelationshipLinked
+  - ContactDuplicateMerged
   - ContactRelationshipUpdated
   - ContactRelationshipRemoved
   - ContactLinkedToOrganization

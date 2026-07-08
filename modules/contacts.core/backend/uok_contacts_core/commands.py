@@ -20,6 +20,7 @@ from .facade import (
     validate_contact_payload_lengths,
 )
 from .models import PartyNote, utcnow
+from .duplicate_commands import cmd_merge_duplicate_contact
 from .group_commands import (
     cmd_add_contacts_to_group,
     cmd_archive_contact_group,
@@ -156,6 +157,7 @@ def command_handlers() -> dict[str, CommandHandler]:
         "AddContactNote": cmd_add_contact_note,
         "RemoveContactFromGroup": cmd_remove_contact_from_group,
         "LinkContactRelationship": cmd_link_contact_relationship,
+        "MergeDuplicateContact": cmd_merge_duplicate_contact,
         "UpdateContactRelationship": cmd_update_contact_relationship,
         "RemoveContactRelationship": cmd_remove_contact_relationship,
         "ImportContactsCsv": cmd_import_contacts_csv,
@@ -177,6 +179,7 @@ def command_permissions() -> dict[str, str]:
         "AddContactNote": "contacts.manage",
         "RemoveContactFromGroup": "contacts.manage",
         "LinkContactRelationship": "contacts.manage",
+        "MergeDuplicateContact": "contacts.manage",
         "UpdateContactRelationship": "contacts.manage",
         "RemoveContactRelationship": "contacts.manage",
         "ImportContactsCsv": "contacts.import",

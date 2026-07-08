@@ -36,6 +36,11 @@ export function ContactQualityWorkspace({
     setComparisonOpen(false);
   };
 
+  const mergeDuplicate = async (primaryContactId: string, duplicateContactId: string) => {
+    await props.onMergeDuplicate(primaryContactId, duplicateContactId);
+    setComparisonOpen(false);
+  };
+
   return (
     <section className="contact-quality-workspace" aria-label="Contact quality workspace">
       <div className="quality-queue" aria-label="Contact quality queue">
@@ -127,7 +132,9 @@ export function ContactQualityWorkspace({
         open={comparisonOpen}
         contact={selected}
         matches={matches}
+        mergeBusy={props.busyAction === "MergeDuplicateContact"}
         onClose={() => setComparisonOpen(false)}
+        onMerge={(primaryContactId, duplicateContactId) => void mergeDuplicate(primaryContactId, duplicateContactId)}
         onOpenMatch={openMatch}
       />
     </section>

@@ -174,6 +174,7 @@ export function renderContactsWorkspace(initialView: ContactsView, records: Cont
       onLinkRelationship: vi.fn(),
       onUpdateRelationship: vi.fn(),
       onRemoveRelationship: vi.fn(),
+      onMergeDuplicate: vi.fn(),
       ...overrides
     };
 

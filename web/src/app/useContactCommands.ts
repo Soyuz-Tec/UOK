@@ -141,6 +141,17 @@ export function useContactCommands({
     await data.loadContactDetail(data.selectedContactId);
   }
 
+  async function mergeDuplicate(primaryContactId: string, duplicateContactId: string) {
+    if (!primaryContactId || !duplicateContactId) return;
+    const result = await command("MergeDuplicateContact", {
+      primary_party_id: primaryContactId,
+      duplicate_party_id: duplicateContactId
+    }, "contact-duplicate-merge");
+    const resultId = result?.result?.id || result?.result?.contact_id || primaryContactId;
+    data.setSelectedContactId(resultId);
+    await data.loadContactDetail(resultId);
+  }
+
   return {
     addNote,
     addSelectedContactToGroup,
@@ -150,6 +161,7 @@ export function useContactCommands({
     groupContactsByBusinessDomain,
     linkRelationship,
     markSelectedReady,
+    mergeDuplicate,
     purgeSelected,
     removeRelationship,
     removeSelectedContactFromGroup,
