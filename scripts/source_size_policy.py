@@ -78,6 +78,8 @@ def python_function_findings(path: Path, repo_root: Path) -> list[SourceFinding]
     if path.suffix != ".py":
         return []
     relative = path.relative_to(repo_root).as_posix()
+    parts = relative.split("/")
+    is_test_file = "tests" in parts or path.name.startswith("test_")
     try:
         tree = ast.parse(path.read_text(encoding="utf-8", errors="ignore"))
     except SyntaxError:
@@ -87,6 +89,8 @@ def python_function_findings(path: Path, repo_root: Path) -> list[SourceFinding]
         if not isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
             continue
         if node.end_lineno is None:
+            continue
+        if is_test_file and node.name.startswith("test_"):
             continue
         line_count = node.end_lineno - node.lineno + 1
         if line_count > FUNCTION_LINE_LIMIT:

@@ -36,14 +36,31 @@ def _demo_password(env_name: str, fallback: str) -> str:
 
 
 def seed(db: Session) -> str:
-    schema_version = db.get(SchemaVersion, TARGET_VERSION)
-    if not schema_version:
+    _ensure_schema_version(db)
+    org = _ensure_organization(db)
+    _ensure_demo_users(db, org)
+    _ensure_required_modules(db, org)
+    _ensure_governance_rules(db, org)
+    db.commit()
+    return org.id
+
+
+def _ensure_schema_version(db: Session) -> None:
+    if not db.get(SchemaVersion, TARGET_VERSION):
         db.add(SchemaVersion(version=TARGET_VERSION, note="Initial baseline with one active migration baseline."))
+
+
+def _ensure_organization(db: Session) -> Organization:
     org = db.scalar(select(Organization).where(Organization.name == ORG_NAME))
-    if not org:
-        org = Organization(name=ORG_NAME)
-        db.add(org)
-        db.flush()
+    if org:
+        return org
+    org = Organization(name=ORG_NAME)
+    db.add(org)
+    db.flush()
+    return org
+
+
+def _ensure_demo_users(db: Session, org: Organization) -> None:
     reset_demo_passwords = os.getenv("UOK_RESET_DEMO_PASSWORDS", "1") == "1"
     for username, password_env, fallback_password, display_name, role in DEMO_USER_CONFIG:
         password = _demo_password(password_env, fallback_password)
@@ -62,6 +79,9 @@ def seed(db: Session) -> str:
         ))
         if not membership:
             db.add(Membership(organization_id=org.id, user_id=user.id, role=role))
+
+
+def _ensure_required_modules(db: Session, org: Organization) -> None:
     for module in module_catalog().values():
         if not module.get("required"):
             continue
@@ -79,6 +99,9 @@ def seed(db: Session) -> str:
             existing.version = APP_VERSION
             existing.status = "installed"
             existing.manifest_json = dumps(module)
+
+
+def _ensure_governance_rules(db: Session, org: Organization) -> None:
     rules = [
         ("baseline.module_neutral.required", "architecture", "platform_admin"),
         ("apps.manager.bootstrap.required", "modules", "platform_admin"),
@@ -96,5 +119,3 @@ def seed(db: Session) -> str:
                 owner_role=owner_role,
                 details_json=dumps({"uok_version": APP_VERSION, "uok": True}),
             ))
-    db.commit()
-    return org.id

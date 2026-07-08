@@ -1,21 +1,12 @@
 import { useEffect, useState } from "react";
-import { Building2, CalendarDays, FileText, MessageCircle, Save, ShieldCheck, UserRound, X } from "lucide-react";
+import { Save, X } from "lucide-react";
 
 import type { ContactDraft } from "../../shared/types";
 import { FieldMessage } from "../../shared/forms";
 import { CommandButton } from "../../shared/primitives";
 import { ContactFormDisclosure } from "./ContactFormDisclosure";
-
-type AddableSection = "person" | "organization" | "dates" | "messaging" | "source" | "more";
-
-const addableSections: Array<{ id: AddableSection; label: string; description: string; icon: typeof UserRound }> = [
-  { id: "person", label: "Person details", description: "Given and family name", icon: UserRound },
-  { id: "organization", label: "Organization details", description: "Company, title, and team", icon: Building2 },
-  { id: "dates", label: "Dates", description: "Birthday and important date", icon: CalendarDays },
-  { id: "messaging", label: "Messaging and tags", description: "Instant message and tags", icon: MessageCircle },
-  { id: "source", label: "Governance details", description: "Source, consent, and allowed use", icon: ShieldCheck },
-  { id: "more", label: "More details", description: "Website, address, and note", icon: FileText }
-];
+import { addableSections, contactDraftHasMeaningfulValue, contactDraftSectionState, isValidEmail, isValidWebsite } from "./contactFormModel";
+import type { AddableSection } from "./contactFormModel";
 
 export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }: {
   draft: ContactDraft;
@@ -28,33 +19,8 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
   const setField = (field: keyof ContactDraft, value: string) => onChange({ ...draft, [field]: value });
   const emailError = draft.email.trim() && !isValidEmail(draft.email) ? "Enter a valid email address." : "";
   const websiteError = draft.website.trim() && !isValidWebsite(draft.website) ? "Enter a valid website address." : "";
-  const hasMeaningfulValue = [
-    draft.display_name,
-    draft.given_name,
-    draft.family_name,
-    draft.organization_name,
-    draft.company_name,
-    draft.email,
-    draft.phone,
-    draft.website,
-    draft.address,
-    draft.title,
-    draft.birthday,
-    draft.important_date,
-    draft.instant_message,
-    draft.tags,
-    draft.consent_status,
-    draft.allowed_use,
-    draft.confidence_level,
-    draft.note
-  ].some((value) => value.trim().length > 0);
+  const hasMeaningfulValue = contactDraftHasMeaningfulValue(draft);
   const canSave = hasMeaningfulValue && !emailError && !websiteError;
-  const hasPersonDetails = [draft.given_name, draft.family_name].some((value) => value.trim().length > 0);
-  const hasOrganizationDetails = [draft.organization_name, draft.company_name, draft.title, draft.team_id].some((value) => value.trim().length > 0);
-  const hasDateDetails = [draft.birthday, draft.important_date].some((value) => value.trim().length > 0);
-  const hasMessagingDetails = [draft.instant_message, draft.tags].some((value) => value.trim().length > 0);
-  const hasSourceDetails = [draft.source, draft.client_reference, draft.consent_status, draft.allowed_use, draft.confidence_level].some((value) => value.trim().length > 0);
-  const hasMoreContactDetails = [draft.website, draft.address, draft.note].some((value) => value.trim().length > 0);
   const [addedSections, setAddedSections] = useState<Record<AddableSection, boolean>>({
     person: false,
     organization: false,
@@ -63,15 +29,7 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
     source: false,
     more: false
   });
-  const visibleSections = {
-    person: addedSections.person || hasPersonDetails,
-    organization: addedSections.organization || hasOrganizationDetails,
-    dates: addedSections.dates || hasDateDetails,
-    messaging: addedSections.messaging || hasMessagingDetails,
-    source: addedSections.source || hasSourceDetails,
-    more: addedSections.more || hasMoreContactDetails
-  };
-  const availableSections = addableSections.filter((section) => !visibleSections[section.id]);
+  const { availableSections, visibleSections } = contactDraftSectionState(draft, addedSections);
 
   useEffect(() => {
     setAddedSections({ person: false, organization: false, dates: false, messaging: false, source: false, more: false });
@@ -223,19 +181,4 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
       </div>
     </form>
   );
-}
-
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
-function isValidWebsite(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return true;
-  try {
-    const url = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
-    return Boolean(url.hostname.includes("."));
-  } catch {
-    return false;
-  }
 }

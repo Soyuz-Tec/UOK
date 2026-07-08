@@ -72,6 +72,7 @@ Function and component guidance:
 - Prefer React render components that mainly render one surface, with data loading and mutation orchestration in hooks.
 - Prefer backend API routes that delegate validation, command handling, and read-model shaping to focused helpers.
 - Prefer test files grouped by behavior area; a test file above `200` lines should still describe one scenario family.
+- Cohesive pytest `test_*` scenario bodies may exceed the normal `60` line function preference when splitting the body would make the behavior harder to audit; the executable audit still applies the `200` line soft threshold to the owning test file.
 
 Soft warnings do not fail the build by themselves. They must appear in repeatable audit evidence, including the full `source_size_policy` section of `EngineeringEvidence`, and reduce the relevant quality scorecard category so they can be reviewed before expansion. Hard violations fail `TechnologyAudit`, `Audit`, and `Verify`.
 

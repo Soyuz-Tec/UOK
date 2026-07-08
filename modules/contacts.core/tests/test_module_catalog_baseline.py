@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from starlette.testclient import TestClient
 
+from module_catalog_assertions import assert_module_lifecycle_and_evidence
 from tests.helpers import auth, command
 
 
@@ -193,42 +194,4 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
     assert review_queue.status_code == 200, review_queue.text
     assert any(row["source"] == "csv_import" for row in review_queue.json())
 
-    dashboard = client.get("/api/dashboard", headers=admin)
-    assert dashboard.status_code == 200, dashboard.text
-    assert dashboard.json()["counts"]["contacts"] >= 1
-    assert dashboard.json()["counts"]["organizations"] >= 1
-    assert dashboard.json()["counts"]["review_queue"] >= 1
-
-    lifecycle = client.get("/api/modules/lifecycle", headers=admin)
-    assert lifecycle.status_code == 200, lifecycle.text
-    lifecycle_checks = lifecycle.json()["checks"]
-    assert lifecycle_checks["apps_manager_declared"] is True
-    assert lifecycle_checks["contacts_declared_as_available_module"] is True
-    assert lifecycle_checks["only_apps_manager_required"] is True
-    assert lifecycle_checks["no_business_modules_declared"] is True
-    assert lifecycle_checks["contacts_installable"] is True
-    assert lifecycle_checks["contacts_uninstallable"] is True
-
-    evidence = client.get("/api/baseline-evidence", headers=admin)
-    assert evidence.status_code == 200, evidence.text
-    checks = evidence.json()["checks"]
-    assert evidence.json()["ok"] is True
-    assert checks["apps_manager_operational"] is True
-    assert checks["contacts_module_available_to_install"] is True
-    assert checks["contacts_module_operational"] is True
-    assert checks["module_lifecycle_events_present"] is True
-    assert checks["contact_full_crm_events_present"] is True
-    assert checks["private_notes_available"] is True
-    assert checks["relationships_available"] is True
-    assert checks["contact_groups_available"] is True
-    assert checks["contact_group_members_available"] is True
-    assert checks["import_batches_available"] is True
-    assert checks["review_queue_available"] is True
-    assert checks["role_denials_recorded"] is True
-    assert checks["validation_errors_recorded"] is True
-
-    verify = client.post("/api/architecture/verify-baseline", headers=admin)
-    assert verify.status_code == 200, verify.text
-    assert verify.json()["result"]["ok"] is True
-    assert verify.json()["result"]["checks"]["module_neutral_baseline"] is True
-    assert verify.json()["result"]["checks"]["module_lifecycle_ok"] is True
+    assert_module_lifecycle_and_evidence(client, admin)
