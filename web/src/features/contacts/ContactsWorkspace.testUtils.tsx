@@ -36,6 +36,20 @@ export const importedContact: ContactRecord = {
   email: "imported.person@example.test"
 };
 
+export const businessContactWithoutCompany: ContactRecord = {
+  id: "contact-5",
+  party_type: "person",
+  display_name: "Mina Supplier",
+  status: "active",
+  review_state: "needs_review",
+  visibility_scope: "tenant",
+  source: "gmail",
+  sync_state: "ready",
+  attrs: {},
+  email: "mina@supplier.example",
+  phone: "+1 555 0160"
+};
+
 export const duplicateContact: ContactRecord = {
   id: "contact-3",
   party_type: "person",

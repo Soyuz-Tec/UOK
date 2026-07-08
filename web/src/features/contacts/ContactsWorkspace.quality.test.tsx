@@ -2,7 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { contact, duplicateContact, importedContact, renderContactsWorkspace, resetContactsWorkspaceTest } from "./ContactsWorkspace.testUtils";
+import { businessContactWithoutCompany, contact, duplicateContact, importedContact, renderContactsWorkspace, resetContactsWorkspaceTest } from "./ContactsWorkspace.testUtils";
 
 afterEach(resetContactsWorkspaceTest);
 
@@ -14,7 +14,7 @@ describe("ContactsWorkspace quality workflow", () => {
     expect(screen.getByRole("region", { name: "Contact quality workspace" })).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Section by" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Possible duplicates" })).toHaveTextContent("Example Contact");
-    expect(screen.getByRole("region", { name: "Needs a better name" })).toHaveTextContent("imported.person@example.test");
+    expect(screen.getByRole("region", { name: "Email-only contacts" })).toHaveTextContent("imported.person@example.test");
 
     const duplicateGroup = screen.getByRole("region", { name: "Possible duplicates" });
     fireEvent.click(within(duplicateGroup).getByRole("button", { name: /Example Contact/i }));
@@ -30,5 +30,14 @@ describe("ContactsWorkspace quality workflow", () => {
     expect(screen.getByLabelText("Purpose note")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Purpose note"), { target: { value: "Known from import review." } });
     expect(screen.getByLabelText("Purpose note")).toHaveValue("Known from import review.");
+  });
+
+  it("separates business contacts that need company context", () => {
+    renderContactsWorkspace("quality", [businessContactWithoutCompany]);
+
+    const group = screen.getByRole("region", { name: "Missing company" });
+    expect(group).toHaveTextContent("Mina Supplier");
+    fireEvent.click(within(group).getByRole("button", { name: /Mina Supplier/i }));
+    expect(screen.getByRole("complementary", { name: "Guided contact fixes" })).toHaveTextContent("Add company or organization");
   });
 });

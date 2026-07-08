@@ -54,7 +54,7 @@ This plan is based on UOK module policy, UOK UI policy, and these Apple referenc
 - Contacts can be organized into user-managed groups without changing the core party model.
 - Contacts can be grouped automatically by business email domain; group names should prefer the related company label, while personal/free-mail and test/demo domains are excluded so the group rail remains useful.
 - Users can import CSV and correct records; normal users cannot bulk export.
-- Imported, incomplete, uncertain, and possible duplicate records appear in a review queue.
+- Imported, incomplete, uncertain, email-only, missing-company, and possible duplicate records appear in a review queue.
 - Possible duplicates can be compared and merged from the guided quality workflow. The merge keeps one selected authoritative party, fills missing facts from the duplicate, moves notes, group memberships, and relationships, archives the duplicate for recovery/audit, and emits module-owned merge evidence.
 
 ## Domain Model
@@ -166,6 +166,7 @@ The Contacts UI must be human-friendly and policy-aligned:
 - List + Detail is the fallback default.
 - Table supports dense review and correction with persisted, accessible resizable columns from the shared UOK table primitive.
 - Cards support recognition-focused browsing.
+- The quality workspace must separate possible duplicates, email-only records, placeholder names, missing company context, missing purpose notes, imported review records, incomplete records, and ready records into guided queues with direct suggested actions.
 - Review Queue is visible and actionable.
 - Review Queue includes duplicate comparison and merge actions that let users choose which record remains authoritative without leaving the workspace.
 - Create/edit form supports minimal save with at least one meaningful field.

@@ -1,6 +1,14 @@
 import type { ContactRecord } from "../../shared/types";
 
-export type ContactQualityIssueId = "possible_duplicate" | "needs_name" | "missing_purpose" | "imported_review" | "incomplete" | "ready";
+export type ContactQualityIssueId =
+  | "possible_duplicate"
+  | "email_only"
+  | "needs_name"
+  | "missing_company"
+  | "missing_purpose"
+  | "imported_review"
+  | "incomplete"
+  | "ready";
 
 export type ContactQualityGroup = {
   id: ContactQualityIssueId;
@@ -11,7 +19,9 @@ export type ContactQualityGroup = {
 
 export const contactQualityIssueOrder: ContactQualityIssueId[] = [
   "possible_duplicate",
+  "email_only",
   "needs_name",
+  "missing_company",
   "missing_purpose",
   "imported_review",
   "incomplete",
@@ -23,9 +33,17 @@ const qualityCopy: Record<ContactQualityIssueId, { title: string; description: s
     title: "Possible duplicates",
     description: "Compare before using these contacts in a transaction."
   },
+  email_only: {
+    title: "Email-only contacts",
+    description: "Add a real name, organization, or purpose before using these records."
+  },
   needs_name: {
     title: "Needs a better name",
     description: "Replace email-only or placeholder names with a real person or organization name."
+  },
+  missing_company: {
+    title: "Missing company",
+    description: "Add the company or role for business contacts so relationships stay clear."
   },
   missing_purpose: {
     title: "Needs purpose note",
@@ -47,7 +65,9 @@ const qualityCopy: Record<ContactQualityIssueId, { title: string; description: s
 
 export function contactPrimaryQualityIssue(contact: ContactRecord): ContactQualityIssueId {
   if ((contact.duplicate_candidates || []).length || contact.review_state === "possible_duplicate") return "possible_duplicate";
+  if (isEmailOnlyContact(contact)) return "email_only";
   if (looksLikePlaceholderName(contact)) return "needs_name";
+  if (needsCompany(contact)) return "missing_company";
   if (needsPurposeNote(contact)) return "missing_purpose";
   if (contact.review_state === "needs_review" || contact.source === "csv_import") return "imported_review";
   if (contact.review_state === "incomplete" || contactFactCount(contact) < 2) return "incomplete";
@@ -70,7 +90,9 @@ export function contactQualityGroups(contacts: ContactRecord[]): ContactQualityG
 export function contactQualityActions(contact: ContactRecord) {
   const issue = contactPrimaryQualityIssue(contact);
   if (issue === "possible_duplicate") return ["Compare duplicate records", "Keep the best contact facts", "Mark ready after review"];
+  if (issue === "email_only") return ["Add a person or organization name", "Confirm why this email is useful", "Mark ready after review"];
   if (issue === "needs_name") return ["Edit the display name", "Add person or organization details", "Mark ready after review"];
+  if (issue === "missing_company") return ["Add company or organization", "Link the related company if it already exists", "Mark ready after review"];
   if (issue === "missing_purpose") return ["Add a short purpose note", "Confirm source and relationship", "Mark ready after review"];
   if (issue === "imported_review") return ["Confirm imported fields", "Add a purpose note if needed", "Mark ready"];
   if (issue === "incomplete") return ["Add one contact method", "Add organization or address", "Mark ready after review"];
@@ -104,6 +126,21 @@ function looksLikePlaceholderName(contact: ContactRecord) {
   );
 }
 
+function isEmailOnlyContact(contact: ContactRecord) {
+  const email = normalize(contact.email);
+  if (!email) return false;
+  const name = normalize(contact.display_name);
+  const hasOtherFact = Boolean(contact.phone || contact.website || contact.address || contact.organization_name || contact.title);
+  return !hasOtherFact && (!name || name === email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(name));
+}
+
+function needsCompany(contact: ContactRecord) {
+  if (contact.party_type !== "person") return false;
+  if (contact.organization_name || contact.title) return false;
+  const emailDomain = normalize(contact.email).split("@")[1] || "";
+  return Boolean(emailDomain && !publicEmailDomains.has(emailDomain));
+}
+
 function needsPurposeNote(contact: ContactRecord) {
   const imported = contact.source === "csv_import" || contact.source === "gmail" || contact.source === "email";
   const hasPurposeSignal = Boolean(contact.organization_name || contact.title || contact.address || contact.website);
@@ -117,3 +154,18 @@ function contactFactCount(contact: ContactRecord) {
 function normalize(value?: string) {
   return String(value || "").trim().toLowerCase();
 }
+
+const publicEmailDomains = new Set([
+  "gmail.com",
+  "googlemail.com",
+  "icloud.com",
+  "me.com",
+  "outlook.com",
+  "hotmail.com",
+  "live.com",
+  "msn.com",
+  "yahoo.com",
+  "aol.com",
+  "proton.me",
+  "protonmail.com"
+]);
