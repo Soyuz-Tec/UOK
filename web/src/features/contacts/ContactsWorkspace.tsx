@@ -119,8 +119,10 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
           onNewGroupNameChange={props.onNewGroupNameChange}
           onCreateGroup={props.onCreateGroup}
           onGroupContactsByBusinessDomain={props.onGroupContactsByBusinessDomain}
+          onGroupContactsBySmartRules={props.onGroupContactsBySmartRules}
           onArchiveGroup={props.onArchiveGroup}
           domainGroupingBusy={props.busyAction === "GroupContactsByBusinessEmailDomain"}
+          smartGroupingBusy={props.busyAction === "GroupContactsBySmartRule"}
         />
         <div className="contacts-workspace-main">
           {props.contactsView === "quality" ? (

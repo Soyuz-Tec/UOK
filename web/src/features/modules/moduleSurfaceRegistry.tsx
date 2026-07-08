@@ -69,6 +69,7 @@ export const moduleSurfaces: ModuleSurface[] = [
         onNewGroupNameChange={workbench.setNewGroupName}
         onCreateGroup={workbench.createGroup}
         onGroupContactsByBusinessDomain={workbench.groupContactsByBusinessDomain}
+        onGroupContactsBySmartRules={workbench.groupContactsBySmartRules}
         onArchiveGroup={workbench.archiveGroup}
         onAddSelectedContactToGroup={workbench.addSelectedContactToGroup}
         onRemoveSelectedContactFromGroup={workbench.removeSelectedContactFromGroup}

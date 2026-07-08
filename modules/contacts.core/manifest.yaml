@@ -26,6 +26,7 @@ commands:
   - AddContactsToGroup
   - RemoveContactFromGroup
   - GroupContactsByBusinessEmailDomain
+  - GroupContactsBySmartRule
   - LinkContactRelationship
   - MergeDuplicateContact
   - RollbackDuplicateMerge
@@ -40,6 +41,7 @@ events:
   - ContactAddedToGroup
   - ContactRemovedFromGroup
   - ContactsGroupedByBusinessEmailDomain
+  - ContactsGroupedBySmartRule
   - ContactUpdated
   - ContactArchived
   - ContactRestored

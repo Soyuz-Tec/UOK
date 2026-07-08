@@ -53,6 +53,7 @@ This plan is based on UOK module policy, UOK UI policy, and these Apple referenc
 - Search is layered: simple default search plus filters for power users.
 - Contacts can be organized into user-managed groups without changing the core party model.
 - Contacts can be grouped automatically by business email domain; group names should prefer the related company label, while personal/free-mail and test/demo domains are excluded so the group rail remains useful.
+- Contacts can be grouped automatically by smart rules for company, country, contact type, review state, and source. These smart-rule outputs are materialized as normal contact groups so users can select, archive, and adjust them through the same group workflow.
 - Users can import CSV and correct records; normal users cannot bulk export.
 - Imported, incomplete, uncertain, email-only, missing-company, and possible duplicate records appear in a review queue.
 - Possible duplicates can be compared and merged from the guided quality workflow. The merge keeps one selected authoritative party, fills missing facts from the duplicate, moves notes, group memberships, and relationships, archives the duplicate for recovery/audit, and emits module-owned merge evidence.
@@ -112,6 +113,7 @@ Required concepts:
 - `ContactGroupMember`: many-to-many membership between a group and a party.
 - Groups must not duplicate contact facts or replace relationships. A group answers "which contacts belong in this working set"; a relationship answers "how two parties are connected."
 - Business-domain groups are generated from contact email domains as repeatable `business_domain` groups. Their identity is the email domain, but their display name should come from the best related company signal: linked organization relationships first, then organization records, then a readable domain fallback. They remain normal group records after creation and can be selected, archived, and used to filter contacts.
+- Smart-rule groups are generated from existing contact facts as repeatable `smart_rule` groups. Supported alpha.3 rules are company, country, contact type, review state, and source. Company smart groups use linked organization relationships before falling back to inline organization fields; generated groups remain normal materialized groups rather than hidden dynamic filters.
 - Group schema changes stay in `modules/contacts.core/migrations`; they must not expand the shared UOK baseline.
 
 ### Import Batches
@@ -162,6 +164,7 @@ The Contacts UI must be human-friendly and policy-aligned:
 - Visual result sectioning uses `Section by`, not `Group`, to avoid confusing it with persistent contact groups.
 - A compact Contacts group rail supports all contacts, saved groups, group creation, and archive actions.
 - The group rail includes a repeatable business-domain action that creates or updates persistent groups from eligible contact email domains without duplicating memberships; reruns may improve generated group names as better company relationships are added.
+- The group rail includes a compact smart-groups action that generates persistent groups from company, country, contact type, review state, and source without duplicating memberships.
 - Contact detail shows current group memberships and supports add/remove without leaving the workspace.
 - List + Detail is the fallback default.
 - Table supports dense review and correction with persisted, accessible resizable columns from the shared UOK table primitive.

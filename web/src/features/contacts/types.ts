@@ -48,6 +48,7 @@ export type ContactsWorkspaceProps = {
   onNewGroupNameChange: (value: string) => void;
   onCreateGroup: () => void;
   onGroupContactsByBusinessDomain: () => void;
+  onGroupContactsBySmartRules: () => void;
   onArchiveGroup: (groupId: string) => void;
   onAddSelectedContactToGroup: (groupId: string) => Promise<void>;
   onRemoveSelectedContactFromGroup: (groupId: string) => Promise<void>;

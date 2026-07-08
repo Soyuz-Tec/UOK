@@ -228,4 +228,13 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: /More details/i }));
     expect(within(dialog).getByLabelText("Website")).toBeInTheDocument();
   });
+
+  it("runs smart contact grouping from the group rail", async () => {
+    const onGroupContactsBySmartRules = vi.fn();
+    renderContactsWorkspace("table", [contact, organizationContact], { onGroupContactsBySmartRules });
+
+    fireEvent.click(screen.getByRole("button", { name: "Smart groups" }));
+
+    await waitFor(() => expect(onGroupContactsBySmartRules).toHaveBeenCalledTimes(1));
+  });
 });

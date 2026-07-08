@@ -26,6 +26,7 @@ from .group_commands import (
     cmd_archive_contact_group,
     cmd_create_contact_group,
     cmd_group_contacts_by_business_email_domain,
+    cmd_group_contacts_by_smart_rule,
     cmd_remove_contact_from_group,
     cmd_update_contact_group,
 )
@@ -149,6 +150,7 @@ def command_handlers() -> dict[str, CommandHandler]:
         "CreateContact": cmd_create_contact,
         "CreateContactGroup": cmd_create_contact_group,
         "GroupContactsByBusinessEmailDomain": cmd_group_contacts_by_business_email_domain,
+        "GroupContactsBySmartRule": cmd_group_contacts_by_smart_rule,
         "UpdateContact": cmd_update_contact,
         "UpdateContactGroup": cmd_update_contact_group,
         "ArchiveContact": cmd_archive_contact,
@@ -172,6 +174,7 @@ def command_permissions() -> dict[str, str]:
         "CreateContact": "contacts.manage",
         "CreateContactGroup": "contacts.manage",
         "GroupContactsByBusinessEmailDomain": "contacts.manage",
+        "GroupContactsBySmartRule": "contacts.manage",
         "UpdateContact": "contacts.manage",
         "UpdateContactGroup": "contacts.manage",
         "ArchiveContact": "contacts.manage",

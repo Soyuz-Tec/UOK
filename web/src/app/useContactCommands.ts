@@ -101,6 +101,12 @@ export function useContactCommands({
     await command("GroupContactsByBusinessEmailDomain", { minimum_members: 2 }, "contact-group-domain");
   }
 
+  async function groupContactsBySmartRules() {
+    for (const rule of ["organization", "country", "party_type", "review_state", "source"]) {
+      await command("GroupContactsBySmartRule", { rule, minimum_members: 2 }, "contact-group-smart");
+    }
+  }
+
   async function addSelectedContactToGroup(groupId: string) {
     if (!data.selectedContactId || !groupId) return;
     await command("AddContactsToGroup", { group_id: groupId, party_ids: [data.selectedContactId] }, "contact-group-add");
@@ -161,6 +167,7 @@ export function useContactCommands({
     archiveGroup,
     createGroup,
     groupContactsByBusinessDomain,
+    groupContactsBySmartRules,
     linkRelationship,
     markSelectedReady,
     mergeDuplicate,

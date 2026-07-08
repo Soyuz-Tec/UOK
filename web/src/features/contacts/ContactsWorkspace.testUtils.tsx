@@ -170,6 +170,7 @@ export function renderContactsWorkspace(initialView: ContactsView, records: Cont
       onNewGroupNameChange: setNewGroupName,
       onCreateGroup: vi.fn(),
       onGroupContactsByBusinessDomain: vi.fn(),
+      onGroupContactsBySmartRules: vi.fn(),
       onArchiveGroup: vi.fn(),
       onAddSelectedContactToGroup: vi.fn(),
       onRemoveSelectedContactFromGroup: vi.fn(),

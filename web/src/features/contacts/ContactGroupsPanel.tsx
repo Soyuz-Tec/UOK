@@ -1,4 +1,4 @@
-import { Archive, AtSign, Plus, UsersRound } from "lucide-react";
+import { Archive, AtSign, Layers3, Plus, UsersRound } from "lucide-react";
 
 import { CommandButton, IconButton } from "../../shared/primitives";
 import type { ContactGroupRecord } from "../../shared/types";
@@ -11,8 +11,10 @@ export function ContactGroupsPanel({
   onNewGroupNameChange,
   onCreateGroup,
   onGroupContactsByBusinessDomain,
+  onGroupContactsBySmartRules,
   onArchiveGroup,
-  domainGroupingBusy = false
+  domainGroupingBusy = false,
+  smartGroupingBusy = false
 }: {
   groups: ContactGroupRecord[];
   selectedGroupId: string;
@@ -21,8 +23,10 @@ export function ContactGroupsPanel({
   onNewGroupNameChange: (value: string) => void;
   onCreateGroup: () => void;
   onGroupContactsByBusinessDomain: () => void;
+  onGroupContactsBySmartRules: () => void;
   onArchiveGroup: (groupId: string) => void;
   domainGroupingBusy?: boolean;
+  smartGroupingBusy?: boolean;
 }) {
   return (
     <aside className="contacts-group-sidebar" aria-label="Contact groups">
@@ -78,6 +82,9 @@ export function ContactGroupsPanel({
       <div className="contact-group-domain-action">
         <CommandButton icon={AtSign} onClick={onGroupContactsByBusinessDomain} loading={domainGroupingBusy}>
           Business domains
+        </CommandButton>
+        <CommandButton icon={Layers3} onClick={onGroupContactsBySmartRules} loading={smartGroupingBusy}>
+          Smart groups
         </CommandButton>
       </div>
     </aside>

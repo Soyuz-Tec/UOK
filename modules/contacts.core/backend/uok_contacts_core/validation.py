@@ -32,7 +32,7 @@ MAX_CSV_IMPORT_BYTES = 1_000_000
 MAX_CSV_IMPORT_ROWS = 1000
 MAX_IMPORT_RESULT_ITEMS = 100
 VALID_CONTACT_VISIBILITY_SCOPES = {"organization", "team", "private"}
-VALID_CONTACT_GROUP_KINDS = {"business_domain", "manual"}
+VALID_CONTACT_GROUP_KINDS = {"business_domain", "manual", "smart_rule"}
 VALID_NOTE_VISIBILITY_SCOPES = {"internal", "organization", "private"}
 
 CONTACT_FIELD_LIMITS = {

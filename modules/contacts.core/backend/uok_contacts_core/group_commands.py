@@ -9,6 +9,7 @@ from .command_support import _emit_event
 from .group_domain_commands import cmd_group_contacts_by_business_email_domain
 from .group_membership_commands import cmd_add_contacts_to_group, cmd_remove_contact_from_group
 from .group_read_model import get_contact_group_or_error, serialize_contact_group
+from .group_smart_commands import cmd_group_contacts_by_smart_rule
 from .models import ContactGroup, utcnow
 from .validation import (
     bounded_text,

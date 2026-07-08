@@ -152,6 +152,7 @@ export function useWorkbench() {
     addNote: contactCommands.addNote,
     createGroup: contactCommands.createGroup,
     groupContactsByBusinessDomain: contactCommands.groupContactsByBusinessDomain,
+    groupContactsBySmartRules: contactCommands.groupContactsBySmartRules,
     archiveGroup: contactCommands.archiveGroup,
     addSelectedContactToGroup: contactCommands.addSelectedContactToGroup,
     removeSelectedContactFromGroup: contactCommands.removeSelectedContactFromGroup,
