@@ -32,7 +32,6 @@ export function ContactGroupsPanel({
   return (
     <aside className="contacts-group-sidebar" aria-label="Contact groups">
       <SectionHeading
-        eyebrow="Groups"
         title="Contact groups"
         action={<UsersRound size={18} aria-hidden="true" />}
       />
