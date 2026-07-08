@@ -87,13 +87,13 @@
   padding: var(--uok-space-4);
 }
 
-.column-visibility-menu {
+.field-visibility-menu {
   position: relative;
   display: inline-flex;
 }
 
-.column-visibility-trigger,
-.column-visibility-reset {
+.field-visibility-trigger,
+.field-visibility-reset {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -106,28 +106,28 @@
   cursor: pointer;
 }
 
-.column-visibility-trigger {
+.field-visibility-trigger {
   padding: 0 var(--uok-space-3);
 }
 
-.column-visibility-reset {
+.field-visibility-reset {
   width: 100%;
   padding: 0 var(--uok-space-2);
 }
 
-.column-visibility-trigger:hover,
-.column-visibility-reset:hover {
+.field-visibility-trigger:hover,
+.field-visibility-reset:hover {
   border-color: var(--uok-accent);
 }
 
-.column-visibility-trigger:focus-visible,
-.column-visibility-reset:focus-visible,
-.column-visibility-option input:focus-visible {
+.field-visibility-trigger:focus-visible,
+.field-visibility-reset:focus-visible,
+.field-visibility-option input:focus-visible {
   outline: 3px solid var(--uok-focus-ring);
   outline-offset: 2px;
 }
 
-.column-visibility-panel {
+.field-visibility-panel {
   position: absolute;
   top: calc(100% + var(--uok-space-2));
   right: 0;
@@ -142,14 +142,14 @@
   box-shadow: var(--uok-shadow-2);
 }
 
-.column-visibility-options {
+.field-visibility-options {
   display: grid;
   gap: var(--uok-space-1);
   max-height: 320px;
   overflow: auto;
 }
 
-.column-visibility-option {
+.field-visibility-option {
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr);
   align-items: center;
@@ -161,10 +161,10 @@
   cursor: pointer;
 }
 
-.column-visibility-option:hover {
+.field-visibility-option:hover {
   background: var(--uok-bg-grouped-secondary);
 }
 
-.column-visibility-option input:disabled + span {
+.field-visibility-option input:disabled + span {
   color: var(--uok-text-tertiary);
 }

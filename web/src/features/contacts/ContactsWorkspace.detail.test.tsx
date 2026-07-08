@@ -139,8 +139,9 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(results).getByText("Example Organization")).toBeInTheDocument();
     expect(within(results).queryByText(contact.email || "")).not.toBeInTheDocument();
 
-    fireEvent.click(within(results).getByRole("button", { name: "Display fields" }));
-    const menu = within(results).getByRole("group", { name: "Visible display fields" });
+    expect(screen.getAllByRole("button", { name: "Fields" })).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Fields" }));
+    const menu = screen.getByRole("group", { name: "Visible contact fields" });
     fireEvent.click(within(menu).getByLabelText("Organization"));
     fireEvent.click(within(menu).getByLabelText("Email"));
 

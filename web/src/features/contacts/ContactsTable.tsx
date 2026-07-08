@@ -1,29 +1,26 @@
-import { useMemo, type KeyboardEvent } from "react";
+import { type KeyboardEvent } from "react";
 
 import type { ContactGroupBy, ContactRecord } from "../../shared/types";
 import {
-  ColumnVisibilityMenu,
   ResizableDataTable,
-  useColumnVisibility,
+  type DataTableColumn,
   type DataTableSpanRow
 } from "../../shared/tables";
 import { ContactResultsEmptyState } from "./ContactResultState";
 import { groupContacts } from "./contactGrouping";
-import {
-  contactTableColumns,
-  contactTableColumnVisibilityOptions,
-  type ContactTableRow
-} from "./contactTableColumns";
+import { type ContactTableRow } from "./contactTableColumns";
 
 export function ContactsTable({
   contacts,
   selectedContactId,
   onSelect,
+  visibleColumns,
   groupBy = "none"
 }: {
   contacts: ContactRecord[];
   selectedContactId: string;
   onSelect: (id: string) => void;
+  visibleColumns: DataTableColumn<ContactTableRow>[];
   groupBy?: ContactGroupBy;
 }) {
   const selectFromKeyboard = (event: KeyboardEvent, contactId: string) => {
@@ -34,12 +31,6 @@ export function ContactsTable({
   };
 
   const groups = groupContacts(contacts, groupBy);
-  const columns = useMemo(() => contactTableColumns(onSelect), [onSelect]);
-  const { resetColumnVisibility, setColumnVisible, visibility, visibleColumns } = useColumnVisibility(
-    columns,
-    "contacts.records",
-    contactTableColumnVisibilityOptions
-  );
   const rows = groups.flatMap((group) => [
     ...(groupBy !== "none" ? [{ kind: "group" as const, id: `group-${group.id}`, label: group.label }] : []),
     ...group.contacts.map((contact) => ({ kind: "contact" as const, contact }))
@@ -47,14 +38,6 @@ export function ContactsTable({
 
   return (
     <div className="contacts-table-stack">
-      <div className="contacts-table-control-bar" aria-label="Contact table controls">
-        <ColumnVisibilityMenu
-          options={contactTableColumnVisibilityOptions}
-          visibility={visibility}
-          onReset={resetColumnVisibility}
-          onToggle={setColumnVisible}
-        />
-      </div>
       <ResizableDataTable
         ariaLabel="Contact records"
         columns={visibleColumns}

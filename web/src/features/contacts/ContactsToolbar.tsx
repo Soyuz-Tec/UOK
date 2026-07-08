@@ -4,6 +4,7 @@ import { contactsViewOptions } from "../../shared/options";
 import type { ContactGroupBy, ContactGroupRecord, ContactQualityFilter, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "../../shared/types";
 import { SearchWorkspace } from "../../shared/forms";
 import { IconButton, SegmentedControl } from "../../shared/primitives";
+import { FieldVisibilityMenu, type FieldVisibilityMenuConfig } from "../../shared/tables";
 import { ContactPagingControls } from "./ContactPagingControls";
 import { contactsSavedViewsKey, groupOptions, presetSavedViews, qualityOptions, reviewOptions, sortOptions, sourceOptions, statusOptions, typeOptions } from "./contactsToolbarOptions";
 
@@ -25,6 +26,7 @@ export function ContactsToolbar({
   contactSortDir,
   contactsView,
   contactGroupBy,
+  fieldVisibility,
   onQueryChange,
   onStatusFilterChange,
   onReviewFilterChange,
@@ -58,6 +60,7 @@ export function ContactsToolbar({
   contactSortDir: ContactSortDir;
   contactsView: ContactsView;
   contactGroupBy: ContactGroupBy;
+  fieldVisibility?: FieldVisibilityMenuConfig;
   onQueryChange: (value: string) => void;
   onStatusFilterChange: (value: string) => void;
   onReviewFilterChange: (value: string) => void;
@@ -131,6 +134,17 @@ export function ContactsToolbar({
       <div className="toolbar-group view-group">
         <SegmentedControl value={contactsView} onChange={onViewChange} options={contactsViewOptions} label="Contacts view" iconOnly />
       </div>
+      {fieldVisibility ? (
+        <div className="toolbar-group fields-group">
+          <FieldVisibilityMenu
+            groupLabel={fieldVisibility.groupLabel}
+            options={fieldVisibility.options}
+            visibility={fieldVisibility.visibility}
+            onReset={fieldVisibility.onReset}
+            onToggle={fieldVisibility.onToggle}
+          />
+        </div>
+      ) : null}
       <div className="toolbar-group primary-group">
         <IconButton icon={UserPlus} label="New contact" title="New contact" onClick={onCreate} primary />
       </div>

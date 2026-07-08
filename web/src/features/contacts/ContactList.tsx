@@ -1,26 +1,19 @@
 import type { ContactGroupBy, ContactRecord } from "../../shared/types";
-import { ColumnVisibilityMenu, useColumnVisibilityOptions } from "../../shared/tables";
+import type { ColumnVisibilityMap } from "../../shared/tables";
 import { ContactResultsEmptyState, ContactStateStack } from "./ContactResultState";
 import { groupContacts } from "./contactGrouping";
-import {
-  contactListDisplayFieldOptions,
-  contactListDisplayHeader,
-  contactListDisplayValue
-} from "./contactListDisplayFields";
+import { contactListDisplayHeader, contactListDisplayValue } from "./contactListDisplayFields";
 import { contactInitial } from "./contactPresentation";
 
-export function ContactList({ contacts, selectedId, onSelect, groupBy }: {
+export function ContactList({ contacts, selectedId, onSelect, groupBy, displayVisibility }: {
   contacts: ContactRecord[];
   selectedId: string;
   onSelect: (id: string) => void;
   groupBy?: ContactGroupBy;
+  displayVisibility: ColumnVisibilityMap;
 }) {
   const groups = groupContacts(contacts, groupBy || "none");
-  const { resetColumnVisibility, setColumnVisible, visibility } = useColumnVisibilityOptions(
-    "contacts.list.display_fields.v2",
-    contactListDisplayFieldOptions
-  );
-  const detailHeader = contactListDisplayHeader(visibility);
+  const detailHeader = contactListDisplayHeader(displayVisibility);
 
   return (
     <div className="contact-list" role="list" aria-label="Contact records">
@@ -30,22 +23,13 @@ export function ContactList({ contacts, selectedId, onSelect, groupBy }: {
             <span>Name</span>
             <span className="contact-list-display-header">
               <span>{detailHeader}</span>
-              <ColumnVisibilityMenu
-                groupLabel="Visible display fields"
-                label="Display fields"
-                options={contactListDisplayFieldOptions}
-                resetLabel="Reset display fields"
-                visibility={visibility}
-                onReset={resetColumnVisibility}
-                onToggle={setColumnVisible}
-              />
             </span>
           </div>
           {groups.map((group) => (
             <section key={group.id} className="contact-group-section" aria-label={group.label}>
               {(groupBy && groupBy !== "none") ? <h3 className="contact-group-heading">{group.label}</h3> : null}
               {group.contacts.map((contact) => {
-                const identity = contactListDisplayValue(contact, visibility);
+                const identity = contactListDisplayValue(contact, displayVisibility);
                 return (
                   <button
                     key={contact.id}

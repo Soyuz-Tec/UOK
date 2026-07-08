@@ -15,8 +15,9 @@ describe("ContactsWorkspace table columns", () => {
     expect(screen.getByRole("columnheader", { name: /^Phone/ })).toBeInTheDocument();
     expect(screen.queryByRole("columnheader", { name: /^Website/ })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Columns" }));
-    const menu = screen.getByRole("group", { name: "Visible columns" });
+    expect(screen.getAllByRole("button", { name: "Fields" })).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Fields" }));
+    const menu = screen.getByRole("group", { name: "Visible contact fields" });
     expect(within(menu).getByLabelText("Name")).toBeDisabled();
 
     fireEvent.click(within(menu).getByLabelText("Phone"));

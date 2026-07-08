@@ -82,20 +82,6 @@
   white-space: nowrap;
 }
 
-.contact-list-display-header .column-visibility-trigger {
-  min-height: 32px;
-  padding: 0 var(--uok-space-2);
-  color: var(--uok-text-secondary);
-  font-size: var(--uok-caption);
-  font-weight: 800;
-}
-
-.contact-list-display-header .column-visibility-panel {
-  color: var(--uok-text-primary);
-  font-size: var(--uok-body);
-  font-weight: 600;
-}
-
 .contacts-view-split .contact-list-row {
   grid-template-columns: minmax(13rem, 0.85fr) minmax(10rem, 1fr);
   min-height: 56px;

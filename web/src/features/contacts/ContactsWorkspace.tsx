@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Download, Power } from "lucide-react";
 
 import { EmptyState, StatusPill } from "../../shared/data-display";
@@ -11,6 +11,7 @@ import { ContactQualityWorkspace } from "./ContactQualityWorkspace";
 import { ContactResultsPanel } from "./ContactResultsPanel";
 import { ContactsToolbar } from "./ContactsToolbar";
 import type { ContactsWorkspaceProps } from "./types";
+import { useContactFieldVisibility } from "./useContactFieldVisibility";
 
 export function ContactsWorkspace(props: ContactsWorkspaceProps) {
   const popupMode = props.contactsView === "table" || props.contactsView === "cards" || props.contactsView === "quality";
@@ -24,15 +25,15 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
     if (!props.selectedContact && !props.editing) setDetailPopupOpen(false);
   }, [props.editing, props.selectedContact]);
 
-  const selectContact = (id: string) => {
+  const selectContact = useCallback((id: string) => {
     props.onSelect(id);
     if (popupMode) setDetailPopupOpen(true);
-  };
+  }, [popupMode, props.onSelect]);
 
-  const createContact = () => {
+  const createContact = useCallback(() => {
     props.onCreate();
     if (popupMode) setDetailPopupOpen(true);
-  };
+  }, [popupMode, props.onCreate]);
 
   const changeView = (value: ContactsWorkspaceProps["contactsView"]) => {
     setDetailPopupOpen(false);
@@ -43,6 +44,10 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
     if (props.editing) props.onCancelEdit();
     setDetailPopupOpen(false);
   };
+  const { fieldVisibility, listDisplayVisibility, tableVisibleColumns } = useContactFieldVisibility(
+    props.contactsView,
+    selectContact
+  );
 
   if (!props.token) {
     return (
@@ -98,6 +103,7 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
         contactSortDir={props.contactSortDir}
         contactsView={props.contactsView}
         contactGroupBy={props.contactGroupBy}
+        fieldVisibility={fieldVisibility}
         onQueryChange={props.onQueryChange}
         onStatusFilterChange={props.onStatusFilterChange}
         onReviewFilterChange={props.onReviewFilterChange}
@@ -135,12 +141,12 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
             <WorkflowSplitView
               primaryLabel="Contact results"
               secondaryLabel="Contact inspector"
-              primary={<ContactResultsPanel contacts={props.contacts} contactsView={props.contactsView} selectedContactId={props.selectedContactId} contactGroupBy={props.contactGroupBy} onSelect={props.onSelect} />}
+              primary={<ContactResultsPanel contacts={props.contacts} contactsView={props.contactsView} selectedContactId={props.selectedContactId} contactGroupBy={props.contactGroupBy} listDisplayVisibility={listDisplayVisibility} tableVisibleColumns={tableVisibleColumns} onSelect={props.onSelect} />}
               secondary={<ContactDetailPanel {...props} />}
             />
           ) : (
             <section className="contacts-results-workspace" aria-label="Contact results">
-              <ContactResultsPanel contacts={props.contacts} contactsView={props.contactsView} selectedContactId={props.selectedContactId} contactGroupBy={props.contactGroupBy} onSelect={selectContact} />
+              <ContactResultsPanel contacts={props.contacts} contactsView={props.contactsView} selectedContactId={props.selectedContactId} contactGroupBy={props.contactGroupBy} listDisplayVisibility={listDisplayVisibility} tableVisibleColumns={tableVisibleColumns} onSelect={selectContact} />
             </section>
           )}
         </div>

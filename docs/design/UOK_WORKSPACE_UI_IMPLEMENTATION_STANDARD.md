@@ -103,6 +103,7 @@ Required shared primitives include:
 - data table with accessible resizable columns
 - data table column visibility for optional data points
 - list display-field visibility for compact secondary identity lanes
+- one consistent toolbar-level `Fields` control for active-view field visibility when multiple result views expose optional fields
 - pagination controls
 - inline editable field
 - workspace popup or sheet

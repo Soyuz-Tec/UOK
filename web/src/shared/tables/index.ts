@@ -1,5 +1,6 @@
 export { ResizableDataTable } from "./ResizableDataTable";
-export { ColumnVisibilityMenu } from "./ColumnVisibilityMenu";
+export { FieldVisibilityMenu } from "./FieldVisibilityMenu";
+export type { FieldVisibilityMenuConfig } from "./FieldVisibilityMenu";
 export { useColumnVisibility } from "./useColumnVisibility";
 export { useColumnVisibilityOptions } from "./useColumnVisibilityOptions";
 export type { ColumnVisibilityMap, ColumnVisibilityOption } from "./columnVisibility";

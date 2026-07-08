@@ -38,6 +38,7 @@
       "search"
       "page"
       "view"
+      "fields"
       "primary";
   }
 
@@ -129,6 +130,7 @@
   .contact-page-controls,
   .contact-page-stepper,
   .view-group,
+  .fields-group,
   .primary-group,
   .contact-inspector-actions,
   .inline-edit-actions {

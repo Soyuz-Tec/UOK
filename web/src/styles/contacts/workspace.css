@@ -117,9 +117,9 @@
 
 .contacts-toolbar {
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) auto auto auto;
+  grid-template-columns: minmax(320px, 1fr) auto auto auto auto;
   grid-template-areas:
-    "search page view primary";
+    "search page view fields primary";
   align-items: center;
   column-gap: var(--uok-space-2);
   padding: var(--uok-space-3);
@@ -196,11 +196,16 @@
   grid-area: view;
 }
 
+.fields-group {
+  grid-area: fields;
+}
+
 .primary-group {
   grid-area: primary;
 }
 
 .view-group,
+.fields-group,
 .primary-group {
   display: flex;
   align-items: center;
