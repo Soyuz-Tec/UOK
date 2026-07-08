@@ -33,6 +33,27 @@
   text-align: left;
 }
 
+.contact-list-header {
+  display: grid;
+  grid-template-columns: minmax(13rem, 0.85fr) minmax(10rem, 1fr);
+  gap: var(--uok-space-3);
+  align-items: center;
+  min-height: 48px;
+  border-bottom: var(--uok-line);
+  padding: var(--uok-space-3) var(--uok-space-4);
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 800;
+  background: var(--uok-bg-elevated);
+}
+
+.contact-list-header span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .contacts-view-split .contact-list-row {
   grid-template-columns: minmax(13rem, 0.85fr) minmax(10rem, 1fr);
   min-height: 56px;

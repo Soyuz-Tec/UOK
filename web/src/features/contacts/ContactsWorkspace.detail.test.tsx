@@ -118,9 +118,12 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     renderContactsWorkspace("split", [organizationContact, contact]);
 
     const results = screen.getByLabelText("Contact results");
+    expect(within(results).getByText("Name")).toBeInTheDocument();
+    expect(within(results).getByText("Organization")).toBeInTheDocument();
     expect(within(results).getByText("Example Organization")).toBeInTheDocument();
-    expect(within(results).queryByText("Organization")).not.toBeInTheDocument();
     expect(within(results).queryByText(contact.email || "")).not.toBeInTheDocument();
+    const organizationRow = within(results).getByText("Example Organization").closest("button");
+    expect(organizationRow).not.toHaveTextContent("Example OrganizationOrganization");
 
     fireEvent.click(within(results).getByRole("button", { name: /Example Contact/i }));
 
