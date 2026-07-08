@@ -39,11 +39,11 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--uok-separator) 72%, transparent);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--uok-separator) 72%, transparent);
 }
 
 .contact-group-list > .contact-group-button {
-  border-bottom: 1px solid color-mix(in srgb, var(--uok-separator) 72%, transparent);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--uok-separator) 72%, transparent);
 }
 
 .contact-group-button {
