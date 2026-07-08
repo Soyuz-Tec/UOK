@@ -1,14 +1,29 @@
-import type { ElementType } from "react";
+import type { CSSProperties, ElementType } from "react";
 
-export function SegmentedControl<T extends string>({ value, onChange, options, label, iconOnly = false }: {
+type SegmentStyle = CSSProperties & { "--uok-segment-count": string };
+
+export function SegmentedControl<T extends string>({
+  value,
+  onChange,
+  options,
+  label,
+  iconOnly = false,
+}: {
   value: T;
   onChange: (value: T) => void;
   options: Array<{ id: T; label: string; icon: ElementType }>;
   label: string;
   iconOnly?: boolean;
 }) {
+  const segmentStyle: SegmentStyle = { "--uok-segment-count": String(options.length) };
+
   return (
-    <div className={iconOnly ? "segmented-control icon-only" : "segmented-control"} role="group" aria-label={label}>
+    <div
+      className={iconOnly ? "segmented-control icon-only" : "segmented-control"}
+      role="group"
+      aria-label={label}
+      style={segmentStyle}
+    >
       {options.map((option) => {
         const Icon = option.icon;
         return (

@@ -44,7 +44,7 @@
 
 .segmented-control {
   display: inline-grid;
-  grid-template-columns: repeat(3, minmax(82px, 1fr));
+  grid-template-columns: repeat(var(--uok-segment-count, 3), minmax(82px, 1fr));
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
   padding: var(--uok-space-1);
@@ -52,7 +52,7 @@
 }
 
 .segmented-control.icon-only {
-  grid-template-columns: repeat(4, var(--uok-control-height));
+  grid-template-columns: repeat(var(--uok-segment-count, 4), var(--uok-control-height));
 }
 
 .segment {

@@ -73,6 +73,10 @@
   box-shadow: var(--uok-shadow-2);
 }
 
+.search-workspace-menu:not([open]) > .search-workspace-panel {
+  display: none;
+}
+
 .search-workspace-panel.without-grouping {
   grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr);
   width: min(640px, calc(100vw - var(--uok-space-6)));
