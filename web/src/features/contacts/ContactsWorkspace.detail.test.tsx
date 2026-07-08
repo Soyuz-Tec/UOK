@@ -131,6 +131,24 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(inspector).getAllByText(contact.email || "").length).toBeGreaterThan(0);
   });
 
+  it("lets users choose the List and Detail display field lane", () => {
+    renderContactsWorkspace("split", [contact]);
+
+    const results = screen.getByLabelText("Contact results");
+    expect(within(results).getByText("Organization")).toBeInTheDocument();
+    expect(within(results).getByText("Example Organization")).toBeInTheDocument();
+    expect(within(results).queryByText(contact.email || "")).not.toBeInTheDocument();
+
+    fireEvent.click(within(results).getByRole("button", { name: "Display fields" }));
+    const menu = within(results).getByRole("group", { name: "Visible display fields" });
+    fireEvent.click(within(menu).getByLabelText("Organization"));
+    fireEvent.click(within(menu).getByLabelText("Email"));
+
+    expect(results.querySelector(".contact-list-display-header > span")).toHaveTextContent("Email");
+    expect(within(results).getByText(contact.email || "")).toBeInTheDocument();
+    expect(within(results).queryByText("Example Organization")).not.toBeInTheDocument();
+  });
+
   it("starts a new contact from a clean addable form in popup views", () => {
     renderContactsWorkspace("table");
 

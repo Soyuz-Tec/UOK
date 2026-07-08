@@ -4,14 +4,18 @@ import { useId, useState } from "react";
 import type { ColumnVisibilityMap, ColumnVisibilityOption } from "./columnVisibility";
 
 export function ColumnVisibilityMenu({
+  groupLabel = "Visible columns",
   label = "Columns",
   options,
+  resetLabel = "Reset columns",
   visibility,
   onReset,
   onToggle
 }: {
+  groupLabel?: string;
   label?: string;
   options: ColumnVisibilityOption[];
+  resetLabel?: string;
   visibility: ColumnVisibilityMap;
   onReset: () => void;
   onToggle: (columnId: string, visible: boolean) => void;
@@ -32,7 +36,7 @@ export function ColumnVisibilityMenu({
         <span>{label}</span>
       </button>
       {open ? (
-        <div id={panelId} className="column-visibility-panel" role="group" aria-label="Visible columns">
+        <div id={panelId} className="column-visibility-panel" role="group" aria-label={groupLabel}>
           <div className="column-visibility-options">
             {options.map((option) => (
               <label key={option.id} className="column-visibility-option">
@@ -48,7 +52,7 @@ export function ColumnVisibilityMenu({
           </div>
           <button type="button" className="column-visibility-reset" onClick={onReset}>
             <RotateCcw size={15} aria-hidden="true" />
-            <span>Reset columns</span>
+            <span>{resetLabel}</span>
           </button>
         </div>
       ) : null}

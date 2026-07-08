@@ -66,6 +66,7 @@ The alpha.3 baseline currently includes:
 - saved search presets and user-saved searches;
 - shared resizable table column behavior;
 - shared user-configurable table column visibility for optional contact data points;
+- shared user-configurable List + Detail display-field visibility for compact identity lanes;
 - local candidate verifier coverage.
 
 ## Domain Model
@@ -199,6 +200,7 @@ Current UI responsibilities:
 - keep New Contact clean and independent from any previously selected contact;
 - keep table review workflows compact, with explicit row-level open-detail affordances in addition to row click and keyboard activation;
 - let users add or remove optional Table view data points without changing the default low-distraction view;
+- let users choose the compact List + Detail secondary display fields while keeping the contact name as the fixed primary identity;
 - keep create/edit forms progressive, with essentials first and optional addable sections;
 - keep validation messages specific and near the affected fields;
 - support light, dark, and system appearance through design tokens.
