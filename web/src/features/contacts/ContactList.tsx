@@ -17,7 +17,7 @@ export function ContactList({ contacts, selectedId, onSelect, groupBy }: {
 }) {
   const groups = groupContacts(contacts, groupBy || "none");
   const { resetColumnVisibility, setColumnVisible, visibility } = useColumnVisibilityOptions(
-    "contacts.list.display_fields",
+    "contacts.list.display_fields.v2",
     contactListDisplayFieldOptions
   );
   const detailHeader = contactListDisplayHeader(visibility);

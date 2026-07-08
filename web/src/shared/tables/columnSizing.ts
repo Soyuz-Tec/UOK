@@ -1,5 +1,5 @@
 import type { ColumnWidthMap, DataTableColumn } from "./types";
-import { browserStorage } from "../storage";
+import { readStorageJson, writeStorageJson } from "../storage";
 
 const storagePrefix = "uok_column_widths:";
 
@@ -30,34 +30,17 @@ export function normalizeColumnWidths<T>(columns: DataTableColumn<T>[], widths: 
 
 export function readColumnWidths<T>(
   columns: DataTableColumn<T>[],
-  storageKey: string,
-  storage: Storage | null = localColumnStorage()
+  storageKey: string
 ) {
-  if (!storage) return defaultColumnWidths(columns);
-
-  try {
-    const rawValue = storage.getItem(columnStorageKey(storageKey));
-    const stored = rawValue ? JSON.parse(rawValue) : {};
-    return normalizeColumnWidths(columns, isColumnWidthMap(stored) ? stored : {});
-  } catch {
-    return defaultColumnWidths(columns);
-  }
+  const stored = readStorageJson("local", columnStorageKey(storageKey), {}, isColumnWidthMap);
+  return normalizeColumnWidths(columns, stored);
 }
 
-export function writeColumnWidths(storageKey: string, widths: ColumnWidthMap, storage: Storage | null = localColumnStorage()) {
-  if (!storage) return;
-  try {
-    storage.setItem(columnStorageKey(storageKey), JSON.stringify(widths));
-  } catch {
-    // Column resizing is a preference. Storage failures must not block record work.
-  }
+export function writeColumnWidths(storageKey: string, widths: ColumnWidthMap) {
+  writeStorageJson("local", columnStorageKey(storageKey), widths);
 }
 
 function isColumnWidthMap(value: unknown): value is ColumnWidthMap {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   return Object.values(value).every((item) => typeof item === "number");
-}
-
-function localColumnStorage() {
-  return browserStorage("local");
 }

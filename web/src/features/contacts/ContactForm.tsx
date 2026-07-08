@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Save, X } from "lucide-react";
 
 import type { ContactDraft } from "../../shared/types";
+import { validEmail } from "../../shared/format";
 import { FieldMessage } from "../../shared/forms";
 import { CommandButton } from "../../shared/primitives";
 import { ContactFormDisclosure } from "./ContactFormDisclosure";
-import { addableSections, contactDraftHasMeaningfulValue, contactDraftSectionState, isValidEmail, isValidWebsite } from "./contactFormModel";
+import { addableSections, contactDraftHasMeaningfulValue, contactDraftSectionState, isValidWebsite } from "./contactFormModel";
 import type { AddableSection } from "./contactFormModel";
 
 export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }: {
@@ -17,7 +18,7 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
   busy: boolean;
 }) {
   const setField = (field: keyof ContactDraft, value: string) => onChange({ ...draft, [field]: value });
-  const emailError = draft.email.trim() && !isValidEmail(draft.email) ? "Enter a valid email address." : "";
+  const emailError = draft.email.trim() && !validEmail(draft.email) ? "Enter a valid email address." : "";
   const websiteError = draft.website.trim() && !isValidWebsite(draft.website) ? "Enter a valid website address." : "";
   const hasMeaningfulValue = contactDraftHasMeaningfulValue(draft);
   const canSave = hasMeaningfulValue && !emailError && !websiteError;

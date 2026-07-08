@@ -1,4 +1,5 @@
 import type { ContactBusinessIntelligenceProfile, ContactRecord } from "../../shared/types";
+import { contactDataFactCount, contactIdentitySignalCount, normalizedContactText } from "./contactSignals";
 
 const WARNING_READINESS = new Set(["needs_review", "possible_duplicate", "incomplete"]);
 
@@ -8,7 +9,7 @@ export function deriveContactBusinessIntelligenceProfile(contact: ContactRecord)
   const groupCount = contact.groups?.length || 0;
   const businessDomainGroupCount = (contact.groups || []).filter((group) => group.kind === "business_domain").length;
   const duplicateCandidateCount = contact.duplicate_candidates?.length || 0;
-  const factCount = contactFactCount(contact);
+  const factCount = contactDataFactCount(contact);
   const imported = ["csv_import", "gmail", "email"].includes(contact.source);
   const readiness = contactReadiness(contact.status, contact.review_state, factCount, duplicateCandidateCount);
   const confidence = contactConfidence(contact.status, contact.review_state, factCount, noteCount, relationshipCount, groupCount, duplicateCandidateCount);
@@ -19,7 +20,7 @@ export function deriveContactBusinessIntelligenceProfile(contact: ContactRecord)
     summary: profileSummary(contact, factCount, noteCount, relationshipCount, groupCount, duplicateCandidateCount, imported),
     confidence,
     readiness,
-    signal_count: 1 + noteCount + relationshipCount + groupCount + duplicateCandidateCount + (imported ? 1 : 0),
+    signal_count: contactIdentitySignalCount(contact) + noteCount + relationshipCount + groupCount + duplicateCandidateCount + (imported ? 1 : 0),
     fact_count: factCount,
     note_count: noteCount,
     relationship_count: relationshipCount,
@@ -58,10 +59,6 @@ export function profileTone(readiness: ContactBusinessIntelligenceProfile["readi
 
 export function profileRiskTone(flag: string): "warning" | "info" {
   return WARNING_READINESS.has(flag) ? "warning" : "info";
-}
-
-function contactFactCount(contact: ContactRecord) {
-  return [contact.email, contact.phone, contact.website, contact.address, contact.organization_name, contact.title].filter(Boolean).length + (contact.display_name ? 1 : 0);
 }
 
 function contactReadiness(status: string, reviewState: string, factCount: number, duplicateCandidateCount: number) {
@@ -133,7 +130,7 @@ function uniqueValues(values: Array<string | undefined | null>) {
   const result: string[] = [];
   for (const value of values) {
     const text = String(value || "").trim();
-    const key = text.toLowerCase();
+    const key = normalizedContactText(text);
     if (!text || seen.has(key)) continue;
     seen.add(key);
     result.push(text);

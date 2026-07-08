@@ -1,4 +1,5 @@
 import type { ContactRecord } from "../../shared/types";
+import { contactDataFactCount, normalizedContactText } from "./contactSignals";
 
 export type ContactQualityIssueId =
   | "possible_duplicate"
@@ -70,7 +71,7 @@ export function contactPrimaryQualityIssue(contact: ContactRecord): ContactQuali
   if (needsCompany(contact)) return "missing_company";
   if (needsPurposeNote(contact)) return "missing_purpose";
   if (contact.review_state === "needs_review" || contact.source === "csv_import") return "imported_review";
-  if (contact.review_state === "incomplete" || contactFactCount(contact) < 2) return "incomplete";
+  if (contact.review_state === "incomplete" || contactDataFactCount(contact) < 2) return "incomplete";
   return "ready";
 }
 
@@ -101,16 +102,16 @@ export function contactQualityActions(contact: ContactRecord) {
 
 export function duplicateMatches(contact: ContactRecord, contacts: ContactRecord[]) {
   const explicitIds = new Set((contact.duplicate_candidates || []).map((candidate) => candidate.id));
-  const normalizedEmail = normalize(contact.email);
-  const normalizedPhone = normalize(contact.phone);
-  const normalizedName = normalize(contact.display_name);
+  const normalizedEmail = normalizedContactText(contact.email);
+  const normalizedPhone = normalizedContactText(contact.phone);
+  const normalizedName = normalizedContactText(contact.display_name);
   return contacts.filter((candidate) => {
     if (candidate.id === contact.id) return false;
     if (explicitIds.has(candidate.id)) return true;
     return Boolean(
-      (normalizedEmail && normalize(candidate.email) === normalizedEmail) ||
-      (normalizedPhone && normalize(candidate.phone) === normalizedPhone) ||
-      (normalizedName && normalize(candidate.display_name) === normalizedName)
+      (normalizedEmail && normalizedContactText(candidate.email) === normalizedEmail) ||
+      (normalizedPhone && normalizedContactText(candidate.phone) === normalizedPhone) ||
+      (normalizedName && normalizedContactText(candidate.display_name) === normalizedName)
     );
   });
 }
@@ -119,17 +120,17 @@ function looksLikePlaceholderName(contact: ContactRecord) {
   const name = contact.display_name.trim().toLowerCase();
   return Boolean(
     !name ||
-    name === normalize(contact.email) ||
-    name === normalize(contact.phone) ||
-    name === normalize(contact.website) ||
+    name === normalizedContactText(contact.email) ||
+    name === normalizedContactText(contact.phone) ||
+    name === normalizedContactText(contact.website) ||
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(name)
   );
 }
 
 function isEmailOnlyContact(contact: ContactRecord) {
-  const email = normalize(contact.email);
+  const email = normalizedContactText(contact.email);
   if (!email) return false;
-  const name = normalize(contact.display_name);
+  const name = normalizedContactText(contact.display_name);
   const hasOtherFact = Boolean(contact.phone || contact.website || contact.address || contact.organization_name || contact.title);
   return !hasOtherFact && (!name || name === email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(name));
 }
@@ -137,7 +138,7 @@ function isEmailOnlyContact(contact: ContactRecord) {
 function needsCompany(contact: ContactRecord) {
   if (contact.party_type !== "person") return false;
   if (contact.organization_name || contact.title) return false;
-  const emailDomain = normalize(contact.email).split("@")[1] || "";
+  const emailDomain = normalizedContactText(contact.email).split("@")[1] || "";
   return Boolean(emailDomain && !publicEmailDomains.has(emailDomain));
 }
 
@@ -145,14 +146,6 @@ function needsPurposeNote(contact: ContactRecord) {
   const imported = contact.source === "csv_import" || contact.source === "gmail" || contact.source === "email";
   const hasPurposeSignal = Boolean(contact.organization_name || contact.title || contact.address || contact.website);
   return imported && !hasPurposeSignal;
-}
-
-function contactFactCount(contact: ContactRecord) {
-  return [contact.email, contact.phone, contact.website, contact.address, contact.organization_name, contact.title].filter(Boolean).length;
-}
-
-function normalize(value?: string) {
-  return String(value || "").trim().toLowerCase();
 }
 
 const publicEmailDomains = new Set([

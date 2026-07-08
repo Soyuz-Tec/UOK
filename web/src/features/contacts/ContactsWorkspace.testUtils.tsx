@@ -14,6 +14,7 @@ export function resetContactsWorkspaceTest() {
   cleanup();
   localStorage.removeItem("uok_column_widths:contacts.records");
   localStorage.removeItem("uok_column_visibility:contacts.list.display_fields");
+  localStorage.removeItem("uok_column_visibility:contacts.list.display_fields.v2");
   localStorage.removeItem("uok_column_visibility:contacts.records");
   localStorage.removeItem("uok_contacts_saved_search_views");
 }

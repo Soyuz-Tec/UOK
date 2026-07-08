@@ -57,10 +57,6 @@ export function contactDraftHasMeaningfulValue(draft: ContactDraft) {
   ].some(hasText);
 }
 
-export function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-}
-
 export function isValidWebsite(value: string) {
   const trimmed = value.trim();
   if (!trimmed) return true;

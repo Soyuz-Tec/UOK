@@ -1,4 +1,5 @@
 import type { SessionUser } from "./types";
+import { readStorageJson, readStorageString, removeStorageItem } from "./storage";
 
 export const tokenKey = "uok_token";
 export const userKey = "uok_user";
@@ -8,17 +9,18 @@ export const contactsGroupByKey = "uok_contacts_group_by";
 export const sidebarCollapsedKey = "uok_sidebar_collapsed";
 
 export function storedUser() {
-  try {
-    const value = localStorage.getItem(userKey);
-    return value ? JSON.parse(value) as SessionUser : null;
-  } catch {
-    localStorage.removeItem(userKey);
-    return null;
-  }
+  return readStorageJson<SessionUser | null>("local", userKey, null, isSessionUser);
 }
 
 export function storedToken() {
-  const value = sessionStorage.getItem(tokenKey) || "";
-  localStorage.removeItem(tokenKey);
+  const value = readStorageString("session", tokenKey);
+  removeStorageItem("local", tokenKey);
   return value;
+}
+
+function isSessionUser(value: unknown): value is SessionUser | null {
+  if (value === null) return true;
+  if (!value || typeof value !== "object") return false;
+  const user = value as Partial<SessionUser>;
+  return typeof user.username === "string" && typeof user.display_name === "string";
 }

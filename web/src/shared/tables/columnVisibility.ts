@@ -1,4 +1,4 @@
-import { browserStorage } from "../storage";
+import { readStorageJson, writeStorageJson } from "../storage";
 
 const storagePrefix = "uok_column_visibility:";
 
@@ -32,38 +32,20 @@ export function normalizeColumnVisibility(options: ColumnVisibilityOption[], vis
 
 export function readColumnVisibility(
   options: ColumnVisibilityOption[],
-  storageKey: string,
-  storage: Storage | null = localColumnVisibilityStorage()
+  storageKey: string
 ) {
-  if (!storage) return defaultColumnVisibility(options);
-
-  try {
-    const rawValue = storage.getItem(columnVisibilityStorageKey(storageKey));
-    const stored = rawValue ? JSON.parse(rawValue) : {};
-    return normalizeColumnVisibility(options, isColumnVisibilityMap(stored) ? stored : {});
-  } catch {
-    return defaultColumnVisibility(options);
-  }
+  const stored = readStorageJson("local", columnVisibilityStorageKey(storageKey), {}, isColumnVisibilityMap);
+  return normalizeColumnVisibility(options, stored);
 }
 
 export function writeColumnVisibility(
   storageKey: string,
-  visibility: ColumnVisibilityMap,
-  storage: Storage | null = localColumnVisibilityStorage()
+  visibility: ColumnVisibilityMap
 ) {
-  if (!storage) return;
-  try {
-    storage.setItem(columnVisibilityStorageKey(storageKey), JSON.stringify(visibility));
-  } catch {
-    // Column visibility is a preference. Storage failures must not block record work.
-  }
+  writeStorageJson("local", columnVisibilityStorageKey(storageKey), visibility);
 }
 
 function isColumnVisibilityMap(value: unknown): value is ColumnVisibilityMap {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   return Object.values(value).every((item) => typeof item === "boolean");
-}
-
-function localColumnVisibilityStorage() {
-  return browserStorage("local");
 }

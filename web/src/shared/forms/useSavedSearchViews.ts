@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { browserStorage } from "../storage";
+import { readStorageJson, writeStorageJson } from "../storage";
 import type { SavedSearchView } from "./SearchWorkspace.types";
 
 export function useSavedSearchViews(storageKey: string) {
@@ -22,26 +22,18 @@ export function useSavedSearchViews(storageKey: string) {
 }
 
 function readSavedViews(storageKey: string): SavedSearchView[] {
-  const storage = browserStorage("local");
-  if (!storage) return [];
-
-  try {
-    const raw = storage.getItem(storageKey);
-    const views = raw ? JSON.parse(raw) as SavedSearchView[] : [];
-    return views.filter((view) => view.name.trim() && view.name !== "Working view");
-  } catch {
-    storage.removeItem(storageKey);
-    return [];
-  }
+  const views = readStorageJson<SavedSearchView[]>("local", storageKey, [], isSavedSearchViewArray);
+  return views.filter((view) => view.name.trim() && view.name !== "Working view");
 }
 
 function writeSavedViews(storageKey: string, views: SavedSearchView[]) {
-  const storage = browserStorage("local");
-  if (!storage) return;
+  writeStorageJson("local", storageKey, views);
+}
 
-  try {
-    storage.setItem(storageKey, JSON.stringify(views));
-  } catch {
-    // Saved searches are a convenience layer; search itself must keep working.
-  }
+function isSavedSearchViewArray(value: unknown): value is SavedSearchView[] {
+  return Array.isArray(value) && value.every((view) => {
+    if (!view || typeof view !== "object") return false;
+    const item = view as Partial<SavedSearchView>;
+    return typeof item.id === "string" && typeof item.name === "string" && typeof item.query === "string";
+  });
 }

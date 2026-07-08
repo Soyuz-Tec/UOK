@@ -61,12 +61,14 @@ The alpha.3 baseline currently includes:
 - review queue and quality views;
 - duplicate detection, merge, and rollback;
 - derived business intelligence profiles;
+- shared contact signal helpers so quality, readiness, and profile derivation count facts consistently;
 - PostgreSQL-native search with Python fallback for compatibility paths;
 - List + Detail, Table, and Cards views;
 - saved search presets and user-saved searches;
 - shared resizable table column behavior;
 - shared user-configurable table column visibility for optional contact data points;
 - shared user-configurable List + Detail display-field visibility for compact identity lanes;
+- a shared contact field registry so List + Detail and Table views reuse the same field labels and value extraction;
 - local candidate verifier coverage.
 
 ## Domain Model

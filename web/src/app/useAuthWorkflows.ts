@@ -4,6 +4,7 @@ import type { AuthState } from "./useAuthState";
 import type { WorkbenchData } from "./useWorkbenchData";
 import { apiErrorMessage, validEmail } from "../shared/format";
 import { tokenKey, userKey } from "../shared/session";
+import { removeStorageItem, writeStorageJson, writeStorageString } from "../shared/storage";
 import type { SessionUser } from "../shared/types";
 
 export function useAuthWorkflows(auth: AuthState, data: WorkbenchData, onClearSession: () => void) {
@@ -22,9 +23,9 @@ export function useAuthWorkflows(auth: AuthState, data: WorkbenchData, onClearSe
         method: "POST",
         body: JSON.stringify({ username: auth.username.trim(), password: auth.password })
       });
-      sessionStorage.setItem(tokenKey, response.access_token);
-      localStorage.removeItem(tokenKey);
-      localStorage.setItem(userKey, JSON.stringify(response.user));
+      writeStorageString("session", tokenKey, response.access_token);
+      removeStorageItem("local", tokenKey);
+      writeStorageJson("local", userKey, response.user);
       auth.setToken(response.access_token);
       auth.setCurrentUser(response.user);
       auth.setPassword("");
@@ -61,9 +62,9 @@ export function useAuthWorkflows(auth: AuthState, data: WorkbenchData, onClearSe
         method: "POST",
         body: JSON.stringify({ display_name: displayName, email, password: auth.registerPassword })
       });
-      sessionStorage.setItem(tokenKey, response.access_token);
-      localStorage.removeItem(tokenKey);
-      localStorage.setItem(userKey, JSON.stringify(response.user));
+      writeStorageString("session", tokenKey, response.access_token);
+      removeStorageItem("local", tokenKey);
+      writeStorageJson("local", userKey, response.user);
       auth.setToken(response.access_token);
       auth.setCurrentUser(response.user);
       auth.setUsername(email);

@@ -36,7 +36,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `GithubSecuritySetup` | Enable Dependabot alerts/security updates, configure merge hygiene, and report branch-protection/ruleset availability | `.\scripts\uok_ops.ps1 -Action GithubSecuritySetup` |
 | `GithubPrChecks` | Show or watch PR checks for the current branch or a supplied PR number | `.\scripts\uok_ops.ps1 -Action GithubPrChecks -PullRequestNumber <number> -WatchChecks` |
 
-The script is a convenience wrapper. The underlying commands remain visible and may be run directly when debugging.
+The script is a convenience wrapper. Shared PowerShell operation helpers live in `scripts/uok_common_ops.ps1`; operation scripts should dot-source that helper instead of copying `Invoke-UokStep` or native-command handling. The underlying commands remain visible and may be run directly when debugging.
 
 ## Required Verification Levels
 
