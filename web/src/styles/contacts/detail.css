@@ -139,6 +139,51 @@
   width: 100%;
 }
 
+.contact-activity-timeline {
+  display: grid;
+  gap: var(--uok-space-3);
+}
+
+.contact-activity-timeline h3,
+.contact-activity-timeline p {
+  margin: 0;
+}
+
+.contact-timeline-list {
+  display: grid;
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+}
+
+.contact-timeline-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--uok-space-3);
+  padding: var(--uok-space-3);
+  border-bottom: var(--uok-line);
+}
+
+.contact-timeline-item:last-child {
+  border-bottom: 0;
+}
+
+.contact-timeline-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: var(--uok-accent);
+  background: color-mix(in srgb, var(--uok-accent) 12%, transparent);
+}
+
+.contact-timeline-item p,
+.contact-timeline-item small {
+  color: var(--uok-text-tertiary);
+}
+
 .contact-detail-empty {
   display: flex;
   flex-wrap: wrap;

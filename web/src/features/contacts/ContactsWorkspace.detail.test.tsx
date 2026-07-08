@@ -50,6 +50,52 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(inspector).getByText("Signals")).toBeInTheDocument();
   });
 
+  it("shows a unified contact activity timeline", () => {
+    renderContactsWorkspace("split", [{
+      ...contact,
+      source: "csv_import",
+      attrs: {
+        merge_history: [{
+          merge_id: "merge-1",
+          duplicate_display_name: "Duplicate Example",
+          merged_at: "2026-07-07T00:00:00Z"
+        }]
+      },
+      notes: [{ id: "note-1", body: "Known from supplier onboarding.", created_at: "2026-07-07T00:00:00Z" }],
+      groups: [{
+        id: "group-existing",
+        name: "Review list",
+        visibility_scope: "organization",
+        member_id: "member-1",
+        created_at: "2026-07-07T00:00:00Z"
+      }],
+      relationships: [{
+        id: "relationship-1",
+        from_party_id: contact.id,
+        to_party_id: organizationContact.id,
+        relationship_type: "works_for",
+        direction: "outbound",
+        related_party_id: organizationContact.id,
+        related_party_name: organizationContact.display_name,
+        related_party_type: organizationContact.party_type,
+        related_party_email: organizationContact.email
+      }],
+      duplicate_candidates: [{ id: "duplicate-1", display_name: "Duplicate Example", reason: "email" }]
+    }, organizationContact]);
+
+    fireEvent.click(screen.getByRole("button", { name: /Example Contact/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Activity" }));
+
+    const timeline = within(screen.getByLabelText("Contact inspector")).getByLabelText("Contact activity timeline");
+    expect(within(timeline).getByText("Why this contact exists")).toBeInTheDocument();
+    expect(within(timeline).getByText("Imported for review")).toBeInTheDocument();
+    expect(within(timeline).getByText("Known from supplier onboarding.")).toBeInTheDocument();
+    expect(within(timeline).getByText("Works For")).toBeInTheDocument();
+    expect(within(timeline).getByText("Review list")).toBeInTheDocument();
+    expect(within(timeline).getByText("Duplicate candidate")).toBeInTheDocument();
+    expect(within(timeline).getByText("Merged Duplicate Example")).toBeInTheDocument();
+  });
+
   it("opens contact detail in the same popup primitive from cards view", () => {
     renderContactsWorkspace("cards");
 

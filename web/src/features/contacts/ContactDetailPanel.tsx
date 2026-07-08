@@ -4,6 +4,7 @@ import { contactDetailPaneOptions } from "../../shared/options";
 import { formatLabel } from "../../shared/format";
 import { DetailItem, EmptyState } from "../../shared/data-display";
 import { CommandButton, IconButton, SegmentedControl } from "../../shared/primitives";
+import { ContactActivityTimeline } from "./ContactActivityTimeline";
 import { ContactBusinessIntelligenceProfilePanel } from "./ContactBusinessIntelligenceProfile";
 import { ContactFactRows } from "./ContactFactRows";
 import { ContactForm } from "./ContactForm";
@@ -76,9 +77,7 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
                 </label>
                 <CommandButton icon={FileCheck2} onClick={props.onAddNote} disabled={!contact || !props.noteText.trim()}>Add</CommandButton>
               </div>
-              <div className="record-list">
-                {contact.notes?.length ? contact.notes.map((note) => <div className="record-row" key={note.id}>{note.body}</div>) : <EmptyState text="No notes." />}
-              </div>
+              <ContactActivityTimeline contact={contact} />
             </div>
           )}
           {props.detailPane === "relationships" && (

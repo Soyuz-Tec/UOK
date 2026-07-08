@@ -94,6 +94,13 @@ export type ContactAttrs = {
   address?: string;
   title?: string;
   duplicate_candidates?: Array<{ id: string; display_name: string; reason: string }>;
+  merge_history?: Array<{
+    merge_id: string;
+    duplicate_party_id?: string;
+    duplicate_display_name?: string;
+    merged_at?: string;
+    rolled_back_at?: string;
+  }>;
 };
 
 export type ContactRecord = {

@@ -100,6 +100,8 @@ Examples:
 
 Notes are private internal timeline entries, stored separately from the editable party profile and included in audit/event evidence.
 
+The Activity pane must present a unified contact timeline rather than a raw note list. It should answer "why does this contact exist?" with source/import context, purpose notes, relationship links, group membership, duplicate candidates, and duplicate merge history while keeping the note composer available for human cleanup work.
+
 ### Groups
 
 Groups are user-managed contact lists owned by `contacts.core`.
