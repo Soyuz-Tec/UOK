@@ -66,7 +66,7 @@ def cmd_update_contact(db: Session, actor: Actor, payload: dict[str, Any], comma
         attrs[field] = value
     if "party_type" in payload:
         party.party_type = choose_party_type(payload)
-    if any(field in payload for field in ("display_name", "given_name", "family_name", "organization_name", "email", "phone", "website", "address", "note")):
+    if any(field in payload for field in ("display_name", "given_name", "family_name", "organization_name", "email", "phone", "website", "address", "birthday", "important_date", "instant_message", "tags", "note")):
         merged_payload = {**attrs, **payload, "display_name": payload.get("display_name", party.display_name)}
         if not has_meaningful_contact_value(merged_payload):
             raise ValueError("at least one meaningful contact field is required")
@@ -80,6 +80,12 @@ def cmd_update_contact(db: Session, actor: Actor, payload: dict[str, Any], comma
         party.team_id = bounded_text(payload.get("team_id"), "team_id") or None
     if "visibility_scope" in payload:
         party.visibility_scope = contact_visibility_scope(payload.get("visibility_scope"))
+    if "source" in payload:
+        party.source = bounded_text(payload.get("source"), "source") or party.source
+    if "client_reference" in payload:
+        party.client_reference = bounded_text(payload.get("client_reference"), "client_reference") or None
+    if "sync_state" in payload:
+        party.sync_state = bounded_text(payload.get("sync_state"), "sync_state") or party.sync_state
     party.attrs_json = dumps(attrs)
     touch_party(party)
     _emit_event(db, actor, "ContactUpdated", "Party", party.id, {"display_name": party.display_name, "review_state": party.review_state})

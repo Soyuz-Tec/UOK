@@ -13,6 +13,7 @@ from .validation import (
     MAX_CONTACT_NOTE_LENGTH,
     MAX_CONTACT_PHONE_LENGTH,
     MAX_CONTACT_REFERENCE_LENGTH,
+    MAX_CONTACT_SOURCE_LENGTH,
     MAX_CONTACT_STATUS_LENGTH,
     MAX_CONTACT_TITLE_LENGTH,
     MAX_CONTACT_WEBSITE_LENGTH,
@@ -33,11 +34,16 @@ class ContactWriteRequest(BaseModel):
     website: str | None = Field(default=None, max_length=MAX_CONTACT_WEBSITE_LENGTH)
     address: str | None = Field(default=None, max_length=MAX_CONTACT_ADDRESS_LENGTH)
     title: str | None = Field(default=None, max_length=MAX_CONTACT_TITLE_LENGTH)
+    birthday: str | None = Field(default=None, max_length=MAX_CONTACT_STATUS_LENGTH)
+    important_date: str | None = Field(default=None, max_length=MAX_CONTACT_STATUS_LENGTH)
+    instant_message: str | None = Field(default=None, max_length=MAX_CONTACT_EMAIL_LENGTH)
+    tags: str | None = Field(default=None, max_length=MAX_CONTACT_WEBSITE_LENGTH)
     note: str | None = Field(default=None, max_length=MAX_CONTACT_NOTE_LENGTH)
     owner_user_id: str | None = Field(default=None, max_length=MAX_CONTACT_ID_LENGTH)
     team_id: str | None = Field(default=None, max_length=MAX_CONTACT_ID_LENGTH)
     visibility_scope: str | None = Field(default=None, max_length=MAX_CONTACT_STATUS_LENGTH)
     client_reference: str | None = Field(default=None, max_length=MAX_CONTACT_REFERENCE_LENGTH)
+    source: str | None = Field(default=None, max_length=MAX_CONTACT_SOURCE_LENGTH)
     sync_state: str | None = Field(default=None, max_length=MAX_CONTACT_STATUS_LENGTH)
     review_state: str | None = Field(default=None, max_length=MAX_CONTACT_STATUS_LENGTH)
 

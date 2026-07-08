@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
-import { Building2, FileText, Save, UserRound, X } from "lucide-react";
+import { Building2, CalendarDays, FileText, MessageCircle, Save, ShieldCheck, UserRound, X } from "lucide-react";
 
 import type { ContactDraft } from "../../shared/types";
 import { FieldMessage } from "../../shared/forms";
 import { CommandButton } from "../../shared/primitives";
 import { ContactFormDisclosure } from "./ContactFormDisclosure";
 
-type AddableSection = "person" | "organization" | "more";
+type AddableSection = "person" | "organization" | "dates" | "messaging" | "source" | "more";
 
 const addableSections: Array<{ id: AddableSection; label: string; description: string; icon: typeof UserRound }> = [
   { id: "person", label: "Person details", description: "Given and family name", icon: UserRound },
   { id: "organization", label: "Organization details", description: "Company, title, and team", icon: Building2 },
+  { id: "dates", label: "Dates", description: "Birthday and important date", icon: CalendarDays },
+  { id: "messaging", label: "Messaging and tags", description: "Instant message and tags", icon: MessageCircle },
+  { id: "source", label: "Source details", description: "Source and reference", icon: ShieldCheck },
   { id: "more", label: "More details", description: "Website, address, and note", icon: FileText }
 ];
 
@@ -36,22 +39,39 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
     draft.website,
     draft.address,
     draft.title,
+    draft.birthday,
+    draft.important_date,
+    draft.instant_message,
+    draft.tags,
     draft.note
   ].some((value) => value.trim().length > 0);
   const canSave = hasMeaningfulValue && !emailError && !websiteError;
   const hasPersonDetails = [draft.given_name, draft.family_name].some((value) => value.trim().length > 0);
   const hasOrganizationDetails = [draft.organization_name, draft.company_name, draft.title, draft.team_id].some((value) => value.trim().length > 0);
+  const hasDateDetails = [draft.birthday, draft.important_date].some((value) => value.trim().length > 0);
+  const hasMessagingDetails = [draft.instant_message, draft.tags].some((value) => value.trim().length > 0);
+  const hasSourceDetails = [draft.source, draft.client_reference].some((value) => value.trim().length > 0);
   const hasMoreContactDetails = [draft.website, draft.address, draft.note].some((value) => value.trim().length > 0);
-  const [addedSections, setAddedSections] = useState<Record<AddableSection, boolean>>({ person: false, organization: false, more: false });
+  const [addedSections, setAddedSections] = useState<Record<AddableSection, boolean>>({
+    person: false,
+    organization: false,
+    dates: false,
+    messaging: false,
+    source: false,
+    more: false
+  });
   const visibleSections = {
     person: addedSections.person || hasPersonDetails,
     organization: addedSections.organization || hasOrganizationDetails,
+    dates: addedSections.dates || hasDateDetails,
+    messaging: addedSections.messaging || hasMessagingDetails,
+    source: addedSections.source || hasSourceDetails,
     more: addedSections.more || hasMoreContactDetails
   };
   const availableSections = addableSections.filter((section) => !visibleSections[section.id]);
 
   useEffect(() => {
-    setAddedSections({ person: false, organization: false, more: false });
+    setAddedSections({ person: false, organization: false, dates: false, messaging: false, source: false, more: false });
   }, [formKey]);
 
   const addSection = (section: AddableSection) => {
@@ -117,6 +137,34 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
           <label className="field"><span>Company link</span><input value={draft.company_name} onChange={(event) => setField("company_name", event.target.value)} /></label>
           <label className="field"><span>Title</span><input autoComplete="organization-title" value={draft.title} onChange={(event) => setField("title", event.target.value)} /></label>
           <label className="field"><span>Team</span><input value={draft.team_id} onChange={(event) => setField("team_id", event.target.value)} /></label>
+        </ContactFormDisclosure>
+      )}
+      {visibleSections.dates && (
+        <ContactFormDisclosure title="Dates" summary="Birthday and important date" defaultOpen>
+          <label className="field"><span>Birthday</span><input type="date" value={draft.birthday} onChange={(event) => setField("birthday", event.target.value)} /></label>
+          <label className="field"><span>Important date</span><input type="date" value={draft.important_date} onChange={(event) => setField("important_date", event.target.value)} /></label>
+        </ContactFormDisclosure>
+      )}
+      {visibleSections.messaging && (
+        <ContactFormDisclosure title="Messaging and tags" summary="Instant message and searchable tags" defaultOpen>
+          <label className="field"><span>Instant message</span><input value={draft.instant_message} onChange={(event) => setField("instant_message", event.target.value)} /></label>
+          <label className="field field-wide"><span>Tags</span><input value={draft.tags} placeholder="supplier, finance, priority" onChange={(event) => setField("tags", event.target.value)} /></label>
+        </ContactFormDisclosure>
+      )}
+      {visibleSections.source && (
+        <ContactFormDisclosure title="Source details" summary="Origin and reference" defaultOpen>
+          <label className="field">
+            <span>Source</span>
+            <select value={draft.source} onChange={(event) => setField("source", event.target.value)}>
+              <option value="">Keep default</option>
+              <option value="contacts">Contacts</option>
+              <option value="gmail">Gmail</option>
+              <option value="csv_import">CSV import</option>
+              <option value="vcard">vCard</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
+          <label className="field"><span>Reference</span><input value={draft.client_reference} onChange={(event) => setField("client_reference", event.target.value)} /></label>
         </ContactFormDisclosure>
       )}
       {visibleSections.more && (

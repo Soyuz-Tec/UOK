@@ -79,9 +79,9 @@ Required concepts:
 - `sync_state`
 - `created_at`, `updated_at`, `archived_at`, `purged_at`
 
-### Contact Methods
+### Contact Facts And Methods
 
-The first release may store email, phone, website, and address values inside module-owned JSON attributes as long as API contracts expose typed fields. Future releases may split them into dedicated tables if repeated values, validation, and dedupe need stronger relational behavior.
+The first release may store email, phone, website, address, birthday, important date, instant message, and tags inside module-owned JSON attributes as long as API contracts expose typed fields. Source and client reference stay on the party record. Future releases may split repeated values into dedicated tables if validation, dedupe, multiple values per field, or sync needs stronger relational behavior.
 
 ### Relationships
 
@@ -175,7 +175,7 @@ The Contacts UI must be human-friendly and policy-aligned:
 - The quality workspace must separate possible duplicates, email-only records, placeholder names, missing company context, missing purpose notes, imported review records, incomplete records, and ready records into guided queues with direct suggested actions.
 - Review Queue is visible and actionable.
 - Review Queue includes duplicate comparison and merge actions that let users choose which record remains authoritative without leaving the workspace.
-- Create/edit form supports minimal save with at least one meaningful field.
+- Create/edit form supports minimal save with at least one meaningful field and addable sections for person details, organization details, dates, messaging and tags, source/reference, website, address, and notes.
 - Validation errors are specific and close to the affected fields.
 - Module disabled/uninstalled states are clear and route users back to Apps Manager actions.
 - Light, dark, and system appearances remain supported.

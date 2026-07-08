@@ -13,7 +13,13 @@ export function draftFromContact(contact: ContactRecord): ContactDraft {
     website: contact.website || "",
     address: contact.address || "",
     title: contact.title || "",
+    birthday: contact.birthday || "",
+    important_date: contact.important_date || "",
+    instant_message: contact.instant_message || "",
+    tags: contact.tags || "",
     note: "",
+    source: contact.source || "",
+    client_reference: contact.client_reference || "",
     team_id: contact.team_id || ""
   };
 }

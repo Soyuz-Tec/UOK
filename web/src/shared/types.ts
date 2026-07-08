@@ -93,6 +93,10 @@ export type ContactAttrs = {
   website?: string;
   address?: string;
   title?: string;
+  birthday?: string;
+  important_date?: string;
+  instant_message?: string;
+  tags?: string;
   duplicate_candidates?: Array<{ id: string; display_name: string; reason: string }>;
   merge_history?: Array<{
     merge_id: string;
@@ -114,6 +118,7 @@ export type ContactRecord = {
   team_id?: string | null;
   visibility_scope: string;
   source: string;
+  client_reference?: string | null;
   sync_state: string;
   attrs: ContactAttrs;
   created_at?: string;
@@ -128,6 +133,10 @@ export type ContactRecord = {
   family_name?: string;
   organization_name?: string;
   title?: string;
+  birthday?: string;
+  important_date?: string;
+  instant_message?: string;
+  tags?: string;
   notes?: Array<{ id: string; body: string; created_at: string }>;
   business_intelligence_profile?: ContactBusinessIntelligenceProfile;
   relationships?: Array<{
@@ -158,7 +167,13 @@ export type ContactDraft = {
   website: string;
   address: string;
   title: string;
+  birthday: string;
+  important_date: string;
+  instant_message: string;
+  tags: string;
   note: string;
+  source: string;
+  client_reference: string;
   team_id: string;
 };
 
@@ -174,6 +189,12 @@ export const emptyDraft: ContactDraft = {
   website: "",
   address: "",
   title: "",
+  birthday: "",
+  important_date: "",
+  instant_message: "",
+  tags: "",
   note: "",
+  source: "",
+  client_reference: "",
   team_id: ""
 };

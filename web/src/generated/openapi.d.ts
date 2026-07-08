@@ -724,6 +724,8 @@ export interface components {
         ContactWriteRequest: {
             /** Address */
             address?: string | null;
+            /** Birthday */
+            birthday?: string | null;
             /** Client Reference */
             client_reference?: string | null;
             /** Company Name */
@@ -738,6 +740,10 @@ export interface components {
             family_name?: string | null;
             /** Given Name */
             given_name?: string | null;
+            /** Important Date */
+            important_date?: string | null;
+            /** Instant Message */
+            instant_message?: string | null;
             /** Note */
             note?: string | null;
             /** Organization Name */
@@ -750,8 +756,12 @@ export interface components {
             phone?: string | null;
             /** Review State */
             review_state?: string | null;
+            /** Source */
+            source?: string | null;
             /** Sync State */
             sync_state?: string | null;
+            /** Tags */
+            tags?: string | null;
             /** Team Id */
             team_id?: string | null;
             /** Title */

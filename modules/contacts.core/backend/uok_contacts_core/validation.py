@@ -11,6 +11,10 @@ CONTACT_ATTR_FIELDS = (
     "website",
     "address",
     "title",
+    "birthday",
+    "important_date",
+    "instant_message",
+    "tags",
 )
 
 MEANINGFUL_FIELDS = CONTACT_ATTR_FIELDS + ("display_name", "note")
@@ -54,6 +58,10 @@ CONTACT_FIELD_LIMITS = {
     "website": MAX_CONTACT_WEBSITE_LENGTH,
     "address": MAX_CONTACT_ADDRESS_LENGTH,
     "title": MAX_CONTACT_TITLE_LENGTH,
+    "birthday": MAX_CONTACT_STATUS_LENGTH,
+    "important_date": MAX_CONTACT_STATUS_LENGTH,
+    "instant_message": MAX_CONTACT_EMAIL_LENGTH,
+    "tags": MAX_CONTACT_WEBSITE_LENGTH,
     "name": MAX_CONTACT_GROUP_NAME_LENGTH,
     "group_name": MAX_CONTACT_GROUP_NAME_LENGTH,
     "group_description": MAX_CONTACT_GROUP_DESCRIPTION_LENGTH,

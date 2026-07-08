@@ -227,9 +227,18 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(dialog).getByText("Add at least one name, organization, contact method, or note.")).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: /Person details/i })).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: /Organization details/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /Dates/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /Messaging and tags/i })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: /Source details/i })).toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByRole("button", { name: /More details/i }));
     expect(within(dialog).getByLabelText("Website")).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: /Dates/i }));
+    expect(within(dialog).getByLabelText("Birthday")).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: /Messaging and tags/i }));
+    expect(within(dialog).getByLabelText("Tags")).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: /Source details/i }));
+    expect(within(dialog).getByLabelText("Source")).toBeInTheDocument();
   });
 
   it("runs smart contact grouping from the group rail", async () => {
