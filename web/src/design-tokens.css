@@ -32,6 +32,9 @@
   --uok-radius-2: 6px;
   --uok-radius-3: 8px;
   --uok-control-height: 44px;
+  --uok-row-height: 50px;
+  --uok-header-row-height: 50px;
+  --uok-row-separator-color: color-mix(in srgb, var(--uok-separator) 72%, transparent);
   --uok-sidebar-width: 272px;
   --uok-sidebar-collapsed-width: 88px;
   --uok-line: 1px solid var(--uok-separator);

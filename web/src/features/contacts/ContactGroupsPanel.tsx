@@ -30,22 +30,22 @@ export function ContactGroupsPanel({
   smartGroupingBusy?: boolean;
 }) {
   return (
-    <aside className="contacts-group-sidebar" aria-label="Contact groups">
+    <aside className="contacts-group-sidebar uok-row-rhythm" aria-label="Contact groups">
       <SectionHeading
         title="Contact groups"
         action={<UsersRound size={18} aria-hidden="true" />}
       />
-      <div className="contact-group-list" role="list">
+      <div className="contact-group-list uok-row-list" role="list">
         <button
           type="button"
-          className={selectedGroupId ? "contact-group-button" : "contact-group-button selected"}
+          className={selectedGroupId ? "contact-group-button uok-row" : "contact-group-button uok-row selected"}
           aria-pressed={!selectedGroupId}
           onClick={() => onGroupChange("")}
         >
           <span>All contacts</span>
         </button>
         {groups.map((group) => (
-          <div className="contact-group-row" role="listitem" key={group.id}>
+          <div className="contact-group-row uok-row" role="listitem" key={group.id}>
             <button
               type="button"
               className={selectedGroupId === group.id ? "contact-group-button selected" : "contact-group-button"}
