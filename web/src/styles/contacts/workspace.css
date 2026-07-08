@@ -23,8 +23,7 @@
 }
 
 .contacts-view-split .contact-list {
-  max-height: calc(100vh - 174px);
-  overflow: auto;
+  overflow: visible;
 }
 
 .contacts-view-split .contact-detail {
