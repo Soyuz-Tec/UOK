@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from .read_model_profile import business_intelligence_profile
 from .read_model_rows import (
-    business_intelligence_profile,
     import_batch_rows,
     iso_or_none,
     note_rows,

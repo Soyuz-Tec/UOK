@@ -48,16 +48,32 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 ## Line-Of-Code Integrity
 
+Line count is a reviewability signal, not the only quality signal. UOK uses a tiered model:
+
+- `300` lines is the hard local audit threshold for scanned non-generated source files.
+- `200` lines is the soft review threshold for route composition, command-family files, React components, hooks, and tests.
+- Files above the soft threshold are acceptable only when they remain cohesive and have a clear owner.
+- Files above the hard threshold must be split or explicitly justified in the owning architecture or module document.
+
 The working source-size target is:
 
 | File class | Target |
 |---|---|
-| Backend route composition | generally under `200` lines |
-| Backend command bus or command-family files | generally under `200` lines |
-| Backend business services, read models, and policy modules | generally under `300` lines unless cohesive |
-| React components and hooks | generally under `300` lines |
+| Backend route composition | soft warning above `200` lines; hard gate above `300` lines |
+| Backend command bus or command-family files | soft warning above `200` lines; hard gate above `300` lines |
+| Backend business services, read models, and policy modules | soft warning above `250` lines; hard gate above `300` lines unless cohesive and documented |
+| React components and hooks | soft warning above `200` lines; hard gate above `300` lines |
 | CSS | split by design-system layer, shell, shared primitive, or feature surface |
 | Tests | split by behavior area when scenarios become unrelated |
+
+Function and component guidance:
+
+- Prefer functions under `60` lines unless the logic is a cohesive parser, mapper, or validation table.
+- Prefer React render components that mainly render one surface, with data loading and mutation orchestration in hooks.
+- Prefer backend API routes that delegate validation, command handling, and read-model shaping to focused helpers.
+- Prefer test files grouped by behavior area; a test file above `200` lines should still describe one scenario family.
+
+Soft warnings do not fail the build by themselves. They must appear in repeatable audit evidence, including the full `source_size_policy` section of `EngineeringEvidence`, and reduce the relevant quality scorecard category so they can be reviewed before expansion. Hard violations fail `TechnologyAudit`, `Audit`, and `Verify`.
 
 The audit gate checks non-generated source files in:
 

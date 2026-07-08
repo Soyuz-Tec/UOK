@@ -7,12 +7,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import source_size_policy
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SOURCE_ROOTS = ("src", "modules", "web/src", "tests", "scripts", "migrations")
-SOURCE_SUFFIXES = {".py", ".ts", ".tsx", ".css", ".ps1", ".sql"}
-EXCLUDED_PARTS = {"node_modules", "static", "generated", "__pycache__", ".pytest_cache"}
-SOURCE_LINE_LIMIT = 300
 
 
 @dataclass
@@ -30,14 +28,6 @@ def read_json(path: str) -> dict[str, Any]:
     return json.loads(read_text(path))
 
 
-def is_source_file(path: Path) -> bool:
-    return (
-        path.is_file()
-        and path.suffix in SOURCE_SUFFIXES
-        and not EXCLUDED_PARTS.intersection(path.parts)
-    )
-
-
 def check_required_artifacts() -> CheckResult:
     required = [
         "README.md",
@@ -53,6 +43,8 @@ def check_required_artifacts() -> CheckResult:
         "docs/operations/UOK_ASUH_TEST_EVENTS.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
         "scripts/engineering_evidence.py",
+        "scripts/quality_scorecard.py",
+        "scripts/source_size_policy.py",
         "scripts/uok_github_ops.ps1",
         ".github/CODEOWNERS",
         ".github/copilot-instructions.md",
@@ -152,19 +144,9 @@ def check_module_shape() -> CheckResult:
 
 
 def check_source_size() -> CheckResult:
-    violations: list[str] = []
-    for root_name in SOURCE_ROOTS:
-        root = REPO_ROOT / root_name
-        if not root.exists():
-            continue
-        for path in sorted(root.rglob("*")):
-            if not is_source_file(path):
-                continue
-            line_count = len(path.read_text(encoding="utf-8", errors="ignore").splitlines())
-            if line_count > SOURCE_LINE_LIMIT:
-                relative = path.relative_to(REPO_ROOT).as_posix()
-                violations.append(f"{relative}: {line_count} lines")
-    return CheckResult("source_size", not violations, "; ".join(violations) or "within limits")
+    report = source_size_policy.run_source_size_policy(REPO_ROOT)
+    details = source_size_policy.summarize_source_size_policy(report)
+    return CheckResult("source_size", bool(report["ok"]), details)
 
 
 def check_operations_hygiene() -> CheckResult:

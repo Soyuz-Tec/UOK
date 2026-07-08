@@ -10,6 +10,7 @@ from typing import Any
 
 import quality_audit
 import quality_scorecard
+import source_size_policy
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -54,6 +55,10 @@ def quality_report() -> dict[str, Any]:
     }
 
 
+def source_size_report() -> dict[str, Any]:
+    return source_size_policy.run_source_size_policy(REPO_ROOT)
+
+
 def module_manifest_records() -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for manifest in sorted((REPO_ROOT / "modules").glob("*/manifest.yaml")):
@@ -87,6 +92,9 @@ def build_evidence() -> dict[str, Any]:
         "docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md",
         "docs/operations/UOK_STANDARD_OPERATIONS.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
+        "scripts/quality_audit.py",
+        "scripts/quality_scorecard.py",
+        "scripts/source_size_policy.py",
     ]
     quality = quality_report()
     return {
@@ -100,6 +108,7 @@ def build_evidence() -> dict[str, Any]:
         },
         "quality_audit": quality,
         "quality_scorecard": quality_scorecard.build_scorecard(quality),
+        "source_size_policy": source_size_report(),
         "guardrail_files": [file_record(path) for path in guardrail_files],
         "module_manifests": module_manifest_records(),
     }

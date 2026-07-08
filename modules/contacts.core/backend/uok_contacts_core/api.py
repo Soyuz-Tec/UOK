@@ -1,46 +1,25 @@
 from __future__ import annotations
 
 from typing import Any
-from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
-from uok.commands import execute_command
 from uok.db import get_db
-from uok.module_ops import ensure_module_operational
 from uok.security import Actor, current_actor, require_permission
 
 from .api_schemas import (
     ContactCsvImportRequest,
-    ContactGroupMembersRequest,
-    ContactGroupUpdateRequest,
-    ContactGroupWriteRequest,
     ContactNoteRequest,
     ContactRelationshipRequest,
     ContactRelationshipUpdateRequest,
     ContactWriteRequest,
 )
+from .api_groups import register_group_routes
+from .api_support import require_contacts_module_operational, run_contact_command
 from .facade import count_parties, get_party_or_error, import_batch_rows, list_parties, note_rows, relationship_rows, review_queue, serialize_party
-from .group_read_model import contact_group_rows
 
 router = APIRouter(prefix="/api/contacts", tags=["contacts"])
-
-
-def run_contact_command(db: Session, actor: Actor, command_type: str, payload: dict[str, Any]) -> dict[str, Any]:
-    try:
-        return execute_command(db, actor, command_type, payload, f"{command_type}:{uuid4()}")["result"]
-    except PermissionError as exc:
-        raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
-
-
-def require_contacts_module_operational(db: Session, actor: Actor) -> None:
-    try:
-        ensure_module_operational(db, actor.organization_id, "contacts.core")
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
 
 @router.get("")
@@ -119,40 +98,7 @@ def import_contacts_csv(req: ContactCsvImportRequest, actor: Actor = Depends(cur
     return run_contact_command(db, actor, "ImportContactsCsv", req.model_dump(exclude_none=True))
 
 
-@router.get("/groups")
-def contact_groups(actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
-    require_permission(actor, "contacts.read")
-    require_contacts_module_operational(db, actor)
-    return contact_group_rows(db, actor)
-
-
-@router.post("/groups")
-def create_contact_group(req: ContactGroupWriteRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
-    return run_contact_command(db, actor, "CreateContactGroup", req.model_dump(exclude_none=True))
-
-
-@router.patch("/groups/{group_id}")
-def update_contact_group(group_id: str, req: ContactGroupUpdateRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
-    payload = req.model_dump(exclude_none=True)
-    payload["group_id"] = group_id
-    return run_contact_command(db, actor, "UpdateContactGroup", payload)
-
-
-@router.delete("/groups/{group_id}")
-def archive_contact_group(group_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
-    return run_contact_command(db, actor, "ArchiveContactGroup", {"group_id": group_id})
-
-
-@router.post("/groups/{group_id}/members")
-def add_contacts_to_group(group_id: str, req: ContactGroupMembersRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
-    payload = req.model_dump(exclude_none=True)
-    payload["group_id"] = group_id
-    return run_contact_command(db, actor, "AddContactsToGroup", payload)
-
-
-@router.delete("/groups/{group_id}/members/{party_id}")
-def remove_contact_from_group(group_id: str, party_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
-    return run_contact_command(db, actor, "RemoveContactFromGroup", {"group_id": group_id, "party_id": party_id})
+register_group_routes(router)
 
 
 @router.get("/{party_id}")

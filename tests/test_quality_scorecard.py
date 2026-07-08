@@ -24,5 +24,6 @@ def test_quality_scorecard_is_repeatable_and_complete() -> None:
     assert scorecard["quality_audit_ok"] is True
     assert 0 <= scorecard["overall_score"] <= 100
     assert len(scorecard["categories"]) == 10
-    assert all(category["score"] == 100 for category in scorecard["categories"])
+    assert all(0 <= category["score"] <= 100 for category in scorecard["categories"])
+    assert any("source_size: review" in category["evidence"] for category in scorecard["categories"])
     assert "EngineeringEvidence" in scorecard["repeatability"]["local_command"]
