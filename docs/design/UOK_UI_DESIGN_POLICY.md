@@ -32,6 +32,8 @@ The UOK implementation must not copy Apple assets or imply Apple platform brandi
 
 For implementation decisions, developers must use `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md` as the mandatory technical reference for component state, layout, interaction, accessibility, appearance, and verification rules.
 
+For execution discipline, developers and coding agents must use `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md` to decide specialist review roles, workspace anatomy, reusable primitive promotion, source ownership, and UI verification gates.
+
 ## Mandatory Principles
 
 1. Clarity first

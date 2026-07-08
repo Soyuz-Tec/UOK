@@ -42,6 +42,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
 | `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` | Approved programming stack and maintainability rules | Runtime language, framework, dependency, source-size, or verification policy changes |
 | `docs/design/UOK_UI_DESIGN_POLICY.md` | Mandatory UI design policy | UI system, layout, accessibility, appearance, or interaction rules change |
+| `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md` | Workspace UI implementation method, specialist agent groups, reusable primitive promotion, and UI verification gates | UI implementation workflow, shared primitive rules, workspace anatomy, or specialist review responsibilities change |
 | `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md` | Apple-informed technical UI reference | UI implementation guidance needs updated source detail |
 | `docs/design/UOK_CONTACTS_WORKSPACE_MINIMAL_PHASES.md` | Contacts workspace phased UI target | Contacts workspace phase status or UI target changes |
 | `docs/architecture/UOK_NAMING_CONVENTIONS.md` | Valid UOK naming forms and product-neutral naming rules | Naming policy, module naming, product code, or display label rules change |
@@ -63,6 +64,7 @@ Active policies are mandatory until replaced through an ADR or explicit policy u
 - `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`
 - `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
 - `docs/design/UOK_UI_DESIGN_POLICY.md`
+- `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`
 - `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - `docs/architecture/UOK_NAMING_CONVENTIONS.md`
 - `docs/architecture/UOK_PRODUCT_CARGO_SEPARATION_POLICY.md`
@@ -99,6 +101,7 @@ Module plans should describe module-owned behavior, workflows, acceptance checks
 Design records govern UI direction and interaction quality:
 
 - `docs/design/UOK_UI_DESIGN_POLICY.md`
+- `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`
 - `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md`
 - `docs/design/UOK_CONTACTS_WORKSPACE_MINIMAL_PHASES.md`
 

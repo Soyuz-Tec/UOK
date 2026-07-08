@@ -90,6 +90,7 @@ These accepted lessons must guide future implementation:
 | Quality standards are executable | Keep source reviewable, dependencies pinned, stack choices audited, and line-of-code integrity enforced | `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md` |
 | Quality scorecards are repeatable | Generate engineering evidence with a comparable scorecard after meaningful feature work | `scripts/engineering_evidence.py` |
 | UI policy is mandatory now | Apply the Apple-informed UOK UI policy to current work, not only future redesigns | `docs/design/UOK_UI_DESIGN_POLICY.md` |
+| Workspace UI implementation is standardized | Use the UOK workspace UI implementation standard for specialist review roles, workspace anatomy, shared primitive promotion, and UI verification gates | `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md` |
 | Global reusable UI belongs in shared areas | Reusable pop-ups, inline editing, searchable filters, tables, and column resizing belong in module-neutral shared components | `web/src/shared` and `docs/design/UOK_UI_DESIGN_POLICY.md` |
 | Contacts BI is derived | Business intelligence profiles summarize existing contact signals and must not become a hidden source of truth | `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` |
 | Naming is a boundary | Use only `UOK` and `Unified Operating Kernel`, with lowercase `uok` only where technical surfaces require it | `docs/architecture/UOK_NAMING_CONVENTIONS.md` |
@@ -107,6 +108,7 @@ These accepted lessons must guide future implementation:
 | New module extension surface | Update `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`, `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`, tests, and an ADR if material |
 | New command, event, permission, API, migration, or owned table | Update module manifest, tests, module plan, and verification evidence |
 | New global UI primitive | Update or confirm `docs/design/UOK_UI_DESIGN_POLICY.md` and use `web/src/shared` |
+| Workspace UI implementation method, specialist role, or shared primitive promotion rule | Update `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`; update `docs/design/UOK_UI_DESIGN_POLICY.md` only when the design policy itself changes |
 | Contacts workflow change | Update `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` and related design plan when UI behavior changes |
 | Contact BI profile change | Update `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` |
 | Language, framework, dependency, or build change | Add an ADR and update `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` |
