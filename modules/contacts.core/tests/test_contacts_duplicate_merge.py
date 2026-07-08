@@ -36,6 +36,7 @@ def test_duplicate_merge_preserves_facts_and_archives_duplicate(client: TestClie
         {
             "display_name": f"Merge Person {suffix}",
             "email": f"merge-{suffix}@example.test",
+            "phone": "+1 555 0000",
         },
         f"uok-merge-primary-{suffix}",
     )
@@ -104,7 +105,11 @@ def test_duplicate_merge_preserves_facts_and_archives_duplicate(client: TestClie
         client,
         ops,
         "MergeDuplicateContact",
-        {"primary_party_id": primary_id, "duplicate_party_id": duplicate_id},
+        {
+            "primary_party_id": primary_id,
+            "duplicate_party_id": duplicate_id,
+            "field_choices": {"phone": "duplicate"},
+        },
         f"uok-merge-contacts-{suffix}",
     )
     assert merged.status_code == 200, merged.text
@@ -123,3 +128,31 @@ def test_duplicate_merge_preserves_facts_and_archives_duplicate(client: TestClie
     assert archived_duplicate.status_code == 200, archived_duplicate.text
     assert archived_duplicate.json()["status"] == "archived"
     assert archived_duplicate.json()["attrs"]["merged_into_party_id"] == primary_id
+
+    rolled_back = command(
+        client,
+        ops,
+        "RollbackDuplicateMerge",
+        {
+            "primary_party_id": primary_id,
+            "duplicate_party_id": duplicate_id,
+            "merge_id": result["merge_id"],
+        },
+        f"uok-merge-rollback-{suffix}",
+    )
+    assert rolled_back.status_code == 200, rolled_back.text
+    rollback_result = rolled_back.json()["result"]
+    assert rollback_result["id"] == primary_id
+    assert rollback_result["phone"] == "+1 555 0000"
+    assert rollback_result["notes"] == []
+    assert rollback_result["relationships"] == []
+
+    restored_duplicate = client.get(f"/api/contacts/{duplicate_id}", headers=ops)
+    assert restored_duplicate.status_code == 200, restored_duplicate.text
+    restored = restored_duplicate.json()
+    assert restored["status"] == "active"
+    assert restored["review_state"] == "possible_duplicate"
+    assert "merged_into_party_id" not in restored["attrs"]
+    assert restored["notes"][0]["body"] == "Duplicate contains confirmed phone and address."
+    assert any(row["id"] == group_id for row in restored["groups"])
+    assert any(row["related_party_id"] == organization_id for row in restored["relationships"])

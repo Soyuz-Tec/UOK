@@ -120,6 +120,10 @@ CSV import creates an import batch and records per-row results. Imported rows ma
 
 Duplicate merge is a Contacts command, not a destructive delete. It archives the duplicate and records `merged_into_party_id` in module-owned attributes so administrators can audit or recover the original record.
 
+The merge workflow supports explicit field choices for contact facts such as email, phone, website, address, organization, role, first name, and last name. If no choice is supplied, the command keeps the selected primary value and fills only missing facts from the duplicate. If a user chooses the duplicate value for a fact, the command records that choice in `merge_history` before changing the primary record.
+
+Each successful merge stores a rollback snapshot under the surviving contact's module-owned attributes. The snapshot includes previous contact facts, duplicate status/review state, moved notes, moved group memberships, and moved relationships. `RollbackDuplicateMerge` uses that snapshot to restore the archived duplicate, move owned evidence back where possible, mark the snapshot as rolled back, and emit `ContactDuplicateMergeRolledBack`. This is an admin recovery operation, not normal user delete.
+
 ## API Scope
 
 Required endpoints for alpha.3:

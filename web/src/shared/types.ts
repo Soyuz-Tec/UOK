@@ -7,6 +7,8 @@ export type ContactGroupBy = "none" | "type" | "review_state" | "source" | "orga
 export type ContactDetailPane = "overview" | "intelligence" | "activity" | "relationships";
 export type ContactSortBy = "display_name" | "updated_at" | "created_at" | "status" | "review_state" | "party_type" | "source";
 export type ContactSortDir = "asc" | "desc";
+export type ContactMergeField = "given_name" | "family_name" | "organization_name" | "email" | "phone" | "website" | "address" | "title";
+export type ContactMergeFieldChoices = Partial<Record<ContactMergeField, "primary" | "duplicate">>;
 
 export type ContactGroupRecord = {
   id: string;

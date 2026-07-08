@@ -47,6 +47,7 @@ export const duplicateContact: ContactRecord = {
   sync_state: "ready",
   attrs: {},
   email: "example@uok.test",
+  phone: "+1 555 0111",
   duplicate_candidates: [{ id: "contact-1", display_name: "Example Contact", reason: "email" }]
 };
 

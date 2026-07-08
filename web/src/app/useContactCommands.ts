@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { nonEmptyDraftPayload } from "./contactDraft";
 import type { WorkbenchActions } from "./useWorkbenchActions";
 import type { WorkbenchData } from "./useWorkbenchData";
-import type { ContactDetailPane, ContactDraft } from "../shared/types";
+import type { ContactDetailPane, ContactDraft, ContactMergeFieldChoices } from "../shared/types";
 import { emptyDraft } from "../shared/types";
 
 export function useContactCommands({
@@ -141,11 +141,13 @@ export function useContactCommands({
     await data.loadContactDetail(data.selectedContactId);
   }
 
-  async function mergeDuplicate(primaryContactId: string, duplicateContactId: string) {
+  async function mergeDuplicate(primaryContactId: string, duplicateContactId: string, fieldChoices: ContactMergeFieldChoices = {}) {
     if (!primaryContactId || !duplicateContactId) return;
+    const choices = Object.keys(fieldChoices).length ? { field_choices: fieldChoices } : {};
     const result = await command("MergeDuplicateContact", {
       primary_party_id: primaryContactId,
-      duplicate_party_id: duplicateContactId
+      duplicate_party_id: duplicateContactId,
+      ...choices
     }, "contact-duplicate-merge");
     const resultId = result?.result?.id || result?.result?.contact_id || primaryContactId;
     data.setSelectedContactId(resultId);

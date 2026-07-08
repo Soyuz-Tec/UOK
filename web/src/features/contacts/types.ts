@@ -1,4 +1,4 @@
-import type { ContactDetailPane, ContactDraft, ContactGroupBy, ContactGroupRecord, ContactRecord, ContactSortBy, ContactSortDir, ContactsView, ModuleStatus } from "../../shared/types";
+import type { ContactDetailPane, ContactDraft, ContactGroupBy, ContactGroupRecord, ContactMergeFieldChoices, ContactRecord, ContactSortBy, ContactSortDir, ContactsView, ModuleStatus } from "../../shared/types";
 
 export type ContactsWorkspaceProps = {
   token: string;
@@ -67,5 +67,5 @@ export type ContactsWorkspaceProps = {
   onLinkRelationship: () => void;
   onUpdateRelationship: (relationshipId: string, fromPartyId: string, toPartyId: string, relationshipType: string) => Promise<void>;
   onRemoveRelationship: (relationshipId: string) => Promise<void>;
-  onMergeDuplicate: (primaryContactId: string, duplicateContactId: string) => Promise<void>;
+  onMergeDuplicate: (primaryContactId: string, duplicateContactId: string, fieldChoices?: ContactMergeFieldChoices) => Promise<void>;
 };

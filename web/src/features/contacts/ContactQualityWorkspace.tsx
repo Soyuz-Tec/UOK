@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 
 import { EmptyState } from "../../shared/data-display";
 import { CommandButton } from "../../shared/primitives";
+import type { ContactMergeFieldChoices } from "../../shared/types";
 import { ContactDuplicateComparisonPopup } from "./ContactDuplicateComparisonPopup";
 import { ContactReviewGuidance } from "./ContactReviewGuidance";
 import { contactQualityActions, contactQualityGroups, contactPrimaryQualityIssue, duplicateMatches } from "./contactQuality";
@@ -36,8 +37,8 @@ export function ContactQualityWorkspace({
     setComparisonOpen(false);
   };
 
-  const mergeDuplicate = async (primaryContactId: string, duplicateContactId: string) => {
-    await props.onMergeDuplicate(primaryContactId, duplicateContactId);
+  const mergeDuplicate = async (primaryContactId: string, duplicateContactId: string, fieldChoices?: ContactMergeFieldChoices) => {
+    await props.onMergeDuplicate(primaryContactId, duplicateContactId, fieldChoices);
     setComparisonOpen(false);
   };
 
@@ -134,7 +135,7 @@ export function ContactQualityWorkspace({
         matches={matches}
         mergeBusy={props.busyAction === "MergeDuplicateContact"}
         onClose={() => setComparisonOpen(false)}
-        onMerge={(primaryContactId, duplicateContactId) => void mergeDuplicate(primaryContactId, duplicateContactId)}
+        onMerge={(primaryContactId, duplicateContactId, fieldChoices) => void mergeDuplicate(primaryContactId, duplicateContactId, fieldChoices)}
         onOpenMatch={openMatch}
       />
     </section>

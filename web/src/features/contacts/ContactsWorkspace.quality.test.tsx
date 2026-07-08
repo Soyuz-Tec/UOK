@@ -21,8 +21,10 @@ describe("ContactsWorkspace quality workflow", () => {
     expect(screen.getByRole("complementary", { name: "Guided contact fixes" })).toHaveTextContent("Compare duplicate records");
     fireEvent.click(screen.getByRole("button", { name: "Compare duplicates" }));
     expect(screen.getByRole("dialog", { name: "Compare duplicate contacts" })).toHaveTextContent("Possible match");
-    fireEvent.click(screen.getByRole("button", { name: "Keep this match" }));
-    expect(onMergeDuplicate).toHaveBeenCalledWith("contact-1", "contact-3");
+    expect(screen.getByLabelText("Field choices for Example Contact")).toBeInTheDocument();
+    fireEvent.click(within(screen.getByLabelText("Field choices for Example Contact")).getByRole("button", { name: "Use match Phone" }));
+    fireEvent.click(screen.getByRole("button", { name: "Merge into selected" }));
+    expect(onMergeDuplicate).toHaveBeenCalledWith("contact-3", "contact-1", { phone: "duplicate" });
 
     fireEvent.click(screen.getByRole("button", { name: /imported.person@example.test/i }));
     expect(screen.getByLabelText("Purpose note")).toBeInTheDocument();

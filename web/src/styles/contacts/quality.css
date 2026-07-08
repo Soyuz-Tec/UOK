@@ -226,4 +226,53 @@
 .duplicate-card-actions {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--uok-space-2);
+}
+
+.duplicate-field-choice-list {
+  display: grid;
+  gap: var(--uok-space-2);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.duplicate-field-choice-list > strong {
+  font-size: var(--uok-footnote);
+}
+
+.duplicate-field-choice {
+  display: grid;
+  grid-template-columns: minmax(72px, 0.6fr) minmax(0, 1fr);
+  gap: var(--uok-space-2);
+  align-items: center;
+}
+
+.duplicate-field-choice > span {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 700;
+}
+
+.duplicate-field-choice-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--uok-space-1);
+}
+
+.duplicate-field-choice-options button {
+  min-height: 32px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  font-weight: 700;
+}
+
+.duplicate-field-choice-options button[aria-pressed="true"] {
+  border-color: var(--uok-accent);
+  color: var(--uok-accent);
+  background: color-mix(in srgb, var(--uok-accent) 12%, var(--uok-bg-elevated));
 }
