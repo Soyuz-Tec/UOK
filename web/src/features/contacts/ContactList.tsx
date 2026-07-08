@@ -30,8 +30,8 @@ export function ContactList({ contacts, selectedId, onSelect, groupBy }: {
                 <span className="contact-avatar">{contactInitial(contact.display_name)}</span>
                 <span className="contact-name-stack">
                   <strong>{contact.display_name}</strong>
-                  {identity ? <small>{identity}</small> : null}
                 </span>
+                <span className="contact-list-identity">{identity}</span>
                 <ContactStateStack contact={contact} />
               </button>
             );

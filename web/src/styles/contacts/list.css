@@ -34,7 +34,7 @@
 }
 
 .contacts-view-split .contact-list-row {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(13rem, 0.85fr) minmax(10rem, 1fr);
   min-height: 56px;
   padding: var(--uok-space-3) var(--uok-space-4);
 }
@@ -78,6 +78,16 @@
   margin-top: var(--uok-space-1);
   color: var(--uok-text-tertiary);
   font-size: var(--uok-callout);
+}
+
+.contact-list-identity {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-callout);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contact-name-stack {

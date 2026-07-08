@@ -173,6 +173,10 @@
     grid-template-columns: 72px minmax(0, 1fr);
   }
 
+  .contacts-view-split .contact-list-row {
+    grid-template-columns: 1fr;
+  }
+
   .contact-card-avatar {
     width: 72px;
     height: 72px;
