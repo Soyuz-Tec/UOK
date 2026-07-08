@@ -54,7 +54,7 @@ export function ContactGroupsPanel({
               aria-pressed={selectedGroupId === group.id}
               onClick={() => onGroupChange(group.id)}
             >
-              <span>{group.name}</span>
+              <span title={group.name}>{group.name}</span>
               <small title={`${group.member_count} total members`}>{group.active_member_count ?? group.member_count}</small>
             </button>
             <IconButton icon={Archive} label={`Archive ${group.name}`} title={`Archive ${group.name}`} onClick={() => onArchiveGroup(group.id)} />

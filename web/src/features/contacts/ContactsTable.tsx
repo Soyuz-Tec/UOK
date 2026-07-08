@@ -1,4 +1,5 @@
-import type { KeyboardEvent } from "react";
+import { PanelRightOpen } from "lucide-react";
+import { useMemo, type KeyboardEvent } from "react";
 
 import type { ContactGroupBy, ContactRecord } from "../../shared/types";
 import { ResizableDataTable, type DataTableColumn, type DataTableSpanRow } from "../../shared/tables";
@@ -10,67 +11,92 @@ type ContactTableRow =
   | { kind: "group"; id: string; label: string }
   | { kind: "contact"; contact: ContactRecord };
 
-const contactColumns: DataTableColumn<ContactTableRow>[] = [
-  {
-    id: "initial",
-    header: <span className="visually-hidden">Initial</span>,
-    defaultWidth: 52,
-    minWidth: 44,
-    maxWidth: 64,
-    resizable: false,
-    cellClassName: "initial-cell",
-    renderCell: (row) => row.kind === "contact" ? (
-      <span className="contact-table-avatar">{contactInitial(row.contact.display_name)}</span>
-    ) : null
-  },
-  {
-    id: "name",
-    header: "Name",
-    defaultWidth: 300,
-    minWidth: 180,
-    maxWidth: 520,
-    renderCell: (row) => row.kind === "contact" ? (
-      <span className="contact-name-stack"><strong>{row.contact.display_name}</strong></span>
-    ) : null,
-    getCellTitle: (row) => row.kind === "contact" ? row.contact.display_name : undefined
-  },
-  {
-    id: "email",
-    header: "Email",
-    defaultWidth: 240,
-    minWidth: 160,
-    maxWidth: 420,
-    renderCell: (row) => contactValue(row, "email"),
-    getCellTitle: (row) => contactTitle(row, "email")
-  },
-  {
-    id: "phone",
-    header: "Phone",
-    defaultWidth: 180,
-    minWidth: 130,
-    maxWidth: 320,
-    renderCell: (row) => contactValue(row, "phone"),
-    getCellTitle: (row) => contactTitle(row, "phone")
-  },
-  {
-    id: "address",
-    header: "Address",
-    defaultWidth: 320,
-    minWidth: 180,
-    maxWidth: 560,
-    renderCell: (row) => contactValue(row, "address"),
-    getCellTitle: (row) => contactTitle(row, "address")
-  },
-  {
-    id: "organization",
-    header: "Organization",
-    defaultWidth: 260,
-    minWidth: 160,
-    maxWidth: 460,
-    renderCell: (row) => organizationValue(row),
-    getCellTitle: (row) => organizationTitle(row)
-  }
-];
+function contactColumns(onSelect: (id: string) => void): DataTableColumn<ContactTableRow>[] {
+  return [
+    {
+      id: "initial",
+      header: <span className="visually-hidden">Initial</span>,
+      defaultWidth: 52,
+      minWidth: 44,
+      maxWidth: 64,
+      resizable: false,
+      cellClassName: "initial-cell",
+      renderCell: (row) => row.kind === "contact" ? (
+        <span className="contact-table-avatar">{contactInitial(row.contact.display_name)}</span>
+      ) : null
+    },
+    {
+      id: "name",
+      header: "Name",
+      defaultWidth: 300,
+      minWidth: 180,
+      maxWidth: 520,
+      renderCell: (row) => row.kind === "contact" ? (
+        <span className="contact-name-stack"><strong>{row.contact.display_name}</strong></span>
+      ) : null,
+      getCellTitle: (row) => row.kind === "contact" ? row.contact.display_name : undefined
+    },
+    {
+      id: "email",
+      header: "Email",
+      defaultWidth: 240,
+      minWidth: 160,
+      maxWidth: 420,
+      renderCell: (row) => contactValue(row, "email"),
+      getCellTitle: (row) => contactTitle(row, "email")
+    },
+    {
+      id: "phone",
+      header: "Phone",
+      defaultWidth: 180,
+      minWidth: 130,
+      maxWidth: 320,
+      renderCell: (row) => contactValue(row, "phone"),
+      getCellTitle: (row) => contactTitle(row, "phone")
+    },
+    {
+      id: "address",
+      header: "Address",
+      defaultWidth: 320,
+      minWidth: 180,
+      maxWidth: 560,
+      renderCell: (row) => contactValue(row, "address"),
+      getCellTitle: (row) => contactTitle(row, "address")
+    },
+    {
+      id: "organization",
+      header: "Organization",
+      defaultWidth: 260,
+      minWidth: 160,
+      maxWidth: 460,
+      renderCell: (row) => organizationValue(row),
+      getCellTitle: (row) => organizationTitle(row)
+    },
+    {
+      id: "open",
+      header: <span className="visually-hidden">Open</span>,
+      defaultWidth: 56,
+      minWidth: 48,
+      maxWidth: 64,
+      resizable: false,
+      cellClassName: "open-cell",
+      renderCell: (row) => row.kind === "contact" ? (
+        <button
+          type="button"
+          className="contact-table-open"
+          aria-label={`Open ${row.contact.display_name}`}
+          title={`Open ${row.contact.display_name}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            onSelect(row.contact.id);
+          }}
+        >
+          <PanelRightOpen size={15} aria-hidden="true" />
+        </button>
+      ) : null
+    }
+  ];
+}
 
 export function ContactsTable({
   contacts,
@@ -91,6 +117,7 @@ export function ContactsTable({
   };
 
   const groups = groupContacts(contacts, groupBy);
+  const columns = useMemo(() => contactColumns(onSelect), [onSelect]);
   const rows = groups.flatMap((group) => [
     ...(groupBy !== "none" ? [{ kind: "group" as const, id: `group-${group.id}`, label: group.label }] : []),
     ...group.contacts.map((contact) => ({ kind: "contact" as const, contact }))
@@ -99,7 +126,7 @@ export function ContactsTable({
   return (
     <ResizableDataTable
       ariaLabel="Contact records"
-      columns={contactColumns}
+      columns={columns}
       emptyState={<ContactResultsEmptyState />}
       getRowKey={(row) => row.kind === "group" ? row.id : row.contact.id}
       rowAriaLabel={(row) => row.kind === "contact" ? `Open ${row.contact.display_name}` : undefined}

@@ -1,6 +1,6 @@
 .contacts-workspace-body {
   display: grid;
-  grid-template-columns: minmax(208px, 240px) minmax(0, 1fr);
+  grid-template-columns: minmax(232px, 280px) minmax(0, 1fr);
   gap: var(--uok-space-3);
   align-items: start;
   min-width: 0;
@@ -92,6 +92,14 @@
   min-width: 36px;
   width: 36px;
   height: 36px;
+  color: var(--uok-text-tertiary);
+  opacity: 0;
+  transition: opacity 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.contact-group-row:hover .icon-button,
+.contact-group-row:focus-within .icon-button {
+  opacity: 1;
 }
 
 .contact-group-create {
@@ -187,5 +195,9 @@
 
   .contact-group-button {
     min-width: 148px;
+  }
+
+  .contact-group-row .icon-button {
+    opacity: 1;
   }
 }

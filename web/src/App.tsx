@@ -50,7 +50,7 @@ export function App() {
         <div className="sidebar-top">
           <button type="button" className="brand" aria-label="Home" title="Home" onClick={() => workbench.setActive("overview")}>
             <span className="brand-mark" aria-hidden="true">K</span>
-            <span className="brand-label">
+            <span className="brand-label" aria-hidden="true">
               <strong>UOK</strong>
             </span>
           </button>
@@ -79,7 +79,7 @@ export function App() {
                 onClick={() => workbench.setActive(section.id)}
               >
                 <Icon size={18} aria-hidden="true" />
-                <span className="nav-label">{section.label}</span>
+                <span className="nav-label" aria-hidden="true">{section.label}</span>
               </button>
             );
           })}

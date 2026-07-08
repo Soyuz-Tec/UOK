@@ -25,6 +25,35 @@
   font-weight: 760;
 }
 
+.contacts-table .open-cell {
+  text-align: center;
+}
+
+.contact-table-open {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  color: var(--uok-text-tertiary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
+  opacity: 0.72;
+}
+
+.contacts-table tbody tr:hover .contact-table-open,
+.contact-table-open:focus-visible {
+  color: var(--uok-accent);
+  border-color: var(--uok-accent);
+  opacity: 1;
+}
+
+.contact-table-open:focus-visible {
+  outline: 3px solid var(--uok-focus-ring);
+  outline-offset: 2px;
+}
+
 .contact-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));

@@ -189,11 +189,13 @@ Current UI responsibilities:
 - use `Group` only for persistent contact groups;
 - use `Section by` for result sectioning;
 - keep the group rail secondary and compact;
+- keep group destructive actions visually quiet until hover, focus, or narrow/touch layouts require explicit access;
 - support group creation, selection, archive, business-domain grouping, and smart grouping;
 - support add/remove group membership from contact detail;
 - support editable/removable relationship rows;
 - use a global workspace popup primitive for table/cards detail editing;
 - keep New Contact clean and independent from any previously selected contact;
+- keep table review workflows compact, with explicit row-level open-detail affordances in addition to row click and keyboard activation;
 - keep create/edit forms progressive, with essentials first and optional addable sections;
 - keep validation messages specific and near the affected fields;
 - support light, dark, and system appearance through design tokens.

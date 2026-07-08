@@ -33,6 +33,14 @@
     grid-template-columns: 1fr;
   }
 
+  .contacts-toolbar {
+    grid-template-areas:
+      "search"
+      "page"
+      "view"
+      "primary";
+  }
+
   .contacts-view-split .workflow-primary-region {
     border-right: 0;
     border-bottom: var(--uok-line);
