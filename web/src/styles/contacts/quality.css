@@ -130,7 +130,7 @@
   justify-content: flex-start;
 }
 
-.contact-detail-avatar.compact {
+.record-profile-avatar.compact {
   width: 48px;
   height: 48px;
   font-size: var(--uok-title-3);

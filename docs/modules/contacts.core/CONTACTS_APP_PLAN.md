@@ -205,6 +205,9 @@ Current UI responsibilities:
 - let users add or remove optional Table view data points without changing the default low-distraction view;
 - let users choose the compact List + Detail secondary display fields while keeping the contact name as the fixed primary identity;
 - expose active-view field visibility through one consistent toolbar-level `Fields` control; avoid duplicate user-facing names such as `Columns` and `Display fields` for the same visibility workflow;
+- use shared record-detail primitives for profile headers, fact rows, and tags so detail surfaces stay consistent, reusable, and print-ready;
+- keep contact detail profile pages print-friendly by preserving semantic facts and labels while hiding interactive controls in print media;
+- separate user-managed groups from generated system labels in contact detail so users can manage working groups without confusing them with derived metadata;
 - keep create/edit forms progressive, with essentials first and optional addable sections;
 - keep validation messages specific and near the affected fields;
 - support light, dark, and system appearance through design tokens.

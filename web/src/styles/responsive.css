@@ -167,15 +167,6 @@
     flex-direction: column-reverse;
   }
 
-  .contact-detail-header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .contact-detail-identity {
-    align-items: flex-start;
-  }
-
   .contact-card {
     grid-template-columns: 72px minmax(0, 1fr);
   }

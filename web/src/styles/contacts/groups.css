@@ -124,13 +124,12 @@
   gap: var(--uok-space-3);
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
-  padding: var(--uok-space-3);
+  padding: var(--uok-space-4);
   background: var(--uok-bg-grouped-secondary);
 }
 
 .contact-group-membership-header,
-.contact-group-membership-add,
-.contact-group-membership-row {
+.contact-group-membership-add {
   display: flex;
   align-items: center;
   gap: var(--uok-space-2);
@@ -144,28 +143,22 @@
   margin: 0;
 }
 
-.contact-group-membership-list {
-  display: flex;
-  flex-wrap: wrap;
+.contact-group-membership-content,
+.contact-system-labels {
+  display: grid;
   gap: var(--uok-space-2);
 }
 
-.contact-group-membership-row {
-  min-height: 36px;
-  border: var(--uok-line);
-  border-radius: 999px;
-  padding: 0 var(--uok-space-1) 0 var(--uok-space-3);
-  color: var(--uok-text-secondary);
-  background: var(--uok-bg-elevated);
-  font-size: var(--uok-callout);
-  font-weight: 650;
+.contact-system-labels {
+  padding-top: var(--uok-space-2);
+  border-top: var(--uok-line);
 }
 
-.contact-group-membership-row .icon-button {
-  min-width: 28px;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
+.contact-system-labels p {
+  margin: 0;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+  font-weight: 760;
 }
 
 @media (max-width: 1020px) {

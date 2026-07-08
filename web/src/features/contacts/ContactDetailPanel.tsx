@@ -43,15 +43,19 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
         <>
           <SegmentedControl value={props.detailPane} onChange={props.onDetailPaneChange} options={contactDetailPaneOptions} label="Contact detail pane" />
           {props.detailPane === "overview" && (
-            <>
+            <div className="contact-overview-profile">
               <ContactReviewGuidance contact={contact} />
-              <ContactFactRows facts={contactFacts(contact)} />
-              <ContactGroupMembership
-                contact={contact}
-                groups={props.contactGroups}
-                onAddToGroup={props.onAddSelectedContactToGroup}
-                onRemoveFromGroup={props.onRemoveSelectedContactFromGroup}
-              />
+              <section aria-label="Contact facts">
+                <ContactFactRows facts={contactFacts(contact)} />
+              </section>
+              <section aria-label="Contact groups">
+                <ContactGroupMembership
+                  contact={contact}
+                  groups={props.contactGroups}
+                  onAddToGroup={props.onAddSelectedContactToGroup}
+                  onRemoveFromGroup={props.onRemoveSelectedContactFromGroup}
+                />
+              </section>
               <details className="contact-technical-details">
                 <summary>Technical details</summary>
                 <div className="detail-grid contact-operational-grid">
@@ -62,7 +66,7 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
                   {contact.duplicate_candidates?.length ? <DetailItem label="Duplicates" value={contact.duplicate_candidates.map((item) => item.display_name).join(", ")} /> : null}
                 </div>
               </details>
-            </>
+            </div>
           )}
           {props.detailPane === "intelligence" && contact && (
             <ContactBusinessIntelligenceProfilePanel contact={contact} />

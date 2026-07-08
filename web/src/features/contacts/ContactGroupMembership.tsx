@@ -1,9 +1,15 @@
 import { useMemo, useState } from "react";
 import { Plus, X } from "lucide-react";
 
-import { EmptyState } from "../../shared/data-display";
+import { EmptyState, RecordTagList } from "../../shared/data-display";
 import { IconButton } from "../../shared/primitives";
 import type { ContactGroupRecord, ContactRecord } from "../../shared/types";
+
+const systemGroupPrefixes = ["Company:", "Country:", "Review:", "Source:", "Type:"];
+
+function isSystemGroup(name: string) {
+  return systemGroupPrefixes.some((prefix) => name.startsWith(prefix));
+}
 
 export function ContactGroupMembership({
   contact,
@@ -20,6 +26,8 @@ export function ContactGroupMembership({
   const memberships = contact.groups || [];
   const memberGroupIds = useMemo(() => new Set(memberships.map((group) => group.id)), [memberships]);
   const availableGroups = groups.filter((group) => !memberGroupIds.has(group.id));
+  const userGroups = memberships.filter((group) => !isSystemGroup(group.name));
+  const systemGroups = memberships.filter((group) => isSystemGroup(group.name));
 
   async function addMembership() {
     if (!nextGroupId) return;
@@ -43,18 +51,32 @@ export function ContactGroupMembership({
         </div>
       </div>
       {memberships.length ? (
-        <div className="contact-group-membership-list">
-          {memberships.map((group) => (
-            <div className="contact-group-membership-row" key={group.member_id || group.id}>
-              <span>{group.name}</span>
-              <IconButton
-                icon={X}
-                label={`Remove ${contact.display_name} from ${group.name}`}
-                title={`Remove from ${group.name}`}
-                onClick={() => void onRemoveFromGroup(group.id)}
+        <div className="contact-group-membership-content">
+          <RecordTagList
+            items={userGroups.map((group) => ({
+              id: group.id,
+              label: group.name,
+              removeLabel: `Remove ${contact.display_name} from ${group.name}`
+            }))}
+            onRemove={(groupId) => void onRemoveFromGroup(groupId)}
+            removeIcon={X}
+            emptyText={systemGroups.length ? undefined : "No user-managed groups."}
+          />
+          {systemGroups.length ? (
+            <div className="contact-system-labels">
+              <p>System labels</p>
+              <RecordTagList
+                items={systemGroups.map((group) => ({
+                  id: group.id,
+                  label: group.name,
+                  tone: "system",
+                  removeLabel: `Remove ${contact.display_name} from ${group.name}`
+                }))}
+                onRemove={(groupId) => void onRemoveFromGroup(groupId)}
+                removeIcon={X}
               />
             </div>
-          ))}
+          ) : null}
         </div>
       ) : (
         <EmptyState text="No group memberships." />

@@ -9,6 +9,7 @@
 @import "./styles/shared/row-rhythm.css";
 @import "./styles/shared/overlays.css";
 @import "./styles/shared/data-display.css";
+@import "./styles/shared/record-detail.css";
 @import "./styles/shared/tables.css";
 @import "./styles/apps-manager.css";
 @import "./styles/contacts.css";

@@ -1,5 +1,6 @@
 import { Building2, Globe, Mail, MapPin, Phone, ShieldCheck } from "lucide-react";
 
+import { RecordFactList } from "../../shared/data-display";
 import type { ContactFact, ContactFactKind } from "./contactPresentation";
 
 const factIcons: Record<ContactFactKind, typeof Phone> = {
@@ -24,26 +25,16 @@ export function ContactFactRows({
 }) {
   const visibleFacts = typeof limit === "number" ? facts.slice(0, limit) : facts;
 
-  if (!visibleFacts.length) {
-    return <p className="contact-fact-empty">{emptyText}</p>;
-  }
-
   return (
-    <div className={compact ? "contact-fact-list compact" : "contact-fact-list"}>
-      {visibleFacts.map((fact) => {
-        const Icon = factIcons[fact.kind];
-        return (
-          <div className="contact-fact-row" key={`${fact.kind}-${fact.value}`}>
-            <span className="contact-fact-icon" aria-hidden="true">
-              <Icon size={compact ? 14 : 18} />
-            </span>
-            <span className="contact-fact-copy">
-              <span>{fact.label}</span>
-              <strong>{fact.value}</strong>
-            </span>
-          </div>
-        );
-      })}
-    </div>
+    <RecordFactList
+      compact={compact}
+      emptyText={emptyText}
+      items={visibleFacts.map((fact) => ({
+        id: `${fact.kind}-${fact.value}`,
+        icon: factIcons[fact.kind],
+        label: fact.label,
+        value: fact.value
+      }))}
+    />
   );
 }

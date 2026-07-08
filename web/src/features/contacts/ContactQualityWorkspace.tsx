@@ -92,7 +92,7 @@ export function ContactQualityWorkspace({
         {selected ? (
           <>
             <div className="quality-guide-header">
-              <span className="contact-detail-avatar compact">{contactInitial(selected.display_name)}</span>
+              <span className="record-profile-avatar compact">{contactInitial(selected.display_name)}</span>
               <div className="contact-name-stack">
                 <p className="eyebrow">Guided fix</p>
                 <h2>{selected.display_name}</h2>

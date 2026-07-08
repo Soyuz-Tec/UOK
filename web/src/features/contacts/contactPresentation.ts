@@ -15,7 +15,7 @@ export function contactInitial(name: string) {
 }
 
 export function contactSubtitle(contact: ContactRecord) {
-  return contact.email || contact.phone || contact.website || formatLabel(contact.party_type);
+  return formatLabel(contact.party_type);
 }
 
 export function contactListIdentity(contact: ContactRecord) {

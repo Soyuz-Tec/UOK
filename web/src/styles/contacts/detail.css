@@ -15,6 +15,11 @@
   background: var(--uok-bg-elevated);
 }
 
+.contact-overview-profile {
+  display: grid;
+  gap: var(--uok-space-3);
+}
+
 .contact-operational-grid {
   background: var(--uok-bg-grouped-secondary);
 }
