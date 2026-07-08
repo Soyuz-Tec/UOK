@@ -206,6 +206,8 @@ The three views have distinct purposes:
 - Table: dense review and correction workflow with resizable columns.
 - Cards: recognition-focused browsing.
 
+List + Detail rows must stay selection-focused. They show the contact name and a compact identity cue such as organization, title, or party type. They must not repeat email, phone, website, address, or other full contact facts that already belong in the detail inspector. Table view remains the comparison surface for contact-fact columns, and Cards view remains the richer preview surface.
+
 ## Permission Scope
 
 Initial permission behavior:

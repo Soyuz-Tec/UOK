@@ -18,6 +18,15 @@ export function contactSubtitle(contact: ContactRecord) {
   return contact.email || contact.phone || contact.website || formatLabel(contact.party_type);
 }
 
+export function contactListIdentity(contact: ContactRecord) {
+  const organization = contact.organization_name?.trim();
+  if (organization && organization.toLowerCase() !== contact.display_name.trim().toLowerCase()) {
+    return organization;
+  }
+
+  return contact.title?.trim() || formatLabel(contact.party_type);
+}
+
 export function contactFacts(contact: ContactRecord): ContactFact[] {
   const organization = [contact.title, contact.organization_name].filter(Boolean).join(", ");
   const governance = [

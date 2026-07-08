@@ -2,7 +2,7 @@ import { formatLabel } from "../../shared/format";
 import type { ContactGroupBy, ContactRecord } from "../../shared/types";
 import { ContactResultsEmptyState, ContactStateStack } from "./ContactResultState";
 import { groupContacts } from "./contactGrouping";
-import { contactInitial, contactSubtitle } from "./contactPresentation";
+import { contactInitial, contactListIdentity } from "./contactPresentation";
 
 export function ContactList({ contacts, selectedId, onSelect, groupBy }: {
   contacts: ContactRecord[];
@@ -29,7 +29,7 @@ export function ContactList({ contacts, selectedId, onSelect, groupBy }: {
               <span className="contact-avatar">{contactInitial(contact.display_name)}</span>
               <span className="contact-name-stack">
                 <strong>{contact.display_name}</strong>
-                <small>{contactSubtitle(contact) || formatLabel(contact.party_type)}</small>
+                <small>{contactListIdentity(contact) || formatLabel(contact.party_type)}</small>
               </span>
               <ContactStateStack contact={contact} />
             </button>

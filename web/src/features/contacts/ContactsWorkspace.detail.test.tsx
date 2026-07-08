@@ -114,6 +114,19 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(screen.getByLabelText("Contact inspector")).toBeInTheDocument();
   });
 
+  it("keeps List and Detail rows focused on selection identity", () => {
+    renderContactsWorkspace("split");
+
+    const results = screen.getByLabelText("Contact results");
+    expect(within(results).getByText("Example Organization")).toBeInTheDocument();
+    expect(within(results).queryByText(contact.email || "")).not.toBeInTheDocument();
+
+    fireEvent.click(within(results).getByRole("button", { name: /Example Contact/i }));
+
+    const inspector = screen.getByLabelText("Contact inspector");
+    expect(within(inspector).getAllByText(contact.email || "").length).toBeGreaterThan(0);
+  });
+
   it("starts a new contact from a clean addable form in popup views", () => {
     renderContactsWorkspace("table");
 
