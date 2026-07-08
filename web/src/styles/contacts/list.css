@@ -62,10 +62,24 @@
 }
 
 .contact-list-display-header {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--uok-space-2);
+  overflow: visible;
+}
+
+.contact-list-header > .contact-list-display-header {
+  overflow: visible;
+}
+
+.contact-list-display-header > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contact-list-display-header .column-visibility-trigger {
