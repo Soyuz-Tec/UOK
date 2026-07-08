@@ -24,7 +24,7 @@ export function contactListIdentity(contact: ContactRecord) {
     return organization;
   }
 
-  return contact.title?.trim() || formatLabel(contact.party_type);
+  return contact.title?.trim() || "";
 }
 
 export function contactFacts(contact: ContactRecord): ContactFact[] {

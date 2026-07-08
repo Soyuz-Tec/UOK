@@ -115,10 +115,11 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
   });
 
   it("keeps List and Detail rows focused on selection identity", () => {
-    renderContactsWorkspace("split");
+    renderContactsWorkspace("split", [organizationContact, contact]);
 
     const results = screen.getByLabelText("Contact results");
     expect(within(results).getByText("Example Organization")).toBeInTheDocument();
+    expect(within(results).queryByText("Organization")).not.toBeInTheDocument();
     expect(within(results).queryByText(contact.email || "")).not.toBeInTheDocument();
 
     fireEvent.click(within(results).getByRole("button", { name: /Example Contact/i }));
