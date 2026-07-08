@@ -40,6 +40,54 @@
   padding: var(--uok-space-4);
 }
 
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--uok-space-3);
+  min-width: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2) var(--uok-space-3);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.section-heading-copy {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-width: 0;
+}
+
+.section-heading h2,
+.section-heading h3,
+.section-heading h4,
+.section-heading .eyebrow {
+  margin: 0;
+}
+
+.section-heading h2,
+.section-heading h3,
+.section-heading h4 {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-callout);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.section-heading-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  color: var(--uok-text-secondary);
+}
+
 .workflow-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

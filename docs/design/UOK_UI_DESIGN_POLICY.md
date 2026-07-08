@@ -113,6 +113,7 @@ The next UI iteration must introduce or preserve:
 
 - `web/src/design-tokens.css` or equivalent token module
 - Shared shell components: app shell, sidebar, toolbar, panel, table/list, status pill, workflow stepper, command button, icon-bearing navigation/control patterns
+- Shared compact section headings for sidebars, panels, filter areas, and module workspace sections. These headings must use the shared heading primitive and tokenized shaded heading style for eyebrow text, title font, icon/action alignment, separator, radius, and light/dark surface treatment.
 - Shared module-neutral workflow primitives for repeated module behavior, including workflow headers, search fields, inline field messages, confirmed destructive commands, inline text editing, reusable in-workspace pop-ups for record detail/edit workflows, and reusable data tables with accessible resizable columns. Current homes: `web/src/shared/*`.
 - Module surface registry entries that keep module navigation and rendering out of the generic shell component
 - Shared component states: default, hover, focus-visible, pressed, selected/on, expanded/open, disabled, loading, invalid, destructive, and primary

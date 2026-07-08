@@ -1,5 +1,6 @@
 import { Archive, AtSign, Layers3, Plus, UsersRound } from "lucide-react";
 
+import { SectionHeading } from "../../shared/layout";
 import { CommandButton, IconButton } from "../../shared/primitives";
 import type { ContactGroupRecord } from "../../shared/types";
 
@@ -30,13 +31,11 @@ export function ContactGroupsPanel({
 }) {
   return (
     <aside className="contacts-group-sidebar" aria-label="Contact groups">
-      <div className="contacts-group-sidebar-header">
-        <div>
-          <p className="eyebrow">Groups</p>
-          <h3>Contact groups</h3>
-        </div>
-        <UsersRound size={18} aria-hidden="true" />
-      </div>
+      <SectionHeading
+        eyebrow="Groups"
+        title="Contact groups"
+        action={<UsersRound size={18} aria-hidden="true" />}
+      />
       <div className="contact-group-list" role="list">
         <button
           type="button"

@@ -21,23 +21,6 @@
   background: var(--uok-bg-elevated);
 }
 
-.contacts-group-sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--uok-space-2);
-}
-
-.contacts-group-sidebar-header h3,
-.contacts-group-sidebar-header p {
-  margin: 0;
-}
-
-.contacts-group-sidebar-header h3 {
-  font-size: var(--uok-headline);
-  letter-spacing: 0;
-}
-
 .contact-group-list {
   display: grid;
   gap: var(--uok-space-1);

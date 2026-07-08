@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { describe, expect, it, vi } from "vitest";
 
 import { InlineTextEdit } from "./forms";
+import { SectionHeading } from "./layout";
 import { WorkspaceEditorPopup, WorkspacePopup } from "./overlays";
 
 describe("InlineTextEdit", () => {
@@ -31,6 +32,22 @@ describe("InlineTextEdit", () => {
     await waitFor(() => expect(commit).toHaveBeenCalledWith("Next name"));
     expect(await screen.findByText("Could not save. Try again.")).toBeInTheDocument();
     expect(screen.getByLabelText("Display name")).toBeInTheDocument();
+  });
+});
+
+describe("SectionHeading", () => {
+  it("renders reusable compact section heading copy and action", () => {
+    render(
+      <SectionHeading
+        eyebrow="Groups"
+        title="Contact groups"
+        action={<span aria-label="Group icon">Icon</span>}
+      />
+    );
+
+    expect(screen.getByText("Groups")).toHaveClass("eyebrow");
+    expect(screen.getByRole("heading", { name: "Contact groups" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Group icon")).toBeInTheDocument();
   });
 });
 
