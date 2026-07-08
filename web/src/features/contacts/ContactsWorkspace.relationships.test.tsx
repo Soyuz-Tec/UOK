@@ -74,9 +74,16 @@ describe("ContactsWorkspace relationship and group interactions", () => {
     const onRemoveSelectedContactFromGroup = vi.fn().mockResolvedValue(undefined);
     renderContactsWorkspace("split", [{
       ...contact,
-      groups: [{ id: "group-existing", name: "Review list", visibility_scope: "organization", member_id: "member-1", created_at: "2026-07-07T00:00:00Z" }]
+      groups: [
+        { id: "group-existing", name: "Review list", visibility_scope: "organization", member_id: "member-1", created_at: "2026-07-07T00:00:00Z" },
+        { id: "group-vip", name: "VIP contacts", visibility_scope: "organization", member_id: "member-2", created_at: "2026-07-07T00:00:00Z" }
+      ]
     }], {
-      contactGroups: [contactGroup, { id: "group-existing", name: "Review list", kind: "manual", visibility_scope: "organization", status: "active", member_count: 1 }],
+      contactGroups: [
+        contactGroup,
+        { id: "group-existing", name: "Review list", kind: "manual", visibility_scope: "organization", status: "active", member_count: 1 },
+        { id: "group-vip", name: "VIP contacts", kind: "manual", visibility_scope: "organization", status: "active", member_count: 1 }
+      ],
       onAddSelectedContactToGroup,
       onRemoveSelectedContactFromGroup
     });
@@ -85,6 +92,10 @@ describe("ContactsWorkspace relationship and group interactions", () => {
 
     const inspector = screen.getByLabelText("Contact inspector");
     expect(within(inspector).getByText("Review list")).toBeInTheDocument();
+    expect(within(inspector).getByText("VIP contacts")).toBeInTheDocument();
+    expect(within(inspector).queryByRole("option", { name: "Review list" })).not.toBeInTheDocument();
+    expect(within(inspector).queryByRole("option", { name: "VIP contacts" })).not.toBeInTheDocument();
+    expect(within(inspector).getByRole("option", { name: contactGroup.name })).toBeInTheDocument();
 
     fireEvent.click(within(inspector).getByLabelText("Remove Example Contact from Review list"));
     await waitFor(() => expect(onRemoveSelectedContactFromGroup).toHaveBeenCalledWith("group-existing"));

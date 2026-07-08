@@ -95,6 +95,35 @@ def test_contact_groups_can_be_created_filtered_and_managed(client: TestClient) 
     assert memberships[0]["id"] == group_id
     assert memberships[0]["name"] == f"Operations Group {suffix}"
 
+    second_group = command(
+        client,
+        ops,
+        "CreateContactGroup",
+        {"name": f"Compliance Group {suffix}", "description": "Second group for the same contact."},
+        f"uok-contact-second-group-{suffix}",
+    )
+    assert second_group.status_code == 200, second_group.text
+    second_group_id = second_group.json()["result"]["id"]
+
+    second_added = command(
+        client,
+        ops,
+        "AddContactsToGroup",
+        {"group_id": second_group_id, "party_ids": [person_id]},
+        f"uok-contact-second-group-add-{suffix}",
+    )
+    assert second_added.status_code == 200, second_added.text
+    assert second_added.json()["result"]["added_count"] == 1
+
+    second_grouped_contacts = client.get("/api/contacts", headers=ops, params={"status": "all", "group_id": second_group_id})
+    assert second_grouped_contacts.status_code == 200, second_grouped_contacts.text
+    assert person_id in {row["id"] for row in second_grouped_contacts.json()}
+
+    multi_group_detail = client.get(f"/api/contacts/{person_id}", headers=ops)
+    assert multi_group_detail.status_code == 200, multi_group_detail.text
+    membership_names = {row["name"] for row in multi_group_detail.json()["groups"]}
+    assert {f"Operations Group {suffix}", f"Compliance Group {suffix}"}.issubset(membership_names)
+
     removed = command(
         client,
         ops,

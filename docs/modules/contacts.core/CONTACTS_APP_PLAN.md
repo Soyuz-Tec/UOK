@@ -136,6 +136,7 @@ Group rules:
 - Groups do not duplicate contact facts.
 - Manual, business-domain, and smart-rule groups are normal `ContactGroup` records.
 - Group membership is stored through `ContactGroupMember`.
+- Group membership is many-to-many: one contact can belong to multiple groups, and one group can contain multiple contacts. The same contact must not be duplicated inside the same group.
 - Group schema changes stay under `modules/contacts.core/migrations`.
 
 Business-domain groups are generated from eligible business email domains. Their stable identity is the email domain, but their display name should prefer the best company signal: linked organization first, organization record second, readable domain fallback last. Personal, free-mail, test, and demo domains must be excluded.
