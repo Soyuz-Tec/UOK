@@ -84,6 +84,7 @@ These accepted lessons must guide future implementation:
 | UOK is product-neutral | Keep product, cargo, CRM, accounting, inventory, document, and integration behavior out of `src/uok` unless it is shared runtime infrastructure | `docs/ARCHITECTURE.md` |
 | UOK is a modular monolith | Modules are independently developable, installable, upgradable, disableable, and maintainable through manifests and declared extension points | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` |
 | Apps Manager is the starter control module | Keep the baseline minimal and let users install needed modules | `docs/architecture/UOK_MODULE_ROADMAP.md` |
+| Agents Core is the AI governance boundary | Agent runbooks, Codex tool binding, human approval gates, and compliance evidence belong in `agents.core`, not in the kernel | `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` |
 | Contacts is the first optional capability module | Contacts behavior belongs in `contacts.core` and its module docs/tests | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
 | Stack discipline prevents rewrites | Write durable backend in Python and durable frontend in React + TypeScript + Vite | `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` |
 | Engineering system is internalized | Convert Microsoft SDL, Google Engineering Practices, SLSA, OpenSSF Scorecard, ISO, NIST, and OWASP guidance into UOK policies, gates, reviews, release evidence, and dashboards | `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md` |
@@ -105,6 +106,7 @@ These accepted lessons must guide future implementation:
 | Change type | Required Markdown action |
 |---|---|
 | New module | Update `docs/architecture/UOK_MODULE_ROADMAP.md`, add `docs/modules/<module-name>/`, and ensure module-local `README.md` files exist |
+| Agent runbook, governed tool binding, AI approval gate, or agent evidence change | Update `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` and `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | New module extension surface | Update `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`, `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`, tests, and an ADR if material |
 | New command, event, permission, API, migration, or owned table | Update module manifest, tests, module plan, and verification evidence |
 | New global UI primitive | Update or confirm `docs/design/UOK_UI_DESIGN_POLICY.md` and use `web/src/shared` |

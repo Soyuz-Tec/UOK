@@ -21,6 +21,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | Module | Type | Status | Current target | Plan |
 |---|---|---|---|---|
 | `apps.manager` | control module | required baseline module | `UOK-3.1.0-alpha.3` | UOK bootstrap control module |
+| `agents.core` | capability module | planned scaffold for governed agent operations | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | `contacts.core` | capability module | Contacts MVP hardening in progress | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
 
 ## Current Target
@@ -41,6 +42,14 @@ Architecture documents only track UOK-level governance, release targets, and mod
 - module-owned behavior tests under `modules/contacts.core/tests`
 - module-owned operational index and contact group migrations under `modules/contacts.core/migrations`
 - frontend module surface registry for Contacts composition
+
+It also introduces the `agents.core` scaffold as the next capability boundary for AI-powered business operations:
+
+- governed agent runbooks
+- Codex and future tool bindings under UOK approval and audit control
+- human approval gates for high-impact actions
+- compliance evidence for agent runs
+- future Contacts pilot for enrichment and duplicate-cleanup recommendations
 
 ## Governance Rule
 

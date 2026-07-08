@@ -33,9 +33,12 @@ def assert_module_lifecycle_and_evidence(client, admin: dict[str, str]) -> None:
     lifecycle_checks = lifecycle.json()["checks"]
     for key in (
         "apps_manager_declared",
+        "agents_declared_as_available_module",
         "contacts_declared_as_available_module",
         "only_apps_manager_required",
         "no_business_modules_declared",
+        "agents_installable",
+        "agents_uninstallable",
         "contacts_installable",
         "contacts_uninstallable",
     ):

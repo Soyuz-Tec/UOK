@@ -101,6 +101,7 @@ New extension points require an architecture update and a failing validation tes
 
 - `apps.manager` is the required control module.
 - `contacts.core` is the first optional capability module.
+- `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `contacts.core` backend implementation now lives under `modules/contacts.core/backend/uok_contacts_core`.
 - `contacts.core` commands, command permissions, role grants, dashboard counts, evidence checks, model exports, API router, and candidate verifier scenario are manifest-declared module surfaces.
 - Contacts behavior tests, migrations, and the module candidate verifier scenario now live under `modules/contacts.core`. Module-specific React source is still composed through the top-level frontend shell for this candidate; that bridge is allowed only because ownership paths are declared in the manifest and covered by tests.

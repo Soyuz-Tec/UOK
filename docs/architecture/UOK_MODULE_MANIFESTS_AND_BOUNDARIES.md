@@ -27,6 +27,8 @@ The `.yaml` file stores a strict dependency-light YAML subset. The runtime loade
 - `model_exports`
 - `candidate_verifier_script`
 
+`agents.core` currently declares a scaffold boundary only. It has ownership folders, permissions, lifecycle metadata, and a data-retention policy, but no runtime API, command handlers, migrations, or candidate verifier until the first behavior increment is implemented.
+
 ## Loader checks
 
 UOK verifies:

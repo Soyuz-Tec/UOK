@@ -40,6 +40,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
+| `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` | AI-operated business workflow architecture, governed agent tools, human approval gates, and compliance evidence model | Agent governance, Codex tool binding, AI workflow, approval, or evidence architecture changes |
 | `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` | Approved programming stack and maintainability rules | Runtime language, framework, dependency, source-size, or verification policy changes |
 | `docs/design/UOK_UI_DESIGN_POLICY.md` | Mandatory UI design policy | UI system, layout, accessibility, appearance, or interaction rules change |
 | `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md` | Workspace UI implementation method, specialist agent groups, reusable primitive promotion, and UI verification gates | UI implementation workflow, shared primitive rules, workspace anatomy, or specialist review responsibilities change |
@@ -48,6 +49,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/UOK_NAMING_CONVENTIONS.md` | Valid UOK naming forms and product-neutral naming rules | Naming policy, module naming, product code, or display label rules change |
 | `docs/architecture/UOK_PRODUCT_CARGO_SEPARATION_POLICY.md` | Product, cargo, and transaction separation | Product/cargo/business module modeling changes |
 | `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` | Contacts-derived intelligence profile guidance | Contact profile contract, derivation sources, or storage boundary changes |
+| `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` | Agents Core module roadmap and scope | Agent runbook, governed tool, approval, evidence, or module ownership changes |
 | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` | Contacts module roadmap and scope | Contacts behavior, workflows, module ownership, or acceptance changes |
 | `modules/<module-name>/**/README.md` | Module-local implementation ownership | Module package layout, test ownership, migration ownership, or web ownership changes |
 | `docs/architecture/UOK_OPEN_SOURCE_ERP_QUALITY_RATING_CHART.md` | Peer quality comparison snapshot | Peer comparison or scoring basis changes |
@@ -80,6 +82,7 @@ Implementation must either comply with these artifacts or update them through th
 Architecture records describe current boundaries, module mechanics, and decisions:
 
 - `docs/ARCHITECTURE.md`
+- `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md`
 - `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
@@ -90,8 +93,9 @@ These documents must not overstate future plans as current behavior.
 
 Module plans live under `docs/modules/<module-name>/`.
 
-The current active module plan is:
+The current active module plans are:
 
+- `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md`
 - `docs/modules/contacts.core/CONTACTS_APP_PLAN.md`
 
 Module plans should describe module-owned behavior, workflows, acceptance checks, and open next work. They should not redefine UOK-level architecture unless they link to the relevant architecture document.

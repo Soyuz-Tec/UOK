@@ -33,6 +33,7 @@ Operator browser
 
 - `apps.manager` is the only required control module.
 - `contacts.core` is the first optional capability module.
+- `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - Module metadata is read from `modules/<module_name>/manifest.yaml`.
 - Backend runtime extension points are declared in manifests and resolved from module backend packages.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
@@ -60,6 +61,7 @@ Operator browser
 - Standard operations: `docs/operations/UOK_STANDARD_OPERATIONS.md`
 - ASUH test events: `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - GitHub engineering guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
+- AI operations kernel architecture: `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md`
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
 - Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 

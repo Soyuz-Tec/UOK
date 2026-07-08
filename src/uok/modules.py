@@ -39,6 +39,7 @@ def module_lifecycle_report() -> dict[str, Any]:
     modules = module_catalog()
     checks = {
         "apps_manager_declared": "apps.manager" in modules,
+        "agents_declared_as_available_module": "agents.core" in modules,
         "contacts_declared_as_available_module": "contacts.core" in modules,
         "only_apps_manager_required": sorted(name for name, module in modules.items() if module.get("required")) == ["apps.manager"],
         "no_business_modules_declared": all(module["kind"] != "business_module" for module in modules.values()),
@@ -48,6 +49,12 @@ def module_lifecycle_report() -> dict[str, Any]:
         "apps_manager_separately_updatable": modules["apps.manager"]["updatable"] is True,
         "apps_manager_maintainable": modules["apps.manager"]["maintainable"] is True,
         "apps_manager_has_no_dependencies": modules["apps.manager"]["dependencies"] == [],
+        "agents_installable": modules["agents.core"]["installable"] is True,
+        "agents_optional": modules["agents.core"].get("required") is False,
+        "agents_uninstallable": modules["agents.core"]["uninstallable"] is True,
+        "agents_separately_updatable": modules["agents.core"]["updatable"] is True,
+        "agents_maintainable": modules["agents.core"]["maintainable"] is True,
+        "agents_has_no_dependencies": modules["agents.core"]["dependencies"] == [],
         "contacts_installable": modules["contacts.core"]["installable"] is True,
         "contacts_optional": modules["contacts.core"].get("required") is False,
         "contacts_uninstallable": modules["contacts.core"]["uninstallable"] is True,

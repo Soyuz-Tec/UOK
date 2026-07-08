@@ -28,7 +28,7 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     root = modules_root()
     manifests = load_module_manifests(root)
 
-    assert sorted(manifests) == ["apps.manager", "contacts.core"]
+    assert sorted(manifests) == ["agents.core", "apps.manager", "contacts.core"]
     for module_name in manifests:
         module_dir = root / module_name
         assert (module_dir / "manifest.yaml").is_file()
@@ -38,6 +38,12 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
         assert (module_dir / "tests").is_dir()
 
     assert manifests["apps.manager"]["required"] is True
+    assert manifests["agents.core"]["required"] is False
+    assert manifests["agents.core"]["backend_path"] == "modules/agents.core/backend"
+    assert manifests["agents.core"]["commands"] == []
+    assert manifests["agents.core"]["events"] == []
+    assert "agents.manage" in manifests["agents.core"]["permissions"]
+    assert "web_surface" in manifests["agents.core"]["extension_points"]
     assert manifests["contacts.core"]["required"] is False
     assert "CreateContact" in manifests["contacts.core"]["commands"]
     assert "ContactCreated" in manifests["contacts.core"]["events"]
