@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { IconButton } from "../../shared/primitives";
 
@@ -29,11 +29,14 @@ export function ContactPagingControls({
     <div className="contact-page-controls" aria-label="Contact paging">
       <label className="contact-page-control">
         <span className="visually-hidden">Rows</span>
-        <select aria-label="Contacts page size" value={pageSize} onChange={(event) => onPageSizeChange(Number(event.target.value))}>
-          {pageSizeOptions.map((option) => (
-            <option key={option} value={option}>{option}</option>
-          ))}
-        </select>
+        <span className="contact-page-size-select">
+          <select aria-label="Contacts page size" value={pageSize} onChange={(event) => onPageSizeChange(Number(event.target.value))}>
+            {pageSizeOptions.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+          <ChevronDown size={16} aria-hidden="true" />
+        </span>
       </label>
       <div className="contact-page-stepper" aria-live="polite">
         <IconButton icon={ChevronLeft} label="Previous" onClick={() => onPageChange(Math.max(0, page - 1))} disabled={page === 0} />

@@ -130,7 +130,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--uok-space-3);
+  gap: var(--uok-space-2);
   min-width: 0;
   border: 0;
   border-radius: 0;
@@ -141,7 +141,7 @@
 .contact-page-control {
   display: flex;
   align-items: center;
-  min-width: 96px;
+  min-width: 0;
 }
 
 .contact-page-control span {
@@ -151,31 +151,71 @@
 }
 
 .contact-page-control select {
+  appearance: none;
   height: var(--uok-control-height);
   min-height: var(--uok-control-height);
+  width: 74px;
   border: var(--uok-line);
-  border-radius: var(--uok-radius-2);
-  padding: 0 var(--uok-space-3);
+  border-radius: var(--uok-radius-3);
+  padding: 0 calc(var(--uok-space-5) + var(--uok-space-1)) 0 var(--uok-space-3);
   color: var(--uok-text-primary);
   background: var(--uok-bg-elevated);
   font: inherit;
+  font-weight: 650;
+  line-height: var(--uok-control-height);
+}
+
+.contact-page-size-select {
+  position: relative;
+  display: inline-grid;
+  align-items: center;
+}
+
+.contact-page-size-select svg {
+  position: absolute;
+  right: var(--uok-space-3);
+  width: 16px;
+  height: 16px;
+  color: var(--uok-text-secondary);
+  pointer-events: none;
 }
 
 .contact-page-stepper {
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--uok-control-height) minmax(112px, auto) var(--uok-control-height);
   align-items: center;
-  justify-content: flex-end;
-  gap: var(--uok-space-3);
-  min-width: 264px;
+  justify-content: end;
+  gap: var(--uok-space-2);
+  min-width: 0;
+}
+
+.contact-page-stepper .icon-button {
+  width: var(--uok-control-height);
+  min-width: var(--uok-control-height);
+  height: var(--uok-control-height);
+  border-radius: var(--uok-radius-3);
+}
+
+.contact-page-stepper .icon-button svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.25;
+}
+
+.contact-page-stepper .icon-button:disabled {
+  color: var(--uok-text-tertiary);
+  background: var(--uok-bg-elevated);
+  opacity: 0.56;
 }
 
 .contact-page-status {
-  min-width: 124px;
+  min-width: 112px;
   color: var(--uok-text-secondary);
   font-weight: 700;
   line-height: var(--uok-control-height);
   text-align: center;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .toolbar-group {
