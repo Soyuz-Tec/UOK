@@ -58,8 +58,8 @@ UOK documents should use the well-known standard names above when a rule is deri
 | CI gates | Python compile, Python tests, dependency audits, technology audit, engineering evidence, module contract, source-size, source-boundary, naming, frontend tests, static build, and OpenSSF Scorecard |
 | Code review rules | Small focused changes, ownership clarity, readable code, tests for behavior, architecture impact stated, no avoidable complexity |
 | Release gates | Candidate verifier, module verifier scripts, migration checks, dependency audits, build output, local runtime health, backup/restore confidence where relevant |
-| Dashboards | Current implementation uses CI results, local audit JSON, module evidence, candidate verifier output, and future UI status surfaces |
-| Audit evidence | CI logs, local audit output, verifier output, PR review records, release notes, ASUH events, and local runtime smoke evidence |
+| Dashboards | Current implementation uses CI results, local audit JSON, generated quality scorecard, module evidence, candidate verifier output, and future UI status surfaces |
+| Audit evidence | CI logs, local audit output, generated engineering evidence, generated quality scorecard, verifier output, PR review records, release notes, ASUH events, and local runtime smoke evidence |
 
 ## Mandatory Development Flow
 
@@ -127,6 +127,7 @@ Before candidate promotion or GitHub publication, UOK must have:
 UOK should progressively expose the engineering system through dashboards:
 
 - CI status and latest verification result;
+- generated quality scorecard result;
 - module installation and health status;
 - source-boundary and naming status;
 - dependency audit status;
@@ -135,7 +136,7 @@ UOK should progressively expose the engineering system through dashboards:
 - backup/restore and ASUH drill status;
 - module-level test and evidence status.
 
-Until a dedicated dashboard exists, command output and CI logs are the audit evidence source.
+Until a dedicated dashboard exists, command output, generated engineering evidence, generated quality scorecards, and CI logs are the audit evidence source.
 
 ## No Certification Claim
 

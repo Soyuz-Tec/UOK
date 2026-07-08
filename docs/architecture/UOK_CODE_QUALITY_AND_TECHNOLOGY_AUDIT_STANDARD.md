@@ -85,6 +85,24 @@ The technology audit must confirm:
 - every module manifest has `backend`, `web`, `migrations`, and `tests` folders;
 - local evidence under `var/` remains ignored;
 - this standard is linked from the documentation index and operations runbook.
+- engineering evidence includes a repeatable quality scorecard.
+
+## Quality Scorecard
+
+`EngineeringEvidence` must generate a structured scorecard after each meaningful build or feature. The scorecard converts the executable audit results into comparable categories:
+
+- correctness;
+- test coverage;
+- split quality;
+- reuse and boundaries;
+- module discipline;
+- UI consistency;
+- runtime efficiency;
+- security and supply chain;
+- documentation;
+- CI and release readiness.
+
+The scorecard is not a replacement for `Verify`. It is a repeatable review aid that shows whether the current work still follows the desired engineering system and where the next improvement should go.
 
 ## Efficiency Rules
 
@@ -126,6 +144,12 @@ Candidate verification:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
+```
+
+Engineering scorecard and evidence:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action EngineeringEvidence
 ```
 
 GitHub preparation:

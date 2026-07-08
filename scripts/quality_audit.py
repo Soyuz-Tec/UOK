@@ -256,6 +256,8 @@ def check_github_guardrails() -> CheckResult:
         problems.append("OpenSSF Scorecard workflow missing scorecard action")
     if "python scripts/engineering_evidence.py --stdout" not in ci:
         problems.append("CI must generate engineering evidence")
+    if "quality_scorecard" not in read_text("scripts/engineering_evidence.py"):
+        problems.append("engineering evidence must include quality scorecard")
     for phrase in (
         "branch protection",
         "Require CODEOWNERS review",

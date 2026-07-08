@@ -68,6 +68,7 @@ Every non-trivial UOK task follows this loop:
 
 6. Verify
    - Run the relevant compile, test, build, audit, naming, boundary, module contract, and candidate checks.
+   - Generate `EngineeringEvidence` when the task changes code quality, release readiness, or durable workflow rules.
    - For UI work, verify the local runtime and light/dark/system behavior when possible.
 
 7. Record outcome
@@ -87,6 +88,7 @@ These accepted lessons must guide future implementation:
 | Stack discipline prevents rewrites | Write durable backend in Python and durable frontend in React + TypeScript + Vite | `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` |
 | Engineering system is internalized | Convert Microsoft SDL, Google Engineering Practices, SLSA, OpenSSF Scorecard, ISO, NIST, and OWASP guidance into UOK policies, gates, reviews, release evidence, and dashboards | `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md` |
 | Quality standards are executable | Keep source reviewable, dependencies pinned, stack choices audited, and line-of-code integrity enforced | `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md` |
+| Quality scorecards are repeatable | Generate engineering evidence with a comparable scorecard after meaningful feature work | `scripts/engineering_evidence.py` |
 | UI policy is mandatory now | Apply the Apple-informed UOK UI policy to current work, not only future redesigns | `docs/design/UOK_UI_DESIGN_POLICY.md` |
 | Global reusable UI belongs in shared areas | Reusable pop-ups, inline editing, searchable filters, tables, and column resizing belong in module-neutral shared components | `web/src/shared` and `docs/design/UOK_UI_DESIGN_POLICY.md` |
 | Contacts BI is derived | Business intelligence profiles summarize existing contact signals and must not become a hidden source of truth | `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` |
@@ -110,6 +112,7 @@ These accepted lessons must guide future implementation:
 | Language, framework, dependency, or build change | Add an ADR and update `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` |
 | Engineering system, checklist, review, release gate, dashboard, or audit-evidence change | Update `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`, operations docs, CI, and PR template as applicable |
 | Code quality, line-of-code, efficiency, or technology audit change | Update `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`, `scripts/quality_audit.py`, and operations docs |
+| Quality scorecard, evidence schema, or dashboard metric change | Update `scripts/engineering_evidence.py`, `scripts/quality_scorecard.py`, quality docs, operations docs, and tests |
 | Naming, product, or cargo modeling change | Update naming and separation policy docs before implementation is accepted |
 | Candidate verification gate change | Update `docs/ARCHITECTURE.md`, this guide, verifier scripts, and tests |
 | Local operation, backup, restore, rebuild, GitHub, or ASUH procedure change | Update `docs/operations/UOK_STANDARD_OPERATIONS.md`, `docs/operations/UOK_ASUH_TEST_EVENTS.md`, and related scripts |
@@ -153,6 +156,12 @@ Run the focused quality and technology audit before expanding a feature area:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
+```
+
+Generate comparable engineering evidence and quality scorecard after meaningful feature work:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action EngineeringEvidence
 ```
 
 The standardized wrapper is:

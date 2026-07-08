@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import quality_audit
+import quality_scorecard
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -87,6 +88,7 @@ def build_evidence() -> dict[str, Any]:
         "docs/operations/UOK_STANDARD_OPERATIONS.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
     ]
+    quality = quality_report()
     return {
         "schema": "uok.engineering_evidence.v1",
         "created_at": datetime.now(UTC).isoformat(),
@@ -96,7 +98,8 @@ def build_evidence() -> dict[str, Any]:
             "remote_origin": run_git(["remote", "get-url", "origin"]),
             "dirty_file_count": len(status_lines),
         },
-        "quality_audit": quality_report(),
+        "quality_audit": quality,
+        "quality_scorecard": quality_scorecard.build_scorecard(quality),
         "guardrail_files": [file_record(path) for path in guardrail_files],
         "module_manifests": module_manifest_records(),
     }

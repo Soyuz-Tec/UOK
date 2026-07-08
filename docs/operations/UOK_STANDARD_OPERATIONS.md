@@ -23,7 +23,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | Action | Purpose | Command |
 |---|---|---|
 | `TechnologyAudit` | Focused code-quality, line-of-code, stack, dependency, module-shape, and operations hygiene audit | `.\scripts\uok_ops.ps1 -Action TechnologyAudit` |
-| `EngineeringEvidence` | Generate local engineering-system evidence under `var/evidence/engineering` | `.\scripts\uok_ops.ps1 -Action EngineeringEvidence` |
+| `EngineeringEvidence` | Generate local engineering-system evidence and quality scorecard under `var/evidence/engineering` | `.\scripts\uok_ops.ps1 -Action EngineeringEvidence` |
 | `Audit` | Code, dependency, source-size, naming, module contract, and folder organization checks | `.\scripts\uok_ops.ps1 -Action Audit` |
 | `Verify` | Full audit plus frontend tests, static build, and candidate verifier | `.\scripts\uok_ops.ps1 -Action Verify` |
 | `Rebuild` | Rebuild and start local Podman stack on `127.0.0.1:18088` | `.\scripts\uok_ops.ps1 -Action Rebuild` |
@@ -121,6 +121,7 @@ GitHub publication should include:
 - source-boundary and naming clean;
 - Python and frontend dependency audits clean;
 - candidate verifier clean;
+- engineering evidence includes a quality scorecard with no unreviewed category drift;
 - PR description covering scope, architecture impact, tests, risk, and rollback.
 - PR checks passing through `GithubPrChecks` or GitHub Actions.
 
@@ -244,6 +245,8 @@ See `docs/operations/UOK_ASUH_TEST_EVENTS.md` for schedule and incident trigger 
 ## Evidence Handling
 
 Local evidence belongs under `var/` and must not be committed unless a future task explicitly promotes sanitized evidence into docs.
+
+`EngineeringEvidence` writes a repeatable JSON record with the current quality audit and quality scorecard. Use it after meaningful feature work and before publication so quality trends can be compared without relying on chat history.
 
 Durable standards belong in:
 
