@@ -1,7 +1,7 @@
-import { FolderKanban, Plus, RefreshCw } from "lucide-react";
+import { FolderKanban, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { EmptyState, StatusPill } from "../../shared/data-display";
+import { EmptyState } from "../../shared/data-display";
 import { Pane, WorkflowHeader, WorkflowSplitView } from "../../shared/layout";
 import { CommandButton } from "../../shared/primitives";
 import {
@@ -20,8 +20,9 @@ import {
   updatePlanningTask,
 } from "./planningApi";
 import { PlanningInspector, type PlanningInspectorTab } from "./PlanningInspector";
+import { PlanningModuleState } from "./PlanningModuleState";
 import { PlanningTimeline } from "./PlanningTimeline";
-import { PLANNING_MODULE_ID } from "./planningModule";
+import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningProject, PlanningSchedule, PlanningTask, PlanningWorkspaceProps } from "./types";
 
 export function PlanningWorkspace({ token, appearance, module, busyAction, onActivate }: PlanningWorkspaceProps) {
@@ -121,6 +122,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               onTaskReschedule={rescheduleTask}
               onTaskProgress={(taskId, progress) => void saveTask(taskId, { progress })}
               onDependencyCreate={(payload) => void addDependency(payload)}
+              onTaskMenuAction={(action, task) => void runTaskMenuAction(action, task)}
               onProjectChange={(projectId) => void changeProject(projectId)}
               onCreateDemoSchedule={() => void createDemoSchedule()}
               onRefresh={() => void refresh()}
@@ -243,6 +245,14 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
     await mutate("resource", () => assignPlanningResource(token, payload), { action: "resource_assigned" });
   }
 
+  async function runTaskMenuAction(action: PlanningTaskMenuAction, task: PlanningTask) {
+    const mutation = planningTaskMenuMutation(action, task);
+    if (!mutation) return;
+    if (mutation.kind === "create") await addTask(mutation.payload);
+    else if (mutation.kind === "update") await saveTask(mutation.taskId, mutation.payload);
+    else await removeTask(mutation.taskId);
+  }
+
   async function mutate(action: string, run: () => Promise<unknown>, okStatus: Record<string, unknown>) {
     if (!selectedProjectId) return;
     setBusy(action);
@@ -257,30 +267,6 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
       setBusy("");
     }
   }
-}
-
-function PlanningModuleState({ module, busyAction, onActivate }: Pick<PlanningWorkspaceProps, "module" | "busyAction" | "onActivate">) {
-  const action = module?.status === "disabled" ? "Enable" : "Install";
-  return (
-    <section className="planning-workspace" aria-label="Planning">
-      <Pane title="Planning" description="Module state" wide>
-        <div className="module-row">
-          <div className="module-main">
-            <div className="module-title-line">
-              <h2 className="module-name">{PLANNING_MODULE_ID}</h2>
-              <StatusPill label={module?.status || "available"} tone="info" />
-            </div>
-            <p className="module-meta">capability_module - {module?.version || "not loaded"}</p>
-          </div>
-          <div className="module-actions">
-            <CommandButton icon={Plus} onClick={onActivate} loading={busyAction.startsWith(PLANNING_MODULE_ID)}>
-              {action}
-            </CommandButton>
-          </div>
-        </div>
-      </Pane>
-    </section>
-  );
 }
 
 function taskPayload(title: string, start: string, end: string, progress: number, sortOrder: number, taskType = "task", parentTaskId?: string) {

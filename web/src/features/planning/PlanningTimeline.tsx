@@ -8,6 +8,7 @@ import { PlanningFilters } from "./PlanningFilters";
 import { PlanningGantt } from "./PlanningGantt";
 import { PlanningReadModelView } from "./PlanningReadModelViews";
 import { PlanningSavedViews } from "./PlanningSavedViews";
+import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import { exportScheduleCsv, planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningProject, PlanningSchedule } from "./types";
@@ -29,6 +30,7 @@ export function PlanningTimeline({
   onTaskReschedule,
   onTaskProgress,
   onDependencyCreate,
+  onTaskMenuAction,
   onProjectChange,
   onCreateDemoSchedule,
   onRefresh,
@@ -53,6 +55,7 @@ export function PlanningTimeline({
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
   onDependencyCreate: (payload: Record<string, unknown>) => void;
+  onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningSchedule["tasks"][number]) => void;
   onProjectChange: (projectId: string) => void;
   onCreateDemoSchedule: () => void;
   onRefresh: () => void;
@@ -246,6 +249,7 @@ export function PlanningTimeline({
           onTaskReschedule={onTaskReschedule}
           onTaskProgress={onTaskProgress}
           onDependencyCreate={onDependencyCreate}
+          onTaskMenuAction={onTaskMenuAction}
           onSummaryExpandedChange={setSummaryExpanded}
           onViewDensityChange={setViewDensity}
         />

@@ -19,6 +19,7 @@
 @import "./styles/planning/owned-gantt.css";
 @import "./styles/planning/dependency-drag.css";
 @import "./styles/planning/read-views.css";
+@import "./styles/planning/row-menu.css";
 @import "./styles/planning/saved-views.css";
 @import "./styles/planning/toolbar.css";
 @import "./styles/planning/tooltips.css";

@@ -60,7 +60,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Configurable scales including hours/minutes/sprints/stages | Backlog | Add scale modes as UOK planning-specific options. |
 | Customizable grid columns | Implemented | Field presets, visibility, resize, and autofit exist. |
 | Grid sorting and task filtering | Partial | Search/filter implemented; richer column sorting remains. |
-| Toolbar and context menu | Partial | Toolbar exists; context row menu remains backlog. |
+| Toolbar and context menu | Implemented | Toolbar and task row context menu exist with server-routed planning actions. |
 | Taskbar tooltips | Implemented | UOK-owned hover/focus task detail is rendered in the SVG timeline. |
 | Zooming with scroll | Backlog | Add controlled wheel/trackpad zoom without breaking page scroll. |
 | Hotkeys | Backlog | Add discoverable keyboard actions for common planning operations. |
@@ -78,7 +78,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 
 1. Taskbar hover/focus details: low-risk visible polish from both projects; can be implemented in the current first-party SVG renderer.
 2. Dependency drag creation: implemented with taskbar connector handles and the existing Python-validated dependency API.
-3. Context row menu: professional grid workflow; should reuse shared pop-up/menu primitives if promoted.
+3. Context row menu: implemented with a reusable workspace context menu primitive and planning task actions.
 4. Keyboard hotkeys and focus movement: improves accessibility and dense-workflow speed.
 5. Additional scales: hour, quarter, year, and later sprints/stages.
 6. Column reorder and pinned columns: continue grid maturity using shared table primitives.

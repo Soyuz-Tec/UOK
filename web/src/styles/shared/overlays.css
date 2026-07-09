@@ -93,3 +93,79 @@
   top: var(--uok-space-4);
   right: var(--uok-space-4);
 }
+
+.workspace-context-menu {
+  position: fixed;
+  top: min(var(--context-menu-y), calc(100vh - 280px));
+  left: min(var(--context-menu-x), calc(100vw - 280px));
+  z-index: 45;
+  display: grid;
+  min-width: 236px;
+  max-width: min(280px, calc(100vw - var(--uok-space-4)));
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-2);
+}
+
+.workspace-context-menu button {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--uok-space-2);
+  align-items: start;
+  min-height: 42px;
+  border: 0;
+  border-bottom: var(--uok-line);
+  padding: var(--uok-space-2) var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: transparent;
+  font: 700 var(--uok-callout) var(--uok-font-family);
+  text-align: left;
+}
+
+.workspace-context-menu button:last-child {
+  border-bottom: 0;
+}
+
+.workspace-context-menu button:hover,
+.workspace-context-menu button:focus-visible {
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+  outline: none;
+}
+
+.workspace-context-menu button:focus-visible {
+  box-shadow: inset 3px 0 0 var(--uok-focus-ring);
+}
+
+.workspace-context-menu button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.workspace-context-menu button.destructive {
+  color: var(--uok-status-danger);
+}
+
+.workspace-context-menu svg {
+  margin-top: 2px;
+}
+
+.workspace-context-menu span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.workspace-context-menu strong,
+.workspace-context-menu small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspace-context-menu small {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+  font-weight: 650;
+}

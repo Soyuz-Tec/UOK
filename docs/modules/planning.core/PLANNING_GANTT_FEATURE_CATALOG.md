@@ -55,7 +55,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Pinned columns | Keep WBS/task visible while timeline scrolls. | Backlog |
 | Sort by columns | Sort by WBS, date, status, assignee, progress, and priority. | Partial |
 | Inline grid edit | Edit task cells directly in grid with server validation. | Backlog |
-| Context row menu | Add below, add child, duplicate, delete, convert to milestone, color/status actions. | Backlog |
+| Context row menu | Add below, add child, duplicate, delete, convert to milestone, and status actions. | Implemented |
 
 ## Row And Density Features
 

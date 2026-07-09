@@ -113,10 +113,11 @@ const sampleSchedule = {
 test("UOK proof gate covers planning Gantt usability and visual stability", async ({ page }) => {
   const consoleErrors: string[] = [];
   const dependencyPayloads: unknown[] = [];
+  const taskPayloads: unknown[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
-  await installMockApi(page, dependencyPayloads);
+  await installMockApi(page, dependencyPayloads, taskPayloads);
 
   for (const viewport of [
     { width: 1440, height: 900 },
@@ -148,6 +149,12 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-status-code").getByText("CRIT")).toHaveCount(3);
     await expect(page.locator(".planning-owned-tooltip")).toHaveCount(4);
     if (viewport.width > 980) {
+      const taskRequests = taskPayloads.length;
+      await page.getByRole("button", { name: "Task actions for Define schedule scope" }).click();
+      await expect(page.getByRole("menu", { name: "Task actions for Define schedule scope" })).toBeVisible();
+      await page.getByRole("menuitem", { name: /Duplicate task/ }).click();
+      await expect.poll(() => taskPayloads.length).toBe(taskRequests + 1);
+      expect(taskPayloads.at(-1)).toMatchObject({ title: "Define schedule scope copy", task_type: "task", parent_task_id: "task-summary", status: "planned", progress: 40 });
       const linkRequests = dependencyPayloads.length;
       await page.getByRole("button", { name: "Start dependency from Define schedule scope" }).press("Enter");
       await expect(page.locator(".planning-gantt-shell")).toHaveClass(/planning-linking/);
@@ -236,7 +243,7 @@ async function openPlanning(page: Page) {
   await expect(page.getByRole("region", { name: "Planning", exact: true })).toBeVisible();
 }
 
-async function installMockApi(page: Page, dependencyPayloads: unknown[]) {
+async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPayloads: unknown[]) {
   await page.addInitScript(() => {
     window.sessionStorage.setItem("uok_token", "proof-token");
     window.localStorage.setItem("uok_user", JSON.stringify({
@@ -253,6 +260,10 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[]) {
   await page.route("/api/modules/catalog", (route) => route.fulfill({ json: { modules: moduleCatalog() } }));
   await page.route("/api/planning/projects", (route) => route.fulfill({ json: [sampleProject] }));
   await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({ json: sampleSchedule }));
+  await page.route(`/api/planning/projects/${sampleProject.id}/tasks`, async (route) => {
+    taskPayloads.push(route.request().postDataJSON());
+    await route.fulfill({ json: { status: "validated" } });
+  });
   await page.route(`/api/planning/projects/${sampleProject.id}/dependencies`, async (route) => {
     dependencyPayloads.push(route.request().postDataJSON());
     await route.fulfill({ json: { status: "validated" } });

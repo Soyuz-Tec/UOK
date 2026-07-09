@@ -48,10 +48,11 @@
 }
 
 .planning-owned-grid-row {
+  position: relative;
   width: 100%;
   border: 0;
   border-bottom: var(--uok-line);
-  padding: 0 var(--uok-space-2);
+  padding: 0 calc(var(--uok-space-2) + 34px) 0 var(--uok-space-2);
   color: var(--uok-text-secondary);
   background: transparent;
   font: 600 var(--uok-callout) var(--uok-font-family);

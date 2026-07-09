@@ -1,3 +1,4 @@
+import { MoreHorizontal } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 
 import { ColumnResizeHandle, useResizableColumns, type DataTableColumn } from "../../shared/tables";
@@ -21,6 +22,8 @@ import {
 } from "./planningGanttModel";
 import { DependencyLines, TaskShape, TimelineBackground, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
 import { dependencyLinkPayload, svgPointer, type DependencyLinkDrag } from "./planningDependencyDrag";
+import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
+import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
 
 export function PlanningGantt({
@@ -39,6 +42,7 @@ export function PlanningGantt({
   onTaskReschedule,
   onTaskProgress,
   onDependencyCreate,
+  onTaskMenuAction,
   onSummaryExpandedChange,
   onViewDensityChange,
 }: {
@@ -57,6 +61,7 @@ export function PlanningGantt({
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
   onDependencyCreate: (payload: Record<string, unknown>) => void;
+  onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningTask) => void;
   onSummaryExpandedChange: (expanded: boolean) => void;
   onViewDensityChange: (density: ViewDensity) => void;
 }) {
@@ -64,6 +69,7 @@ export function PlanningGantt({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
   const [linkDrag, setLinkDrag] = useState<DependencyLinkDrag | null>(null);
+  const [taskMenu, setTaskMenu] = useState<{ taskId: string; x: number; y: number } | null>(null);
   const rowSize = rowHeight(viewDensity);
   const columns = useMemo(() => gridColumns(fieldPreset).filter((column) => columnVisibility[column.id] !== false), [columnVisibility, fieldPreset]);
   const resizeColumns = useMemo(() => columns.map(toResizableColumn), [columns]);
@@ -76,6 +82,7 @@ export function PlanningGantt({
   const headerHeight = 54;
   const height = headerHeight + visibleTasks.length * rowSize;
   const gridTemplateColumns = columns.map((column) => `${widths[column.id]}px`).join(" ");
+  const menuTask = taskMenu ? visibleTasks.find((task) => task.id === taskMenu.taskId) || null : null;
 
   useEffect(() => {
     if (!todaySignal || !scrollRef.current) return;
@@ -109,21 +116,31 @@ export function PlanningGantt({
         </div>
         <div className="planning-owned-grid-body">
           {visibleTasks.map((task) => (
-            <button
+            <div
               key={task.id}
-              type="button"
               className={`planning-owned-grid-row ${task.id === selectedTaskId ? "selected" : ""} ${task.task_type === "summary" ? "summary" : ""} ${taskColorClass(task)} ${showCritical && task.critical ? "critical" : ""}`}
               role="row"
+              tabIndex={0}
               style={{ gridTemplateColumns, minHeight: rowSize, minWidth: totalWidth }}
               onClick={() => onTaskSelect(task.id)}
+              onContextMenu={(event) => openTaskMenu(task.id, event.clientX, event.clientY, event)}
               onDoubleClick={() => {
                 if (task.task_type === "summary") onSummaryExpandedChange(!summaryExpanded);
               }}
+              onKeyDown={(event) => handleRowKey(task.id, event)}
             >
               {columns.map((column) => (
                 <span key={column.id} role="cell">{gridValue(column.id, task, assignedByTask)}</span>
               ))}
-            </button>
+              <button
+                type="button"
+                className="planning-owned-row-menu-trigger"
+                aria-label={`Task actions for ${task.title}`}
+                onClick={(event) => openTaskMenu(task.id, event.currentTarget.getBoundingClientRect().left, event.currentTarget.getBoundingClientRect().bottom + 4, event)}
+              >
+                <MoreHorizontal size={16} aria-hidden="true" />
+              </button>
+            </div>
           ))}
         </div>
       </div>
@@ -176,6 +193,13 @@ export function PlanningGantt({
           <TodayMarker chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={height} />
         </svg>
       </div>
+      <PlanningTaskContextMenu
+        open={Boolean(taskMenu)}
+        task={menuTask}
+        position={taskMenu ? { x: taskMenu.x, y: taskMenu.y } : { x: 0, y: 0 }}
+        onClose={() => setTaskMenu(null)}
+        onAction={onTaskMenuAction}
+      />
     </div>
   );
 
@@ -209,6 +233,24 @@ export function PlanningGantt({
     if (!linkDrag || !svgRef.current) return;
     const point = svgPointer(svgRef.current, event.clientX, event.clientY);
     setLinkDrag({ ...linkDrag, pointerX: point.x, pointerY: point.y });
+  }
+
+  function openTaskMenu(taskId: string, x: number, y: number, event: { preventDefault: () => void; stopPropagation: () => void }) {
+    event.preventDefault();
+    event.stopPropagation();
+    onTaskSelect(taskId);
+    setTaskMenu({ taskId, x, y });
+  }
+
+  function handleRowKey(taskId: string, event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onTaskSelect(taskId);
+    }
+    if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      openTaskMenu(taskId, rect.left + 24, rect.top + 24, event);
+    }
   }
 }
 

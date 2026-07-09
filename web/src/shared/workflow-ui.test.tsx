@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { InlineTextEdit } from "./forms";
 import { SectionHeading } from "./layout";
-import { WorkspaceEditorPopup, WorkspacePopup } from "./overlays";
+import { WorkspaceContextMenu, WorkspaceEditorPopup, WorkspacePopup } from "./overlays";
 
 describe("InlineTextEdit", () => {
   it("validates locally and keeps the editor open when save fails", async () => {
@@ -75,6 +75,31 @@ describe("WorkspacePopup", () => {
     );
 
     expect(screen.queryByRole("dialog", { name: "Hidden editor" })).not.toBeInTheDocument();
+  });
+});
+
+describe("WorkspaceContextMenu", () => {
+  it("renders reusable menu actions and closes from Escape", () => {
+    const close = vi.fn();
+    const select = vi.fn();
+    render(
+      <WorkspaceContextMenu
+        open
+        label="Record actions"
+        position={{ x: 24, y: 32 }}
+        onClose={close}
+        items={[{ id: "duplicate", label: "Duplicate", description: "Copy record", onSelect: select }]}
+      />
+    );
+
+    const menu = screen.getByRole("menu", { name: "Record actions" });
+    expect(menu).toHaveTextContent("Copy record");
+    fireEvent.click(screen.getByRole("menuitem", { name: /Duplicate/ }));
+    expect(select).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(close).toHaveBeenCalledTimes(2);
   });
 });
 
