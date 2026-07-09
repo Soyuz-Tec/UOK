@@ -66,6 +66,7 @@ Operator browser
 - ASUH test events: `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - GitHub engineering guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
 - AI operations kernel architecture: `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md`
+- Global export artifacts: `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
 - Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 - Planning Core module plan: `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`

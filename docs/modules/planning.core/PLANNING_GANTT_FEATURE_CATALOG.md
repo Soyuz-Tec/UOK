@@ -16,7 +16,8 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 
 - Scheduling authority stays in Python.
 - React renders validated schedule read models and sends proposed changes back to Python.
-- Shared UI behavior belongs in `web/src/shared` when it can serve other modules.
+- Shared UI and export behavior belongs in `web/src/shared` when it can serve other modules.
+- Export artifact primitives are global UOK features; planning owns only schedule-specific payloads.
 - Planning-specific behavior belongs in `web/src/features/planning` or `modules/planning.core`.
 - Use Python standard library primitives first for scheduling internals: `datetime`, `calendar`, `zoneinfo`, `graphlib.TopologicalSorter`, `csv`, and `json`.
 - Do not add a Python, JavaScript, or CSS Gantt chart dependency without a new ADR.
@@ -39,7 +40,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Critical path | Implemented | Critical flags, highlighting, zero-slack counts, and a Dashboard critical-path explanation panel exist. |
 | Calendars | Implemented | Project working days and holidays drive scheduling, propagation, and holiday shading. Resource calendars remain a separate resource-planning backlog item. |
 | Resources | Implemented | Resource creation, assignment, allocation display, daily workload lanes, and over-allocation warnings exist. |
-| Export | Partial | Visible schedule CSV export, CSV import template, and UOK project JSON exchange exist; PDF/image remain later. |
+| Export | Partial | Visible schedule CSV export, CSV import template, UOK project JSON exchange, and timeline SVG image export exist through shared export primitives; PDF/document remain later. |
 | UI proof | Implemented | Playwright proof covers rendering, controls, inspector tabs, responsiveness, and console cleanliness. |
 
 ## Grid And Column Features
@@ -145,7 +146,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Undo/redo | Reversible local command stack with server reconciliation. | Backlog |
 | Saved views | Store filters, density, fields, scale, and grouping. | Implemented |
 | Search/filter/group | Search task titles; filter by status, critical, resource, milestone. | Implemented |
-| Export | CSV, import template, and UOK project JSON exchange now; later PDF/image. | Partial |
+| Export | CSV, import template, UOK project JSON exchange, and timeline SVG image now; later PDF/document via global export boundary. | Partial |
 | Audit history | Planning schedule events are recorded. | Implemented |
 
 ## Validation

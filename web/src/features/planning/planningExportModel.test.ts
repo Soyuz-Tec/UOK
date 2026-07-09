@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { planningExportFilename, planningImportTemplateCsv, planningProjectExchangeJson, planningScheduleCsv } from "./planningExportModel";
+import { planningExportFilename, planningImportTemplateCsv, planningProjectExchangeJson, planningScheduleCsv, planningTimelineSvg } from "./planningExportModel";
 import type { PlanningSchedule, PlanningTask } from "./types";
 
 describe("planning export model", () => {
@@ -31,6 +31,15 @@ describe("planning export model", () => {
     expect(payload.project.name).toBe("Pilot Delivery");
     expect(payload.tasks).toHaveLength(1);
     expect(payload.dependencies).toEqual([]);
+  });
+
+  it("exports a first-party SVG timeline image", () => {
+    const svg = planningTimelineSvg(schedule());
+
+    expect(svg).toContain("<svg xmlns=\"http://www.w3.org/2000/svg\"");
+    expect(svg).toContain("Pilot Delivery");
+    expect(svg).toContain("Scope, design");
+    expect(svg).toContain("2026-08-01 to 2026-08-10");
   });
 });
 
