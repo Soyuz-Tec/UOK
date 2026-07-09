@@ -14,6 +14,14 @@ class CalendarWriteRequest(BaseModel):
     attrs: dict[str, Any] = Field(default_factory=dict)
 
 
+class CalendarPatchRequest(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=160)
+    color: str | None = Field(default=None, max_length=32)
+    visibility_scope: str | None = Field(default=None, max_length=40)
+    timezone: str | None = Field(default=None, max_length=80)
+    attrs: dict[str, Any] | None = None
+
+
 class ParticipantRequest(BaseModel):
     participant_type: str = Field(..., max_length=40)
     participant_id: str | None = Field(default=None, max_length=80)
