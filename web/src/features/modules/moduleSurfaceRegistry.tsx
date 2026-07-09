@@ -127,8 +127,9 @@ export const moduleSurfaces: ModuleSurface[] = [
           token={workbench.token}
           appearance={workbench.appearance}
           module={planningModule}
+          moduleRows={workbench.moduleRows}
           busyAction={workbench.busyAction}
-          onActivate={() => workbench.moduleAction(PLANNING_MODULE_ID, planningModule?.status === "disabled" ? "enable" : "install")}
+          onActivate={(moduleName = PLANNING_MODULE_ID, action) => workbench.moduleAction(moduleName, action || (planningModule?.status === "disabled" ? "enable" : "install"))}
         />
       );
     }

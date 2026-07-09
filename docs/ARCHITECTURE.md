@@ -33,9 +33,11 @@ Operator browser
 
 - `apps.manager` is the only required control module.
 - `contacts.core` is the first optional capability module.
+- `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, reminders, free-busy, availability, and iCalendar export.
 - `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
+- `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.
 - Module metadata is read from `modules/<module_name>/manifest.yaml`.
 - Backend runtime extension points are declared in manifests and resolved from module backend packages.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.

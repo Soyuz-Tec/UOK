@@ -54,6 +54,18 @@ export type PlanningCalendar = {
   ignored_periods?: Array<{ start: string; end: string }>;
 };
 
+export type PlanningAvailability = {
+  source_module: "calendar.core" | string;
+  scope: string;
+  status: "ready" | "unavailable" | string;
+  from: string;
+  to: string;
+  reason?: string;
+  warnings?: string[];
+  busy: Array<{ event_id: string; start: string; end: string; title: string }>;
+  events: Array<Record<string, unknown>>;
+};
+
 export type PlanningResource = {
   id: string;
   project_id: string;
@@ -80,6 +92,7 @@ export type PlanningSchedule = {
   tasks: PlanningTask[];
   dependencies: PlanningDependency[];
   calendar?: PlanningCalendar;
+  availability?: PlanningAvailability;
   resources: PlanningResource[];
   assignments: PlanningAssignment[];
   baselines: PlanningBaseline[];
@@ -90,6 +103,7 @@ export type PlanningWorkspaceProps = {
   token: string;
   appearance: Appearance;
   module?: ModuleStatus;
+  moduleRows: ModuleStatus[];
   busyAction: string;
-  onActivate: () => void;
+  onActivate: (moduleName?: string, action?: "install" | "enable") => void;
 };

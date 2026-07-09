@@ -39,7 +39,8 @@ events:
   - PlanningResourceCreated
   - PlanningResourceAssigned
   - PlanningResourcesLeveled
-dependencies: []
+dependencies:
+  - calendar.core
 backend_path: modules/planning.core/backend
 web_path: modules/planning.core/web
 migrations_path: modules/planning.core/migrations

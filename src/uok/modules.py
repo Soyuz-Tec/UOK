@@ -67,6 +67,6 @@ def module_lifecycle_report() -> dict[str, Any]:
         "planning_uninstallable": modules["planning.core"]["uninstallable"] is True,
         "planning_separately_updatable": modules["planning.core"]["updatable"] is True,
         "planning_maintainable": modules["planning.core"]["maintainable"] is True,
-        "planning_has_no_dependencies": modules["planning.core"]["dependencies"] == [],
+        "planning_depends_on_calendar": modules["planning.core"]["dependencies"] == ["calendar.core"],
     }
     return {"ok": all(checks.values()), "checks": checks, "modules": modules}

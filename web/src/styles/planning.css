@@ -106,6 +106,32 @@
   font-size: var(--uok-body);
 }
 
+.planning-availability {
+  display: grid;
+  gap: var(--uok-space-1);
+  border-block-start: var(--uok-line);
+  margin-block-start: var(--uok-space-2);
+  padding-block-start: var(--uok-space-2);
+}
+
+.planning-availability h4 {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+  margin: 0;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-callout);
+}
+
+.planning-availability-row {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .planning-editor-fieldset {
   display: grid;
   gap: var(--uok-space-2);

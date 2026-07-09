@@ -14,6 +14,7 @@
 - Frontend: React, TypeScript, Vite, CSS design tokens.
 - Gantt UI: first-party React, TypeScript, SVG, HTML, and CSS renderer behind a UOK adapter; external Gantt tools may inform feature vocabulary but must not be copied or added as renderer dependencies for this candidate.
 - Scheduling logic: Python module service first, with React receiving validated schedule read models.
+- Shared availability: `planning.core` depends on `calendar.core` for organization calendar events and free-busy context in Planning read models. Planning still owns Gantt working days, holidays, ignored periods, dependencies, resource leveling, task normalization, and schedule validation.
 
 ## Current MVP Scope
 
@@ -28,6 +29,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead
 - Python scheduling propagation for dependency-driven successor movement
 - working calendar storage with working-day and holiday-aware task normalization and propagation
+- read-only `calendar.core` availability overlay in the project schedule read model for shared busy events and free-busy warnings
 - hierarchy validation, WBS read model, and summary rollups
 - CPM read model fields for early dates, late dates, slack, and critical flags
 - baseline capture, baseline variance read-model fields, per-row timeline lanes, and variance badges
@@ -80,6 +82,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 ## Deferred Work
 
 - richer resource capacity calendars
+- deeper write integration that can publish selected Planning tasks or milestones to `calendar.core` events after user approval
 - multi-baseline comparison and richer baseline history controls
 - richer critical path dependency-chain explanation beyond the current Dashboard summary
 - richer bulk edit fields after owner, priority, and calendar become first-class task fields

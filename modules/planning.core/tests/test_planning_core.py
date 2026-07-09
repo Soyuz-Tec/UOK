@@ -13,6 +13,7 @@ def test_planning_core_schedule_authority_and_security(client: TestClient) -> No
     ops = auth(client, "ops", "ops123")
     viewer = auth(client, "viewer", "viewer123")
 
+    assert client.post("/api/modules/calendar.core/install", headers=admin).status_code == 200
     install = client.post("/api/modules/planning.core/install", headers=admin)
     assert install.status_code == 200, install.text
     assert install.json()["status"] == "installed"
@@ -105,6 +106,7 @@ def test_planning_core_gantt_improvements(client: TestClient) -> None:
     admin = auth(client, "admin", "admin")
     ops = auth(client, "ops", "ops123")
 
+    assert client.post("/api/modules/calendar.core/install", headers=admin).status_code == 200
     assert client.post("/api/modules/planning.core/install", headers=admin).status_code == 200
     project = command(
         client,

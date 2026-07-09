@@ -12,7 +12,7 @@ import { timelineTaskPayload } from "./planningTimelineCreateModel";
 import type { PlanningProject, PlanningSchedule, PlanningWorkspaceProps } from "./types";
 import { usePlanningWorkspaceMutations } from "./usePlanningWorkspaceMutations";
 
-export function PlanningWorkspace({ token, appearance, module, busyAction, onActivate }: PlanningWorkspaceProps) {
+export function PlanningWorkspace({ token, appearance, module, moduleRows, busyAction, onActivate }: PlanningWorkspaceProps) {
   const [projects, setProjects] = useState<PlanningProject[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [schedule, setSchedule] = useState<PlanningSchedule | null>(null);
@@ -41,7 +41,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
   );
 
   if (!token) return <EmptyState text="Sign in to open Planning." />;
-  if (!operational) return <PlanningModuleState module={module} busyAction={busyAction} onActivate={onActivate} />;
+  if (!operational) return <PlanningModuleState module={module} moduleRows={moduleRows} busyAction={busyAction} onActivate={onActivate} />;
 
   return (
     <section className="planning-workspace" aria-label="Planning">

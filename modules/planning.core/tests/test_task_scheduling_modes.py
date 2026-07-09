@@ -11,6 +11,7 @@ def test_manual_tasks_are_not_moved_by_dependency_propagation(client: TestClient
     suffix = str(uuid4())[:8]
     admin = auth(client, "admin", "admin")
     ops = auth(client, "ops", "ops123")
+    assert client.post("/api/modules/calendar.core/install", headers=admin).status_code == 200
     assert client.post("/api/modules/planning.core/install", headers=admin).status_code == 200
     project = command(client, ops, "CreatePlanningProject", {"name": f"Mode Plan {suffix}", "start": "2026-08-03", "end": "2026-08-20"}, f"mode-project-{suffix}")
     project_id = project.json()["result"]["id"]
@@ -35,6 +36,7 @@ def test_resource_leveling_moves_later_auto_tasks(client: TestClient) -> None:
     suffix = str(uuid4())[:8]
     admin = auth(client, "admin", "admin")
     ops = auth(client, "ops", "ops123")
+    assert client.post("/api/modules/calendar.core/install", headers=admin).status_code == 200
     assert client.post("/api/modules/planning.core/install", headers=admin).status_code == 200
     project = command(client, ops, "CreatePlanningProject", {"name": f"Level Plan {suffix}", "start": "2026-08-03", "end": "2026-08-20"}, f"level-project-{suffix}")
     project_id = project.json()["result"]["id"]

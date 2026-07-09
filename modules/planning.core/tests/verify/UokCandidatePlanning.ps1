@@ -6,6 +6,11 @@ function Invoke-UokPlanningCandidateScenario {
         [Parameter(Mandatory = $true)][long]$Stamp
     )
 
+    $calendarInstalled = Invoke-UokJson -Method "POST" -Path "/api/modules/calendar.core/install" -Headers $Headers
+    if ($calendarInstalled.status -ne "installed") {
+        throw "Calendar dependency install failed: $($calendarInstalled | ConvertTo-Json -Depth 20)"
+    }
+
     $installed = Invoke-UokJson -Method "POST" -Path "/api/modules/planning.core/install" -Headers $Headers
     if ($installed.status -ne "installed") {
         throw "Planning install failed: $($installed | ConvertTo-Json -Depth 20)"
@@ -118,6 +123,9 @@ function Invoke-UokPlanningCandidateScenario {
     $schedule = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $ViewerHeaders
     if ($schedule.validation.ok -ne $true -or $schedule.tasks.Count -lt 2 -or $schedule.dependencies.Count -lt 1) {
         throw "Planning schedule read model failed: $($schedule | ConvertTo-Json -Depth 20)"
+    }
+    if ($schedule.availability.source_module -ne "calendar.core") {
+        throw "Planning did not consume calendar.core availability: $($schedule | ConvertTo-Json -Depth 20)"
     }
 
     return @{ project_id = $projectId }

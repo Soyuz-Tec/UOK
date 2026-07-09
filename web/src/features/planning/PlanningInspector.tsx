@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
 import { Pane } from "../../shared/layout";
+import { PlanningAvailabilityPanel } from "./PlanningAvailabilityPanel";
 import { PlanningTaskConstraintFields } from "./PlanningTaskConstraintFields";
 import type { PlanningDependency, PlanningProject, PlanningSchedule, PlanningTask } from "./types";
 
@@ -223,6 +224,7 @@ function CalendarBaselinePanel({ schedule, busy, onSetCalendar, onCreateBaseline
         </CommandButton>
       </div>
       <span className="planning-muted">{schedule.baselines[0] ? `Latest: ${schedule.baselines[0].name}` : "No baseline captured"}</span>
+      <PlanningAvailabilityPanel availability={schedule.availability} />
     </section>
   );
 }

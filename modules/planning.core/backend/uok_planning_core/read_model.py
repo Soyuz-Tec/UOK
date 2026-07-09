@@ -7,6 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .calendar_bridge import availability_warnings, calendar_availability_read_model
 from .calendar_payload import calendar_holidays, calendar_ignored_periods
 from .models import (
     PlanningAssignment,
@@ -47,6 +48,8 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     latest_baseline = _baseline_task_index(baselines[0]) if baselines else {}
     resources = _resources(db, actor, project.id)
     assignments = _assignments(db, actor, tasks, resources)
+    availability = calendar_availability_read_model(db, actor, project)
+    availability["warnings"] = availability_warnings(tasks, availability)
     violations = validate_schedule(tasks, dependencies, calendar)
     warnings = _resource_warnings(tasks, resources, assignments, calendar)
     wbs = _wbs_numbers(tasks)
@@ -55,6 +58,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
         "tasks": [serialize_task(task, metrics.get(task.id, {}), latest_baseline.get(task.id), wbs.get(task.id, "")) for task in tasks],
         "dependencies": [serialize_dependency(dep) for dep in dependencies],
         "calendar": _calendar_row(db, actor, project.id),
+        "availability": availability,
         "resources": [serialize_resource(row) for row in resources],
         "assignments": [serialize_assignment(row) for row in assignments],
         "baselines": [serialize_baseline(row) for row in baselines],

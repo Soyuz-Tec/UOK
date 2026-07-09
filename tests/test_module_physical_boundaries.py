@@ -71,6 +71,7 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert (root / "contacts.core" / "migrations" / "001_contacts_core_operational_indexes.sql").is_file()
     assert manifests["planning.core"]["required"] is False
     assert manifests["planning.core"]["backend_path"] == "modules/planning.core/backend"
+    assert manifests["planning.core"]["dependencies"] == ["calendar.core"]
     assert manifests["planning.core"]["api_router"] == "uok_planning_core.api:router"
     assert manifests["planning.core"]["command_handlers"] == "uok_planning_core.commands:command_handlers"
     assert manifests["planning.core"]["candidate_verifier_script"] == "modules/planning.core/tests/verify/UokCandidatePlanning.ps1"
