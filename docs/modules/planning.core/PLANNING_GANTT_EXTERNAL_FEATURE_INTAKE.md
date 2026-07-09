@@ -41,7 +41,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Tooltips and quick info | Implemented | UOK renders accessible first-party taskbar hover/focus detail. |
 | Keyboard navigation | Implemented | Grid rows support arrow/home/end focus movement plus common task hotkeys. |
 | Fullscreen mode | Implemented | UOK-owned focus mode expands the planning workspace without invoking third-party fullscreen code. |
-| Drag timeline / click-drag new task | Partial | Timeline panning is implemented; controlled task creation gestures remain later. |
+| Drag timeline / click-drag new task | Implemented | Timeline panning, Ctrl/Command wheel zoom, and Shift-drag empty-space task creation are implemented through UOK-owned interactions. |
 | Smart rendering / large data performance | Backlog | Add virtualization only after current features stabilize. |
 | Data loading/saving and REST sync | Implemented | UOK uses FastAPI read models and command writes, not direct client-owned persistence. |
 | Export to document/image/project formats | Partial | CSV exists; PDF/image/import-export templates remain later. |
@@ -107,7 +107,7 @@ This table turns the external feature vocabulary into UOK-owned build units. It 
 | Timeline | Time scales | scale id, unit, step, label, group label, cell width, zoom order | Hour/day/week/month/quarter/year scale model | Implemented |
 | Timeline | Timeline templates | header label, cell class, task shape class, weekend/holiday class | UOK-owned render helpers and CSS tokens | Partial |
 | Timeline | Markers | today, milestones, deadlines, vertical event markers | Today marker exists; deadline/event markers later | Partial |
-| Timeline | Drag timeline and scroll zoom | pointer panning, wheel modifier, scale bounds, scroll preservation | Empty-space panning and Ctrl/Command wheel scale stepping are implemented; task creation gestures remain later | Partial |
+| Timeline | Drag timeline and scroll zoom | pointer panning, wheel modifier, scale bounds, scroll preservation | Empty-space panning, Ctrl/Command wheel scale stepping, and Shift-drag task creation are implemented | Implemented |
 | Timeline | Zoom-to-fit and scroll-to-date | project range, selected date, today, viewport width, scale bounds | Today command exists; project/date fitting later | Partial |
 | Timeline | Layout modes | grid left/right/hidden, scale top/bottom, RTL, fixed size/autosize | Treat as workspace layout variants after core Gantt matures | Backlog |
 | Tasks | Task types | task, summary/project, milestone, unscheduled, split segment, rollup | Task/summary/milestone exist; unscheduled/split/rollup later | Partial |
@@ -145,7 +145,8 @@ This table turns the external feature vocabulary into UOK-owned build units. It 
 7. Column reorder and pinned WBS/task columns implemented with shared table primitives.
 8. Selected dependency-chain highlighting: implemented as a UOK-owned SVG/grid overlay before heavier scheduling features.
 9. Timeline panning and controlled wheel zoom: implemented with UOK-owned interaction helpers.
-10. Virtualization and click-drag task creation: performance and creation-gesture work after feature behavior stabilizes.
+10. Click-drag task creation: implemented with Shift-drag empty timeline range creation and server-validated task writes.
+11. Virtualization and larger-data rendering: performance work after feature behavior stabilizes and real schedule scale requires it.
 
 ## Validation
 

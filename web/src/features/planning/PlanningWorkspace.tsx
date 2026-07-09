@@ -24,6 +24,7 @@ import { PlanningModuleState } from "./PlanningModuleState";
 import { PlanningTimeline } from "./PlanningTimeline";
 import type { TimelineScale } from "./planningGanttModel";
 import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
+import { timelineTaskPayload } from "./planningTimelineCreateModel";
 import type { PlanningProject, PlanningSchedule, PlanningTask, PlanningWorkspaceProps } from "./types";
 
 export function PlanningWorkspace({ token, appearance, module, busyAction, onActivate }: PlanningWorkspaceProps) {
@@ -123,6 +124,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               onTaskReschedule={rescheduleTask}
               onTaskProgress={(taskId, progress) => void saveTask(taskId, { progress })}
               onDependencyCreate={(payload) => void addDependency(payload)}
+              onTimelineTaskCreate={(start, end) => void addTask(timelineTaskPayload(schedule.tasks, start, end))}
               onTaskMenuAction={(action, task) => void runTaskMenuAction(action, task)}
               onProjectChange={(projectId) => void changeProject(projectId)}
               onCreateDemoSchedule={() => void createDemoSchedule()}

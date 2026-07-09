@@ -2,6 +2,7 @@ import type { KeyboardEvent, PointerEvent } from "react";
 
 import type { PlanningSchedule, PlanningTask } from "./types";
 import type { PlanningDependencyChain } from "./planningDependencyChain";
+import type { TimelineCreateDraft } from "./planningTimelineCreateModel";
 import {
   dateValue,
   durationBetween,
@@ -216,4 +217,13 @@ export function TodayMarker({ chartStart, scale, cellWidth, height }: { chartSta
   const x = xForDate(new Date(), chartStart, scale, cellWidth);
   if (x < 0) return null;
   return <line className="planning-owned-today" x1={x} y1="0" x2={x} y2={height} />;
+}
+
+export function TimelineCreateDraftShape({ draft, headerHeight, height }: { draft: TimelineCreateDraft; headerHeight: number; height: number }) {
+  return (
+    <g className="planning-owned-create-draft" aria-hidden="true">
+      <rect x={draft.x} y={headerHeight + 6} width={draft.width} height={Math.max(28, height - headerHeight - 12)} rx="4" />
+      <text x={draft.x + 8} y={headerHeight + 26}>{draft.start} to {draft.end}</text>
+    </g>
+  );
 }

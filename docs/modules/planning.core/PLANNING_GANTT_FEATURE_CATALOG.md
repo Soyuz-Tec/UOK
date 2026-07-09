@@ -76,6 +76,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Today marker | Current date marker and scroll-to-today command. | Implemented |
 | Fit project | Fit to month/project range. | Partial |
 | Drag timeline and controlled wheel zoom | Drag empty timeline/header space to pan; Ctrl/Command wheel steps the existing zoom scale without breaking normal scroll. | Implemented |
+| Click-drag task creation | Hold Shift and drag empty timeline space to draw a date range, then submit a server-validated task proposal. | Implemented |
 | Weekend shading | Non-working weekend visual bands. | Implemented |
 | Holiday shading | Calendar holiday visual bands. | Implemented |
 | Minute/sprint/stage scales | Additional specialized scale modes. | Backlog |

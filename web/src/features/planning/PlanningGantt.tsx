@@ -2,9 +2,7 @@ import { MoreHorizontal } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 
 import { useColumnOrder, useResizableColumns } from "../../shared/tables";
-import type { ColumnVisibilityMap } from "../../shared/tables";
-import type { Appearance } from "../../shared/types";
-import type { PlanningSchedule, PlanningTask } from "./types";
+import type { PlanningTask } from "./types";
 import {
   assignedResourceNames,
   autoFitColumnWidth,
@@ -20,8 +18,9 @@ import {
   type PlanningGridColumn,
   type TimelineScale,
 } from "./planningGanttModel";
-import { DependencyLines, TaskShape, TimelineBackground, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
+import { DependencyLines, TaskShape, TimelineBackground, TimelineCreateDraftShape, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
 import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
+import type { PlanningGanttProps } from "./planningGanttProps";
 import { selectedDependencyChain, taskDependencyChainClass } from "./planningDependencyChain";
 import { dependencyLinkPayload, svgPointer, type DependencyLinkDrag } from "./planningDependencyDrag";
 import { nextPlanningGridSort, sortPlanningTasks, type PlanningGridSort } from "./planningGridSortModel";
@@ -30,8 +29,6 @@ import { pinnedColumnOffsets, pinnedGridColumns } from "./planningPinnedColumns"
 import { toResizablePlanningColumn } from "./planningResizableColumns";
 import { usePlanningTimelineInteraction } from "./planningTimelineInteraction";
 import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
-import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
-import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
 
 export function PlanningGantt({
   schedule,
@@ -49,31 +46,12 @@ export function PlanningGantt({
   onTaskReschedule,
   onTaskProgress,
   onDependencyCreate,
+  onTimelineTaskCreate,
   onTaskMenuAction,
   onScaleChange,
   onSummaryExpandedChange,
   onViewDensityChange,
-}: {
-  schedule: PlanningSchedule;
-  appearance: Appearance;
-  scale: TimelineScale;
-  showCritical: boolean;
-  showBaselines: boolean;
-  selectedTaskId: string;
-  fieldPreset: FieldPreset;
-  columnVisibility: ColumnVisibilityMap;
-  summaryExpanded: boolean;
-  viewDensity: ViewDensity;
-  todaySignal: number;
-  onTaskSelect: (taskId: string) => void;
-  onTaskReschedule: (taskId: string, start: string, end: string) => void;
-  onTaskProgress: (taskId: string, progress: number) => void;
-  onDependencyCreate: (payload: Record<string, unknown>) => void;
-  onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningTask) => void;
-  onScaleChange: (scale: TimelineScale) => void;
-  onSummaryExpandedChange: (expanded: boolean) => void;
-  onViewDensityChange: (density: ViewDensity) => void;
-}) {
+}: PlanningGanttProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
@@ -98,7 +76,13 @@ export function PlanningGantt({
   const height = headerHeight + visibleTasks.length * rowSize;
   const gridTemplateColumns = columns.map((column) => `${widths[column.id]}px`).join(" ");
   const menuTask = taskMenu ? visibleTasks.find((task) => task.id === taskMenu.taskId) || null : null;
-  const timelineInteraction = usePlanningTimelineInteraction(scrollRef, scale, onScaleChange);
+  const timelineInteraction = usePlanningTimelineInteraction(scrollRef, svgRef, {
+    cellWidth: chart.cellWidth,
+    chartStart: chart.start,
+    onCreateTaskRange: onTimelineTaskCreate,
+    onScaleChange,
+    scale,
+  });
 
   useEffect(() => {
     if (!todaySignal || !scrollRef.current) return;
@@ -164,7 +148,7 @@ export function PlanningGantt({
         className={`planning-owned-chart ${timelineInteraction.panning ? "panning" : ""}`}
         ref={scrollRef}
         aria-label="Planning timeline"
-        title="Drag empty timeline space to pan. Hold Ctrl or Command and use the wheel to zoom."
+        title="Drag empty timeline space to pan. Hold Shift and drag empty space to create a task. Hold Ctrl or Command and use the wheel to zoom."
         onPointerDown={timelineInteraction.onPointerDown}
         onPointerMove={timelineInteraction.onPointerMove}
         onPointerUp={(event) => {
@@ -192,6 +176,7 @@ export function PlanningGantt({
           <TimelineBackground units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} height={height} rowSize={rowSize} rows={visibleTasks.length} />
           <DependencyLines schedule={schedule} tasks={visibleTasks} taskRows={taskRows} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowSize} headerHeight={headerHeight} dependencyChain={dependencyChain} />
           {linkDrag ? <path className="planning-owned-link-draft" d={`M ${linkDrag.sourceX} ${linkDrag.sourceY} L ${linkDrag.pointerX} ${linkDrag.pointerY}`} /> : null}
+          {timelineInteraction.createDraft ? <TimelineCreateDraftShape draft={timelineInteraction.createDraft} headerHeight={headerHeight} height={height} /> : null}
           {visibleTasks.map((task, index) => (
             <TaskShape
               key={task.id}

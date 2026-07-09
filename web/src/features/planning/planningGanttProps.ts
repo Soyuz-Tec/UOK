@@ -1,0 +1,29 @@
+import type { ColumnVisibilityMap } from "../../shared/tables";
+import type { Appearance } from "../../shared/types";
+import type { TimelineScale } from "./planningGanttModel";
+import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
+import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
+import type { PlanningSchedule, PlanningTask } from "./types";
+
+export type PlanningGanttProps = {
+  schedule: PlanningSchedule;
+  appearance: Appearance;
+  scale: TimelineScale;
+  showCritical: boolean;
+  showBaselines: boolean;
+  selectedTaskId: string;
+  fieldPreset: FieldPreset;
+  columnVisibility: ColumnVisibilityMap;
+  summaryExpanded: boolean;
+  viewDensity: ViewDensity;
+  todaySignal: number;
+  onTaskSelect: (taskId: string) => void;
+  onTaskReschedule: (taskId: string, start: string, end: string) => void;
+  onTaskProgress: (taskId: string, progress: number) => void;
+  onDependencyCreate: (payload: Record<string, unknown>) => void;
+  onTimelineTaskCreate: (start: string, end: string) => void;
+  onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningTask) => void;
+  onScaleChange: (scale: TimelineScale) => void;
+  onSummaryExpandedChange: (expanded: boolean) => void;
+  onViewDensityChange: (density: ViewDensity) => void;
+};

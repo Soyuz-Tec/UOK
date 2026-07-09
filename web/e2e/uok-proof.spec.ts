@@ -225,6 +225,24 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await page.mouse.wheel(0, 240);
       await page.keyboard.up("Control");
       await expect(page.getByRole("button", { name: "day", exact: true })).toHaveClass(/selected/);
+      const rangeTaskRequests = taskPayloads.length;
+      await chart.evaluate((node) => { node.scrollLeft = 0; });
+      const createBox = await chart.boundingBox();
+      expect(createBox).not.toBeNull();
+      if (createBox) {
+        const createY = createBox.y + Math.min(createBox.height - 14, 246);
+        await page.keyboard.down("Shift");
+        await page.mouse.move(createBox.x + 180, createY);
+        await page.mouse.down();
+        await page.mouse.move(createBox.x + 300, createY, { steps: 4 });
+        await expect(page.locator(".planning-owned-create-draft")).toBeVisible();
+        await page.mouse.up();
+        await page.keyboard.up("Shift");
+      }
+      await expect.poll(() => taskPayloads.length).toBe(rangeTaskRequests + 1);
+      expect(taskPayloads.at(-1)).toMatchObject({ title: "Timeline task", task_type: "task", status: "planned", progress: 0 });
+      expect(String((taskPayloads.at(-1) as { start?: unknown }).start)).toMatch(/^2026-08-/);
+      expect(String((taskPayloads.at(-1) as { end?: unknown }).end)).toMatch(/^2026-08-/);
     }
     await page.getByRole("button", { name: "Focus", exact: true }).click();
     await expect(page.locator(".planning-timeline-workbench")).toHaveClass(/focus-mode/);

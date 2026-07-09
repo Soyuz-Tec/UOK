@@ -32,6 +32,7 @@ export function PlanningTimeline({
   onTaskReschedule,
   onTaskProgress,
   onDependencyCreate,
+  onTimelineTaskCreate,
   onTaskMenuAction,
   onProjectChange,
   onCreateDemoSchedule,
@@ -57,6 +58,7 @@ export function PlanningTimeline({
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
   onDependencyCreate: (payload: Record<string, unknown>) => void;
+  onTimelineTaskCreate: (start: string, end: string) => void;
   onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningSchedule["tasks"][number]) => void;
   onProjectChange: (projectId: string) => void;
   onCreateDemoSchedule: () => void;
@@ -257,6 +259,7 @@ export function PlanningTimeline({
           onTaskReschedule={onTaskReschedule}
           onTaskProgress={onTaskProgress}
           onDependencyCreate={onDependencyCreate}
+          onTimelineTaskCreate={onTimelineTaskCreate}
           onTaskMenuAction={onTaskMenuAction}
           onScaleChange={onScaleChange}
           onSummaryExpandedChange={setSummaryExpanded}
