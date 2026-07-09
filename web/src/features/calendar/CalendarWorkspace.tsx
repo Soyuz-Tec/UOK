@@ -88,14 +88,20 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
 
   async function createEvent() {
     if (!activeCalendarId || !title.trim()) return;
+    const start = new Date(startsAt);
+    const end = new Date(endsAt);
+    if (Number.isNaN(start.valueOf()) || Number.isNaN(end.valueOf()) || end <= start) {
+      setMessage({ error: "Enter a valid start and end time; end must be after start." });
+      return;
+    }
     try {
       await api("/api/calendar/events", {
         method: "POST",
         body: JSON.stringify({
           calendar_id: activeCalendarId,
           title,
-          starts_at: new Date(startsAt).toISOString(),
-          ends_at: new Date(endsAt).toISOString(),
+          starts_at: start.toISOString(),
+          ends_at: end.toISOString(),
           timezone
         })
       });
