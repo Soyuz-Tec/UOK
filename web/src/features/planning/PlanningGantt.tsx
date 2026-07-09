@@ -1,7 +1,7 @@
 import { MoreHorizontal } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 
-import { ColumnResizeHandle, useResizableColumns, type DataTableColumn } from "../../shared/tables";
+import { useColumnOrder, useResizableColumns, type DataTableColumn } from "../../shared/tables";
 import type { ColumnVisibilityMap } from "../../shared/tables";
 import type { Appearance } from "../../shared/types";
 import type { PlanningSchedule, PlanningTask } from "./types";
@@ -21,6 +21,7 @@ import {
   type TimelineScale,
 } from "./planningGanttModel";
 import { DependencyLines, TaskShape, TimelineBackground, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
+import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
 import { dependencyLinkPayload, svgPointer, type DependencyLinkDrag } from "./planningDependencyDrag";
 import { planningKeyboardCommand } from "./planningKeyboardModel";
 import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
@@ -73,7 +74,9 @@ export function PlanningGantt({
   const [linkDrag, setLinkDrag] = useState<DependencyLinkDrag | null>(null);
   const [taskMenu, setTaskMenu] = useState<{ taskId: string; x: number; y: number } | null>(null);
   const rowSize = rowHeight(viewDensity);
-  const columns = useMemo(() => gridColumns(fieldPreset).filter((column) => columnVisibility[column.id] !== false), [columnVisibility, fieldPreset]);
+  const baseColumns = useMemo(() => gridColumns(fieldPreset), [fieldPreset]);
+  const { moveColumnBefore, orderedColumns } = useColumnOrder(baseColumns, `planning.gantt.order.${fieldPreset}`);
+  const columns = useMemo(() => orderedColumns.filter((column) => columnVisibility[column.id] !== false), [columnVisibility, orderedColumns]);
   const resizeColumns = useMemo(() => columns.map(toResizableColumn), [columns]);
   const { setColumnWidth, totalWidth, widths } = useResizableColumns(resizeColumns, `planning.gantt.${fieldPreset}`);
   const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
@@ -99,23 +102,17 @@ export function PlanningGantt({
       style={{ "--planning-grid-width": `${Math.max(totalWidth, 340)}px` } as CSSProperties}
     >
       <div className="planning-owned-grid" role="table" aria-label="Planning task grid">
-        <div className="planning-owned-grid-header" role="row" style={{ gridTemplateColumns, minWidth: totalWidth }}>
-          {columns.map((column) => (
-            <span key={column.id} role="columnheader" onDoubleClick={() => handleHeaderDoubleClick(column)}>
-              <span className="planning-owned-grid-header-label">{column.label}</span>
-              {column.resizable === false ? null : (
-                <ColumnResizeHandle
-                  label={column.label}
-                  maxWidth={column.maxWidth}
-                  minWidth={column.minWidth}
-                  width={widths[column.id]}
-                  onResize={(value) => setColumnWidth(column.id, value)}
-                  onReset={() => setColumnWidth(column.id, autoFitColumnWidth(column, visibleTasks, assignedByTask))}
-                />
-              )}
-            </span>
-          ))}
-        </div>
+        <PlanningGanttGridHeader
+          assignedByTask={assignedByTask}
+          columns={columns}
+          gridTemplateColumns={gridTemplateColumns}
+          totalWidth={totalWidth}
+          widths={widths}
+          tasks={visibleTasks}
+          onColumnMoveBefore={moveColumnBefore}
+          onColumnWidthChange={setColumnWidth}
+          onHeaderDoubleClick={handleHeaderDoubleClick}
+        />
         <div className="planning-owned-grid-body">
           {visibleTasks.map((task) => (
             <div

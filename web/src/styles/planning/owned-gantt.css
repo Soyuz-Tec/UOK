@@ -24,6 +24,10 @@
   min-width: 0;
 }
 
+.planning-owned-grid-header > span[draggable="true"] {
+  cursor: grab;
+}
+
 .planning-owned-grid-header-label {
   display: block;
   overflow: hidden;

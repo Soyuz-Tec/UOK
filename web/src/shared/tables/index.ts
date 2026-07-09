@@ -1,6 +1,7 @@
 export { ColumnResizeHandle } from "./ColumnResizeHandle";
 export { ResizableDataTable } from "./ResizableDataTable";
 export { FieldVisibilityMenu } from "./FieldVisibilityMenu";
+export { useColumnOrder } from "./useColumnOrder";
 export { useResizableColumns } from "./useResizableColumns";
 export type { FieldVisibilityMenuConfig } from "./FieldVisibilityMenu";
 export { useColumnVisibility } from "./useColumnVisibility";

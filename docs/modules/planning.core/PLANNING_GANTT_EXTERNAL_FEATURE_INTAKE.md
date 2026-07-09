@@ -29,7 +29,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 
 | Feature idea | UOK status | UOK target |
 |---|---:|---|
-| Configurable task grid with tree/task column | Partial | Continue first-party grid work: column reorder, pinned columns, inline edit. |
+| Configurable task grid with tree/task column | Partial | Continue first-party grid work: pinned columns and inline edit remain. |
 | Projects/summary tasks and milestones | Implemented | Keep summary and milestone rendering first-party. |
 | Four dependency types plus lag | Implemented | Keep validation in Python and UI editing in inspector. |
 | Drag scheduling and resize | Implemented | Continue server-validated move/resize/progress behavior. |
@@ -83,7 +83,7 @@ This table turns the external feature vocabulary into UOK-owned build units. It 
 | Workspace shell | Fullscreen/focus workspace | toolbar toggle, pressed state, viewport overlay, exit action, preserved scrollable toolbar | Local `planning.core` focus mode with saved-view persistence | Implemented |
 | Workspace shell | Multiple chart instances | isolated project id, selected view state, independent scroll/zoom state | Keep each planning route instance isolated by project and local storage keys | Partial |
 | Workspace shell | View switching | Gantt, board, list, calendar, workload, people, dashboard | Existing read-model tabs from one validated schedule | Implemented |
-| Grid | Configurable columns | id, label, width, min/max width, visibility, preset, resize/autofit, eventual order/pin flags | Shared table sizing/visibility primitives plus planning-specific field presets | Partial |
+| Grid | Configurable columns | id, label, width, min/max width, visibility, preset, resize/autofit, order, eventual pin flags | Shared table sizing/visibility/order primitives plus planning-specific field presets | Partial |
 | Grid | Tree column | WBS code, indentation, summary marker, expand/collapse state, parent id | Summary rows and WBS sorting; richer per-parent expand state later | Partial |
 | Grid | Inline cell editing | editable field, validation state, commit/cancel, keyboard handling, server command | Defer until command-level validation and audit messages are tighter | Backlog |
 | Grid | Column sorting/filtering | column id, direction, filter mode, query, status/resource criteria | Search/filter exists; richer column sort remains | Partial |
@@ -117,7 +117,7 @@ This table turns the external feature vocabulary into UOK-owned build units. It 
 4. Keyboard hotkeys and focus movement: implemented for Gantt grid row navigation and common task actions.
 5. Additional scales: hour, quarter, and year implemented; later minutes, sprints, and stages remain backlog.
 6. Fullscreen/focus mode: implemented as a UOK-owned dense workspace overlay with saved-view persistence.
-7. Column reorder and pinned columns: continue grid maturity using shared table primitives.
+7. Column reorder implemented with shared table primitives; pinned columns remain grid maturity backlog.
 8. Virtualization and timeline panning: performance work after feature behavior stabilizes.
 
 ## Validation
