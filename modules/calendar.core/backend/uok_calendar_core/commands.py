@@ -28,6 +28,8 @@ from .validation import (
     visibility_scope,
 )
 
+MAX_REMINDER_MINUTES_BEFORE = 43200
+
 
 def _emit_event(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:
     last = db.scalar(select(func.max(EventRecord.sequence)).where(EventRecord.organization_id == actor.organization_id)) or 0
@@ -180,7 +182,7 @@ def cmd_create_calendar_reminder(db: Session, actor: Actor, payload: dict[str, A
         organization_id=actor.organization_id,
         event_id=event.id,
         reminder_type=reminder_type(payload.get("reminder_type")),
-        trigger_minutes_before=int(payload.get("trigger_minutes_before")),
+        trigger_minutes_before=_reminder_minutes(payload.get("trigger_minutes_before")),
     )
     db.add(reminder)
     db.flush()
@@ -210,6 +212,16 @@ def _replace_participants(db: Session, actor: Actor, event: CalendarEvent, parti
             role=bounded_text(item.get("role") or "required", "role", 40),
             response_status=bounded_text(item.get("response_status") or "needs_action", "response_status", 40),
         ))
+
+
+def _reminder_minutes(value: Any) -> int:
+    try:
+        minutes = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("trigger_minutes_before must be an integer") from exc
+    if minutes < 0 or minutes > MAX_REMINDER_MINUTES_BEFORE:
+        raise ValueError(f"trigger_minutes_before must be between 0 and {MAX_REMINDER_MINUTES_BEFORE}")
+    return minutes
 
 
 def command_handlers():
