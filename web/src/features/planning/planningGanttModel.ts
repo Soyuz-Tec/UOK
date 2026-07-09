@@ -2,6 +2,14 @@ import type { PlanningSchedule, PlanningTask } from "./types";
 import type { ViewDensity } from "./planningTimelineModel";
 
 export type TimelineScale = "day" | "week" | "month";
+export type PlanningGridColumn = {
+  id: string;
+  label: string;
+  defaultWidth: number;
+  minWidth: number;
+  maxWidth: number;
+  resizable?: boolean;
+};
 export type TimelineUnit = {
   key: string;
   label: string;
@@ -39,10 +47,11 @@ export function visibleRows(tasks: PlanningTask[], summaryExpanded: boolean) {
   return tasks.filter((task) => !task.parent_task_id || !collapsedParents.has(task.parent_task_id));
 }
 
-export function gridColumns(fieldPreset: "core" | "progress" | "resources") {
-  if (fieldPreset === "progress") return [{ id: "wbs", label: "WBS" }, { id: "task", label: "Task" }, { id: "duration", label: "Dur." }, { id: "progress", label: "%" }, { id: "critical", label: "Critical" }];
-  if (fieldPreset === "resources") return [{ id: "wbs", label: "WBS" }, { id: "task", label: "Task" }, { id: "assigned", label: "Assigned" }, { id: "status", label: "Status" }];
-  return [{ id: "wbs", label: "WBS" }, { id: "task", label: "Task" }, { id: "start", label: "Start" }, { id: "end", label: "End" }];
+export function gridColumns(fieldPreset: "core" | "progress" | "resources"): PlanningGridColumn[] {
+  const base = [gridColumn("wbs", "WBS", 64, 52, 120), gridColumn("task", "Task", 240, 150, 520)];
+  if (fieldPreset === "progress") return [...base, gridColumn("duration", "Dur.", 84, 68, 140), gridColumn("progress", "%", 76, 64, 130), gridColumn("critical", "Critical", 104, 82, 160)];
+  if (fieldPreset === "resources") return [...base, gridColumn("assigned", "Assigned", 180, 130, 360), gridColumn("status", "Status", 116, 90, 180)];
+  return [...base, gridColumn("start", "Start", 116, 90, 170), gridColumn("end", "End", 116, 90, 170)];
 }
 
 export function gridValue(columnId: string, task: PlanningTask, assignedByTask: Map<string, string>) {
@@ -56,6 +65,12 @@ export function gridValue(columnId: string, task: PlanningTask, assignedByTask: 
   if (columnId === "assigned") return assignedByTask.get(task.id) || "-";
   if (columnId === "status") return task.status || "-";
   return "-";
+}
+
+export function autoFitColumnWidth(column: PlanningGridColumn, tasks: PlanningTask[], assignedByTask: Map<string, string>) {
+  const values = [column.label, ...tasks.map((task) => gridValue(column.id, task, assignedByTask))];
+  const longest = Math.max(...values.map((value) => String(value).length));
+  return Math.min(Math.max(longest * 8 + 36, column.minWidth), column.maxWidth);
 }
 
 export function assignedResourceNames(schedule: PlanningSchedule) {
@@ -84,6 +99,14 @@ export function rowHeight(viewDensity: ViewDensity) {
   if (viewDensity === "compact") return 42;
   if (viewDensity === "roomy") return 56;
   return 50;
+}
+
+export function taskColorClass(task: PlanningTask) {
+  if (task.progress >= 100 || task.status === "complete" || task.status === "completed") return "complete";
+  if (dateValue(task.end) < today() && task.progress < 100) return "overdue";
+  if (task.status === "blocked") return "blocked";
+  if (task.progress > 0) return "in-progress";
+  return "not-started";
 }
 
 export function xForDate(date: Date, start: Date, scale: TimelineScale, cellWidth: number) {
@@ -152,4 +175,14 @@ function dateDiffDays(start: Date, end: Date) {
 function weekNumber(value: Date) {
   const first = new Date(value.getFullYear(), 0, 1);
   return Math.ceil((((value.getTime() - first.getTime()) / 86_400_000) + first.getDay() + 1) / 7);
+}
+
+function gridColumn(id: string, label: string, defaultWidth: number, minWidth: number, maxWidth: number): PlanningGridColumn {
+  return { id, label, defaultWidth, minWidth, maxWidth };
+}
+
+function today() {
+  const value = new Date();
+  value.setHours(0, 0, 0, 0);
+  return value;
 }

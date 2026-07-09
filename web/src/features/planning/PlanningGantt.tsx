@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
+import { ColumnResizeHandle, useResizableColumns, type DataTableColumn } from "../../shared/tables";
+import type { ColumnVisibilityMap } from "../../shared/tables";
 import type { Appearance } from "../../shared/types";
 import type { PlanningSchedule, PlanningTask } from "./types";
 import {
   assignedResourceNames,
+  autoFitColumnWidth,
   buildTimeline,
   dateValue,
   durationBetween,
@@ -12,9 +15,11 @@ import {
   gridColumns,
   gridValue,
   rowHeight,
+  taskColorClass,
   visibleRows,
   xForDate,
   type DragState,
+  type PlanningGridColumn,
   type TimelineScale,
   type TimelineUnit,
 } from "./planningGanttModel";
@@ -28,12 +33,15 @@ export function PlanningGantt({
   showBaselines,
   selectedTaskId,
   fieldPreset,
+  columnVisibility,
   summaryExpanded,
   viewDensity,
   todaySignal,
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress: _onTaskProgress,
+  onSummaryExpandedChange,
+  onViewDensityChange,
 }: {
   schedule: PlanningSchedule;
   appearance: Appearance;
@@ -42,16 +50,22 @@ export function PlanningGantt({
   showBaselines: boolean;
   selectedTaskId: string;
   fieldPreset: FieldPreset;
+  columnVisibility: ColumnVisibilityMap;
   summaryExpanded: boolean;
   viewDensity: ViewDensity;
   todaySignal: number;
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
+  onSummaryExpandedChange: (expanded: boolean) => void;
+  onViewDensityChange: (density: ViewDensity) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
   const rowSize = rowHeight(viewDensity);
+  const columns = useMemo(() => gridColumns(fieldPreset).filter((column) => columnVisibility[column.id] !== false), [columnVisibility, fieldPreset]);
+  const resizeColumns = useMemo(() => columns.map(toResizableColumn), [columns]);
+  const { setColumnWidth, totalWidth, widths } = useResizableColumns(resizeColumns, `planning.gantt.${fieldPreset}`);
   const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
   const visibleTasks = useMemo(() => visibleRows(schedule.tasks, summaryExpanded), [schedule.tasks, summaryExpanded]);
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
@@ -59,6 +73,7 @@ export function PlanningGantt({
   const width = Math.max(chart.units.length * chart.cellWidth, 480);
   const headerHeight = 54;
   const height = headerHeight + visibleTasks.length * rowSize;
+  const gridTemplateColumns = columns.map((column) => `${widths[column.id]}px`).join(" ");
 
   useEffect(() => {
     if (!todaySignal || !scrollRef.current) return;
@@ -67,22 +82,43 @@ export function PlanningGantt({
   }, [chart.cellWidth, chart.start, scale, todaySignal]);
 
   return (
-    <div className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance}`} aria-label="Planning Gantt chart">
+    <div
+      className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance}`}
+      aria-label="Planning Gantt chart"
+      style={{ "--planning-grid-width": `${Math.max(totalWidth, 340)}px` } as CSSProperties}
+    >
       <div className="planning-owned-grid" role="table" aria-label="Planning task grid">
-        <div className="planning-owned-grid-header" role="row">
-          {gridColumns(fieldPreset).map((column) => <span key={column.id} role="columnheader">{column.label}</span>)}
+        <div className="planning-owned-grid-header" role="row" style={{ gridTemplateColumns, minWidth: totalWidth }}>
+          {columns.map((column) => (
+            <span key={column.id} role="columnheader" onDoubleClick={() => handleHeaderDoubleClick(column)}>
+              <span className="planning-owned-grid-header-label">{column.label}</span>
+              {column.resizable === false ? null : (
+                <ColumnResizeHandle
+                  label={column.label}
+                  maxWidth={column.maxWidth}
+                  minWidth={column.minWidth}
+                  width={widths[column.id]}
+                  onResize={(value) => setColumnWidth(column.id, value)}
+                  onReset={() => setColumnWidth(column.id, autoFitColumnWidth(column, visibleTasks, assignedByTask))}
+                />
+              )}
+            </span>
+          ))}
         </div>
         <div className="planning-owned-grid-body">
           {visibleTasks.map((task) => (
             <button
               key={task.id}
               type="button"
-              className={`planning-owned-grid-row ${task.id === selectedTaskId ? "selected" : ""} ${task.task_type === "summary" ? "summary" : ""}`}
+              className={`planning-owned-grid-row ${task.id === selectedTaskId ? "selected" : ""} ${task.task_type === "summary" ? "summary" : ""} ${taskColorClass(task)} ${showCritical && task.critical ? "critical" : ""}`}
               role="row"
-              style={{ minHeight: rowSize }}
+              style={{ gridTemplateColumns, minHeight: rowSize, minWidth: totalWidth }}
               onClick={() => onTaskSelect(task.id)}
+              onDoubleClick={() => {
+                if (task.task_type === "summary") onSummaryExpandedChange(!summaryExpanded);
+              }}
             >
-              {gridColumns(fieldPreset).map((column) => (
+              {columns.map((column) => (
                 <span key={column.id} role="cell">{gridValue(column.id, task, assignedByTask)}</span>
               ))}
             </button>
@@ -126,6 +162,14 @@ export function PlanningGantt({
       </div>
     </div>
   );
+
+  function handleHeaderDoubleClick(column: PlanningGridColumn) {
+    if (column.id === "task") {
+      onViewDensityChange(viewDensity === "compact" ? "standard" : "compact");
+      return;
+    }
+    setColumnWidth(column.id, autoFitColumnWidth(column, visibleTasks, assignedByTask));
+  }
 }
 
 function TimelineHeaders({ units, cellWidth, headerHeight, width }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; width: number }) {
@@ -183,7 +227,7 @@ function TaskShape({ task, index, chartStart, scale, cellWidth, rowSize, headerH
   const barHeight = Math.max(18, rowSize * 0.46);
   const width = task.task_type === "milestone" ? barHeight : Math.max(cellWidth * durationUnits(task, scale), cellWidth * 0.65);
   const critical = showCritical && task.critical;
-  const className = `planning-owned-task ${task.task_type} ${critical ? "critical" : ""} ${selected ? "selected" : ""}`;
+  const className = `planning-owned-task ${task.task_type} ${taskColorClass(task)} ${critical ? "critical" : ""} ${selected ? "selected" : ""}`;
   if (task.task_type === "milestone") {
     const centerX = x + barHeight / 2;
     const centerY = y + barHeight / 2;
@@ -215,4 +259,16 @@ function TodayMarker({ chartStart, scale, cellWidth, height }: { chartStart: Dat
   const x = xForDate(new Date(), chartStart, scale, cellWidth);
   if (x < 0) return null;
   return <line className="planning-owned-today" x1={x} y1="0" x2={x} y2={height} />;
+}
+
+function toResizableColumn(column: PlanningGridColumn): DataTableColumn<PlanningTask> {
+  return {
+    id: column.id,
+    header: column.label,
+    defaultWidth: column.defaultWidth,
+    minWidth: column.minWidth,
+    maxWidth: column.maxWidth,
+    resizable: column.resizable,
+    renderCell: () => null,
+  };
 }

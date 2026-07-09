@@ -2,10 +2,11 @@ import { Baseline, CalendarClock, ChevronDown, Columns3, Download, Flag, FolderK
 import { useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
+import { FieldVisibilityMenu, useColumnVisibilityOptions } from "../../shared/tables";
 import type { Appearance } from "../../shared/types";
 import { PlanningGantt } from "./PlanningGantt";
 import { PlanningReadModelView } from "./PlanningReadModelViews";
-import { exportScheduleCsv, planningViews, projectScheduleView, type FieldPreset, type FilterMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
+import { exportScheduleCsv, planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type FilterMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningProject, PlanningSchedule } from "./types";
 
 export function PlanningTimeline({
@@ -64,6 +65,8 @@ export function PlanningTimeline({
   const [selectedVisible, setSelectedVisible] = useState(false);
   const [todaySignal, setTodaySignal] = useState(0);
   const visibleSchedule = useMemo(() => projectScheduleView(schedule, filterMode, cascadeSort), [cascadeSort, filterMode, schedule]);
+  const columnOptions = useMemo(() => planningColumnVisibilityOptions(fieldPreset), [fieldPreset]);
+  const { resetColumnVisibility, setColumnVisible, visibility: columnVisibility } = useColumnVisibilityOptions(`planning.gantt.columns.${fieldPreset}`, columnOptions);
   const selectedCount = selectedVisible ? visibleSchedule.tasks.length : selectedTaskId ? 1 : 0;
 
   return (
@@ -144,6 +147,14 @@ export function PlanningTimeline({
               <option value="resources">Resources</option>
             </select>
           </label>
+          <FieldVisibilityMenu
+            label="Columns"
+            options={columnOptions}
+            resetLabel="Reset columns"
+            visibility={columnVisibility}
+            onReset={resetColumnVisibility}
+            onToggle={setColumnVisible}
+          />
           <label className="planning-toolbar-select">
             <Flag size={16} aria-hidden="true" />
             <span>Filter</span>
@@ -214,12 +225,15 @@ export function PlanningTimeline({
           showBaselines={showBaselines}
           selectedTaskId={selectedTaskId}
           fieldPreset={fieldPreset}
+          columnVisibility={columnVisibility}
           summaryExpanded={summaryExpanded}
           viewDensity={viewDensity}
           todaySignal={todaySignal}
           onTaskSelect={onTaskSelect}
           onTaskReschedule={onTaskReschedule}
           onTaskProgress={onTaskProgress}
+          onSummaryExpandedChange={setSummaryExpanded}
+          onViewDensityChange={setViewDensity}
         />
       ) : (
         <PlanningReadModelView view={activeView} schedule={visibleSchedule} onTaskSelect={onTaskSelect} />

@@ -1,10 +1,8 @@
-import type { KeyboardEvent, PointerEvent, ReactNode } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 
+import { ColumnResizeHandle } from "./ColumnResizeHandle";
 import { useResizableColumns } from "./useResizableColumns";
 import type { DataTableColumn, DataTableSpanRow } from "./types";
-
-const resizeStep = 8;
-const acceleratedResizeStep = 24;
 
 export function ResizableDataTable<T>({
   ariaLabel,
@@ -55,7 +53,9 @@ export function ResizableDataTable<T>({
                 <span className="resizable-data-table-header-label">{column.header}</span>
                 {column.resizable === false ? null : (
                   <ColumnResizeHandle
-                    column={column}
+                    label={columnLabel(column)}
+                    maxWidth={column.maxWidth}
+                    minWidth={column.minWidth}
                     width={widths[column.id]}
                     onReset={() => resetColumnWidth(column.id)}
                     onResize={(width) => setColumnWidth(column.id, width)}
@@ -86,65 +86,8 @@ export function ResizableDataTable<T>({
   );
 }
 
-function ColumnResizeHandle<T>({
-  column,
-  width,
-  onReset,
-  onResize
-}: {
-  column: DataTableColumn<T>;
-  width: number;
-  onReset: () => void;
-  onResize: (width: number) => void;
-}) {
-  const label = typeof column.header === "string" && column.header ? column.header : column.id;
-
-  const startPointerResize = (event: PointerEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const startX = event.clientX;
-    const startWidth = width;
-    const resize = (moveEvent: globalThis.PointerEvent) => onResize(startWidth + moveEvent.clientX - startX);
-    const stop = () => {
-      window.removeEventListener("pointermove", resize);
-      window.removeEventListener("pointerup", stop);
-    };
-    window.addEventListener("pointermove", resize);
-    window.addEventListener("pointerup", stop, { once: true });
-  };
-
-  const resizeFromKeyboard = (event: KeyboardEvent<HTMLDivElement>) => {
-    const step = event.shiftKey ? acceleratedResizeStep : resizeStep;
-    if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      onResize(width - step);
-    } else if (event.key === "ArrowRight") {
-      event.preventDefault();
-      onResize(width + step);
-    } else if (event.key === "Home") {
-      event.preventDefault();
-      onResize(column.minWidth ?? 80);
-    } else if (event.key === "End") {
-      event.preventDefault();
-      onResize(column.maxWidth ?? 640);
-    }
-  };
-
-  return (
-    <div
-      className="column-resize-handle"
-      role="separator"
-      tabIndex={0}
-      aria-label={`Resize ${label} column`}
-      aria-orientation="vertical"
-      aria-valuemax={column.maxWidth ?? 640}
-      aria-valuemin={column.minWidth ?? 80}
-      aria-valuenow={width}
-      aria-valuetext={`${width} pixels`}
-      onDoubleClick={onReset}
-      onKeyDown={resizeFromKeyboard}
-      onPointerDown={startPointerResize}
-    />
-  );
+function columnLabel<T>(column: DataTableColumn<T>) {
+  return typeof column.header === "string" && column.header ? column.header : column.id;
 }
 
 function renderRow<T>(

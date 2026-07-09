@@ -6,6 +6,13 @@ export type FieldPreset = "core" | "progress" | "resources";
 export type FilterMode = "all" | "critical" | "milestones";
 export type ViewDensity = "compact" | "standard" | "roomy";
 
+export function planningColumnVisibilityOptions(fieldPreset: FieldPreset) {
+  const base = [{ id: "wbs", label: "WBS", locked: true }, { id: "task", label: "Task", locked: true }];
+  if (fieldPreset === "progress") return [...base, { id: "duration", label: "Duration" }, { id: "progress", label: "Progress" }, { id: "critical", label: "Critical" }];
+  if (fieldPreset === "resources") return [...base, { id: "assigned", label: "Assigned" }, { id: "status", label: "Status" }];
+  return [...base, { id: "start", label: "Start" }, { id: "end", label: "End" }];
+}
+
 export function projectScheduleView(schedule: PlanningSchedule, filterMode: FilterMode, cascadeSort: boolean): PlanningSchedule {
   const sorted = [...schedule.tasks].sort((a, b) => cascadeSort ? compareWbs(a, b) : a.sort_order - b.sort_order);
   const taskMap = new Map(sorted.map((task) => [task.id, task]));

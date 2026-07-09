@@ -133,7 +133,16 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByLabel("Timeline zoom")).toBeVisible();
     await expect(page.getByText("Fields")).toBeVisible();
     await expect(page.getByText("Filter")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Columns", exact: true })).toBeVisible();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
+    await expect(page.locator(".planning-owned-grid-header .column-resize-handle")).toHaveCount(4);
+    if (viewport.width > 980) {
+      const taskHeader = page.locator(".planning-owned-grid-header [role='columnheader']").nth(1);
+      const standardRowHeight = await page.locator(".planning-owned-grid-row").first().evaluate((row) => row.getBoundingClientRect().height);
+      await taskHeader.dblclick();
+      await expect.poll(() => page.locator(".planning-owned-grid-row").first().evaluate((row) => row.getBoundingClientRect().height)).toBeLessThan(standardRowHeight);
+      await taskHeader.dblclick();
+    }
     await page.getByRole("button", { name: "Board", exact: true }).click();
     await expect(page.getByLabel("Planning board")).toBeVisible();
     await page.getByRole("button", { name: "Gantt chart", exact: true }).click();

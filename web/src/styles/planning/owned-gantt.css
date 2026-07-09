@@ -1,6 +1,6 @@
 .planning-owned-gantt {
   display: grid;
-  grid-template-columns: minmax(340px, 40%) minmax(420px, 1fr);
+  grid-template-columns: minmax(340px, var(--planning-grid-width, 40%)) minmax(420px, 1fr);
 }
 
 .planning-owned-grid {
@@ -14,10 +14,22 @@
 .planning-owned-grid-header,
 .planning-owned-grid-row {
   display: grid;
-  grid-template-columns: 64px minmax(150px, 1fr) repeat(2, minmax(74px, 96px));
   align-items: center;
   gap: var(--uok-space-2);
   min-width: 0;
+}
+
+.planning-owned-grid-header > span {
+  position: relative;
+  min-width: 0;
+}
+
+.planning-owned-grid-header-label {
+  display: block;
+  overflow: hidden;
+  padding-right: var(--uok-space-1);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .planning-owned-grid-header {
@@ -57,6 +69,23 @@
   color: var(--uok-text-primary);
   background: color-mix(in srgb, var(--uok-accent) 8%, transparent);
   font-weight: 800;
+}
+
+.planning-owned-grid-row.complete {
+  border-left: 3px solid var(--uok-status-success);
+}
+
+.planning-owned-grid-row.in-progress {
+  border-left: 3px solid var(--uok-accent);
+}
+
+.planning-owned-grid-row.overdue,
+.planning-owned-grid-row.blocked {
+  border-left: 3px solid var(--uok-status-danger);
+}
+
+.planning-owned-grid-row.critical {
+  border-left: 3px solid var(--uok-status-warning);
 }
 
 .planning-owned-grid-row.selected {
@@ -125,6 +154,26 @@
 .planning-owned-task.summary rect:first-of-type {
   fill: color-mix(in srgb, var(--uok-status-success) 62%, var(--uok-bg-elevated));
   stroke: var(--uok-status-success);
+}
+
+.planning-owned-task.not-started rect:first-of-type {
+  fill: color-mix(in srgb, var(--uok-text-tertiary) 46%, var(--uok-bg-elevated));
+  stroke: color-mix(in srgb, var(--uok-text-tertiary) 70%, var(--uok-text-primary));
+}
+
+.planning-owned-task.in-progress rect:first-of-type {
+  fill: color-mix(in srgb, var(--uok-accent) 82%, var(--uok-bg-elevated));
+}
+
+.planning-owned-task.complete rect:first-of-type {
+  fill: color-mix(in srgb, var(--uok-status-success) 76%, var(--uok-bg-elevated));
+  stroke: var(--uok-status-success);
+}
+
+.planning-owned-task.overdue rect:first-of-type,
+.planning-owned-task.blocked rect:first-of-type {
+  fill: color-mix(in srgb, var(--uok-status-danger) 76%, var(--uok-bg-elevated));
+  stroke: var(--uok-status-danger);
 }
 
 .planning-owned-task.critical rect:first-of-type,
