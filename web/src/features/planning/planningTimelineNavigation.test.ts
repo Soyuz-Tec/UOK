@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { selectedTaskScrollLeft } from "./planningTimelineNavigation";
+import { projectRangeScrollLeft, selectedTaskScrollLeft } from "./planningTimelineNavigation";
 import type { PlanningTask } from "./types";
 
 describe("selectedTaskScrollLeft", () => {
@@ -10,6 +10,16 @@ describe("selectedTaskScrollLeft", () => {
 
   it("does not request a negative scroll position", () => {
     expect(selectedTaskScrollLeft(task("2026-08-02"), new Date("2026-08-01T00:00:00"), "day", 52, 260)).toBe(0);
+  });
+});
+
+describe("projectRangeScrollLeft", () => {
+  it("aligns a project range with visible padding when it fits", () => {
+    expect(projectRangeScrollLeft("2026-08-10", "2026-08-12", new Date("2026-08-01T00:00:00"), "day", 52, 520)).toBe(286);
+  });
+
+  it("anchors a wide project range at the project start", () => {
+    expect(projectRangeScrollLeft("2026-08-10", "2026-08-30", new Date("2026-08-01T00:00:00"), "day", 52, 260)).toBe(468);
   });
 });
 

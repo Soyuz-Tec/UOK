@@ -1,5 +1,5 @@
 import { MoreHorizontal } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 
 import { useColumnOrder, useResizableColumns } from "../../shared/tables";
 import type { PlanningTask } from "./types";
@@ -13,7 +13,6 @@ import {
   rowHeight,
   taskColorClass,
   visibleRows,
-  xForDate,
   type DragState,
   type PlanningGridColumn,
   type TimelineScale,
@@ -28,8 +27,8 @@ import { planningKeyboardCommand } from "./planningKeyboardModel";
 import { pinnedColumnOffsets, pinnedGridColumns } from "./planningPinnedColumns";
 import { toResizablePlanningColumn } from "./planningResizableColumns";
 import { usePlanningTimelineInteraction } from "./planningTimelineInteraction";
-import { selectedTaskScrollLeft } from "./planningTimelineNavigation";
 import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
+import { usePlanningGanttNavigation } from "./usePlanningGanttNavigation";
 
 export function PlanningGantt({
   schedule,
@@ -44,6 +43,7 @@ export function PlanningGantt({
   viewDensity,
   todaySignal,
   selectedTaskSignal,
+  fitProjectSignal,
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
@@ -86,22 +86,19 @@ export function PlanningGantt({
     scale,
   });
 
-  useEffect(() => {
-    if (!todaySignal || !scrollRef.current) return;
-    const todayX = xForDate(new Date(), chart.start, scale, chart.cellWidth);
-    scrollRef.current.scrollTo({ left: Math.max(0, todayX - scrollRef.current.clientWidth / 2), behavior: "smooth" });
-  }, [chart.cellWidth, chart.start, scale, todaySignal]);
-
-  useEffect(() => {
-    if (!selectedTaskSignal || !selectedTaskId || !scrollRef.current) return;
-    const task = visibleTasks.find((row) => row.id === selectedTaskId);
-    if (!task) return;
-    scrollRef.current.scrollTo({
-      left: selectedTaskScrollLeft(task, chart.start, scale, chart.cellWidth, scrollRef.current.clientWidth),
-      behavior: "smooth",
-    });
-    rowRefs.current.get(task.id)?.focus();
-  }, [chart.cellWidth, chart.start, scale, selectedTaskId, selectedTaskSignal, visibleTasks]);
+  usePlanningGanttNavigation({
+    cellWidth: chart.cellWidth,
+    chartStart: chart.start,
+    fitProjectSignal,
+    rowRefs,
+    scale,
+    schedule,
+    scrollRef,
+    selectedTaskId,
+    selectedTaskSignal,
+    todaySignal,
+    visibleTasks,
+  });
 
   return (
     <div

@@ -78,6 +78,7 @@ export function PlanningTimeline({
   const [selectedVisible, setSelectedVisible] = useState(false);
   const [todaySignal, setTodaySignal] = useState(0);
   const [selectedTaskSignal, setSelectedTaskSignal] = useState(0);
+  const [fitProjectSignal, setFitProjectSignal] = useState(0);
   const visibleSchedule = useMemo(() => projectScheduleView(schedule, filters, cascadeSort), [cascadeSort, filters, schedule]);
   const columnOptions = useMemo(() => planningColumnVisibilityOptions(fieldPreset), [fieldPreset]);
   const { resetColumnVisibility, setColumnVisible, visibility: columnVisibility } = useColumnVisibilityOptions(`planning.gantt.columns.${fieldPreset}`, columnOptions);
@@ -216,7 +217,10 @@ export function PlanningTimeline({
             <Target size={16} aria-hidden="true" />
             <span>Selected</span>
           </button>
-          <button type="button" className="planning-toolbar-toggle" onClick={() => onScaleChange("month")}>
+          <button type="button" className="planning-toolbar-toggle" onClick={() => {
+            onScaleChange("month");
+            setFitProjectSignal((value) => value + 1);
+          }}>
             <Maximize2 size={16} aria-hidden="true" />
             <span>Fit</span>
           </button>
@@ -261,6 +265,7 @@ export function PlanningTimeline({
           viewDensity={viewDensity}
           todaySignal={todaySignal}
           selectedTaskSignal={selectedTaskSignal}
+          fitProjectSignal={fitProjectSignal}
           onTaskSelect={onTaskSelect}
           onTaskReschedule={onTaskReschedule}
           onTaskProgress={onTaskProgress}

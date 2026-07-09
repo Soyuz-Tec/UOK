@@ -74,7 +74,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 |---|---|---:|
 | Hour/day/week/month/quarter/year scale | Toolbar scale controls and zoom slider. Hour view uses 6-hour visual buckets while server scheduling remains date-based. | Implemented |
 | Today marker | Current date marker and scroll-to-today command. | Implemented |
-| Fit project | Fit to month/project range. | Partial |
+| Fit project | Fit button switches to a project-range scale and aligns the timeline viewport to the validated project start/end range. | Implemented |
 | Scroll to selected task | Toolbar command centers the selected task's date on the timeline and returns focus to the selected row. | Implemented |
 | Project boundary markers | Timeline renders labeled start/end markers from the validated project read model. | Implemented |
 | Drag timeline and controlled wheel zoom | Drag empty timeline/header space to pan; Ctrl/Command wheel steps the existing zoom scale without breaking normal scroll. | Implemented |

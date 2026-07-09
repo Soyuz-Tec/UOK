@@ -251,6 +251,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await page.getByRole("button", { name: "Selected", exact: true }).click();
       await expect.poll(() => chart.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
       await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Pilot review milestone" }).first()).toBeFocused();
+      await page.getByRole("button", { name: "Fit", exact: true }).click();
+      await expect(page.getByRole("button", { name: "month", exact: true })).toHaveClass(/selected/);
+      await expect.poll(() => chart.evaluate((node) => Math.round(node.scrollLeft))).toBe(0);
     }
     await page.getByRole("button", { name: "Focus", exact: true }).click();
     await expect(page.locator(".planning-timeline-workbench")).toHaveClass(/focus-mode/);
