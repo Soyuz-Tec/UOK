@@ -37,7 +37,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Milestones | Implemented | Milestone task type and diamond rendering. |
 | Baselines | Implemented | Baseline capture, variance fields, per-row timeline lanes, and non-color variance badges render on task rows. |
 | Critical path | Implemented | Critical flags, highlighting, zero-slack counts, and a Dashboard critical-path explanation panel exist. |
-| Calendars | Partial | Working days and holidays exist; holiday shading is visible. |
+| Calendars | Implemented | Project working days and holidays drive scheduling, propagation, and holiday shading. Resource calendars remain a separate resource-planning backlog item. |
 | Resources | Implemented | Resource creation, assignment, allocation display, daily workload lanes, and over-allocation warnings exist. |
 | Export | Partial | CSV export exists for visible schedule. |
 | UI proof | Implemented | Playwright proof covers rendering, controls, inspector tabs, responsiveness, and console cleanliness. |
@@ -124,9 +124,9 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Feature | Target behavior | Status |
 |---|---|---:|
 | Server-side validation | Python validates all schedule mutations before UI accepts them. | Implemented |
-| Topological ordering | Use dependency graph ordering for propagation and cycle checks. | Partial |
+| Topological ordering | Use dependency graph ordering for propagation and cycle checks. | Implemented |
 | CPM read model | Early/late dates, total slack, critical flags. | Implemented |
-| Calendar-aware propagation | Respect working days and holidays. | Partial |
+| Calendar-aware propagation | Respect working days and holidays. | Implemented |
 | Resource over-allocation | Warn when allocation exceeds capacity. | Implemented |
 | Resource leveling | Automatically adjust schedule to resolve allocation conflicts. | Backlog |
 | Constraints | Must-start, must-finish, no-earlier-than, no-later-than. | Backlog |

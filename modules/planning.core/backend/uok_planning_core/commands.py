@@ -51,7 +51,8 @@ def cmd_create_project(db: Session, actor: Actor, payload: dict[str, Any], comma
 
 def cmd_create_task(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     project = project_or_error(db, actor, clean_text(payload.get("project_id"), "project_id", 36))
-    task = _task_from_payload(actor, project.id, payload)
+    calendar = project_calendar(db, actor, project.id)
+    task = _task_from_payload(actor, project.id, payload, calendar)
     _assert_parent_valid(db, actor, project.id, task.parent_task_id)
     db.add(task)
     project.updated_at = utcnow()
@@ -190,7 +191,7 @@ def command_permissions() -> dict[str, str]:
     return {command: "planning.manage" for command in command_handlers()}
 
 
-def _task_from_payload(actor: Actor, project_id: str, payload: dict[str, Any]) -> PlanningTask:
+def _task_from_payload(actor: Actor, project_id: str, payload: dict[str, Any], calendar: Any | None = None) -> PlanningTask:
     start = parse_planning_date(payload.get("start"), "start")
     end = parse_planning_date(payload.get("end"), "end")
     if end < start:
@@ -208,7 +209,7 @@ def _task_from_payload(actor: Actor, project_id: str, payload: dict[str, Any]) -
         sort_order=bounded_int(payload.get("sort_order", 0), "sort_order", 0, 100000),
         updated_at=utcnow(),
     )
-    _recalculate_duration(task)
+    _recalculate_duration(task, calendar)
     return task
 
 

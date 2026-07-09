@@ -129,6 +129,11 @@ def test_planning_core_gantt_improvements(client: TestClient) -> None:
     first = _create_task(client, ops, project_id, suffix, "Design", "2026-08-03", "2026-08-05", "task", 2, summary)
     second = _create_task(client, ops, project_id, suffix, "Build", "2026-08-06", "2026-08-07", "task", 3, summary)
     review = _create_task(client, ops, project_id, suffix, "Review", "2026-08-10", "2026-08-10", "milestone", 4, summary)
+    holiday_task = _create_task(client, ops, project_id, suffix, "Holiday start", "2026-08-14", "2026-08-14", "task", 5)
+    holiday_schedule = client.get(f"/api/planning/projects/{project_id}/schedule", headers=ops).json()
+    holiday_row = {task["id"]: task for task in holiday_schedule["tasks"]}[holiday_task]
+    assert holiday_row["start"] == "2026-08-17"
+    assert holiday_row["end"] == "2026-08-17"
 
     linked = command(
         client,

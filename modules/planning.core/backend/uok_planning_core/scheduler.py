@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import defaultdict, deque
+from collections import defaultdict
 from datetime import date, datetime, time, timezone
 from typing import Any
 
@@ -13,10 +13,12 @@ from .schedule_math import (
     at_utc,
     default_calendar,
     end_for_start,
+    next_working_day,
     shift_working,
     start_for_finish,
     working_distance,
 )
+from .schedule_graph import dependency_order
 from uok.security import Actor
 from uok.util import loads
 
@@ -88,7 +90,8 @@ def apply_schedule(db: Session, actor: Actor, project_id: str) -> set[str]:
     violations = validate_schedule(tasks, dependencies, calendar)
     if any("cycle" in item for item in violations):
         raise ValueError("; ".join(violations))
-    changed = _propagate_dependencies(tasks, dependencies, calendar)
+    changed = _normalize_calendar_windows(tasks, calendar)
+    changed.update(_propagate_dependencies(tasks, dependencies, calendar))
     changed.update(_roll_up_summaries(tasks))
     return changed
 
@@ -101,8 +104,6 @@ def validate_schedule(
     task_ids = {task.id for task in tasks}
     task_by_id = {task.id: task for task in tasks}
     violations: list[str] = []
-    graph: dict[str, list[str]] = defaultdict(list)
-    indegree = {task_id: 0 for task_id in task_ids}
     for dep in dependencies:
         if dep.predecessor_task_id not in task_ids or dep.successor_task_id not in task_ids:
             violations.append("dependency references a missing task")
@@ -113,12 +114,10 @@ def validate_schedule(
         if dep.dependency_type not in DEPENDENCY_TYPES:
             violations.append(f"dependency_type {dep.dependency_type} is not supported")
             continue
-        graph[dep.predecessor_task_id].append(dep.successor_task_id)
-        indegree[dep.successor_task_id] += 1
         violation = _dependency_violation(task_by_id[dep.predecessor_task_id], task_by_id[dep.successor_task_id], dep, calendar)
         if violation:
             violations.append(violation)
-    if _topological_order(indegree, graph) is None:
+    if dependency_order(task_ids, dependencies) is None:
         violations.append("schedule contains a dependency cycle")
     violations.extend(_hierarchy_violations(tasks))
     return violations
@@ -213,6 +212,23 @@ def _propagate_dependencies(tasks: list[PlanningTask], dependencies: list[Planni
     return changed
 
 
+def _normalize_calendar_windows(tasks: list[PlanningTask], calendar: CalendarSpec) -> set[str]:
+    changed: set[str] = set()
+    for task in tasks:
+        if task.task_type == "summary":
+            continue
+        start = next_working_day(task.start_at.date(), calendar)
+        if task.task_type == "milestone":
+            end = start
+        else:
+            end = end_for_start(start, max(1, task.duration_days), calendar)
+        if task.start_at.date() != start or task.end_at.date() != end:
+            task.start_at = at_utc(start)
+            task.end_at = at_utc(end)
+            changed.add(task.id)
+    return changed
+
+
 def _roll_up_summaries(tasks: list[PlanningTask]) -> set[str]:
     changed: set[str] = set()
     children: dict[str, list[PlanningTask]] = defaultdict(list)
@@ -257,27 +273,7 @@ def _dependency_violation(predecessor: PlanningTask, successor: PlanningTask, de
 
 
 def _dependency_order(tasks: list[PlanningTask], dependencies: list[PlanningTaskDependency]) -> list[str] | None:
-    task_ids = {task.id for task in tasks}
-    graph: dict[str, list[str]] = defaultdict(list)
-    indegree = {task_id: 0 for task_id in task_ids}
-    for dep in dependencies:
-        if dep.predecessor_task_id in task_ids and dep.successor_task_id in task_ids:
-            graph[dep.predecessor_task_id].append(dep.successor_task_id)
-            indegree[dep.successor_task_id] += 1
-    return _topological_order(indegree, graph)
-
-
-def _topological_order(indegree: dict[str, int], graph: dict[str, list[str]]) -> list[str] | None:
-    queue = deque(task_id for task_id, value in indegree.items() if value == 0)
-    order: list[str] = []
-    while queue:
-        current = queue.popleft()
-        order.append(current)
-        for successor in graph[current]:
-            indegree[successor] -= 1
-            if indegree[successor] == 0:
-                queue.append(successor)
-    return order if len(order) == len(indegree) else None
+    return dependency_order((task.id for task in tasks), dependencies)
 
 
 def _hierarchy_violations(tasks: list[PlanningTask]) -> list[str]:

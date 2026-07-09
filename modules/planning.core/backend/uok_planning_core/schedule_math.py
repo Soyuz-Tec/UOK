@@ -42,12 +42,17 @@ def shift_working(value: date, offset: int, calendar: CalendarSpec) -> date:
     return current
 
 
+def next_working_day(value: date, calendar: CalendarSpec) -> date:
+    current = value
+    while not calendar.is_working_day(current):
+        current += timedelta(days=1)
+    return current
+
+
 def end_for_start(start: date, duration: int, calendar: CalendarSpec) -> date:
     if duration <= 0:
         return start
-    current = start
-    while not calendar.is_working_day(current):
-        current += timedelta(days=1)
+    current = next_working_day(start, calendar)
     return shift_working(current, duration - 1, calendar)
 
 

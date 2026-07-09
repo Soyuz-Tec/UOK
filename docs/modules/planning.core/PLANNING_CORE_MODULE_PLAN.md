@@ -27,7 +27,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - milestone and summary task model
 - dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead
 - Python scheduling propagation for dependency-driven successor movement
-- working calendar storage with working-day and holiday-aware propagation
+- working calendar storage with working-day and holiday-aware task normalization and propagation
 - hierarchy validation, WBS read model, and summary rollups
 - CPM read model fields for early dates, late dates, slack, and critical flags
 - baseline capture, baseline variance read-model fields, per-row timeline lanes, and variance badges
