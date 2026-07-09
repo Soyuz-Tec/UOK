@@ -143,6 +143,6 @@ def _text_value(value: Any) -> str:
 
 def safe_spreadsheet_cell(value: Any) -> str:
     text = _text_value(value)
-    if text.startswith(DANGEROUS_SPREADSHEET_PREFIXES):
+    if text.lstrip().startswith(DANGEROUS_SPREADSHEET_PREFIXES):
         return "'" + text
     return text
