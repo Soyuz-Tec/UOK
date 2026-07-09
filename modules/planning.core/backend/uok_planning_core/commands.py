@@ -28,7 +28,7 @@ from .scheduler import (
     validate_schedule,
 )
 from .schedule_math import working_duration
-from .task_constraints import set_task_constraint
+from .task_constraints import set_task_planning_attrs
 from uok.models import EventRecord
 from uok.security import Actor
 from uok.util import dumps
@@ -88,8 +88,7 @@ def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_
         task.progress = bounded_int(payload.get("progress"), "progress", 0, 100)
     if "sort_order" in payload:
         task.sort_order = bounded_int(payload.get("sort_order"), "sort_order", 0, 100000)
-    if "constraint_type" in payload or "constraint_date" in payload:
-        set_task_constraint(task, payload.get("constraint_type"), payload.get("constraint_date"))
+    set_task_planning_attrs(task, payload)
     _recalculate_duration(task, project_calendar(db, actor, project.id))
     task.updated_at = utcnow()
     project.updated_at = task.updated_at
@@ -213,8 +212,7 @@ def _task_from_payload(actor: Actor, project_id: str, payload: dict[str, Any], c
         updated_at=utcnow(),
     )
     _recalculate_duration(task, calendar)
-    if "constraint_type" in payload or "constraint_date" in payload:
-        set_task_constraint(task, payload.get("constraint_type"), payload.get("constraint_date"))
+    set_task_planning_attrs(task, payload)
     return task
 
 

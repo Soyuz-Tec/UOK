@@ -911,6 +911,12 @@
             "title": "Progress",
             "type": "integer"
           },
+          "scheduling_mode": {
+            "default": "auto",
+            "pattern": "^(auto|manual)$",
+            "title": "Scheduling Mode",
+            "type": "string"
+          },
           "sort_order": {
             "default": 0,
             "minimum": 0.0,
@@ -1025,6 +1031,18 @@
               }
             ],
             "title": "Progress"
+          },
+          "scheduling_mode": {
+            "anyOf": [
+              {
+                "pattern": "^(auto|manual)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduling Mode"
           },
           "sort_order": {
             "anyOf": [

@@ -110,6 +110,7 @@ function TaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onC
     status: form.status,
     progress: Number(form.progress),
     sort_order: Number(form.sort_order),
+    scheduling_mode: form.scheduling_mode,
     constraint_type: form.constraint_type || null,
     constraint_date: form.constraint_date || null,
   };
@@ -131,7 +132,7 @@ function TaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onC
         <label className="field"><span>End</span><input type="date" value={form.end} onChange={(event) => setForm({ ...form, end: event.target.value })} /></label>
         <label className="field"><span>Progress</span><input type="number" min="0" max="100" value={form.progress} onChange={(event) => setForm({ ...form, progress: event.target.value })} /></label>
         <label className="field"><span>Order</span><input type="number" min="0" value={form.sort_order} onChange={(event) => setForm({ ...form, sort_order: event.target.value })} /></label>
-        <PlanningTaskConstraintFields type={form.constraint_type} date={form.constraint_date} onTypeChange={(value) => setForm({ ...form, constraint_type: value })} onDateChange={(value) => setForm({ ...form, constraint_date: value })} />
+        <PlanningTaskConstraintFields mode={form.scheduling_mode} type={form.constraint_type} date={form.constraint_date} onModeChange={(value) => setForm({ ...form, scheduling_mode: value })} onTypeChange={(value) => setForm({ ...form, constraint_type: value })} onDateChange={(value) => setForm({ ...form, constraint_date: value })} />
       </div>
       <div className="planning-action-row">
         <CommandButton icon={Save} loading={busy === "task"} onClick={() => selectedTask ? onSaveTask(selectedTask.id, payload) : onCreateTask(payload)}>
@@ -284,6 +285,7 @@ function taskForm(task: PlanningTask | null, order: number, newTaskType: "task" 
     end: task?.end || "2026-08-01",
     progress: String(task?.progress ?? 0),
     sort_order: String(task?.sort_order ?? order),
+    scheduling_mode: task?.scheduling_mode || "auto",
     constraint_type: task?.constraint_type || "",
     constraint_date: task?.constraint_date || "",
   };

@@ -7,8 +7,8 @@ describe("planning export model", () => {
   it("exports visible schedule rows as quoted CSV", () => {
     const csv = planningScheduleCsv(schedule());
 
-    expect(csv.split("\n")[0]).toBe("\"WBS\",\"Task\",\"Type\",\"Status\",\"Start\",\"End\",\"Progress\",\"Critical\",\"Constraint\",\"Constraint date\"");
-    expect(csv).toContain("\"1.1\",\"Scope, design\",\"task\",\"planned\",\"2026-08-01\",\"2026-08-03\",\"20\",\"yes\",\"must_start_on\",\"2026-08-01\"");
+    expect(csv.split("\n")[0]).toBe("\"WBS\",\"Task\",\"Type\",\"Status\",\"Start\",\"End\",\"Progress\",\"Critical\",\"Scheduling\",\"Constraint\",\"Constraint date\"");
+    expect(csv).toContain("\"1.1\",\"Scope, design\",\"task\",\"planned\",\"2026-08-01\",\"2026-08-03\",\"20\",\"yes\",\"manual\",\"must_start_on\",\"2026-08-01\"");
   });
 
   it("builds a stable import template", () => {
@@ -50,6 +50,7 @@ describe("planning export model", () => {
     expect(html).toContain("<h2>Project summary</h2>");
     expect(html).toContain("<h2>Tasks</h2>");
     expect(html).toContain("Scope, design");
+    expect(html).toContain("manual");
     expect(html).toContain("must_start_on 2026-08-01");
     expect(html).toContain("2026-08-05 to 2026-08-06");
     expect(html).toContain("2026-08-01T00:00:00.000Z");
@@ -83,6 +84,7 @@ function task(): PlanningTask {
     sort_order: 1,
     critical: true,
     wbs: "1.1",
+    scheduling_mode: "manual",
     constraint_type: "must_start_on",
     constraint_date: "2026-08-01",
   };

@@ -21,7 +21,7 @@ from .schedule_math import (
 )
 from .schedule_graph import dependency_order
 from .schedule_hierarchy import hierarchy_violations
-from .task_constraints import constraint_violations, enforce_task_constraints
+from .task_constraints import constraint_violations, enforce_task_constraints, is_auto_scheduled
 from uok.security import Actor
 from uok.util import loads
 
@@ -207,6 +207,8 @@ def _propagate_dependencies(tasks: list[PlanningTask], dependencies: list[Planni
             incoming[dep.successor_task_id].append(dep)
     for task_id in order:
         task = by_id[task_id]
+        if not is_auto_scheduled(task):
+            continue
         start = task.start_at.date()
         original_start = start
         for dep in incoming[task_id]:

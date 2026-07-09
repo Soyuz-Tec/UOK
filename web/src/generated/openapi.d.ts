@@ -1055,6 +1055,11 @@ export interface components {
              */
             progress: number;
             /**
+             * Scheduling Mode
+             * @default auto
+             */
+            scheduling_mode: string;
+            /**
              * Sort Order
              * @default 0
              */
@@ -1088,6 +1093,8 @@ export interface components {
             parent_task_id?: string | null;
             /** Progress */
             progress?: number | null;
+            /** Scheduling Mode */
+            scheduling_mode?: string | null;
             /** Sort Order */
             sort_order?: number | null;
             /** Start */

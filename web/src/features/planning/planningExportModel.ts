@@ -4,8 +4,8 @@ import type { ViewDensity } from "./planningTimelineModel";
 import type { PlanningSchedule } from "./types";
 
 export function planningScheduleCsv(schedule: PlanningSchedule) {
-  const header = ["WBS", "Task", "Type", "Status", "Start", "End", "Progress", "Critical", "Constraint", "Constraint date"];
-  const rows = schedule.tasks.map((task) => [task.wbs || "", task.title, task.task_type, task.status, task.start, task.end, `${task.progress}`, task.critical ? "yes" : "no", task.constraint_type || "", task.constraint_date || ""]);
+  const header = ["WBS", "Task", "Type", "Status", "Start", "End", "Progress", "Critical", "Scheduling", "Constraint", "Constraint date"];
+  const rows = schedule.tasks.map((task) => [task.wbs || "", task.title, task.task_type, task.status, task.start, task.end, `${task.progress}`, task.critical ? "yes" : "no", task.scheduling_mode || "auto", task.constraint_type || "", task.constraint_date || ""]);
   return csvContent([header, ...rows]);
 }
 
@@ -64,7 +64,7 @@ export function planningScheduleDocumentHtml(schedule: PlanningSchedule, generat
       {
         heading: "Tasks",
         tables: [{
-          headers: ["WBS", "Task", "Type", "Status", "Start", "End", "Duration", "Progress", "Critical", "Constraint"],
+          headers: ["WBS", "Task", "Type", "Status", "Start", "End", "Duration", "Progress", "Critical", "Scheduling", "Constraint"],
           rows: [...schedule.tasks]
             .sort((a, b) => a.sort_order - b.sort_order)
             .map((task) => [
@@ -77,6 +77,7 @@ export function planningScheduleDocumentHtml(schedule: PlanningSchedule, generat
               `${task.duration_days}d`,
               `${task.progress}%`,
               task.critical ? "yes" : "no",
+              task.scheduling_mode || "auto",
               task.constraint_type ? `${task.constraint_type} ${task.constraint_date || ""}`.trim() : "-",
             ]),
         }],

@@ -52,6 +52,7 @@ const sampleSchedule = {
       baseline_end: "2026-08-03",
       start_variance_days: 0,
       end_variance_days: 0,
+      scheduling_mode: "manual",
       constraint_type: "must_start_on",
       constraint_date: "2026-08-01",
     },
@@ -196,6 +197,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await page.getByRole("menuitem", { name: /Duplicate task/ }).click();
       await expect.poll(() => taskPayloads.length).toBe(taskRequests + 1);
       expect(taskPayloads.at(-1)).toMatchObject({ title: "Define schedule scope copy", task_type: "task", parent_task_id: "task-summary", status: "planned", progress: 40 });
+      await expect(page.getByLabel("Task scheduling mode")).toHaveValue("manual");
       await expect(page.getByLabel("Task constraint", { exact: true })).toHaveValue("must_start_on");
       await expect(page.getByLabel("Task constraint date")).toHaveValue("2026-08-01");
       const scopeRow = page.locator(".planning-owned-grid-row").filter({ hasText: "Define schedule scope" }).first();

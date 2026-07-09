@@ -32,6 +32,7 @@ export type PlanningTask = {
   baseline_end?: string | null;
   start_variance_days?: number | null;
   end_variance_days?: number | null;
+  scheduling_mode?: "auto" | "manual" | string | null;
   constraint_type?: string | null;
   constraint_date?: string | null;
 };

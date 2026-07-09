@@ -18,6 +18,7 @@ class PlanningTaskRequest(BaseModel):
     progress: int = Field(default=0, ge=0, le=100)
     parent_task_id: str | None = Field(default=None, max_length=36)
     sort_order: int = Field(default=0, ge=0)
+    scheduling_mode: str = Field(default="auto", pattern="^(auto|manual)$")
     constraint_type: str | None = Field(default=None, max_length=40)
     constraint_date: str | None = Field(default=None, min_length=10, max_length=32)
 
@@ -32,6 +33,7 @@ class PlanningTaskUpdateRequest(BaseModel):
     progress: int | None = Field(default=None, ge=0, le=100)
     sort_order: int | None = Field(default=None, ge=0)
     cascade: bool | None = Field(default=None)
+    scheduling_mode: str | None = Field(default=None, pattern="^(auto|manual)$")
     constraint_type: str | None = Field(default=None, max_length=40)
     constraint_date: str | None = Field(default=None, min_length=10, max_length=32)
 

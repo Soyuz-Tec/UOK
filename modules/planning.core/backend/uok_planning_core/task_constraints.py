@@ -15,11 +15,45 @@ CONSTRAINT_TYPES = {
     "finish_no_earlier_than",
     "finish_no_later_than",
 }
+SCHEDULING_MODES = {"auto", "manual"}
 
 
 def serialize_task_constraint(task: PlanningTask) -> dict[str, str | None]:
     constraint_type, constraint_date = task_constraint(task)
-    return {"constraint_type": constraint_type, "constraint_date": constraint_date.isoformat() if constraint_date else None}
+    return {
+        "constraint_type": constraint_type,
+        "constraint_date": constraint_date.isoformat() if constraint_date else None,
+        "scheduling_mode": scheduling_mode(task),
+    }
+
+
+def set_task_planning_attrs(task: PlanningTask, payload: dict[str, Any]) -> None:
+    if "scheduling_mode" in payload:
+        set_scheduling_mode(task, payload.get("scheduling_mode"))
+    if "constraint_type" in payload or "constraint_date" in payload:
+        set_task_constraint(task, payload.get("constraint_type"), payload.get("constraint_date"))
+
+
+def scheduling_mode(task: PlanningTask) -> str:
+    attrs = loads(task.attrs_json, {})
+    mode = str(attrs.get("scheduling_mode") or "auto").strip()
+    return mode if mode in SCHEDULING_MODES else "auto"
+
+
+def is_auto_scheduled(task: PlanningTask) -> bool:
+    return scheduling_mode(task) == "auto"
+
+
+def set_scheduling_mode(task: PlanningTask, value: Any) -> None:
+    mode = str(value or "auto").strip()
+    if mode not in SCHEDULING_MODES:
+        raise ValueError("scheduling_mode must be auto or manual")
+    attrs = loads(task.attrs_json, {})
+    if mode == "auto":
+        attrs.pop("scheduling_mode", None)
+    else:
+        attrs["scheduling_mode"] = mode
+    task.attrs_json = dumps(attrs)
 
 
 def set_task_constraint(task: PlanningTask, constraint_type: Any, constraint_date: Any) -> None:
