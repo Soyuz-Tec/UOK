@@ -36,7 +36,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Summary tasks and WBS | Implemented | Summary rows, WBS sorting, hierarchy validation, collapse/expand controls. |
 | Milestones | Implemented | Milestone task type and diamond rendering. |
 | Baselines | Partial | Baseline capture and variance fields exist; baseline marks render on task rows. |
-| Critical path | Partial | Critical flags and highlighting exist; richer chain explanation remains. |
+| Critical path | Implemented | Critical flags, highlighting, zero-slack counts, and a Dashboard critical-path explanation panel exist. |
 | Calendars | Partial | Working days and holidays exist; holiday shading is visible. |
 | Resources | Implemented | Resource creation, assignment, allocation display, daily workload lanes, and over-allocation warnings exist. |
 | Export | Partial | CSV export exists for visible schedule. |

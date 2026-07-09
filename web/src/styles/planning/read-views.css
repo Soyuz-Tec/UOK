@@ -97,6 +97,17 @@
   padding: var(--uok-space-3);
 }
 
+.planning-dashboard-view {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-3);
+  padding: var(--uok-space-3);
+}
+
+.planning-dashboard-view .planning-metric-grid {
+  padding: 0;
+}
+
 .planning-metric-tile {
   display: grid;
   gap: var(--uok-space-1);
@@ -191,4 +202,61 @@
   color: var(--uok-text-primary);
   font-style: normal;
   font-weight: 800;
+}
+
+.planning-critical-path-panel {
+  display: grid;
+  gap: var(--uok-space-2);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-critical-path-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--uok-space-3);
+}
+
+.planning-critical-path-panel h3 {
+  margin: 0;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-callout);
+}
+
+.planning-critical-path-panel header span,
+.planning-critical-path-panel small {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.planning-critical-path-item {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 2px var(--uok-space-2);
+  width: 100%;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.planning-critical-path-item strong {
+  grid-row: span 2;
+  color: var(--uok-status-warning);
+}
+
+.planning-critical-path-item span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--uok-text-primary);
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

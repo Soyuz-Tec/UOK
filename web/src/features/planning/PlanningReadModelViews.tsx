@@ -1,5 +1,6 @@
 import type { PlanningSchedule } from "./types";
 import type { PlanningView } from "./planningTimelineModel";
+import { planningCriticalPathSummary } from "./planningCriticalPathModel";
 import { planningResourceWorkloads } from "./planningWorkloadModel";
 
 export function PlanningReadModelView({
@@ -16,7 +17,7 @@ export function PlanningReadModelView({
   if (view === "Calendar") return <PlanningCalendarView schedule={schedule} onTaskSelect={onTaskSelect} />;
   if (view === "Workload") return <PlanningWorkload schedule={schedule} />;
   if (view === "People") return <PlanningPeople schedule={schedule} />;
-  return <PlanningDashboard schedule={schedule} />;
+  return <PlanningDashboard schedule={schedule} onTaskSelect={onTaskSelect} />;
 }
 
 function PlanningBoard({ schedule, onTaskSelect }: { schedule: PlanningSchedule; onTaskSelect: (taskId: string) => void }) {
@@ -109,16 +110,33 @@ function PlanningPeople({ schedule }: { schedule: PlanningSchedule }) {
   );
 }
 
-function PlanningDashboard({ schedule }: { schedule: PlanningSchedule }) {
+function PlanningDashboard({ schedule, onTaskSelect }: { schedule: PlanningSchedule; onTaskSelect: (taskId: string) => void }) {
   const critical = schedule.tasks.filter((task) => task.critical).length;
   const milestones = schedule.tasks.filter((task) => task.task_type === "milestone").length;
   const progress = Math.round(schedule.tasks.reduce((sum, task) => sum + (task.progress || 0), 0) / Math.max(schedule.tasks.length, 1));
+  const criticalPath = planningCriticalPathSummary(schedule);
   return (
-    <div className="planning-read-view planning-metric-grid" aria-label="Planning dashboard">
-      <MetricTile label="Tasks" value={String(schedule.tasks.length)} detail="Visible schedule items" />
-      <MetricTile label="Critical" value={String(critical)} detail="Critical path tasks" />
-      <MetricTile label="Milestones" value={String(milestones)} detail="Delivery markers" />
-      <MetricTile label="Progress" value={`${progress}%`} detail="Average completion" />
+    <div className="planning-read-view planning-dashboard-view" aria-label="Planning dashboard">
+      <div className="planning-metric-grid">
+        <MetricTile label="Tasks" value={String(schedule.tasks.length)} detail="Visible schedule items" />
+        <MetricTile label="Critical" value={String(critical)} detail="Critical path tasks" />
+        <MetricTile label="Milestones" value={String(milestones)} detail="Delivery markers" />
+        <MetricTile label="Progress" value={`${progress}%`} detail="Average completion" />
+      </div>
+      <section className="planning-critical-path-panel" aria-label="Critical path explanation">
+        <header>
+          <h3>Critical path</h3>
+          <span>{criticalPath.zeroSlackCount} zero-slack tasks</span>
+        </header>
+        {criticalPath.items.map((item) => (
+          <button key={item.id} type="button" className="planning-critical-path-item" onClick={() => onTaskSelect(item.id)}>
+            <strong>{item.wbs}</strong>
+            <span>{item.label}</span>
+            <small>{item.window} · slack {item.slack}d</small>
+          </button>
+        ))}
+        {!criticalPath.items.length ? <small>No critical tasks in this schedule</small> : null}
+      </section>
     </div>
   );
 }

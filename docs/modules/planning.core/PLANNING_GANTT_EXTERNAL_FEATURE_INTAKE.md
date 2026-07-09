@@ -75,7 +75,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Localization | Backlog | Requires UOK-wide localization approach, not planning-only strings. |
 | Light/dark themes | Implemented | UOK appearance tokens and UI proof cover light/dark behavior. |
 | Work-time calendars and resource calendars | Partial | Calendar-aware scheduling exists partially; resource calendars remain backlog. |
-| Critical path, slack, baselines | Partial | CPM read model exists; richer UX and baseline lanes remain. |
+| Critical path, slack, baselines | Partial | CPM read model, critical-path explanation, and slack counts exist; richer baseline lanes remain. |
 | Resource planning and workload | Implemented | Resource assignment, warnings, and first-party daily workload lanes exist; automatic leveling remains a separate scheduling backlog item. |
 | Task grouping, rollups, split tasks, unscheduled tasks | Backlog | Add only after core dependency/constraint model is stronger. |
 | Undo/redo | Backlog | Needs command stack with server reconciliation. |
@@ -142,7 +142,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Dependencies | Link model | predecessor, successor, type, lag/lead, validation errors, cycle checks | Python-owned validation with inspector and drag-link UI | Implemented |
 | Dependencies | Chain highlighting | predecessor/successor path, selected task emphasis, critical chain | Selected predecessor/successor rows, task bars, and dependency paths highlight in the first-party renderer | Implemented |
 | Scheduling | Auto scheduling | dependency propagation, calendar rules, manual/auto mode, constraints | Partial Python propagation; constraints/manual mode later | Partial |
-| Scheduling | CPM and slack | early/late dates, total slack, critical flag, variance | CPM read model exists; richer visual explanation later | Partial |
+| Scheduling | CPM and slack | early/late dates, total slack, critical flag, variance | CPM read model and Dashboard critical-path/slack explanation are implemented | Implemented |
 | Scheduling | Calendars | working days, holidays, resource calendars, ignored/non-linear periods | Working days/holidays partially implemented | Partial |
 | Scheduling | Backward planning and fixed project limits | direction, project start/end bounds, constraint violation messages | Later Python scheduling policy extension | Backlog |
 | Resources | Assignments | resource id/name, role, allocation, capacity, warnings, workload lane | Assignments, warnings, and workload lanes are implemented from the validated schedule read model | Implemented |
