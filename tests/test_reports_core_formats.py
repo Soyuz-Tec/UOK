@@ -12,6 +12,7 @@ def test_csv_formula_injection_guard_prefixes_dangerous_values() -> None:
     assert safe_spreadsheet_cell("=1+1") == "'=1+1"
     assert safe_spreadsheet_cell("+cmd") == "'+cmd"
     assert safe_spreadsheet_cell("@lookup") == "'@lookup"
+    assert safe_spreadsheet_cell("   =1+1") == "'   =1+1"
 
 
 def test_secure_core_renders_csv_json_and_markdown() -> None:
