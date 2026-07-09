@@ -243,6 +243,12 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     }
     await page.getByRole("button", { name: "Board", exact: true }).click();
     await expect(page.getByLabel("Planning board")).toBeVisible();
+    await page.getByRole("button", { name: "Workload", exact: true }).click();
+    const workload = page.getByLabel("Planning workload");
+    await expect(workload).toBeVisible();
+    await expect(workload.getByText("Planner")).toBeVisible();
+    await expect(workload.getByText("120% peak")).toBeVisible();
+    await expect(workload.getByText("7 overloaded days")).toBeVisible();
     await page.getByRole("button", { name: "Gantt chart", exact: true }).click();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
     await page.getByRole("button", { name: "Timeline only", exact: true }).click();

@@ -1,5 +1,6 @@
 import type { PlanningSchedule } from "./types";
 import type { PlanningView } from "./planningTimelineModel";
+import { planningResourceWorkloads } from "./planningWorkloadModel";
 
 export function PlanningReadModelView({
   view,
@@ -70,14 +71,31 @@ function PlanningCalendarView({ schedule, onTaskSelect }: { schedule: PlanningSc
 }
 
 function PlanningWorkload({ schedule }: { schedule: PlanningSchedule }) {
+  const workloads = planningResourceWorkloads(schedule);
   return (
-    <div className="planning-read-view planning-metric-grid" aria-label="Planning workload">
-      {schedule.resources.map((resource) => {
-        const assignments = schedule.assignments.filter((assignment) => assignment.resource_id === resource.id);
-        const allocation = assignments.reduce((sum, assignment) => sum + assignment.allocation_percent, 0);
-        return <MetricTile key={resource.id} label={resource.name} value={`${allocation}%`} detail={resource.role || "Resource"} />;
-      })}
-      {!schedule.resources.length ? <MetricTile label="Resources" value="0" detail="No resources assigned" /> : null}
+    <div className="planning-read-view planning-workload-view" aria-label="Planning workload">
+      {workloads.map((workload) => (
+        <section key={workload.resourceId} className="planning-workload-lane">
+          <header>
+            <div>
+              <h3>{workload.resourceName}</h3>
+              <span>{workload.role} · {workload.taskCount} tasks</span>
+            </div>
+            <strong className={workload.peakAllocation > 100 ? "overloaded" : ""}>{workload.peakAllocation}% peak</strong>
+          </header>
+          <div className="planning-workload-days" aria-label={`${workload.resourceName} daily allocation`}>
+            {workload.days.slice(0, 14).map((day) => (
+              <span key={day.date} className={day.allocation > 100 ? "overloaded" : ""} title={`${day.date}: ${day.allocation}% ${day.taskTitles.join(", ")}`}>
+                <b style={{ height: `${Math.min(day.allocation, 160) / 1.6}%` }} />
+                <small>{day.date.slice(5)}</small>
+                <em>{day.allocation}%</em>
+              </span>
+            ))}
+          </div>
+          <small className={workload.overloadedDays ? "overloaded" : ""}>{workload.overloadedDays ? `${workload.overloadedDays} overloaded days` : "No overload detected"}</small>
+        </section>
+      ))}
+      {!workloads.length ? <MetricTile label="Resources" value="0" detail="No resources assigned" /> : null}
     </div>
   );
 }

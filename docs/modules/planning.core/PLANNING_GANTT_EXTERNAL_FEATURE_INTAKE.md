@@ -76,7 +76,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Light/dark themes | Implemented | UOK appearance tokens and UI proof cover light/dark behavior. |
 | Work-time calendars and resource calendars | Partial | Calendar-aware scheduling exists partially; resource calendars remain backlog. |
 | Critical path, slack, baselines | Partial | CPM read model exists; richer UX and baseline lanes remain. |
-| Resource planning and workload | Partial | Resource assignment and warnings exist; workload visualization can mature. |
+| Resource planning and workload | Implemented | Resource assignment, warnings, and first-party daily workload lanes exist; automatic leveling remains a separate scheduling backlog item. |
 | Task grouping, rollups, split tasks, unscheduled tasks | Backlog | Add only after core dependency/constraint model is stronger. |
 | Undo/redo | Backlog | Needs command stack with server reconciliation. |
 | Export/import | Partial | CSV exists; PDF/image/Excel/MS Project equivalents remain later. |
@@ -145,8 +145,8 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Scheduling | CPM and slack | early/late dates, total slack, critical flag, variance | CPM read model exists; richer visual explanation later | Partial |
 | Scheduling | Calendars | working days, holidays, resource calendars, ignored/non-linear periods | Working days/holidays partially implemented | Partial |
 | Scheduling | Backward planning and fixed project limits | direction, project start/end bounds, constraint violation messages | Later Python scheduling policy extension | Backlog |
-| Resources | Assignments | resource id/name, role, allocation, capacity, warnings, workload lane | Assignments and warnings exist; workload visualization matures later | Partial |
-| Resources | Resource panel/load chart | resource row, load cell, chart mode, allocation template, overload state | Later first-party workload panel based on existing assignments | Backlog |
+| Resources | Assignments | resource id/name, role, allocation, capacity, warnings, workload lane | Assignments, warnings, and workload lanes are implemented from the validated schedule read model | Implemented |
+| Resources | Resource panel/load chart | resource row, load cell, chart mode, allocation template, overload state | First-party Workload view renders resource lanes, daily allocation cells, peak load, and overload status from existing assignments | Implemented |
 | Baselines | Baseline overlays | baseline start/end, variance, baseline lane, deadline marker | Capture and row overlay exist; richer lane later | Partial |
 | Performance | Smart rendering/virtualization | visible row window, visible column/window, stable row heights, overscan | Defer until data scale requires it and proof covers it | Backlog |
 | Accessibility | Keyboard/touch/ARIA | row navigation, focus rings, button labels, touch target size, non-color cues | Keyboard and ARIA proof exists; touch/localization later | Partial |

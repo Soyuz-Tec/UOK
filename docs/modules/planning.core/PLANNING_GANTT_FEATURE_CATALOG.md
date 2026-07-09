@@ -38,7 +38,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Baselines | Partial | Baseline capture and variance fields exist; baseline marks render on task rows. |
 | Critical path | Partial | Critical flags and highlighting exist; richer chain explanation remains. |
 | Calendars | Partial | Working days and holidays exist; holiday shading is visible. |
-| Resources | Partial | Resource creation, assignment, allocation display, and warnings exist. |
+| Resources | Implemented | Resource creation, assignment, allocation display, daily workload lanes, and over-allocation warnings exist. |
 | Export | Partial | CSV export exists for visible schedule. |
 | UI proof | Implemented | Playwright proof covers rendering, controls, inspector tabs, responsiveness, and console cleanliness. |
 
@@ -136,7 +136,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 
 | Feature | Target behavior | Status |
 |---|---|---:|
-| Board/List/Calendar/Workload/People/Dashboard views | Alternate read-model views from same validated schedule. | Implemented |
+| Board/List/Calendar/Workload/People/Dashboard views | Alternate read-model views from the same validated schedule; Workload includes daily resource load lanes and overload counts. | Implemented |
 | Fullscreen/focus mode | Expand the planning workspace into a dense viewport overlay with an explicit exit action. | Implemented |
 | Layout mode persistence | Saved views include split/timeline-only layout mode with other Gantt workspace preferences. | Implemented |
 | Review/edit mode | Toolbar toggle prevents schedule mutations by disabling task creation, edit commands, row action menus, drag handles, progress handles, dependency handles, and inspector editor controls. | Implemented |

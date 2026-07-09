@@ -117,3 +117,78 @@
   color: var(--uok-text-primary);
   font-size: var(--uok-title);
 }
+
+.planning-workload-view {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-3);
+  padding: var(--uok-space-3);
+}
+
+.planning-workload-lane {
+  display: grid;
+  gap: var(--uok-space-2);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-workload-lane header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--uok-space-3);
+}
+
+.planning-workload-lane h3 {
+  margin: 0;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-callout);
+}
+
+.planning-workload-lane header span,
+.planning-workload-lane > small {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.planning-workload-lane strong.overloaded,
+.planning-workload-lane > small.overloaded {
+  color: var(--uok-status-danger);
+}
+
+.planning-workload-days {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
+  gap: var(--uok-space-2);
+  min-height: 112px;
+}
+
+.planning-workload-days span {
+  display: grid;
+  grid-template-rows: minmax(64px, 1fr) auto auto;
+  align-items: end;
+  gap: 2px;
+  min-width: 0;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  text-align: center;
+}
+
+.planning-workload-days b {
+  display: block;
+  min-height: 4px;
+  border-radius: 4px 4px 0 0;
+  background: color-mix(in srgb, var(--uok-accent) 78%, var(--uok-bg-elevated));
+}
+
+.planning-workload-days .overloaded b {
+  background: color-mix(in srgb, var(--uok-status-danger) 78%, var(--uok-bg-elevated));
+}
+
+.planning-workload-days em {
+  color: var(--uok-text-primary);
+  font-style: normal;
+  font-weight: 800;
+}
