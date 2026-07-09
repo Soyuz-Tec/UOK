@@ -4,6 +4,7 @@ export const planningViews = ["Gantt chart", "Board", "List", "Calendar", "Workl
 export type PlanningView = typeof planningViews[number];
 export type FieldPreset = "core" | "progress" | "resources";
 export type FilterMode = "all" | "critical" | "milestones";
+export type PlanningLayoutMode = "split" | "timeline";
 export type ViewDensity = "compact" | "standard" | "roomy";
 export type PlanningFilterState = {
   mode: FilterMode;

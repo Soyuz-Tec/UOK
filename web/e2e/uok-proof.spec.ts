@@ -142,6 +142,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByText("Fields")).toBeVisible();
     await expect(page.getByText("Filter")).toBeVisible();
     await expect(page.getByRole("button", { name: "Columns", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Timeline only", exact: true })).toBeVisible();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
     await expect(page.locator(".planning-owned-grid-header .column-resize-handle")).toHaveCount(4);
     await expect(page.locator(".planning-owned-resize-handle")).toHaveCount(6);
@@ -211,6 +212,12 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByLabel("Planning board")).toBeVisible();
     await page.getByRole("button", { name: "Gantt chart", exact: true }).click();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
+    await page.getByRole("button", { name: "Timeline only", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Split view", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator(".planning-owned-grid")).toBeHidden();
+    await expect(page.locator(".planning-owned-chart")).toBeVisible();
+    await page.getByRole("button", { name: "Split view", exact: true }).click();
+    await expect(page.locator(".planning-owned-grid")).toBeVisible();
     await page.getByRole("button", { name: "Task", exact: true }).focus();
     await expect(page.getByRole("button", { name: "Task", exact: true })).toBeFocused();
     await expect.poll(() => page.locator(".planning-gantt-shell").getByText("Build integrated Gantt with dependency validation").count()).toBeGreaterThan(0);

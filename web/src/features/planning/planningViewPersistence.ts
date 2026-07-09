@@ -1,6 +1,6 @@
 import type { SavedSearchView } from "../../shared/forms";
 import { timelineScales, type TimelineScale } from "./planningGanttModel";
-import { planningViews, type FieldPreset, type FilterMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
+import { planningViews, type FieldPreset, type FilterMode, type PlanningLayoutMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 
 export type PlanningSavedViewConfig = {
   activeView: PlanningView;
@@ -8,6 +8,7 @@ export type PlanningSavedViewConfig = {
   fieldPreset: FieldPreset;
   filterMode: FilterMode;
   focusMode: boolean;
+  layoutMode: PlanningLayoutMode;
   query: string;
   resourceId: string;
   scale: TimelineScale;
@@ -21,6 +22,7 @@ export type PlanningSavedViewConfig = {
 
 const fieldPresets: FieldPreset[] = ["core", "progress", "resources"];
 const filterModes: FilterMode[] = ["all", "critical", "milestones"];
+const layoutModes: PlanningLayoutMode[] = ["split", "timeline"];
 const scales: readonly TimelineScale[] = timelineScales;
 const viewDensities: ViewDensity[] = ["compact", "standard", "roomy"];
 
@@ -35,6 +37,7 @@ export function createPlanningSavedView(name: string, config: PlanningSavedViewC
       fieldPreset: config.fieldPreset,
       filterMode: config.filterMode,
       focusMode: String(config.focusMode),
+      layoutMode: config.layoutMode,
       query: config.query,
       resourceId: config.resourceId,
       scale: config.scale,
@@ -58,6 +61,7 @@ export function planningConfigFromSavedView(view: SavedSearchView, fallback: Pla
     fieldPreset: oneOf(fieldPresets, view.filters.fieldPreset, fallback.fieldPreset),
     filterMode: oneOf(filterModes, view.filters.filterMode, fallback.filterMode),
     focusMode: booleanValue(view.filters.focusMode, fallback.focusMode),
+    layoutMode: oneOf(layoutModes, view.filters.layoutMode, fallback.layoutMode),
     query: stringValue(view.filters.query, fallback.query),
     resourceId: stringValue(view.filters.resourceId, fallback.resourceId),
     scale: oneOf(scales, view.filters.scale, fallback.scale),

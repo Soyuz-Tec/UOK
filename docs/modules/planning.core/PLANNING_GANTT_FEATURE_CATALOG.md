@@ -82,6 +82,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Project boundary markers | Timeline renders labeled start/end markers from the validated project read model. | Implemented |
 | Drag timeline and controlled wheel zoom | Drag empty timeline/header space to pan; Ctrl/Command wheel steps the existing zoom scale without breaking normal scroll. | Implemented |
 | Click-drag task creation | Hold Shift and drag empty timeline space to draw a date range, then submit a server-validated task proposal. | Implemented |
+| Timeline-only layout | Toolbar toggle hides the grid and gives the timeline the full Gantt workspace width; split view restores the grid. | Implemented |
 | Weekend shading | Non-working weekend visual bands. | Implemented |
 | Holiday shading | Calendar holiday visual bands. | Implemented |
 | Minute/sprint/stage scales | Additional specialized scale modes. | Backlog |
@@ -135,6 +136,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 |---|---|---:|
 | Board/List/Calendar/Workload/People/Dashboard views | Alternate read-model views from same validated schedule. | Implemented |
 | Fullscreen/focus mode | Expand the planning workspace into a dense viewport overlay with an explicit exit action. | Implemented |
+| Layout mode persistence | Saved views include split/timeline-only layout mode with other Gantt workspace preferences. | Implemented |
 | Bulk selection | Select visible rows and apply safe bulk actions. | Partial |
 | Bulk edit | Change status, owner, dates, priority, or calendar for selected tasks. | Backlog |
 | Undo/redo | Reversible local command stack with server reconciliation. | Backlog |

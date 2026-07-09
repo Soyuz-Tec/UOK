@@ -10,7 +10,7 @@ import { PlanningTimelineUtilities } from "./PlanningTimelineUtilities";
 import type { TimelineScale } from "./planningGanttModel";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
-import { planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningView, type ViewDensity } from "./planningTimelineModel";
+import { planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningLayoutMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningProject, PlanningSchedule } from "./types";
 
 export function PlanningTimeline({
@@ -72,6 +72,7 @@ export function PlanningTimeline({
   const [summaryExpanded, setSummaryExpanded] = useState(true);
   const [cascadeSort, setCascadeSort] = useState(true);
   const [focusMode, setFocusMode] = useState(false);
+  const [layoutMode, setLayoutMode] = useState<PlanningLayoutMode>("split");
   const [viewDensity, setViewDensity] = useState<ViewDensity>("standard");
   const [selectedVisible, setSelectedVisible] = useState(false);
   const [todaySignal, setTodaySignal] = useState(0);
@@ -89,6 +90,7 @@ export function PlanningTimeline({
     fieldPreset,
     filterMode: filters.mode,
     focusMode,
+    layoutMode,
     query: filters.query,
     resourceId: filters.resourceId,
     status: filters.status,
@@ -98,10 +100,10 @@ export function PlanningTimeline({
     showCritical,
     summaryExpanded,
     viewDensity,
-  }), [activeView, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, focusMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
+  }), [activeView, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, focusMode, layoutMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
 
   return (
-    <div className={`planning-timeline-workbench ${focusMode ? "focus-mode" : ""}`}>
+    <div className={`planning-timeline-workbench planning-layout-${layoutMode} ${focusMode ? "focus-mode" : ""}`}>
       <div className="planning-gantt-toolbar" aria-label="Gantt toolbar">
         <div className="planning-toolbar-title">
           <span className="eyebrow">Planning workspace</span>
@@ -168,7 +170,7 @@ export function PlanningTimeline({
           <CommandButton icon={Baseline} onClick={onCreateBaseline}>Baseline</CommandButton>
           <CommandButton icon={Users} onClick={onOpenResources}>Resources</CommandButton>
         </div>
-        <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} viewDensity={viewDensity} />
+        <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} layoutMode={layoutMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onToggleLayoutMode={() => setLayoutMode((value) => value === "split" ? "timeline" : "split")} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} viewDensity={viewDensity} />
       </div>
       {activeView === "Gantt chart" ? (
         <PlanningGantt
@@ -211,6 +213,7 @@ export function PlanningTimeline({
     setFieldPreset(config.fieldPreset);
     setFilters({ mode: config.filterMode, query: config.query, resourceId: config.resourceId, status: config.status });
     setFocusMode(config.focusMode);
+    setLayoutMode(config.layoutMode);
     setSelectedVisible(config.selectedVisible);
     setSummaryExpanded(config.summaryExpanded);
     setViewDensity(config.viewDensity);

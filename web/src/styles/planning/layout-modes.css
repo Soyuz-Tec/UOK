@@ -1,0 +1,11 @@
+.planning-layout-timeline .planning-owned-gantt {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.planning-layout-timeline .planning-owned-grid {
+  display: none;
+}
+
+.planning-layout-timeline .planning-owned-chart {
+  border-left: 0;
+}

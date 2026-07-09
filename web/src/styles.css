@@ -20,6 +20,7 @@
 @import "./styles/planning/grid-sort.css";
 @import "./styles/planning/owned-gantt.css";
 @import "./styles/planning/header-menu.css";
+@import "./styles/planning/layout-modes.css";
 @import "./styles/planning/dependency-chain.css";
 @import "./styles/planning/pinned-columns.css";
 @import "./styles/planning/dependency-drag.css";

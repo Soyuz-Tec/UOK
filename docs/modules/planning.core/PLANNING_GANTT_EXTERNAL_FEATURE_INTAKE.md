@@ -49,7 +49,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Event system | Partial | UOK equivalent is command bus plus planning audit events. |
 | Row resize | Backlog | Use a UOK row-height model before adding per-row resize handles. |
 | Drag rows / branch ordering | Backlog | Add WBS reorder only after hierarchy command validation is explicit. |
-| Right-side grid columns / no-grid mode / bottom scale / RTL | Backlog | Treat as layout modes; do not add until primary workspace is stable. |
+| Right-side grid columns / no-grid mode / bottom scale / RTL | Partial | Timeline-only no-grid mode is implemented; right-side grid, bottom scale, and RTL remain later layout variants. |
 | Backward planning and fixed project dates | Backlog | Requires constraint model and explicit scheduling direction. |
 | Empty-state screen | Implemented | First-party grid and timeline empty state appears when filters or a project leave no visible tasks. |
 | Deadline/event markers | Partial | Project start/end boundary markers are implemented; task deadlines and arbitrary event markers remain later. |
@@ -81,7 +81,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Undo/redo | Backlog | Needs command stack with server reconciliation. |
 | Export/import | Partial | CSV exists; PDF/image/Excel/MS Project equivalents remain later. |
 | Header menu for visible columns | Implemented | UOK now has a first-party per-column header menu for sort, quick action, width reset, hide, and show-all column controls. |
-| No-grid and read-only/prevent-actions modes | Backlog | Useful for embedded schedule review surfaces after edit permissions mature. |
+| No-grid and read-only/prevent-actions modes | Partial | Timeline-only no-grid mode is implemented; permission-aware read-only/prevent-action mode remains later. |
 | Custom task templates and cell borders | Partial | UOK owns task/status templates and timeline grid borders through CSS tokens. |
 | Scroll to date / custom zoom / min scale unit | Partial | Scroll-to-today, scroll-to-selected-task, arbitrary date navigation, project-fit navigation, and scale controls exist; custom zoom bounds remain later. |
 | Editor validation, readonly editor, comments, custom controls | Partial | Inspector validation exists; comments and editor modes remain module backlog. |
@@ -130,7 +130,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Timeline | Markers | today, project bounds, milestones, deadlines, vertical event markers | Today and project boundary markers exist; task deadlines and arbitrary event markers remain later | Partial |
 | Timeline | Drag timeline and scroll zoom | pointer panning, wheel modifier, scale bounds, scroll preservation | Empty-space panning, Ctrl/Command wheel scale stepping, and Shift-drag task creation are implemented | Implemented |
 | Timeline | Zoom-to-fit and scroll-to-date | project range, selected date, today, viewport width, scale bounds | Today, selected task, arbitrary date target, and project-fit commands exist; custom zoom bounds remain later | Partial |
-| Timeline | Layout modes | grid left/right/hidden, scale top/bottom, RTL, fixed size/autosize | Treat as workspace layout variants after core Gantt matures | Backlog |
+| Timeline | Layout modes | grid left/right/hidden, scale top/bottom, RTL, fixed size/autosize | Timeline-only hidden-grid mode is implemented and saved with planning views | Partial |
 | Tasks | Task types | task, summary/project, milestone, unscheduled, split segment, rollup | Task/summary/milestone exist; unscheduled/split/rollup later | Partial |
 | Tasks | Taskbar editing | move, resize start/end, progress drag, dependency handles | Implemented through first-party SVG with server validation | Implemented |
 | Tasks | Task status presentation | status code, color token, non-color label, critical flag, selected/focus state | Implemented for bars and grid rows | Implemented |

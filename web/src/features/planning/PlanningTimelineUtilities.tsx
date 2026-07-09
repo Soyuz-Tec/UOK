@@ -6,7 +6,7 @@ import { PlanningFilters } from "./PlanningFilters";
 import { PlanningSavedViews } from "./PlanningSavedViews";
 import type { TimelineScale } from "./planningGanttModel";
 import { maxZoomValue, scaleToZoomValue, timelineScaleOptions, zoomValueToScale } from "./planningScaleOptions";
-import { exportScheduleCsv, type FieldPreset, type PlanningFilterState, type ViewDensity } from "./planningTimelineModel";
+import { exportScheduleCsv, type FieldPreset, type PlanningFilterState, type PlanningLayoutMode, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import type { PlanningSchedule } from "./types";
 
@@ -17,6 +17,7 @@ export function PlanningTimelineUtilities({
   fieldPreset,
   filters,
   focusMode,
+  layoutMode,
   onApplySavedView,
   onDateTarget,
   onFieldPresetChange,
@@ -27,6 +28,7 @@ export function PlanningTimelineUtilities({
   onToggleCritical,
   onToggleColumn,
   onToggleFocusMode,
+  onToggleLayoutMode,
   onResetColumns,
   onSelectedTask,
   onToday,
@@ -45,6 +47,7 @@ export function PlanningTimelineUtilities({
   fieldPreset: FieldPreset;
   filters: PlanningFilterState;
   focusMode: boolean;
+  layoutMode: PlanningLayoutMode;
   onApplySavedView: (config: PlanningSavedViewConfig) => void;
   onDateTarget: (date: string) => void;
   onFieldPresetChange: (preset: FieldPreset) => void;
@@ -55,6 +58,7 @@ export function PlanningTimelineUtilities({
   onToggleCritical: () => void;
   onToggleColumn: (columnId: string, visible: boolean) => void;
   onToggleFocusMode: () => void;
+  onToggleLayoutMode: () => void;
   onResetColumns: () => void;
   onSelectedTask: () => void;
   onToday: () => void;
@@ -84,6 +88,10 @@ export function PlanningTimelineUtilities({
       </label>
       <FieldVisibilityMenu label="Columns" options={columnOptions} resetLabel="Reset columns" visibility={columnVisibility} onReset={onResetColumns} onToggle={onToggleColumn} />
       <PlanningFilters filters={filters} schedule={schedule} onChange={onFiltersChange} />
+      <button type="button" className={`planning-toolbar-toggle ${layoutMode === "timeline" ? "selected" : ""}`} aria-pressed={layoutMode === "timeline"} onClick={onToggleLayoutMode}>
+        {layoutMode === "timeline" ? <Columns3 size={16} aria-hidden="true" /> : <Maximize2 size={16} aria-hidden="true" />}
+        <span>{layoutMode === "timeline" ? "Split view" : "Timeline only"}</span>
+      </button>
       <label className="planning-zoom-control">
         <span>Zoom</span>
         <input type="range" min="0" max={maxZoomValue()} value={scaleToZoomValue(scale)} aria-label="Timeline zoom" onChange={(event) => onScaleChange(zoomValueToScale(event.target.value))} />
