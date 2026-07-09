@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy.orm import Session
 
 from uok.security import Actor
 
-from .read_model import event_rows
+from .read_model import event_rows, stored_utc
 
 
 def _escape_text(value: Any) -> str:
@@ -16,7 +16,7 @@ def _escape_text(value: Any) -> str:
 
 
 def _dtstamp(value: datetime) -> str:
-    return value.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return stored_utc(value).strftime("%Y%m%dT%H%M%SZ")
 
 
 def _fold(line: str) -> list[str]:
