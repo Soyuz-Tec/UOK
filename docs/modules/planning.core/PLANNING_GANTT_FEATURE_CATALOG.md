@@ -127,7 +127,7 @@ UOK must implement these features as first-party React, TypeScript, SVG, HTML, C
 | Bulk edit | Change status, owner, dates, priority, or calendar for selected tasks. | Backlog |
 | Undo/redo | Reversible local command stack with server reconciliation. | Backlog |
 | Saved views | Store filters, density, fields, scale, and grouping. | Implemented |
-| Search/filter/group | Search task titles; filter by status, critical, resource, milestone. | Partial |
+| Search/filter/group | Search task titles; filter by status, critical, resource, milestone. | Implemented |
 | Export | CSV now; later PDF/image/import template. | Partial |
 | Audit history | Planning schedule events are recorded. | Implemented |
 

@@ -14,8 +14,10 @@
 @import "./styles/apps-manager.css";
 @import "./styles/contacts.css";
 @import "./styles/planning.css";
+@import "./styles/planning/filters.css";
 @import "./styles/planning/gantt.css";
 @import "./styles/planning/owned-gantt.css";
 @import "./styles/planning/read-views.css";
 @import "./styles/planning/saved-views.css";
+@import "./styles/planning/toolbar.css";
 @import "./styles/responsive.css";

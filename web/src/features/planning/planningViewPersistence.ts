@@ -7,10 +7,13 @@ export type PlanningSavedViewConfig = {
   cascadeSort: boolean;
   fieldPreset: FieldPreset;
   filterMode: FilterMode;
+  query: string;
+  resourceId: string;
   scale: TimelineScale;
   selectedVisible: boolean;
   showBaselines: boolean;
   showCritical: boolean;
+  status: string;
   summaryExpanded: boolean;
   viewDensity: ViewDensity;
 };
@@ -30,10 +33,13 @@ export function createPlanningSavedView(name: string, config: PlanningSavedViewC
       cascadeSort: String(config.cascadeSort),
       fieldPreset: config.fieldPreset,
       filterMode: config.filterMode,
+      query: config.query,
+      resourceId: config.resourceId,
       scale: config.scale,
       selectedVisible: String(config.selectedVisible),
       showBaselines: String(config.showBaselines),
       showCritical: String(config.showCritical),
+      status: config.status,
       summaryExpanded: String(config.summaryExpanded),
       viewDensity: config.viewDensity,
     },
@@ -49,10 +55,13 @@ export function planningConfigFromSavedView(view: SavedSearchView, fallback: Pla
     cascadeSort: booleanValue(view.filters.cascadeSort, view.sortBy ? view.sortBy !== "manual" : fallback.cascadeSort),
     fieldPreset: oneOf(fieldPresets, view.filters.fieldPreset, fallback.fieldPreset),
     filterMode: oneOf(filterModes, view.filters.filterMode, fallback.filterMode),
+    query: stringValue(view.filters.query, fallback.query),
+    resourceId: stringValue(view.filters.resourceId, fallback.resourceId),
     scale: oneOf(scales, view.filters.scale, fallback.scale),
     selectedVisible: booleanValue(view.filters.selectedVisible, fallback.selectedVisible),
     showBaselines: booleanValue(view.filters.showBaselines, fallback.showBaselines),
     showCritical: booleanValue(view.filters.showCritical, fallback.showCritical),
+    status: stringValue(view.filters.status, fallback.status),
     summaryExpanded: booleanValue(view.filters.summaryExpanded, view.groupBy ? view.groupBy === "expanded" : fallback.summaryExpanded),
     viewDensity: oneOf(viewDensities, view.filters.viewDensity, fallback.viewDensity),
   };
@@ -66,4 +75,8 @@ function booleanValue(value: string | undefined, fallback: boolean) {
   if (value === "true") return true;
   if (value === "false") return false;
   return fallback;
+}
+
+function stringValue(value: string | undefined, fallback: string) {
+  return typeof value === "string" ? value : fallback;
 }

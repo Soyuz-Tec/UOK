@@ -17,7 +17,9 @@
     "title meta project plan controls"
     "views views views views controls"
     "commands commands commands commands controls";
-  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 280px) auto minmax(520px, 1.35fr);
+  grid-template-columns: minmax(180px, 0.8fr) auto minmax(200px, 260px) auto minmax(640px, 1.6fr);
+  column-gap: var(--uok-space-2);
+  row-gap: var(--uok-space-1);
   justify-content: stretch;
   border: var(--uok-line);
   border-radius: var(--uok-radius-2);
@@ -115,11 +117,6 @@
   font-size: var(--uok-callout);
 }
 
-.planning-plan-actions {
-  grid-area: plan;
-  justify-content: flex-start;
-}
-
 .planning-view-tabs {
   display: flex;
   grid-area: views;
@@ -158,7 +155,6 @@
 
 .planning-gantt-toolbar [aria-label="Timeline utilities"] {
   grid-area: controls;
-  justify-content: flex-end;
 }
 
 .planning-selection-toggle,

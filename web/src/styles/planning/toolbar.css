@@ -1,0 +1,18 @@
+.planning-gantt-toolbar [aria-label="Timeline utilities"] {
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.planning-plan-actions {
+  grid-area: plan;
+  justify-content: flex-start;
+}
+
+@media (max-width: 1260px) {
+  .planning-gantt-toolbar [aria-label="Timeline utilities"] {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}

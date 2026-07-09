@@ -5,6 +5,12 @@ export type PlanningView = typeof planningViews[number];
 export type FieldPreset = "core" | "progress" | "resources";
 export type FilterMode = "all" | "critical" | "milestones";
 export type ViewDensity = "compact" | "standard" | "roomy";
+export type PlanningFilterState = {
+  mode: FilterMode;
+  query: string;
+  resourceId: string;
+  status: string;
+};
 
 export function planningColumnVisibilityOptions(fieldPreset: FieldPreset) {
   const base = [{ id: "wbs", label: "WBS", locked: true }, { id: "task", label: "Task", locked: true }];
@@ -13,12 +19,13 @@ export function planningColumnVisibilityOptions(fieldPreset: FieldPreset) {
   return [...base, { id: "start", label: "Start" }, { id: "end", label: "End" }];
 }
 
-export function projectScheduleView(schedule: PlanningSchedule, filterMode: FilterMode, cascadeSort: boolean): PlanningSchedule {
+export function projectScheduleView(schedule: PlanningSchedule, filterState: PlanningFilterState, cascadeSort: boolean): PlanningSchedule {
   const sorted = [...schedule.tasks].sort((a, b) => cascadeSort ? compareWbs(a, b) : a.sort_order - b.sort_order);
   const taskMap = new Map(sorted.map((task) => [task.id, task]));
+  const resourceTaskIds = new Set(schedule.assignments.filter((assignment) => assignment.resource_id === filterState.resourceId).map((assignment) => assignment.task_id));
   const included = new Set<string>();
   for (const task of sorted) {
-    if (taskMatchesFilter(task, filterMode)) {
+    if (taskMatchesFilter(task, filterState, resourceTaskIds)) {
       included.add(task.id);
       let parentId = task.parent_task_id || "";
       while (parentId) {
@@ -49,9 +56,13 @@ export function exportScheduleCsv(schedule: PlanningSchedule) {
   URL.revokeObjectURL(url);
 }
 
-function taskMatchesFilter(task: PlanningTask, filterMode: FilterMode) {
-  if (filterMode === "critical") return task.critical || task.task_type === "summary";
-  if (filterMode === "milestones") return task.task_type === "milestone" || task.task_type === "summary";
+function taskMatchesFilter(task: PlanningTask, filterState: PlanningFilterState, resourceTaskIds: Set<string>) {
+  if (filterState.mode === "critical" && !task.critical) return false;
+  if (filterState.mode === "milestones" && task.task_type !== "milestone") return false;
+  if (filterState.status && (task.status || "planned") !== filterState.status) return false;
+  if (filterState.resourceId && !resourceTaskIds.has(task.id)) return false;
+  const query = filterState.query.trim().toLocaleLowerCase();
+  if (query && !`${task.wbs || ""} ${task.title}`.toLocaleLowerCase().includes(query)) return false;
   return true;
 }
 

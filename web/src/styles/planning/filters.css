@@ -1,0 +1,31 @@
+.planning-filters {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--uok-space-1);
+}
+
+.planning-filters .search-field {
+  width: 136px;
+  min-height: 36px;
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-2);
+}
+
+.planning-filters .planning-toolbar-select {
+  padding-inline: var(--uok-space-1);
+}
+
+.planning-filters .planning-toolbar-select span {
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .planning-filters,
+  .planning-filters .search-field {
+    width: 100%;
+  }
+}

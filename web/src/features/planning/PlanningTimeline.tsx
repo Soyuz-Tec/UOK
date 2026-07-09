@@ -4,11 +4,12 @@ import { useMemo, useState } from "react";
 import { CommandButton } from "../../shared/primitives";
 import { FieldVisibilityMenu, useColumnVisibilityOptions } from "../../shared/tables";
 import type { Appearance } from "../../shared/types";
+import { PlanningFilters } from "./PlanningFilters";
 import { PlanningGantt } from "./PlanningGantt";
 import { PlanningReadModelView } from "./PlanningReadModelViews";
 import { PlanningSavedViews } from "./PlanningSavedViews";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
-import { exportScheduleCsv, planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type FilterMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
+import { exportScheduleCsv, planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningProject, PlanningSchedule } from "./types";
 
 export function PlanningTimeline({
@@ -60,13 +61,13 @@ export function PlanningTimeline({
 }) {
   const [activeView, setActiveView] = useState<PlanningView>("Gantt chart");
   const [fieldPreset, setFieldPreset] = useState<FieldPreset>("core");
-  const [filterMode, setFilterMode] = useState<FilterMode>("all");
+  const [filters, setFilters] = useState<PlanningFilterState>({ mode: "all", query: "", resourceId: "", status: "" });
   const [summaryExpanded, setSummaryExpanded] = useState(true);
   const [cascadeSort, setCascadeSort] = useState(true);
   const [viewDensity, setViewDensity] = useState<ViewDensity>("standard");
   const [selectedVisible, setSelectedVisible] = useState(false);
   const [todaySignal, setTodaySignal] = useState(0);
-  const visibleSchedule = useMemo(() => projectScheduleView(schedule, filterMode, cascadeSort), [cascadeSort, filterMode, schedule]);
+  const visibleSchedule = useMemo(() => projectScheduleView(schedule, filters, cascadeSort), [cascadeSort, filters, schedule]);
   const columnOptions = useMemo(() => planningColumnVisibilityOptions(fieldPreset), [fieldPreset]);
   const { resetColumnVisibility, setColumnVisible, visibility: columnVisibility } = useColumnVisibilityOptions(`planning.gantt.columns.${fieldPreset}`, columnOptions);
   const selectedCount = selectedVisible ? visibleSchedule.tasks.length : selectedTaskId ? 1 : 0;
@@ -74,14 +75,17 @@ export function PlanningTimeline({
     activeView,
     cascadeSort,
     fieldPreset,
-    filterMode,
+    filterMode: filters.mode,
+    query: filters.query,
+    resourceId: filters.resourceId,
+    status: filters.status,
     scale,
     selectedVisible,
     showBaselines,
     showCritical,
     summaryExpanded,
     viewDensity,
-  }), [activeView, cascadeSort, fieldPreset, filterMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
+  }), [activeView, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
 
   return (
     <div className="planning-timeline-workbench">
@@ -170,15 +174,7 @@ export function PlanningTimeline({
             onReset={resetColumnVisibility}
             onToggle={setColumnVisible}
           />
-          <label className="planning-toolbar-select">
-            <Flag size={16} aria-hidden="true" />
-            <span>Filter</span>
-            <select value={filterMode} onChange={(event) => setFilterMode(event.target.value as FilterMode)}>
-              <option value="all">All</option>
-              <option value="critical">Critical</option>
-              <option value="milestones">Milestones</option>
-            </select>
-          </label>
+          <PlanningFilters filters={filters} schedule={schedule} onChange={setFilters} />
           <label className="planning-zoom-control">
             <span>Zoom</span>
             <input
@@ -260,7 +256,7 @@ export function PlanningTimeline({
     setActiveView(config.activeView);
     setCascadeSort(config.cascadeSort);
     setFieldPreset(config.fieldPreset);
-    setFilterMode(config.filterMode);
+    setFilters({ mode: config.filterMode, query: config.query, resourceId: config.resourceId, status: config.status });
     setSelectedVisible(config.selectedVisible);
     setSummaryExpanded(config.summaryExpanded);
     setViewDensity(config.viewDensity);

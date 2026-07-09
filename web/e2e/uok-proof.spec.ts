@@ -132,6 +132,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByLabel("Timeline utilities")).toBeVisible();
     await expect(page.getByLabel("Saved planning views")).toBeVisible();
     await expect(page.getByLabel("Planning view name")).toBeVisible();
+    await expect(page.getByLabel("Planning search and filters")).toBeVisible();
+    await expect(page.getByLabel("Search planning tasks")).toBeVisible();
     await expect(page.getByLabel("Timeline zoom")).toBeVisible();
     await expect(page.getByText("Fields")).toBeVisible();
     await expect(page.getByText("Filter")).toBeVisible();
@@ -142,6 +144,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-progress-handle")).toHaveCount(3);
     await expect(page.locator(".planning-owned-status-code")).toHaveCount(4);
     await expect(page.locator(".planning-owned-status-code").getByText("CRIT")).toHaveCount(3);
+    await page.getByLabel("Search planning tasks").fill("integrated");
+    await expect(page.locator(".planning-owned-grid-body").getByText("Build integrated Gantt with dependency validation")).toBeVisible();
+    await page.getByLabel("Search planning tasks").fill("");
     if (viewport.width > 980) {
       const taskHeader = page.locator(".planning-owned-grid-header [role='columnheader']").nth(1);
       const standardRowHeight = await page.locator(".planning-owned-grid-row").first().evaluate((row) => row.getBoundingClientRect().height);
