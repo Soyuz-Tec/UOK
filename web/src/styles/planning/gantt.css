@@ -1,0 +1,143 @@
+.planning-timeline-workbench {
+  display: grid;
+  gap: var(--uok-space-2);
+  min-width: 0;
+}
+
+.planning-gantt-toolbar,
+.planning-toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--uok-space-2);
+}
+
+.planning-gantt-toolbar {
+  justify-content: space-between;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  background: var(--uok-bg-elevated);
+}
+
+.planning-segmented-control {
+  display: inline-flex;
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-segmented-control button,
+.planning-toolbar-toggle {
+  min-height: 36px;
+  border: 0;
+  color: var(--uok-text-secondary);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.planning-segmented-control button {
+  padding: 0 var(--uok-space-3);
+  text-transform: capitalize;
+}
+
+.planning-segmented-control button + button {
+  border-left: var(--uok-line);
+}
+
+.planning-toolbar-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-3);
+}
+
+.planning-segmented-control button.selected,
+.planning-toolbar-toggle.selected {
+  color: var(--uok-text-primary);
+  background: color-mix(in srgb, var(--uok-accent) 14%, var(--uok-bg-elevated));
+}
+
+.planning-gantt-shell {
+  min-width: 0;
+  height: clamp(420px, 62vh, 720px);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  overflow: hidden;
+  background: var(--uok-bg-elevated);
+  scrollbar-gutter: stable both-edges;
+  --wx-grid-header-font: 650 var(--uok-callout) var(--uok-font-family);
+  --wx-grid-body-font: 450 var(--uok-callout) var(--uok-font-family);
+  --wx-timescale-font: 650 var(--uok-caption) var(--uok-font-family);
+  --wx-grid-body-row-border: 1px solid var(--uok-row-separator-color);
+  --wx-grid-body-cell-border: 1px solid var(--uok-row-separator-color);
+  --wx-timescale-border: 1px solid var(--uok-row-separator-color);
+  --wx-gantt-border: 1px solid var(--uok-row-separator-color);
+}
+
+.planning-gantt-shell .wx-theme {
+  height: 100%;
+  min-height: 100%;
+}
+
+.planning-gantt-shell .wx-gantt {
+  height: 100%;
+  min-height: 100%;
+  scrollbar-width: thin;
+}
+
+.planning-gantt-shell .wx-table-container,
+.planning-gantt-shell .wx-chart {
+  scrollbar-width: thin;
+}
+
+.planning-gantt-shell .wx-layout {
+  min-width: 0;
+}
+
+.planning-gantt-shell .wx-chart {
+  min-width: 320px;
+}
+
+.planning-gantt-shell .wx-cell,
+.planning-gantt-shell .wx-row {
+  box-sizing: border-box;
+}
+
+.planning-gantt-shell .wx-table .wx-cell {
+  padding-inline: var(--uok-space-2);
+}
+
+.planning-gantt-critical {
+  --wx-gantt-task-color: var(--uok-status-danger);
+  --wx-gantt-task-fill: color-mix(in srgb, var(--uok-status-danger) 86%, var(--uok-bg-elevated));
+}
+
+.planning-gantt-today {
+  color: var(--uok-status-warning);
+}
+
+@media (max-width: 680px) {
+  .planning-gantt-shell {
+    height: 480px;
+  }
+
+  .planning-gantt-toolbar {
+    align-items: stretch;
+  }
+
+  .planning-toolbar-group,
+  .planning-toolbar-group .command-button,
+  .planning-toolbar-toggle,
+  .planning-segmented-control {
+    width: 100%;
+  }
+
+  .planning-segmented-control button {
+    flex: 1 1 0;
+  }
+}

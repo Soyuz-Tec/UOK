@@ -5,7 +5,7 @@
 }
 
 .planning-workspace .workflow-split-view {
-  grid-template-columns: minmax(720px, 1fr) minmax(360px, 420px);
+  grid-template-columns: minmax(820px, 1fr) minmax(340px, 392px);
 }
 
 .planning-workspace .workflow-secondary-region {
@@ -13,38 +13,6 @@
   overflow-y: auto;
 }
 
-.planning-timeline-workbench {
-  display: grid;
-  gap: var(--uok-space-2);
-  min-width: 0;
-}
-
-.planning-gantt-toolbar,
-.planning-toolbar-group {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--uok-space-2);
-}
-
-.planning-gantt-toolbar {
-  justify-content: space-between;
-  border: var(--uok-line);
-  border-radius: var(--uok-radius-2);
-  padding: var(--uok-space-2);
-  background: var(--uok-bg-elevated);
-}
-
-.planning-segmented-control {
-  display: inline-flex;
-  overflow: hidden;
-  border: var(--uok-line);
-  border-radius: var(--uok-radius-2);
-  background: var(--uok-bg-grouped-secondary);
-}
-
-.planning-segmented-control button,
-.planning-toolbar-toggle,
 .planning-inspector-tabs button {
   min-height: 36px;
   border: 0;
@@ -54,51 +22,9 @@
   cursor: pointer;
 }
 
-.planning-segmented-control button {
-  padding: 0 var(--uok-space-3);
-  text-transform: capitalize;
-}
-
-.planning-segmented-control button + button {
-  border-left: var(--uok-line);
-}
-
-.planning-toolbar-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--uok-space-1);
-  border: var(--uok-line);
-  border-radius: var(--uok-radius-2);
-  padding: 0 var(--uok-space-3);
-}
-
-.planning-segmented-control button.selected,
-.planning-toolbar-toggle.selected,
 .planning-inspector-tabs button.selected {
   color: var(--uok-text-primary);
   background: color-mix(in srgb, var(--uok-accent) 14%, var(--uok-bg-elevated));
-}
-
-.planning-gantt-shell {
-  min-width: 0;
-  height: clamp(420px, 62vh, 720px);
-  border: var(--uok-line);
-  border-radius: var(--uok-radius-3);
-  overflow: hidden;
-  background: var(--uok-bg-elevated);
-}
-
-.planning-gantt-shell .wx-gantt {
-  min-height: 100%;
-}
-
-.planning-gantt-critical {
-  --wx-gantt-task-color: var(--uok-status-danger);
-  --wx-gantt-task-fill: color-mix(in srgb, var(--uok-status-danger) 86%, var(--uok-bg-elevated));
-}
-
-.planning-gantt-today {
-  color: var(--uok-status-warning);
 }
 
 .planning-task-grid {
@@ -257,27 +183,13 @@
   white-space: pre-wrap;
 }
 
-@media (max-width: 680px) {
-  .planning-gantt-shell {
-    height: 480px;
-  }
-
+@media (max-width: 1260px) {
   .planning-workspace .workflow-split-view {
     grid-template-columns: 1fr;
   }
 
-  .planning-gantt-toolbar {
-    align-items: stretch;
-  }
-
-  .planning-toolbar-group,
-  .planning-toolbar-group .command-button,
-  .planning-toolbar-toggle,
-  .planning-segmented-control {
-    width: 100%;
-  }
-
-  .planning-segmented-control button {
-    flex: 1 1 0;
+  .planning-workspace .workflow-secondary-region {
+    position: static;
+    max-height: none;
   }
 }

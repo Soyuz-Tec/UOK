@@ -44,6 +44,7 @@ export function PlanningGantt({
     type: linkType(dependency.dependency_type),
   }));
   const Theme = appearance === "dark" ? WillowDark : Willow;
+  const layout = ganttLayout(scale);
 
   return (
     <div className="planning-gantt-shell" aria-label="Planning Gantt chart">
@@ -55,16 +56,19 @@ export function PlanningGantt({
           baselines={showBaselines}
           scales={scaleConfig(scale)}
           lengthUnit={scale === "month" ? "week" : "day"}
-          cellWidth={scale === "day" ? 72 : scale === "week" ? 54 : 42}
+          cellWidth={layout.cellWidth}
+          cellHeight={50}
+          scaleHeight={44}
+          gridWidth={layout.gridWidth}
           markers={[{ start: new Date(), text: "Today", css: "planning-gantt-today" }]}
           start={dateValue(schedule.project.start)}
           end={dateValue(schedule.project.end)}
           columns={[
-            { id: "text", header: "Task", width: 260 },
-            { id: "start", header: "Start", width: 108 },
-            { id: "end", header: "End", width: 108 },
-            { id: "duration", header: "Dur.", width: 72 },
-            { id: "progress", header: "%", width: 60 },
+            { id: "text", header: "Task", width: 220 },
+            { id: "start", header: "Start", width: 92 },
+            { id: "end", header: "End", width: 92 },
+            { id: "duration", header: "Dur.", width: 48 },
+            { id: "progress", header: "%", width: 44 },
           ]}
           cellBorders="column"
           onselecttask={(event) => {
@@ -78,6 +82,12 @@ export function PlanningGantt({
       </Theme>
     </div>
   );
+}
+
+function ganttLayout(scale: "day" | "week" | "month") {
+  if (scale === "month") return { cellWidth: 96, gridWidth: 500 };
+  if (scale === "week") return { cellWidth: 76, gridWidth: 500 };
+  return { cellWidth: 60, gridWidth: 500 };
 }
 
 function dateValue(value: string) {

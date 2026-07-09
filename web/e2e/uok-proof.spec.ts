@@ -147,17 +147,26 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     const layout = await page.evaluate(() => {
       const shell = document.querySelector(".shell")?.getBoundingClientRect();
       const gantt = document.querySelector(".planning-gantt-shell")?.getBoundingClientRect();
+      const ganttTheme = document.querySelector(".planning-gantt-shell .wx-theme")?.getBoundingClientRect();
+      const firstGanttRow = document.querySelector(".planning-gantt-shell .wx-table .wx-body .wx-row")?.getBoundingClientRect();
+      const firstGanttChart = document.querySelector(".planning-gantt-shell .wx-chart")?.getBoundingClientRect();
       const inspector = document.querySelector(".workflow-secondary-region")?.getBoundingClientRect();
       return {
         shellWidth: shell?.width || 0,
         ganttWidth: gantt?.width || 0,
         ganttHeight: gantt?.height || 0,
+        ganttThemeHeight: ganttTheme?.height || 0,
+        firstGanttRowHeight: firstGanttRow?.height || 0,
+        firstGanttChartHeight: firstGanttChart?.height || 0,
         overlap: Boolean(gantt && inspector && !(gantt.right <= inspector.left || inspector.right <= gantt.left || gantt.bottom <= inspector.top || inspector.bottom <= gantt.top)),
       };
     });
     expect(layout.shellWidth).toBeGreaterThan(300);
     expect(layout.ganttWidth).toBeGreaterThan(280);
     expect(layout.ganttHeight).toBeGreaterThan(360);
+    expect(layout.ganttThemeHeight).toBeGreaterThan(layout.ganttHeight - 4);
+    expect(layout.firstGanttRowHeight).toBeGreaterThanOrEqual(48);
+    expect(layout.firstGanttChartHeight).toBeGreaterThan(300);
     if (viewport.width > 980) expect(layout.overlap).toBe(false);
 
     const screenshot = await page.screenshot();
