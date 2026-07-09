@@ -22,7 +22,7 @@ KERNEL_MODULE_FACADE_FILES = {
     "src/uok/contact_read_model.py",
     "src/uok/contact_validation.py",
 }
-BASELINE_MODULES = ["agents.core", "apps.manager", "contacts.core", "planning.core"]
+BASELINE_MODULES = ["agents.core", "apps.manager", "contacts.core", "planning.core", "reports.core"]
 
 
 def test_file_backed_module_manifests_define_baseline_catalog() -> None:
@@ -67,6 +67,19 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert "CreatePlanningProject" in manifests["planning.core"]["commands"]
     assert "PlanningTaskLinked" in manifests["planning.core"]["events"]
     assert "planning.manage" in manifests["planning.core"]["permissions"]
+    assert manifests["reports.core"]["required"] is False
+    assert manifests["reports.core"]["kind"] == "capability_module"
+    assert "GenerateReport" in manifests["reports.core"]["commands"]
+    assert "ReportGenerated" in manifests["reports.core"]["events"]
+    assert manifests["reports.core"]["backend_path"] == "modules/reports.core/backend"
+    assert "/api/reports" in manifests["reports.core"]["api_prefixes"]
+    assert manifests["reports.core"]["api_router"] == "uok_reports_core.api:router"
+    assert manifests["reports.core"]["command_handlers"] == "uok_reports_core.commands:command_handlers"
+    assert manifests["reports.core"]["command_permissions"] == "uok_reports_core.commands:command_permissions"
+    assert manifests["reports.core"]["role_grants"] == "uok_reports_core.policy:role_grants"
+    assert manifests["reports.core"]["model_exports"] == "uok_reports_core.models:owned_models"
+    assert manifests["reports.core"]["candidate_verifier_script"] == "modules/reports.core/tests/verify/UokCandidateReports.ps1"
+    assert "reports.render" in manifests["reports.core"]["permissions"]
 
 
 def test_contacts_core_backend_loads_from_physical_module_root() -> None:
@@ -108,6 +121,7 @@ def test_kernel_imports_module_backends_only_in_declared_facades() -> None:
                 package_names.add(child.name)
     assert "uok_contacts_core" in package_names
     assert "uok_planning_core" in package_names
+    assert "uok_reports_core" in package_names
 
     import_pattern = re.compile(rf"^\s*(?:from|import)\s+(?:{'|'.join(sorted(package_names))})\b", re.MULTILINE)
     offenders = sorted(
@@ -123,7 +137,7 @@ def test_module_routers_mount_from_manifest_declarations() -> None:
     manifests = load_module_manifests()
     routers = load_module_routers()
 
-    assert [module_name for module_name, _ in routers] == ["contacts.core", "planning.core"]
+    assert [module_name for module_name, _ in routers] == ["contacts.core", "planning.core", "reports.core"]
     for module_name, router in routers:
         prefixes = manifests[module_name]["api_prefixes"]
         assert router.routes
@@ -138,13 +152,19 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
 
     assert "CreateContact" in handlers
     assert "ImportContactsCsv" in handlers
+    assert "GenerateReport" in handlers
+    assert "DeleteReportArtifact" in handlers
     assert permissions["CreateContact"] == "contacts.manage"
     assert permissions["CreatePlanningProject"] == "planning.manage"
     assert permissions["RestoreContact"] == "contacts.restore"
+    assert permissions["GenerateReport"] == "reports.render"
+    assert permissions["DeleteReportArtifact"] == "reports.delete"
     assert permissions["VerifyBaseline"] == "migration.verify"
     assert "contacts.manage" in grants["ops_manager"]
     assert "planning.manage" in grants["ops_manager"]
+    assert "reports.manage" in grants["ops_manager"]
     assert "contacts.read" in grants["viewer"]
+    assert "reports.read" in grants["viewer"]
     assert {
         "parties",
         "party_notes",
@@ -153,6 +173,7 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
         "planning_projects",
         "planning_tasks",
         "planning_task_dependencies",
+        "report_artifacts",
     }.issubset(declared_module_table_names())
 
 
@@ -163,6 +184,7 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
     assert "/api/contacts" in app_paths
     assert "/api/contacts/review-queue" in app_paths
     assert "/api/planning/projects" in app_paths
+    assert "/api/reports/formats" in app_paths
 
     main_source = (repo_root() / "src" / "uok" / "main.py").read_text(encoding="utf-8")
     assert "contacts" not in main_source.lower()

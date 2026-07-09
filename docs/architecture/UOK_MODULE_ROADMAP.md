@@ -24,6 +24,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `agents.core` | capability module | planned scaffold for governed agent operations | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | `contacts.core` | capability module | Contacts MVP hardening in progress | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
 | `planning.core` | capability module | integrated Gantt MVP in progress | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
+| `reports.core` | capability module | secure global report artifact foundation in PR #5 | `UOK-3.1.0-alpha.3` | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` |
 
 ## Current Target
 
@@ -61,6 +62,8 @@ It also introduces `planning.core` as the integrated planning and Gantt capabili
 - drag-style reschedule API path through Python validation
 - planning audit events and candidate verifier scenario
 - Playwright UI proof automation for Gantt rendering, keyboard, appearance, responsive layout, and console cleanliness
+
+`reports.core` adds a product-neutral global artifact boundary for JSON, JSONL, TXT, Markdown, CSV, and TSV report generation before richer PDF, office document, spreadsheet, image, or conversion adapters are added later.
 
 ## Governance Rule
 

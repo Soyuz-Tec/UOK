@@ -17,12 +17,16 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
     catalog = client.get("/api/modules/catalog", headers=admin)
     assert catalog.status_code == 200, catalog.text
     modules = catalog.json()["modules"]
-    assert sorted(modules) == ["agents.core", "apps.manager", "contacts.core", "planning.core"]
+    assert sorted(modules) == ["agents.core", "apps.manager", "contacts.core", "planning.core", "reports.core"]
     assert modules["apps.manager"]["status"] == "installed"
     assert modules["apps.manager"]["required"] is True
     assert modules["agents.core"]["required"] is False
     assert modules["contacts.core"]["required"] is False
     assert modules["planning.core"]["required"] is False
+    assert modules["reports.core"]["kind"] == "capability_module"
+    assert modules["reports.core"]["required"] is False
+    assert modules["reports.core"]["installable"] is True
+    assert modules["reports.core"]["uninstallable"] is True
 
     install = client.post("/api/modules/contacts.core/install", headers=admin)
     assert install.status_code == 200, install.text
