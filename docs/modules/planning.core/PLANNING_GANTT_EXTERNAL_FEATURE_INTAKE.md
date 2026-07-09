@@ -44,7 +44,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Drag timeline / click-drag new task | Implemented | Timeline panning, Ctrl/Command wheel zoom, and Shift-drag empty-space task creation are implemented through UOK-owned interactions. |
 | Smart rendering / large data performance | Backlog | Add virtualization only after current features stabilize. |
 | Data loading/saving and REST sync | Implemented | UOK uses FastAPI read models and command writes, not direct client-owned persistence. |
-| Export to document/image/project formats | Partial | CSV export and an import template exist; PDF/image/project exchange remain later. |
+| Export to document/image/project formats | Partial | CSV export, an import template, and UOK project JSON exchange exist; PDF/image remain later. |
 | Locales/accessibility/touch | Partial | Continue ARIA, focus, and responsive proof; localization remains backlog. |
 | Event system | Partial | UOK equivalent is command bus plus planning audit events. |
 | Row resize | Implemented | UOK row-height model supports per-project row overrides, drag/keyboard resize handles, and double-click/Enter row fit without third-party code. |
@@ -79,7 +79,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Resource planning and workload | Implemented | Resource assignment, warnings, and first-party daily workload lanes exist; automatic leveling remains a separate scheduling backlog item. |
 | Task grouping, rollups, split tasks, unscheduled tasks | Backlog | Add only after core dependency/constraint model is stronger. |
 | Undo/redo | Backlog | Needs command stack with server reconciliation. |
-| Export/import | Partial | CSV export and an import template exist; PDF/image/Excel/MS Project equivalents remain later. |
+| Export/import | Partial | CSV export, an import template, and UOK project JSON exchange exist; PDF/image/Excel/MS Project equivalents remain later. |
 | Header menu for visible columns | Implemented | UOK now has a first-party per-column header menu for sort, quick action, width reset, hide, and show-all column controls. |
 | No-grid and read-only/prevent-actions modes | Implemented | Timeline-only no-grid mode and review/edit mode are implemented; deeper role-derived permission policy remains a future authorization layer. |
 | Custom task templates and cell borders | Partial | UOK owns task/status templates and timeline grid borders through CSS tokens. |
@@ -152,7 +152,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Accessibility | Keyboard/touch/ARIA | row navigation, focus rings, button labels, touch target size, non-color cues | Keyboard and ARIA proof exists; touch/localization later | Partial |
 | Data integration | REST sync and events | read model, command write, audit event, optimistic state rules | UOK command bus and audit events, no client-owned persistence | Implemented |
 | Data integration | Provider/batch sync modes | backend source, batch transaction, conflict state, local rollback | Selected-task bulk completion uses existing server-validated task writes; richer conflict UX and atomic batch endpoint later | Partial |
-| Export/import | Output formats | visible CSV, PDF/image, Excel, project exchange, import validation | CSV export and import template exist; document/image/project export later | Partial |
+| Export/import | Output formats | visible CSV, PDF/image, Excel, project exchange, import validation | CSV export, import template, and UOK project JSON exchange exist; document/image exports later | Partial |
 | History | Undo/redo | command stack, reversible payload, server reconciliation, audit correlation | Needs explicit command-stack design | Backlog |
 
 ## Near-Term UOK Implementation Order

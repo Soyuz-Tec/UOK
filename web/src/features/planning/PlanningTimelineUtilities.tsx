@@ -2,7 +2,7 @@ import { Baseline, CalendarClock, ChevronDown, Columns3, Download, Flag, Lock, M
 import { useEffect, useState } from "react";
 
 import { FieldVisibilityMenu, type ColumnVisibilityMap } from "../../shared/tables";
-import { exportPlanningImportTemplate, exportScheduleCsv } from "./planningExportModel";
+import { exportPlanningImportTemplate, exportPlanningProjectJson, exportScheduleCsv } from "./planningExportModel";
 import { PlanningFilters } from "./PlanningFilters";
 import { PlanningSavedViews } from "./PlanningSavedViews";
 import type { TimelineScale } from "./planningGanttModel";
@@ -143,6 +143,10 @@ export function PlanningTimelineUtilities({
       <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningImportTemplate(schedule)}>
         <Download size={16} aria-hidden="true" />
         <span>Template</span>
+      </button>
+      <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningProjectJson(schedule)}>
+        <Download size={16} aria-hidden="true" />
+        <span>Project JSON</span>
       </button>
       <label className="planning-toolbar-select">
         <ChevronDown size={16} aria-hidden="true" />

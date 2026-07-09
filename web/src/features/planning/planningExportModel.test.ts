@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { planningExportFilename, planningImportTemplateCsv, planningScheduleCsv } from "./planningExportModel";
+import { planningExportFilename, planningImportTemplateCsv, planningProjectExchangeJson, planningScheduleCsv } from "./planningExportModel";
 import type { PlanningSchedule, PlanningTask } from "./types";
 
 describe("planning export model", () => {
@@ -20,6 +20,17 @@ describe("planning export model", () => {
 
   it("uses the project name in export filenames", () => {
     expect(planningExportFilename(schedule(), "import-template")).toBe("pilot-delivery-import-template.csv");
+    expect(planningExportFilename(schedule(), "project", "json")).toBe("pilot-delivery-project.json");
+  });
+
+  it("exports a deterministic UOK project exchange model", () => {
+    const payload = JSON.parse(planningProjectExchangeJson(schedule()));
+
+    expect(payload.format).toBe("uok.planning.schedule");
+    expect(payload.version).toBe(1);
+    expect(payload.project.name).toBe("Pilot Delivery");
+    expect(payload.tasks).toHaveLength(1);
+    expect(payload.dependencies).toEqual([]);
   });
 });
 

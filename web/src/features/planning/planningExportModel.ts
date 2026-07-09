@@ -12,8 +12,26 @@ export function planningImportTemplateCsv() {
   return [header, example].map((row) => row.map(csvCell).join(",")).join("\n");
 }
 
-export function planningExportFilename(schedule: PlanningSchedule, suffix: string) {
-  return `${schedule.project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-${suffix}.csv`;
+export function planningProjectExchangeJson(schedule: PlanningSchedule) {
+  return JSON.stringify(
+    {
+      format: "uok.planning.schedule",
+      version: 1,
+      project: schedule.project,
+      calendar: schedule.calendar || null,
+      tasks: schedule.tasks,
+      dependencies: schedule.dependencies,
+      resources: schedule.resources,
+      assignments: schedule.assignments,
+      baselines: schedule.baselines,
+    },
+    null,
+    2,
+  );
+}
+
+export function planningExportFilename(schedule: PlanningSchedule, suffix: string, extension = "csv") {
+  return `${schedule.project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-${suffix}.${extension}`;
 }
 
 export function exportScheduleCsv(schedule: PlanningSchedule) {
@@ -22,6 +40,10 @@ export function exportScheduleCsv(schedule: PlanningSchedule) {
 
 export function exportPlanningImportTemplate(schedule: PlanningSchedule) {
   downloadTextFile(planningExportFilename(schedule, "import-template"), planningImportTemplateCsv(), "text/csv;charset=utf-8");
+}
+
+export function exportPlanningProjectJson(schedule: PlanningSchedule) {
+  downloadTextFile(planningExportFilename(schedule, "project", "json"), planningProjectExchangeJson(schedule), "application/json;charset=utf-8");
 }
 
 function csvCell(value: string) {
