@@ -127,6 +127,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
 
     await expect(page.getByRole("heading", { name: "Project schedule" })).toBeVisible();
     await expect(page.getByLabel("Gantt toolbar")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Gantt chart", exact: true })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("button", { name: "Board", exact: true })).toHaveAttribute("aria-disabled", "true");
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
     await page.getByRole("button", { name: "Task", exact: true }).focus();
     await expect(page.getByRole("button", { name: "Task", exact: true })).toBeFocused();

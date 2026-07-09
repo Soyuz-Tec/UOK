@@ -5,6 +5,8 @@ import type { Appearance } from "../../shared/types";
 import { PlanningGantt } from "./PlanningGantt";
 import type { PlanningProject, PlanningSchedule } from "./types";
 
+const planningViews = ["Gantt chart", "Board", "List", "Calendar", "Workload", "People", "Dashboard"] as const;
+
 export function PlanningTimeline({
   projects,
   schedule,
@@ -72,6 +74,23 @@ export function PlanningTimeline({
             Refresh
           </CommandButton>
         </div>
+        <nav className="planning-view-tabs" aria-label="Planning views">
+          {planningViews.map((view) => {
+            const isCurrent = view === "Gantt chart";
+            return (
+              <button
+                key={view}
+                type="button"
+                className={isCurrent ? "selected" : ""}
+                aria-current={isCurrent ? "page" : undefined}
+                aria-disabled={isCurrent ? undefined : "true"}
+                tabIndex={isCurrent ? 0 : -1}
+              >
+                {view}
+              </button>
+            );
+          })}
+        </nav>
         <div className="planning-toolbar-group" aria-label="Schedule commands">
           <CommandButton icon={Plus} onClick={() => onNewTask("task")} primary>Task</CommandButton>
           <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")}>Milestone</CommandButton>
