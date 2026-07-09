@@ -90,8 +90,8 @@ UOK must implement these features as first-party React, TypeScript, SVG, HTML, C
 | Status color coding | Not started, in progress, complete, overdue, blocked, critical. | Implemented |
 | Non-color indicators | Labels/icons/patterns so status does not depend on color alone. | Backlog |
 | Selected/hover/focus states | Visible selected and keyboard focus states. | Partial |
-| Resize start/end handles | Drag bar edges to change duration. | Backlog |
-| Progress drag handle | Drag progress handle to update percent through server validation. | Backlog |
+| Resize start/end handles | Drag bar edges to change duration. | Implemented |
+| Progress drag handle | Drag progress handle to update percent through server validation. | Implemented |
 
 ## Dependency Features
 

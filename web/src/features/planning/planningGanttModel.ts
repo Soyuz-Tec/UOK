@@ -21,6 +21,8 @@ export type TimelineUnit = {
 export type DragState = {
   taskId: string;
   startX: number;
+  mode: "move" | "resize-start" | "resize-end" | "progress";
+  barWidth?: number;
 };
 
 export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity) {
@@ -86,13 +88,37 @@ export function assignedResourceNames(schedule: PlanningSchedule) {
   return new Map(Array.from(namesByTask.entries()).map(([taskId, names]) => [taskId, names.join(", ")]));
 }
 
-export function finishDrag(clientX: number, drag: DragState, cellWidth: number, scale: TimelineScale, tasks: PlanningTask[], onTaskReschedule: (taskId: string, start: string, end: string) => void) {
+export function finishDrag(
+  clientX: number,
+  drag: DragState,
+  cellWidth: number,
+  scale: TimelineScale,
+  tasks: PlanningTask[],
+  onTaskReschedule: (taskId: string, start: string, end: string) => void,
+  onTaskProgress: (taskId: string, progress: number) => void
+) {
   const task = tasks.find((row) => row.id === drag.taskId);
   if (!task) return;
+  if (drag.mode === "progress") {
+    const barWidth = Math.max(drag.barWidth || cellWidth, 1);
+    const nextProgress = Math.round(Math.max(0, Math.min(100, task.progress + ((clientX - drag.startX) / barWidth) * 100)));
+    if (nextProgress !== task.progress) onTaskProgress(task.id, nextProgress);
+    return;
+  }
   const deltaCells = Math.round((clientX - drag.startX) / cellWidth);
   if (!deltaCells) return;
   const deltaDays = deltaCells * unitDays(scale);
-  onTaskReschedule(task.id, isoDate(addDays(dateValue(task.start), deltaDays)), isoDate(addDays(dateValue(task.end), deltaDays)));
+  const currentStart = dateValue(task.start);
+  const currentEnd = dateValue(task.end);
+  if (drag.mode === "resize-start") {
+    const nextStart = addDays(currentStart, deltaDays);
+    onTaskReschedule(task.id, isoDate(nextStart > currentEnd ? currentEnd : nextStart), task.end);
+  } else if (drag.mode === "resize-end") {
+    const nextEnd = addDays(currentEnd, deltaDays);
+    onTaskReschedule(task.id, task.start, isoDate(nextEnd < currentStart ? currentStart : nextEnd));
+  } else {
+    onTaskReschedule(task.id, isoDate(addDays(currentStart, deltaDays)), isoDate(addDays(currentEnd, deltaDays)));
+  }
 }
 
 export function rowHeight(viewDensity: ViewDensity) {

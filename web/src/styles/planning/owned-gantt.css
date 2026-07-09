@@ -194,6 +194,34 @@
   pointer-events: none;
 }
 
+.planning-owned-resize-handle,
+.planning-owned-progress-handle {
+  opacity: 0;
+  cursor: ew-resize;
+  transition: opacity 120ms ease;
+}
+
+.planning-owned-progress-handle {
+  fill: var(--uok-bg-elevated);
+  stroke: var(--uok-text-primary);
+  stroke-width: 1.5;
+}
+
+.planning-owned-resize-handle {
+  fill: color-mix(in srgb, var(--uok-bg-elevated) 64%, transparent);
+  stroke: var(--uok-text-primary);
+  stroke-width: 1;
+}
+
+.planning-owned-task:hover .planning-owned-resize-handle,
+.planning-owned-task:hover .planning-owned-progress-handle,
+.planning-owned-task:focus-visible .planning-owned-resize-handle,
+.planning-owned-task:focus-visible .planning-owned-progress-handle,
+.planning-owned-task.selected .planning-owned-resize-handle,
+.planning-owned-task.selected .planning-owned-progress-handle {
+  opacity: 1;
+}
+
 .planning-owned-task .baseline {
   fill: var(--uok-status-warning);
   opacity: 0.85;
