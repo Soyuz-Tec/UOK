@@ -1,7 +1,9 @@
 .planning-timeline-workbench {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: var(--uok-space-2);
   min-width: 0;
+  min-height: 100%;
 }
 
 .planning-gantt-toolbar,
@@ -234,7 +236,8 @@
 
 .planning-gantt-shell {
   min-width: 0;
-  height: clamp(388px, var(--planning-gantt-content-height, 62vh), 720px);
+  height: max(var(--planning-gantt-content-height, 560px), calc(100vh - 168px));
+  min-height: 0;
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
   overflow: hidden;
@@ -255,7 +258,7 @@
 
 @media (max-width: 680px) {
   .planning-gantt-shell {
-    height: 480px;
+    height: max(var(--planning-gantt-content-height, 480px), calc(100vh - 240px));
   }
 
   .planning-gantt-toolbar {

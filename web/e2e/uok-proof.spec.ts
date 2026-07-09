@@ -486,10 +486,10 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       expect(layout.ganttTop).toBeLessThan(360);
     }
     expect(layout.ganttWidth).toBeGreaterThan(viewport.width > 680 ? 280 : 150);
-    expect(layout.ganttHeight).toBeGreaterThan(360);
-    expect(layout.ganttThemeHeight).toBeGreaterThan(220);
+    expect(layout.ganttHeight).toBeGreaterThan(viewport.width > 680 ? Math.max(500, viewport.height - 260) : 460);
+    expect(layout.ganttThemeHeight).toBeGreaterThan(layout.ganttHeight - 40);
     expect(layout.firstGanttRowHeight).toBeGreaterThanOrEqual(48);
-    expect(layout.firstGanttChartHeight).toBeGreaterThan(220);
+    expect(layout.firstGanttChartHeight).toBeGreaterThan(viewport.width > 680 ? layout.ganttHeight - 40 : 300);
     if (viewport.width > 980) expect(layout.overlap).toBe(false);
 
     const screenshot = await page.screenshot();
