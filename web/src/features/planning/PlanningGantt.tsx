@@ -1,12 +1,26 @@
-import { Gantt, Willow, WillowDark, type ILink, type ITask } from "@svar-ui/react-gantt";
+import { Gantt, Willow, WillowDark, type ILink, type IScaleConfig, type ITask } from "@svar-ui/react-gantt";
 import "@svar-ui/react-gantt/all.css";
 
 import type { Appearance } from "../../shared/types";
 import type { PlanningSchedule } from "./types";
 
-export function PlanningGantt({ schedule, appearance, onTaskReschedule }: {
+export function PlanningGantt({
+  schedule,
+  appearance,
+  scale,
+  showCritical,
+  showBaselines,
+  selectedTaskId,
+  onTaskSelect,
+  onTaskReschedule,
+}: {
   schedule: PlanningSchedule;
   appearance: Appearance;
+  scale: "day" | "week" | "month";
+  showCritical: boolean;
+  showBaselines: boolean;
+  selectedTaskId: string;
+  onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
 }) {
   const tasks: Partial<ITask>[] = schedule.tasks.map((task) => ({
@@ -18,7 +32,10 @@ export function PlanningGantt({ schedule, appearance, onTaskReschedule }: {
     progress: task.progress,
     type: task.task_type === "milestone" ? "milestone" : task.task_type === "summary" ? "summary" : "task",
     parent: task.parent_task_id || 0,
-    css: task.critical ? "planning-gantt-critical" : undefined,
+    open: task.task_type === "summary" ? true : undefined,
+    base_start: task.baseline_start ? dateValue(task.baseline_start) : undefined,
+    base_duration: task.baseline_start && task.baseline_end ? baselineDuration(task.baseline_start, task.baseline_end) : undefined,
+    css: showCritical && task.critical ? "planning-gantt-critical" : undefined,
   }));
   const links: ILink[] = schedule.dependencies.map((dependency) => ({
     id: dependency.id,
@@ -34,12 +51,25 @@ export function PlanningGantt({ schedule, appearance, onTaskReschedule }: {
         <Gantt
           tasks={tasks}
           links={links}
+          selected={selectedTaskId ? [selectedTaskId] : []}
+          baselines={showBaselines}
+          scales={scaleConfig(scale)}
+          lengthUnit={scale === "month" ? "week" : "day"}
+          cellWidth={scale === "day" ? 72 : scale === "week" ? 54 : 42}
+          markers={[{ start: new Date(), text: "Today", css: "planning-gantt-today" }]}
+          start={dateValue(schedule.project.start)}
+          end={dateValue(schedule.project.end)}
           columns={[
-            { id: "text", header: "Task", width: 220 },
-            { id: "start", header: "Start", width: 112 },
-            { id: "end", header: "End", width: 112 },
+            { id: "text", header: "Task", width: 260 },
+            { id: "start", header: "Start", width: 108 },
+            { id: "end", header: "End", width: 108 },
+            { id: "duration", header: "Dur.", width: 72 },
+            { id: "progress", header: "%", width: 60 },
           ]}
           cellBorders="column"
+          onselecttask={(event) => {
+            if (event?.id) onTaskSelect(String(event.id));
+          }}
           onupdatetask={(event) => {
             if (event?.inProgress || !event?.task?.start || !event?.task?.end) return;
             onTaskReschedule(String(event.id), toIsoDate(event.task.start), toIsoDate(event.task.end));
@@ -64,4 +94,34 @@ function linkType(type: string) {
   if (type === "finish_to_finish") return "e2e";
   if (type === "start_to_finish") return "s2e";
   return "e2s";
+}
+
+function baselineDuration(start: string, end: string) {
+  const startDate = dateValue(start);
+  const endDate = dateValue(end);
+  return Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000) + 1);
+}
+
+function scaleConfig(scale: "day" | "week" | "month"): IScaleConfig[] {
+  if (scale === "month") {
+    return [
+      { unit: "year", step: 1, format: (date) => String(date.getFullYear()) },
+      { unit: "month", step: 1, format: (date) => date.toLocaleString("en-US", { month: "short" }) },
+    ];
+  }
+  if (scale === "week") {
+    return [
+      { unit: "month", step: 1, format: (date) => date.toLocaleString("en-US", { month: "long", year: "numeric" }) },
+      { unit: "week", step: 1, format: (date) => `W${weekNumber(date)}` },
+    ];
+  }
+  return [
+    { unit: "month", step: 1, format: (date) => date.toLocaleString("en-US", { month: "long", year: "numeric" }) },
+    { unit: "day", step: 1, format: (date) => String(date.getDate()) },
+  ];
+}
+
+function weekNumber(value: Date) {
+  const first = new Date(value.getFullYear(), 0, 1);
+  return Math.ceil((((value.getTime() - first.getTime()) / 86_400_000) + first.getDay() + 1) / 7);
 }

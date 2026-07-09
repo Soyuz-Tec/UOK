@@ -20,6 +20,7 @@
 - project list
 - project schedule read model
 - editable task grid and inspector path for create, update, delete, hierarchy, status, progress, and task type
+- traditional Gantt workspace with grid/timeline, task command toolbar, day/week/month scale controls, today/fit controls, critical and baseline toggles, and tabbed inspector panels
 - Gantt bars
 - milestone and summary task model
 - dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead

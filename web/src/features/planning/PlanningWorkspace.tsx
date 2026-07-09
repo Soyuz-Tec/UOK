@@ -19,8 +19,8 @@ import {
   updatePlanningDependency,
   updatePlanningTask,
 } from "./planningApi";
-import { PlanningGantt } from "./PlanningGantt";
-import { PlanningInspector } from "./PlanningInspector";
+import { PlanningInspector, type PlanningInspectorTab } from "./PlanningInspector";
+import { PlanningTimeline } from "./PlanningTimeline";
 import { PLANNING_MODULE_ID } from "./planningModule";
 import type { PlanningProject, PlanningSchedule, PlanningTask, PlanningWorkspaceProps } from "./types";
 
@@ -29,11 +29,16 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [schedule, setSchedule] = useState<PlanningSchedule | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState("");
+  const [inspectorTab, setInspectorTab] = useState<PlanningInspectorTab>("task");
+  const [newTaskType, setNewTaskType] = useState<"task" | "milestone">("task");
+  const [timelineScale, setTimelineScale] = useState<"day" | "week" | "month">("day");
+  const [showCritical, setShowCritical] = useState(true);
+  const [showBaselines, setShowBaselines] = useState(true);
   const [status, setStatus] = useState<unknown>("Planning module ready.");
   const [busy, setBusy] = useState("");
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const selectedTask = useMemo(
-    () => schedule?.tasks.find((task) => task.id === selectedTaskId) || schedule?.tasks[0] || null,
+    () => schedule?.tasks.find((task) => task.id === selectedTaskId) || null,
     [schedule, selectedTaskId],
   );
 
@@ -93,17 +98,43 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
         <WorkflowSplitView
           primaryLabel="Planning timeline"
           secondaryLabel="Planning inspector"
-          primary={<PlanningGantt schedule={schedule} appearance={appearance} onTaskReschedule={rescheduleTask} />}
+          primary={(
+            <PlanningTimeline
+              schedule={schedule}
+              appearance={appearance}
+              scale={timelineScale}
+              showCritical={showCritical}
+              showBaselines={showBaselines}
+              selectedTaskId={selectedTaskId}
+              onScaleChange={setTimelineScale}
+              onToggleCritical={() => setShowCritical((value) => !value)}
+              onToggleBaselines={() => setShowBaselines((value) => !value)}
+              onTaskSelect={(taskId) => {
+                setSelectedTaskId(taskId);
+                setInspectorTab("task");
+              }}
+              onTaskReschedule={rescheduleTask}
+              onNewTask={(taskType) => {
+                setNewTaskType(taskType);
+                setSelectedTaskId("");
+                setInspectorTab("task");
+              }}
+              onOpenDependencies={() => setInspectorTab("links")}
+              onCreateBaseline={() => void addBaseline({ name: `Baseline ${schedule.baselines.length + 1}` })}
+              onOpenResources={() => setInspectorTab("resources")}
+            />
+          )}
           secondary={(
             <PlanningInspector
               projects={projects}
               schedule={schedule}
               selectedTask={selectedTask}
-              selectedTaskId={selectedTaskId}
+              activeTab={inspectorTab}
+              newTaskType={newTaskType}
               status={status}
               busy={busy}
+              onTabChange={setInspectorTab}
               onProjectChange={changeProject}
-              onTaskSelect={setSelectedTaskId}
               onSaveTask={saveTask}
               onCreateTask={addTask}
               onDeleteTask={removeTask}

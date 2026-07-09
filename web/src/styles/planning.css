@@ -4,6 +4,81 @@
   min-width: 0;
 }
 
+.planning-workspace .workflow-split-view {
+  grid-template-columns: minmax(720px, 1fr) minmax(360px, 420px);
+}
+
+.planning-workspace .workflow-secondary-region {
+  max-height: calc(100vh - (var(--uok-space-4) * 2));
+  overflow-y: auto;
+}
+
+.planning-timeline-workbench {
+  display: grid;
+  gap: var(--uok-space-2);
+  min-width: 0;
+}
+
+.planning-gantt-toolbar,
+.planning-toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--uok-space-2);
+}
+
+.planning-gantt-toolbar {
+  justify-content: space-between;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  background: var(--uok-bg-elevated);
+}
+
+.planning-segmented-control {
+  display: inline-flex;
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-segmented-control button,
+.planning-toolbar-toggle,
+.planning-inspector-tabs button {
+  min-height: 36px;
+  border: 0;
+  color: var(--uok-text-secondary);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.planning-segmented-control button {
+  padding: 0 var(--uok-space-3);
+  text-transform: capitalize;
+}
+
+.planning-segmented-control button + button {
+  border-left: var(--uok-line);
+}
+
+.planning-toolbar-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-3);
+}
+
+.planning-segmented-control button.selected,
+.planning-toolbar-toggle.selected,
+.planning-inspector-tabs button.selected {
+  color: var(--uok-text-primary);
+  background: color-mix(in srgb, var(--uok-accent) 14%, var(--uok-bg-elevated));
+}
+
 .planning-gantt-shell {
   min-width: 0;
   height: clamp(420px, 62vh, 720px);
@@ -20,6 +95,10 @@
 .planning-gantt-critical {
   --wx-gantt-task-color: var(--uok-status-danger);
   --wx-gantt-task-fill: color-mix(in srgb, var(--uok-status-danger) 86%, var(--uok-bg-elevated));
+}
+
+.planning-gantt-today {
+  color: var(--uok-status-warning);
 }
 
 .planning-task-grid {
@@ -58,6 +137,54 @@
   margin: 0;
   color: var(--uok-text-primary);
   font-size: var(--uok-body);
+}
+
+.planning-inspector-top {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.planning-selected-summary {
+  display: grid;
+  gap: var(--uok-space-1);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-selected-summary strong,
+.planning-selected-summary span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-selected-summary span {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.planning-inspector-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-inspector-tabs button {
+  min-width: 0;
+  padding: 0 var(--uok-space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-inspector-tabs button + button {
+  border-left: var(--uok-line);
 }
 
 .planning-form-grid {
@@ -133,5 +260,24 @@
 @media (max-width: 680px) {
   .planning-gantt-shell {
     height: 480px;
+  }
+
+  .planning-workspace .workflow-split-view {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-gantt-toolbar {
+    align-items: stretch;
+  }
+
+  .planning-toolbar-group,
+  .planning-toolbar-group .command-button,
+  .planning-toolbar-toggle,
+  .planning-segmented-control {
+    width: 100%;
+  }
+
+  .planning-segmented-control button {
+    flex: 1 1 0;
   }
 }

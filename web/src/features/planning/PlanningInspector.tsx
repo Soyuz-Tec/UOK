@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
 import { Pane } from "../../shared/layout";
-import { PlanningTaskGrid } from "./PlanningTaskGrid";
 import type { PlanningDependency, PlanningProject, PlanningSchedule, PlanningTask } from "./types";
 
 const dependencyTypes = [
@@ -12,16 +11,18 @@ const dependencyTypes = [
   ["finish_to_finish", "Finish to finish"],
   ["start_to_finish", "Start to finish"],
 ];
+export type PlanningInspectorTab = "task" | "links" | "calendar" | "resources" | "status";
 
 export function PlanningInspector(props: {
   projects: PlanningProject[];
   schedule: PlanningSchedule;
   selectedTask: PlanningTask | null;
-  selectedTaskId: string;
+  activeTab: PlanningInspectorTab;
+  newTaskType: "task" | "milestone";
   status: unknown;
   busy: string;
+  onTabChange: (tab: PlanningInspectorTab) => void;
   onProjectChange: (projectId: string) => void;
-  onTaskSelect: (taskId: string) => void;
   onSaveTask: (taskId: string, payload: Record<string, unknown>) => Promise<void>;
   onCreateTask: (payload: Record<string, unknown>) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
@@ -33,42 +34,51 @@ export function PlanningInspector(props: {
   onCreateResource: (payload: Record<string, unknown>) => Promise<void>;
   onAssignResource: (payload: Record<string, unknown>) => Promise<void>;
 }) {
-  const { projects, schedule, selectedTask, selectedTaskId, status, busy, onProjectChange, onTaskSelect } = props;
+  const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, onProjectChange, onTabChange } = props;
 
   return (
     <Pane title="Inspector" description={schedule.project.name}>
-      <label className="field">
-        <span>Project</span>
-        <select value={schedule.project.id} onChange={(event) => onProjectChange(event.target.value)}>
-          {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
-        </select>
-      </label>
-      <PlanningTaskGrid
-        tasks={schedule.tasks}
-        resources={schedule.resources}
-        assignments={schedule.assignments}
-        selectedTaskId={selectedTaskId}
-        onSelect={onTaskSelect}
-      />
-      <ValidationPanel schedule={schedule} status={status} />
-      <TaskEditor
-        key={selectedTask?.id || "new"}
-        schedule={schedule}
-        selectedTask={selectedTask}
-        busy={busy}
-        onSaveTask={props.onSaveTask}
-        onCreateTask={props.onCreateTask}
-        onDeleteTask={props.onDeleteTask}
-      />
-      <DependencyEditor
-        schedule={schedule}
-        busy={busy}
-        onCreateDependency={props.onCreateDependency}
-        onUpdateDependency={props.onUpdateDependency}
-        onRemoveDependency={props.onRemoveDependency}
-      />
-      <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />
-      <ResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />
+      <div className="planning-inspector-top">
+        <label className="field">
+          <span>Project</span>
+          <select value={schedule.project.id} onChange={(event) => onProjectChange(event.target.value)}>
+            {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+          </select>
+        </label>
+        <div className="planning-selected-summary" aria-label="Selected task">
+          <strong>{selectedTask?.title || "New task"}</strong>
+          <span>{selectedTask ? `${selectedTask.wbs || "-"} - ${selectedTask.start} to ${selectedTask.end}` : "Blank task form"}</span>
+        </div>
+      </div>
+      <div className="planning-inspector-tabs" role="tablist" aria-label="Planning inspector sections">
+        {[
+          ["task", "Task"],
+          ["links", "Links"],
+          ["calendar", "Calendar"],
+          ["resources", "Resources"],
+          ["status", "Status"],
+        ].map(([id, label]) => (
+          <button key={id} type="button" role="tab" aria-selected={activeTab === id} className={activeTab === id ? "selected" : ""} onClick={() => onTabChange(id as PlanningInspectorTab)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {activeTab === "task" && (
+        <TaskEditor
+          key={selectedTask?.id || "new"}
+          schedule={schedule}
+          selectedTask={selectedTask}
+          newTaskType={newTaskType}
+          busy={busy}
+          onSaveTask={props.onSaveTask}
+          onCreateTask={props.onCreateTask}
+          onDeleteTask={props.onDeleteTask}
+        />
+      )}
+      {activeTab === "links" && <DependencyEditor schedule={schedule} busy={busy} onCreateDependency={props.onCreateDependency} onUpdateDependency={props.onUpdateDependency} onRemoveDependency={props.onRemoveDependency} />}
+      {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
+      {activeTab === "resources" && <ResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />}
+      {activeTab === "status" && <ValidationPanel schedule={schedule} status={status} />}
     </Pane>
   );
 }
@@ -84,17 +94,18 @@ function ValidationPanel({ schedule, status }: { schedule: PlanningSchedule; sta
   );
 }
 
-function TaskEditor({ schedule, selectedTask, busy, onSaveTask, onCreateTask, onDeleteTask }: {
+function TaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onCreateTask, onDeleteTask }: {
   schedule: PlanningSchedule;
   selectedTask: PlanningTask | null;
+  newTaskType: "task" | "milestone";
   busy: string;
   onSaveTask: (taskId: string, payload: Record<string, unknown>) => Promise<void>;
   onCreateTask: (payload: Record<string, unknown>) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
 }) {
-  const [form, setForm] = useState(taskForm(selectedTask, schedule.tasks.length + 1));
+  const [form, setForm] = useState(taskForm(selectedTask, schedule.tasks.length + 1, newTaskType));
 
-  useEffect(() => setForm(taskForm(selectedTask, schedule.tasks.length + 1)), [schedule.tasks.length, selectedTask]);
+  useEffect(() => setForm(taskForm(selectedTask, schedule.tasks.length + 1, newTaskType)), [newTaskType, schedule.tasks.length, selectedTask]);
 
   const payload = {
     title: form.title,
@@ -264,10 +275,10 @@ function DependencyTypeSelect({ value, onChange }: { value: string; onChange: (v
   );
 }
 
-function taskForm(task: PlanningTask | null, order: number) {
+function taskForm(task: PlanningTask | null, order: number, newTaskType: "task" | "milestone") {
   return {
     title: task?.title || "",
-    task_type: task?.task_type || "task",
+    task_type: task?.task_type || newTaskType,
     parent_task_id: task?.parent_task_id || "",
     status: task?.status || "planned",
     start: task?.start || "2026-08-01",

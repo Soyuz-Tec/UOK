@@ -126,24 +126,33 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await openPlanning(page);
 
     await expect(page.getByRole("heading", { name: "Project schedule" })).toBeVisible();
+    await expect(page.getByLabel("Gantt toolbar")).toBeVisible();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
-    const taskTable = page.getByRole("table", { name: "Planning tasks" });
-    await expect(taskTable).toBeVisible();
-    await expect(taskTable.getByRole("row", { name: /Build integrated Gantt/ })).toBeVisible();
+    await page.getByRole("button", { name: "Task", exact: true }).focus();
+    await expect(page.getByRole("button", { name: "Task", exact: true })).toBeFocused();
+    await expect.poll(() => page.locator(".planning-gantt-shell").getByText("Build integrated Gantt with dependency validation").count()).toBeGreaterThan(0);
+    await expect(page.getByRole("button", { name: "day", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "week", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "month", exact: true })).toBeVisible();
     await expect(page.getByLabel("Task editor")).toBeVisible();
+    await page.getByRole("tab", { name: "Links" }).click();
     await expect(page.getByLabel("Dependency editor")).toBeVisible();
+    await page.getByRole("tab", { name: "Calendar" }).click();
     await expect(page.getByLabel("Calendar and baseline")).toBeVisible();
+    await page.getByRole("tab", { name: "Resources" }).click();
     await expect(page.getByLabel("Resource assignments")).toBeVisible();
+    await page.getByRole("tab", { name: "Status" }).click();
+    await expect(page.getByLabel("Planning validation status")).toBeVisible();
 
     const layout = await page.evaluate(() => {
       const shell = document.querySelector(".shell")?.getBoundingClientRect();
       const gantt = document.querySelector(".planning-gantt-shell")?.getBoundingClientRect();
-      const status = document.querySelector(".planning-validation")?.getBoundingClientRect();
+      const inspector = document.querySelector(".workflow-secondary-region")?.getBoundingClientRect();
       return {
         shellWidth: shell?.width || 0,
         ganttWidth: gantt?.width || 0,
         ganttHeight: gantt?.height || 0,
-        overlap: Boolean(gantt && status && !(gantt.right <= status.left || status.right <= gantt.left || gantt.bottom <= status.top || status.bottom <= gantt.top)),
+        overlap: Boolean(gantt && inspector && !(gantt.right <= inspector.left || inspector.right <= gantt.left || gantt.bottom <= inspector.top || inspector.bottom <= gantt.top)),
       };
     });
     expect(layout.shellWidth).toBeGreaterThan(300);
@@ -151,8 +160,6 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     expect(layout.ganttHeight).toBeGreaterThan(360);
     if (viewport.width > 980) expect(layout.overlap).toBe(false);
 
-    await page.keyboard.press("Tab");
-    await expect(page.locator(":focus")).toBeVisible();
     const screenshot = await page.screenshot();
     expect(screenshot.length).toBeGreaterThan(20_000);
   }
