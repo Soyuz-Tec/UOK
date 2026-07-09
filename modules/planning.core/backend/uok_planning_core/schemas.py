@@ -24,6 +24,8 @@ class PlanningTaskUpdateRequest(BaseModel):
     title: str | None = Field(default=None, min_length=2, max_length=180)
     start: str | None = Field(default=None, min_length=10, max_length=32)
     end: str | None = Field(default=None, min_length=10, max_length=32)
+    task_type: str | None = Field(default=None, pattern="^(task|summary|milestone)$")
+    parent_task_id: str | None = Field(default=None, max_length=36)
     status: str | None = Field(default=None, max_length=40)
     progress: int | None = Field(default=None, ge=0, le=100)
     sort_order: int | None = Field(default=None, ge=0)
@@ -32,5 +34,31 @@ class PlanningTaskUpdateRequest(BaseModel):
 class PlanningDependencyRequest(BaseModel):
     predecessor_task_id: str = Field(..., max_length=36)
     successor_task_id: str = Field(..., max_length=36)
-    dependency_type: str = Field(default="finish_to_start", pattern="^finish_to_start$")
-    lag_days: int = Field(default=0, ge=0, le=30)
+    dependency_type: str = Field(default="finish_to_start", pattern="^(finish_to_start|start_to_start|finish_to_finish|start_to_finish)$")
+    lag_days: int = Field(default=0, ge=-30, le=30)
+
+
+class PlanningDependencyUpdateRequest(BaseModel):
+    dependency_type: str | None = Field(default=None, pattern="^(finish_to_start|start_to_start|finish_to_finish|start_to_finish)$")
+    lag_days: int | None = Field(default=None, ge=-30, le=30)
+
+
+class PlanningCalendarRequest(BaseModel):
+    name: str = Field(default="Standard", max_length=120)
+    working_days: list[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5])
+    holidays: list[str] = Field(default_factory=list)
+
+
+class PlanningBaselineRequest(BaseModel):
+    name: str = Field(default="Baseline", min_length=2, max_length=120)
+
+
+class PlanningResourceRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=160)
+    role: str = Field(default="", max_length=120)
+
+
+class PlanningAssignmentRequest(BaseModel):
+    task_id: str = Field(..., max_length=36)
+    resource_id: str = Field(..., max_length=36)
+    allocation_percent: int = Field(default=100, ge=1, le=300)

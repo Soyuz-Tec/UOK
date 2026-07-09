@@ -19,15 +19,21 @@
 
 - project list
 - project schedule read model
-- task grid
+- editable task grid and inspector path for create, update, delete, hierarchy, status, progress, and task type
 - Gantt bars
-- milestone-ready task model
-- finish-to-start dependencies
+- milestone and summary task model
+- dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead
+- Python scheduling propagation for dependency-driven successor movement
+- working calendar storage with working-day and holiday-aware propagation
+- hierarchy validation, WBS read model, and summary rollups
+- CPM read model fields for early dates, late dates, slack, and critical flags
+- baseline capture and baseline variance read-model fields
+- resource creation, assignment, allocation display, and over-allocation warnings
 - drag-to-reschedule path through server validation
 - command-bus writes and idempotency
 - planning audit events
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier
-- Playwright UI proof for Gantt rendering, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness
+- Playwright UI proof for Gantt rendering, editor panels, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness
 
 ## Module Ownership
 
@@ -45,14 +51,17 @@ Shared shell and reusable controls remain under `web/src/shared` and `web/src/fe
 
 All project, task, dependency, and reschedule changes must pass through Python validation before the UI accepts them. The React Gantt component may initiate drag-style changes, but it must call the planning API or command bus and reload the validated schedule read model after the server accepts the change.
 
-The first release validates:
+The current release validates:
 
 - required dates
 - end date on or after start date
 - dependency references inside the project
 - self-dependency rejection
-- finish-to-start date ordering
-- cycle detection
+- dependency type-specific date ordering
+- dependency and hierarchy cycle detection
+- parent references inside the project
+- cross-project resource assignment rejection
+- resource over-allocation warnings
 
 ## Acceptance Checks
 
@@ -60,16 +69,16 @@ Required checks before handoff:
 
 ```powershell
 python -m pytest modules/planning.core/tests/test_planning_core.py -q
-npm --prefix web run build:static
+npm --prefix web run build
 npm --prefix web run test:ui-proof
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```
 
 ## Deferred Work
 
-- calendar exception rules in scheduling calculations
-- baselines in the Gantt view
-- resource loading
-- multiple dependency types
-- critical path UX beyond initial read-model flagging
+- full resource leveling and capacity calendars
+- baseline overlay lanes directly inside the Gantt timeline
+- richer critical path UX beyond read-model flags and grid fields
+- bulk edit, undo, and import/export flows
+- richer keyboard grid editing beyond the current inspector workflow
 - module-root frontend source packaging

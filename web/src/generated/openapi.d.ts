@@ -622,6 +622,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Assign Resource */
+        post: operations["assign_resource_api_planning_assignments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/dependencies/{dependency_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Dependency */
+        delete: operations["remove_dependency_api_planning_dependencies__dependency_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Dependency */
+        patch: operations["update_dependency_api_planning_dependencies__dependency_id__patch"];
+        trace?: never;
+    };
     "/api/planning/projects": {
         parameters: {
             query?: never;
@@ -640,6 +675,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/projects/{project_id}/baselines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Baseline */
+        post: operations["create_baseline_api_planning_projects__project_id__baselines_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Calendar */
+        put: operations["set_calendar_api_planning_projects__project_id__calendar_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/projects/{project_id}/dependencies": {
         parameters: {
             query?: never;
@@ -651,6 +720,23 @@ export interface paths {
         put?: never;
         /** Link Tasks */
         post: operations["link_tasks_api_planning_projects__project_id__dependencies_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Resource */
+        post: operations["create_resource_api_planning_projects__project_id__resources_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -701,7 +787,8 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Task */
+        delete: operations["delete_task_api_planning_tasks__task_id__delete"];
         options?: never;
         head?: never;
         /** Update Task */
@@ -875,6 +962,38 @@ export interface components {
             /** Username */
             username: string;
         };
+        /** PlanningAssignmentRequest */
+        PlanningAssignmentRequest: {
+            /**
+             * Allocation Percent
+             * @default 100
+             */
+            allocation_percent: number;
+            /** Resource Id */
+            resource_id: string;
+            /** Task Id */
+            task_id: string;
+        };
+        /** PlanningBaselineRequest */
+        PlanningBaselineRequest: {
+            /**
+             * Name
+             * @default Baseline
+             */
+            name: string;
+        };
+        /** PlanningCalendarRequest */
+        PlanningCalendarRequest: {
+            /** Holidays */
+            holidays?: string[];
+            /**
+             * Name
+             * @default Standard
+             */
+            name: string;
+            /** Working Days */
+            working_days?: number[];
+        };
         /** PlanningDependencyRequest */
         PlanningDependencyRequest: {
             /**
@@ -892,6 +1011,13 @@ export interface components {
             /** Successor Task Id */
             successor_task_id: string;
         };
+        /** PlanningDependencyUpdateRequest */
+        PlanningDependencyUpdateRequest: {
+            /** Dependency Type */
+            dependency_type?: string | null;
+            /** Lag Days */
+            lag_days?: number | null;
+        };
         /** PlanningProjectRequest */
         PlanningProjectRequest: {
             /** End */
@@ -900,6 +1026,16 @@ export interface components {
             name: string;
             /** Start */
             start: string;
+        };
+        /** PlanningResourceRequest */
+        PlanningResourceRequest: {
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @default
+             */
+            role: string;
         };
         /** PlanningTaskRequest */
         PlanningTaskRequest: {
@@ -936,6 +1072,8 @@ export interface components {
         PlanningTaskUpdateRequest: {
             /** End */
             end?: string | null;
+            /** Parent Task Id */
+            parent_task_id?: string | null;
             /** Progress */
             progress?: number | null;
             /** Sort Order */
@@ -944,6 +1082,8 @@ export interface components {
             start?: string | null;
             /** Status */
             status?: string | null;
+            /** Task Type */
+            task_type?: string | null;
             /** Title */
             title?: string | null;
         };
@@ -2450,6 +2590,117 @@ export interface operations {
             };
         };
     };
+    assign_resource_api_planning_assignments_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningAssignmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_dependency_api_planning_dependencies__dependency_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                dependency_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_dependency_api_planning_dependencies__dependency_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                dependency_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningDependencyUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     projects_api_planning_projects_get: {
         parameters: {
             query?: never;
@@ -2520,6 +2771,84 @@ export interface operations {
             };
         };
     };
+    create_baseline_api_planning_projects__project_id__baselines_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningBaselineRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_calendar_api_planning_projects__project_id__calendar_put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningCalendarRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     link_tasks_api_planning_projects__project_id__dependencies_post: {
         parameters: {
             query?: never;
@@ -2534,6 +2863,45 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["PlanningDependencyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_resource_api_planning_projects__project_id__resources_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningResourceRequest"];
             };
         };
         responses: {
@@ -2610,6 +2978,41 @@ export interface operations {
                 "application/json": components["schemas"]["PlanningTaskRequest"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_task_api_planning_tasks__task_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

@@ -2,12 +2,32 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from .models import PlanningProject, PlanningScheduleEvent, PlanningTask, PlanningTaskDependency, utcnow
-from .read_model import schedule_read_model, serialize_project, serialize_task
-from .scheduler import parse_planning_date, project_or_error, project_tasks, task_or_error, validate_schedule
+from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_set_calendar
+from .models import (
+    PlanningAssignment,
+    PlanningProject,
+    PlanningScheduleEvent,
+    PlanningTask,
+    PlanningTaskDependency,
+    utcnow,
+)
+from .read_model import baseline_snapshot, schedule_read_model, serialize_project, serialize_task
+from .scheduler import (
+    DEPENDENCY_TYPES,
+    apply_schedule,
+    assert_task_dependency_position,
+    parse_planning_date,
+    project_calendar,
+    project_dependencies,
+    project_or_error,
+    project_tasks,
+    task_or_error,
+    validate_schedule,
+)
+from .schedule_math import working_duration
 from uok.models import EventRecord
 from uok.security import Actor
 from uok.util import dumps
@@ -32,12 +52,14 @@ def cmd_create_project(db: Session, actor: Actor, payload: dict[str, Any], comma
 def cmd_create_task(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     project = project_or_error(db, actor, clean_text(payload.get("project_id"), "project_id", 36))
     task = _task_from_payload(actor, project.id, payload)
+    _assert_parent_valid(db, actor, project.id, task.parent_task_id)
     db.add(task)
     project.updated_at = utcnow()
     db.flush()
+    changed = apply_schedule(db, actor, project.id)
     _assert_schedule_valid(db, actor, project.id)
     _emit(db, actor, "PlanningTaskCreated", "PlanningTask", task.id, {"project_id": project.id, "title": task.title})
-    _schedule_event(db, actor, project.id, "task_created", {"task_id": task.id})
+    _schedule_event(db, actor, project.id, "task_created", {"task_id": task.id, "changed_task_ids": sorted(changed)})
     return serialize_task(task)
 
 
@@ -46,6 +68,12 @@ def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_
     project = project_or_error(db, actor, task.project_id)
     if "title" in payload:
         task.title = clean_text(payload.get("title"), "title", 180)
+    if "task_type" in payload:
+        task.task_type = _task_type(payload.get("task_type"))
+    if "parent_task_id" in payload:
+        parent_id = str(payload["parent_task_id"]) if payload.get("parent_task_id") else None
+        _assert_parent_valid(db, actor, project.id, parent_id, task.id)
+        task.parent_task_id = parent_id
     if "start" in payload:
         task.start_at = parse_planning_date(payload.get("start"), "start")
     if "end" in payload:
@@ -58,13 +86,41 @@ def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_
         task.progress = bounded_int(payload.get("progress"), "progress", 0, 100)
     if "sort_order" in payload:
         task.sort_order = bounded_int(payload.get("sort_order"), "sort_order", 0, 100000)
-    task.duration_days = max(1, (task.end_at.date() - task.start_at.date()).days + 1)
+    _recalculate_duration(task, project_calendar(db, actor, project.id))
     task.updated_at = utcnow()
     project.updated_at = task.updated_at
+    tasks = project_tasks(db, actor, project.id)
+    dependencies = project_dependencies(db, actor, project.id)
+    assert_task_dependency_position(task, tasks, dependencies, project_calendar(db, actor, project.id))
+    changed = apply_schedule(db, actor, project.id)
     _assert_schedule_valid(db, actor, project.id)
     _emit(db, actor, "PlanningTaskUpdated", "PlanningTask", task.id, {"project_id": project.id, "title": task.title})
-    _schedule_event(db, actor, project.id, "task_updated", {"task_id": task.id})
+    _schedule_event(db, actor, project.id, "task_updated", {"task_id": task.id, "changed_task_ids": sorted(changed)})
     return {"task": serialize_task(task), "validation": schedule_read_model(db, actor, project)["validation"]}
+
+
+def cmd_delete_task(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
+    task = task_or_error(db, actor, clean_text(payload.get("task_id"), "task_id", 36))
+    project = project_or_error(db, actor, task.project_id)
+    task_ids = _task_subtree_ids(project_tasks(db, actor, project.id), task.id)
+    for row in project_tasks(db, actor, project.id):
+        if row.id in task_ids:
+            row.status = "deleted"
+            row.updated_at = utcnow()
+    db.execute(delete(PlanningTaskDependency).where(
+        PlanningTaskDependency.organization_id == actor.organization_id,
+        PlanningTaskDependency.project_id == project.id,
+        PlanningTaskDependency.predecessor_task_id.in_(task_ids) | PlanningTaskDependency.successor_task_id.in_(task_ids),
+    ))
+    db.execute(delete(PlanningAssignment).where(
+        PlanningAssignment.organization_id == actor.organization_id,
+        PlanningAssignment.task_id.in_(task_ids),
+    ))
+    project.updated_at = utcnow()
+    changed = apply_schedule(db, actor, project.id)
+    _emit(db, actor, "PlanningTaskDeleted", "PlanningTask", task.id, {"project_id": project.id})
+    _schedule_event(db, actor, project.id, "task_deleted", {"task_ids": sorted(task_ids), "changed_task_ids": sorted(changed)})
+    return schedule_read_model(db, actor, project)
 
 
 def cmd_link_tasks(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
@@ -76,15 +132,41 @@ def cmd_link_tasks(db: Session, actor: Actor, payload: dict[str, Any], command_i
         project_id=project.id,
         predecessor_task_id=predecessor.id,
         successor_task_id=successor.id,
-        dependency_type=clean_text(payload.get("dependency_type") or "finish_to_start", "dependency_type", 20),
-        lag_days=bounded_int(payload.get("lag_days", 0), "lag_days", 0, 30),
+        dependency_type=_dependency_type(payload.get("dependency_type")),
+        lag_days=bounded_int(payload.get("lag_days", 0), "lag_days", -30, 30),
     )
     db.add(dep)
     project.updated_at = utcnow()
     db.flush()
+    changed = apply_schedule(db, actor, project.id)
     _assert_schedule_valid(db, actor, project.id)
     _emit(db, actor, "PlanningTaskLinked", "PlanningTaskDependency", dep.id, {"project_id": project.id})
-    _schedule_event(db, actor, project.id, "task_linked", {"dependency_id": dep.id})
+    _schedule_event(db, actor, project.id, "task_linked", {"dependency_id": dep.id, "changed_task_ids": sorted(changed)})
+    return schedule_read_model(db, actor, project)
+
+
+def cmd_update_dependency(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
+    dep = _dependency_or_error(db, actor, clean_text(payload.get("dependency_id"), "dependency_id", 36))
+    project = project_or_error(db, actor, dep.project_id)
+    if "dependency_type" in payload:
+        dep.dependency_type = _dependency_type(payload.get("dependency_type"))
+    if "lag_days" in payload:
+        dep.lag_days = bounded_int(payload.get("lag_days", 0), "lag_days", -30, 30)
+    changed = apply_schedule(db, actor, project.id)
+    _assert_schedule_valid(db, actor, project.id)
+    _emit(db, actor, "PlanningDependencyUpdated", "PlanningTaskDependency", dep.id, {"project_id": project.id})
+    _schedule_event(db, actor, project.id, "dependency_updated", {"dependency_id": dep.id, "changed_task_ids": sorted(changed)})
+    return schedule_read_model(db, actor, project)
+
+
+def cmd_remove_dependency(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
+    dep = _dependency_or_error(db, actor, clean_text(payload.get("dependency_id"), "dependency_id", 36))
+    project = project_or_error(db, actor, dep.project_id)
+    dep_id = dep.id
+    db.delete(dep)
+    changed = apply_schedule(db, actor, project.id)
+    _emit(db, actor, "PlanningDependencyRemoved", "PlanningTaskDependency", dep_id, {"project_id": project.id})
+    _schedule_event(db, actor, project.id, "dependency_removed", {"dependency_id": dep_id, "changed_task_ids": sorted(changed)})
     return schedule_read_model(db, actor, project)
 
 
@@ -93,7 +175,14 @@ def command_handlers() -> dict[str, CommandHandler]:
         "CreatePlanningProject": cmd_create_project,
         "CreatePlanningTask": cmd_create_task,
         "UpdatePlanningTask": cmd_update_task,
+        "DeletePlanningTask": cmd_delete_task,
         "LinkPlanningTasks": cmd_link_tasks,
+        "UpdatePlanningDependency": cmd_update_dependency,
+        "RemovePlanningDependency": cmd_remove_dependency,
+        "SetPlanningCalendar": cmd_set_calendar,
+        "CreatePlanningBaseline": cmd_create_baseline,
+        "CreatePlanningResource": cmd_create_resource,
+        "AssignPlanningResource": cmd_assign_resource,
     }
 
 
@@ -101,56 +190,87 @@ def command_permissions() -> dict[str, str]:
     return {command: "planning.manage" for command in command_handlers()}
 
 
-def clean_text(value: Any, field: str, limit: int) -> str:
-    text = str(value or "").strip()
-    if not text:
-        raise ValueError(f"{field} is required")
-    if len(text) > limit:
-        raise ValueError(f"{field} must be {limit} characters or fewer")
-    return text
-
-
-def bounded_int(value: Any, field: str, minimum: int, maximum: int) -> int:
-    try:
-        parsed = int(value)
-    except (TypeError, ValueError) as exc:
-        raise ValueError(f"{field} must be a number") from exc
-    if parsed < minimum or parsed > maximum:
-        raise ValueError(f"{field} must be between {minimum} and {maximum}")
-    return parsed
-
-
 def _task_from_payload(actor: Actor, project_id: str, payload: dict[str, Any]) -> PlanningTask:
     start = parse_planning_date(payload.get("start"), "start")
     end = parse_planning_date(payload.get("end"), "end")
     if end < start:
         raise ValueError("task end must be on or after start")
-    task_type = str(payload.get("task_type") or "task")
-    if task_type not in {"task", "summary", "milestone"}:
-        raise ValueError("task_type must be task, summary, or milestone")
-    return PlanningTask(
+    task = PlanningTask(
         organization_id=actor.organization_id,
         project_id=project_id,
         parent_task_id=str(payload["parent_task_id"]) if payload.get("parent_task_id") else None,
         title=clean_text(payload.get("title"), "title", 180),
-        task_type=task_type,
+        task_type=_task_type(payload.get("task_type")),
         status=str(payload.get("status") or "planned")[:40],
         start_at=start,
         end_at=end,
-        duration_days=max(1, (end.date() - start.date()).days + 1),
         progress=bounded_int(payload.get("progress", 0), "progress", 0, 100),
         sort_order=bounded_int(payload.get("sort_order", 0), "sort_order", 0, 100000),
         updated_at=utcnow(),
     )
+    _recalculate_duration(task)
+    return task
 
 
 def _assert_schedule_valid(db: Session, actor: Actor, project_id: str) -> None:
-    violations = validate_schedule(project_tasks(db, actor, project_id), list(db.scalars(select(PlanningTaskDependency).where(
-        PlanningTaskDependency.organization_id == actor.organization_id,
-        PlanningTaskDependency.project_id == project_id,
-    )).all()))
+    violations = validate_schedule(project_tasks(db, actor, project_id), project_dependencies(db, actor, project_id), project_calendar(db, actor, project_id))
     if violations:
         raise ValueError("; ".join(violations))
+
+
+def _assert_parent_valid(db: Session, actor: Actor, project_id: str, parent_id: str | None, task_id: str | None = None) -> None:
+    if not parent_id:
+        return
+    parent = task_or_error(db, actor, parent_id, project_id)
+    if parent.id == task_id:
+        raise ValueError("task cannot be its own parent")
+
+
+def _dependency_or_error(db: Session, actor: Actor, dependency_id: str) -> PlanningTaskDependency:
+    dep = db.get(PlanningTaskDependency, dependency_id)
+    if not dep or dep.organization_id != actor.organization_id:
+        raise ValueError("dependency_id not found")
+    return dep
+
+
+def _task_type(value: Any) -> str:
+    task_type = str(value or "task")
+    if task_type not in {"task", "summary", "milestone"}:
+        raise ValueError("task_type must be task, summary, or milestone")
+    return task_type
+
+
+def _dependency_type(value: Any) -> str:
+    dependency_type = str(value or "finish_to_start")
+    if dependency_type not in DEPENDENCY_TYPES:
+        raise ValueError("dependency_type must be finish_to_start, start_to_start, finish_to_finish, or start_to_finish")
+    return dependency_type
+
+
+def _recalculate_duration(task: PlanningTask, calendar: Any | None = None) -> None:
+    if task.task_type == "milestone":
+        task.duration_days = 0
+        task.end_at = task.start_at
+        return
+    if calendar:
+        task.duration_days = max(1, working_duration(task.start_at.date(), task.end_at.date(), calendar))
+    else:
+        task.duration_days = max(1, (task.end_at.date() - task.start_at.date()).days + 1)
+
+
+def _task_subtree_ids(tasks: list[PlanningTask], task_id: str) -> set[str]:
+    children: dict[str, list[str]] = {}
+    for row in tasks:
+        if row.parent_task_id:
+            children.setdefault(row.parent_task_id, []).append(row.id)
+    found = {task_id}
+    stack = [task_id]
+    while stack:
+        current = stack.pop()
+        for child_id in children.get(current, []):
+            found.add(child_id)
+            stack.append(child_id)
+    return found
 
 
 def _emit(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:

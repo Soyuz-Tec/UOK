@@ -1,13 +1,27 @@
-import { CalendarRange, FolderKanban, Plus, RefreshCw } from "lucide-react";
+import { FolderKanban, Plus, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { CommandButton } from "../../shared/primitives";
 import { EmptyState, StatusPill } from "../../shared/data-display";
 import { Pane, WorkflowHeader, WorkflowSplitView } from "../../shared/layout";
-import { loadPlanningSchedule, listPlanningProjects, planningCommand, updatePlanningTask } from "./planningApi";
-import { PLANNING_MODULE_ID } from "./planningModule";
+import { CommandButton } from "../../shared/primitives";
+import {
+  assignPlanningResource,
+  createPlanningBaseline,
+  createPlanningDependency,
+  createPlanningResource,
+  createPlanningTask,
+  deletePlanningTask,
+  loadPlanningSchedule,
+  listPlanningProjects,
+  planningCommand,
+  removePlanningDependency,
+  setPlanningCalendar,
+  updatePlanningDependency,
+  updatePlanningTask,
+} from "./planningApi";
 import { PlanningGantt } from "./PlanningGantt";
-import { PlanningTaskGrid } from "./PlanningTaskGrid";
+import { PlanningInspector } from "./PlanningInspector";
+import { PLANNING_MODULE_ID } from "./planningModule";
 import type { PlanningProject, PlanningSchedule, PlanningTask, PlanningWorkspaceProps } from "./types";
 
 export function PlanningWorkspace({ token, appearance, module, busyAction, onActivate }: PlanningWorkspaceProps) {
@@ -23,6 +37,13 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
     [schedule, selectedTaskId],
   );
 
+  const reloadSchedule = useCallback(async (projectId: string) => {
+    const nextSchedule = await loadPlanningSchedule(token, projectId);
+    setSchedule(nextSchedule);
+    setSelectedTaskId((current) => nextSchedule.tasks.some((task) => task.id === current) ? current : nextSchedule.tasks[0]?.id || "");
+    return nextSchedule;
+  }, [token]);
+
   const refresh = useCallback(async () => {
     if (!token || !operational) return;
     setBusy("refresh");
@@ -31,56 +52,29 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
       setProjects(rows);
       const projectId = selectedProjectId || rows[0]?.id || "";
       setSelectedProjectId(projectId);
-      if (projectId) {
-        const nextSchedule = await loadPlanningSchedule(token, projectId);
-        setSchedule(nextSchedule);
-        setSelectedTaskId((current) => current || nextSchedule.tasks[0]?.id || "");
-      } else {
-        setSchedule(null);
-      }
+      if (projectId) await reloadSchedule(projectId);
+      else setSchedule(null);
       setStatus({ status: "ready", projects: rows.length });
     } catch (error) {
       setStatus(error);
     } finally {
       setBusy("");
     }
-  }, [operational, selectedProjectId, token]);
+  }, [operational, reloadSchedule, selectedProjectId, token]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
   if (!token) return <EmptyState text="Sign in to open Planning." />;
-  if (!operational) {
-    const action = module?.status === "disabled" ? "Enable" : "Install";
-    return (
-      <section className="planning-workspace" aria-label="Planning">
-        <Pane title="Planning" description="Module state" wide>
-          <div className="module-row">
-            <div className="module-main">
-              <div className="module-title-line">
-                <h2 className="module-name">{PLANNING_MODULE_ID}</h2>
-                <StatusPill label={module?.status || "available"} tone="info" />
-              </div>
-              <p className="module-meta">capability_module - {module?.version || "not loaded"}</p>
-            </div>
-            <div className="module-actions">
-              <CommandButton icon={Plus} onClick={onActivate} loading={busyAction.startsWith(PLANNING_MODULE_ID)}>
-                {action}
-              </CommandButton>
-            </div>
-          </div>
-        </Pane>
-      </section>
-    );
-  }
+  if (!operational) return <PlanningModuleState module={module} busyAction={busyAction} onActivate={onActivate} />;
 
   return (
     <section className="planning-workspace" aria-label="Planning">
       <WorkflowHeader
         eyebrow="Planning"
         title="Project schedule"
-        summary={schedule ? `${schedule.tasks.length} tasks, ${schedule.dependencies.length} dependencies` : "Create a sample schedule to begin."}
+        summary={schedule ? `${schedule.tasks.length} tasks, ${schedule.dependencies.length} dependencies` : "Create a plan to begin."}
       >
         <>
           <CommandButton icon={FolderKanban} onClick={() => void createDemoSchedule()} loading={busy === "demo"} primary>
@@ -107,8 +101,19 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               selectedTask={selectedTask}
               selectedTaskId={selectedTaskId}
               status={status}
+              busy={busy}
               onProjectChange={changeProject}
               onTaskSelect={setSelectedTaskId}
+              onSaveTask={saveTask}
+              onCreateTask={addTask}
+              onDeleteTask={removeTask}
+              onCreateDependency={addDependency}
+              onUpdateDependency={saveDependency}
+              onRemoveDependency={removeDependency}
+              onSetCalendar={saveCalendar}
+              onCreateBaseline={addBaseline}
+              onCreateResource={addResource}
+              onAssignResource={assignResource}
             />
           )}
         />
@@ -122,36 +127,25 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
       const stamp = Date.now();
       const project = await planningCommand<PlanningProject>(token, "CreatePlanningProject", {
         name: `Gantt Pilot ${stamp}`,
-        start: "2026-08-01",
-        end: "2026-08-20",
+        start: "2026-08-03",
+        end: "2026-08-28",
       }, "planning-project");
-      const first = await planningCommand<PlanningTask>(token, "CreatePlanningTask", {
-        project_id: project.result.id,
-        title: "Define schedule scope",
-        start: "2026-08-01",
-        end: "2026-08-03",
-        progress: 40,
-        sort_order: 1,
-      }, "planning-task-a");
-      const second = await planningCommand<PlanningTask>(token, "CreatePlanningTask", {
-        project_id: project.result.id,
-        title: "Build integrated Gantt",
-        start: "2026-08-04",
-        end: "2026-08-10",
-        sort_order: 2,
-      }, "planning-task-b");
-      await planningCommand(token, "LinkPlanningTasks", {
-        project_id: project.result.id,
-        predecessor_task_id: first.result.id,
-        successor_task_id: second.result.id,
-      }, "planning-link");
-      const nextProjects = await listPlanningProjects(token);
-      const nextSchedule = await loadPlanningSchedule(token, project.result.id);
-      setProjects(nextProjects);
-      setSelectedProjectId(project.result.id);
-      setSchedule(nextSchedule);
-      setSelectedTaskId(nextSchedule.tasks[0]?.id || "");
-      setStatus({ status: "created", project_id: project.result.id });
+      const projectId = project.result.id;
+      await setPlanningCalendar(token, projectId, { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: ["2026-08-14"] });
+      const summary = await createPlanningTask(token, projectId, taskPayload("Pilot delivery", "2026-08-03", "2026-08-20", 0, 1, "summary"));
+      const first = await createPlanningTask(token, projectId, taskPayload("Define schedule scope", "2026-08-03", "2026-08-05", 40, 2, "task", resultId(summary)));
+      const second = await createPlanningTask(token, projectId, taskPayload("Build integrated Gantt", "2026-08-06", "2026-08-12", 10, 3, "task", resultId(summary)));
+      const milestone = await createPlanningTask(token, projectId, taskPayload("Pilot review milestone", "2026-08-13", "2026-08-13", 0, 4, "milestone", resultId(summary)));
+      await createPlanningDependency(token, projectId, { predecessor_task_id: resultId(first), successor_task_id: resultId(second), dependency_type: "finish_to_start", lag_days: 1 });
+      await createPlanningDependency(token, projectId, { predecessor_task_id: resultId(second), successor_task_id: resultId(milestone), dependency_type: "finish_to_start", lag_days: 0 });
+      const resourceSchedule = await createPlanningResource(token, projectId, { name: "Planner", role: "Scheduling" }) as { resources?: { id: string }[] };
+      const resourceId = resourceSchedule.resources?.[0]?.id;
+      if (resourceId) await assignPlanningResource(token, { task_id: resultId(second), resource_id: resourceId, allocation_percent: 100 });
+      await createPlanningBaseline(token, projectId, { name: "Initial baseline" });
+      setProjects(await listPlanningProjects(token));
+      setSelectedProjectId(projectId);
+      await reloadSchedule(projectId);
+      setStatus({ status: "created", project_id: projectId });
     } catch (error) {
       setStatus(error);
     } finally {
@@ -161,54 +155,97 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
 
   async function changeProject(projectId: string) {
     setSelectedProjectId(projectId);
-    const nextSchedule = await loadPlanningSchedule(token, projectId);
-    setSchedule(nextSchedule);
-    setSelectedTaskId(nextSchedule.tasks[0]?.id || "");
+    await reloadSchedule(projectId);
   }
 
   async function rescheduleTask(taskId: string, start: string, end: string) {
-    setBusy("reschedule");
+    await mutate("reschedule", () => updatePlanningTask(token, taskId, { start, end }), { taskId, start, end });
+  }
+
+  async function saveTask(taskId: string, payload: Record<string, unknown>) {
+    await mutate("task", () => updatePlanningTask(token, taskId, payload), { taskId });
+  }
+
+  async function addTask(payload: Record<string, unknown>) {
+    await mutate("task", () => createPlanningTask(token, selectedProjectId, payload), { action: "task_created" });
+  }
+
+  async function removeTask(taskId: string) {
+    await mutate("task", () => deletePlanningTask(token, taskId), { taskId, action: "task_deleted" });
+  }
+
+  async function addDependency(payload: Record<string, unknown>) {
+    await mutate("dependency", () => createPlanningDependency(token, selectedProjectId, payload), { action: "dependency_created" });
+  }
+
+  async function saveDependency(dependencyId: string, payload: Record<string, unknown>) {
+    await mutate("dependency", () => updatePlanningDependency(token, dependencyId, payload), { dependencyId });
+  }
+
+  async function removeDependency(dependencyId: string) {
+    await mutate("dependency", () => removePlanningDependency(token, dependencyId), { dependencyId, action: "dependency_removed" });
+  }
+
+  async function saveCalendar(payload: Record<string, unknown>) {
+    await mutate("calendar", () => setPlanningCalendar(token, selectedProjectId, payload), { action: "calendar_updated" });
+  }
+
+  async function addBaseline(payload: Record<string, unknown>) {
+    await mutate("baseline", () => createPlanningBaseline(token, selectedProjectId, payload), { action: "baseline_created" });
+  }
+
+  async function addResource(payload: Record<string, unknown>) {
+    await mutate("resource", () => createPlanningResource(token, selectedProjectId, payload), { action: "resource_created" });
+  }
+
+  async function assignResource(payload: Record<string, unknown>) {
+    await mutate("resource", () => assignPlanningResource(token, payload), { action: "resource_assigned" });
+  }
+
+  async function mutate(action: string, run: () => Promise<unknown>, okStatus: Record<string, unknown>) {
+    if (!selectedProjectId) return;
+    setBusy(action);
     try {
-      await updatePlanningTask(token, taskId, { start, end });
-      if (selectedProjectId) setSchedule(await loadPlanningSchedule(token, selectedProjectId));
-      setStatus({ status: "validated", taskId, start, end });
+      await run();
+      await reloadSchedule(selectedProjectId);
+      setStatus({ status: "validated", ...okStatus });
     } catch (error) {
       setStatus(error);
-      await refresh();
+      await reloadSchedule(selectedProjectId).catch(() => undefined);
     } finally {
       setBusy("");
     }
   }
 }
 
-function PlanningInspector({ projects, schedule, selectedTask, selectedTaskId, status, onProjectChange, onTaskSelect }: {
-  projects: PlanningProject[];
-  schedule: PlanningSchedule;
-  selectedTask: PlanningTask | null;
-  selectedTaskId: string;
-  status: unknown;
-  onProjectChange: (projectId: string) => void;
-  onTaskSelect: (taskId: string) => void;
-}) {
+function PlanningModuleState({ module, busyAction, onActivate }: Pick<PlanningWorkspaceProps, "module" | "busyAction" | "onActivate">) {
+  const action = module?.status === "disabled" ? "Enable" : "Install";
   return (
-    <Pane title="Inspector" description={schedule.project.name}>
-      <label className="field">
-        <span>Project</span>
-        <select value={schedule.project.id} onChange={(event) => onProjectChange(event.target.value)}>
-          {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
-        </select>
-      </label>
-      <PlanningTaskGrid tasks={schedule.tasks} selectedTaskId={selectedTaskId} onSelect={onTaskSelect} />
-      {selectedTask && (
-        <div className="planning-selected-task">
-          <CalendarRange size={18} aria-hidden="true" />
-          <div>
-            <strong>{selectedTask.title}</strong>
-            <span>{selectedTask.start} to {selectedTask.end}</span>
+    <section className="planning-workspace" aria-label="Planning">
+      <Pane title="Planning" description="Module state" wide>
+        <div className="module-row">
+          <div className="module-main">
+            <div className="module-title-line">
+              <h2 className="module-name">{PLANNING_MODULE_ID}</h2>
+              <StatusPill label={module?.status || "available"} tone="info" />
+            </div>
+            <p className="module-meta">capability_module - {module?.version || "not loaded"}</p>
+          </div>
+          <div className="module-actions">
+            <CommandButton icon={Plus} onClick={onActivate} loading={busyAction.startsWith(PLANNING_MODULE_ID)}>
+              {action}
+            </CommandButton>
           </div>
         </div>
-      )}
-      <pre className="planning-status" aria-label="Planning validation status">{JSON.stringify({ validation: schedule.validation, status }, null, 2)}</pre>
-    </Pane>
+      </Pane>
+    </section>
   );
+}
+
+function taskPayload(title: string, start: string, end: string, progress: number, sortOrder: number, taskType = "task", parentTaskId?: string) {
+  return { title, start, end, progress, sort_order: sortOrder, task_type: taskType, parent_task_id: parentTaskId };
+}
+
+function resultId(value: unknown) {
+  return String((value as { id?: string; result?: { id?: string } }).id || (value as { result?: { id?: string } }).result?.id || "");
 }

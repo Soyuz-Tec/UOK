@@ -672,18 +672,84 @@
         "title": "LoginRequest",
         "type": "object"
       },
+      "PlanningAssignmentRequest": {
+        "properties": {
+          "allocation_percent": {
+            "default": 100,
+            "maximum": 300.0,
+            "minimum": 1.0,
+            "title": "Allocation Percent",
+            "type": "integer"
+          },
+          "resource_id": {
+            "maxLength": 36,
+            "title": "Resource Id",
+            "type": "string"
+          },
+          "task_id": {
+            "maxLength": 36,
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "resource_id"
+        ],
+        "title": "PlanningAssignmentRequest",
+        "type": "object"
+      },
+      "PlanningBaselineRequest": {
+        "properties": {
+          "name": {
+            "default": "Baseline",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "title": "PlanningBaselineRequest",
+        "type": "object"
+      },
+      "PlanningCalendarRequest": {
+        "properties": {
+          "holidays": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Holidays",
+            "type": "array"
+          },
+          "name": {
+            "default": "Standard",
+            "maxLength": 120,
+            "title": "Name",
+            "type": "string"
+          },
+          "working_days": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Working Days",
+            "type": "array"
+          }
+        },
+        "title": "PlanningCalendarRequest",
+        "type": "object"
+      },
       "PlanningDependencyRequest": {
         "properties": {
           "dependency_type": {
             "default": "finish_to_start",
-            "pattern": "^finish_to_start$",
+            "pattern": "^(finish_to_start|start_to_start|finish_to_finish|start_to_finish)$",
             "title": "Dependency Type",
             "type": "string"
           },
           "lag_days": {
             "default": 0,
             "maximum": 30.0,
-            "minimum": 0.0,
+            "minimum": -30.0,
             "title": "Lag Days",
             "type": "integer"
           },
@@ -703,6 +769,37 @@
           "successor_task_id"
         ],
         "title": "PlanningDependencyRequest",
+        "type": "object"
+      },
+      "PlanningDependencyUpdateRequest": {
+        "properties": {
+          "dependency_type": {
+            "anyOf": [
+              {
+                "pattern": "^(finish_to_start|start_to_start|finish_to_finish|start_to_finish)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dependency Type"
+          },
+          "lag_days": {
+            "anyOf": [
+              {
+                "maximum": 30.0,
+                "minimum": -30.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lag Days"
+          }
+        },
+        "title": "PlanningDependencyUpdateRequest",
         "type": "object"
       },
       "PlanningProjectRequest": {
@@ -732,6 +829,27 @@
           "end"
         ],
         "title": "PlanningProjectRequest",
+        "type": "object"
+      },
+      "PlanningResourceRequest": {
+        "properties": {
+          "name": {
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "default": "",
+            "maxLength": 120,
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "PlanningResourceRequest",
         "type": "object"
       },
       "PlanningTaskRequest": {
@@ -815,6 +933,18 @@
             ],
             "title": "End"
           },
+          "parent_task_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Task Id"
+          },
           "progress": {
             "anyOf": [
               {
@@ -864,6 +994,18 @@
               }
             ],
             "title": "Status"
+          },
+          "task_type": {
+            "anyOf": [
+              {
+                "pattern": "^(task|summary|milestone)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Type"
           },
           "title": {
             "anyOf": [
@@ -3470,6 +3612,195 @@
         ]
       }
     },
+    "/api/planning/assignments": {
+      "post": {
+        "operationId": "assign_resource_api_planning_assignments_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningAssignmentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Assign Resource Api Planning Assignments Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign Resource",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/planning/dependencies/{dependency_id}": {
+      "delete": {
+        "operationId": "remove_dependency_api_planning_dependencies__dependency_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dependency_id",
+            "required": true,
+            "schema": {
+              "title": "Dependency Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Remove Dependency Api Planning Dependencies  Dependency Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Dependency",
+        "tags": [
+          "planning"
+        ]
+      },
+      "patch": {
+        "operationId": "update_dependency_api_planning_dependencies__dependency_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "dependency_id",
+            "required": true,
+            "schema": {
+              "title": "Dependency Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningDependencyUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Dependency Api Planning Dependencies  Dependency Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Dependency",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
     "/api/planning/projects": {
       "get": {
         "operationId": "projects_api_planning_projects_get",
@@ -3583,6 +3914,146 @@
         ]
       }
     },
+    "/api/planning/projects/{project_id}/baselines": {
+      "post": {
+        "operationId": "create_baseline_api_planning_projects__project_id__baselines_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningBaselineRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Baseline Api Planning Projects  Project Id  Baselines Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Baseline",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/calendar": {
+      "put": {
+        "operationId": "set_calendar_api_planning_projects__project_id__calendar_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningCalendarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Set Calendar Api Planning Projects  Project Id  Calendar Put",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Calendar",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
     "/api/planning/projects/{project_id}/dependencies": {
       "post": {
         "operationId": "link_tasks_api_planning_projects__project_id__dependencies_post",
@@ -3648,6 +4119,76 @@
           }
         },
         "summary": "Link Tasks",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/resources": {
+      "post": {
+        "operationId": "create_resource_api_planning_projects__project_id__resources_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningResourceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Resource Api Planning Projects  Project Id  Resources Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Resource",
         "tags": [
           "planning"
         ]
@@ -3784,6 +4325,64 @@
       }
     },
     "/api/planning/tasks/{task_id}": {
+      "delete": {
+        "operationId": "delete_task_api_planning_tasks__task_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Delete Task Api Planning Tasks  Task Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Task",
+        "tags": [
+          "planning"
+        ]
+      },
       "patch": {
         "operationId": "update_task_api_planning_tasks__task_id__patch",
         "parameters": [

@@ -16,7 +16,7 @@ export function PlanningGantt({ schedule, appearance, onTaskReschedule }: {
     end: dateValue(task.end),
     duration: task.duration_days,
     progress: task.progress,
-    type: task.task_type === "milestone" ? "milestone" : "task",
+    type: task.task_type === "milestone" ? "milestone" : task.task_type === "summary" ? "summary" : "task",
     parent: task.parent_task_id || 0,
     css: task.critical ? "planning-gantt-critical" : undefined,
   }));
@@ -24,7 +24,7 @@ export function PlanningGantt({ schedule, appearance, onTaskReschedule }: {
     id: dependency.id,
     source: dependency.predecessor_task_id,
     target: dependency.successor_task_id,
-    type: "e2s",
+    type: linkType(dependency.dependency_type),
   }));
   const Theme = appearance === "dark" ? WillowDark : Willow;
 
@@ -57,4 +57,11 @@ function dateValue(value: string) {
 function toIsoDate(value: unknown) {
   const date = value instanceof Date ? value : new Date(String(value));
   return date.toISOString().slice(0, 10);
+}
+
+function linkType(type: string) {
+  if (type === "start_to_start") return "s2s";
+  if (type === "finish_to_finish") return "e2e";
+  if (type === "start_to_finish") return "s2e";
+  return "e2s";
 }

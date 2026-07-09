@@ -11,12 +11,33 @@ const sampleProject = {
 
 const sampleSchedule = {
   project: sampleProject,
-  validation: { ok: true, violations: [] },
+  validation: { ok: true, violations: [], warnings: ["Planner is allocated 120% on 2026-08-06"] },
   tasks: [
+    {
+      id: "task-summary",
+      project_id: sampleProject.id,
+      parent_task_id: null,
+      wbs: "1",
+      title: "Pilot delivery",
+      task_type: "summary",
+      status: "planned",
+      start: "2026-08-01",
+      end: "2026-08-13",
+      duration_days: 9,
+      progress: 20,
+      sort_order: 0,
+      critical: false,
+      total_slack_days: 0,
+      baseline_start: "2026-08-01",
+      baseline_end: "2026-08-12",
+      start_variance_days: 0,
+      end_variance_days: 1,
+    },
     {
       id: "task-1",
       project_id: sampleProject.id,
-      parent_task_id: null,
+      parent_task_id: "task-summary",
+      wbs: "1.1",
       title: "Define schedule scope",
       task_type: "task",
       status: "planned",
@@ -26,12 +47,18 @@ const sampleSchedule = {
       progress: 40,
       sort_order: 1,
       critical: true,
+      total_slack_days: 0,
+      baseline_start: "2026-08-01",
+      baseline_end: "2026-08-03",
+      start_variance_days: 0,
+      end_variance_days: 0,
     },
     {
       id: "task-2",
       project_id: sampleProject.id,
-      parent_task_id: null,
-      title: "Build integrated Gantt",
+      parent_task_id: "task-summary",
+      wbs: "1.2",
+      title: "Build integrated Gantt with dependency validation",
       task_type: "task",
       status: "planned",
       start: "2026-08-04",
@@ -40,6 +67,31 @@ const sampleSchedule = {
       progress: 0,
       sort_order: 2,
       critical: true,
+      total_slack_days: 0,
+      baseline_start: "2026-08-04",
+      baseline_end: "2026-08-09",
+      start_variance_days: 0,
+      end_variance_days: 1,
+    },
+    {
+      id: "task-3",
+      project_id: sampleProject.id,
+      parent_task_id: "task-summary",
+      wbs: "1.3",
+      title: "Pilot review milestone",
+      task_type: "milestone",
+      status: "planned",
+      start: "2026-08-13",
+      end: "2026-08-13",
+      duration_days: 0,
+      progress: 0,
+      sort_order: 3,
+      critical: true,
+      total_slack_days: 0,
+      baseline_start: "2026-08-12",
+      baseline_end: "2026-08-12",
+      start_variance_days: 1,
+      end_variance_days: 1,
     },
   ],
   dependencies: [
@@ -49,9 +101,13 @@ const sampleSchedule = {
       predecessor_task_id: "task-1",
       successor_task_id: "task-2",
       dependency_type: "finish_to_start",
-      lag_days: 0,
+      lag_days: 1,
     },
   ],
+  calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: ["2026-08-14"] },
+  resources: [{ id: "resource-1", project_id: sampleProject.id, name: "Planner", role: "Scheduling" }],
+  assignments: [{ id: "assignment-1", task_id: "task-2", resource_id: "resource-1", allocation_percent: 120 }],
+  baselines: [{ id: "baseline-1", project_id: sampleProject.id, name: "Initial baseline", created_at: "2026-08-01T00:00:00Z" }],
 };
 
 test("UOK proof gate covers planning Gantt usability and visual stability", async ({ page }) => {
@@ -74,11 +130,15 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     const taskTable = page.getByRole("table", { name: "Planning tasks" });
     await expect(taskTable).toBeVisible();
     await expect(taskTable.getByRole("row", { name: /Build integrated Gantt/ })).toBeVisible();
+    await expect(page.getByLabel("Task editor")).toBeVisible();
+    await expect(page.getByLabel("Dependency editor")).toBeVisible();
+    await expect(page.getByLabel("Calendar and baseline")).toBeVisible();
+    await expect(page.getByLabel("Resource assignments")).toBeVisible();
 
     const layout = await page.evaluate(() => {
       const shell = document.querySelector(".shell")?.getBoundingClientRect();
       const gantt = document.querySelector(".planning-gantt-shell")?.getBoundingClientRect();
-      const status = document.querySelector(".planning-status")?.getBoundingClientRect();
+      const status = document.querySelector(".planning-validation")?.getBoundingClientRect();
       return {
         shellWidth: shell?.width || 0,
         ganttWidth: gantt?.width || 0,

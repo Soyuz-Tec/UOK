@@ -21,6 +21,7 @@ Before non-trivial edits:
 - Language stack: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - Code quality and technology audit: `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
 - Internal engineering system: `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`
+- AI worker development model: `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`
 - UI design: `docs/design/UOK_UI_DESIGN_POLICY.md`
 - Standard operations: `docs/operations/UOK_STANDARD_OPERATIONS.md`
 - GitHub guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
@@ -36,6 +37,7 @@ Before non-trivial edits:
 - Split files before they become mixed-responsibility.
 - Add or update tests for meaningful behavior changes.
 - Apply the UOK Internal Engineering System for policies, checklists, CI gates, review rules, release gates, dashboards, and audit evidence.
+- Treat AI worker output as advisory until verified against repo files, tests, runtime evidence, Git/GitHub state, and UOK gates.
 - Update the owning Markdown artifact when a rule, workflow, boundary, or durable lesson changes.
 
 ## Required Local Checks

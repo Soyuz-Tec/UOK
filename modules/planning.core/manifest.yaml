@@ -17,12 +17,26 @@ commands:
   - CreatePlanningProject
   - CreatePlanningTask
   - UpdatePlanningTask
+  - DeletePlanningTask
   - LinkPlanningTasks
+  - UpdatePlanningDependency
+  - RemovePlanningDependency
+  - SetPlanningCalendar
+  - CreatePlanningBaseline
+  - CreatePlanningResource
+  - AssignPlanningResource
 events:
   - PlanningProjectCreated
   - PlanningTaskCreated
   - PlanningTaskUpdated
+  - PlanningTaskDeleted
   - PlanningTaskLinked
+  - PlanningDependencyUpdated
+  - PlanningDependencyRemoved
+  - PlanningCalendarUpdated
+  - PlanningBaselineCreated
+  - PlanningResourceCreated
+  - PlanningResourceAssigned
 dependencies: []
 backend_path: modules/planning.core/backend
 web_path: modules/planning.core/web

@@ -98,3 +98,161 @@ def test_planning_core_schedule_authority_and_security(client: TestClient) -> No
     assert len(body["tasks"]) == 2
     assert len(body["dependencies"]) == 1
     assert any(task["critical"] for task in body["tasks"])
+
+
+def test_planning_core_gantt_improvements(client: TestClient) -> None:
+    suffix = str(uuid4())[:8]
+    admin = auth(client, "admin", "admin")
+    ops = auth(client, "ops", "ops123")
+
+    assert client.post("/api/modules/planning.core/install", headers=admin).status_code == 200
+    project = command(
+        client,
+        ops,
+        "CreatePlanningProject",
+        {"name": f"Improved Plan {suffix}", "start": "2026-08-03", "end": "2026-08-31"},
+        f"planning-improved-project-{suffix}",
+    )
+    assert project.status_code == 200, project.text
+    project_id = project.json()["result"]["id"]
+
+    calendar = command(
+        client,
+        ops,
+        "SetPlanningCalendar",
+        {"project_id": project_id, "working_days": [1, 2, 3, 4, 5], "holidays": ["2026-08-14"]},
+        f"planning-calendar-{suffix}",
+    )
+    assert calendar.status_code == 200, calendar.text
+
+    summary = _create_task(client, ops, project_id, suffix, "Delivery", "2026-08-03", "2026-08-20", "summary", 1)
+    first = _create_task(client, ops, project_id, suffix, "Design", "2026-08-03", "2026-08-05", "task", 2, summary)
+    second = _create_task(client, ops, project_id, suffix, "Build", "2026-08-06", "2026-08-07", "task", 3, summary)
+    review = _create_task(client, ops, project_id, suffix, "Review", "2026-08-10", "2026-08-10", "milestone", 4, summary)
+
+    linked = command(
+        client,
+        ops,
+        "LinkPlanningTasks",
+        {
+            "project_id": project_id,
+            "predecessor_task_id": first,
+            "successor_task_id": second,
+            "dependency_type": "finish_to_start",
+            "lag_days": 1,
+        },
+        f"planning-fs-lag-{suffix}",
+    )
+    assert linked.status_code == 200, linked.text
+    tasks = {task["id"]: task for task in linked.json()["result"]["tasks"]}
+    assert tasks[second]["start"] == "2026-08-07"
+
+    ss = command(
+        client,
+        ops,
+        "LinkPlanningTasks",
+        {
+            "project_id": project_id,
+            "predecessor_task_id": second,
+            "successor_task_id": review,
+            "dependency_type": "start_to_start",
+            "lag_days": -1,
+        },
+        f"planning-ss-lead-{suffix}",
+    )
+    assert ss.status_code == 200, ss.text
+
+    moved = command(
+        client,
+        ops,
+        "UpdatePlanningTask",
+        {"task_id": first, "start": "2026-08-12", "end": "2026-08-13"},
+        f"planning-propagate-{suffix}",
+    )
+    assert moved.status_code == 200, moved.text
+    schedule = client.get(f"/api/planning/projects/{project_id}/schedule", headers=ops).json()
+    tasks = {task["id"]: task for task in schedule["tasks"]}
+    assert tasks[second]["start"] == "2026-08-18"
+    assert tasks[summary]["start"] == "2026-08-12"
+    assert tasks[summary]["end"] >= tasks[review]["end"]
+    assert tasks[first]["early_start"] == tasks[first]["start"]
+    assert any(task["total_slack_days"] == 0 for task in tasks.values())
+
+    rejected = command(
+        client,
+        ops,
+        "UpdatePlanningTask",
+        {"task_id": second, "start": "2026-08-13", "end": "2026-08-14"},
+        f"planning-invalid-successor-{suffix}",
+    )
+    assert rejected.status_code == 400, rejected.text
+
+    baseline = command(
+        client,
+        ops,
+        "CreatePlanningBaseline",
+        {"project_id": project_id, "name": "Control"},
+        f"planning-baseline-{suffix}",
+    )
+    assert baseline.status_code == 200, baseline.text
+    assert baseline.json()["result"]["baselines"][0]["name"] == "Control"
+
+    resource = command(
+        client,
+        ops,
+        "CreatePlanningResource",
+        {"project_id": project_id, "name": "Planner", "role": "Scheduling"},
+        f"planning-resource-{suffix}",
+    )
+    resource_id = resource.json()["result"]["resources"][0]["id"]
+    assigned = command(
+        client,
+        ops,
+        "AssignPlanningResource",
+        {"task_id": first, "resource_id": resource_id, "allocation_percent": 150},
+        f"planning-assignment-a-{suffix}",
+    )
+    assert assigned.status_code == 200, assigned.text
+    assigned_again = command(
+        client,
+        ops,
+        "AssignPlanningResource",
+        {"task_id": second, "resource_id": resource_id, "allocation_percent": 150},
+        f"planning-assignment-b-{suffix}",
+    )
+    assert assigned_again.status_code == 200, assigned_again.text
+    final_schedule = client.get(f"/api/planning/projects/{project_id}/schedule", headers=ops).json()
+    assert final_schedule["validation"]["ok"] is True
+    assert final_schedule["validation"]["warnings"]
+    assert final_schedule["calendar"]["holidays"] == ["2026-08-14"]
+
+
+def _create_task(
+    client: TestClient,
+    headers: dict[str, str],
+    project_id: str,
+    suffix: str,
+    title: str,
+    start: str,
+    end: str,
+    task_type: str,
+    sort_order: int,
+    parent_task_id: str | None = None,
+) -> str:
+    created = command(
+        client,
+        headers,
+        "CreatePlanningTask",
+        {
+            "project_id": project_id,
+            "title": title,
+            "start": start,
+            "end": end,
+            "task_type": task_type,
+            "sort_order": sort_order,
+            "parent_task_id": parent_task_id,
+        },
+        f"planning-task-{title}-{suffix}",
+    )
+    assert created.status_code == 200, created.text
+    return created.json()["result"]["id"]

@@ -32,6 +32,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/DOCUMENTATION_INDEX.md` | Documentation routing and artifact ownership | New durable Markdown artifact is added or an artifact changes purpose |
 | `docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md` | Development continuity process, feedback loop, documentation update rules | Workflow, quality gates, or continuity responsibilities change |
 | `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md` | Internalized engineering system based on Microsoft SDL, Google Engineering Practices, SLSA, OpenSSF Scorecard, ISO, NIST, and OWASP standards | Policies, checklists, CI gates, code review rules, release gates, dashboards, or audit evidence change |
+| `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md` | Development-time AI worker roles, activation levels, handoff protocol, and verification authority | Coding-agent workflow, specialist review workers, worker handoff, or AI-assisted development governance changes |
 | `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md` | Code quality, line-of-code integrity, efficiency, source-size, and technology audit rules | Quality standards, technology audit gates, source-size policy, or reviewability rules change |
 | `docs/operations/UOK_STANDARD_OPERATIONS.md` | Standard local operations, audits, GitHub preflight, backup, restore, rebuild, repeatable commands | Operations command, evidence, backup, restore, or GitHub workflow changes |
 | `docs/operations/UOK_ASUH_TEST_EVENTS.md` | Local ASUH incident-drill schedule and event trigger rules | ASUH event types, local schedules, or incident drill expectations change |
@@ -66,6 +67,7 @@ Active policies are mandatory until replaced through an ADR or explicit policy u
 
 - `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`
+- `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`
 - `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
 - `docs/design/UOK_UI_DESIGN_POLICY.md`
 - `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`
@@ -85,6 +87,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 
 - `docs/ARCHITECTURE.md`
 - `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md`
+- `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`
 - `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`

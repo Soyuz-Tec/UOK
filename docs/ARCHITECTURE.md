@@ -55,6 +55,7 @@ Operator browser
 - Documentation index: `docs/DOCUMENTATION_INDEX.md`
 - Development continuity system: `docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md`
 - Internal engineering system: `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`
+- AI worker development model: `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`
 - Code quality and technology audit standard: `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
 - ADR-0001: `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - ADR-0002: `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`

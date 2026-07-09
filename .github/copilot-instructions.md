@@ -1,6 +1,7 @@
 # UOK Repository Instructions
 
 Use `AGENTS.md` as the first local instruction file for coding-agent work.
+Use `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md` when AI worker or specialist review roles are involved; worker output is advisory until verified against repo files, tests, runtime evidence, Git/GitHub state, and UOK gates.
 
 Before non-trivial implementation:
 

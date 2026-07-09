@@ -7,7 +7,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from .read_model import list_projects, schedule_read_model
-from .schemas import PlanningDependencyRequest, PlanningProjectRequest, PlanningTaskRequest, PlanningTaskUpdateRequest
+from .schemas import (
+    PlanningAssignmentRequest,
+    PlanningBaselineRequest,
+    PlanningCalendarRequest,
+    PlanningDependencyRequest,
+    PlanningDependencyUpdateRequest,
+    PlanningProjectRequest,
+    PlanningResourceRequest,
+    PlanningTaskRequest,
+    PlanningTaskUpdateRequest,
+)
 from .scheduler import project_or_error
 from uok.commands import execute_command
 from uok.db import get_db
@@ -48,11 +58,54 @@ def update_task(task_id: str, req: PlanningTaskUpdateRequest, actor: Actor = Dep
     return run_planning_command(db, actor, "UpdatePlanningTask", payload)
 
 
+@router.delete("/tasks/{task_id}")
+def delete_task(task_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    return run_planning_command(db, actor, "DeletePlanningTask", {"task_id": task_id})
+
+
 @router.post("/projects/{project_id}/dependencies")
 def link_tasks(project_id: str, req: PlanningDependencyRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
     payload = req.model_dump(exclude_none=True)
     payload["project_id"] = project_id
     return run_planning_command(db, actor, "LinkPlanningTasks", payload)
+
+
+@router.patch("/dependencies/{dependency_id}")
+def update_dependency(dependency_id: str, req: PlanningDependencyUpdateRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["dependency_id"] = dependency_id
+    return run_planning_command(db, actor, "UpdatePlanningDependency", payload)
+
+
+@router.delete("/dependencies/{dependency_id}")
+def remove_dependency(dependency_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    return run_planning_command(db, actor, "RemovePlanningDependency", {"dependency_id": dependency_id})
+
+
+@router.put("/projects/{project_id}/calendar")
+def set_calendar(project_id: str, req: PlanningCalendarRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["project_id"] = project_id
+    return run_planning_command(db, actor, "SetPlanningCalendar", payload)
+
+
+@router.post("/projects/{project_id}/baselines")
+def create_baseline(project_id: str, req: PlanningBaselineRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["project_id"] = project_id
+    return run_planning_command(db, actor, "CreatePlanningBaseline", payload)
+
+
+@router.post("/projects/{project_id}/resources")
+def create_resource(project_id: str, req: PlanningResourceRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["project_id"] = project_id
+    return run_planning_command(db, actor, "CreatePlanningResource", payload)
+
+
+@router.post("/assignments")
+def assign_resource(req: PlanningAssignmentRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    return run_planning_command(db, actor, "AssignPlanningResource", req.model_dump(exclude_none=True))
 
 
 def require_planning_read(db: Session, actor: Actor) -> None:

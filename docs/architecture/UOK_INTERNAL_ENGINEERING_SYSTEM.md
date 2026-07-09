@@ -84,6 +84,7 @@ Every non-trivial UOK change follows this flow:
 
 5. Review for UOK fit.
    - Ensure the change is product-neutral where required, module-owned where appropriate, typed, source-size compliant, and aligned with the UI and stack policies.
+   - When AI workers are used, apply `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`; specialist output remains advisory until verified by the coordinator against UOK gates.
 
 6. Verify.
    - Run the narrowest relevant gate during development and the broader gate before handoff or publication.
