@@ -44,6 +44,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
 | `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` | AI-operated business workflow architecture, governed agent tools, human approval gates, and compliance evidence model | Agent governance, Codex tool binding, AI workflow, approval, or evidence architecture changes |
 | `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md` | Global export artifact boundary for CSV, JSON, image/SVG, PDF, document, and future import/export helpers | Export format ownership, shared artifact primitives, module export behavior, or export UI patterns change |
+| `docs/architecture/UOK_GLOBAL_SHARED_FEATURES.md` | Module-neutral reusable backend and frontend feature boundaries | Shared UI primitive, backend helper, table behavior, event helper, or cross-module feature ownership changes |
 | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` | Secure reports artifact generation, storage, audit, verification, download, and deletion boundary | Report artifact security, supported report formats, report API, or reports.core adapter direction changes |
 | `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` | Approved programming stack and maintainability rules | Runtime language, framework, dependency, source-size, or verification policy changes |
 | `docs/design/UOK_UI_DESIGN_POLICY.md` | Mandatory UI design policy | UI system, layout, accessibility, appearance, or interaction rules change |
@@ -97,6 +98,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
+- `docs/architecture/UOK_GLOBAL_SHARED_FEATURES.md`
 - `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 
 These documents must not overstate future plans as current behavior.

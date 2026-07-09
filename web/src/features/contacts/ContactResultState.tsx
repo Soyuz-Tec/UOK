@@ -1,4 +1,5 @@
 import { formatLabel } from "../../shared/format";
+import { EmptyState } from "../../shared/data-display";
 import type { ContactRecord } from "../../shared/types";
 import { contactReviewTone, contactStatusTone } from "./contactPresentation";
 
@@ -19,10 +20,5 @@ export function ContactStateStack({ contact }: { contact: ContactRecord }) {
 }
 
 export function ContactResultsEmptyState() {
-  return (
-    <div className="contact-results-empty">
-      <strong>No matching contacts</strong>
-      <span>Adjust search or filters to show contact records.</span>
-    </div>
-  );
+  return <EmptyState className="contact-results-empty" title="No matching contacts" text="Adjust search or filters to show contact records." />;
 }

@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import csv
-from io import StringIO
 from typing import Any
 
 from sqlalchemy.orm import Session
 
+from uok.data_exchange import csv_dict_rows
 from .facade import (
     MAX_CSV_IMPORT_BYTES,
     MAX_CSV_IMPORT_ROWS,
@@ -47,8 +46,6 @@ def cmd_import_contacts_csv(db: Session, actor: Actor, payload: dict[str, Any], 
     csv_text = clean_text(payload.get("csv_text"))
     if not csv_text:
         raise ValueError("csv_text is required")
-    if len(csv_text.encode("utf-8")) > MAX_CSV_IMPORT_BYTES:
-        raise ValueError(f"csv_text must be {MAX_CSV_IMPORT_BYTES} bytes or fewer")
     filename = bounded_text(payload.get("filename"), "filename") or "contacts.csv"
     batch = ContactImportBatch(
         organization_id=actor.organization_id,
@@ -61,10 +58,7 @@ def cmd_import_contacts_csv(db: Session, actor: Actor, payload: dict[str, Any], 
     db.flush()
     imported: list[dict[str, Any]] = []
     failures: list[dict[str, Any]] = []
-    reader = csv.DictReader(StringIO(csv_text))
-    for row_index, (row_number, row) in enumerate(enumerate(reader, start=2), start=1):
-        if row_index > MAX_CSV_IMPORT_ROWS:
-            raise ValueError(f"CSV import is limited to {MAX_CSV_IMPORT_ROWS} rows")
+    for row_number, row in csv_dict_rows(csv_text, MAX_CSV_IMPORT_BYTES, MAX_CSV_IMPORT_ROWS):
         try:
             if _looks_like_automated_marketing(row):
                 raise ValueError("automated marketing contact rejected")

@@ -4,6 +4,12 @@
   white-space: nowrap;
 }
 
+.toggle-button {
+  background: var(--uok-bg-elevated);
+  border-color: var(--uok-separator);
+  white-space: nowrap;
+}
+
 .icon-button {
   width: var(--uok-control-height);
   min-width: var(--uok-control-height);
@@ -31,12 +37,19 @@
   background: color-mix(in srgb, var(--uok-accent) 10%, var(--uok-bg-grouped-secondary));
 }
 
+.toggle-button.selected {
+  color: var(--uok-accent);
+  border-color: var(--uok-accent);
+  background: color-mix(in srgb, var(--uok-accent) 10%, var(--uok-bg-grouped-secondary));
+}
+
 .command-button.destructive {
   color: var(--uok-status-danger);
 }
 
 .command-button:disabled,
-.icon-button:disabled {
+.icon-button:disabled,
+.toggle-button:disabled {
   cursor: not-allowed;
   color: var(--uok-text-placeholder);
   background: var(--uok-bg-grouped-secondary);

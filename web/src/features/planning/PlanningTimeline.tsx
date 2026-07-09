@@ -1,7 +1,7 @@
 import { Baseline, FolderKanban, GitBranch, Link2, Maximize2, Milestone, Minimize2, Plus, Redo2, RefreshCw, Rows3, Star, Undo2, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { CommandButton } from "../../shared/primitives";
+import { CommandButton, ToggleButton } from "../../shared/primitives";
 import { useColumnVisibilityOptions } from "../../shared/tables";
 import type { Appearance } from "../../shared/types";
 import { PlanningBulkEditControls, type PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
@@ -50,6 +50,7 @@ export function PlanningTimeline({
   onLevelResources,
   onUndo,
   onRedo,
+  token,
 }: {
   projects: PlanningProject[];
   schedule: PlanningSchedule;
@@ -84,6 +85,7 @@ export function PlanningTimeline({
   onLevelResources: () => void;
   onUndo: () => void;
   onRedo: () => void;
+  token: string;
 }) {
   const [activeView, setActiveView] = useState<PlanningView>("Gantt chart");
   const [fieldPreset, setFieldPreset] = useState<FieldPreset>("core");
@@ -187,27 +189,15 @@ export function PlanningTimeline({
           <CommandButton icon={Plus} onClick={() => onNewTask("task")} disabled={reviewMode} primary>Task</CommandButton>
           <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")} disabled={reviewMode}>Milestone</CommandButton>
           <CommandButton icon={Link2} onClick={onOpenDependencies} disabled={reviewMode}>Link</CommandButton>
-          <button type="button" className="planning-toolbar-toggle" aria-label="Expand all" onClick={() => setCollapsedSummaries(true)}>
-            <Maximize2 size={16} aria-hidden="true" />
-            <span>Expand</span>
-          </button>
-          <button type="button" className="planning-toolbar-toggle" aria-label="Collapse all" onClick={() => setCollapsedSummaries(false)}>
-            <Minimize2 size={16} aria-hidden="true" />
-            <span>Collapse</span>
-          </button>
-          <button type="button" className={`planning-toolbar-toggle ${cascadeSort ? "selected" : ""}`} aria-label="WBS order" aria-pressed={cascadeSort} onClick={() => setCascadeSort((value) => !value)}>
-            <Rows3 size={16} aria-hidden="true" />
-            <span>WBS</span>
-          </button>
-          <button type="button" className={`planning-toolbar-toggle ${cascadeScheduling ? "selected" : ""}`} aria-label="Cascade scheduling" aria-pressed={cascadeScheduling} onClick={() => setCascadeScheduling((value) => !value)} disabled={reviewMode}>
-            <GitBranch size={16} aria-hidden="true" />
-            <span>Cascade</span>
-          </button>
+          <ToggleButton icon={Maximize2} className="planning-toolbar-toggle" onClick={() => setCollapsedSummaries(true)}>Expand</ToggleButton>
+          <ToggleButton icon={Minimize2} className="planning-toolbar-toggle" onClick={() => setCollapsedSummaries(false)}>Collapse</ToggleButton>
+          <ToggleButton icon={Rows3} className="planning-toolbar-toggle" aria-label="WBS order" pressed={cascadeSort} onClick={() => setCascadeSort((value) => !value)}>WBS</ToggleButton>
+          <ToggleButton icon={GitBranch} className="planning-toolbar-toggle" aria-label="Cascade scheduling" pressed={cascadeScheduling} onClick={() => setCascadeScheduling((value) => !value)} disabled={reviewMode}>Cascade</ToggleButton>
           <CommandButton icon={Baseline} onClick={onCreateBaseline} disabled={reviewMode}>Baseline</CommandButton>
           <CommandButton icon={Users} onClick={onOpenResources} disabled={reviewMode}>Resources</CommandButton>
           <CommandButton icon={Users} onClick={onLevelResources} loading={busy === "level"} disabled={reviewMode}>Level</CommandButton>
         </div>
-        <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} layoutMode={layoutMode} reviewMode={reviewMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onToggleLayoutMode={() => setLayoutMode((value) => value === "split" ? "timeline" : "split")} onToggleReviewMode={() => onReviewModeChange(!reviewMode)} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} viewDensity={viewDensity} />
+        <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} layoutMode={layoutMode} reviewMode={reviewMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onToggleLayoutMode={() => setLayoutMode((value) => value === "split" ? "timeline" : "split")} onToggleReviewMode={() => onReviewModeChange(!reviewMode)} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} token={token} viewDensity={viewDensity} />
       </div>
       {activeView === "Gantt chart" ? (
         <PlanningGantt

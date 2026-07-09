@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { readStorageJson, writeStorageJson } from "../../shared/storage";
+import { clampRowHeight, fitRowHeight, rowLayoutMap, rowLayouts, useStoredRowHeights, type RowHeightMap } from "../../shared/tables";
 import type { PlanningTask } from "./types";
 
-export type PlanningRowHeightMap = Record<string, number>;
+export type PlanningRowHeightMap = RowHeightMap;
 export type PlanningRowLayout = { taskId: string; top: number; height: number };
 
 const storagePrefix = "uok:planning:gantt:row-heights:";
@@ -15,60 +13,26 @@ export function planningRowHeightStorageKey(projectId: string) {
 }
 
 export function clampPlanningRowHeight(height: number) {
-  return Math.round(Math.min(Math.max(height, planningRowMinHeight), planningRowMaxHeight));
+  return clampRowHeight(height, planningRowMinHeight, planningRowMaxHeight);
 }
 
 export function planningRowLayouts(tasks: PlanningTask[], baseHeight: number, overrides: PlanningRowHeightMap) {
-  let top = 0;
-  const layouts: PlanningRowLayout[] = tasks.map((task) => {
-    const height = clampPlanningRowHeight(overrides[task.id] || baseHeight);
-    const layout = { taskId: task.id, top, height };
-    top += height;
-    return layout;
-  });
-  return { layouts, totalHeight: top };
+  const state = rowLayouts(tasks, (task) => task.id, baseHeight, overrides, planningRowMinHeight, planningRowMaxHeight);
+  return {
+    layouts: state.layouts.map((layout) => ({ taskId: layout.rowId, top: layout.top, height: layout.height })),
+    totalHeight: state.totalHeight,
+  };
 }
 
 export function planningRowLayoutMap(layouts: PlanningRowLayout[]) {
-  return new Map(layouts.map((layout) => [layout.taskId, layout]));
+  const shared = rowLayoutMap(layouts.map((layout) => ({ rowId: layout.taskId, top: layout.top, height: layout.height })));
+  return new Map(Array.from(shared, ([taskId, layout]) => [taskId, { taskId, top: layout.top, height: layout.height }]));
 }
 
 export function fitPlanningRowHeight(contentHeight: number, baseHeight: number) {
-  return clampPlanningRowHeight(Math.max(baseHeight, contentHeight + 4));
+  return fitRowHeight(contentHeight, baseHeight, planningRowMinHeight, planningRowMaxHeight);
 }
 
 export function usePlanningRowHeights(projectId: string) {
-  const storageKey = useMemo(() => planningRowHeightStorageKey(projectId), [projectId]);
-  const [rowHeights, setRowHeights] = useState<PlanningRowHeightMap>(() => readRowHeights(storageKey));
-
-  useEffect(() => {
-    setRowHeights(readRowHeights(storageKey));
-  }, [storageKey]);
-
-  useEffect(() => {
-    writeStorageJson("local", storageKey, rowHeights);
-  }, [rowHeights, storageKey]);
-
-  const setRowHeight = useCallback((taskId: string, height: number) => {
-    setRowHeights((current) => ({ ...current, [taskId]: clampPlanningRowHeight(height) }));
-  }, []);
-
-  const resetRowHeight = useCallback((taskId: string) => {
-    setRowHeights((current) => {
-      const next = { ...current };
-      delete next[taskId];
-      return next;
-    });
-  }, []);
-
-  return { resetRowHeight, rowHeights, setRowHeight };
-}
-
-function readRowHeights(storageKey: string) {
-  return readStorageJson<PlanningRowHeightMap>("local", storageKey, {}, isPlanningRowHeightMap);
-}
-
-function isPlanningRowHeightMap(value: unknown): value is PlanningRowHeightMap {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  return Object.values(value).every((height) => typeof height === "number" && Number.isFinite(height));
+  return useStoredRowHeights(planningRowHeightStorageKey(projectId), planningRowMinHeight, planningRowMaxHeight);
 }

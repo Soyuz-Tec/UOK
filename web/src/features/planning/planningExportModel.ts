@@ -1,4 +1,4 @@
-import { csvContent, downloadExportArtifact, exportFilename, htmlDocumentContent, jsonContent, textArtifact, xmlText } from "../../shared/exporting";
+import { csvContent, downloadExportArtifact, exportFilename, htmlDocumentContent, jsonContent, textArtifact, xmlText, type GenerateReportRequest, type ReportFormat } from "../../shared/exporting";
 import { buildTimeline, dateValue, durationUnits, taskColorClass, xForDate, type TimelineScale } from "./planningGanttModel";
 import type { ViewDensity } from "./planningTimelineModel";
 import type { PlanningSchedule } from "./types";
@@ -27,6 +27,80 @@ export function planningProjectExchangeJson(schedule: PlanningSchedule) {
     assignments: schedule.assignments,
     baselines: schedule.baselines,
   });
+}
+
+export function planningScheduleReportRequest(schedule: PlanningSchedule, formats: ReportFormat[], title = `${schedule.project.name} schedule`): GenerateReportRequest {
+  return {
+    source_module: "planning.core",
+    template_key: "planning.schedule",
+    title,
+    filename_base: schedule.project.name,
+    formats,
+    payload: {
+      project: schedule.project,
+      rows: schedule.tasks.map((task) => ({
+        wbs: task.wbs || "",
+        task: task.title,
+        type: task.task_type,
+        status: task.status,
+        start: task.start,
+        end: task.end,
+        duration_days: task.duration_days,
+        progress: task.progress,
+        critical: task.critical ? "yes" : "no",
+        scheduling_mode: task.scheduling_mode || "auto",
+        constraint_type: task.constraint_type || "",
+        constraint_date: task.constraint_date || "",
+      })),
+      dependencies: schedule.dependencies,
+      resources: schedule.resources,
+      baselines: schedule.baselines,
+    },
+  };
+}
+
+export function planningImportTemplateReportRequest(schedule: PlanningSchedule, formats: ReportFormat[]): GenerateReportRequest {
+  return {
+    source_module: "planning.core",
+    template_key: "planning.import_template",
+    title: `${schedule.project.name} import template`,
+    filename_base: `${schedule.project.name} import template`,
+    formats,
+    payload: {
+      rows: [{
+        task: "Example task",
+        type: "task",
+        parent_wbs: "",
+        start: "YYYY-MM-DD",
+        end: "YYYY-MM-DD",
+        progress: "0",
+        status: "planned",
+        assigned_resource: "",
+        dependency_predecessor_wbs: "",
+        dependency_type: "finish_to_start",
+        lag_days: "0",
+      }],
+    },
+  };
+}
+
+export function planningProjectReportRequest(schedule: PlanningSchedule, formats: ReportFormat[]): GenerateReportRequest {
+  return {
+    source_module: "planning.core",
+    template_key: "planning.project_exchange",
+    title: `${schedule.project.name} project exchange`,
+    filename_base: `${schedule.project.name} project`,
+    formats,
+    payload: {
+      project: schedule.project,
+      calendar: schedule.calendar || null,
+      tasks: schedule.tasks,
+      dependencies: schedule.dependencies,
+      resources: schedule.resources,
+      assignments: schedule.assignments,
+      baselines: schedule.baselines,
+    },
+  };
 }
 
 export function planningScheduleDocumentHtml(schedule: PlanningSchedule, generatedAt?: string) {

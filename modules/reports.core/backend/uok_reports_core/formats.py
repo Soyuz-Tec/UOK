@@ -5,14 +5,13 @@ import io
 from dataclasses import dataclass
 from typing import Any
 
+from uok.data_exchange import safe_spreadsheet_cell, text_cell
 from uok.util import dumps
 
 from .schemas import GenerateReportRequest
 
-DANGEROUS_SPREADSHEET_PREFIXES = ("=", "+", "-", "@", "\t", "\r", "\n")
 MAX_ROWS = 10_000
 MAX_COLUMNS = 120
-MAX_CELL_CHARS = 4_000
 
 MEDIA_TYPES = {
     "txt": "text/plain; charset=utf-8",
@@ -129,20 +128,4 @@ def _markdown_cell(value: Any) -> str:
 
 
 def _text_value(value: Any) -> str:
-    if value is None:
-        return ""
-    if isinstance(value, (dict, list, tuple)):
-        text = dumps(value)
-    else:
-        text = str(value)
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-    if len(text) > MAX_CELL_CHARS:
-        return text[:MAX_CELL_CHARS] + "…[truncated]"
-    return text
-
-
-def safe_spreadsheet_cell(value: Any) -> str:
-    text = _text_value(value)
-    if text.lstrip().startswith(DANGEROUS_SPREADSHEET_PREFIXES):
-        return "'" + text
-    return text
+    return text_cell(value)

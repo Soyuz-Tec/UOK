@@ -106,3 +106,38 @@
   flex-wrap: wrap;
   gap: var(--uok-space-2);
 }
+.saved-view-controls {
+  display: flex;
+  align-items: end;
+  gap: var(--uok-space-2);
+  flex: 0 0 auto;
+  min-width: 360px;
+}
+
+.saved-view-controls label {
+  display: grid;
+  gap: var(--uok-space-1);
+}
+
+.saved-view-controls input {
+  width: 132px;
+}
+
+.saved-view-controls select {
+  min-width: 140px;
+}
+
+@media (max-width: 680px) {
+  .saved-view-controls,
+  .saved-view-controls label,
+  .saved-view-controls select,
+  .saved-view-controls input,
+  .saved-view-controls .command-button {
+    width: 100%;
+  }
+
+  .saved-view-controls {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+}

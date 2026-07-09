@@ -110,6 +110,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               onLevelResources={() => void actions.levelResources()}
               onUndo={() => void actions.runHistory("undo")}
               onRedo={() => void actions.runHistory("redo")}
+              token={token}
             />
           )}
           secondary={(

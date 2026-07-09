@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_level_resources, cmd_set_calendar
@@ -29,7 +29,7 @@ from .scheduler import (
 )
 from .schedule_math import working_duration
 from .task_constraints import set_task_planning_attrs
-from uok.models import EventRecord
+from uok.module_events import emit_module_event
 from uok.security import Actor
 from uok.util import dumps
 
@@ -279,15 +279,7 @@ def _task_subtree_ids(tasks: list[PlanningTask], task_id: str) -> set[str]:
 
 
 def _emit(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:
-    last = db.scalar(select(func.max(EventRecord.sequence)).where(EventRecord.organization_id == actor.organization_id)) or 0
-    db.add(EventRecord(
-        organization_id=actor.organization_id,
-        sequence=int(last) + 1,
-        event_type=event_type,
-        object_type=object_type,
-        object_id=object_id,
-        payload_json=dumps({"actor_user_id": actor.user_id, **payload}),
-    ))
+    emit_module_event(db, actor, event_type, object_type, object_id, payload)
 
 
 def _schedule_event(db: Session, actor: Actor, project_id: str, event_type: str, payload: dict[str, Any]) -> None:

@@ -1,8 +1,10 @@
 import { Baseline, CalendarClock, ChevronDown, Columns3, Download, FileText, Flag, Lock, Maximize2, Minimize2, Target, Unlock } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { generateAndDownloadReport } from "../../shared/exporting";
+import { SegmentedControl, ToggleButton } from "../../shared/primitives";
 import { FieldVisibilityMenu, type ColumnVisibilityMap } from "../../shared/tables";
-import { exportPlanningImportTemplate, exportPlanningProjectJson, exportPlanningScheduleDocument, exportPlanningTimelineSvg, exportScheduleCsv } from "./planningExportModel";
+import { exportPlanningTimelineSvg, planningImportTemplateReportRequest, planningProjectReportRequest, planningScheduleReportRequest } from "./planningExportModel";
 import { PlanningFilters } from "./PlanningFilters";
 import { PlanningSavedViews } from "./PlanningSavedViews";
 import type { TimelineScale } from "./planningGanttModel";
@@ -42,6 +44,7 @@ export function PlanningTimelineUtilities({
   selectedTaskId,
   showBaselines,
   showCritical,
+  token,
   viewDensity,
 }: {
   columnOptions: { id: string; label: string }[];
@@ -74,9 +77,11 @@ export function PlanningTimelineUtilities({
   selectedTaskId: string;
   showBaselines: boolean;
   showCritical: boolean;
+  token: string;
   viewDensity: ViewDensity;
 }) {
   const [targetDate, setTargetDate] = useState(projectStart);
+  const [reportStatus, setReportStatus] = useState("");
   useEffect(() => setTargetDate(projectStart), [projectStart]);
 
   return (
@@ -93,21 +98,17 @@ export function PlanningTimelineUtilities({
       </label>
       <FieldVisibilityMenu label="Columns" options={columnOptions} resetLabel="Reset columns" visibility={columnVisibility} onReset={onResetColumns} onToggle={onToggleColumn} />
       <PlanningFilters filters={filters} schedule={schedule} onChange={onFiltersChange} />
-      <button type="button" className={`planning-toolbar-toggle ${layoutMode === "timeline" ? "selected" : ""}`} aria-pressed={layoutMode === "timeline"} onClick={onToggleLayoutMode}>
-        {layoutMode === "timeline" ? <Columns3 size={16} aria-hidden="true" /> : <Maximize2 size={16} aria-hidden="true" />}
-        <span>{layoutMode === "timeline" ? "Split view" : "Timeline only"}</span>
-      </button>
-      <button type="button" className={`planning-toolbar-toggle ${reviewMode ? "selected" : ""}`} aria-pressed={reviewMode} onClick={onToggleReviewMode}>
-        {reviewMode ? <Unlock size={16} aria-hidden="true" /> : <Lock size={16} aria-hidden="true" />}
-        <span>{reviewMode ? "Edit mode" : "Review mode"}</span>
-      </button>
+      <ToggleButton icon={layoutMode === "timeline" ? Columns3 : Maximize2} className="planning-toolbar-toggle" pressed={layoutMode === "timeline"} onClick={onToggleLayoutMode}>
+        {layoutMode === "timeline" ? "Split view" : "Timeline only"}
+      </ToggleButton>
+      <ToggleButton icon={reviewMode ? Unlock : Lock} className="planning-toolbar-toggle" pressed={reviewMode} onClick={onToggleReviewMode}>
+        {reviewMode ? "Edit mode" : "Review mode"}
+      </ToggleButton>
       <label className="planning-zoom-control">
         <span>Zoom</span>
         <input type="range" min="0" max={maxZoomValue()} value={scaleToZoomValue(scale)} aria-label="Timeline zoom" onChange={(event) => onScaleChange(zoomValueToScale(event.target.value))} />
       </label>
-      <div className="planning-segmented-control" aria-label="Timeline scale">
-        {timelineScaleOptions.map((item) => <button key={item.value} type="button" className={scale === item.value ? "selected" : ""} onClick={() => onScaleChange(item.value)}>{item.label}</button>)}
-      </div>
+      <SegmentedControl value={scale} onChange={onScaleChange} options={timelineScaleOptions.map((item) => ({ id: item.value, label: item.label, icon: CalendarClock }))} label="Timeline scale" />
       <label className="planning-toolbar-select">
         <CalendarClock size={16} aria-hidden="true" />
         <span>Date</span>
@@ -132,19 +133,18 @@ export function PlanningTimelineUtilities({
         <Maximize2 size={16} aria-hidden="true" />
         <span>Fit</span>
       </button>
-      <button type="button" className={`planning-toolbar-toggle ${focusMode ? "selected" : ""}`} aria-pressed={focusMode} onClick={onToggleFocusMode}>
-        {focusMode ? <Minimize2 size={16} aria-hidden="true" /> : <Maximize2 size={16} aria-hidden="true" />}
-        <span>{focusMode ? "Exit focus" : "Focus"}</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => exportScheduleCsv(schedule)}>
+      <ToggleButton icon={focusMode ? Minimize2 : Maximize2} className="planning-toolbar-toggle" pressed={focusMode} onClick={onToggleFocusMode}>
+        {focusMode ? "Exit focus" : "Focus"}
+      </ToggleButton>
+      <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("csv", planningScheduleReportRequest(schedule, ["csv"]))}>
         <Download size={16} aria-hidden="true" />
         <span>Export CSV</span>
       </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningImportTemplate(schedule)}>
+      <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("csv", planningImportTemplateReportRequest(schedule, ["csv"]))}>
         <Download size={16} aria-hidden="true" />
         <span>Template</span>
       </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningProjectJson(schedule)}>
+      <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("json", planningProjectReportRequest(schedule, ["json"]))}>
         <Download size={16} aria-hidden="true" />
         <span>Project JSON</span>
       </button>
@@ -152,7 +152,7 @@ export function PlanningTimelineUtilities({
         <Download size={16} aria-hidden="true" />
         <span>Timeline SVG</span>
       </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningScheduleDocument(schedule)}>
+      <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("md", planningScheduleReportRequest(schedule, ["md"], `${schedule.project.name} schedule document`))}>
         <FileText size={16} aria-hidden="true" />
         <span>Document</span>
       </button>
@@ -165,14 +165,19 @@ export function PlanningTimelineUtilities({
           <option value="roomy">Roomy</option>
         </select>
       </label>
-      <button type="button" className={`planning-toolbar-toggle ${showCritical ? "selected" : ""}`} aria-pressed={showCritical} onClick={onToggleCritical}>
-        <Flag size={16} aria-hidden="true" />
-        <span>Critical</span>
-      </button>
-      <button type="button" className={`planning-toolbar-toggle ${showBaselines ? "selected" : ""}`} aria-pressed={showBaselines} onClick={onToggleBaselines}>
-        <Baseline size={16} aria-hidden="true" />
-        <span>Baselines</span>
-      </button>
+      <ToggleButton icon={Flag} className="planning-toolbar-toggle" pressed={showCritical} onClick={onToggleCritical}>Critical</ToggleButton>
+      <ToggleButton icon={Baseline} className="planning-toolbar-toggle" pressed={showBaselines} onClick={onToggleBaselines}>Baselines</ToggleButton>
+      {reportStatus ? <span className="planning-muted" aria-live="polite">{reportStatus}</span> : null}
     </div>
   );
+
+  async function runReport(format: "csv" | "json" | "md", request: Parameters<typeof generateAndDownloadReport>[1]) {
+    setReportStatus("Generating report");
+    try {
+      const artifact = await generateAndDownloadReport(token, request, format);
+      setReportStatus(`Downloaded ${artifact.filename}`);
+    } catch {
+      setReportStatus("Report export failed");
+    }
+  }
 }

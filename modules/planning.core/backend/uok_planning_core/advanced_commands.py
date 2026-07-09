@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .models import PlanningAssignment, PlanningBaseline, PlanningCalendar, PlanningResource, PlanningScheduleEvent
 from .read_model import baseline_snapshot, schedule_read_model
 from .resource_leveling import level_resource_allocations
 from .scheduler import apply_schedule, parse_planning_date, project_calendar, project_dependencies, project_or_error, project_tasks, task_or_error, validate_schedule
-from uok.models import EventRecord
+from uok.module_events import emit_module_event
 from uok.security import Actor
 from uok.util import dumps
 
@@ -168,15 +168,7 @@ def _ignored_periods(value: Any) -> list[dict[str, str]]:
 
 
 def _emit(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:
-    last = db.scalar(select(func.max(EventRecord.sequence)).where(EventRecord.organization_id == actor.organization_id)) or 0
-    db.add(EventRecord(
-        organization_id=actor.organization_id,
-        sequence=int(last) + 1,
-        event_type=event_type,
-        object_type=object_type,
-        object_id=object_id,
-        payload_json=dumps({"actor_user_id": actor.user_id, **payload}),
-    ))
+    emit_module_event(db, actor, event_type, object_type, object_id, payload)
 
 
 def _schedule_event(db: Session, actor: Actor, project_id: str, event_type: str, payload: dict[str, Any]) -> None:
