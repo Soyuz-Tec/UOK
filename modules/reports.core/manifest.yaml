@@ -42,6 +42,7 @@ extension_points:
   - api_router
   - command_handlers
   - command_permissions
+  - role_grants
   - report_templates
   - report_format_adapters
   - report_renderers
@@ -55,4 +56,5 @@ extension_points:
 api_router: uok_reports_core.api:router
 command_handlers: uok_reports_core.commands:command_handlers
 command_permissions: uok_reports_core.commands:command_permissions
+role_grants: uok_reports_core.policy:role_grants
 data_retention_policy: "Generated artifacts are organization-scoped, stored outside the public webroot under DATA_DIR, content-hashed, audited, and deletable only by authorized users."
