@@ -28,6 +28,8 @@ export type PlanningGanttProps = {
   onTimelineTaskCreate: (start: string, end: string) => void;
   onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningTask) => void;
   onScaleChange: (scale: TimelineScale) => void;
+  onColumnVisible: (columnId: string, visible: boolean) => void;
+  onColumnsReset: () => void;
   onSummaryExpandedChange: (expanded: boolean) => void;
   onViewDensityChange: (density: ViewDensity) => void;
 };

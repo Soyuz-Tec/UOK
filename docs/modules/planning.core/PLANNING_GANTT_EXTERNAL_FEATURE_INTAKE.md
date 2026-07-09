@@ -80,7 +80,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Task grouping, rollups, split tasks, unscheduled tasks | Backlog | Add only after core dependency/constraint model is stronger. |
 | Undo/redo | Backlog | Needs command stack with server reconciliation. |
 | Export/import | Partial | CSV exists; PDF/image/Excel/MS Project equivalents remain later. |
-| Header menu for visible columns | Implemented | UOK uses field presets and column visibility controls; a right-click header menu can be added later if needed. |
+| Header menu for visible columns | Implemented | UOK now has a first-party per-column header menu for sort, quick action, width reset, hide, and show-all column controls. |
 | No-grid and read-only/prevent-actions modes | Backlog | Useful for embedded schedule review surfaces after edit permissions mature. |
 | Custom task templates and cell borders | Partial | UOK owns task/status templates and timeline grid borders through CSS tokens. |
 | Scroll to date / custom zoom / min scale unit | Partial | Scroll-to-today, scroll-to-selected-task, arbitrary date navigation, project-fit navigation, and scale controls exist; custom zoom bounds remain later. |
@@ -118,7 +118,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Workspace shell | Multiple chart instances | isolated project id, selected view state, independent scroll/zoom state | Keep each planning route instance isolated by project and local storage keys | Partial |
 | Workspace shell | View switching | Gantt, board, list, calendar, workload, people, dashboard | Existing read-model tabs from one validated schedule | Implemented |
 | Grid | Configurable columns | id, label, width, min/max width, visibility, preset, resize/autofit, order, pin flags | Shared table sizing/visibility/order primitives plus planning-specific pinned columns | Partial |
-| Grid | Header menu | column id, checked state, hide/show action, reset widths, sort action, keyboard access | Existing field controls first; optional right-click/header menu later | Backlog |
+| Grid | Header menu | column id, checked state, hide/show action, reset widths, sort action, keyboard access | First-party per-column menu complements field controls and shared column primitives | Implemented |
 | Grid | Add-task/action column | command button, row action menu, add child/add below, disabled/read-only states | Row menu exists; add-column control later if density allows | Partial |
 | Grid | Tree column | WBS code, indentation, summary marker, expand/collapse state, parent id | Summary rows and WBS sorting; richer per-parent expand state later | Partial |
 | Grid | Inline cell editing | editable field, validation state, commit/cancel, keyboard handling, server command | Defer until command-level validation and audit messages are tighter | Backlog |

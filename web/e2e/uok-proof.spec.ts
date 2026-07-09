@@ -199,6 +199,13 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await expect(headers.nth(1)).toHaveText("Task");
       await page.getByRole("button", { name: "Sort by End" }).click();
       await expect(page.locator(".planning-owned-grid-row").first()).toContainText("Define schedule scope");
+      await page.getByRole("button", { name: "Column menu for Start" }).click();
+      await expect(page.getByRole("menu", { name: "Column actions for Start" })).toBeVisible();
+      await page.getByRole("menuitem", { name: /Hide column/ }).click();
+      await expect(headers.filter({ hasText: "Start" })).toHaveCount(0);
+      await page.getByRole("button", { name: "Column menu for End" }).click();
+      await page.getByRole("menuitem", { name: /Show all columns/ }).click();
+      await expect(headers.filter({ hasText: "Start" })).toHaveCount(1);
     }
     await page.getByRole("button", { name: "Board", exact: true }).click();
     await expect(page.getByLabel("Planning board")).toBeVisible();

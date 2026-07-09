@@ -51,6 +51,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Shared column resize primitive | Contacts and Planning use shared resize handle/sizing hook instead of local copies. | Implemented |
 | Field presets | Core, Progress, and Resources column sets. | Implemented |
 | Column visibility | User-selectable individual columns beyond presets. | Implemented |
+| Column header menu | Per-column menu supports sorting, quick action, width reset, hiding non-pinned columns, and restoring visible columns. | Implemented |
 | Column reorder | Drag headers to reorder columns; order persists locally per field preset. | Implemented |
 | Pinned columns | Keep WBS/task pinned ahead of reordered fields and sticky inside the grid. | Implemented |
 | Sort by columns | Sort visible rows by WBS, task, dates, duration, progress, critical flag, assignee, and status. | Implemented |

@@ -54,6 +54,7 @@ export function PlanningGantt({
   onTimelineTaskCreate,
   onTaskMenuAction,
   onScaleChange,
+  onColumnVisible, onColumnsReset,
   onSummaryExpandedChange,
   onViewDensityChange,
 }: PlanningGanttProps) {
@@ -69,7 +70,7 @@ export function PlanningGantt({
   const { moveColumnBefore, orderedColumns } = useColumnOrder(baseColumns, `planning.gantt.order.${fieldPreset}`);
   const columns = useMemo(() => pinnedGridColumns(orderedColumns.filter((column) => columnVisibility[column.id] !== false)), [columnVisibility, orderedColumns]);
   const resizeColumns = useMemo(() => columns.map(toResizablePlanningColumn), [columns]);
-  const { setColumnWidth, totalWidth, widths } = useResizableColumns(resizeColumns, `planning.gantt.${fieldPreset}`);
+  const { resetColumnWidth, setColumnWidth, totalWidth, widths } = useResizableColumns(resizeColumns, `planning.gantt.${fieldPreset}`);
   const pinnedOffsets = useMemo(() => pinnedColumnOffsets(columns, widths), [columns, widths]);
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
   const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
@@ -121,8 +122,9 @@ export function PlanningGantt({
           pinnedOffsets={pinnedOffsets}
           tasks={visibleTasks}
           onColumnMoveBefore={moveColumnBefore}
+          onColumnVisible={onColumnVisible} onColumnsReset={onColumnsReset}
           onColumnWidthChange={setColumnWidth}
-          onHeaderDoubleClick={handleHeaderDoubleClick}
+          onHeaderDoubleClick={handleHeaderDoubleClick} onResetColumnWidth={resetColumnWidth}
           onSort={(columnId) => setSort((current) => nextPlanningGridSort(current, columnId))}
           sort={sort}
         />

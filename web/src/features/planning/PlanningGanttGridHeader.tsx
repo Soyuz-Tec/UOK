@@ -3,6 +3,7 @@ import type { DragEvent } from "react";
 
 import { ColumnResizeHandle, type ColumnWidthMap } from "../../shared/tables";
 import { autoFitColumnWidth, type PlanningGridColumn } from "./planningGanttModel";
+import { PlanningGanttHeaderMenu } from "./PlanningGanttHeaderMenu";
 import type { PlanningGridSort } from "./planningGridSortModel";
 import type { PinnedColumnOffsetMap } from "./planningPinnedColumns";
 import type { PlanningTask } from "./types";
@@ -12,8 +13,11 @@ export function PlanningGanttGridHeader({
   columns,
   gridTemplateColumns,
   onColumnMoveBefore,
+  onColumnVisible,
+  onColumnsReset,
   onColumnWidthChange,
   onHeaderDoubleClick,
+  onResetColumnWidth,
   onSort,
   pinnedOffsets,
   sort,
@@ -25,8 +29,11 @@ export function PlanningGanttGridHeader({
   columns: PlanningGridColumn[];
   gridTemplateColumns: string;
   onColumnMoveBefore: (sourceId: string, targetId: string) => void;
+  onColumnVisible: (columnId: string, visible: boolean) => void;
+  onColumnsReset: () => void;
   onColumnWidthChange: (columnId: string, width: number) => void;
   onHeaderDoubleClick: (column: PlanningGridColumn) => void;
+  onResetColumnWidth: (columnId: string) => void;
   onSort: (columnId: string) => void;
   pinnedOffsets: PinnedColumnOffsetMap;
   sort: PlanningGridSort;
@@ -53,6 +60,7 @@ export function PlanningGanttGridHeader({
           <button type="button" className="planning-owned-sort-button" aria-label={`Sort by ${column.label}`} onClick={() => onSort(column.id)}>
             <ArrowUpDown size={13} aria-hidden="true" />
           </button>
+          <PlanningGanttHeaderMenu column={column} canHide={!column.pinned} onColumnHide={(columnId) => onColumnVisible(columnId, false)} onColumnQuickAction={onHeaderDoubleClick} onResetColumns={onColumnsReset} onResetWidth={onResetColumnWidth} onSort={onSort} />
           {column.resizable === false ? null : (
             <ColumnResizeHandle
               label={column.label}

@@ -194,6 +194,8 @@ export function PlanningTimeline({
           onTimelineTaskCreate={onTimelineTaskCreate}
           onTaskMenuAction={onTaskMenuAction}
           onScaleChange={onScaleChange}
+          onColumnVisible={setColumnVisible}
+          onColumnsReset={resetColumnVisibility}
           onSummaryExpandedChange={setSummaryExpanded}
           onViewDensityChange={setViewDensity}
         />
