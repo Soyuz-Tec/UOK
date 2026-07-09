@@ -363,12 +363,23 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await page.getByRole("button", { name: "Done", exact: true }).click();
     if (viewport.width > 980) {
       const chart = page.locator(".planning-owned-chart");
+      const visibleDayLabelCount = () => chart.evaluate((node) => {
+        const bounds = node.getBoundingClientRect();
+        return Array.from(node.querySelectorAll(".planning-owned-header text")).filter((label) => {
+          const value = label.textContent || "";
+          const rect = label.getBoundingClientRect();
+          return /^\d+$/.test(value) && rect.left >= bounds.left - 2 && rect.right <= bounds.right + 2;
+        }).length;
+      });
       await chart.hover();
+      const baseDayCount = await visibleDayLabelCount();
       await page.keyboard.down("Control");
-      await page.mouse.wheel(0, -240);
+      await page.mouse.wheel(0, 240);
       await page.keyboard.up("Control");
+      await expect.poll(visibleDayLabelCount).toBeGreaterThan(baseDayCount);
+      const expandedDayCount = await visibleDayLabelCount();
       await page.getByLabel("Open planning controls").click();
-      await expect(page.getByRole("button", { name: "hour", exact: true })).toHaveClass(/selected/);
+      await expect(page.getByRole("button", { name: "day", exact: true })).toHaveClass(/selected/);
       await page.getByRole("button", { name: "Done", exact: true }).click();
       const beforePan = await chart.evaluate((node) => node.scrollLeft);
       const box = await chart.boundingBox();
@@ -382,8 +393,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       }
       await expect.poll(() => chart.evaluate((node) => node.scrollLeft)).toBeGreaterThan(beforePan);
       await page.keyboard.down("Control");
-      await page.mouse.wheel(0, 240);
+      await page.mouse.wheel(0, -240);
       await page.keyboard.up("Control");
+      await expect.poll(visibleDayLabelCount).toBeLessThan(expandedDayCount);
       await page.getByLabel("Open planning controls").click();
       await expect(page.getByRole("button", { name: "day", exact: true })).toHaveClass(/selected/);
       await page.getByRole("button", { name: "Done", exact: true }).click();

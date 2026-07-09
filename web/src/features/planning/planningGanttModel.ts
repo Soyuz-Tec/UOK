@@ -37,12 +37,12 @@ export type TaskStatusIndicator = {
   label: string;
 };
 
-export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity, minVisibleWidth = 0) {
+export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity, minVisibleWidth = 0, zoom = 1) {
   const start = startOfUnit(dateValue(schedule.project.start), scale);
   const end = addUnit(endOfUnit(dateValue(schedule.project.end), scale), scale);
   const holidays = calendarExcludedDates(schedule);
   const units: TimelineUnit[] = [];
-  const width = cellWidth(scale, viewDensity);
+  const width = cellWidth(scale, viewDensity, zoom);
   const minUnits = Math.max(1, Math.ceil(minVisibleWidth / width));
   let cursor = new Date(start);
   while (cursor <= end || units.length < minUnits) {

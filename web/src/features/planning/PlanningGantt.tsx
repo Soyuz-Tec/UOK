@@ -25,6 +25,7 @@ import { nextPlanningGridSort, sortPlanningTasks, type PlanningGridSort } from "
 import { planningKeyboardCommand } from "./planningKeyboardModel";
 import { pinnedColumnOffsets, pinnedGridColumns } from "./planningPinnedColumns";
 import { toResizablePlanningColumn } from "./planningResizableColumns";
+import { nextTimelineZoom } from "./planningScaleOptions";
 import { planningRowLayoutMap, planningRowLayouts, usePlanningRowHeights } from "./planningRowHeights";
 import { usePlanningTimelineInteraction } from "./planningTimelineInteraction";
 import { taskTimelineMarkers } from "./planningTimelineMarkers";
@@ -68,6 +69,7 @@ export function PlanningGantt({
   const [setChartSizeElement, , chartInlineSize] = useElementBlockSize<HTMLDivElement>();
   const [drag, setDrag] = useState<DragState | null>(null);
   const [linkDrag, setLinkDrag] = useState<DependencyLinkDrag | null>(null);
+  const [timelineZoom, setTimelineZoom] = useState(1);
   const [sort, setSort] = useState<PlanningGridSort>(null);
   const [taskMenu, setTaskMenu] = useState<{ taskId: string; x: number; y: number } | null>(null);
   const rowSize = rowHeight(viewDensity);
@@ -78,7 +80,7 @@ export function PlanningGantt({
   const { resetColumnWidth, setColumnWidth, totalWidth, widths } = useResizableColumns(resizeColumns, `planning.gantt.${fieldPreset}`);
   const pinnedOffsets = useMemo(() => pinnedColumnOffsets(columns, widths), [columns, widths]);
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
-  const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity, chartInlineSize), [chartInlineSize, scale, schedule, viewDensity]);
+  const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity, chartInlineSize, timelineZoom), [chartInlineSize, scale, schedule, timelineZoom, viewDensity]);
   const visibleTasks = useMemo(() => sortPlanningTasks(visibleRows(schedule.tasks, collapsedSummaryIds), sort, assignedByTask), [assignedByTask, collapsedSummaryIds, schedule.tasks, sort]);
   const { resetRowHeight, rowHeights, setRowHeight } = usePlanningRowHeights(schedule.project.id);
   const rowLayoutState = useMemo(() => planningRowLayouts(visibleTasks, rowSize, rowHeights), [rowHeights, rowSize, visibleTasks]);
@@ -98,6 +100,7 @@ export function PlanningGantt({
     chartStart: chart.start,
     onCreateTaskRange: readOnly ? () => undefined : onTimelineTaskCreate,
     onScaleChange,
+    onWheelZoom: (direction) => setTimelineZoom((current) => nextTimelineZoom(current, direction)),
     scale,
   });
   const setChartElement = useCallback((element: HTMLDivElement | null) => {

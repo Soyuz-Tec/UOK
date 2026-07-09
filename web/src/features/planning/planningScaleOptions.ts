@@ -20,3 +20,8 @@ export function adjacentTimelineScale(scale: TimelineScale, direction: "in" | "o
   const delta = direction === "in" ? 1 : -1;
   return zoomScaleOrder[Math.max(0, Math.min(maxZoomValue(), current + delta))] || scale;
 }
+
+export function nextTimelineZoom(current: number, direction: "in" | "out") {
+  const factor = direction === "in" ? 1.16 : 1 / 1.16;
+  return Math.round(Math.min(1.9, Math.max(0.55, current * factor)) * 100) / 100;
+}

@@ -90,16 +90,17 @@ export function unitKey(date: Date, scale: TimelineScale) {
   return `${isoDatePart(date)}T${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
-export function cellWidth(scale: TimelineScale, viewDensity: ViewDensity) {
-  if (scale === "minute") return viewDensity === "compact" ? 10 : 12;
-  if (scale === "hour") return viewDensity === "compact" ? 28 : 34;
-  if (scale === "sprint") return 110;
-  if (scale === "stage") return 132;
-  if (scale === "year") return 180;
-  if (scale === "quarter") return 150;
-  if (scale === "month") return 120;
-  if (scale === "week") return 92;
-  return viewDensity === "compact" ? 44 : 52;
+export function cellWidth(scale: TimelineScale, viewDensity: ViewDensity, zoom = 1) {
+  let width = viewDensity === "compact" ? 44 : 52;
+  if (scale === "minute") width = viewDensity === "compact" ? 10 : 12;
+  else if (scale === "hour") width = viewDensity === "compact" ? 28 : 34;
+  else if (scale === "sprint") width = 110;
+  else if (scale === "stage") width = 132;
+  else if (scale === "year") width = 180;
+  else if (scale === "quarter") width = 150;
+  else if (scale === "month") width = 120;
+  else if (scale === "week") width = 92;
+  return Math.max(8, Math.round(width * zoom));
 }
 
 function addMinutes(date: Date, minutes: number) {

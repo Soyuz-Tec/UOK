@@ -17,9 +17,10 @@ export function usePlanningTimelineInteraction(
     scale: TimelineScale;
     onCreateTaskRange: (start: string, end: string) => void;
     onScaleChange: (scale: TimelineScale) => void;
+    onWheelZoom?: (direction: "in" | "out") => void;
   },
 ) {
-  const { cellWidth, chartStart, onCreateTaskRange, onScaleChange, scale } = options;
+  const { cellWidth, chartStart, onCreateTaskRange, onScaleChange, onWheelZoom, scale } = options;
   const panRef = useRef<PanState>(null);
   const createRef = useRef<CreateState>(null);
   const draftRef = useRef<TimelineCreateDraft | null>(null);
@@ -35,7 +36,7 @@ export function usePlanningTimelineInteraction(
     requestAnimationFrame(() => {
       node.scrollLeft = Math.max(0, (node.scrollWidth - node.clientWidth) * zoom.ratio);
     });
-  }, [scale, scrollRef]);
+  }, [cellWidth, scale, scrollRef]);
 
   useEffect(() => {
     const node = scrollRef.current;
@@ -43,14 +44,19 @@ export function usePlanningTimelineInteraction(
     const onWheel = (event: WheelEvent) => {
       if (!event.ctrlKey && !event.metaKey) return;
       event.preventDefault();
-      const nextScale = adjacentTimelineScale(scale, event.deltaY < 0 ? "in" : "out");
-      if (nextScale === scale) return;
+      const direction = event.deltaY < 0 ? "in" : "out";
       zoomRef.current = { ratio: node.scrollLeft / Math.max(1, node.scrollWidth - node.clientWidth) };
+      if (onWheelZoom) {
+        onWheelZoom(direction);
+        return;
+      }
+      const nextScale = adjacentTimelineScale(scale, direction);
+      if (nextScale === scale) return;
       onScaleChange(nextScale);
     };
     node.addEventListener("wheel", onWheel, { passive: false });
     return () => node.removeEventListener("wheel", onWheel);
-  }, [onScaleChange, scale, scrollRef]);
+  }, [onScaleChange, onWheelZoom, scale, scrollRef]);
 
   return {
     createDraft,
