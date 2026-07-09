@@ -23,7 +23,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
   const [showCritical, setShowCritical] = useState(true);
   const [showBaselines, setShowBaselines] = useState(true);
   const [reviewMode, setReviewMode] = useState(false);
-  const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const actions = usePlanningWorkspaceMutations({
     token,
@@ -70,7 +70,9 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
           primaryLabel="Planning timeline"
           secondaryLabel="Planning inspector"
           primary={renderPlanningPrimaryPane(schedule)}
-          secondary={inspectorOpen ? renderPlanningInspectorPane(schedule) : undefined}
+          secondary={renderPlanningInspectorPane(schedule)}
+          secondaryOpen={inspectorOpen}
+          secondaryPresentation="slide"
         />
       )}
     </section>
@@ -80,7 +82,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
     return (
       <div className="planning-primary-stack">
         {!inspectorOpen ? (
-          <div className="planning-inspector-toggle-row">
+          <div className="planning-inspector-toggle-row planning-inspector-toggle-floating">
             <CommandButton icon={PanelRightOpen} onClick={() => setInspectorOpen(true)}>Show inspector</CommandButton>
           </div>
         ) : null}
@@ -103,6 +105,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
           onTaskSelect={(taskId) => {
             setSelectedTaskId(taskId);
             setInspectorTab("task");
+            setInspectorOpen(true);
           }}
           onTaskReschedule={actions.rescheduleTask}
           onTaskProgress={(taskId, progress) => void actions.saveTask(taskId, { progress })}
@@ -118,10 +121,17 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
             setNewTaskType(taskType);
             setSelectedTaskId("");
             setInspectorTab("task");
+            setInspectorOpen(true);
           }}
-          onOpenDependencies={() => setInspectorTab("links")}
+          onOpenDependencies={() => {
+            setInspectorTab("links");
+            setInspectorOpen(true);
+          }}
           onCreateBaseline={() => void actions.addBaseline({ name: `Baseline ${activeSchedule.baselines.length + 1}` })}
-          onOpenResources={() => setInspectorTab("resources")}
+          onOpenResources={() => {
+            setInspectorTab("resources");
+            setInspectorOpen(true);
+          }}
           onLevelResources={() => void actions.levelResources()}
           onUndo={() => void actions.runHistory("undo")}
           onRedo={() => void actions.runHistory("redo")}

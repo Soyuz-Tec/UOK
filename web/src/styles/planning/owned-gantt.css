@@ -36,6 +36,11 @@
   white-space: nowrap;
 }
 
+.planning-owned-grid-header svg,
+.planning-owned-grid-header svg * {
+  pointer-events: none;
+}
+
 .planning-owned-grid-header {
   border-bottom: var(--uok-line);
   padding-inline: var(--uok-space-2);

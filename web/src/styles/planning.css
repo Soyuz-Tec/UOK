@@ -4,8 +4,16 @@
   min-width: 0;
 }
 
-.planning-workspace .workflow-split-view {
+.planning-workspace .workflow-split-view:not(.secondary-slide) {
   grid-template-columns: minmax(980px, 1fr) minmax(320px, 360px);
+}
+
+.planning-workspace .workflow-split-view.secondary-slide {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+}
+
+.planning-workspace .workflow-split-view.secondary-slide.secondary-closed {
+  grid-template-columns: minmax(0, 1fr) 0;
 }
 
 .planning-workspace .workflow-secondary-region {
@@ -20,9 +28,25 @@
   min-width: 0;
 }
 
+.planning-primary-stack {
+  position: relative;
+}
+
 .planning-inspector-toggle-row {
   display: flex;
   justify-content: flex-end;
+}
+
+.planning-inspector-toggle-floating {
+  position: absolute;
+  top: var(--uok-space-2);
+  right: var(--uok-space-2);
+  z-index: 8;
+  pointer-events: none;
+}
+
+.planning-inspector-toggle-floating .command-button {
+  pointer-events: auto;
 }
 
 .planning-inspector-tabs button {
@@ -205,11 +229,11 @@
 }
 
 @media (max-width: 1500px) {
-  .planning-workspace .workflow-split-view {
+  .planning-workspace .workflow-split-view:not(.secondary-slide) {
     grid-template-columns: 1fr;
   }
 
-  .planning-workspace .workflow-secondary-region {
+  .planning-workspace .workflow-split-view:not(.secondary-slide) .workflow-secondary-region {
     position: static;
     max-height: none;
   }

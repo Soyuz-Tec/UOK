@@ -4,20 +4,35 @@ export function WorkflowSplitView({
   primaryLabel,
   secondaryLabel,
   primary,
-  secondary
+  secondary,
+  secondaryOpen = true,
+  secondaryPresentation = "inline"
 }: {
   primaryLabel: string;
   secondaryLabel: string;
   primary: ReactNode;
   secondary?: ReactNode;
+  secondaryOpen?: boolean;
+  secondaryPresentation?: "inline" | "slide";
 }) {
-  const classes = ["workflow-split-view", secondary ? "" : "single-pane"].filter(Boolean).join(" ");
+  const hasSecondary = Boolean(secondary);
+  const secondaryVisible = hasSecondary && secondaryOpen;
+  const classes = [
+    "workflow-split-view",
+    secondaryPresentation === "slide" ? "secondary-slide" : "",
+    secondaryVisible ? "secondary-open" : "secondary-closed",
+    hasSecondary && (secondaryPresentation !== "inline" || secondaryVisible) ? "" : "single-pane",
+  ].filter(Boolean).join(" ");
   return (
     <div className={classes}>
       <section className="workflow-primary-region" aria-label={primaryLabel}>
         {primary}
       </section>
-      {secondary ? <aside className="workflow-secondary-region" aria-label={secondaryLabel}>{secondary}</aside> : null}
+      {secondary ? (
+        <aside className="workflow-secondary-region" aria-label={secondaryLabel} aria-hidden={!secondaryVisible} inert={!secondaryVisible ? true : undefined}>
+          {secondary}
+        </aside>
+      ) : null}
     </div>
   );
 }

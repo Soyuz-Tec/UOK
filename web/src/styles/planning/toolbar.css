@@ -9,6 +9,36 @@
   scrollbar-width: thin;
 }
 
+.planning-gantt-toolbar {
+  row-gap: 4px;
+  padding: var(--uok-space-1);
+}
+
+.planning-gantt-toolbar [aria-label="Schedule commands"] {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+
+.planning-gantt-toolbar .command-button,
+.planning-gantt-toolbar .planning-toolbar-toggle,
+.planning-gantt-toolbar .planning-selection-toggle,
+.planning-gantt-toolbar .planning-toolbar-select,
+.planning-gantt-toolbar .planning-zoom-control {
+  min-height: 32px;
+}
+
+.planning-gantt-toolbar .planning-segmented-control button {
+  min-height: 32px;
+  padding-inline: var(--uok-space-2);
+}
+
+.planning-gantt-toolbar .planning-view-tabs button {
+  min-height: 24px;
+}
+
 .planning-toolbar-select input[type="date"] {
   min-width: 132px;
   min-height: 28px;
@@ -34,6 +64,26 @@
   border-radius: var(--uok-radius-2);
   padding: var(--uok-space-1);
   background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-utility-group .saved-view-controls {
+  align-items: center;
+  gap: var(--uok-space-1);
+  min-width: max-content;
+}
+
+.planning-utility-group .saved-view-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+}
+
+.planning-utility-group .saved-view-controls input {
+  width: 112px;
+}
+
+.planning-utility-group .saved-view-controls select {
+  min-width: 124px;
 }
 
 .planning-saved-field-controls {
@@ -76,7 +126,7 @@
 
 .planning-scale-controls .segmented-control {
   width: max-content;
-  grid-template-columns: repeat(6, minmax(76px, 1fr));
+  grid-template-columns: repeat(8, minmax(72px, 1fr));
 }
 
 @media (max-width: 1260px) {
