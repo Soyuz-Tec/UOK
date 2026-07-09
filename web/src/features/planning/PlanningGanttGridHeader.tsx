@@ -1,7 +1,9 @@
+import { ArrowUpDown } from "lucide-react";
 import type { DragEvent } from "react";
 
 import { ColumnResizeHandle, type ColumnWidthMap } from "../../shared/tables";
 import { autoFitColumnWidth, type PlanningGridColumn } from "./planningGanttModel";
+import type { PlanningGridSort } from "./planningGridSortModel";
 import type { PlanningTask } from "./types";
 
 export function PlanningGanttGridHeader({
@@ -11,6 +13,8 @@ export function PlanningGanttGridHeader({
   onColumnMoveBefore,
   onColumnWidthChange,
   onHeaderDoubleClick,
+  onSort,
+  sort,
   tasks,
   totalWidth,
   widths,
@@ -21,6 +25,8 @@ export function PlanningGanttGridHeader({
   onColumnMoveBefore: (sourceId: string, targetId: string) => void;
   onColumnWidthChange: (columnId: string, width: number) => void;
   onHeaderDoubleClick: (column: PlanningGridColumn) => void;
+  onSort: (columnId: string) => void;
+  sort: PlanningGridSort;
   tasks: PlanningTask[];
   totalWidth: number;
   widths: ColumnWidthMap;
@@ -31,6 +37,7 @@ export function PlanningGanttGridHeader({
         <span
           key={column.id}
           role="columnheader"
+          aria-sort={sort?.columnId === column.id ? (sort.direction === "asc" ? "ascending" : "descending") : "none"}
           draggable={columns.length > 1}
           onDoubleClick={() => onHeaderDoubleClick(column)}
           onDragOver={(event) => event.preventDefault()}
@@ -38,6 +45,9 @@ export function PlanningGanttGridHeader({
           onDrop={(event) => dropColumnBefore(column.id, event)}
         >
           <span className="planning-owned-grid-header-label">{column.label}</span>
+          <button type="button" className="planning-owned-sort-button" aria-label={`Sort by ${column.label}`} onClick={() => onSort(column.id)}>
+            <ArrowUpDown size={13} aria-hidden="true" />
+          </button>
           {column.resizable === false ? null : (
             <ColumnResizeHandle
               label={column.label}

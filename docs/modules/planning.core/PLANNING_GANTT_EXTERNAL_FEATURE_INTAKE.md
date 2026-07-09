@@ -59,7 +59,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Hierarchical subtasks | Implemented | Summary hierarchy and collapse/expand exist. |
 | Configurable scales including hours/minutes/sprints/stages | Partial | Hour mode exists; minutes, sprints, and stages remain UOK-specific backlog. |
 | Customizable grid columns | Implemented | Field presets, visibility, resize, and autofit exist. |
-| Grid sorting and task filtering | Partial | Search/filter implemented; richer column sorting remains. |
+| Grid sorting and task filtering | Implemented | Search/filter plus visible-column sorting are implemented for current field presets. |
 | Toolbar and context menu | Implemented | Toolbar and task row context menu exist with server-routed planning actions. |
 | Taskbar tooltips | Implemented | UOK-owned hover/focus task detail is rendered in the SVG timeline. |
 | Zooming with scroll | Backlog | Add controlled wheel/trackpad zoom without breaking page scroll. |
@@ -86,7 +86,7 @@ This table turns the external feature vocabulary into UOK-owned build units. It 
 | Grid | Configurable columns | id, label, width, min/max width, visibility, preset, resize/autofit, order, eventual pin flags | Shared table sizing/visibility/order primitives plus planning-specific field presets | Partial |
 | Grid | Tree column | WBS code, indentation, summary marker, expand/collapse state, parent id | Summary rows and WBS sorting; richer per-parent expand state later | Partial |
 | Grid | Inline cell editing | editable field, validation state, commit/cancel, keyboard handling, server command | Defer until command-level validation and audit messages are tighter | Backlog |
-| Grid | Column sorting/filtering | column id, direction, filter mode, query, status/resource criteria | Search/filter exists; richer column sort remains | Partial |
+| Grid | Column sorting/filtering | column id, direction, filter mode, query, status/resource criteria | Search/filter and visible-column sorting use UOK-owned read-model helpers | Implemented |
 | Timeline | Time scales | scale id, unit, step, label, group label, cell width, zoom order | Hour/day/week/month/quarter/year scale model | Implemented |
 | Timeline | Timeline templates | header label, cell class, task shape class, weekend/holiday class | UOK-owned render helpers and CSS tokens | Partial |
 | Timeline | Markers | today, milestones, deadlines, vertical event markers | Today marker exists; deadline/event markers later | Partial |

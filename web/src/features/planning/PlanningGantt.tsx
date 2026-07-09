@@ -23,6 +23,7 @@ import {
 import { DependencyLines, TaskShape, TimelineBackground, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
 import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
 import { dependencyLinkPayload, svgPointer, type DependencyLinkDrag } from "./planningDependencyDrag";
+import { nextPlanningGridSort, sortPlanningTasks, type PlanningGridSort } from "./planningGridSortModel";
 import { planningKeyboardCommand } from "./planningKeyboardModel";
 import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
@@ -72,6 +73,7 @@ export function PlanningGantt({
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
   const [drag, setDrag] = useState<DragState | null>(null);
   const [linkDrag, setLinkDrag] = useState<DependencyLinkDrag | null>(null);
+  const [sort, setSort] = useState<PlanningGridSort>(null);
   const [taskMenu, setTaskMenu] = useState<{ taskId: string; x: number; y: number } | null>(null);
   const rowSize = rowHeight(viewDensity);
   const baseColumns = useMemo(() => gridColumns(fieldPreset), [fieldPreset]);
@@ -79,9 +81,9 @@ export function PlanningGantt({
   const columns = useMemo(() => orderedColumns.filter((column) => columnVisibility[column.id] !== false), [columnVisibility, orderedColumns]);
   const resizeColumns = useMemo(() => columns.map(toResizableColumn), [columns]);
   const { setColumnWidth, totalWidth, widths } = useResizableColumns(resizeColumns, `planning.gantt.${fieldPreset}`);
-  const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
-  const visibleTasks = useMemo(() => visibleRows(schedule.tasks, summaryExpanded), [schedule.tasks, summaryExpanded]);
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
+  const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
+  const visibleTasks = useMemo(() => sortPlanningTasks(visibleRows(schedule.tasks, summaryExpanded), sort, assignedByTask), [assignedByTask, schedule.tasks, sort, summaryExpanded]);
   const taskRows = useMemo(() => new Map(visibleTasks.map((task, index) => [task.id, index])), [visibleTasks]);
   const width = Math.max(chart.units.length * chart.cellWidth, 480);
   const headerHeight = 54;
@@ -112,6 +114,8 @@ export function PlanningGantt({
           onColumnMoveBefore={moveColumnBefore}
           onColumnWidthChange={setColumnWidth}
           onHeaderDoubleClick={handleHeaderDoubleClick}
+          onSort={(columnId) => setSort((current) => nextPlanningGridSort(current, columnId))}
+          sort={sort}
         />
         <div className="planning-owned-grid-body">
           {visibleTasks.map((task) => (
