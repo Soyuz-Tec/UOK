@@ -1,20 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from uuid import uuid4
+from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
-
-
-def new_id() -> str:
-    return str(uuid4())
-
-
-def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+from .models_base import new_id, utcnow
 
 
 class Organization(Base):
@@ -190,6 +182,13 @@ from .planning_models import (  # noqa: E402
     PlanningScheduleEvent,
     PlanningTask,
     PlanningTaskDependency,
+)
+
+from .calendar_models import (  # noqa: E402
+    Calendar,
+    CalendarEvent,
+    CalendarEventParticipant,
+    CalendarReminder,
 )
 
 

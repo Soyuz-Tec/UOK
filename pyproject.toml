@@ -11,6 +11,7 @@ dependencies = [
   "psycopg[binary]==3.3.4",
   "argon2-cffi==25.1.0",
   "python-multipart==0.0.32",
+  "python-dateutil==2.9.0.post0",
 ]
 
 [project.optional-dependencies]
@@ -22,5 +23,5 @@ dev = [
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
-testpaths = ["tests", "modules/contacts.core/tests"]
+testpaths = ["tests", "modules/calendar.core/tests", "modules/contacts.core/tests"]
 addopts = "-q"
