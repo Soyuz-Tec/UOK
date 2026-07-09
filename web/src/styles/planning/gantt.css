@@ -16,10 +16,8 @@
   display: grid;
   grid-template-areas:
     "title meta project plan"
-    "views views views views"
-    "commands commands commands commands"
-    "controls controls controls controls";
-  grid-template-columns: minmax(180px, 0.9fr) auto minmax(220px, 300px) auto;
+    "views commands commands controls";
+  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 280px) auto;
   column-gap: var(--uok-space-2);
   row-gap: var(--uok-space-1);
   justify-content: stretch;
@@ -122,11 +120,10 @@
 .planning-view-tabs {
   display: flex;
   grid-area: views;
-  gap: var(--uok-space-4);
+  align-self: center;
+  gap: var(--uok-space-3);
   min-width: 0;
   overflow-x: auto;
-  border-top: var(--uok-line);
-  padding-top: var(--uok-space-1);
   scrollbar-width: thin;
 }
 

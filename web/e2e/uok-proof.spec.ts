@@ -136,6 +136,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByRole("button", { name: "Gantt chart", exact: true })).toHaveAttribute("aria-current", "page");
     await expect(page.getByLabel("Project metadata")).toBeVisible();
     await expect(page.getByLabel("Timeline utilities")).toBeVisible();
+    await page.getByLabel("Open planning controls").click();
     await expect(page.getByLabel("Saved planning views")).toBeVisible();
     await expect(page.getByLabel("Planning view name")).toBeVisible();
     await expect(page.getByLabel("Planning search and filters")).toBeVisible();
@@ -157,6 +158,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByRole("button", { name: "Project JSON", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Timeline SVG", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Document", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Done", exact: true }).click();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
     await expect(page.locator(".planning-owned-grid-header .column-resize-handle")).toHaveCount(4);
     await expect(page.locator(".planning-owned-resize-handle")).toHaveCount(6);
@@ -221,12 +223,18 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await expect.poll(() => dependencyPayloads.length).toBe(linkRequests + 1);
       expect(dependencyPayloads.at(-1)).toMatchObject({ predecessor_task_id: "task-1", successor_task_id: "task-3", dependency_type: "finish_to_start", lag_days: 0 });
     }
+    await page.getByLabel("Open planning controls").click();
     await page.getByLabel("Search planning tasks").fill("integrated");
+    await page.getByRole("button", { name: "Done", exact: true }).click();
     await expect(page.locator(".planning-owned-grid-body").getByText("Build integrated Gantt with dependency validation")).toBeVisible();
+    await page.getByLabel("Open planning controls").click();
     await page.getByLabel("Search planning tasks").fill("not a visible planning task");
+    await page.getByRole("button", { name: "Done", exact: true }).click();
     await expect(page.getByLabel("No visible planning grid tasks")).toBeVisible();
     await expect(page.getByLabel("No visible planning timeline tasks")).toBeVisible();
+    await page.getByLabel("Open planning controls").click();
     await page.getByLabel("Search planning tasks").fill("");
+    await page.getByRole("button", { name: "Done", exact: true }).click();
     if (viewport.width > 980) {
       await expect(page.getByRole("complementary", { name: "Planning inspector" })).toBeVisible();
       await page.getByRole("button", { name: "Hide inspector", exact: true }).click();
@@ -278,6 +286,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(criticalPath.getByText("Build integrated Gantt with dependency validation")).toBeVisible();
     await page.getByRole("button", { name: "Gantt chart", exact: true }).click();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
+    await page.getByLabel("Open planning controls").click();
     await page.getByRole("button", { name: "Timeline only", exact: true }).click();
     await expect(page.getByRole("button", { name: "Split view", exact: true })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator(".planning-owned-grid")).toBeHidden();
@@ -286,6 +295,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-grid")).toBeVisible();
     await page.getByRole("button", { name: "Review mode", exact: true }).click();
     await expect(page.getByRole("button", { name: "Edit mode", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: "Done", exact: true }).click();
     await expect(page.locator(".planning-gantt-shell")).toHaveAttribute("aria-readonly", "true");
     await expect(page.getByRole("button", { name: "Task", exact: true })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Task actions for Define schedule scope" })).toBeDisabled();
@@ -300,7 +310,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-link-handle")).toHaveCount(0);
     const editHideInspector = page.getByRole("button", { name: "Hide inspector", exact: true });
     if (await editHideInspector.count()) await editHideInspector.evaluate((button) => (button as HTMLButtonElement).click());
+    await page.getByLabel("Open planning controls").click();
     await page.getByRole("button", { name: "Edit mode", exact: true }).click();
+    await page.getByRole("button", { name: "Done", exact: true }).click();
     await expect(page.getByRole("button", { name: "Task", exact: true })).toBeEnabled();
     await expect(page.locator(".planning-owned-resize-handle")).toHaveCount(6);
     await expect(page.locator(".planning-owned-progress-handle")).toHaveCount(3);
@@ -344,16 +356,20 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await page.getByRole("button", { name: "Task", exact: true }).focus();
     await expect(page.getByRole("button", { name: "Task", exact: true })).toBeFocused();
     await expect.poll(() => page.locator(".planning-gantt-shell").getByText("Build integrated Gantt with dependency validation").count()).toBeGreaterThan(0);
+    await page.getByLabel("Open planning controls").click();
     for (const scale of ["minute", "hour", "day", "week", "sprint", "stage", "month", "quarter", "year"]) {
       await expect(page.getByRole("button", { name: scale, exact: true })).toBeVisible();
     }
+    await page.getByRole("button", { name: "Done", exact: true }).click();
     if (viewport.width > 980) {
       const chart = page.locator(".planning-owned-chart");
       await chart.hover();
       await page.keyboard.down("Control");
       await page.mouse.wheel(0, -240);
       await page.keyboard.up("Control");
+      await page.getByLabel("Open planning controls").click();
       await expect(page.getByRole("button", { name: "hour", exact: true })).toHaveClass(/selected/);
+      await page.getByRole("button", { name: "Done", exact: true }).click();
       const beforePan = await chart.evaluate((node) => node.scrollLeft);
       const box = await chart.boundingBox();
       expect(box).not.toBeNull();
@@ -368,7 +384,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await page.keyboard.down("Control");
       await page.mouse.wheel(0, 240);
       await page.keyboard.up("Control");
+      await page.getByLabel("Open planning controls").click();
       await expect(page.getByRole("button", { name: "day", exact: true })).toHaveClass(/selected/);
+      await page.getByRole("button", { name: "Done", exact: true }).click();
       const rangeTaskRequests = taskPayloads.length;
       await chart.evaluate((node) => { node.scrollLeft = 0; });
       const createBox = await chart.boundingBox();
@@ -388,21 +406,29 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       expect(String((taskPayloads.at(-1) as { start?: unknown }).start)).toMatch(/^2026-08-/);
       expect(String((taskPayloads.at(-1) as { end?: unknown }).end)).toMatch(/^2026-08-/);
       await chart.evaluate((node) => { node.scrollLeft = 0; });
+      await page.getByLabel("Open planning controls").click();
       await page.getByRole("button", { name: "Selected", exact: true }).click();
+      await page.getByRole("button", { name: "Done", exact: true }).click();
       await expect.poll(() => chart.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
-      await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Pilot review milestone" }).first()).toBeFocused();
+      await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Pilot review milestone" }).first()).toHaveClass(/selected/);
       await chart.evaluate((node) => { node.scrollLeft = 0; });
+      await page.getByLabel("Open planning controls").click();
       await page.getByLabel("Timeline target date").fill("2026-08-13");
       await page.getByRole("button", { name: "Go", exact: true }).click();
+      await page.getByRole("button", { name: "Done", exact: true }).click();
       await expect.poll(() => chart.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
+      await page.getByLabel("Open planning controls").click();
       await page.getByRole("button", { name: "Fit", exact: true }).click();
       await expect(page.getByRole("button", { name: "month", exact: true })).toHaveClass(/selected/);
+      await page.getByRole("button", { name: "Done", exact: true }).click();
       await expect.poll(() => chart.evaluate((node) => Math.round(node.scrollLeft))).toBe(0);
     }
+    await page.getByLabel("Open planning controls").click();
     await page.getByRole("button", { name: "Focus", exact: true }).click();
     await expect(page.locator(".planning-timeline-workbench")).toHaveClass(/focus-mode/);
     await expect(page.getByRole("button", { name: "Exit focus", exact: true })).toHaveAttribute("aria-pressed", "true");
     await page.getByRole("button", { name: "Exit focus", exact: true }).click();
+    await page.getByRole("button", { name: "Done", exact: true }).click();
     await expect(page.locator(".planning-timeline-workbench")).not.toHaveClass(/focus-mode/);
     const finalShowInspector = page.getByRole("button", { name: "Show inspector", exact: true });
     if (await finalShowInspector.count()) {
@@ -425,6 +451,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await layoutHideInspector.evaluate((button) => (button as HTMLButtonElement).click());
       await expect(page.locator(".workflow-split-view")).toHaveClass(/secondary-closed/);
     }
+    await page.locator(".planning-controls-menu[open]").evaluateAll((menus) => {
+      for (const menu of menus) (menu as HTMLDetailsElement).open = false;
+    });
 
     const layout = await page.evaluate(() => {
       const shell = document.querySelector(".shell")?.getBoundingClientRect();
@@ -434,7 +463,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       const ganttTheme = document.querySelector(".planning-gantt-shell .planning-owned-chart svg")?.getBoundingClientRect();
       const firstGanttRow = document.querySelector(".planning-gantt-shell .planning-owned-grid-row")?.getBoundingClientRect();
       const firstGanttChart = document.querySelector(".planning-gantt-shell .planning-owned-chart")?.getBoundingClientRect();
-      const inspector = document.querySelector(".workflow-secondary-region")?.getBoundingClientRect();
+      const inspectorNode = document.querySelector(".workflow-secondary-region");
+      const inspectorOpen = inspectorNode?.getAttribute("aria-hidden") !== "true";
+      const inspector = inspectorOpen ? inspectorNode?.getBoundingClientRect() : undefined;
       return {
         shellWidth: shell?.width || 0,
         workflowHeaderVisible: Boolean(workflowHeader),

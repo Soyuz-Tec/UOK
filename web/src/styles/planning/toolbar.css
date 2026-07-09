@@ -3,10 +3,68 @@
   flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-start;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 2px;
-  scrollbar-width: thin;
+  overflow: visible;
+}
+
+.planning-controls-menu {
+  position: relative;
+}
+
+.planning-controls-menu summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--uok-space-2);
+  min-width: 220px;
+  min-height: 34px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
+  list-style: none;
+}
+
+.planning-controls-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.planning-controls-menu summary span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-controls-panel {
+  position: fixed;
+  z-index: 12;
+  top: 76px;
+  right: var(--uok-space-4);
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1fr) minmax(220px, 1fr) minmax(220px, 1fr);
+  gap: var(--uok-space-3);
+  width: min(1080px, calc(100vw - var(--uok-space-6)));
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-2);
+}
+
+.planning-controls-menu:not([open]) > .planning-controls-panel {
+  display: none;
+}
+
+.planning-controls-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--uok-space-2);
+  border-top: var(--uok-line);
+  padding-top: var(--uok-space-2);
 }
 
 .planning-gantt-toolbar {
@@ -16,6 +74,7 @@
 
 .planning-gantt-toolbar [aria-label="Schedule commands"] {
   flex-wrap: nowrap;
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 2px;
@@ -50,15 +109,17 @@
 
 .planning-plan-actions {
   grid-area: plan;
-  justify-content: flex-start;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  min-width: max-content;
 }
 
 .planning-utility-group {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   align-items: end;
   gap: var(--uok-space-1);
-  flex: 0 0 auto;
+  align-content: start;
   min-width: 0;
   border: var(--uok-line);
   border-radius: var(--uok-radius-2);
@@ -87,18 +148,18 @@
 }
 
 .planning-saved-field-controls {
-  flex-basis: auto;
+  grid-column: span 2;
   order: 1;
 }
 
 .planning-filter-controls {
-  flex-basis: auto;
+  grid-column: span 2;
   order: 2;
 }
 
 .planning-mode-controls,
 .planning-display-controls {
-  flex-basis: auto;
+  grid-column: span 1;
 }
 
 .planning-mode-controls {
@@ -110,17 +171,17 @@
 }
 
 .planning-scale-controls {
-  flex-basis: auto;
+  grid-column: span 2;
   order: 3;
 }
 
 .planning-navigation-controls {
-  flex-basis: auto;
+  grid-column: span 2;
   order: 4;
 }
 
 .planning-export-controls {
-  flex-basis: auto;
+  grid-column: span 2;
   order: 5;
 }
 
@@ -133,12 +194,30 @@
   .planning-gantt-toolbar [aria-label="Timeline utilities"] {
     align-items: center;
   }
+
+  .planning-controls-panel {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
 }
 
 @media (max-width: 680px) {
+  .planning-controls-menu,
+  .planning-controls-menu summary {
+    width: 100%;
+  }
+
+  .planning-controls-panel {
+    top: var(--uok-space-4);
+    left: var(--uok-space-2);
+    right: var(--uok-space-2);
+    grid-template-columns: 1fr;
+    width: auto;
+    max-height: calc(100vh - (var(--uok-space-4) * 2));
+  }
+
   .planning-utility-group {
     order: initial;
-    flex-basis: 100%;
+    grid-column: auto;
   }
 
   .planning-scale-controls .segmented-control {
