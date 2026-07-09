@@ -5,9 +5,9 @@ import type { PlanningDependencyChain } from "./planningDependencyChain";
 import type { TimelineCreateDraft } from "./planningTimelineCreateModel";
 import type { PlanningTimelineMarker } from "./planningTimelineMarkers";
 import type { PlanningRowLayout } from "./planningRowHeights";
+import { PlanningBaselineLane } from "./PlanningBaselineLane";
 import {
   dateValue,
-  durationBetween,
   durationUnits,
   taskColorClass,
   taskStatusIndicator,
@@ -144,7 +144,6 @@ export function TaskShape({
       onKeyDown={(event) => selectOnKey(event, task.id, onSelect)}
     >
       <title>{accessibilityLabel}</title>
-      {showBaselines && task.baseline_start && task.baseline_end ? <BaselineShape task={task} chartStart={chartStart} scale={scale} cellWidth={cellWidth} y={y + barHeight + 6} /> : null}
       <rect x={x} y={y} width={width} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)} />
       <rect className="progress" x={x} y={y} width={progressWidth} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} />
       {readOnly ? null : <rect className="planning-owned-resize-handle start" x={x - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-start", event.clientX)} />}
@@ -152,6 +151,7 @@ export function TaskShape({
       {readOnly ? null : <circle className="planning-owned-progress-handle" cx={x + progressWidth} cy={y + barHeight / 2} r="5" onPointerDown={(event) => onDragStart(task.id, "progress", event.clientX, width)} />}
       <text x={x + 8} y={y + barHeight / 2 + 4}>{task.title}</text>
       <TaskStatusCode x={indicatorX} y={y + Math.max(2, (barHeight - 18) / 2)} indicator={indicator} />
+      {showBaselines ? <PlanningBaselineLane task={task} chartStart={chartStart} scale={scale} cellWidth={cellWidth} y={y + barHeight + 6} /> : null}
       {readOnly ? null : <DependencyHandles task={task} sourceX={x + width + 12} targetX={x - 12} y={y + barHeight / 2} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
       <TaskTooltip task={task} x={x} y={Math.max(4, y - 50)} indicator={indicator} />
     </g>
@@ -209,13 +209,6 @@ function linkOnKey(event: KeyboardEvent<SVGCircleElement>, action: () => void) {
   event.preventDefault();
   event.stopPropagation();
   action();
-}
-
-function BaselineShape({ task, chartStart, scale, cellWidth, y }: { task: PlanningTask; chartStart: Date; scale: TimelineScale; cellWidth: number; y: number }) {
-  if (!task.baseline_start || !task.baseline_end) return null;
-  const x = xForDate(dateValue(task.baseline_start), chartStart, scale, cellWidth);
-  const width = Math.max(cellWidth * durationBetween(task.baseline_start, task.baseline_end, scale), cellWidth * 0.5);
-  return <rect className="baseline" x={x} y={y} width={width} height="4" rx="2" />;
 }
 
 export function TodayMarker({ chartStart, scale, cellWidth, height }: { chartStart: Date; scale: TimelineScale; cellWidth: number; height: number }) {

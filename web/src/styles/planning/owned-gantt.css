@@ -248,12 +248,6 @@
   opacity: 1;
 }
 
-.planning-owned-task .baseline {
-  fill: var(--uok-status-warning);
-  opacity: 0.85;
-  pointer-events: none;
-}
-
 .planning-owned-task text {
   fill: var(--uok-bg-elevated);
   font-size: 12px;

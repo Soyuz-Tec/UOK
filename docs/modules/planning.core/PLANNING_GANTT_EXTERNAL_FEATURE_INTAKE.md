@@ -75,7 +75,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Localization | Backlog | Requires UOK-wide localization approach, not planning-only strings. |
 | Light/dark themes | Implemented | UOK appearance tokens and UI proof cover light/dark behavior. |
 | Work-time calendars and resource calendars | Partial | Calendar-aware scheduling exists partially; resource calendars remain backlog. |
-| Critical path, slack, baselines | Partial | CPM read model, critical-path explanation, and slack counts exist; richer baseline lanes remain. |
+| Critical path, slack, baselines | Implemented | CPM read model, critical-path explanation, slack counts, per-row baseline lanes, and variance badges exist. |
 | Resource planning and workload | Implemented | Resource assignment, warnings, and first-party daily workload lanes exist; automatic leveling remains a separate scheduling backlog item. |
 | Task grouping, rollups, split tasks, unscheduled tasks | Backlog | Add only after core dependency/constraint model is stronger. |
 | Undo/redo | Backlog | Needs command stack with server reconciliation. |
@@ -147,7 +147,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Scheduling | Backward planning and fixed project limits | direction, project start/end bounds, constraint violation messages | Later Python scheduling policy extension | Backlog |
 | Resources | Assignments | resource id/name, role, allocation, capacity, warnings, workload lane | Assignments, warnings, and workload lanes are implemented from the validated schedule read model | Implemented |
 | Resources | Resource panel/load chart | resource row, load cell, chart mode, allocation template, overload state | First-party Workload view renders resource lanes, daily allocation cells, peak load, and overload status from existing assignments | Implemented |
-| Baselines | Baseline overlays | baseline start/end, variance, baseline lane, deadline marker | Capture and row overlay exist; richer lane later | Partial |
+| Baselines | Baseline overlays | baseline start/end, variance, baseline lane, deadline marker | Capture, per-row timeline lanes, and variance badges are implemented | Implemented |
 | Performance | Smart rendering/virtualization | visible row window, visible column/window, stable row heights, overscan | Defer until data scale requires it and proof covers it | Backlog |
 | Accessibility | Keyboard/touch/ARIA | row navigation, focus rings, button labels, touch target size, non-color cues | Keyboard and ARIA proof exists; touch/localization later | Partial |
 | Data integration | REST sync and events | read model, command write, audit event, optimistic state rules | UOK command bus and audit events, no client-owned persistence | Implemented |

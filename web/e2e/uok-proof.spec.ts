@@ -148,6 +148,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-grid-header .column-resize-handle")).toHaveCount(4);
     await expect(page.locator(".planning-owned-resize-handle")).toHaveCount(6);
     await expect(page.locator(".planning-owned-progress-handle")).toHaveCount(3);
+    await expect(page.locator(".planning-owned-baseline-lane")).toHaveCount(3);
+    await expect(page.locator(".planning-owned-baseline-lane.late").first()).toBeVisible();
     await expect(page.locator(".planning-owned-link-handle")).toHaveCount(8);
     await expect(page.locator(".planning-owned-status-code")).toHaveCount(4);
     await expect(page.locator(".planning-owned-status-code").getByText("CRIT")).toHaveCount(3);

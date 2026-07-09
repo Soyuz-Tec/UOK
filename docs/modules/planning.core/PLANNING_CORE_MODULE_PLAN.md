@@ -30,7 +30,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - working calendar storage with working-day and holiday-aware propagation
 - hierarchy validation, WBS read model, and summary rollups
 - CPM read model fields for early dates, late dates, slack, and critical flags
-- baseline capture and baseline variance read-model fields
+- baseline capture, baseline variance read-model fields, per-row timeline lanes, and variance badges
 - resource creation, assignment, allocation display, and over-allocation warnings
 - drag-to-reschedule path through server validation
 - command-bus writes and idempotency
@@ -80,8 +80,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 ## Deferred Work
 
 - full resource leveling and capacity calendars
-- baseline overlay lanes directly inside the Gantt timeline
-- richer critical path UX beyond read-model flags and grid fields
+- multi-baseline comparison and richer baseline history controls
+- richer critical path dependency-chain explanation beyond the current Dashboard summary
 - bulk edit, undo, and import/export flows
 - richer keyboard grid editing beyond the current inspector workflow
 - module-root frontend source packaging

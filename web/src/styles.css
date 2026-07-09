@@ -17,6 +17,7 @@
 @import "./styles/planning/filters.css";
 @import "./styles/planning/focus-mode.css";
 @import "./styles/planning/gantt.css";
+@import "./styles/planning/baseline-lanes.css";
 @import "./styles/planning/grid-sort.css";
 @import "./styles/planning/owned-gantt.css";
 @import "./styles/planning/header-menu.css";
