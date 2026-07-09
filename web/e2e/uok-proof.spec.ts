@@ -114,10 +114,11 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
   const consoleErrors: string[] = [];
   const dependencyPayloads: unknown[] = [];
   const taskPayloads: unknown[] = [];
+  const taskUpdatePayloads: unknown[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
-  await installMockApi(page, dependencyPayloads, taskPayloads);
+  await installMockApi(page, dependencyPayloads, taskPayloads, taskUpdatePayloads);
 
   for (const viewport of [
     { width: 1440, height: 900 },
@@ -155,6 +156,15 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await page.getByRole("menuitem", { name: /Duplicate task/ }).click();
       await expect.poll(() => taskPayloads.length).toBe(taskRequests + 1);
       expect(taskPayloads.at(-1)).toMatchObject({ title: "Define schedule scope copy", task_type: "task", parent_task_id: "task-summary", status: "planned", progress: 40 });
+      const scopeRow = page.locator(".planning-owned-grid-row").filter({ hasText: "Define schedule scope" }).first();
+      const ganttRow = page.locator(".planning-owned-grid-row").filter({ hasText: "Build integrated Gantt with dependency validation" }).first();
+      await scopeRow.focus();
+      await scopeRow.press("ArrowDown");
+      await expect(ganttRow).toBeFocused();
+      const taskUpdates = taskUpdatePayloads.length;
+      await ganttRow.press("Control+Enter");
+      await expect.poll(() => taskUpdatePayloads.length).toBe(taskUpdates + 1);
+      expect(taskUpdatePayloads.at(-1)).toMatchObject({ status: "complete", progress: 100 });
       const linkRequests = dependencyPayloads.length;
       await page.getByRole("button", { name: "Start dependency from Define schedule scope" }).press("Enter");
       await expect(page.locator(".planning-gantt-shell")).toHaveClass(/planning-linking/);
@@ -243,7 +253,7 @@ async function openPlanning(page: Page) {
   await expect(page.getByRole("region", { name: "Planning", exact: true })).toBeVisible();
 }
 
-async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPayloads: unknown[]) {
+async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPayloads: unknown[], taskUpdatePayloads: unknown[]) {
   await page.addInitScript(() => {
     window.sessionStorage.setItem("uok_token", "proof-token");
     window.localStorage.setItem("uok_user", JSON.stringify({
@@ -264,6 +274,10 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
     taskPayloads.push(route.request().postDataJSON());
     await route.fulfill({ json: { status: "validated" } });
   });
+  await page.route("/api/planning/tasks/**", async (route) => {
+    taskUpdatePayloads.push(route.request().postDataJSON());
+    await route.fulfill({ json: { status: "validated" } });
+  });
   await page.route(`/api/planning/projects/${sampleProject.id}/dependencies`, async (route) => {
     dependencyPayloads.push(route.request().postDataJSON());
     await route.fulfill({ json: { status: "validated" } });
@@ -272,16 +286,7 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
 }
 
 function moduleCatalog() {
-  const base = {
-    version: "3.1.0-alpha.3",
-    installable: true,
-    uninstallable: true,
-    updatable: true,
-    maintainable: true,
-    required: false,
-    dependencies: [],
-    dependents: [],
-  };
+  const base = { version: "3.1.0-alpha.3", installable: true, uninstallable: true, updatable: true, maintainable: true, required: false, dependencies: [], dependents: [] };
   return {
     "apps.manager": { ...base, name: "apps.manager", status: "installed", kind: "control_module", required: true, uninstallable: false },
     "agents.core": { ...base, name: "agents.core", status: "available", kind: "capability_module" },

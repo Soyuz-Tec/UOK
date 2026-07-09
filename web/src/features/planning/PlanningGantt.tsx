@@ -22,6 +22,7 @@ import {
 } from "./planningGanttModel";
 import { DependencyLines, TaskShape, TimelineBackground, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
 import { dependencyLinkPayload, svgPointer, type DependencyLinkDrag } from "./planningDependencyDrag";
+import { planningKeyboardCommand } from "./planningKeyboardModel";
 import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
@@ -67,6 +68,7 @@ export function PlanningGantt({
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const rowRefs = useRef(new Map<string, HTMLDivElement>());
   const [drag, setDrag] = useState<DragState | null>(null);
   const [linkDrag, setLinkDrag] = useState<DependencyLinkDrag | null>(null);
   const [taskMenu, setTaskMenu] = useState<{ taskId: string; x: number; y: number } | null>(null);
@@ -118,6 +120,7 @@ export function PlanningGantt({
           {visibleTasks.map((task) => (
             <div
               key={task.id}
+              ref={(element) => setRowRef(task.id, element)}
               className={`planning-owned-grid-row ${task.id === selectedTaskId ? "selected" : ""} ${task.task_type === "summary" ? "summary" : ""} ${taskColorClass(task)} ${showCritical && task.critical ? "critical" : ""}`}
               role="row"
               tabIndex={0}
@@ -127,7 +130,7 @@ export function PlanningGantt({
               onDoubleClick={() => {
                 if (task.task_type === "summary") onSummaryExpandedChange(!summaryExpanded);
               }}
-              onKeyDown={(event) => handleRowKey(task.id, event)}
+              onKeyDown={(event) => handleRowKey(task, event)}
             >
               {columns.map((column) => (
                 <span key={column.id} role="cell">{gridValue(column.id, task, assignedByTask)}</span>
@@ -242,15 +245,28 @@ export function PlanningGantt({
     setTaskMenu({ taskId, x, y });
   }
 
-  function handleRowKey(taskId: string, event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      onTaskSelect(taskId);
-    }
-    if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) {
+  function handleRowKey(task: PlanningTask, event: KeyboardEvent<HTMLDivElement>) {
+    const command = planningKeyboardCommand(event, task, visibleTasks);
+    if (command.kind === "none") return;
+    event.preventDefault();
+    if (command.kind === "select") selectAndFocus(command.taskId);
+    else if (command.kind === "open-menu") {
       const rect = event.currentTarget.getBoundingClientRect();
-      openTaskMenu(taskId, rect.left + 24, rect.top + 24, event);
-    }
+      openTaskMenu(task.id, rect.left + 24, rect.top + 24, event);
+    } else if (command.kind === "toggle-summary") {
+      onTaskSelect(task.id);
+      onSummaryExpandedChange(!summaryExpanded);
+    } else onTaskMenuAction(command.action, task);
+  }
+
+  function selectAndFocus(taskId: string) {
+    onTaskSelect(taskId);
+    rowRefs.current.get(taskId)?.focus();
+  }
+
+  function setRowRef(taskId: string, element: HTMLDivElement | null) {
+    if (element) rowRefs.current.set(taskId, element);
+    else rowRefs.current.delete(taskId);
   }
 }
 

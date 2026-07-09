@@ -39,7 +39,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Configurable scales from hour to year | Backlog | Add hour, quarter, and year modes without changing the renderer boundary. |
 | Timeline cell templates and task templates | Partial | Use UOK-owned render helpers and status indicators; avoid third-party template API cloning. |
 | Tooltips and quick info | Implemented | UOK renders accessible first-party taskbar hover/focus detail. |
-| Keyboard navigation | Partial | Extend focus movement and hotkeys in the grid/timeline. |
+| Keyboard navigation | Implemented | Grid rows support arrow/home/end focus movement plus common task hotkeys. |
 | Fullscreen mode | Backlog | Add workspace/fullscreen toggle if it improves dense planning work. |
 | Drag timeline / click-drag new task | Backlog | Add timeline panning and controlled task creation gestures later. |
 | Smart rendering / large data performance | Backlog | Add virtualization only after current features stabilize. |
@@ -63,7 +63,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Toolbar and context menu | Implemented | Toolbar and task row context menu exist with server-routed planning actions. |
 | Taskbar tooltips | Implemented | UOK-owned hover/focus task detail is rendered in the SVG timeline. |
 | Zooming with scroll | Backlog | Add controlled wheel/trackpad zoom without breaking page scroll. |
-| Hotkeys | Backlog | Add discoverable keyboard actions for common planning operations. |
+| Hotkeys | Implemented | Common task actions can be triggered from focused Gantt rows. |
 | Virtualization for large data sets | Backlog | Add only with measurable performance need and tests. |
 | Localization | Backlog | Requires UOK-wide localization approach, not planning-only strings. |
 | Light/dark themes | Implemented | UOK appearance tokens and UI proof cover light/dark behavior. |
@@ -79,7 +79,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 1. Taskbar hover/focus details: low-risk visible polish from both projects; can be implemented in the current first-party SVG renderer.
 2. Dependency drag creation: implemented with taskbar connector handles and the existing Python-validated dependency API.
 3. Context row menu: implemented with a reusable workspace context menu primitive and planning task actions.
-4. Keyboard hotkeys and focus movement: improves accessibility and dense-workflow speed.
+4. Keyboard hotkeys and focus movement: implemented for Gantt grid row navigation and common task actions.
 5. Additional scales: hour, quarter, year, and later sprints/stages.
 6. Column reorder and pinned columns: continue grid maturity using shared table primitives.
 7. Virtualization and timeline panning: performance work after feature behavior stabilizes.
