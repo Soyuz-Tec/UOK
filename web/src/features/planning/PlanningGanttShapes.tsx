@@ -1,6 +1,7 @@
 import type { KeyboardEvent, PointerEvent } from "react";
 
 import type { PlanningSchedule, PlanningTask } from "./types";
+import type { PlanningDependencyChain } from "./planningDependencyChain";
 import {
   dateValue,
   durationBetween,
@@ -40,7 +41,7 @@ export function TimelineBackground({ units, cellWidth, headerHeight, height, row
   );
 }
 
-export function DependencyLines({ schedule, tasks, taskRows, chartStart, scale, cellWidth, rowSize, headerHeight }: { schedule: PlanningSchedule; tasks: PlanningTask[]; taskRows: Map<string, number>; chartStart: Date; scale: TimelineScale; cellWidth: number; rowSize: number; headerHeight: number }) {
+export function DependencyLines({ schedule, tasks, taskRows, chartStart, scale, cellWidth, rowSize, headerHeight, dependencyChain }: { schedule: PlanningSchedule; tasks: PlanningTask[]; taskRows: Map<string, number>; chartStart: Date; scale: TimelineScale; cellWidth: number; rowSize: number; headerHeight: number; dependencyChain: PlanningDependencyChain }) {
   const taskMap = new Map(tasks.map((task) => [task.id, task]));
   return (
     <g className="planning-owned-dependencies">
@@ -55,7 +56,7 @@ export function DependencyLines({ schedule, tasks, taskRows, chartStart, scale, 
         const x2 = xForDate(dateValue(target.start), chartStart, scale, cellWidth);
         const y2 = headerHeight + targetRow * rowSize + rowSize / 2;
         const mid = Math.max(x1 + 16, x2 - 16);
-        return <path key={dependency.id} d={`M ${x1} ${y1} L ${mid} ${y1} L ${mid} ${y2} L ${x2} ${y2}`} />;
+        return <path key={dependency.id} className={dependencyChain.dependencyIds.has(dependency.id) ? "chain-highlight" : undefined} d={`M ${x1} ${y1} L ${mid} ${y1} L ${mid} ${y2} L ${x2} ${y2}`} />;
       })}
     </g>
   );
@@ -70,6 +71,7 @@ export function TaskShape({
   rowSize,
   headerHeight,
   selected,
+  chainClass,
   showCritical,
   showBaselines,
   onSelect,
@@ -85,6 +87,7 @@ export function TaskShape({
   rowSize: number;
   headerHeight: number;
   selected: boolean;
+  chainClass: string;
   showCritical: boolean;
   showBaselines: boolean;
   onSelect: (taskId: string) => void;
@@ -97,7 +100,7 @@ export function TaskShape({
   const barHeight = Math.max(18, rowSize * 0.46);
   const width = task.task_type === "milestone" ? barHeight : Math.max(cellWidth * durationUnits(task, scale), cellWidth * 0.65);
   const critical = showCritical && task.critical;
-  const className = `planning-owned-task ${task.task_type} ${taskColorClass(task)} ${critical ? "critical" : ""} ${selected ? "selected" : ""}`;
+  const className = `planning-owned-task ${task.task_type} ${taskColorClass(task)} ${critical ? "critical" : ""} ${selected ? "selected" : ""} ${chainClass}`;
   const indicator = taskStatusIndicator(task, showCritical);
   const accessibilityLabel = `${task.title}, ${indicator.label}, ${task.progress}% complete`;
   if (task.task_type === "milestone") {

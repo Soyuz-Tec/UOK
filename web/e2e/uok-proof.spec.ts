@@ -158,6 +158,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       expect(taskPayloads.at(-1)).toMatchObject({ title: "Define schedule scope copy", task_type: "task", parent_task_id: "task-summary", status: "planned", progress: 40 });
       const scopeRow = page.locator(".planning-owned-grid-row").filter({ hasText: "Define schedule scope" }).first();
       const ganttRow = page.locator(".planning-owned-grid-row").filter({ hasText: "Build integrated Gantt with dependency validation" }).first();
+      await expect(ganttRow).toHaveClass(/chain-successor/);
+      await expect(page.locator(".planning-owned-dependencies path.chain-highlight")).toHaveCount(1);
       await scopeRow.focus();
       await scopeRow.press("ArrowDown");
       await expect(ganttRow).toBeFocused();

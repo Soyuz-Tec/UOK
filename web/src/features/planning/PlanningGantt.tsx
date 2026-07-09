@@ -22,6 +22,7 @@ import {
 } from "./planningGanttModel";
 import { DependencyLines, TaskShape, TimelineBackground, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
 import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
+import { selectedDependencyChain, taskDependencyChainClass } from "./planningDependencyChain";
 import { dependencyLinkPayload, svgPointer, type DependencyLinkDrag } from "./planningDependencyDrag";
 import { nextPlanningGridSort, sortPlanningTasks, type PlanningGridSort } from "./planningGridSortModel";
 import { planningKeyboardCommand } from "./planningKeyboardModel";
@@ -86,6 +87,7 @@ export function PlanningGantt({
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
   const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
   const visibleTasks = useMemo(() => sortPlanningTasks(visibleRows(schedule.tasks, summaryExpanded), sort, assignedByTask), [assignedByTask, schedule.tasks, sort, summaryExpanded]);
+  const dependencyChain = useMemo(() => selectedDependencyChain(schedule, selectedTaskId), [schedule, selectedTaskId]);
   const taskRows = useMemo(() => new Map(visibleTasks.map((task, index) => [task.id, index])), [visibleTasks]);
   const width = Math.max(chart.units.length * chart.cellWidth, 480);
   const headerHeight = 54;
@@ -125,7 +127,7 @@ export function PlanningGantt({
             <div
               key={task.id}
               ref={(element) => setRowRef(task.id, element)}
-              className={`planning-owned-grid-row ${task.id === selectedTaskId ? "selected" : ""} ${task.task_type === "summary" ? "summary" : ""} ${taskColorClass(task)} ${showCritical && task.critical ? "critical" : ""}`}
+              className={`planning-owned-grid-row ${task.id === selectedTaskId ? "selected" : ""} ${task.task_type === "summary" ? "summary" : ""} ${taskColorClass(task)} ${showCritical && task.critical ? "critical" : ""} ${taskDependencyChainClass(dependencyChain, task.id)}`}
               role="row"
               tabIndex={0}
               style={{ gridTemplateColumns, minHeight: rowSize, minWidth: totalWidth }}
@@ -178,7 +180,7 @@ export function PlanningGantt({
         >
           <TimelineHeaders units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} width={width} />
           <TimelineBackground units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} height={height} rowSize={rowSize} rows={visibleTasks.length} />
-          <DependencyLines schedule={schedule} tasks={visibleTasks} taskRows={taskRows} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowSize} headerHeight={headerHeight} />
+          <DependencyLines schedule={schedule} tasks={visibleTasks} taskRows={taskRows} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowSize} headerHeight={headerHeight} dependencyChain={dependencyChain} />
           {linkDrag ? <path className="planning-owned-link-draft" d={`M ${linkDrag.sourceX} ${linkDrag.sourceY} L ${linkDrag.pointerX} ${linkDrag.pointerY}`} /> : null}
           {visibleTasks.map((task, index) => (
             <TaskShape
@@ -191,6 +193,7 @@ export function PlanningGantt({
               rowSize={rowSize}
               headerHeight={headerHeight}
               selected={task.id === selectedTaskId}
+              chainClass={taskDependencyChainClass(dependencyChain, task.id)}
               showCritical={showCritical}
               showBaselines={showBaselines}
               onSelect={onTaskSelect}

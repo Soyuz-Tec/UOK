@@ -19,6 +19,7 @@
 @import "./styles/planning/gantt.css";
 @import "./styles/planning/grid-sort.css";
 @import "./styles/planning/owned-gantt.css";
+@import "./styles/planning/dependency-chain.css";
 @import "./styles/planning/pinned-columns.css";
 @import "./styles/planning/dependency-drag.css";
 @import "./styles/planning/read-views.css";

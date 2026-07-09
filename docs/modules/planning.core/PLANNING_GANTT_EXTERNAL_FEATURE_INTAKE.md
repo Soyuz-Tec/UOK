@@ -14,8 +14,8 @@ This artifact does not permit copying third-party source code, vendoring third-p
 
 | Source | Reviewed for | Notes |
 |---|---|---|
-| `https://github.com/DHTMLX/gantt` | Community feature set, plugin vocabulary, data API ideas, advanced PRO comparison | DHTMLX describes configurable task grids, projects, milestones, four dependency types with lag, drag scheduling, progress bars, templates, plugins, data loading/saving, export, accessibility, touch support, events, and TypeScript definitions. |
-| `https://github.com/svar-widgets/react-gantt` | React-first feature vocabulary, large-data concerns, toolbar/context menu ideas, PRO comparison | SVAR describes React/TypeScript support, task and dependency visualization, editable tasks, hierarchy, custom scales, grid sorting/filtering, toolbar/context menu, tooltips, scroll zoom, hotkeys, virtualization, localization, themes, and PRO scheduling features. |
+| `https://github.com/DHTMLX/gantt` | Community feature set, plugin vocabulary, sample gallery, data API ideas, advanced PRO comparison | Snapshot `e5ea07b`. DHTMLX describes configurable task grids, projects, milestones, four dependency types with lag, drag scheduling, progress bars, templates, plugins, data loading/saving, export, accessibility, touch support, events, TypeScript definitions, and many sample-level feature variants. |
+| `https://github.com/svar-widgets/react-gantt` | React-first feature vocabulary, public type surface, demo gallery, large-data concerns, toolbar/context menu ideas, PRO comparison | Snapshot `8ce2cde`. SVAR describes React/TypeScript support, task and dependency visualization, editable tasks, hierarchy, custom scales, grid sorting/filtering, toolbar/context menu, tooltips, scroll zoom, hotkeys, virtualization, localization, themes, and PRO scheduling features. |
 
 ## Intake Rules
 
@@ -47,6 +47,13 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Export to document/image/project formats | Partial | CSV exists; PDF/image/import-export templates remain later. |
 | Locales/accessibility/touch | Partial | Continue ARIA, focus, and responsive proof; localization remains backlog. |
 | Event system | Partial | UOK equivalent is command bus plus planning audit events. |
+| Row resize | Backlog | Use a UOK row-height model before adding per-row resize handles. |
+| Drag rows / branch ordering | Backlog | Add WBS reorder only after hierarchy command validation is explicit. |
+| Right-side grid columns / no-grid mode / bottom scale / RTL | Backlog | Treat as layout modes; do not add until primary workspace is stable. |
+| Backward planning and fixed project dates | Backlog | Requires constraint model and explicit scheduling direction. |
+| Empty-state screen | Backlog | Add a first-party empty planning state when project has no tasks. |
+| Deadline/event markers | Backlog | Use the same marker model as today and baseline overlays. |
+| Import from Excel/MS Project/Primavera/iCal | Backlog | Requires validated server import pipeline and no external service dependency. |
 
 ## SVAR Feature Vocabulary
 
@@ -73,6 +80,12 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Task grouping, rollups, split tasks, unscheduled tasks | Backlog | Add only after core dependency/constraint model is stronger. |
 | Undo/redo | Backlog | Needs command stack with server reconciliation. |
 | Export/import | Partial | CSV exists; PDF/image/Excel/MS Project equivalents remain later. |
+| Header menu for visible columns | Implemented | UOK uses field presets and column visibility controls; a right-click header menu can be added later if needed. |
+| No-grid and read-only/prevent-actions modes | Backlog | Useful for embedded schedule review surfaces after edit permissions mature. |
+| Custom task templates and cell borders | Partial | UOK owns task/status templates and timeline grid borders through CSS tokens. |
+| Scroll to date / custom zoom / min scale unit | Partial | Scroll-to-today and scale controls exist; richer scroll-to-date and zoom bounds remain later. |
+| Editor validation, readonly editor, comments, custom controls | Partial | Inspector validation exists; comments and editor modes remain module backlog. |
+| Start/end date display variants and duration units | Partial | Current schedule is date-based; hour/minute duration editing is later. |
 
 ## Detailed Feature And Property Catalog
 
@@ -84,28 +97,40 @@ This table turns the external feature vocabulary into UOK-owned build units. It 
 | Workspace shell | Multiple chart instances | isolated project id, selected view state, independent scroll/zoom state | Keep each planning route instance isolated by project and local storage keys | Partial |
 | Workspace shell | View switching | Gantt, board, list, calendar, workload, people, dashboard | Existing read-model tabs from one validated schedule | Implemented |
 | Grid | Configurable columns | id, label, width, min/max width, visibility, preset, resize/autofit, order, pin flags | Shared table sizing/visibility/order primitives plus planning-specific pinned columns | Partial |
+| Grid | Header menu | column id, checked state, hide/show action, reset widths, sort action, keyboard access | Existing field controls first; optional right-click/header menu later | Backlog |
+| Grid | Add-task/action column | command button, row action menu, add child/add below, disabled/read-only states | Row menu exists; add-column control later if density allows | Partial |
 | Grid | Tree column | WBS code, indentation, summary marker, expand/collapse state, parent id | Summary rows and WBS sorting; richer per-parent expand state later | Partial |
 | Grid | Inline cell editing | editable field, validation state, commit/cancel, keyboard handling, server command | Defer until command-level validation and audit messages are tighter | Backlog |
 | Grid | Column sorting/filtering | column id, direction, filter mode, query, status/resource criteria | Search/filter and visible-column sorting use UOK-owned read-model helpers | Implemented |
+| Grid | Branch ordering / row drag | dragged task id, drop parent, before/after mode, valid WBS target, audit event | Later WBS reorder command with Python validation | Backlog |
+| Grid | Row resize | row id, height, min/max, global density fallback, persisted override | Later row-height helper and proof tests | Backlog |
 | Timeline | Time scales | scale id, unit, step, label, group label, cell width, zoom order | Hour/day/week/month/quarter/year scale model | Implemented |
 | Timeline | Timeline templates | header label, cell class, task shape class, weekend/holiday class | UOK-owned render helpers and CSS tokens | Partial |
 | Timeline | Markers | today, milestones, deadlines, vertical event markers | Today marker exists; deadline/event markers later | Partial |
 | Timeline | Drag timeline and scroll zoom | pointer panning, wheel modifier, scale bounds, scroll preservation | Add after current controls stabilize | Backlog |
+| Timeline | Zoom-to-fit and scroll-to-date | project range, selected date, today, viewport width, scale bounds | Today command exists; project/date fitting later | Partial |
+| Timeline | Layout modes | grid left/right/hidden, scale top/bottom, RTL, fixed size/autosize | Treat as workspace layout variants after core Gantt matures | Backlog |
 | Tasks | Task types | task, summary/project, milestone, unscheduled, split segment, rollup | Task/summary/milestone exist; unscheduled/split/rollup later | Partial |
 | Tasks | Taskbar editing | move, resize start/end, progress drag, dependency handles | Implemented through first-party SVG with server validation | Implemented |
 | Tasks | Task status presentation | status code, color token, non-color label, critical flag, selected/focus state | Implemented for bars and grid rows | Implemented |
 | Tasks | Quick info/tooltips | title, WBS, status, progress, start/end, assignee, dependency hints | First-party hover/focus task detail | Implemented |
+| Tasks | Read-only/prevent-actions mode | permission flag, disabled drag handles, disabled context actions, review-only labels | Later permission-aware planning workspace mode | Backlog |
+| Tasks | Deadline and outside-timescale handling | deadline date, warning marker, clipped label, offscreen indicator | Later marker/edge indicator model | Backlog |
 | Editing | Lightbox/edit form | modal or side panel, title, dates, progress, parent, type, status, resources | UOK inspector path; compact edit improvements later | Partial |
+| Editing | Comments and custom controls | task comment thread, custom fields, validation messages, read-only fields | Later after module comments/custom fields are designed | Backlog |
 | Dependencies | Link model | predecessor, successor, type, lag/lead, validation errors, cycle checks | Python-owned validation with inspector and drag-link UI | Implemented |
-| Dependencies | Chain highlighting | predecessor/successor path, selected task emphasis, critical chain | Future selected-chain overlay | Backlog |
+| Dependencies | Chain highlighting | predecessor/successor path, selected task emphasis, critical chain | Selected predecessor/successor rows, task bars, and dependency paths highlight in the first-party renderer | Implemented |
 | Scheduling | Auto scheduling | dependency propagation, calendar rules, manual/auto mode, constraints | Partial Python propagation; constraints/manual mode later | Partial |
 | Scheduling | CPM and slack | early/late dates, total slack, critical flag, variance | CPM read model exists; richer visual explanation later | Partial |
 | Scheduling | Calendars | working days, holidays, resource calendars, ignored/non-linear periods | Working days/holidays partially implemented | Partial |
+| Scheduling | Backward planning and fixed project limits | direction, project start/end bounds, constraint violation messages | Later Python scheduling policy extension | Backlog |
 | Resources | Assignments | resource id/name, role, allocation, capacity, warnings, workload lane | Assignments and warnings exist; workload visualization matures later | Partial |
+| Resources | Resource panel/load chart | resource row, load cell, chart mode, allocation template, overload state | Later first-party workload panel based on existing assignments | Backlog |
 | Baselines | Baseline overlays | baseline start/end, variance, baseline lane, deadline marker | Capture and row overlay exist; richer lane later | Partial |
 | Performance | Smart rendering/virtualization | visible row window, visible column/window, stable row heights, overscan | Defer until data scale requires it and proof covers it | Backlog |
 | Accessibility | Keyboard/touch/ARIA | row navigation, focus rings, button labels, touch target size, non-color cues | Keyboard and ARIA proof exists; touch/localization later | Partial |
 | Data integration | REST sync and events | read model, command write, audit event, optimistic state rules | UOK command bus and audit events, no client-owned persistence | Implemented |
+| Data integration | Provider/batch sync modes | backend source, batch transaction, conflict state, local rollback | UOK commands already batch through server transactions; richer conflict UX later | Partial |
 | Export/import | Output formats | visible CSV, PDF/image, Excel, project exchange, import validation | CSV exists; document/image/project export later | Partial |
 | History | Undo/redo | command stack, reversible payload, server reconciliation, audit correlation | Needs explicit command-stack design | Backlog |
 
@@ -118,7 +143,8 @@ This table turns the external feature vocabulary into UOK-owned build units. It 
 5. Additional scales: hour, quarter, and year implemented; later minutes, sprints, and stages remain backlog.
 6. Fullscreen/focus mode: implemented as a UOK-owned dense workspace overlay with saved-view persistence.
 7. Column reorder and pinned WBS/task columns implemented with shared table primitives.
-8. Virtualization and timeline panning: performance work after feature behavior stabilizes.
+8. Selected dependency-chain highlighting: implemented as a UOK-owned SVG/grid overlay before heavier scheduling features.
+9. Virtualization and timeline panning: performance work after feature behavior stabilizes.
 
 ## Validation
 
