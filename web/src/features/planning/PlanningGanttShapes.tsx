@@ -1,6 +1,6 @@
 import type { KeyboardEvent, PointerEvent } from "react";
 
-import type { PlanningSchedule, PlanningTask } from "./types";
+import type { PlanningProject, PlanningSchedule, PlanningTask } from "./types";
 import type { PlanningDependencyChain } from "./planningDependencyChain";
 import type { TimelineCreateDraft } from "./planningTimelineCreateModel";
 import {
@@ -217,6 +217,23 @@ export function TodayMarker({ chartStart, scale, cellWidth, height }: { chartSta
   const x = xForDate(new Date(), chartStart, scale, cellWidth);
   if (x < 0) return null;
   return <line className="planning-owned-today" x1={x} y1="0" x2={x} y2={height} />;
+}
+
+export function ProjectBoundaryMarkers({ project, chartStart, scale, cellWidth, height }: { project: PlanningProject; chartStart: Date; scale: TimelineScale; cellWidth: number; height: number }) {
+  const markers = [
+    { key: "start", label: "Project start", x: xForDate(dateValue(project.start), chartStart, scale, cellWidth) },
+    { key: "end", label: "Project end", x: xForDate(dateValue(project.end), chartStart, scale, cellWidth) + cellWidth },
+  ];
+  return (
+    <g className="planning-owned-boundary-markers">
+      {markers.map((marker) => (
+        <g key={marker.key} className={`planning-owned-boundary-marker ${marker.key}`}>
+          <line x1={marker.x} y1="0" x2={marker.x} y2={height} />
+          <text x={marker.x + 6} y="52">{marker.label}</text>
+        </g>
+      ))}
+    </g>
+  );
 }
 
 export function TimelineCreateDraftShape({ draft, headerHeight, height }: { draft: TimelineCreateDraft; headerHeight: number; height: number }) {

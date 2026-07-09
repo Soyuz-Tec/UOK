@@ -150,6 +150,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-status-code")).toHaveCount(4);
     await expect(page.locator(".planning-owned-status-code").getByText("CRIT")).toHaveCount(3);
     await expect(page.locator(".planning-owned-tooltip")).toHaveCount(4);
+    await expect(page.locator(".planning-owned-boundary-marker")).toHaveCount(2);
+    await expect(page.locator(".planning-owned-boundary-marker").getByText("Project start")).toBeVisible();
+    await expect(page.locator(".planning-owned-boundary-marker").getByText("Project end")).toBeVisible();
     if (viewport.width > 980) {
       const taskRequests = taskPayloads.length;
       await page.getByRole("button", { name: "Task actions for Define schedule scope" }).click();

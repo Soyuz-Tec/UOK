@@ -52,7 +52,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Right-side grid columns / no-grid mode / bottom scale / RTL | Backlog | Treat as layout modes; do not add until primary workspace is stable. |
 | Backward planning and fixed project dates | Backlog | Requires constraint model and explicit scheduling direction. |
 | Empty-state screen | Backlog | Add a first-party empty planning state when project has no tasks. |
-| Deadline/event markers | Backlog | Use the same marker model as today and baseline overlays. |
+| Deadline/event markers | Partial | Project start/end boundary markers are implemented; task deadlines and arbitrary event markers remain later. |
 | Import from Excel/MS Project/Primavera/iCal | Backlog | Requires validated server import pipeline and no external service dependency. |
 
 ## SVAR Feature Vocabulary
@@ -127,7 +127,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Grid | Row resize | row id, height, min/max, global density fallback, persisted override | Later row-height helper and proof tests | Backlog |
 | Timeline | Time scales | scale id, unit, step, label, group label, cell width, zoom order | Hour/day/week/month/quarter/year scale model | Implemented |
 | Timeline | Timeline templates | header label, cell class, task shape class, weekend/holiday class | UOK-owned render helpers and CSS tokens | Partial |
-| Timeline | Markers | today, milestones, deadlines, vertical event markers | Today marker exists; deadline/event markers later | Partial |
+| Timeline | Markers | today, project bounds, milestones, deadlines, vertical event markers | Today and project boundary markers exist; task deadlines and arbitrary event markers remain later | Partial |
 | Timeline | Drag timeline and scroll zoom | pointer panning, wheel modifier, scale bounds, scroll preservation | Empty-space panning, Ctrl/Command wheel scale stepping, and Shift-drag task creation are implemented | Implemented |
 | Timeline | Zoom-to-fit and scroll-to-date | project range, selected date, today, viewport width, scale bounds | Today command exists; project/date fitting later | Partial |
 | Timeline | Layout modes | grid left/right/hidden, scale top/bottom, RTL, fixed size/autosize | Treat as workspace layout variants after core Gantt matures | Backlog |
