@@ -47,7 +47,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Export to document/image/project formats | Partial | CSV exists; PDF/image/import-export templates remain later. |
 | Locales/accessibility/touch | Partial | Continue ARIA, focus, and responsive proof; localization remains backlog. |
 | Event system | Partial | UOK equivalent is command bus plus planning audit events. |
-| Row resize | Backlog | Use a UOK row-height model before adding per-row resize handles. |
+| Row resize | Implemented | UOK row-height model supports per-project row overrides, drag/keyboard resize handles, and double-click/Enter row fit without third-party code. |
 | Drag rows / branch ordering | Backlog | Add WBS reorder only after hierarchy command validation is explicit. |
 | Right-side grid columns / no-grid mode / bottom scale / RTL | Partial | Timeline-only no-grid mode is implemented; right-side grid, bottom scale, and RTL remain later layout variants. |
 | Backward planning and fixed project dates | Backlog | Requires constraint model and explicit scheduling direction. |
@@ -124,7 +124,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Grid | Inline cell editing | editable field, validation state, commit/cancel, keyboard handling, server command | Title, start, end, progress, and status cells use shared inline editing and existing server task validation | Implemented |
 | Grid | Column sorting/filtering | column id, direction, filter mode, query, status/resource criteria | Search/filter and visible-column sorting use UOK-owned read-model helpers | Implemented |
 | Grid | Branch ordering / row drag | dragged task id, drop parent, before/after mode, valid WBS target, audit event | Later WBS reorder command with Python validation | Backlog |
-| Grid | Row resize | row id, height, min/max, global density fallback, persisted override | Later row-height helper and proof tests | Backlog |
+| Grid | Row resize | row id, height, min/max, global density fallback, persisted override | First-party row-height helper, row-bottom separators, keyboard resize, and proof tests | Implemented |
 | Timeline | Time scales | scale id, unit, step, label, group label, cell width, zoom order | Hour/day/week/month/quarter/year scale model | Implemented |
 | Timeline | Timeline templates | header label, cell class, task shape class, weekend/holiday class | UOK-owned render helpers and CSS tokens | Partial |
 | Timeline | Markers | today, project bounds, milestones, deadlines, vertical event markers | Today, project boundary markers, and derived visible-task due/variance/milestone markers exist; arbitrary user event markers remain later | Partial |

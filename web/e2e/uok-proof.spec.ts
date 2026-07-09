@@ -207,6 +207,15 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await taskHeader.dblclick();
       await expect.poll(() => page.locator(".planning-owned-grid-row").first().evaluate((row) => row.getBoundingClientRect().height)).toBeLessThan(standardRowHeight);
       await taskHeader.dblclick();
+      const rowResizeHandle = page.getByRole("separator", { name: "Resize row Define schedule scope" });
+      const rowForResize = page.locator(".planning-owned-grid-row").filter({ hasText: "Define schedule scope" }).first();
+      await expect(rowResizeHandle).toBeVisible();
+      await rowResizeHandle.focus();
+      const resizeStartHeight = await rowForResize.evaluate((row) => row.getBoundingClientRect().height);
+      await rowResizeHandle.press("ArrowDown");
+      await expect.poll(() => rowForResize.evaluate((row) => row.getBoundingClientRect().height)).toBeGreaterThan(resizeStartHeight);
+      await rowResizeHandle.press("Home");
+      await expect.poll(async () => Math.round(await rowForResize.evaluate((row) => row.getBoundingClientRect().height))).toBe(Math.round(resizeStartHeight));
       const headers = page.locator(".planning-owned-grid-header [role='columnheader']");
       await expect(headers.nth(0)).toHaveClass(/planning-owned-pinned-column/);
       await expect(headers.nth(1)).toHaveClass(/planning-owned-pinned-column/);

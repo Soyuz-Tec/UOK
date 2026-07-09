@@ -65,8 +65,8 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Compact/standard/roomy density | Toolbar-controlled row height modes. | Implemented |
 | Double-click task header to shorten rows | Double-click Task header toggles compact/standard density. | Implemented |
 | Double-click summary row | Double-click summary row toggles global expand/collapse. | Implemented |
-| Per-row height | Resize individual rows by dragging row bottom edge. | Backlog |
-| Auto-height row fit | Fit selected row to content without layout overlap. | Backlog |
+| Per-row height | Resize individual rows from a row-bottom separator; keyboard arrows adjust height and per-project overrides persist locally. | Implemented |
+| Auto-height row fit | Double-click or press Enter on a row resize separator to fit that row to its content without breaking grid/timeline alignment. | Implemented |
 | Scroll synchronization | Grid and timeline row alignment must remain stable. | Implemented |
 | Empty visible schedule state | Grid and timeline render a first-party empty state when filters or a project leave no visible tasks. | Implemented |
 

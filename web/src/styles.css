@@ -27,6 +27,7 @@
 @import "./styles/planning/dependency-drag.css";
 @import "./styles/planning/empty-state.css";
 @import "./styles/planning/read-views.css";
+@import "./styles/planning/row-height.css";
 @import "./styles/planning/row-menu.css";
 @import "./styles/planning/saved-views.css";
 @import "./styles/planning/timeline-interaction.css";

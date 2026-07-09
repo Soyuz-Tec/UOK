@@ -56,6 +56,7 @@
   width: 100%;
   border: 0;
   border-bottom: var(--uok-line);
+  overflow: hidden;
   padding: 0 calc(var(--uok-space-2) + 34px) 0 var(--uok-space-2);
   color: var(--uok-text-secondary);
   background: transparent;

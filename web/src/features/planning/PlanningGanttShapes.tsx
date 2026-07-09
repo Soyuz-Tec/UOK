@@ -4,6 +4,7 @@ import type { PlanningProject, PlanningSchedule, PlanningTask } from "./types";
 import type { PlanningDependencyChain } from "./planningDependencyChain";
 import type { TimelineCreateDraft } from "./planningTimelineCreateModel";
 import type { PlanningTimelineMarker } from "./planningTimelineMarkers";
+import type { PlanningRowLayout } from "./planningRowHeights";
 import {
   dateValue,
   durationBetween,
@@ -31,32 +32,33 @@ export function TimelineHeaders({ units, cellWidth, headerHeight, width }: { uni
   );
 }
 
-export function TimelineBackground({ units, cellWidth, headerHeight, height, rowSize, rows }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; height: number; rowSize: number; rows: number }) {
+export function TimelineBackground({ units, cellWidth, headerHeight, height, rowLayouts }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; height: number; rowLayouts: PlanningRowLayout[] }) {
   return (
     <g className="planning-owned-background">
       {units.map((unit, index) => (
         <rect key={unit.key} className={unit.holiday ? "holiday" : unit.weekend ? "weekend" : ""} x={index * cellWidth} y={headerHeight} width={cellWidth} height={height - headerHeight} />
       ))}
       {units.map((unit, index) => <line key={`v-${unit.key}`} x1={index * cellWidth} y1="0" x2={index * cellWidth} y2={height} />)}
-      {Array.from({ length: rows + 1 }, (_, index) => <line key={`h-${index}`} x1="0" y1={headerHeight + index * rowSize} x2={units.length * cellWidth} y2={headerHeight + index * rowSize} />)}
+      <line x1="0" y1={headerHeight} x2={units.length * cellWidth} y2={headerHeight} />
+      {rowLayouts.map((layout) => <line key={`h-${layout.taskId}`} x1="0" y1={headerHeight + layout.top + layout.height} x2={units.length * cellWidth} y2={headerHeight + layout.top + layout.height} />)}
     </g>
   );
 }
 
-export function DependencyLines({ schedule, tasks, taskRows, chartStart, scale, cellWidth, rowSize, headerHeight, dependencyChain }: { schedule: PlanningSchedule; tasks: PlanningTask[]; taskRows: Map<string, number>; chartStart: Date; scale: TimelineScale; cellWidth: number; rowSize: number; headerHeight: number; dependencyChain: PlanningDependencyChain }) {
+export function DependencyLines({ schedule, tasks, rowLayoutByTask, chartStart, scale, cellWidth, headerHeight, dependencyChain }: { schedule: PlanningSchedule; tasks: PlanningTask[]; rowLayoutByTask: Map<string, PlanningRowLayout>; chartStart: Date; scale: TimelineScale; cellWidth: number; headerHeight: number; dependencyChain: PlanningDependencyChain }) {
   const taskMap = new Map(tasks.map((task) => [task.id, task]));
   return (
     <g className="planning-owned-dependencies">
       {schedule.dependencies.map((dependency) => {
         const source = taskMap.get(dependency.predecessor_task_id);
         const target = taskMap.get(dependency.successor_task_id);
-        const sourceRow = taskRows.get(dependency.predecessor_task_id);
-        const targetRow = taskRows.get(dependency.successor_task_id);
-        if (!source || !target || sourceRow === undefined || targetRow === undefined) return null;
+        const sourceRow = rowLayoutByTask.get(dependency.predecessor_task_id);
+        const targetRow = rowLayoutByTask.get(dependency.successor_task_id);
+        if (!source || !target || !sourceRow || !targetRow) return null;
         const x1 = xForDate(dateValue(source.end), chartStart, scale, cellWidth) + cellWidth * 0.75;
-        const y1 = headerHeight + sourceRow * rowSize + rowSize / 2;
+        const y1 = headerHeight + sourceRow.top + sourceRow.height / 2;
         const x2 = xForDate(dateValue(target.start), chartStart, scale, cellWidth);
-        const y2 = headerHeight + targetRow * rowSize + rowSize / 2;
+        const y2 = headerHeight + targetRow.top + targetRow.height / 2;
         const mid = Math.max(x1 + 16, x2 - 16);
         return <path key={dependency.id} className={dependencyChain.dependencyIds.has(dependency.id) ? "chain-highlight" : undefined} d={`M ${x1} ${y1} L ${mid} ${y1} L ${mid} ${y2} L ${x2} ${y2}`} />;
       })}
@@ -66,7 +68,7 @@ export function DependencyLines({ schedule, tasks, taskRows, chartStart, scale, 
 
 export function TaskShape({
   task,
-  index,
+  rowTop,
   chartStart,
   scale,
   cellWidth,
@@ -83,7 +85,7 @@ export function TaskShape({
   onLinkFinish,
 }: {
   task: PlanningTask;
-  index: number;
+  rowTop: number;
   chartStart: Date;
   scale: TimelineScale;
   cellWidth: number;
@@ -100,7 +102,7 @@ export function TaskShape({
   onLinkFinish: (taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) => void;
 }) {
   const x = xForDate(dateValue(task.start), chartStart, scale, cellWidth);
-  const y = headerHeight + index * rowSize + Math.max(7, rowSize * 0.22);
+  const y = headerHeight + rowTop + Math.max(7, rowSize * 0.22);
   const barHeight = Math.max(18, rowSize * 0.46);
   const width = task.task_type === "milestone" ? barHeight : Math.max(cellWidth * durationUnits(task, scale), cellWidth * 0.65);
   const critical = showCritical && task.critical;
