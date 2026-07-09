@@ -19,6 +19,8 @@ export type PlanningGanttProps = {
   todaySignal: number;
   selectedTaskSignal: number;
   fitProjectSignal: number;
+  dateTarget: string;
+  dateTargetSignal: number;
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;

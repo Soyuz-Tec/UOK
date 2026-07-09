@@ -13,3 +13,8 @@ export function projectRangeScrollLeft(projectStart: string, projectEnd: string,
   const availablePadding = Math.max(0, viewportWidth - rangeWidth);
   return Math.max(0, startX - availablePadding / 2);
 }
+
+export function dateScrollLeft(targetDate: string, chartStart: Date, scale: TimelineScale, cellWidth: number, viewportWidth: number) {
+  const targetX = xForDate(dateValue(targetDate), chartStart, scale, cellWidth);
+  return Math.max(0, targetX - Math.max(cellWidth, viewportWidth / 2));
+}

@@ -1,12 +1,14 @@
 import { useEffect, type RefObject } from "react";
 
 import { xForDate, type TimelineScale } from "./planningGanttModel";
-import { projectRangeScrollLeft, selectedTaskScrollLeft } from "./planningTimelineNavigation";
+import { dateScrollLeft, projectRangeScrollLeft, selectedTaskScrollLeft } from "./planningTimelineNavigation";
 import type { PlanningSchedule, PlanningTask } from "./types";
 
 export function usePlanningGanttNavigation({
   cellWidth,
   chartStart,
+  dateTarget,
+  dateTargetSignal,
   fitProjectSignal,
   rowRefs,
   scale,
@@ -19,6 +21,8 @@ export function usePlanningGanttNavigation({
 }: {
   cellWidth: number;
   chartStart: Date;
+  dateTarget: string;
+  dateTargetSignal: number;
   fitProjectSignal: number;
   rowRefs: RefObject<Map<string, HTMLDivElement>>;
   scale: TimelineScale;
@@ -50,4 +54,9 @@ export function usePlanningGanttNavigation({
       behavior: "smooth",
     });
   }, [cellWidth, chartStart, fitProjectSignal, scale, schedule.project.end, schedule.project.start, scrollRef]);
+
+  useEffect(() => {
+    if (!dateTargetSignal || !dateTarget || !scrollRef.current) return;
+    scrollRef.current.scrollTo({ left: dateScrollLeft(dateTarget, chartStart, scale, cellWidth, scrollRef.current.clientWidth), behavior: "smooth" });
+  }, [cellWidth, chartStart, dateTarget, dateTargetSignal, scale, scrollRef]);
 }

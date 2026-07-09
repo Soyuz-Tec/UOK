@@ -5,6 +5,15 @@
   scrollbar-width: thin;
 }
 
+.planning-toolbar-select input[type="date"] {
+  min-width: 132px;
+  min-height: 28px;
+  border: 0;
+  color: var(--uok-text-primary);
+  background: transparent;
+  font: inherit;
+}
+
 .planning-plan-actions {
   grid-area: plan;
   justify-content: flex-start;

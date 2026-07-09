@@ -83,7 +83,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Header menu for visible columns | Implemented | UOK uses field presets and column visibility controls; a right-click header menu can be added later if needed. |
 | No-grid and read-only/prevent-actions modes | Backlog | Useful for embedded schedule review surfaces after edit permissions mature. |
 | Custom task templates and cell borders | Partial | UOK owns task/status templates and timeline grid borders through CSS tokens. |
-| Scroll to date / custom zoom / min scale unit | Partial | Scroll-to-today, scroll-to-selected-task, project-fit navigation, and scale controls exist; arbitrary scroll-to-date and zoom bounds remain later. |
+| Scroll to date / custom zoom / min scale unit | Partial | Scroll-to-today, scroll-to-selected-task, arbitrary date navigation, project-fit navigation, and scale controls exist; custom zoom bounds remain later. |
 | Editor validation, readonly editor, comments, custom controls | Partial | Inspector validation exists; comments and editor modes remain module backlog. |
 | Start/end date display variants and duration units | Partial | Current schedule is date-based; hour/minute duration editing is later. |
 
@@ -129,7 +129,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Timeline | Timeline templates | header label, cell class, task shape class, weekend/holiday class | UOK-owned render helpers and CSS tokens | Partial |
 | Timeline | Markers | today, project bounds, milestones, deadlines, vertical event markers | Today and project boundary markers exist; task deadlines and arbitrary event markers remain later | Partial |
 | Timeline | Drag timeline and scroll zoom | pointer panning, wheel modifier, scale bounds, scroll preservation | Empty-space panning, Ctrl/Command wheel scale stepping, and Shift-drag task creation are implemented | Implemented |
-| Timeline | Zoom-to-fit and scroll-to-date | project range, selected date, today, viewport width, scale bounds | Today, selected task, and project-fit commands exist; arbitrary date target remains later | Partial |
+| Timeline | Zoom-to-fit and scroll-to-date | project range, selected date, today, viewport width, scale bounds | Today, selected task, arbitrary date target, and project-fit commands exist; custom zoom bounds remain later | Partial |
 | Timeline | Layout modes | grid left/right/hidden, scale top/bottom, RTL, fixed size/autosize | Treat as workspace layout variants after core Gantt matures | Backlog |
 | Tasks | Task types | task, summary/project, milestone, unscheduled, split segment, rollup | Task/summary/milestone exist; unscheduled/split/rollup later | Partial |
 | Tasks | Taskbar editing | move, resize start/end, progress drag, dependency handles | Implemented through first-party SVG with server validation | Implemented |

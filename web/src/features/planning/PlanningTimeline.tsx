@@ -1,18 +1,16 @@
-import { Baseline, CalendarClock, ChevronDown, Columns3, Download, Flag, FolderKanban, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Target, Users } from "lucide-react";
+import { Baseline, FolderKanban, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
-import { FieldVisibilityMenu, useColumnVisibilityOptions } from "../../shared/tables";
+import { useColumnVisibilityOptions } from "../../shared/tables";
 import type { Appearance } from "../../shared/types";
-import { PlanningFilters } from "./PlanningFilters";
 import { PlanningGantt } from "./PlanningGantt";
 import { PlanningReadModelView } from "./PlanningReadModelViews";
-import { PlanningSavedViews } from "./PlanningSavedViews";
+import { PlanningTimelineUtilities } from "./PlanningTimelineUtilities";
 import type { TimelineScale } from "./planningGanttModel";
-import { maxZoomValue, scaleToZoomValue, timelineScaleOptions, zoomValueToScale } from "./planningScaleOptions";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
-import { exportScheduleCsv, planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningView, type ViewDensity } from "./planningTimelineModel";
+import { planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningProject, PlanningSchedule } from "./types";
 
 export function PlanningTimeline({
@@ -79,6 +77,8 @@ export function PlanningTimeline({
   const [todaySignal, setTodaySignal] = useState(0);
   const [selectedTaskSignal, setSelectedTaskSignal] = useState(0);
   const [fitProjectSignal, setFitProjectSignal] = useState(0);
+  const [dateTarget, setDateTarget] = useState(schedule.project.start);
+  const [dateTargetSignal, setDateTargetSignal] = useState(0);
   const visibleSchedule = useMemo(() => projectScheduleView(schedule, filters, cascadeSort), [cascadeSort, filters, schedule]);
   const columnOptions = useMemo(() => planningColumnVisibilityOptions(fieldPreset), [fieldPreset]);
   const { resetColumnVisibility, setColumnVisible, visibility: columnVisibility } = useColumnVisibilityOptions(`planning.gantt.columns.${fieldPreset}`, columnOptions);
@@ -168,88 +168,7 @@ export function PlanningTimeline({
           <CommandButton icon={Baseline} onClick={onCreateBaseline}>Baseline</CommandButton>
           <CommandButton icon={Users} onClick={onOpenResources}>Resources</CommandButton>
         </div>
-        <div className="planning-toolbar-group" aria-label="Timeline utilities">
-          <PlanningSavedViews current={savedViewConfig} onApply={applySavedView} />
-          <label className="planning-toolbar-select">
-            <Columns3 size={16} aria-hidden="true" />
-            <span>Fields</span>
-            <select value={fieldPreset} onChange={(event) => setFieldPreset(event.target.value as FieldPreset)}>
-              <option value="core">Core</option>
-              <option value="progress">Progress</option>
-              <option value="resources">Resources</option>
-            </select>
-          </label>
-          <FieldVisibilityMenu
-            label="Columns"
-            options={columnOptions}
-            resetLabel="Reset columns"
-            visibility={columnVisibility}
-            onReset={resetColumnVisibility}
-            onToggle={setColumnVisible}
-          />
-          <PlanningFilters filters={filters} schedule={schedule} onChange={setFilters} />
-          <label className="planning-zoom-control">
-            <span>Zoom</span>
-            <input
-              type="range"
-              min="0"
-              max={maxZoomValue()}
-              value={scaleToZoomValue(scale)}
-              aria-label="Timeline zoom"
-              onChange={(event) => onScaleChange(zoomValueToScale(event.target.value))}
-            />
-          </label>
-          <div className="planning-segmented-control" aria-label="Timeline scale">
-            {timelineScaleOptions.map((item) => (
-              <button key={item.value} type="button" className={scale === item.value ? "selected" : ""} onClick={() => onScaleChange(item.value)}>
-                {item.label}
-              </button>
-            ))}
-          </div>
-          <button type="button" className="planning-toolbar-toggle" onClick={() => {
-            onScaleChange("day");
-            setTodaySignal((value) => value + 1);
-          }}>
-            <CalendarClock size={16} aria-hidden="true" />
-            <span>Today</span>
-          </button>
-          <button type="button" className="planning-toolbar-toggle" disabled={!selectedTaskId} onClick={() => setSelectedTaskSignal((value) => value + 1)}>
-            <Target size={16} aria-hidden="true" />
-            <span>Selected</span>
-          </button>
-          <button type="button" className="planning-toolbar-toggle" onClick={() => {
-            onScaleChange("month");
-            setFitProjectSignal((value) => value + 1);
-          }}>
-            <Maximize2 size={16} aria-hidden="true" />
-            <span>Fit</span>
-          </button>
-          <button type="button" className={`planning-toolbar-toggle ${focusMode ? "selected" : ""}`} aria-pressed={focusMode} onClick={() => setFocusMode((value) => !value)}>
-            {focusMode ? <Minimize2 size={16} aria-hidden="true" /> : <Maximize2 size={16} aria-hidden="true" />}
-            <span>{focusMode ? "Exit focus" : "Focus"}</span>
-          </button>
-          <button type="button" className="planning-toolbar-toggle" onClick={() => exportScheduleCsv(visibleSchedule)}>
-            <Download size={16} aria-hidden="true" />
-            <span>Export</span>
-          </button>
-          <label className="planning-toolbar-select">
-            <ChevronDown size={16} aria-hidden="true" />
-            <span>View</span>
-            <select value={viewDensity} onChange={(event) => setViewDensity(event.target.value as ViewDensity)}>
-              <option value="compact">Compact</option>
-              <option value="standard">Standard</option>
-              <option value="roomy">Roomy</option>
-            </select>
-          </label>
-          <button type="button" className={`planning-toolbar-toggle ${showCritical ? "selected" : ""}`} aria-pressed={showCritical} onClick={onToggleCritical}>
-            <Flag size={16} aria-hidden="true" />
-            <span>Critical</span>
-          </button>
-          <button type="button" className={`planning-toolbar-toggle ${showBaselines ? "selected" : ""}`} aria-pressed={showBaselines} onClick={onToggleBaselines}>
-            <Baseline size={16} aria-hidden="true" />
-            <span>Baselines</span>
-          </button>
-        </div>
+        <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} viewDensity={viewDensity} />
       </div>
       {activeView === "Gantt chart" ? (
         <PlanningGantt
@@ -266,6 +185,8 @@ export function PlanningTimeline({
           todaySignal={todaySignal}
           selectedTaskSignal={selectedTaskSignal}
           fitProjectSignal={fitProjectSignal}
+          dateTarget={dateTarget}
+          dateTargetSignal={dateTargetSignal}
           onTaskSelect={onTaskSelect}
           onTaskReschedule={onTaskReschedule}
           onTaskProgress={onTaskProgress}
@@ -294,5 +215,15 @@ export function PlanningTimeline({
     if (scale !== config.scale) onScaleChange(config.scale);
     if (showCritical !== config.showCritical) onToggleCritical();
     if (showBaselines !== config.showBaselines) onToggleBaselines();
+  }
+
+  function goToDate(date: string) {
+    setDateTarget(date);
+    setDateTargetSignal((value) => value + 1);
+  }
+
+  function goToToday() {
+    onScaleChange("day");
+    setTodaySignal((value) => value + 1);
   }
 }

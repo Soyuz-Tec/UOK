@@ -44,6 +44,8 @@ export function PlanningGantt({
   todaySignal,
   selectedTaskSignal,
   fitProjectSignal,
+  dateTarget,
+  dateTargetSignal,
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
@@ -89,6 +91,8 @@ export function PlanningGantt({
   usePlanningGanttNavigation({
     cellWidth: chart.cellWidth,
     chartStart: chart.start,
+    dateTarget,
+    dateTargetSignal,
     fitProjectSignal,
     rowRefs,
     scale,

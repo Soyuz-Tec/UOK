@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { projectRangeScrollLeft, selectedTaskScrollLeft } from "./planningTimelineNavigation";
+import { dateScrollLeft, projectRangeScrollLeft, selectedTaskScrollLeft } from "./planningTimelineNavigation";
 import type { PlanningTask } from "./types";
 
 describe("selectedTaskScrollLeft", () => {
@@ -20,6 +20,16 @@ describe("projectRangeScrollLeft", () => {
 
   it("anchors a wide project range at the project start", () => {
     expect(projectRangeScrollLeft("2026-08-10", "2026-08-30", new Date("2026-08-01T00:00:00"), "day", 52, 260)).toBe(468);
+  });
+});
+
+describe("dateScrollLeft", () => {
+  it("centers an arbitrary target date with left context", () => {
+    expect(dateScrollLeft("2026-08-15", new Date("2026-08-01T00:00:00"), "day", 52, 260)).toBe(598);
+  });
+
+  it("does not request a negative scroll position for early dates", () => {
+    expect(dateScrollLeft("2026-08-01", new Date("2026-08-01T00:00:00"), "day", 52, 260)).toBe(0);
   });
 });
 

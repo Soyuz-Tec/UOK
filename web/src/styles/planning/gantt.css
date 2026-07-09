@@ -156,6 +156,7 @@
 
 .planning-gantt-toolbar [aria-label="Timeline utilities"] {
   grid-area: controls;
+  min-width: 0;
 }
 
 .planning-selection-toggle,
