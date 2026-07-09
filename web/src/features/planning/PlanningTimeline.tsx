@@ -1,4 +1,4 @@
-import { Baseline, CheckCircle2, FolderKanban, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Users } from "lucide-react";
+import { Baseline, CheckCircle2, FolderKanban, GitBranch, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
@@ -60,9 +60,9 @@ export function PlanningTimeline({
   onToggleBaselines: () => void;
   onReviewModeChange: (reviewMode: boolean) => void;
   onTaskSelect: (taskId: string) => void;
-  onTaskReschedule: (taskId: string, start: string, end: string) => void;
+  onTaskReschedule: (taskId: string, start: string, end: string, cascade: boolean) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
-  onTaskInlineEdit: (taskId: string, payload: Record<string, unknown>) => void;
+  onTaskInlineEdit: (taskId: string, payload: Record<string, unknown>, cascade: boolean) => void;
   onBulkTaskStatus: (taskIds: string[], payload: Record<string, unknown>) => void;
   onDependencyCreate: (payload: Record<string, unknown>) => void;
   onTimelineTaskCreate: (start: string, end: string) => void;
@@ -81,6 +81,7 @@ export function PlanningTimeline({
   const [summaryExpanded, setSummaryExpanded] = useState(true);
   const [collapsedSummaryIds, setCollapsedSummaryIds] = useState<Set<string>>(new Set());
   const [cascadeSort, setCascadeSort] = useState(true);
+  const [cascadeScheduling, setCascadeScheduling] = useState(true);
   const [focusMode, setFocusMode] = useState(false);
   const [layoutMode, setLayoutMode] = useState<PlanningLayoutMode>("split");
   const [viewDensity, setViewDensity] = useState<ViewDensity>("standard");
@@ -97,6 +98,7 @@ export function PlanningTimeline({
   const selectedTaskIds = selectedVisible ? visibleSchedule.tasks.map((task) => task.id) : selectedTaskId ? [selectedTaskId] : [];
   const savedViewConfig = useMemo<PlanningSavedViewConfig>(() => ({
     activeView,
+    cascadeScheduling,
     cascadeSort,
     fieldPreset,
     filterMode: filters.mode,
@@ -112,7 +114,7 @@ export function PlanningTimeline({
     showCritical,
     summaryExpanded,
     viewDensity,
-  }), [activeView, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, focusMode, layoutMode, reviewMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
+  }), [activeView, cascadeScheduling, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, focusMode, layoutMode, reviewMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
 
   return (
     <div className={`planning-timeline-workbench planning-layout-${layoutMode} ${focusMode ? "focus-mode" : ""}`}>
@@ -168,17 +170,21 @@ export function PlanningTimeline({
           <CommandButton icon={Plus} onClick={() => onNewTask("task")} disabled={reviewMode} primary>Task</CommandButton>
           <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")} disabled={reviewMode}>Milestone</CommandButton>
           <CommandButton icon={Link2} onClick={onOpenDependencies} disabled={reviewMode}>Link</CommandButton>
-          <button type="button" className="planning-toolbar-toggle" onClick={() => setCollapsedSummaries(true)}>
+          <button type="button" className="planning-toolbar-toggle" aria-label="Expand all" onClick={() => setCollapsedSummaries(true)}>
             <Maximize2 size={16} aria-hidden="true" />
-            <span>Expand all</span>
+            <span>Expand</span>
           </button>
-          <button type="button" className="planning-toolbar-toggle" onClick={() => setCollapsedSummaries(false)}>
+          <button type="button" className="planning-toolbar-toggle" aria-label="Collapse all" onClick={() => setCollapsedSummaries(false)}>
             <Minimize2 size={16} aria-hidden="true" />
-            <span>Collapse all</span>
+            <span>Collapse</span>
           </button>
-          <button type="button" className={`planning-toolbar-toggle ${cascadeSort ? "selected" : ""}`} aria-pressed={cascadeSort} onClick={() => setCascadeSort((value) => !value)}>
+          <button type="button" className={`planning-toolbar-toggle ${cascadeSort ? "selected" : ""}`} aria-label="WBS order" aria-pressed={cascadeSort} onClick={() => setCascadeSort((value) => !value)}>
             <Rows3 size={16} aria-hidden="true" />
-            <span>Cascade sorting</span>
+            <span>WBS</span>
+          </button>
+          <button type="button" className={`planning-toolbar-toggle ${cascadeScheduling ? "selected" : ""}`} aria-label="Cascade scheduling" aria-pressed={cascadeScheduling} onClick={() => setCascadeScheduling((value) => !value)} disabled={reviewMode}>
+            <GitBranch size={16} aria-hidden="true" />
+            <span>Cascade</span>
           </button>
           <CommandButton icon={Baseline} onClick={onCreateBaseline} disabled={reviewMode}>Baseline</CommandButton>
           <CommandButton icon={Users} onClick={onOpenResources} disabled={reviewMode}>Resources</CommandButton>
@@ -204,9 +210,9 @@ export function PlanningTimeline({
           dateTargetSignal={dateTargetSignal}
           readOnly={reviewMode}
           onTaskSelect={onTaskSelect}
-          onTaskReschedule={onTaskReschedule}
+          onTaskReschedule={(taskId, start, end) => onTaskReschedule(taskId, start, end, cascadeScheduling)}
           onTaskProgress={onTaskProgress}
-          onTaskInlineEdit={onTaskInlineEdit}
+          onTaskInlineEdit={(taskId, payload) => onTaskInlineEdit(taskId, payload, shouldCascadeEdit(payload))}
           onDependencyCreate={onDependencyCreate}
           onTimelineTaskCreate={onTimelineTaskCreate}
           onTaskMenuAction={onTaskMenuAction}
@@ -224,6 +230,7 @@ export function PlanningTimeline({
 
   function applySavedView(config: PlanningSavedViewConfig) {
     setActiveView(config.activeView);
+    setCascadeScheduling(config.cascadeScheduling);
     setCascadeSort(config.cascadeSort);
     setFieldPreset(config.fieldPreset);
     setFilters({ mode: config.filterMode, query: config.query, resourceId: config.resourceId, status: config.status });
@@ -237,6 +244,10 @@ export function PlanningTimeline({
     if (scale !== config.scale) onScaleChange(config.scale);
     if (showCritical !== config.showCritical) onToggleCritical();
     if (showBaselines !== config.showBaselines) onToggleBaselines();
+  }
+
+  function shouldCascadeEdit(payload: Record<string, unknown>) {
+    return payload.start || payload.end ? cascadeScheduling : true;
   }
 
   function goToDate(date: string) {

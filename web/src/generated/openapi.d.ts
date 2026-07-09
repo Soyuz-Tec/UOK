@@ -1070,6 +1070,8 @@ export interface components {
         };
         /** PlanningTaskUpdateRequest */
         PlanningTaskUpdateRequest: {
+            /** Cascade */
+            cascade?: boolean | null;
             /** End */
             end?: string | null;
             /** Parent Task Id */

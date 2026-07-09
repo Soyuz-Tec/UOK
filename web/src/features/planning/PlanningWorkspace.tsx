@@ -126,7 +126,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               }}
               onTaskReschedule={rescheduleTask}
               onTaskProgress={(taskId, progress) => void saveTask(taskId, { progress })}
-              onTaskInlineEdit={(taskId, payload) => void saveTask(taskId, payload)}
+              onTaskInlineEdit={(taskId, payload, cascade) => void saveTask(taskId, payload, cascade)}
               onBulkTaskStatus={(taskIds, payload) => void saveTaskBatch(taskIds, payload)}
               onDependencyCreate={(payload) => void addDependency(payload)}
               onTimelineTaskCreate={(start, end) => void addTask(timelineTaskPayload(schedule.tasks, start, end))}
@@ -210,12 +210,12 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
     await reloadSchedule(projectId);
   }
 
-  async function rescheduleTask(taskId: string, start: string, end: string) {
-    await mutate("reschedule", () => updatePlanningTask(token, taskId, { start, end }), { taskId, start, end });
+  async function rescheduleTask(taskId: string, start: string, end: string, cascade = true) {
+    await mutate("reschedule", () => updatePlanningTask(token, taskId, { start, end, cascade }), { taskId, start, end, cascade });
   }
 
-  async function saveTask(taskId: string, payload: Record<string, unknown>) {
-    await mutate("task", () => updatePlanningTask(token, taskId, payload), { taskId });
+  async function saveTask(taskId: string, payload: Record<string, unknown>, cascade = true) {
+    await mutate("task", () => updatePlanningTask(token, taskId, withCascade(payload, cascade)), { taskId, cascade });
   }
 
   async function saveTaskBatch(taskIds: string[], payload: Record<string, unknown>) {
@@ -288,4 +288,8 @@ function taskPayload(title: string, start: string, end: string, progress: number
 
 function resultId(value: unknown) {
   return String((value as { id?: string; result?: { id?: string } }).id || (value as { result?: { id?: string } }).result?.id || "");
+}
+
+function withCascade(payload: Record<string, unknown>, cascade: boolean) {
+  return payload.start || payload.end ? { ...payload, cascade } : payload;
 }

@@ -4,6 +4,7 @@ import { createPlanningSavedView, planningConfigFromSavedView, type PlanningSave
 
 const config: PlanningSavedViewConfig = {
   activeView: "Workload",
+  cascadeScheduling: false,
   cascadeSort: false,
   fieldPreset: "resources",
   filterMode: "critical",
@@ -27,6 +28,7 @@ describe("planning saved views", () => {
     expect(view.name).toBe("Review board");
     expect(view.filters).toMatchObject({
       activeView: "Workload",
+      cascadeScheduling: "false",
       cascadeSort: "false",
       fieldPreset: "resources",
       filterMode: "critical",
@@ -54,6 +56,7 @@ describe("planning saved views", () => {
     const restored = planningConfigFromSavedView(view, { ...config, fieldPreset: "core", scale: "month" });
     expect(restored).toMatchObject({
       activeView: "Workload",
+      cascadeScheduling: false,
       cascadeSort: false,
       fieldPreset: "core",
       filterMode: "critical",

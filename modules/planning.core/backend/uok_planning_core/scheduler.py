@@ -83,7 +83,7 @@ def project_calendar(db: Session, actor: Actor, project_id: str) -> CalendarSpec
     holidays = {date.fromisoformat(str(item)) for item in loads(row.holidays_json, [])}
     return CalendarSpec(frozenset(working_days or {1, 2, 3, 4, 5}), frozenset(holidays))
 
-def apply_schedule(db: Session, actor: Actor, project_id: str) -> set[str]:
+def apply_schedule(db: Session, actor: Actor, project_id: str, cascade_dependencies: bool = True) -> set[str]:
     tasks = project_tasks(db, actor, project_id)
     dependencies = project_dependencies(db, actor, project_id)
     calendar = project_calendar(db, actor, project_id)
@@ -91,7 +91,8 @@ def apply_schedule(db: Session, actor: Actor, project_id: str) -> set[str]:
     if any("cycle" in item for item in violations):
         raise ValueError("; ".join(violations))
     changed = _normalize_calendar_windows(tasks, calendar)
-    changed.update(_propagate_dependencies(tasks, dependencies, calendar))
+    if cascade_dependencies:
+        changed.update(_propagate_dependencies(tasks, dependencies, calendar))
     changed.update(_roll_up_summaries(tasks))
     return changed
 

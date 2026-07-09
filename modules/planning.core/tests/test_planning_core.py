@@ -167,6 +167,16 @@ def test_planning_core_gantt_improvements(client: TestClient) -> None:
     )
     assert ss.status_code == 200, ss.text
 
+    no_cascade = command(
+        client,
+        ops,
+        "UpdatePlanningTask",
+        {"task_id": first, "start": "2026-08-12", "end": "2026-08-13", "cascade": False},
+        f"planning-no-cascade-{suffix}",
+    )
+    assert no_cascade.status_code == 400, no_cascade.text
+    assert "violates finish_to_start dependency" in no_cascade.text
+
     moved = command(
         client,
         ops,

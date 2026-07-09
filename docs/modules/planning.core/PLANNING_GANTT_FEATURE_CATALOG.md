@@ -118,7 +118,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Dependency validation | Reject missing refs, self-links, cycles, and invalid date order. | Implemented |
 | Dependency drag creation | Drag from one task to another to link tasks through server validation. | Implemented |
 | Highlight chain | Show selected task predecessors and successors in grid rows, task bars, and dependency paths. | Implemented |
-| Cascade scheduling toggle | Move successors when predecessor dates change. | Partial |
+| Cascade scheduling toggle | Move successors when predecessor dates change, or reject violating predecessor moves when disabled. | Implemented |
 
 ## Scheduling And Python Features
 

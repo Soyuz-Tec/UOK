@@ -920,6 +920,17 @@
       },
       "PlanningTaskUpdateRequest": {
         "properties": {
+          "cascade": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cascade"
+          },
           "end": {
             "anyOf": [
               {

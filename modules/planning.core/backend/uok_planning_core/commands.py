@@ -93,7 +93,7 @@ def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_
     tasks = project_tasks(db, actor, project.id)
     dependencies = project_dependencies(db, actor, project.id)
     assert_task_dependency_position(task, tasks, dependencies, project_calendar(db, actor, project.id))
-    changed = apply_schedule(db, actor, project.id)
+    changed = apply_schedule(db, actor, project.id, cascade_dependencies=bool(payload.get("cascade", True)))
     _assert_schedule_valid(db, actor, project.id)
     _emit(db, actor, "PlanningTaskUpdated", "PlanningTask", task.id, {"project_id": project.id, "title": task.title})
     _schedule_event(db, actor, project.id, "task_updated", {"task_id": task.id, "changed_task_ids": sorted(changed)})

@@ -29,6 +29,7 @@ class PlanningTaskUpdateRequest(BaseModel):
     status: str | None = Field(default=None, max_length=40)
     progress: int | None = Field(default=None, ge=0, le=100)
     sort_order: int | None = Field(default=None, ge=0)
+    cascade: bool | None = Field(default=None)
 
 
 class PlanningDependencyRequest(BaseModel):

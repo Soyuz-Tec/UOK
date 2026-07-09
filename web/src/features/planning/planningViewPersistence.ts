@@ -4,6 +4,7 @@ import { planningViews, type FieldPreset, type FilterMode, type PlanningLayoutMo
 
 export type PlanningSavedViewConfig = {
   activeView: PlanningView;
+  cascadeScheduling: boolean;
   cascadeSort: boolean;
   fieldPreset: FieldPreset;
   filterMode: FilterMode;
@@ -34,6 +35,7 @@ export function createPlanningSavedView(name: string, config: PlanningSavedViewC
     query: "",
     filters: {
       activeView: config.activeView,
+      cascadeScheduling: String(config.cascadeScheduling),
       cascadeSort: String(config.cascadeSort),
       fieldPreset: config.fieldPreset,
       filterMode: config.filterMode,
@@ -59,6 +61,7 @@ export function createPlanningSavedView(name: string, config: PlanningSavedViewC
 export function planningConfigFromSavedView(view: SavedSearchView, fallback: PlanningSavedViewConfig): PlanningSavedViewConfig {
   return {
     activeView: oneOf(planningViews, view.filters.activeView, fallback.activeView),
+    cascadeScheduling: booleanValue(view.filters.cascadeScheduling, fallback.cascadeScheduling),
     cascadeSort: booleanValue(view.filters.cascadeSort, view.sortBy ? view.sortBy !== "manual" : fallback.cascadeSort),
     fieldPreset: oneOf(fieldPresets, view.filters.fieldPreset, fallback.fieldPreset),
     filterMode: oneOf(filterModes, view.filters.filterMode, fallback.filterMode),
