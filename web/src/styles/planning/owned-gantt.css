@@ -188,10 +188,30 @@
   stroke-width: 2;
 }
 
+.planning-owned-task:focus-visible {
+  outline: none;
+}
+
+.planning-owned-task:focus-visible rect:first-of-type,
+.planning-owned-task:focus-visible polygon {
+  stroke: var(--uok-text-primary);
+  stroke-width: 2.5;
+}
+
 .planning-owned-task .progress {
   fill: color-mix(in srgb, var(--uok-bg-elevated) 38%, transparent);
   stroke: 0;
   pointer-events: none;
+}
+
+.planning-owned-status-code {
+  pointer-events: none;
+}
+
+.planning-owned-status-code rect {
+  fill: color-mix(in srgb, var(--uok-bg-elevated) 86%, transparent);
+  stroke: color-mix(in srgb, var(--uok-text-primary) 54%, transparent);
+  stroke-width: 1;
 }
 
 .planning-owned-resize-handle,
@@ -237,6 +257,13 @@
 
 .planning-owned-task.milestone text {
   fill: var(--uok-text-primary);
+}
+
+.planning-owned-task .planning-owned-status-code text {
+  fill: var(--uok-text-primary);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0;
 }
 
 .planning-owned-today {

@@ -48,7 +48,7 @@ UOK must implement these features as first-party React, TypeScript, SVG, HTML, C
 | Auto-fit columns | Double-click column resize handle/header to fit visible content. | Implemented |
 | Shared column resize primitive | Contacts and Planning use shared resize handle/sizing hook instead of local copies. | Implemented |
 | Field presets | Core, Progress, and Resources column sets. | Implemented |
-| Column visibility | User-selectable individual columns beyond presets. | Backlog |
+| Column visibility | User-selectable individual columns beyond presets. | Implemented |
 | Column reorder | Drag headers to reorder columns. | Backlog |
 | Pinned columns | Keep WBS/task visible while timeline scrolls. | Backlog |
 | Sort by columns | Sort by WBS, date, status, assignee, progress, and priority. | Partial |
@@ -88,8 +88,8 @@ UOK must implement these features as first-party React, TypeScript, SVG, HTML, C
 | Milestone diamonds | Render zero-duration milestones. | Implemented |
 | Progress overlay | Inner progress fill shows completion percentage. | Implemented |
 | Status color coding | Not started, in progress, complete, overdue, blocked, critical. | Implemented |
-| Non-color indicators | Labels/icons/patterns so status does not depend on color alone. | Backlog |
-| Selected/hover/focus states | Visible selected and keyboard focus states. | Partial |
+| Non-color indicators | Labels/icons/patterns so status does not depend on color alone. | Implemented |
+| Selected/hover/focus states | Visible selected and keyboard focus states. | Implemented |
 | Resize start/end handles | Drag bar edges to change duration. | Implemented |
 | Progress drag handle | Drag progress handle to update percent through server validation. | Implemented |
 

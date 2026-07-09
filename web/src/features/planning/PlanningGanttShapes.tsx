@@ -1,9 +1,12 @@
+import type { KeyboardEvent } from "react";
+
 import type { PlanningSchedule, PlanningTask } from "./types";
 import {
   dateValue,
   durationBetween,
   durationUnits,
   taskColorClass,
+  taskStatusIndicator,
   xForDate,
   type TimelineScale,
   type TimelineUnit,
@@ -91,19 +94,41 @@ export function TaskShape({
   const width = task.task_type === "milestone" ? barHeight : Math.max(cellWidth * durationUnits(task, scale), cellWidth * 0.65);
   const critical = showCritical && task.critical;
   const className = `planning-owned-task ${task.task_type} ${taskColorClass(task)} ${critical ? "critical" : ""} ${selected ? "selected" : ""}`;
+  const indicator = taskStatusIndicator(task, showCritical);
+  const accessibilityLabel = `${task.title}, ${indicator.label}, ${task.progress}% complete`;
   if (task.task_type === "milestone") {
     const centerX = x + barHeight / 2;
     const centerY = y + barHeight / 2;
     return (
-      <g className={className} tabIndex={0} onClick={() => onSelect(task.id)} onPointerDown={(event) => onDragStart(task.id, "move", event.clientX)}>
+      <g
+        className={className}
+        role="button"
+        tabIndex={0}
+        aria-label={accessibilityLabel}
+        onClick={() => onSelect(task.id)}
+        onKeyDown={(event) => selectOnKey(event, task.id, onSelect)}
+        onPointerDown={(event) => onDragStart(task.id, "move", event.clientX)}
+      >
+        <title>{accessibilityLabel}</title>
         <polygon points={`${centerX},${y} ${x + barHeight},${centerY} ${centerX},${y + barHeight} ${x},${centerY}`} />
-        <text x={x + barHeight + 6} y={centerY + 4}>{task.title}</text>
+        <TaskStatusCode x={x + barHeight + 6} y={y + 1} indicator={indicator} />
+        <text x={x + barHeight + statusCodeWidth(indicator.code) + 14} y={centerY + 4}>{task.title}</text>
       </g>
     );
   }
   const progressWidth = width * Math.max(0, Math.min(100, task.progress)) / 100;
+  const indicatorWidth = statusCodeWidth(indicator.code);
+  const indicatorX = width > indicatorWidth + 72 ? x + width - indicatorWidth - 5 : x + width + 6;
   return (
-    <g className={className} tabIndex={0} onClick={() => onSelect(task.id)}>
+    <g
+      className={className}
+      role="button"
+      tabIndex={0}
+      aria-label={accessibilityLabel}
+      onClick={() => onSelect(task.id)}
+      onKeyDown={(event) => selectOnKey(event, task.id, onSelect)}
+    >
+      <title>{accessibilityLabel}</title>
       {showBaselines && task.baseline_start && task.baseline_end ? <BaselineShape task={task} chartStart={chartStart} scale={scale} cellWidth={cellWidth} y={y + barHeight + 6} /> : null}
       <rect x={x} y={y} width={width} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} onPointerDown={(event) => onDragStart(task.id, "move", event.clientX)} />
       <rect className="progress" x={x} y={y} width={progressWidth} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} />
@@ -111,8 +136,29 @@ export function TaskShape({
       <rect className="planning-owned-resize-handle end" x={x + width - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-end", event.clientX)} />
       <circle className="planning-owned-progress-handle" cx={x + progressWidth} cy={y + barHeight / 2} r="5" onPointerDown={(event) => onDragStart(task.id, "progress", event.clientX, width)} />
       <text x={x + 8} y={y + barHeight / 2 + 4}>{task.title}</text>
+      <TaskStatusCode x={indicatorX} y={y + Math.max(2, (barHeight - 18) / 2)} indicator={indicator} />
     </g>
   );
+}
+
+function TaskStatusCode({ x, y, indicator }: { x: number; y: number; indicator: { code: string; label: string } }) {
+  const width = statusCodeWidth(indicator.code);
+  return (
+    <g className="planning-owned-status-code" aria-label={indicator.label}>
+      <rect x={x} y={y} width={width} height="18" rx="4" />
+      <text x={x + width / 2} y={y + 13} textAnchor="middle">{indicator.code}</text>
+    </g>
+  );
+}
+
+function statusCodeWidth(code: string) {
+  return Math.max(34, code.length * 7 + 12);
+}
+
+function selectOnKey(event: KeyboardEvent<SVGGElement>, taskId: string, onSelect: (taskId: string) => void) {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  onSelect(taskId);
 }
 
 function BaselineShape({ task, chartStart, scale, cellWidth, y }: { task: PlanningTask; chartStart: Date; scale: TimelineScale; cellWidth: number; y: number }) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { finishDrag, type DragState } from "./planningGanttModel";
+import { finishDrag, taskStatusIndicator, type DragState } from "./planningGanttModel";
 import type { PlanningTask } from "./types";
 
 const task: PlanningTask = {
@@ -38,6 +38,16 @@ describe("planning Gantt drag model", () => {
     const progresses: number[] = [];
     finishDrag(150, { ...drag("progress"), barWidth: 200 }, 60, "day", [task], () => undefined, (_taskId, progress) => progresses.push(progress));
     expect(progresses).toEqual([85]);
+  });
+});
+
+describe("planning Gantt status indicators", () => {
+  it("returns non-color status codes for task state", () => {
+    expect(taskStatusIndicator({ ...task, progress: 0 }).code).toBe("OPEN");
+    expect(taskStatusIndicator(task).code).toBe("WORK");
+    expect(taskStatusIndicator({ ...task, progress: 100 }).code).toBe("DONE");
+    expect(taskStatusIndicator({ ...task, status: "blocked", progress: 0 }).code).toBe("HOLD");
+    expect(taskStatusIndicator({ ...task, critical: true }, true).code).toBe("CRIT");
   });
 });
 

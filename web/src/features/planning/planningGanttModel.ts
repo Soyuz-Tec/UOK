@@ -24,6 +24,10 @@ export type DragState = {
   mode: "move" | "resize-start" | "resize-end" | "progress";
   barWidth?: number;
 };
+export type TaskStatusIndicator = {
+  code: string;
+  label: string;
+};
 
 export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity) {
   const start = startOfUnit(dateValue(schedule.project.start), scale);
@@ -133,6 +137,16 @@ export function taskColorClass(task: PlanningTask) {
   if (task.status === "blocked") return "blocked";
   if (task.progress > 0) return "in-progress";
   return "not-started";
+}
+
+export function taskStatusIndicator(task: PlanningTask, showCritical = false): TaskStatusIndicator {
+  if (showCritical && task.critical) return { code: "CRIT", label: "Critical path task" };
+  const status = taskColorClass(task);
+  if (status === "complete") return { code: "DONE", label: "Complete task" };
+  if (status === "overdue") return { code: "LATE", label: "Overdue task" };
+  if (status === "blocked") return { code: "HOLD", label: "Blocked task" };
+  if (status === "in-progress") return { code: "WORK", label: "In progress task" };
+  return { code: "OPEN", label: "Not started task" };
 }
 
 export function xForDate(date: Date, start: Date, scale: TimelineScale, cellWidth: number) {
