@@ -6,6 +6,8 @@ import { FieldVisibilityMenu, useColumnVisibilityOptions } from "../../shared/ta
 import type { Appearance } from "../../shared/types";
 import { PlanningGantt } from "./PlanningGantt";
 import { PlanningReadModelView } from "./PlanningReadModelViews";
+import { PlanningSavedViews } from "./PlanningSavedViews";
+import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import { exportScheduleCsv, planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type FilterMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningProject, PlanningSchedule } from "./types";
 
@@ -68,6 +70,18 @@ export function PlanningTimeline({
   const columnOptions = useMemo(() => planningColumnVisibilityOptions(fieldPreset), [fieldPreset]);
   const { resetColumnVisibility, setColumnVisible, visibility: columnVisibility } = useColumnVisibilityOptions(`planning.gantt.columns.${fieldPreset}`, columnOptions);
   const selectedCount = selectedVisible ? visibleSchedule.tasks.length : selectedTaskId ? 1 : 0;
+  const savedViewConfig = useMemo<PlanningSavedViewConfig>(() => ({
+    activeView,
+    cascadeSort,
+    fieldPreset,
+    filterMode,
+    scale,
+    selectedVisible,
+    showBaselines,
+    showCritical,
+    summaryExpanded,
+    viewDensity,
+  }), [activeView, cascadeSort, fieldPreset, filterMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
 
   return (
     <div className="planning-timeline-workbench">
@@ -138,6 +152,7 @@ export function PlanningTimeline({
           <CommandButton icon={Users} onClick={onOpenResources}>Resources</CommandButton>
         </div>
         <div className="planning-toolbar-group" aria-label="Timeline utilities">
+          <PlanningSavedViews current={savedViewConfig} onApply={applySavedView} />
           <label className="planning-toolbar-select">
             <Columns3 size={16} aria-hidden="true" />
             <span>Fields</span>
@@ -240,4 +255,17 @@ export function PlanningTimeline({
       )}
     </div>
   );
+
+  function applySavedView(config: PlanningSavedViewConfig) {
+    setActiveView(config.activeView);
+    setCascadeSort(config.cascadeSort);
+    setFieldPreset(config.fieldPreset);
+    setFilterMode(config.filterMode);
+    setSelectedVisible(config.selectedVisible);
+    setSummaryExpanded(config.summaryExpanded);
+    setViewDensity(config.viewDensity);
+    if (scale !== config.scale) onScaleChange(config.scale);
+    if (showCritical !== config.showCritical) onToggleCritical();
+    if (showBaselines !== config.showBaselines) onToggleBaselines();
+  }
 }

@@ -130,6 +130,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByRole("button", { name: "Gantt chart", exact: true })).toHaveAttribute("aria-current", "page");
     await expect(page.getByLabel("Project metadata")).toBeVisible();
     await expect(page.getByLabel("Timeline utilities")).toBeVisible();
+    await expect(page.getByLabel("Saved planning views")).toBeVisible();
+    await expect(page.getByLabel("Planning view name")).toBeVisible();
     await expect(page.getByLabel("Timeline zoom")).toBeVisible();
     await expect(page.getByText("Fields")).toBeVisible();
     await expect(page.getByText("Filter")).toBeVisible();
