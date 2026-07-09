@@ -233,6 +233,20 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-resize-handle")).toHaveCount(6);
     await expect(page.locator(".planning-owned-progress-handle")).toHaveCount(3);
     await expect(page.locator(".planning-owned-link-handle")).toHaveCount(8);
+    if (viewport.width > 980) {
+      const bulkUpdates = taskUpdatePayloads.length;
+      await page.locator(".planning-selection-toggle input").check();
+      await expect(page.getByText("4 selected")).toBeVisible();
+      await page.getByRole("button", { name: "Complete selected", exact: true }).click();
+      await expect.poll(() => taskUpdatePayloads.length).toBe(bulkUpdates + 4);
+      expect(taskUpdatePayloads.slice(-4)).toEqual([
+        { status: "complete", progress: 100 },
+        { status: "complete", progress: 100 },
+        { status: "complete", progress: 100 },
+        { status: "complete", progress: 100 },
+      ]);
+      await page.locator(".planning-selection-toggle input").uncheck();
+    }
     await page.getByRole("button", { name: "Task", exact: true }).focus();
     await expect(page.getByRole("button", { name: "Task", exact: true })).toBeFocused();
     await expect.poll(() => page.locator(".planning-gantt-shell").getByText("Build integrated Gantt with dependency validation").count()).toBeGreaterThan(0);

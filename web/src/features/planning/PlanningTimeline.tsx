@@ -1,4 +1,4 @@
-import { Baseline, FolderKanban, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Users } from "lucide-react";
+import { Baseline, CheckCircle2, FolderKanban, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
@@ -31,6 +31,7 @@ export function PlanningTimeline({
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
+  onBulkTaskStatus,
   onDependencyCreate,
   onTimelineTaskCreate,
   onTaskMenuAction,
@@ -59,6 +60,7 @@ export function PlanningTimeline({
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
+  onBulkTaskStatus: (taskIds: string[], payload: Record<string, unknown>) => void;
   onDependencyCreate: (payload: Record<string, unknown>) => void;
   onTimelineTaskCreate: (start: string, end: string) => void;
   onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningSchedule["tasks"][number]) => void;
@@ -88,6 +90,7 @@ export function PlanningTimeline({
   const columnOptions = useMemo(() => planningColumnVisibilityOptions(fieldPreset), [fieldPreset]);
   const { resetColumnVisibility, setColumnVisible, visibility: columnVisibility } = useColumnVisibilityOptions(`planning.gantt.columns.${fieldPreset}`, columnOptions);
   const selectedCount = selectedVisible ? visibleSchedule.tasks.length : selectedTaskId ? 1 : 0;
+  const selectedTaskIds = selectedVisible ? visibleSchedule.tasks.map((task) => task.id) : selectedTaskId ? [selectedTaskId] : [];
   const savedViewConfig = useMemo<PlanningSavedViewConfig>(() => ({
     activeView,
     cascadeSort,
@@ -157,6 +160,7 @@ export function PlanningTimeline({
             <input type="checkbox" checked={selectedVisible} onChange={(event) => setSelectedVisible(event.target.checked)} />
             <span>{selectedCount} selected</span>
           </label>
+          {selectedVisible ? <CommandButton icon={CheckCircle2} onClick={() => onBulkTaskStatus(selectedTaskIds, { status: "complete", progress: 100 })} loading={busy === "bulk-task"} disabled={reviewMode || selectedTaskIds.length === 0}>Complete selected</CommandButton> : null}
           <CommandButton icon={Plus} onClick={() => onNewTask("task")} disabled={reviewMode} primary>Task</CommandButton>
           <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")} disabled={reviewMode}>Milestone</CommandButton>
           <CommandButton icon={Link2} onClick={onOpenDependencies} disabled={reviewMode}>Link</CommandButton>

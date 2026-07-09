@@ -138,8 +138,8 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Fullscreen/focus mode | Expand the planning workspace into a dense viewport overlay with an explicit exit action. | Implemented |
 | Layout mode persistence | Saved views include split/timeline-only layout mode with other Gantt workspace preferences. | Implemented |
 | Review/edit mode | Toolbar toggle prevents schedule mutations by disabling task creation, edit commands, row action menus, drag handles, progress handles, dependency handles, and inspector editor controls. | Implemented |
-| Bulk selection | Select visible rows and apply safe bulk actions. | Partial |
-| Bulk edit | Change status, owner, dates, priority, or calendar for selected tasks. | Backlog |
+| Bulk selection | Select visible rows and apply safe server-validated bulk completion. | Implemented |
+| Bulk edit | Change status, owner, dates, priority, or calendar for selected tasks. Status/progress completion exists; broader fields remain backlog. | Partial |
 | Undo/redo | Reversible local command stack with server reconciliation. | Backlog |
 | Saved views | Store filters, density, fields, scale, and grouping. | Implemented |
 | Search/filter/group | Search task titles; filter by status, critical, resource, milestone. | Implemented |

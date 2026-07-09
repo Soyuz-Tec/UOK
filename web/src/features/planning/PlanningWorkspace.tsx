@@ -126,6 +126,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               }}
               onTaskReschedule={rescheduleTask}
               onTaskProgress={(taskId, progress) => void saveTask(taskId, { progress })}
+              onBulkTaskStatus={(taskIds, payload) => void saveTaskBatch(taskIds, payload)}
               onDependencyCreate={(payload) => void addDependency(payload)}
               onTimelineTaskCreate={(start, end) => void addTask(timelineTaskPayload(schedule.tasks, start, end))}
               onTaskMenuAction={(action, task) => void runTaskMenuAction(action, task)}
@@ -214,6 +215,10 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
 
   async function saveTask(taskId: string, payload: Record<string, unknown>) {
     await mutate("task", () => updatePlanningTask(token, taskId, payload), { taskId });
+  }
+
+  async function saveTaskBatch(taskIds: string[], payload: Record<string, unknown>) {
+    await mutate("bulk-task", () => Promise.all(taskIds.map((taskId) => updatePlanningTask(token, taskId, payload))), { action: "bulk_task_updated", tasks: taskIds.length });
   }
 
   async function addTask(payload: Record<string, unknown>) {
