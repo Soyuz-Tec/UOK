@@ -28,6 +28,7 @@ export function PlanningTimeline({
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
+  onDependencyCreate,
   onProjectChange,
   onCreateDemoSchedule,
   onRefresh,
@@ -51,6 +52,7 @@ export function PlanningTimeline({
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
+  onDependencyCreate: (payload: Record<string, unknown>) => void;
   onProjectChange: (projectId: string) => void;
   onCreateDemoSchedule: () => void;
   onRefresh: () => void;
@@ -243,6 +245,7 @@ export function PlanningTimeline({
           onTaskSelect={onTaskSelect}
           onTaskReschedule={onTaskReschedule}
           onTaskProgress={onTaskProgress}
+          onDependencyCreate={onDependencyCreate}
           onSummaryExpandedChange={setSummaryExpanded}
           onViewDensityChange={setViewDensity}
         />

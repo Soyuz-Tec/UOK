@@ -112,10 +112,11 @@ const sampleSchedule = {
 
 test("UOK proof gate covers planning Gantt usability and visual stability", async ({ page }) => {
   const consoleErrors: string[] = [];
+  const dependencyPayloads: unknown[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
-  await installMockApi(page);
+  await installMockApi(page, dependencyPayloads);
 
   for (const viewport of [
     { width: 1440, height: 900 },
@@ -142,9 +143,18 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-grid-header .column-resize-handle")).toHaveCount(4);
     await expect(page.locator(".planning-owned-resize-handle")).toHaveCount(6);
     await expect(page.locator(".planning-owned-progress-handle")).toHaveCount(3);
+    await expect(page.locator(".planning-owned-link-handle")).toHaveCount(8);
     await expect(page.locator(".planning-owned-status-code")).toHaveCount(4);
     await expect(page.locator(".planning-owned-status-code").getByText("CRIT")).toHaveCount(3);
     await expect(page.locator(".planning-owned-tooltip")).toHaveCount(4);
+    if (viewport.width > 980) {
+      const linkRequests = dependencyPayloads.length;
+      await page.getByRole("button", { name: "Start dependency from Define schedule scope" }).press("Enter");
+      await expect(page.locator(".planning-gantt-shell")).toHaveClass(/planning-linking/);
+      await page.getByRole("button", { name: "Finish dependency at Pilot review milestone" }).press("Enter");
+      await expect.poll(() => dependencyPayloads.length).toBe(linkRequests + 1);
+      expect(dependencyPayloads.at(-1)).toMatchObject({ predecessor_task_id: "task-1", successor_task_id: "task-3", dependency_type: "finish_to_start", lag_days: 0 });
+    }
     await page.getByLabel("Search planning tasks").fill("integrated");
     await expect(page.locator(".planning-owned-grid-body").getByText("Build integrated Gantt with dependency validation")).toBeVisible();
     await page.getByLabel("Search planning tasks").fill("");
@@ -226,7 +236,7 @@ async function openPlanning(page: Page) {
   await expect(page.getByRole("region", { name: "Planning", exact: true })).toBeVisible();
 }
 
-async function installMockApi(page: Page) {
+async function installMockApi(page: Page, dependencyPayloads: unknown[]) {
   await page.addInitScript(() => {
     window.sessionStorage.setItem("uok_token", "proof-token");
     window.localStorage.setItem("uok_user", JSON.stringify({
@@ -243,6 +253,10 @@ async function installMockApi(page: Page) {
   await page.route("/api/modules/catalog", (route) => route.fulfill({ json: { modules: moduleCatalog() } }));
   await page.route("/api/planning/projects", (route) => route.fulfill({ json: [sampleProject] }));
   await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({ json: sampleSchedule }));
+  await page.route(`/api/planning/projects/${sampleProject.id}/dependencies`, async (route) => {
+    dependencyPayloads.push(route.request().postDataJSON());
+    await route.fulfill({ json: { status: "validated" } });
+  });
   await page.route("/api/contacts**", (route) => route.fulfill({ json: [] }));
 }
 

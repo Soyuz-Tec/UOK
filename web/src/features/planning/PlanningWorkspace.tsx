@@ -120,6 +120,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               }}
               onTaskReschedule={rescheduleTask}
               onTaskProgress={(taskId, progress) => void saveTask(taskId, { progress })}
+              onDependencyCreate={(payload) => void addDependency(payload)}
               onProjectChange={(projectId) => void changeProject(projectId)}
               onCreateDemoSchedule={() => void createDemoSchedule()}
               onRefresh={() => void refresh()}

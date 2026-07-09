@@ -17,6 +17,7 @@
 @import "./styles/planning/filters.css";
 @import "./styles/planning/gantt.css";
 @import "./styles/planning/owned-gantt.css";
+@import "./styles/planning/dependency-drag.css";
 @import "./styles/planning/read-views.css";
 @import "./styles/planning/saved-views.css";
 @import "./styles/planning/toolbar.css";

@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, PointerEvent } from "react";
 
 import type { PlanningSchedule, PlanningTask } from "./types";
 import {
@@ -74,6 +74,8 @@ export function TaskShape({
   showBaselines,
   onSelect,
   onDragStart,
+  onLinkStart,
+  onLinkFinish,
 }: {
   task: PlanningTask;
   index: number;
@@ -87,6 +89,8 @@ export function TaskShape({
   showBaselines: boolean;
   onSelect: (taskId: string) => void;
   onDragStart: (taskId: string, mode: "move" | "resize-start" | "resize-end" | "progress", clientX: number, barWidth?: number) => void;
+  onLinkStart: (taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) => void;
+  onLinkFinish: (taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) => void;
 }) {
   const x = xForDate(dateValue(task.start), chartStart, scale, cellWidth);
   const y = headerHeight + index * rowSize + Math.max(7, rowSize * 0.22);
@@ -113,6 +117,7 @@ export function TaskShape({
         <polygon points={`${centerX},${y} ${x + barHeight},${centerY} ${centerX},${y + barHeight} ${x},${centerY}`} />
         <TaskStatusCode x={x + barHeight + 6} y={y + 1} indicator={indicator} />
         <text x={x + barHeight + statusCodeWidth(indicator.code) + 14} y={centerY + 4}>{task.title}</text>
+        <DependencyHandles task={task} sourceX={x + barHeight + 12} targetX={x - 12} y={centerY} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />
         <TaskTooltip task={task} x={x} y={Math.max(4, y - 50)} indicator={indicator} />
       </g>
     );
@@ -138,7 +143,24 @@ export function TaskShape({
       <circle className="planning-owned-progress-handle" cx={x + progressWidth} cy={y + barHeight / 2} r="5" onPointerDown={(event) => onDragStart(task.id, "progress", event.clientX, width)} />
       <text x={x + 8} y={y + barHeight / 2 + 4}>{task.title}</text>
       <TaskStatusCode x={indicatorX} y={y + Math.max(2, (barHeight - 18) / 2)} indicator={indicator} />
+      <DependencyHandles task={task} sourceX={x + width + 12} targetX={x - 12} y={y + barHeight / 2} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />
       <TaskTooltip task={task} x={x} y={Math.max(4, y - 50)} indicator={indicator} />
+    </g>
+  );
+}
+
+function DependencyHandles({ task, sourceX, targetX, y, onLinkStart, onLinkFinish }: {
+  task: PlanningTask;
+  sourceX: number;
+  targetX: number;
+  y: number;
+  onLinkStart: (taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) => void;
+  onLinkFinish: (taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) => void;
+}) {
+  return (
+    <g className="planning-owned-link-handles">
+      <circle className="planning-owned-link-handle target" cx={targetX} cy={y} r="5" tabIndex={0} role="button" aria-label={`Finish dependency at ${task.title}`} onPointerUp={(event) => onLinkFinish(task.id, targetX, y, event)} onKeyDown={(event) => linkOnKey(event, () => onLinkFinish(task.id, targetX, y, event))} />
+      <circle className="planning-owned-link-handle source" cx={sourceX} cy={y} r="5" tabIndex={0} role="button" aria-label={`Start dependency from ${task.title}`} onPointerDown={(event) => onLinkStart(task.id, sourceX, y, event)} onKeyDown={(event) => linkOnKey(event, () => onLinkStart(task.id, sourceX, y, event))} />
     </g>
   );
 }
@@ -171,6 +193,13 @@ function selectOnKey(event: KeyboardEvent<SVGGElement>, taskId: string, onSelect
   if (event.key !== "Enter" && event.key !== " ") return;
   event.preventDefault();
   onSelect(taskId);
+}
+
+function linkOnKey(event: KeyboardEvent<SVGCircleElement>, action: () => void) {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  event.stopPropagation();
+  action();
 }
 
 function BaselineShape({ task, chartStart, scale, cellWidth, y }: { task: PlanningTask; chartStart: Date; scale: TimelineScale; cellWidth: number; y: number }) {

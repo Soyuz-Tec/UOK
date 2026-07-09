@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 
 import { ColumnResizeHandle, useResizableColumns, type DataTableColumn } from "../../shared/tables";
 import type { ColumnVisibilityMap } from "../../shared/tables";
@@ -20,6 +20,7 @@ import {
   type TimelineScale,
 } from "./planningGanttModel";
 import { DependencyLines, TaskShape, TimelineBackground, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
+import { dependencyLinkPayload, svgPointer, type DependencyLinkDrag } from "./planningDependencyDrag";
 import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
 
 export function PlanningGantt({
@@ -37,6 +38,7 @@ export function PlanningGantt({
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
+  onDependencyCreate,
   onSummaryExpandedChange,
   onViewDensityChange,
 }: {
@@ -54,11 +56,14 @@ export function PlanningGantt({
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
+  onDependencyCreate: (payload: Record<string, unknown>) => void;
   onSummaryExpandedChange: (expanded: boolean) => void;
   onViewDensityChange: (density: ViewDensity) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
+  const [linkDrag, setLinkDrag] = useState<DependencyLinkDrag | null>(null);
   const rowSize = rowHeight(viewDensity);
   const columns = useMemo(() => gridColumns(fieldPreset).filter((column) => columnVisibility[column.id] !== false), [columnVisibility, fieldPreset]);
   const resizeColumns = useMemo(() => columns.map(toResizableColumn), [columns]);
@@ -80,7 +85,7 @@ export function PlanningGantt({
 
   return (
     <div
-      className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance}`}
+      className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance} ${linkDrag ? "planning-linking" : ""}`}
       aria-label="Planning Gantt chart"
       style={{ "--planning-grid-width": `${Math.max(totalWidth, 340)}px` } as CSSProperties}
     >
@@ -131,12 +136,24 @@ export function PlanningGantt({
           finishDrag(event.clientX, drag, chart.cellWidth, scale, visibleTasks, onTaskReschedule, onTaskProgress);
           setDrag(null);
         }}
-        onPointerCancel={() => setDrag(null)}
+        onPointerCancel={() => {
+          setDrag(null);
+          setLinkDrag(null);
+        }}
       >
-        <svg width={width} height={height} role="img" aria-label={`${schedule.project.name} timeline`}>
+        <svg
+          ref={svgRef}
+          width={width}
+          height={height}
+          role="img"
+          aria-label={`${schedule.project.name} timeline`}
+          onPointerMove={(event) => updateLinkPointer(event)}
+          onPointerUp={() => setLinkDrag(null)}
+        >
           <TimelineHeaders units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} width={width} />
           <TimelineBackground units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} height={height} rowSize={rowSize} rows={visibleTasks.length} />
           <DependencyLines schedule={schedule} tasks={visibleTasks} taskRows={taskRows} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowSize} headerHeight={headerHeight} />
+          {linkDrag ? <path className="planning-owned-link-draft" d={`M ${linkDrag.sourceX} ${linkDrag.sourceY} L ${linkDrag.pointerX} ${linkDrag.pointerY}`} /> : null}
           {visibleTasks.map((task, index) => (
             <TaskShape
               key={task.id}
@@ -152,6 +169,8 @@ export function PlanningGantt({
               showBaselines={showBaselines}
               onSelect={onTaskSelect}
               onDragStart={(taskId, mode, clientX, barWidth) => setDrag({ taskId, mode, startX: clientX, barWidth })}
+              onLinkStart={startDependencyLink}
+              onLinkFinish={finishDependencyLink}
             />
           ))}
           <TodayMarker chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={height} />
@@ -166,6 +185,30 @@ export function PlanningGantt({
       return;
     }
     setColumnWidth(column.id, autoFitColumnWidth(column, visibleTasks, assignedByTask));
+  }
+
+  function startDependencyLink(taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    onTaskSelect(taskId);
+    setDrag(null);
+    setLinkDrag({ sourceTaskId: taskId, sourceX: x, sourceY: y, pointerX: x + 28, pointerY: y });
+  }
+
+  function finishDependencyLink(taskId: string, _x: number, _y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!linkDrag) return;
+    const payload = dependencyLinkPayload(schedule, linkDrag.sourceTaskId, taskId);
+    setLinkDrag(null);
+    onTaskSelect(taskId);
+    if (payload) onDependencyCreate(payload);
+  }
+
+  function updateLinkPointer(event: PointerEvent<SVGSVGElement>) {
+    if (!linkDrag || !svgRef.current) return;
+    const point = svgPointer(svgRef.current, event.clientX, event.clientY);
+    setLinkDrag({ ...linkDrag, pointerX: point.x, pointerY: point.y });
   }
 }
 

@@ -104,7 +104,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Dependency inspector | Create/update/remove dependency records. | Implemented |
 | Dependency lag/lead | Positive lag and negative lead. | Implemented |
 | Dependency validation | Reject missing refs, self-links, cycles, and invalid date order. | Implemented |
-| Dependency drag creation | Drag from one task to another to link tasks. | Backlog |
+| Dependency drag creation | Drag from one task to another to link tasks through server validation. | Implemented |
 | Highlight chain | Show selected task predecessors and successors. | Backlog |
 | Cascade scheduling toggle | Move successors when predecessor dates change. | Partial |
 

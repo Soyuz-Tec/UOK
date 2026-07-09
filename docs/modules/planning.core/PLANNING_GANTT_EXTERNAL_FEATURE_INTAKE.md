@@ -33,7 +33,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Projects/summary tasks and milestones | Implemented | Keep summary and milestone rendering first-party. |
 | Four dependency types plus lag | Implemented | Keep validation in Python and UI editing in inspector. |
 | Drag scheduling and resize | Implemented | Continue server-validated move/resize/progress behavior. |
-| Drag-to-create dependency links | Backlog | Add taskbar connector handles and server-validated dependency creation. |
+| Drag-to-create dependency links | Implemented | Taskbar connector handles create finish-to-start links through server validation. |
 | Progress bar editing | Implemented | Keep progress drag handle and inspector edits. |
 | Lightbox/task editor | Partial | UOK equivalent is the inspector; improve compact edit workflows and inline grid edit. |
 | Configurable scales from hour to year | Backlog | Add hour, quarter, and year modes without changing the renderer boundary. |
@@ -77,7 +77,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 ## Near-Term UOK Implementation Order
 
 1. Taskbar hover/focus details: low-risk visible polish from both projects; can be implemented in the current first-party SVG renderer.
-2. Dependency drag creation: core professional Gantt interaction; requires careful server validation and proof.
+2. Dependency drag creation: implemented with taskbar connector handles and the existing Python-validated dependency API.
 3. Context row menu: professional grid workflow; should reuse shared pop-up/menu primitives if promoted.
 4. Keyboard hotkeys and focus movement: improves accessibility and dense-workflow speed.
 5. Additional scales: hour, quarter, year, and later sprints/stages.
