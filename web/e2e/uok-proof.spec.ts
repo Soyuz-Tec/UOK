@@ -290,6 +290,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       const bulkUpdates = taskUpdatePayloads.length;
       await page.locator(".planning-selection-toggle input").check();
       await expect(page.getByText("4 selected")).toBeVisible();
+      await expect(page.getByLabel("Bulk status")).toBeVisible();
+      await expect(page.getByLabel("Bulk progress")).toBeVisible();
+      await expect(page.getByLabel("Bulk shift days")).toBeVisible();
       await page.getByRole("button", { name: "Complete selected", exact: true }).click();
       await expect.poll(() => taskUpdatePayloads.length).toBe(bulkUpdates + 4);
       expect(taskUpdatePayloads.slice(-4)).toEqual([
@@ -297,6 +300,25 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
         { status: "complete", progress: 100 },
         { status: "complete", progress: 100 },
         { status: "complete", progress: 100 },
+      ]);
+      await page.getByLabel("Bulk status").selectOption("blocked");
+      await page.getByLabel("Bulk progress").fill("25");
+      await page.getByRole("button", { name: "Apply bulk", exact: true }).click();
+      await expect.poll(() => taskUpdatePayloads.length).toBe(bulkUpdates + 8);
+      expect(taskUpdatePayloads.slice(-4)).toEqual([
+        { status: "blocked", progress: 25 },
+        { status: "blocked", progress: 25 },
+        { status: "blocked", progress: 25 },
+        { status: "blocked", progress: 25 },
+      ]);
+      await page.getByLabel("Bulk shift days").fill("2");
+      await page.getByRole("button", { name: "Shift dates", exact: true }).click();
+      await expect.poll(() => taskUpdatePayloads.length).toBe(bulkUpdates + 12);
+      expect(taskUpdatePayloads.slice(-4)).toEqual([
+        { start: "2026-08-15", end: "2026-08-15", cascade: false },
+        { start: "2026-08-06", end: "2026-08-12", cascade: false },
+        { start: "2026-08-03", end: "2026-08-05", cascade: false },
+        { start: "2026-08-03", end: "2026-08-15", cascade: false },
       ]);
       await page.locator(".planning-selection-toggle input").uncheck();
     }

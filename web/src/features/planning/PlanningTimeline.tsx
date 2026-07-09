@@ -1,9 +1,10 @@
-import { Baseline, CheckCircle2, FolderKanban, GitBranch, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Users } from "lucide-react";
+import { Baseline, FolderKanban, GitBranch, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
 import { useColumnVisibilityOptions } from "../../shared/tables";
 import type { Appearance } from "../../shared/types";
+import { PlanningBulkEditControls, type PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
 import { PlanningGantt } from "./PlanningGantt";
 import { PlanningReadModelView } from "./PlanningReadModelViews";
 import { PlanningTimelineUtilities } from "./PlanningTimelineUtilities";
@@ -33,7 +34,7 @@ export function PlanningTimeline({
   onTaskReschedule,
   onTaskProgress,
   onTaskInlineEdit,
-  onBulkTaskStatus,
+  onBulkTaskEdit,
   onDependencyCreate,
   onTimelineTaskCreate,
   onTaskMenuAction,
@@ -63,7 +64,7 @@ export function PlanningTimeline({
   onTaskReschedule: (taskId: string, start: string, end: string, cascade: boolean) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
   onTaskInlineEdit: (taskId: string, payload: Record<string, unknown>, cascade: boolean) => void;
-  onBulkTaskStatus: (taskIds: string[], payload: Record<string, unknown>) => void;
+  onBulkTaskEdit: (updates: PlanningBulkTaskUpdate[]) => void;
   onDependencyCreate: (payload: Record<string, unknown>) => void;
   onTimelineTaskCreate: (start: string, end: string) => void;
   onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningSchedule["tasks"][number]) => void;
@@ -96,6 +97,7 @@ export function PlanningTimeline({
   const { resetColumnVisibility, setColumnVisible, visibility: columnVisibility } = useColumnVisibilityOptions(`planning.gantt.columns.${fieldPreset}`, columnOptions);
   const selectedCount = selectedVisible ? visibleSchedule.tasks.length : selectedTaskId ? 1 : 0;
   const selectedTaskIds = selectedVisible ? visibleSchedule.tasks.map((task) => task.id) : selectedTaskId ? [selectedTaskId] : [];
+  const selectedTasks = useMemo(() => selectedTaskIds.map((taskId) => visibleSchedule.tasks.find((task) => task.id === taskId)).filter((task): task is PlanningSchedule["tasks"][number] => Boolean(task)), [selectedTaskIds, visibleSchedule.tasks]);
   const savedViewConfig = useMemo<PlanningSavedViewConfig>(() => ({
     activeView,
     cascadeScheduling,
@@ -166,7 +168,7 @@ export function PlanningTimeline({
             <input type="checkbox" checked={selectedVisible} onChange={(event) => setSelectedVisible(event.target.checked)} />
             <span>{selectedCount} selected</span>
           </label>
-          {selectedVisible ? <CommandButton icon={CheckCircle2} onClick={() => onBulkTaskStatus(selectedTaskIds, { status: "complete", progress: 100 })} loading={busy === "bulk-task"} disabled={reviewMode || selectedTaskIds.length === 0}>Complete selected</CommandButton> : null}
+          {selectedVisible ? <PlanningBulkEditControls busy={busy === "bulk-task"} disabled={reviewMode} selectedTasks={selectedTasks} onBulkTaskEdit={onBulkTaskEdit} /> : null}
           <CommandButton icon={Plus} onClick={() => onNewTask("task")} disabled={reviewMode} primary>Task</CommandButton>
           <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")} disabled={reviewMode}>Milestone</CommandButton>
           <CommandButton icon={Link2} onClick={onOpenDependencies} disabled={reviewMode}>Link</CommandButton>

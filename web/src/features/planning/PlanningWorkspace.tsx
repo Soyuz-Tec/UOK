@@ -22,6 +22,7 @@ import {
 import { PlanningInspector, type PlanningInspectorTab } from "./PlanningInspector";
 import { PlanningModuleState } from "./PlanningModuleState";
 import { PlanningTimeline } from "./PlanningTimeline";
+import type { PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
 import type { TimelineScale } from "./planningGanttModel";
 import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import { timelineTaskPayload } from "./planningTimelineCreateModel";
@@ -127,7 +128,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               onTaskReschedule={rescheduleTask}
               onTaskProgress={(taskId, progress) => void saveTask(taskId, { progress })}
               onTaskInlineEdit={(taskId, payload, cascade) => void saveTask(taskId, payload, cascade)}
-              onBulkTaskStatus={(taskIds, payload) => void saveTaskBatch(taskIds, payload)}
+              onBulkTaskEdit={(updates) => void saveTaskBatch(updates)}
               onDependencyCreate={(payload) => void addDependency(payload)}
               onTimelineTaskCreate={(start, end) => void addTask(timelineTaskPayload(schedule.tasks, start, end))}
               onTaskMenuAction={(action, task) => void runTaskMenuAction(action, task)}
@@ -218,8 +219,8 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
     await mutate("task", () => updatePlanningTask(token, taskId, withCascade(payload, cascade)), { taskId, cascade });
   }
 
-  async function saveTaskBatch(taskIds: string[], payload: Record<string, unknown>) {
-    await mutate("bulk-task", () => Promise.all(taskIds.map((taskId) => updatePlanningTask(token, taskId, payload))), { action: "bulk_task_updated", tasks: taskIds.length });
+  async function saveTaskBatch(updates: PlanningBulkTaskUpdate[]) {
+    await mutate("bulk-task", () => Promise.all(updates.map((update) => updatePlanningTask(token, update.taskId, update.payload))), { action: "bulk_task_updated", tasks: updates.length });
   }
 
   async function addTask(payload: Record<string, unknown>) {
