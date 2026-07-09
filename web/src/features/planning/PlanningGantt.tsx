@@ -9,11 +9,11 @@ import {
   finishDrag,
   gridColumns,
   rowHeight,
-  visibleRows,
   type DragState,
   type PlanningGridColumn,
   type TimelineScale,
 } from "./planningGanttModel";
+import { visibleRows } from "./planningGanttTree";
 import { DependencyLines, ProjectBoundaryMarkers, TaskShape, TaskTimelineMarkers, TimelineBackground, TimelineCreateDraftShape, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
 import { PlanningGanttEmptyState } from "./PlanningGanttEmptyState";
 import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
@@ -40,7 +40,7 @@ export function PlanningGantt({
   selectedTaskId,
   fieldPreset,
   columnVisibility,
-  summaryExpanded,
+  collapsedSummaryIds,
   viewDensity,
   todaySignal,
   selectedTaskSignal,
@@ -57,7 +57,7 @@ export function PlanningGantt({
   onTaskMenuAction,
   onScaleChange,
   onColumnVisible, onColumnsReset,
-  onSummaryExpandedChange,
+  onSummaryToggle,
   onViewDensityChange,
 }: PlanningGanttProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -76,7 +76,7 @@ export function PlanningGantt({
   const pinnedOffsets = useMemo(() => pinnedColumnOffsets(columns, widths), [columns, widths]);
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
   const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
-  const visibleTasks = useMemo(() => sortPlanningTasks(visibleRows(schedule.tasks, summaryExpanded), sort, assignedByTask), [assignedByTask, schedule.tasks, sort, summaryExpanded]);
+  const visibleTasks = useMemo(() => sortPlanningTasks(visibleRows(schedule.tasks, collapsedSummaryIds), sort, assignedByTask), [assignedByTask, collapsedSummaryIds, schedule.tasks, sort]);
   const { resetRowHeight, rowHeights, setRowHeight } = usePlanningRowHeights(schedule.project.id);
   const rowLayoutState = useMemo(() => planningRowLayouts(visibleTasks, rowSize, rowHeights), [rowHeights, rowSize, visibleTasks]);
   const rowLayoutByTask = useMemo(() => planningRowLayoutMap(rowLayoutState.layouts), [rowLayoutState.layouts]);
@@ -150,11 +150,12 @@ export function PlanningGantt({
               rowRef={(element) => setRowRef(task.id, element)}
               rowSize={rowSize}
               showCritical={showCritical}
+              summaryExpanded={!collapsedSummaryIds.has(task.id)}
               task={task}
               onKeyDown={handleRowKey}
               onOpenTaskMenu={openTaskMenu}
               onSelect={onTaskSelect}
-              onSummaryDoubleClick={() => onSummaryExpandedChange(!summaryExpanded)}
+              onSummaryToggle={() => onSummaryToggle(task.id)}
               onTaskInlineEdit={onTaskInlineEdit}
               onRowHeightChange={setRowHeight}
               onRowHeightReset={resetRowHeight}
@@ -264,7 +265,7 @@ export function PlanningGantt({
       openTaskMenu(task.id, rect.left + 24, rect.top + 24, event);
     } else if (command.kind === "toggle-summary") {
       onTaskSelect(task.id);
-      onSummaryExpandedChange(!summaryExpanded);
+      onSummaryToggle(task.id);
     } else if (!readOnly) onTaskMenuAction(command.action, task);
   }
 

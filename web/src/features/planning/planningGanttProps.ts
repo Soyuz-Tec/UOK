@@ -14,7 +14,7 @@ export type PlanningGanttProps = {
   selectedTaskId: string;
   fieldPreset: FieldPreset;
   columnVisibility: ColumnVisibilityMap;
-  summaryExpanded: boolean;
+  collapsedSummaryIds: Set<string>;
   viewDensity: ViewDensity;
   todaySignal: number;
   selectedTaskSignal: number;
@@ -32,6 +32,6 @@ export type PlanningGanttProps = {
   onScaleChange: (scale: TimelineScale) => void;
   onColumnVisible: (columnId: string, visible: boolean) => void;
   onColumnsReset: () => void;
-  onSummaryExpandedChange: (expanded: boolean) => void;
+  onSummaryToggle: (taskId: string) => void;
   onViewDensityChange: (density: ViewDensity) => void;
 };

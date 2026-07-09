@@ -56,6 +56,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Pinned columns | Keep WBS/task pinned ahead of reordered fields and sticky inside the grid. | Implemented |
 | Sort by columns | Sort visible rows by WBS, task, dates, duration, progress, critical flag, assignee, and status. | Implemented |
 | Inline grid edit | Edit task title, start, end, progress, and status cells directly in the grid with server validation; derived/read-only cells stay locked. | Implemented |
+| Tree summary expander | WBS tree cells expose accessible per-summary expand/collapse controls; nested descendants hide with their collapsed parent. | Implemented |
 | Context row menu | Add below, add child, duplicate, delete, convert to milestone, and status actions. | Implemented |
 
 ## Row And Density Features
@@ -64,7 +65,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 |---|---|---:|
 | Compact/standard/roomy density | Toolbar-controlled row height modes. | Implemented |
 | Double-click task header to shorten rows | Double-click Task header toggles compact/standard density. | Implemented |
-| Double-click summary row | Double-click summary row toggles global expand/collapse. | Implemented |
+| Double-click summary row | Double-click summary row toggles that summary branch while toolbar commands expand/collapse all branches. | Implemented |
 | Per-row height | Resize individual rows from a row-bottom separator; keyboard arrows adjust height and per-project overrides persist locally. | Implemented |
 | Auto-height row fit | Double-click or press Enter on a row resize separator to fit that row to its content without breaking grid/timeline alignment. | Implemented |
 | Scroll synchronization | Grid and timeline row alignment must remain stable. | Implemented |

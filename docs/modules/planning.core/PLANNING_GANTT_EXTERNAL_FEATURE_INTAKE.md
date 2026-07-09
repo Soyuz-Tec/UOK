@@ -120,7 +120,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Grid | Configurable columns | id, label, width, min/max width, visibility, preset, resize/autofit, order, pin flags | Shared table sizing/visibility/order primitives plus planning-specific pinned columns | Partial |
 | Grid | Header menu | column id, checked state, hide/show action, reset widths, sort action, keyboard access | First-party per-column menu complements field controls and shared column primitives | Implemented |
 | Grid | Add-task/action column | command button, row action menu, add child/add below, disabled/read-only states | Row menu exists; add-column control later if density allows | Partial |
-| Grid | Tree column | WBS code, indentation, summary marker, expand/collapse state, parent id | Summary rows and WBS sorting; richer per-parent expand state later | Partial |
+| Grid | Tree column | WBS code, indentation, summary marker, expand/collapse state, parent id | Summary rows, WBS sorting, and accessible per-summary expand/collapse controls with nested descendant hiding | Implemented |
 | Grid | Inline cell editing | editable field, validation state, commit/cancel, keyboard handling, server command | Title, start, end, progress, and status cells use shared inline editing and existing server task validation | Implemented |
 | Grid | Column sorting/filtering | column id, direction, filter mode, query, status/resource criteria | Search/filter and visible-column sorting use UOK-owned read-model helpers | Implemented |
 | Grid | Branch ordering / row drag | dragged task id, drop parent, before/after mode, valid WBS target, audit event | Later WBS reorder command with Python validation | Backlog |

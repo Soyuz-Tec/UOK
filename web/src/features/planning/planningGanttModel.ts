@@ -49,12 +49,6 @@ export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, 
   return { start, units, cellWidth: cellWidth(scale, viewDensity) };
 }
 
-export function visibleRows(tasks: PlanningTask[], summaryExpanded: boolean) {
-  if (summaryExpanded) return tasks;
-  const collapsedParents = new Set(tasks.filter((task) => task.task_type === "summary").map((task) => task.id));
-  return tasks.filter((task) => !task.parent_task_id || !collapsedParents.has(task.parent_task_id));
-}
-
 export function gridColumns(fieldPreset: "core" | "progress" | "resources"): PlanningGridColumn[] {
   const base = [gridColumn("wbs", "WBS", 64, 52, 120, true), gridColumn("task", "Task", 240, 150, 520, true)];
   if (fieldPreset === "progress") return [...base, gridColumn("duration", "Dur.", 84, 68, 140), gridColumn("progress", "%", 76, 64, 130), gridColumn("critical", "Critical", 104, 82, 160)];

@@ -8,6 +8,7 @@ import { PlanningGantt } from "./PlanningGantt";
 import { PlanningReadModelView } from "./PlanningReadModelViews";
 import { PlanningTimelineUtilities } from "./PlanningTimelineUtilities";
 import type { TimelineScale } from "./planningGanttModel";
+import { summaryTaskIds } from "./planningGanttTree";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import { planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningLayoutMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
@@ -78,6 +79,7 @@ export function PlanningTimeline({
   const [fieldPreset, setFieldPreset] = useState<FieldPreset>("core");
   const [filters, setFilters] = useState<PlanningFilterState>({ mode: "all", query: "", resourceId: "", status: "" });
   const [summaryExpanded, setSummaryExpanded] = useState(true);
+  const [collapsedSummaryIds, setCollapsedSummaryIds] = useState<Set<string>>(new Set());
   const [cascadeSort, setCascadeSort] = useState(true);
   const [focusMode, setFocusMode] = useState(false);
   const [layoutMode, setLayoutMode] = useState<PlanningLayoutMode>("split");
@@ -166,11 +168,11 @@ export function PlanningTimeline({
           <CommandButton icon={Plus} onClick={() => onNewTask("task")} disabled={reviewMode} primary>Task</CommandButton>
           <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")} disabled={reviewMode}>Milestone</CommandButton>
           <CommandButton icon={Link2} onClick={onOpenDependencies} disabled={reviewMode}>Link</CommandButton>
-          <button type="button" className="planning-toolbar-toggle" onClick={() => setSummaryExpanded(true)}>
+          <button type="button" className="planning-toolbar-toggle" onClick={() => setCollapsedSummaries(true)}>
             <Maximize2 size={16} aria-hidden="true" />
             <span>Expand all</span>
           </button>
-          <button type="button" className="planning-toolbar-toggle" onClick={() => setSummaryExpanded(false)}>
+          <button type="button" className="planning-toolbar-toggle" onClick={() => setCollapsedSummaries(false)}>
             <Minimize2 size={16} aria-hidden="true" />
             <span>Collapse all</span>
           </button>
@@ -193,7 +195,7 @@ export function PlanningTimeline({
           selectedTaskId={selectedTaskId}
           fieldPreset={fieldPreset}
           columnVisibility={columnVisibility}
-          summaryExpanded={summaryExpanded}
+          collapsedSummaryIds={collapsedSummaryIds}
           viewDensity={viewDensity}
           todaySignal={todaySignal}
           selectedTaskSignal={selectedTaskSignal}
@@ -211,7 +213,7 @@ export function PlanningTimeline({
           onScaleChange={onScaleChange}
           onColumnVisible={setColumnVisible}
           onColumnsReset={resetColumnVisibility}
-          onSummaryExpandedChange={setSummaryExpanded}
+          onSummaryToggle={toggleSummary}
           onViewDensityChange={setViewDensity}
         />
       ) : (
@@ -230,6 +232,7 @@ export function PlanningTimeline({
     onReviewModeChange(config.reviewMode);
     setSelectedVisible(config.selectedVisible);
     setSummaryExpanded(config.summaryExpanded);
+    setCollapsedSummaries(config.summaryExpanded);
     setViewDensity(config.viewDensity);
     if (scale !== config.scale) onScaleChange(config.scale);
     if (showCritical !== config.showCritical) onToggleCritical();
@@ -244,5 +247,20 @@ export function PlanningTimeline({
   function goToToday() {
     onScaleChange("day");
     setTodaySignal((value) => value + 1);
+  }
+
+  function setCollapsedSummaries(expanded: boolean) {
+    setSummaryExpanded(expanded);
+    setCollapsedSummaryIds(expanded ? new Set() : new Set(summaryTaskIds(schedule.tasks)));
+  }
+
+  function toggleSummary(taskId: string) {
+    setCollapsedSummaryIds((current) => {
+      const next = new Set(current);
+      if (next.has(taskId)) next.delete(taskId);
+      else next.add(taskId);
+      setSummaryExpanded(next.size === 0);
+      return next;
+    });
   }
 }

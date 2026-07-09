@@ -34,4 +34,5 @@
 @import "./styles/planning/timeline-markers.css";
 @import "./styles/planning/toolbar.css";
 @import "./styles/planning/tooltips.css";
+@import "./styles/planning/tree-column.css";
 @import "./styles/responsive.css";

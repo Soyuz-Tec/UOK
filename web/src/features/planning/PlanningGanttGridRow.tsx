@@ -22,11 +22,12 @@ export function PlanningGanttGridRow({
   rowRef,
   rowSize,
   showCritical,
+  summaryExpanded,
   task,
   onKeyDown,
   onOpenTaskMenu,
   onSelect,
-  onSummaryDoubleClick,
+  onSummaryToggle,
   onTaskInlineEdit,
   onRowHeightChange,
   onRowHeightReset,
@@ -43,11 +44,12 @@ export function PlanningGanttGridRow({
   rowRef: (element: HTMLDivElement | null) => void;
   rowSize: number;
   showCritical: boolean;
+  summaryExpanded: boolean;
   task: PlanningTask;
   onKeyDown: (task: PlanningTask, event: KeyboardEvent<HTMLDivElement>) => void;
   onOpenTaskMenu: (taskId: string, x: number, y: number, event: { preventDefault: () => void; stopPropagation: () => void }) => void;
   onSelect: (taskId: string) => void;
-  onSummaryDoubleClick: () => void;
+  onSummaryToggle: () => void;
   onTaskInlineEdit: (taskId: string, payload: Record<string, unknown>) => void;
   onRowHeightChange: (taskId: string, height: number) => void;
   onRowHeightReset: (taskId: string) => void;
@@ -60,17 +62,18 @@ export function PlanningGanttGridRow({
       ref={rowRef}
       className={rowClass}
       role="row"
+      aria-expanded={task.task_type === "summary" ? summaryExpanded : undefined}
       tabIndex={0}
       style={{ gridTemplateColumns, height: rowHeight, minHeight: rowHeight, minWidth } as CSSProperties}
       onClick={() => onSelect(task.id)}
       onContextMenu={(event) => onOpenTaskMenu(task.id, event.clientX, event.clientY, event)}
       onDoubleClick={() => {
-        if (task.task_type === "summary") onSummaryDoubleClick();
+        if (task.task_type === "summary") onSummaryToggle();
       }}
       onKeyDown={(event) => onKeyDown(task, event)}
     >
       {columns.map((column) => (
-        <PlanningGanttGridCell key={column.id} assignedByTask={assignedByTask} column={column} pinnedOffsets={pinnedOffsets} readOnly={readOnly} task={task} onTaskEdit={onTaskInlineEdit} />
+        <PlanningGanttGridCell key={column.id} assignedByTask={assignedByTask} column={column} pinnedOffsets={pinnedOffsets} readOnly={readOnly} summaryExpanded={summaryExpanded} task={task} onSummaryToggle={onSummaryToggle} onTaskEdit={onTaskInlineEdit} />
       ))}
       <button
         type="button"

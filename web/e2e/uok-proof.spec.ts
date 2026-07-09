@@ -163,6 +163,14 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-task-marker text").filter({ hasText: "VAR" })).toHaveCount(1);
     await expect(page.locator(".planning-owned-task-marker text").filter({ hasText: "MS" })).toHaveCount(1);
     if (viewport.width > 980) {
+      const summaryRow = page.locator(".planning-owned-grid-row").filter({ hasText: "Pilot delivery" }).first();
+      await expect(summaryRow).toHaveAttribute("aria-expanded", "true");
+      await page.getByRole("button", { name: "Collapse Pilot delivery" }).click();
+      await expect(summaryRow).toHaveAttribute("aria-expanded", "false");
+      await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Define schedule scope" })).toHaveCount(0);
+      await page.getByRole("button", { name: "Expand Pilot delivery" }).click();
+      await expect(summaryRow).toHaveAttribute("aria-expanded", "true");
+      await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Define schedule scope" })).toHaveCount(1);
       const inlineUpdates = taskUpdatePayloads.length;
       await page.getByRole("button", { name: "Edit Task for Define schedule scope" }).click();
       const inlineForm = page.locator(".planning-owned-inline-cell .inline-edit-form");
