@@ -1,13 +1,15 @@
-import { ContactRound } from "lucide-react";
+import { CalendarDays, ContactRound } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { Workbench } from "../../app/useWorkbench";
 import type { Option } from "../../shared/options";
 import type { Section } from "../../shared/types";
+import { CalendarWorkspace } from "../calendar/CalendarWorkspace";
+import { CALENDAR_MODULE_ID, CALENDAR_SECTION_ID } from "../calendar/calendarModule";
 import { CONTACTS_MODULE_ID, CONTACTS_SECTION_ID } from "../contacts/contactModule";
 import { ContactsWorkspace } from "../contacts/ContactsWorkspace";
 
-type ModuleSection = Extract<Section, "contacts">;
+type ModuleSection = Extract<Section, "contacts" | "calendar">;
 
 type ModuleSurface = Option<ModuleSection> & {
   moduleName: string;
@@ -68,6 +70,20 @@ export const moduleSurfaces: ModuleSurface[] = [
         onImportFilenameChange={workbench.setImportFilename}
         onImportTextChange={workbench.setImportText}
         onImport={workbench.importCsv}
+      />
+    )
+  },
+  {
+    id: CALENDAR_SECTION_ID,
+    label: "Calendar",
+    icon: CalendarDays,
+    moduleName: CALENDAR_MODULE_ID,
+    render: (workbench) => (
+      <CalendarWorkspace
+        token={workbench.token}
+        moduleRows={workbench.moduleRows}
+        busyAction={workbench.busyAction}
+        onInstall={() => workbench.moduleAction(CALENDAR_MODULE_ID, "install")}
       />
     )
   }
