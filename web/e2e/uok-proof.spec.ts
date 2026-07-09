@@ -182,8 +182,12 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await expect.poll(() => page.locator(".planning-owned-grid-row").first().evaluate((row) => row.getBoundingClientRect().height)).toBeLessThan(standardRowHeight);
       await taskHeader.dblclick();
       const headers = page.locator(".planning-owned-grid-header [role='columnheader']");
+      await expect(headers.nth(0)).toHaveClass(/planning-owned-pinned-column/);
+      await expect(headers.nth(1)).toHaveClass(/planning-owned-pinned-column/);
       await headers.nth(3).dragTo(headers.nth(2));
       await expect(headers.nth(2)).toHaveText("End");
+      await expect(headers.nth(0)).toHaveText("WBS");
+      await expect(headers.nth(1)).toHaveText("Task");
       await page.getByRole("button", { name: "Sort by End" }).click();
       await expect(page.locator(".planning-owned-grid-row").first()).toContainText("Define schedule scope");
     }

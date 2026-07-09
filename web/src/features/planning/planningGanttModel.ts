@@ -9,6 +9,7 @@ export type PlanningGridColumn = {
   defaultWidth: number;
   minWidth: number;
   maxWidth: number;
+  pinned?: boolean;
   resizable?: boolean;
 };
 export type TimelineUnit = {
@@ -55,7 +56,7 @@ export function visibleRows(tasks: PlanningTask[], summaryExpanded: boolean) {
 }
 
 export function gridColumns(fieldPreset: "core" | "progress" | "resources"): PlanningGridColumn[] {
-  const base = [gridColumn("wbs", "WBS", 64, 52, 120), gridColumn("task", "Task", 240, 150, 520)];
+  const base = [gridColumn("wbs", "WBS", 64, 52, 120, true), gridColumn("task", "Task", 240, 150, 520, true)];
   if (fieldPreset === "progress") return [...base, gridColumn("duration", "Dur.", 84, 68, 140), gridColumn("progress", "%", 76, 64, 130), gridColumn("critical", "Critical", 104, 82, 160)];
   if (fieldPreset === "resources") return [...base, gridColumn("assigned", "Assigned", 180, 130, 360), gridColumn("status", "Status", 116, 90, 180)];
   return [...base, gridColumn("start", "Start", 116, 90, 170), gridColumn("end", "End", 116, 90, 170)];
@@ -279,8 +280,8 @@ function weekNumber(value: Date) {
   return Math.ceil((((value.getTime() - first.getTime()) / 86_400_000) + first.getDay() + 1) / 7);
 }
 
-function gridColumn(id: string, label: string, defaultWidth: number, minWidth: number, maxWidth: number): PlanningGridColumn {
-  return { id, label, defaultWidth, minWidth, maxWidth };
+function gridColumn(id: string, label: string, defaultWidth: number, minWidth: number, maxWidth: number, pinned = false): PlanningGridColumn {
+  return { id, label, defaultWidth, minWidth, maxWidth, pinned };
 }
 
 function today() {

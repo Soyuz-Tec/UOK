@@ -25,6 +25,7 @@ import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
 import { dependencyLinkPayload, svgPointer, type DependencyLinkDrag } from "./planningDependencyDrag";
 import { nextPlanningGridSort, sortPlanningTasks, type PlanningGridSort } from "./planningGridSortModel";
 import { planningKeyboardCommand } from "./planningKeyboardModel";
+import { pinnedColumnOffsets, pinnedGridColumns } from "./planningPinnedColumns";
 import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
@@ -78,9 +79,10 @@ export function PlanningGantt({
   const rowSize = rowHeight(viewDensity);
   const baseColumns = useMemo(() => gridColumns(fieldPreset), [fieldPreset]);
   const { moveColumnBefore, orderedColumns } = useColumnOrder(baseColumns, `planning.gantt.order.${fieldPreset}`);
-  const columns = useMemo(() => orderedColumns.filter((column) => columnVisibility[column.id] !== false), [columnVisibility, orderedColumns]);
+  const columns = useMemo(() => pinnedGridColumns(orderedColumns.filter((column) => columnVisibility[column.id] !== false)), [columnVisibility, orderedColumns]);
   const resizeColumns = useMemo(() => columns.map(toResizableColumn), [columns]);
   const { setColumnWidth, totalWidth, widths } = useResizableColumns(resizeColumns, `planning.gantt.${fieldPreset}`);
+  const pinnedOffsets = useMemo(() => pinnedColumnOffsets(columns, widths), [columns, widths]);
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
   const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
   const visibleTasks = useMemo(() => sortPlanningTasks(visibleRows(schedule.tasks, summaryExpanded), sort, assignedByTask), [assignedByTask, schedule.tasks, sort, summaryExpanded]);
@@ -110,6 +112,7 @@ export function PlanningGantt({
           gridTemplateColumns={gridTemplateColumns}
           totalWidth={totalWidth}
           widths={widths}
+          pinnedOffsets={pinnedOffsets}
           tasks={visibleTasks}
           onColumnMoveBefore={moveColumnBefore}
           onColumnWidthChange={setColumnWidth}
@@ -134,7 +137,9 @@ export function PlanningGantt({
               onKeyDown={(event) => handleRowKey(task, event)}
             >
               {columns.map((column) => (
-                <span key={column.id} role="cell">{gridValue(column.id, task, assignedByTask)}</span>
+                <span key={column.id} role="cell" className={pinnedOffsets.has(column.id) ? "planning-owned-pinned-column" : undefined} style={pinnedStyle(column.id)}>
+                  {gridValue(column.id, task, assignedByTask)}
+                </span>
               ))}
               <button
                 type="button"
@@ -268,6 +273,11 @@ export function PlanningGantt({
   function setRowRef(taskId: string, element: HTMLDivElement | null) {
     if (element) rowRefs.current.set(taskId, element);
     else rowRefs.current.delete(taskId);
+  }
+
+  function pinnedStyle(columnId: string): CSSProperties | undefined {
+    const left = pinnedOffsets.get(columnId);
+    return left === undefined ? undefined : { left };
   }
 }
 
