@@ -82,7 +82,7 @@ function Invoke-UokReportsCandidateScenario {
         throw "Report artifact verification failed: $($verify | ConvertTo-Json -Depth 20)"
     }
 
-    $download = Invoke-WebRequest -Method "GET" -Uri "$BaseUrl/api/reports/artifacts/$($csvArtifact.id)/download" -Headers $OpsHeaders
+    $download = Invoke-WebRequest -UseBasicParsing -Method "GET" -Uri "$BaseUrl/api/reports/artifacts/$($csvArtifact.id)/download" -Headers $OpsHeaders
     if ($download.Content -notmatch "'=1\+1") {
         throw "CSV formula guard was not present in downloaded report: $($download.Content)"
     }

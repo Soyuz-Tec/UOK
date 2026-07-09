@@ -33,6 +33,7 @@ Operator browser
 
 - `apps.manager` is the only required control module.
 - `contacts.core` is the first optional capability module.
+- `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
 - Module metadata is read from `modules/<module_name>/manifest.yaml`.
 - Backend runtime extension points are declared in manifests and resolved from module backend packages.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
@@ -54,6 +55,7 @@ Operator browser
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
+- Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 
 ## Verification
 

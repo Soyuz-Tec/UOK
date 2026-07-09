@@ -1,5 +1,9 @@
 # UOK Secure Reports & Artifact Engine
 
+**Status:** Active global capability module foundation.
+
+**Current target:** `UOK-3.1.0-alpha.3`
+
 ## Purpose
 
 `reports.core` is the global UOK capability for generating, storing, auditing, verifying, downloading, and deleting report artifacts. Business modules must not embed their own file-generation utilities when a shared report artifact can be produced through this module.
