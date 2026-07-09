@@ -25,6 +25,7 @@ from .scheduler import (
     validate_schedule,
 )
 from .schedule_math import working_duration
+from .task_constraints import serialize_task_constraint
 from uok.security import Actor
 from uok.util import loads
 
@@ -102,6 +103,7 @@ def serialize_task(task: PlanningTask, metrics: dict[str, Any] | None = None, ba
         "baseline_end": baseline_end,
         "start_variance_days": _variance_days(baseline_start, start),
         "end_variance_days": _variance_days(baseline_end, end),
+        **serialize_task_constraint(task),
     }
 
 

@@ -139,6 +139,20 @@ def test_planning_core_gantt_improvements(client: TestClient) -> None:
     ignored_row = {task["id"]: task for task in ignored_schedule["tasks"]}[ignored_task]
     assert ignored_row["start"] == "2026-08-21"
     assert ignored_schedule["calendar"]["ignored_periods"] == [{"start": "2026-08-19", "end": "2026-08-20"}]
+    constrained = command(
+        client,
+        ops,
+        "CreatePlanningTask",
+        {"project_id": project_id, "title": "Constrained start", "start": "2026-08-04", "end": "2026-08-04", "task_type": "task", "sort_order": 7, "constraint_type": "start_no_earlier_than", "constraint_date": "2026-08-07"},
+        f"planning-constrained-start-{suffix}",
+    )
+    assert constrained.status_code == 200, constrained.text
+    constrained_task = constrained.json()["result"]["id"]
+    constrained_schedule = client.get(f"/api/planning/projects/{project_id}/schedule", headers=ops).json()
+    constrained_row = {task["id"]: task for task in constrained_schedule["tasks"]}[constrained_task]
+    assert constrained_row["start"] == "2026-08-07"
+    assert constrained_row["constraint_type"] == "start_no_earlier_than"
+    assert constrained_row["constraint_date"] == "2026-08-07"
 
     linked = command(
         client,
@@ -246,6 +260,7 @@ def test_planning_core_gantt_improvements(client: TestClient) -> None:
     assert final_schedule["validation"]["warnings"]
     assert final_schedule["calendar"]["holidays"] == ["2026-08-14"]
     assert final_schedule["calendar"]["ignored_periods"] == [{"start": "2026-08-19", "end": "2026-08-20"}]
+    assert any(task["constraint_type"] == "start_no_earlier_than" for task in final_schedule["tasks"])
 
 
 def _create_task(

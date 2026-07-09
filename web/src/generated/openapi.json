@@ -861,6 +861,31 @@
       },
       "PlanningTaskRequest": {
         "properties": {
+          "constraint_date": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constraint Date"
+          },
+          "constraint_type": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constraint Type"
+          },
           "end": {
             "maxLength": 32,
             "minLength": 10,
@@ -937,6 +962,31 @@
               }
             ],
             "title": "Cascade"
+          },
+          "constraint_date": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constraint Date"
+          },
+          "constraint_type": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constraint Type"
           },
           "end": {
             "anyOf": [

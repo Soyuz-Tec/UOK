@@ -51,7 +51,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Row resize | Implemented | UOK row-height model supports per-project row overrides, drag/keyboard resize handles, and double-click/Enter row fit without third-party code. |
 | Drag rows / branch ordering | Backlog | Add WBS reorder only after hierarchy command validation is explicit. |
 | Right-side grid columns / no-grid mode / bottom scale / RTL | Partial | Timeline-only no-grid mode is implemented; right-side grid, bottom scale, and RTL remain later layout variants. |
-| Backward planning and fixed project dates | Backlog | Requires constraint model and explicit scheduling direction. |
+| Backward planning and fixed project dates | Partial | Task constraints now exist for must-start, must-finish, and start/finish no-earlier/no-later rules; backward scheduling direction and fixed project limits remain later. |
 | Empty-state screen | Implemented | First-party grid and timeline empty state appears when filters or a project leave no visible tasks. |
 | Deadline/event markers | Partial | Project start/end markers plus derived visible-task due, variance, and milestone markers are implemented; arbitrary user event markers remain later. |
 | Import from Excel/MS Project/Primavera/iCal | Backlog | Requires validated server import pipeline and no external service dependency. |
@@ -142,10 +142,10 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Editing | Comments and custom controls | task comment thread, custom fields, validation messages, read-only fields | Later after module comments/custom fields are designed | Backlog |
 | Dependencies | Link model | predecessor, successor, type, lag/lead, validation errors, cycle checks | Python-owned validation with inspector and drag-link UI | Implemented |
 | Dependencies | Chain highlighting | predecessor/successor path, selected task emphasis, critical chain | Selected predecessor/successor rows, task bars, and dependency paths highlight in the first-party renderer | Implemented |
-| Scheduling | Auto scheduling | dependency propagation, calendar rules, manual/auto mode, constraints | Python dependency propagation, project calendar rules, and a cascade scheduling toggle exist; constraints/manual mode later | Partial |
+| Scheduling | Auto scheduling | dependency propagation, calendar rules, manual/auto mode, constraints | Python dependency propagation, project calendar rules, a cascade scheduling toggle, and task constraints exist; per-task manual/auto mode remains later | Partial |
 | Scheduling | CPM and slack | early/late dates, total slack, critical flag, variance | CPM read model and Dashboard critical-path/slack explanation are implemented | Implemented |
 | Scheduling | Calendars | working days, holidays, resource calendars, ignored/non-linear periods | Project working days, holidays, and ignored periods drive task normalization, propagation, read models, and shading; resource calendars remain later | Partial |
-| Scheduling | Backward planning and fixed project limits | direction, project start/end bounds, constraint violation messages | Later Python scheduling policy extension | Backlog |
+| Scheduling | Backward planning and fixed project limits | direction, project start/end bounds, constraint violation messages | Task-level constraint violation messages exist; backward direction and fixed project limits remain later | Partial |
 | Resources | Assignments | resource id/name, role, allocation, capacity, warnings, workload lane | Assignments, warnings, and workload lanes are implemented from the validated schedule read model | Implemented |
 | Resources | Resource panel/load chart | resource row, load cell, chart mode, allocation template, overload state | First-party Workload view renders resource lanes, daily allocation cells, peak load, and overload status from existing assignments | Implemented |
 | Baselines | Baseline overlays | baseline start/end, variance, baseline lane, deadline marker | Capture, per-row timeline lanes, and variance badges are implemented | Implemented |

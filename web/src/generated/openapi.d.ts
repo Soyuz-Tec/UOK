@@ -1041,6 +1041,10 @@ export interface components {
         };
         /** PlanningTaskRequest */
         PlanningTaskRequest: {
+            /** Constraint Date */
+            constraint_date?: string | null;
+            /** Constraint Type */
+            constraint_type?: string | null;
             /** End */
             end: string;
             /** Parent Task Id */
@@ -1074,6 +1078,10 @@ export interface components {
         PlanningTaskUpdateRequest: {
             /** Cascade */
             cascade?: boolean | null;
+            /** Constraint Date */
+            constraint_date?: string | null;
+            /** Constraint Type */
+            constraint_type?: string | null;
             /** End */
             end?: string | null;
             /** Parent Task Id */

@@ -20,6 +20,8 @@ from .schedule_math import (
     working_distance,
 )
 from .schedule_graph import dependency_order
+from .schedule_hierarchy import hierarchy_violations
+from .task_constraints import constraint_violations, enforce_task_constraints
 from uok.security import Actor
 from uok.util import loads
 
@@ -94,8 +96,10 @@ def apply_schedule(db: Session, actor: Actor, project_id: str, cascade_dependenc
     if any("cycle" in item for item in violations):
         raise ValueError("; ".join(violations))
     changed = _normalize_calendar_windows(tasks, calendar)
+    changed.update(enforce_task_constraints(tasks, calendar))
     if cascade_dependencies:
         changed.update(_propagate_dependencies(tasks, dependencies, calendar))
+        changed.update(enforce_task_constraints(tasks, calendar))
     changed.update(_roll_up_summaries(tasks))
     return changed
 
@@ -123,7 +127,8 @@ def validate_schedule(
             violations.append(violation)
     if dependency_order(task_ids, dependencies) is None:
         violations.append("schedule contains a dependency cycle")
-    violations.extend(_hierarchy_violations(tasks))
+    violations.extend(hierarchy_violations(tasks))
+    violations.extend(constraint_violations(tasks))
     return violations
 
 def assert_task_dependency_position(task: PlanningTask, tasks: list[PlanningTask], dependencies: list[PlanningTaskDependency], calendar: CalendarSpec) -> None:
@@ -278,23 +283,3 @@ def _dependency_violation(predecessor: PlanningTask, successor: PlanningTask, de
 
 def _dependency_order(tasks: list[PlanningTask], dependencies: list[PlanningTaskDependency]) -> list[str] | None:
     return dependency_order((task.id for task in tasks), dependencies)
-
-
-def _hierarchy_violations(tasks: list[PlanningTask]) -> list[str]:
-    task_ids = {task.id for task in tasks}
-    violations: list[str] = []
-    for task in tasks:
-        if task.parent_task_id and task.parent_task_id not in task_ids:
-            violations.append(f"{task.title} references a missing parent task")
-        seen: set[str] = set()
-        current = task
-        while current.parent_task_id:
-            if current.parent_task_id in seen or current.parent_task_id == task.id:
-                violations.append("schedule contains a hierarchy cycle")
-                break
-            seen.add(current.parent_task_id)
-            parent = next((item for item in tasks if item.id == current.parent_task_id), None)
-            if not parent:
-                break
-            current = parent
-    return violations
