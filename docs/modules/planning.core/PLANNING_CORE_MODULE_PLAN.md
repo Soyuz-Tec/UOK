@@ -12,7 +12,7 @@
 
 - Backend: Python, FastAPI, Pydantic, SQLAlchemy, PostgreSQL.
 - Frontend: React, TypeScript, Vite, CSS design tokens.
-- Gantt UI: React Gantt library wrapped behind a UOK adapter.
+- Gantt UI: first-party React, TypeScript, SVG, HTML, and CSS renderer behind a UOK adapter; external Gantt tools may inform feature vocabulary but must not be copied or added as renderer dependencies for this candidate.
 - Scheduling logic: Python module service first, with React receiving validated schedule read models.
 
 ## Current MVP Scope
@@ -20,7 +20,7 @@
 - project list
 - project schedule read model
 - editable task grid and inspector path for create, update, delete, hierarchy, status, progress, and task type
-- traditional Gantt workspace with compact project command bar, Gantt view tab rail, grid/timeline, task command toolbar, day/week/month scale controls, today/fit controls, critical and baseline toggles, and tabbed inspector panels
+- traditional Gantt workspace with compact project command bar, Gantt view tab rail, project metadata chips, selection control, grid/timeline, task command toolbar, expand/collapse, cascade sorting, field presets, filters, export, day/week/month scale controls, today/fit controls, critical and baseline toggles, read-model Board/List/Calendar/Workload/People/Dashboard views, and tabbed inspector panels
 - Gantt bars
 - milestone and summary task model
 - dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead

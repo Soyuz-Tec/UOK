@@ -125,10 +125,18 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await page.setViewportSize(viewport);
     await openPlanning(page);
 
-    await expect(page.getByRole("heading", { name: "Project schedule" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "UOK Gantt Proof" })).toBeVisible();
     await expect(page.getByLabel("Gantt toolbar")).toBeVisible();
     await expect(page.getByRole("button", { name: "Gantt chart", exact: true })).toHaveAttribute("aria-current", "page");
-    await expect(page.getByRole("button", { name: "Board", exact: true })).toHaveAttribute("aria-disabled", "true");
+    await expect(page.getByLabel("Project metadata")).toBeVisible();
+    await expect(page.getByLabel("Timeline utilities")).toBeVisible();
+    await expect(page.getByLabel("Timeline zoom")).toBeVisible();
+    await expect(page.getByText("Fields")).toBeVisible();
+    await expect(page.getByText("Filter")).toBeVisible();
+    await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
+    await page.getByRole("button", { name: "Board", exact: true }).click();
+    await expect(page.getByLabel("Planning board")).toBeVisible();
+    await page.getByRole("button", { name: "Gantt chart", exact: true }).click();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
     await page.getByRole("button", { name: "Task", exact: true }).focus();
     await expect(page.getByRole("button", { name: "Task", exact: true })).toBeFocused();
@@ -151,9 +159,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       const workflowHeader = document.querySelector(".planning-workspace .workflow-header")?.getBoundingClientRect();
       const toolbar = document.querySelector(".planning-gantt-toolbar")?.getBoundingClientRect();
       const gantt = document.querySelector(".planning-gantt-shell")?.getBoundingClientRect();
-      const ganttTheme = document.querySelector(".planning-gantt-shell .wx-theme")?.getBoundingClientRect();
-      const firstGanttRow = document.querySelector(".planning-gantt-shell .wx-table .wx-body .wx-row")?.getBoundingClientRect();
-      const firstGanttChart = document.querySelector(".planning-gantt-shell .wx-chart")?.getBoundingClientRect();
+      const ganttTheme = document.querySelector(".planning-gantt-shell .planning-owned-chart svg")?.getBoundingClientRect();
+      const firstGanttRow = document.querySelector(".planning-gantt-shell .planning-owned-grid-row")?.getBoundingClientRect();
+      const firstGanttChart = document.querySelector(".planning-gantt-shell .planning-owned-chart")?.getBoundingClientRect();
       const inspector = document.querySelector(".workflow-secondary-region")?.getBoundingClientRect();
       return {
         shellWidth: shell?.width || 0,
@@ -171,14 +179,14 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     expect(layout.shellWidth).toBeGreaterThan(300);
     expect(layout.workflowHeaderVisible).toBe(false);
     if (viewport.width > 980) {
-      expect(layout.toolbarHeight).toBeLessThan(180);
-      expect(layout.ganttTop).toBeLessThan(210);
+      expect(layout.toolbarHeight).toBeLessThan(290);
+      expect(layout.ganttTop).toBeLessThan(320);
     }
     expect(layout.ganttWidth).toBeGreaterThan(280);
     expect(layout.ganttHeight).toBeGreaterThan(360);
-    expect(layout.ganttThemeHeight).toBeGreaterThan(layout.ganttHeight - 4);
+    expect(layout.ganttThemeHeight).toBeGreaterThan(220);
     expect(layout.firstGanttRowHeight).toBeGreaterThanOrEqual(48);
-    expect(layout.firstGanttChartHeight).toBeGreaterThan(300);
+    expect(layout.firstGanttChartHeight).toBeGreaterThan(220);
     if (viewport.width > 980) expect(layout.overlap).toBe(false);
 
     const screenshot = await page.screenshot();

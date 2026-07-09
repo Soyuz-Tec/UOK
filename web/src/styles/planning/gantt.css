@@ -3,7 +3,6 @@
   gap: var(--uok-space-2);
   min-width: 0;
 }
-
 .planning-gantt-toolbar,
 .planning-toolbar-group {
   display: flex;
@@ -15,10 +14,10 @@
 .planning-gantt-toolbar {
   display: grid;
   grid-template-areas:
-    "title project plan controls"
-    "views views views controls"
-    "commands commands commands controls";
-  grid-template-columns: minmax(164px, 176px) minmax(220px, 280px) auto minmax(460px, 1fr);
+    "title meta project plan controls"
+    "views views views views controls"
+    "commands commands commands commands controls";
+  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 280px) auto minmax(520px, 1.35fr);
   justify-content: stretch;
   border: var(--uok-line);
   border-radius: var(--uok-radius-2);
@@ -49,6 +48,42 @@
   font-size: var(--uok-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.planning-project-meta {
+  display: flex;
+  grid-area: meta;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--uok-space-1);
+}
+
+.planning-status-chip,
+.planning-owner-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-grouped-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.planning-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
 }
 
 .planning-project-picker {
@@ -121,9 +156,44 @@
   grid-area: commands;
 }
 
-.planning-gantt-toolbar [aria-label="Timeline controls"] {
+.planning-gantt-toolbar [aria-label="Timeline utilities"] {
   grid-area: controls;
   justify-content: flex-end;
+}
+
+.planning-selection-toggle,
+.planning-toolbar-select,
+.planning-zoom-control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+  min-height: 36px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  font-size: var(--uok-callout);
+  font-weight: 700;
+}
+
+.planning-selection-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--uok-accent);
+}
+
+.planning-toolbar-select select {
+  min-height: 28px;
+  border: 0;
+  color: var(--uok-text-primary);
+  background: transparent;
+  font: inherit;
+}
+
+.planning-zoom-control input {
+  width: 84px;
+  accent-color: var(--uok-accent);
 }
 
 .planning-segmented-control {
@@ -176,69 +246,21 @@
   overflow: hidden;
   background: var(--uok-bg-elevated);
   scrollbar-gutter: stable both-edges;
-  --wx-grid-header-font: 650 var(--uok-callout) var(--uok-font-family);
-  --wx-grid-body-font: 450 var(--uok-callout) var(--uok-font-family);
-  --wx-timescale-font: 650 var(--uok-caption) var(--uok-font-family);
-  --wx-grid-body-row-border: 1px solid var(--uok-row-separator-color);
-  --wx-grid-body-cell-border: 1px solid var(--uok-row-separator-color);
-  --wx-timescale-border: 1px solid var(--uok-row-separator-color);
-  --wx-gantt-border: 1px solid var(--uok-row-separator-color);
-}
-
-.planning-gantt-shell .wx-theme {
-  height: 100%;
-  min-height: 100%;
-}
-
-.planning-gantt-shell .wx-gantt {
-  height: 100%;
-  min-height: 100%;
-  scrollbar-width: thin;
-}
-
-.planning-gantt-shell .wx-table-container,
-.planning-gantt-shell .wx-chart {
-  scrollbar-width: thin;
-}
-
-.planning-gantt-shell .wx-layout {
-  min-width: 0;
-}
-
-.planning-gantt-shell .wx-chart {
-  min-width: 320px;
-}
-
-.planning-gantt-shell .wx-cell,
-.planning-gantt-shell .wx-row {
-  box-sizing: border-box;
-}
-
-.planning-gantt-shell .wx-table .wx-cell {
-  padding-inline: var(--uok-space-2);
-}
-
-.planning-gantt-critical {
-  --wx-gantt-task-color: var(--uok-status-danger);
-  --wx-gantt-task-fill: color-mix(in srgb, var(--uok-status-danger) 86%, var(--uok-bg-elevated));
-}
-
-.planning-gantt-today {
-  color: var(--uok-status-warning);
 }
 
 @media (max-width: 1260px) {
   .planning-gantt-toolbar {
     grid-template-areas:
-      "title project"
+      "title meta"
+      "project plan"
       "views views"
-      "plan controls"
-      "commands commands";
+      "commands commands"
+      "controls controls";
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .planning-gantt-toolbar [aria-label="Timeline controls"] {
-    justify-content: flex-end;
+  .planning-gantt-toolbar [aria-label="Timeline utilities"] {
+    justify-content: flex-start;
   }
 }
 
@@ -251,6 +273,7 @@
     grid-template-columns: 1fr;
     grid-template-areas:
       "title"
+      "meta"
       "project"
       "views"
       "plan"
@@ -262,6 +285,10 @@
   .planning-project-picker,
   .planning-toolbar-group,
   .planning-toolbar-group .command-button,
+  .planning-selection-toggle,
+  .planning-toolbar-select,
+  .planning-toolbar-select select,
+  .planning-zoom-control,
   .planning-toolbar-toggle,
   .planning-segmented-control {
     width: 100%;

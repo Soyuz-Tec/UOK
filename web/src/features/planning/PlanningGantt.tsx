@@ -1,8 +1,24 @@
-import { Gantt, Willow, WillowDark, type ILink, type IScaleConfig, type ITask } from "@svar-ui/react-gantt";
-import "@svar-ui/react-gantt/all.css";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { Appearance } from "../../shared/types";
-import type { PlanningSchedule } from "./types";
+import type { PlanningSchedule, PlanningTask } from "./types";
+import {
+  assignedResourceNames,
+  buildTimeline,
+  dateValue,
+  durationBetween,
+  durationUnits,
+  finishDrag,
+  gridColumns,
+  gridValue,
+  rowHeight,
+  visibleRows,
+  xForDate,
+  type DragState,
+  type TimelineScale,
+  type TimelineUnit,
+} from "./planningGanttModel";
+import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
 
 export function PlanningGantt({
   schedule,
@@ -11,127 +27,192 @@ export function PlanningGantt({
   showCritical,
   showBaselines,
   selectedTaskId,
+  fieldPreset,
+  summaryExpanded,
+  viewDensity,
+  todaySignal,
   onTaskSelect,
   onTaskReschedule,
+  onTaskProgress: _onTaskProgress,
 }: {
   schedule: PlanningSchedule;
   appearance: Appearance;
-  scale: "day" | "week" | "month";
+  scale: TimelineScale;
   showCritical: boolean;
   showBaselines: boolean;
   selectedTaskId: string;
+  fieldPreset: FieldPreset;
+  summaryExpanded: boolean;
+  viewDensity: ViewDensity;
+  todaySignal: number;
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
+  onTaskProgress: (taskId: string, progress: number) => void;
 }) {
-  const tasks: Partial<ITask>[] = schedule.tasks.map((task) => ({
-    id: task.id,
-    text: task.title,
-    start: dateValue(task.start),
-    end: dateValue(task.end),
-    duration: task.duration_days,
-    progress: task.progress,
-    type: task.task_type === "milestone" ? "milestone" : task.task_type === "summary" ? "summary" : "task",
-    parent: task.parent_task_id || 0,
-    open: task.task_type === "summary" ? true : undefined,
-    base_start: task.baseline_start ? dateValue(task.baseline_start) : undefined,
-    base_duration: task.baseline_start && task.baseline_end ? baselineDuration(task.baseline_start, task.baseline_end) : undefined,
-    css: showCritical && task.critical ? "planning-gantt-critical" : undefined,
-  }));
-  const links: ILink[] = schedule.dependencies.map((dependency) => ({
-    id: dependency.id,
-    source: dependency.predecessor_task_id,
-    target: dependency.successor_task_id,
-    type: linkType(dependency.dependency_type),
-  }));
-  const Theme = appearance === "dark" ? WillowDark : Willow;
-  const layout = ganttLayout(scale);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [drag, setDrag] = useState<DragState | null>(null);
+  const rowSize = rowHeight(viewDensity);
+  const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
+  const visibleTasks = useMemo(() => visibleRows(schedule.tasks, summaryExpanded), [schedule.tasks, summaryExpanded]);
+  const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
+  const taskRows = useMemo(() => new Map(visibleTasks.map((task, index) => [task.id, index])), [visibleTasks]);
+  const width = Math.max(chart.units.length * chart.cellWidth, 480);
+  const headerHeight = 54;
+  const height = headerHeight + visibleTasks.length * rowSize;
+
+  useEffect(() => {
+    if (!todaySignal || !scrollRef.current) return;
+    const todayX = xForDate(new Date(), chart.start, scale, chart.cellWidth);
+    scrollRef.current.scrollTo({ left: Math.max(0, todayX - scrollRef.current.clientWidth / 2), behavior: "smooth" });
+  }, [chart.cellWidth, chart.start, scale, todaySignal]);
 
   return (
-    <div className="planning-gantt-shell" aria-label="Planning Gantt chart">
-      <Theme fonts={false}>
-        <Gantt
-          tasks={tasks}
-          links={links}
-          selected={selectedTaskId ? [selectedTaskId] : []}
-          baselines={showBaselines}
-          scales={scaleConfig(scale)}
-          lengthUnit={scale === "month" ? "week" : "day"}
-          cellWidth={layout.cellWidth}
-          cellHeight={50}
-          scaleHeight={44}
-          gridWidth={layout.gridWidth}
-          markers={[{ start: new Date(), text: "Today", css: "planning-gantt-today" }]}
-          start={dateValue(schedule.project.start)}
-          end={dateValue(schedule.project.end)}
-          columns={[
-            { id: "text", header: "Task", width: 220 },
-            { id: "start", header: "Start", width: 92 },
-            { id: "end", header: "End", width: 92 },
-            { id: "duration", header: "Dur.", width: 48 },
-            { id: "progress", header: "%", width: 44 },
-          ]}
-          cellBorders="column"
-          onselecttask={(event) => {
-            if (event?.id) onTaskSelect(String(event.id));
-          }}
-          onupdatetask={(event) => {
-            if (event?.inProgress || !event?.task?.start || !event?.task?.end) return;
-            onTaskReschedule(String(event.id), toIsoDate(event.task.start), toIsoDate(event.task.end));
-          }}
-        />
-      </Theme>
+    <div className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance}`} aria-label="Planning Gantt chart">
+      <div className="planning-owned-grid" role="table" aria-label="Planning task grid">
+        <div className="planning-owned-grid-header" role="row">
+          {gridColumns(fieldPreset).map((column) => <span key={column.id} role="columnheader">{column.label}</span>)}
+        </div>
+        <div className="planning-owned-grid-body">
+          {visibleTasks.map((task) => (
+            <button
+              key={task.id}
+              type="button"
+              className={`planning-owned-grid-row ${task.id === selectedTaskId ? "selected" : ""} ${task.task_type === "summary" ? "summary" : ""}`}
+              role="row"
+              style={{ minHeight: rowSize }}
+              onClick={() => onTaskSelect(task.id)}
+            >
+              {gridColumns(fieldPreset).map((column) => (
+                <span key={column.id} role="cell">{gridValue(column.id, task, assignedByTask)}</span>
+              ))}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div
+        className="planning-owned-chart"
+        ref={scrollRef}
+        aria-label="Planning timeline"
+        onPointerUp={(event) => {
+          if (!drag) return;
+          finishDrag(event.clientX, drag, chart.cellWidth, scale, visibleTasks, onTaskReschedule);
+          setDrag(null);
+        }}
+        onPointerCancel={() => setDrag(null)}
+      >
+        <svg width={width} height={height} role="img" aria-label={`${schedule.project.name} timeline`}>
+          <TimelineHeaders units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} width={width} />
+          <TimelineBackground units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} height={height} rowSize={rowSize} rows={visibleTasks.length} />
+          <DependencyLines schedule={schedule} tasks={visibleTasks} taskRows={taskRows} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowSize} headerHeight={headerHeight} />
+          {visibleTasks.map((task, index) => (
+            <TaskShape
+              key={task.id}
+              task={task}
+              index={index}
+              chartStart={chart.start}
+              scale={scale}
+              cellWidth={chart.cellWidth}
+              rowSize={rowSize}
+              headerHeight={headerHeight}
+              selected={task.id === selectedTaskId}
+              showCritical={showCritical}
+              showBaselines={showBaselines}
+              onSelect={onTaskSelect}
+              onDragStart={(clientX) => setDrag({ taskId: task.id, startX: clientX })}
+            />
+          ))}
+          <TodayMarker chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={height} />
+        </svg>
+      </div>
     </div>
   );
 }
 
-function ganttLayout(scale: "day" | "week" | "month") {
-  if (scale === "month") return { cellWidth: 96, gridWidth: 500 };
-  if (scale === "week") return { cellWidth: 76, gridWidth: 500 };
-  return { cellWidth: 60, gridWidth: 500 };
-}
-
-function dateValue(value: string) {
-  return new Date(`${value}T00:00:00`);
-}
-
-function toIsoDate(value: unknown) {
-  const date = value instanceof Date ? value : new Date(String(value));
-  return date.toISOString().slice(0, 10);
-}
-
-function linkType(type: string) {
-  if (type === "start_to_start") return "s2s";
-  if (type === "finish_to_finish") return "e2e";
-  if (type === "start_to_finish") return "s2e";
-  return "e2s";
-}
-
-function baselineDuration(start: string, end: string) {
-  const startDate = dateValue(start);
-  const endDate = dateValue(end);
-  return Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000) + 1);
-}
-
-function scaleConfig(scale: "day" | "week" | "month"): IScaleConfig[] {
-  if (scale === "month") {
-    return [
-      { unit: "year", step: 1, format: (date) => String(date.getFullYear()) },
-      { unit: "month", step: 1, format: (date) => date.toLocaleString("en-US", { month: "short" }) },
-    ];
+function TimelineHeaders({ units, cellWidth, headerHeight, width }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; width: number }) {
+  const groups: { label: string; x: number; width: number }[] = [];
+  for (const unit of units) {
+    const last = groups[groups.length - 1];
+    if (last?.label === unit.group) last.width += cellWidth;
+    else groups.push({ label: unit.group, x: groups.reduce((sum, group) => sum + group.width, 0), width: cellWidth });
   }
-  if (scale === "week") {
-    return [
-      { unit: "month", step: 1, format: (date) => date.toLocaleString("en-US", { month: "long", year: "numeric" }) },
-      { unit: "week", step: 1, format: (date) => `W${weekNumber(date)}` },
-    ];
-  }
-  return [
-    { unit: "month", step: 1, format: (date) => date.toLocaleString("en-US", { month: "long", year: "numeric" }) },
-    { unit: "day", step: 1, format: (date) => String(date.getDate()) },
-  ];
+  return (
+    <g className="planning-owned-header">
+      <rect x="0" y="0" width={width} height={headerHeight} />
+      {groups.map((group) => <text key={`${group.label}-${group.x}`} x={group.x + group.width / 2} y="18" textAnchor="middle">{group.label}</text>)}
+      {units.map((unit, index) => <text key={unit.key} x={index * cellWidth + cellWidth / 2} y="42" textAnchor="middle">{unit.label}</text>)}
+    </g>
+  );
 }
 
-function weekNumber(value: Date) {
-  const first = new Date(value.getFullYear(), 0, 1);
-  return Math.ceil((((value.getTime() - first.getTime()) / 86_400_000) + first.getDay() + 1) / 7);
+function TimelineBackground({ units, cellWidth, headerHeight, height, rowSize, rows }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; height: number; rowSize: number; rows: number }) {
+  return (
+    <g className="planning-owned-background">
+      {units.map((unit, index) => (
+        <rect key={unit.key} className={unit.holiday ? "holiday" : unit.weekend ? "weekend" : ""} x={index * cellWidth} y={headerHeight} width={cellWidth} height={height - headerHeight} />
+      ))}
+      {units.map((unit, index) => <line key={`v-${unit.key}`} x1={index * cellWidth} y1="0" x2={index * cellWidth} y2={height} />)}
+      {Array.from({ length: rows + 1 }, (_, index) => <line key={`h-${index}`} x1="0" y1={headerHeight + index * rowSize} x2={units.length * cellWidth} y2={headerHeight + index * rowSize} />)}
+    </g>
+  );
+}
+
+function DependencyLines({ schedule, tasks, taskRows, chartStart, scale, cellWidth, rowSize, headerHeight }: { schedule: PlanningSchedule; tasks: PlanningTask[]; taskRows: Map<string, number>; chartStart: Date; scale: TimelineScale; cellWidth: number; rowSize: number; headerHeight: number }) {
+  const taskMap = new Map(tasks.map((task) => [task.id, task]));
+  return (
+    <g className="planning-owned-dependencies">
+      {schedule.dependencies.map((dependency) => {
+        const source = taskMap.get(dependency.predecessor_task_id);
+        const target = taskMap.get(dependency.successor_task_id);
+        const sourceRow = taskRows.get(dependency.predecessor_task_id);
+        const targetRow = taskRows.get(dependency.successor_task_id);
+        if (!source || !target || sourceRow === undefined || targetRow === undefined) return null;
+        const x1 = xForDate(dateValue(source.end), chartStart, scale, cellWidth) + cellWidth * 0.75;
+        const y1 = headerHeight + sourceRow * rowSize + rowSize / 2;
+        const x2 = xForDate(dateValue(target.start), chartStart, scale, cellWidth);
+        const y2 = headerHeight + targetRow * rowSize + rowSize / 2;
+        const mid = Math.max(x1 + 16, x2 - 16);
+        return <path key={dependency.id} d={`M ${x1} ${y1} L ${mid} ${y1} L ${mid} ${y2} L ${x2} ${y2}`} />;
+      })}
+    </g>
+  );
+}
+
+function TaskShape({ task, index, chartStart, scale, cellWidth, rowSize, headerHeight, selected, showCritical, showBaselines, onSelect, onDragStart }: { task: PlanningTask; index: number; chartStart: Date; scale: TimelineScale; cellWidth: number; rowSize: number; headerHeight: number; selected: boolean; showCritical: boolean; showBaselines: boolean; onSelect: (taskId: string) => void; onDragStart: (clientX: number) => void }) {
+  const x = xForDate(dateValue(task.start), chartStart, scale, cellWidth);
+  const y = headerHeight + index * rowSize + Math.max(7, rowSize * 0.22);
+  const barHeight = Math.max(18, rowSize * 0.46);
+  const width = task.task_type === "milestone" ? barHeight : Math.max(cellWidth * durationUnits(task, scale), cellWidth * 0.65);
+  const critical = showCritical && task.critical;
+  const className = `planning-owned-task ${task.task_type} ${critical ? "critical" : ""} ${selected ? "selected" : ""}`;
+  if (task.task_type === "milestone") {
+    const centerX = x + barHeight / 2;
+    const centerY = y + barHeight / 2;
+    return (
+      <g className={className} tabIndex={0} onClick={() => onSelect(task.id)} onPointerDown={(event) => onDragStart(event.clientX)}>
+        <polygon points={`${centerX},${y} ${x + barHeight},${centerY} ${centerX},${y + barHeight} ${x},${centerY}`} />
+        <text x={x + barHeight + 6} y={centerY + 4}>{task.title}</text>
+      </g>
+    );
+  }
+  return (
+    <g className={className} tabIndex={0} onClick={() => onSelect(task.id)} onPointerDown={(event) => onDragStart(event.clientX)}>
+      {showBaselines && task.baseline_start && task.baseline_end ? <BaselineShape task={task} chartStart={chartStart} scale={scale} cellWidth={cellWidth} y={y + barHeight + 6} /> : null}
+      <rect x={x} y={y} width={width} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} />
+      <rect className="progress" x={x} y={y} width={width * Math.max(0, Math.min(100, task.progress)) / 100} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} />
+      <text x={x + 8} y={y + barHeight / 2 + 4}>{task.title}</text>
+    </g>
+  );
+}
+
+function BaselineShape({ task, chartStart, scale, cellWidth, y }: { task: PlanningTask; chartStart: Date; scale: TimelineScale; cellWidth: number; y: number }) {
+  if (!task.baseline_start || !task.baseline_end) return null;
+  const x = xForDate(dateValue(task.baseline_start), chartStart, scale, cellWidth);
+  const width = Math.max(cellWidth * durationBetween(task.baseline_start, task.baseline_end, scale), cellWidth * 0.5);
+  return <rect className="baseline" x={x} y={y} width={width} height="4" rx="2" />;
+}
+
+function TodayMarker({ chartStart, scale, cellWidth, height }: { chartStart: Date; scale: TimelineScale; cellWidth: number; height: number }) {
+  const x = xForDate(new Date(), chartStart, scale, cellWidth);
+  if (x < 0) return null;
+  return <line className="planning-owned-today" x1={x} y1="0" x2={x} y2={height} />;
 }

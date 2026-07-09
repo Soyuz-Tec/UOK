@@ -18,7 +18,6 @@
     "dev": "vite --host 127.0.0.1 --port 5187"
   },
   "dependencies": {
-    "@svar-ui/react-gantt": "2.7.1",
     "lucide-react": "1.23.0",
     "react": "19.2.7",
     "react-dom": "19.2.7"

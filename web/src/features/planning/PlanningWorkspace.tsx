@@ -119,6 +119,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
                 setInspectorTab("task");
               }}
               onTaskReschedule={rescheduleTask}
+              onTaskProgress={(taskId, progress) => void saveTask(taskId, { progress })}
               onProjectChange={(projectId) => void changeProject(projectId)}
               onCreateDemoSchedule={() => void createDemoSchedule()}
               onRefresh={() => void refresh()}

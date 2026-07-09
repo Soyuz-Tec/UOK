@@ -1,0 +1,119 @@
+.planning-read-view {
+  min-width: 0;
+  min-height: 420px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  overflow: auto;
+  background: var(--uok-bg-elevated);
+}
+
+.planning-board-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--uok-space-3);
+  padding: var(--uok-space-3);
+}
+
+.planning-read-lane {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-2);
+  min-height: 280px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-read-lane h3 {
+  margin: 0;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-callout);
+  text-transform: capitalize;
+}
+
+.planning-read-lane button,
+.planning-calendar-view button {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-elevated);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.planning-read-lane small,
+.planning-calendar-view small,
+.planning-metric-tile small {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.planning-read-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--uok-callout);
+}
+
+.planning-read-table th,
+.planning-read-table td {
+  border-bottom: var(--uok-line);
+  padding: var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  text-align: left;
+}
+
+.planning-read-table th {
+  position: sticky;
+  top: 0;
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+  font-size: var(--uok-caption);
+  text-transform: uppercase;
+}
+
+.planning-read-table tr {
+  cursor: pointer;
+}
+
+.planning-calendar-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-content: start;
+  gap: var(--uok-space-2);
+  padding: var(--uok-space-3);
+}
+
+.planning-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-content: start;
+  gap: var(--uok-space-3);
+  padding: var(--uok-space-3);
+}
+
+.planning-metric-tile {
+  display: grid;
+  gap: var(--uok-space-1);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-metric-tile span {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.planning-metric-tile strong {
+  color: var(--uok-text-primary);
+  font-size: var(--uok-title);
+}
