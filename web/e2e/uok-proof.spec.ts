@@ -138,6 +138,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByLabel("Planning search and filters")).toBeVisible();
     await expect(page.getByLabel("Search planning tasks")).toBeVisible();
     await expect(page.getByLabel("Timeline zoom")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Selected", exact: true })).toBeVisible();
     await expect(page.getByText("Fields")).toBeVisible();
     await expect(page.getByText("Filter")).toBeVisible();
     await expect(page.getByRole("button", { name: "Columns", exact: true })).toBeVisible();
@@ -243,6 +244,10 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       expect(taskPayloads.at(-1)).toMatchObject({ title: "Timeline task", task_type: "task", status: "planned", progress: 0 });
       expect(String((taskPayloads.at(-1) as { start?: unknown }).start)).toMatch(/^2026-08-/);
       expect(String((taskPayloads.at(-1) as { end?: unknown }).end)).toMatch(/^2026-08-/);
+      await chart.evaluate((node) => { node.scrollLeft = 0; });
+      await page.getByRole("button", { name: "Selected", exact: true }).click();
+      await expect.poll(() => chart.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
+      await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Pilot review milestone" }).first()).toBeFocused();
     }
     await page.getByRole("button", { name: "Focus", exact: true }).click();
     await expect(page.locator(".planning-timeline-workbench")).toHaveClass(/focus-mode/);

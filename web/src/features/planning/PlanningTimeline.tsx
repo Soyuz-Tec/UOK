@@ -1,4 +1,4 @@
-import { Baseline, CalendarClock, ChevronDown, Columns3, Download, Flag, FolderKanban, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Users } from "lucide-react";
+import { Baseline, CalendarClock, ChevronDown, Columns3, Download, Flag, FolderKanban, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Target, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
@@ -77,6 +77,7 @@ export function PlanningTimeline({
   const [viewDensity, setViewDensity] = useState<ViewDensity>("standard");
   const [selectedVisible, setSelectedVisible] = useState(false);
   const [todaySignal, setTodaySignal] = useState(0);
+  const [selectedTaskSignal, setSelectedTaskSignal] = useState(0);
   const visibleSchedule = useMemo(() => projectScheduleView(schedule, filters, cascadeSort), [cascadeSort, filters, schedule]);
   const columnOptions = useMemo(() => planningColumnVisibilityOptions(fieldPreset), [fieldPreset]);
   const { resetColumnVisibility, setColumnVisible, visibility: columnVisibility } = useColumnVisibilityOptions(`planning.gantt.columns.${fieldPreset}`, columnOptions);
@@ -211,6 +212,10 @@ export function PlanningTimeline({
             <CalendarClock size={16} aria-hidden="true" />
             <span>Today</span>
           </button>
+          <button type="button" className="planning-toolbar-toggle" disabled={!selectedTaskId} onClick={() => setSelectedTaskSignal((value) => value + 1)}>
+            <Target size={16} aria-hidden="true" />
+            <span>Selected</span>
+          </button>
           <button type="button" className="planning-toolbar-toggle" onClick={() => onScaleChange("month")}>
             <Maximize2 size={16} aria-hidden="true" />
             <span>Fit</span>
@@ -255,6 +260,7 @@ export function PlanningTimeline({
           summaryExpanded={summaryExpanded}
           viewDensity={viewDensity}
           todaySignal={todaySignal}
+          selectedTaskSignal={selectedTaskSignal}
           onTaskSelect={onTaskSelect}
           onTaskReschedule={onTaskReschedule}
           onTaskProgress={onTaskProgress}

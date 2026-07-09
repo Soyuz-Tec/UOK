@@ -28,6 +28,7 @@ import { planningKeyboardCommand } from "./planningKeyboardModel";
 import { pinnedColumnOffsets, pinnedGridColumns } from "./planningPinnedColumns";
 import { toResizablePlanningColumn } from "./planningResizableColumns";
 import { usePlanningTimelineInteraction } from "./planningTimelineInteraction";
+import { selectedTaskScrollLeft } from "./planningTimelineNavigation";
 import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
 
 export function PlanningGantt({
@@ -42,6 +43,7 @@ export function PlanningGantt({
   summaryExpanded,
   viewDensity,
   todaySignal,
+  selectedTaskSignal,
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
@@ -89,6 +91,17 @@ export function PlanningGantt({
     const todayX = xForDate(new Date(), chart.start, scale, chart.cellWidth);
     scrollRef.current.scrollTo({ left: Math.max(0, todayX - scrollRef.current.clientWidth / 2), behavior: "smooth" });
   }, [chart.cellWidth, chart.start, scale, todaySignal]);
+
+  useEffect(() => {
+    if (!selectedTaskSignal || !selectedTaskId || !scrollRef.current) return;
+    const task = visibleTasks.find((row) => row.id === selectedTaskId);
+    if (!task) return;
+    scrollRef.current.scrollTo({
+      left: selectedTaskScrollLeft(task, chart.start, scale, chart.cellWidth, scrollRef.current.clientWidth),
+      behavior: "smooth",
+    });
+    rowRefs.current.get(task.id)?.focus();
+  }, [chart.cellWidth, chart.start, scale, selectedTaskId, selectedTaskSignal, visibleTasks]);
 
   return (
     <div

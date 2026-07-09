@@ -14,8 +14,8 @@ This artifact does not permit copying third-party source code, vendoring third-p
 
 | Source | Reviewed for | Notes |
 |---|---|---|
-| `https://github.com/DHTMLX/gantt` | Community feature set, plugin vocabulary, sample gallery, data API ideas, advanced PRO comparison | Snapshot `e5ea07b`. DHTMLX describes configurable task grids, projects, milestones, four dependency types with lag, drag scheduling, progress bars, templates, plugins, data loading/saving, export, accessibility, touch support, events, TypeScript definitions, and many sample-level feature variants. |
-| `https://github.com/svar-widgets/react-gantt` | React-first feature vocabulary, public type surface, demo gallery, large-data concerns, toolbar/context menu ideas, PRO comparison | Snapshot `8ce2cde`. SVAR describes React/TypeScript support, task and dependency visualization, editable tasks, hierarchy, custom scales, grid sorting/filtering, toolbar/context menu, tooltips, scroll zoom, hotkeys, virtualization, localization, themes, and PRO scheduling features. |
+| `https://github.com/DHTMLX/gantt` | Community feature set, plugin vocabulary, sample gallery, data API ideas, advanced PRO comparison | Snapshot `e5ea07b` verified on 2026-07-09. DHTMLX describes configurable task grids, projects, milestones, four dependency types with lag, drag scheduling, progress bars, templates, plugins, data loading/saving, export, accessibility, touch support, events, TypeScript definitions, and many sample-level feature variants. |
+| `https://github.com/svar-widgets/react-gantt` | React-first feature vocabulary, public type surface, demo gallery, large-data concerns, toolbar/context menu ideas, PRO comparison | Snapshot `8ce2cde` verified on 2026-07-09. SVAR describes React/TypeScript support, task and dependency visualization, editable tasks, hierarchy, custom scales, grid sorting/filtering, toolbar/context menu, tooltips, scroll zoom, hotkeys, virtualization, localization, themes, and PRO scheduling features. |
 
 ## Intake Rules
 
@@ -83,13 +83,34 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Header menu for visible columns | Implemented | UOK uses field presets and column visibility controls; a right-click header menu can be added later if needed. |
 | No-grid and read-only/prevent-actions modes | Backlog | Useful for embedded schedule review surfaces after edit permissions mature. |
 | Custom task templates and cell borders | Partial | UOK owns task/status templates and timeline grid borders through CSS tokens. |
-| Scroll to date / custom zoom / min scale unit | Partial | Scroll-to-today and scale controls exist; richer scroll-to-date and zoom bounds remain later. |
+| Scroll to date / custom zoom / min scale unit | Partial | Scroll-to-today, scroll-to-selected-task, and scale controls exist; arbitrary scroll-to-date and zoom bounds remain later. |
 | Editor validation, readonly editor, comments, custom controls | Partial | Inspector validation exists; comments and editor modes remain module backlog. |
 | Start/end date display variants and duration units | Partial | Current schedule is date-based; hour/minute duration editing is later. |
 
 ## Detailed Feature And Property Catalog
 
 This table turns the external feature vocabulary into UOK-owned build units. It names the expected properties and UI elements without adopting third-party APIs or source code.
+
+## Source-Derived Property And Element Matrix
+
+These are the implementation-neutral ideas UOK should model in its own schemas, read models, components, and CSS tokens. Names below describe capability concepts, not third-party API names to import or clone.
+
+| Area | Feature/function ideas | Properties to model in UOK | Visible/control elements |
+|---|---|---|---|
+| Task data | Task, summary/project, milestone, unscheduled, split segment, rollup | `id`, `title`, `task_type`, `parent_task_id`, `start`, `end`, `duration_days`, `progress`, `status`, `sort_order`, `wbs`, `open/collapsed`, `baseline`, `deadline`, `constraint`, `manual/auto`, `calendar_id`, `resource_ids` | Grid rows, tree indentation, summary bars, normal bars, milestone diamonds, rollup markers, status badges |
+| Dependency data | FS, SS, FF, SF links; lag/lead; drag-created links | `predecessor_task_id`, `successor_task_id`, `dependency_type`, `lag_days`, validation state, chain membership, critical membership | Connector lines, link handles, draft link line, dependency editor rows, invalid-link message |
+| Grid configuration | Tree column, task column, add/action column, custom fields, inline editing, sorting, filtering, resizing, pinned columns | column id, label, field, width, min/max, pinned, visible, order, align, formatter, editable, sort direction, filter criteria | Header row, resize handles, field visibility menu, header menu, action column, inline cell editor, row context menu |
+| Timeline scale | Single/dual headers, hour/day/week/month/quarter/year, custom steps, sprint/stage/minute variants | scale id, unit, step, label format, group label, cell width, min/max zoom, fit mode, date range | Header bands, zoom slider, scale segmented control, fit/today/selected commands, weekend/holiday cells |
+| Timeline markers | Today line, deadlines, vertical events, project bounds, external milestones | marker id, date, label, kind, severity, visibility, clipping behavior | Vertical line, marker label, edge/offscreen indicator, tooltip |
+| Editing interactions | Move, resize start/end, progress drag, click-drag task creation, dependency drag, row drag, multi-task drag | drag mode, pointer id, source row, target row, proposed start/end, proposed progress, validation result, optimistic/draft state | Task handles, progress knob, draft task rectangle, draft dependency line, drop indicator, disabled/read-only state |
+| Editors | Lightbox or side inspector, quick info, custom fields, comments, readonly forms | selected task id, editor mode, dirty fields, validation messages, field schema, custom fields, comment count | Inspector tabs, compact quick info, modal/popup later, save/delete commands, inline validation text |
+| Templates/rendering | Custom task bars, grid cells, scale cells, tooltips, skins/themes | render kind, semantic status, critical flag, baseline variance, custom class/token, high contrast state | UOK-owned SVG shapes, CSS token classes, tooltip, non-color status code |
+| Navigation | Drag timeline, wheel zoom, scroll-to-date, scroll-to-task, fullscreen/focus, multiple independent instances | scroll left/top, selected task id, date target, zoom state, focus mode, instance storage key | Timeline pan cursor, Today button, Selected button, Focus button, per-project saved view |
+| Data sync/events | JSON loading, REST sync, event hooks, lifecycle callbacks, batch updates | command type, command id, actor, audit event, rollback state, read-model version, validation warnings | Status panel, audit/event log later, command result messages |
+| Performance | Smart rendering, virtualization, lazy loading, dynamic loading, large data mode | visible row window, visible time window, overscan, row height, total counts, loading boundary | Virtualized rows, loading placeholder, stable scrollbars, large-schedule proof |
+| Accessibility/localization | WAI-ARIA, keyboard navigation, hotkeys, touch support, 32/localized labels, RTL | aria labels, focus target, keyboard command map, locale id, text direction, date/number format | Focus rings, keyboard row movement, translated labels later, touch-sized handles |
+| Export/import | PDF, PNG, Excel, iCal, MS Project, CSV, import validation | export format, visible fields, date range, import row mapping, validation summary | Export menu, import wizard later, downloaded artifact status |
+| Advanced scheduling | Auto-schedule, critical path, slack, calendars, constraints, resource planning, workload, backward planning, undo/redo | dependency graph, calendar, resource capacity, slack, constraint type/date, scheduling direction, undo command stack | Critical overlays, workload lane, constraint indicators, undo/redo buttons later |
 
 | Capability family | Feature/function | Typical properties/elements to model | UOK implementation target | Status |
 |---|---|---|---|---:|

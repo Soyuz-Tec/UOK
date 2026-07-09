@@ -17,6 +17,7 @@ export type PlanningGanttProps = {
   summaryExpanded: boolean;
   viewDensity: ViewDensity;
   todaySignal: number;
+  selectedTaskSignal: number;
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
