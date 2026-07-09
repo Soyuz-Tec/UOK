@@ -51,7 +51,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Drag rows / branch ordering | Backlog | Add WBS reorder only after hierarchy command validation is explicit. |
 | Right-side grid columns / no-grid mode / bottom scale / RTL | Backlog | Treat as layout modes; do not add until primary workspace is stable. |
 | Backward planning and fixed project dates | Backlog | Requires constraint model and explicit scheduling direction. |
-| Empty-state screen | Backlog | Add a first-party empty planning state when project has no tasks. |
+| Empty-state screen | Implemented | First-party grid and timeline empty state appears when filters or a project leave no visible tasks. |
 | Deadline/event markers | Partial | Project start/end boundary markers are implemented; task deadlines and arbitrary event markers remain later. |
 | Import from Excel/MS Project/Primavera/iCal | Backlog | Requires validated server import pipeline and no external service dependency. |
 

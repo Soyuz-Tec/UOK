@@ -180,6 +180,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     }
     await page.getByLabel("Search planning tasks").fill("integrated");
     await expect(page.locator(".planning-owned-grid-body").getByText("Build integrated Gantt with dependency validation")).toBeVisible();
+    await page.getByLabel("Search planning tasks").fill("not a visible planning task");
+    await expect(page.getByLabel("No visible planning grid tasks")).toBeVisible();
+    await expect(page.getByLabel("No visible planning timeline tasks")).toBeVisible();
     await page.getByLabel("Search planning tasks").fill("");
     if (viewport.width > 980) {
       const taskHeader = page.locator(".planning-owned-grid-header [role='columnheader']").nth(1);

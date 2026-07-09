@@ -22,6 +22,7 @@
 @import "./styles/planning/dependency-chain.css";
 @import "./styles/planning/pinned-columns.css";
 @import "./styles/planning/dependency-drag.css";
+@import "./styles/planning/empty-state.css";
 @import "./styles/planning/read-views.css";
 @import "./styles/planning/row-menu.css";
 @import "./styles/planning/saved-views.css";

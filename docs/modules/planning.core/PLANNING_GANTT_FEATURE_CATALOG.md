@@ -67,6 +67,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Per-row height | Resize individual rows by dragging row bottom edge. | Backlog |
 | Auto-height row fit | Fit selected row to content without layout overlap. | Backlog |
 | Scroll synchronization | Grid and timeline row alignment must remain stable. | Implemented |
+| Empty visible schedule state | Grid and timeline render a first-party empty state when filters or a project leave no visible tasks. | Implemented |
 
 ## Timeline Features
 

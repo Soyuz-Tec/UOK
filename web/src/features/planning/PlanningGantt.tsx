@@ -18,6 +18,7 @@ import {
   type TimelineScale,
 } from "./planningGanttModel";
 import { DependencyLines, ProjectBoundaryMarkers, TaskShape, TimelineBackground, TimelineCreateDraftShape, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
+import { PlanningGanttEmptyState } from "./PlanningGanttEmptyState";
 import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
 import type { PlanningGanttProps } from "./planningGanttProps";
 import { selectedDependencyChain, taskDependencyChainClass } from "./planningDependencyChain";
@@ -156,6 +157,7 @@ export function PlanningGantt({
               </button>
             </div>
           ))}
+          {visibleTasks.length === 0 ? <PlanningGanttEmptyState variant="grid" /> : null}
         </div>
       </div>
       <div
@@ -214,6 +216,7 @@ export function PlanningGantt({
           ))}
           <TodayMarker chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={height} />
         </svg>
+        {visibleTasks.length === 0 ? <PlanningGanttEmptyState variant="timeline" /> : null}
       </div>
       <PlanningTaskContextMenu
         open={Boolean(taskMenu)}
