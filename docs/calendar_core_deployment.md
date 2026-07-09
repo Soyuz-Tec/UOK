@@ -16,6 +16,9 @@
 - Free/busy endpoint.
 - ICS export.
 - Basic safe RRULE validation and expansion.
+- Human-friendly Calendar workspace with Month, Week, Day, and Agenda views.
+- Event editor for create, update, cancel, restore, recurrence, reminders, participants, and description/location fields.
+- Workspace controls for Today, previous/next range navigation, calendar selection, refresh, free/busy summary, and ICS export.
 
 ## Security and correctness controls
 

@@ -55,6 +55,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/UOK_PRODUCT_CARGO_SEPARATION_POLICY.md` | Product, cargo, and transaction separation | Product/cargo/business module modeling changes |
 | `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` | Contacts-derived intelligence profile guidance | Contact profile contract, derivation sources, or storage boundary changes |
 | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` | Agents Core module roadmap and scope | Agent runbook, governed tool, approval, evidence, or module ownership changes |
+| `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md` | Calendar Core module roadmap and scope | Calendar workspace, events, recurrence, reminders, availability, free/busy, or iCalendar behavior changes |
 | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` | Contacts module roadmap and scope | Contacts behavior, workflows, module ownership, or acceptance changes |
 | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` | Planning Core module roadmap and scope | Gantt, scheduling, dependency, project, baseline, calendar, or planning verification behavior changes |
 | `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md` | Planning Gantt feature inventory and implementation status | Gantt grid, timeline, scheduling, dependency, resource, baseline, color, or workspace feature status changes |
@@ -110,6 +111,7 @@ Module plans live under `docs/modules/<module-name>/`.
 The current active module plans are:
 
 - `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md`
+- `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - `docs/modules/contacts.core/CONTACTS_APP_PLAN.md`
 - `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
 
