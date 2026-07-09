@@ -1,0 +1,52 @@
+name: reports.core
+kind: capability_module
+version: APP_VERSION
+description: "Global secure report and artifact generation capability shared by UOK modules."
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - GenerateReport
+  - DeleteReportArtifact
+  - VerifyReportArtifact
+events:
+  - ReportGenerated
+  - ReportGenerationFailed
+  - ReportArtifactDeleted
+  - ReportArtifactVerified
+dependencies: []
+backend_path: modules/reports.core/backend
+web_path: modules/reports.core/web
+migrations_path: modules/reports.core/migrations
+tests_path: modules/reports.core/tests
+api_prefixes:
+  - /api/reports
+permissions:
+  - reports.render
+  - reports.read
+  - reports.manage
+  - reports.delete
+owned_tables:
+  - ReportArtifact
+  - CommandLog:reports.core
+  - EventRecord:Report
+extension_points:
+  - report_templates
+  - report_format_adapters
+  - report_renderers
+  - report_asset_resolvers
+  - artifact_storage
+  - permissions
+  - events
+  - migrations
+  - tests
+  - candidate_verifier
+data_retention_policy: "Generated artifacts are organization-scoped, stored outside the public webroot under DATA_DIR, content-hashed, audited, and deletable only by authorized users."
