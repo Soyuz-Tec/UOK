@@ -17,7 +17,7 @@ import {
   type PlanningGridColumn,
   type TimelineScale,
 } from "./planningGanttModel";
-import { DependencyLines, ProjectBoundaryMarkers, TaskShape, TimelineBackground, TimelineCreateDraftShape, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
+import { DependencyLines, ProjectBoundaryMarkers, TaskShape, TaskTimelineMarkers, TimelineBackground, TimelineCreateDraftShape, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
 import { PlanningGanttEmptyState } from "./PlanningGanttEmptyState";
 import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
 import type { PlanningGanttProps } from "./planningGanttProps";
@@ -28,6 +28,7 @@ import { planningKeyboardCommand } from "./planningKeyboardModel";
 import { pinnedColumnOffsets, pinnedGridColumns } from "./planningPinnedColumns";
 import { toResizablePlanningColumn } from "./planningResizableColumns";
 import { usePlanningTimelineInteraction } from "./planningTimelineInteraction";
+import { taskTimelineMarkers } from "./planningTimelineMarkers";
 import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
 import { usePlanningGanttNavigation } from "./usePlanningGanttNavigation";
 
@@ -76,6 +77,7 @@ export function PlanningGantt({
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
   const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
   const visibleTasks = useMemo(() => sortPlanningTasks(visibleRows(schedule.tasks, summaryExpanded), sort, assignedByTask), [assignedByTask, schedule.tasks, sort, summaryExpanded]);
+  const timelineMarkers = useMemo(() => taskTimelineMarkers(visibleTasks), [visibleTasks]);
   const dependencyChain = useMemo(() => selectedDependencyChain(schedule, selectedTaskId), [schedule, selectedTaskId]);
   const taskRows = useMemo(() => new Map(visibleTasks.map((task, index) => [task.id, index])), [visibleTasks]);
   const width = Math.max(chart.units.length * chart.cellWidth, 480);
@@ -196,6 +198,7 @@ export function PlanningGantt({
           <TimelineHeaders units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} width={width} />
           <TimelineBackground units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} height={height} rowSize={rowSize} rows={visibleTasks.length} />
           <ProjectBoundaryMarkers project={schedule.project} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={height} />
+          <TaskTimelineMarkers markers={timelineMarkers} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={height} />
           <DependencyLines schedule={schedule} tasks={visibleTasks} taskRows={taskRows} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowSize} headerHeight={headerHeight} dependencyChain={dependencyChain} />
           {linkDrag ? <path className="planning-owned-link-draft" d={`M ${linkDrag.sourceX} ${linkDrag.sourceY} L ${linkDrag.pointerX} ${linkDrag.pointerY}`} /> : null}
           {timelineInteraction.createDraft ? <TimelineCreateDraftShape draft={timelineInteraction.createDraft} headerHeight={headerHeight} height={height} /> : null}

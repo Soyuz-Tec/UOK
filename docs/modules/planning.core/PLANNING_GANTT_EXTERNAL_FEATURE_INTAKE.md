@@ -52,7 +52,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Right-side grid columns / no-grid mode / bottom scale / RTL | Partial | Timeline-only no-grid mode is implemented; right-side grid, bottom scale, and RTL remain later layout variants. |
 | Backward planning and fixed project dates | Backlog | Requires constraint model and explicit scheduling direction. |
 | Empty-state screen | Implemented | First-party grid and timeline empty state appears when filters or a project leave no visible tasks. |
-| Deadline/event markers | Partial | Project start/end boundary markers are implemented; task deadlines and arbitrary event markers remain later. |
+| Deadline/event markers | Partial | Project start/end markers plus derived visible-task due, variance, and milestone markers are implemented; arbitrary user event markers remain later. |
 | Import from Excel/MS Project/Primavera/iCal | Backlog | Requires validated server import pipeline and no external service dependency. |
 
 ## SVAR Feature Vocabulary
@@ -101,7 +101,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Dependency data | FS, SS, FF, SF links; lag/lead; drag-created links | `predecessor_task_id`, `successor_task_id`, `dependency_type`, `lag_days`, validation state, chain membership, critical membership | Connector lines, link handles, draft link line, dependency editor rows, invalid-link message |
 | Grid configuration | Tree column, task column, add/action column, custom fields, inline editing, sorting, filtering, resizing, pinned columns | column id, label, field, width, min/max, pinned, visible, order, align, formatter, editable, sort direction, filter criteria | Header row, resize handles, field visibility menu, header menu, action column, inline cell editor, row context menu |
 | Timeline scale | Single/dual headers, hour/day/week/month/quarter/year, custom steps, sprint/stage/minute variants | scale id, unit, step, label format, group label, cell width, min/max zoom, fit mode, date range | Header bands, zoom slider, scale segmented control, fit/today/selected commands, weekend/holiday cells |
-| Timeline markers | Today line, deadlines, vertical events, project bounds, external milestones | marker id, date, label, kind, severity, visibility, clipping behavior | Vertical line, marker label, edge/offscreen indicator, tooltip |
+| Timeline markers | Today line, deadlines, vertical events, project bounds, external milestones | marker id, date, label, kind, severity, visibility, clipping behavior | Vertical line, marker label/code, derived task marker flags, edge/offscreen indicator later, tooltip |
 | Editing interactions | Move, resize start/end, progress drag, click-drag task creation, dependency drag, row drag, multi-task drag | drag mode, pointer id, source row, target row, proposed start/end, proposed progress, validation result, optimistic/draft state | Task handles, progress knob, draft task rectangle, draft dependency line, drop indicator, disabled/read-only state |
 | Editors | Lightbox or side inspector, quick info, custom fields, comments, readonly forms | selected task id, editor mode, dirty fields, validation messages, field schema, custom fields, comment count | Inspector tabs, compact quick info, modal/popup later, save/delete commands, inline validation text |
 | Templates/rendering | Custom task bars, grid cells, scale cells, tooltips, skins/themes | render kind, semantic status, critical flag, baseline variance, custom class/token, high contrast state | UOK-owned SVG shapes, CSS token classes, tooltip, non-color status code |
@@ -127,7 +127,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Grid | Row resize | row id, height, min/max, global density fallback, persisted override | Later row-height helper and proof tests | Backlog |
 | Timeline | Time scales | scale id, unit, step, label, group label, cell width, zoom order | Hour/day/week/month/quarter/year scale model | Implemented |
 | Timeline | Timeline templates | header label, cell class, task shape class, weekend/holiday class | UOK-owned render helpers and CSS tokens | Partial |
-| Timeline | Markers | today, project bounds, milestones, deadlines, vertical event markers | Today and project boundary markers exist; task deadlines and arbitrary event markers remain later | Partial |
+| Timeline | Markers | today, project bounds, milestones, deadlines, vertical event markers | Today, project boundary markers, and derived visible-task due/variance/milestone markers exist; arbitrary user event markers remain later | Partial |
 | Timeline | Drag timeline and scroll zoom | pointer panning, wheel modifier, scale bounds, scroll preservation | Empty-space panning, Ctrl/Command wheel scale stepping, and Shift-drag task creation are implemented | Implemented |
 | Timeline | Zoom-to-fit and scroll-to-date | project range, selected date, today, viewport width, scale bounds | Today, selected task, arbitrary date target, and project-fit commands exist; custom zoom bounds remain later | Partial |
 | Timeline | Layout modes | grid left/right/hidden, scale top/bottom, RTL, fixed size/autosize | Timeline-only hidden-grid mode is implemented and saved with planning views | Partial |
@@ -136,7 +136,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Tasks | Task status presentation | status code, color token, non-color label, critical flag, selected/focus state | Implemented for bars and grid rows | Implemented |
 | Tasks | Quick info/tooltips | title, WBS, status, progress, start/end, assignee, dependency hints | First-party hover/focus task detail | Implemented |
 | Tasks | Read-only/prevent-actions mode | permission flag, disabled drag handles, disabled context actions, review-only labels | Review mode disables schedule mutation controls, chart edit handles, dependency handles, context actions, and inspector editor controls | Implemented |
-| Tasks | Deadline and outside-timescale handling | deadline date, warning marker, clipped label, offscreen indicator | Later marker/edge indicator model | Backlog |
+| Tasks | Deadline and outside-timescale handling | deadline date, warning marker, clipped label, offscreen indicator | Derived visible-task marker flags exist; clipped/offscreen indicator model remains later | Partial |
 | Editing | Lightbox/edit form | modal or side panel, title, dates, progress, parent, type, status, resources | UOK inspector path; compact edit improvements later | Partial |
 | Editing | Comments and custom controls | task comment thread, custom fields, validation messages, read-only fields | Later after module comments/custom fields are designed | Backlog |
 | Dependencies | Link model | predecessor, successor, type, lag/lead, validation errors, cycle checks | Python-owned validation with inspector and drag-link UI | Implemented |
@@ -167,7 +167,8 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 8. Selected dependency-chain highlighting: implemented as a UOK-owned SVG/grid overlay before heavier scheduling features.
 9. Timeline panning and controlled wheel zoom: implemented with UOK-owned interaction helpers.
 10. Click-drag task creation: implemented with Shift-drag empty timeline range creation and server-validated task writes.
-11. Virtualization and larger-data rendering: performance work after feature behavior stabilizes and real schedule scale requires it.
+11. Derived timeline markers: implemented first-party marker flags for visible-task due dates, baseline variance, and milestones.
+12. Virtualization and larger-data rendering: performance work after feature behavior stabilizes and real schedule scale requires it.
 
 ## Validation
 

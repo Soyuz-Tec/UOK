@@ -155,6 +155,13 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-boundary-marker")).toHaveCount(2);
     await expect(page.locator(".planning-owned-boundary-marker").getByText("Project start")).toBeVisible();
     await expect(page.locator(".planning-owned-boundary-marker").getByText("Project end")).toBeVisible();
+    await expect(page.locator(".planning-owned-task-marker")).toHaveCount(3);
+    await expect(page.getByLabel("Deadline: Define schedule scope")).toBeVisible();
+    await expect(page.getByLabel("Baseline variance: Build integrated Gantt with dependency validation")).toBeVisible();
+    await expect(page.getByLabel("Milestone: Pilot review milestone")).toBeVisible();
+    await expect(page.locator(".planning-owned-task-marker text").filter({ hasText: "DUE" })).toHaveCount(1);
+    await expect(page.locator(".planning-owned-task-marker text").filter({ hasText: "VAR" })).toHaveCount(1);
+    await expect(page.locator(".planning-owned-task-marker text").filter({ hasText: "MS" })).toHaveCount(1);
     if (viewport.width > 980) {
       const taskRequests = taskPayloads.length;
       await page.getByRole("button", { name: "Task actions for Define schedule scope" }).click();

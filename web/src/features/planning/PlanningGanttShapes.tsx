@@ -3,6 +3,7 @@ import type { KeyboardEvent, PointerEvent } from "react";
 import type { PlanningProject, PlanningSchedule, PlanningTask } from "./types";
 import type { PlanningDependencyChain } from "./planningDependencyChain";
 import type { TimelineCreateDraft } from "./planningTimelineCreateModel";
+import type { PlanningTimelineMarker } from "./planningTimelineMarkers";
 import {
   dateValue,
   durationBetween,
@@ -234,6 +235,25 @@ export function ProjectBoundaryMarkers({ project, chartStart, scale, cellWidth, 
           <text x={marker.x + 6} y="52">{marker.label}</text>
         </g>
       ))}
+    </g>
+  );
+}
+
+export function TaskTimelineMarkers({ markers, chartStart, scale, cellWidth, height }: { markers: PlanningTimelineMarker[]; chartStart: Date; scale: TimelineScale; cellWidth: number; height: number }) {
+  if (markers.length === 0) return null;
+  return (
+    <g className="planning-owned-task-markers" aria-label="Task deadline markers">
+      {markers.map((marker) => {
+        const x = xForDate(dateValue(marker.date), chartStart, scale, cellWidth) + cellWidth;
+        return (
+          <g key={marker.id} className={`planning-owned-task-marker ${marker.kind}`} aria-label={marker.label}>
+            <title>{marker.label} on {marker.date}</title>
+            <line x1={x} y1="0" x2={x} y2={height} />
+            <rect x={x + 5} y="4" width="34" height="18" rx="4" />
+            <text x={x + 22} y="17" textAnchor="middle">{marker.code}</text>
+          </g>
+        );
+      })}
     </g>
   );
 }

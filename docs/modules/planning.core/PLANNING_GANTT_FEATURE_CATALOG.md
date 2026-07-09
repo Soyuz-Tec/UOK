@@ -80,6 +80,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Scroll to selected task | Toolbar command centers the selected task's date on the timeline and returns focus to the selected row. | Implemented |
 | Scroll to date | Date input and Go command center an arbitrary date on the current timeline scale. | Implemented |
 | Project boundary markers | Timeline renders labeled start/end markers from the validated project read model. | Implemented |
+| Task deadline/event markers | Timeline renders first-party visible-task marker flags for critical due dates, baseline variance, and milestones. | Implemented |
 | Drag timeline and controlled wheel zoom | Drag empty timeline/header space to pan; Ctrl/Command wheel steps the existing zoom scale without breaking normal scroll. | Implemented |
 | Click-drag task creation | Hold Shift and drag empty timeline space to draw a date range, then submit a server-validated task proposal. | Implemented |
 | Timeline-only layout | Toolbar toggle hides the grid and gives the timeline the full Gantt workspace width; split view restores the grid. | Implemented |
