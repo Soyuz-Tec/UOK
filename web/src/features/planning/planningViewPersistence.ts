@@ -7,6 +7,7 @@ export type PlanningSavedViewConfig = {
   cascadeSort: boolean;
   fieldPreset: FieldPreset;
   filterMode: FilterMode;
+  focusMode: boolean;
   query: string;
   resourceId: string;
   scale: TimelineScale;
@@ -33,6 +34,7 @@ export function createPlanningSavedView(name: string, config: PlanningSavedViewC
       cascadeSort: String(config.cascadeSort),
       fieldPreset: config.fieldPreset,
       filterMode: config.filterMode,
+      focusMode: String(config.focusMode),
       query: config.query,
       resourceId: config.resourceId,
       scale: config.scale,
@@ -55,6 +57,7 @@ export function planningConfigFromSavedView(view: SavedSearchView, fallback: Pla
     cascadeSort: booleanValue(view.filters.cascadeSort, view.sortBy ? view.sortBy !== "manual" : fallback.cascadeSort),
     fieldPreset: oneOf(fieldPresets, view.filters.fieldPreset, fallback.fieldPreset),
     filterMode: oneOf(filterModes, view.filters.filterMode, fallback.filterMode),
+    focusMode: booleanValue(view.filters.focusMode, fallback.focusMode),
     query: stringValue(view.filters.query, fallback.query),
     resourceId: stringValue(view.filters.resourceId, fallback.resourceId),
     scale: oneOf(scales, view.filters.scale, fallback.scale),

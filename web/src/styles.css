@@ -15,6 +15,7 @@
 @import "./styles/contacts.css";
 @import "./styles/planning.css";
 @import "./styles/planning/filters.css";
+@import "./styles/planning/focus-mode.css";
 @import "./styles/planning/gantt.css";
 @import "./styles/planning/owned-gantt.css";
 @import "./styles/planning/dependency-drag.css";

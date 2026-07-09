@@ -192,6 +192,11 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     for (const scale of ["hour", "day", "week", "month", "quarter", "year"]) {
       await expect(page.getByRole("button", { name: scale, exact: true })).toBeVisible();
     }
+    await page.getByRole("button", { name: "Focus", exact: true }).click();
+    await expect(page.locator(".planning-timeline-workbench")).toHaveClass(/focus-mode/);
+    await expect(page.getByRole("button", { name: "Exit focus", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: "Exit focus", exact: true }).click();
+    await expect(page.locator(".planning-timeline-workbench")).not.toHaveClass(/focus-mode/);
     await expect(page.getByLabel("Task editor")).toBeVisible();
     await page.getByRole("tab", { name: "Links" }).click();
     await expect(page.getByLabel("Dependency editor")).toBeVisible();

@@ -71,6 +71,7 @@ export function PlanningTimeline({
   const [filters, setFilters] = useState<PlanningFilterState>({ mode: "all", query: "", resourceId: "", status: "" });
   const [summaryExpanded, setSummaryExpanded] = useState(true);
   const [cascadeSort, setCascadeSort] = useState(true);
+  const [focusMode, setFocusMode] = useState(false);
   const [viewDensity, setViewDensity] = useState<ViewDensity>("standard");
   const [selectedVisible, setSelectedVisible] = useState(false);
   const [todaySignal, setTodaySignal] = useState(0);
@@ -83,6 +84,7 @@ export function PlanningTimeline({
     cascadeSort,
     fieldPreset,
     filterMode: filters.mode,
+    focusMode,
     query: filters.query,
     resourceId: filters.resourceId,
     status: filters.status,
@@ -92,10 +94,10 @@ export function PlanningTimeline({
     showCritical,
     summaryExpanded,
     viewDensity,
-  }), [activeView, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
+  }), [activeView, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, focusMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
 
   return (
-    <div className="planning-timeline-workbench">
+    <div className={`planning-timeline-workbench ${focusMode ? "focus-mode" : ""}`}>
       <div className="planning-gantt-toolbar" aria-label="Gantt toolbar">
         <div className="planning-toolbar-title">
           <span className="eyebrow">Planning workspace</span>
@@ -211,6 +213,10 @@ export function PlanningTimeline({
             <Maximize2 size={16} aria-hidden="true" />
             <span>Fit</span>
           </button>
+          <button type="button" className={`planning-toolbar-toggle ${focusMode ? "selected" : ""}`} aria-pressed={focusMode} onClick={() => setFocusMode((value) => !value)}>
+            {focusMode ? <Minimize2 size={16} aria-hidden="true" /> : <Maximize2 size={16} aria-hidden="true" />}
+            <span>{focusMode ? "Exit focus" : "Focus"}</span>
+          </button>
           <button type="button" className="planning-toolbar-toggle" onClick={() => exportScheduleCsv(visibleSchedule)}>
             <Download size={16} aria-hidden="true" />
             <span>Export</span>
@@ -266,6 +272,7 @@ export function PlanningTimeline({
     setCascadeSort(config.cascadeSort);
     setFieldPreset(config.fieldPreset);
     setFilters({ mode: config.filterMode, query: config.query, resourceId: config.resourceId, status: config.status });
+    setFocusMode(config.focusMode);
     setSelectedVisible(config.selectedVisible);
     setSummaryExpanded(config.summaryExpanded);
     setViewDensity(config.viewDensity);

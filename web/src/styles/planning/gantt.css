@@ -3,6 +3,7 @@
   gap: var(--uok-space-2);
   min-width: 0;
 }
+
 .planning-gantt-toolbar,
 .planning-toolbar-group {
   display: flex;
