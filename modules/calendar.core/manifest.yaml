@@ -1,0 +1,76 @@
+name: calendar.core
+kind: capability_module
+version: APP_VERSION
+description: "Global calendar, scheduling, recurrence, reminders, availability, and iCalendar export capability for UOK apps."
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - CreateCalendar
+  - UpdateCalendar
+  - DeleteCalendar
+  - CreateCalendarEvent
+  - UpdateCalendarEvent
+  - CancelCalendarEvent
+  - RestoreCalendarEvent
+  - CreateCalendarReminder
+  - DeleteCalendarReminder
+events:
+  - CalendarCreated
+  - CalendarUpdated
+  - CalendarDeleted
+  - CalendarEventCreated
+  - CalendarEventUpdated
+  - CalendarEventCanceled
+  - CalendarEventRestored
+  - CalendarReminderCreated
+  - CalendarReminderDeleted
+dependencies: []
+backend_path: modules/calendar.core/backend
+web_path: modules/calendar.core/web
+migrations_path: modules/calendar.core/migrations
+tests_path: modules/calendar.core/tests
+api_prefixes:
+  - /api/calendar
+api_router: uok_calendar_core.api:router
+command_handlers: uok_calendar_core.commands:command_handlers
+command_permissions: uok_calendar_core.commands:command_permissions
+role_grants: uok_calendar_core.policy:role_grants
+model_exports: uok_calendar_core.models:owned_models
+permissions:
+  - calendar.read
+  - calendar.manage
+  - calendar.event.create
+  - calendar.event.update
+  - calendar.event.cancel
+  - calendar.event.restore
+  - calendar.freebusy.read
+  - calendar.reminder.manage
+  - calendar.ics.export
+owned_tables:
+  - Calendar
+  - CalendarEvent
+  - CalendarEventParticipant
+  - CalendarReminder
+  - CommandLog:calendar.core
+  - EventRecord:Calendar
+extension_points:
+  - manifest
+  - backend_package
+  - command_handlers
+  - api_router
+  - model_exports
+  - permissions
+  - events
+  - migrations
+  - web_surface
+  - tests
+data_retention_policy: "Calendar records are organization-scoped. Deletion soft-deletes calendars and cancellation retains event history for audit; purge is intentionally deferred to a future governance workflow."
