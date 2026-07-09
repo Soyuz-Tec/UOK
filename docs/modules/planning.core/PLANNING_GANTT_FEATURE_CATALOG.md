@@ -88,7 +88,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Timeline-only layout | Toolbar toggle hides the grid and gives the timeline the full Gantt workspace width; split view restores the grid. | Implemented |
 | Weekend shading | Non-working weekend visual bands. | Implemented |
 | Holiday shading | Calendar holiday visual bands. | Implemented |
-| Minute/sprint/stage scales | Additional specialized scale modes. | Backlog |
+| Minute/sprint/stage scales | Additional specialized visual scale modes. Minute view uses 30-minute visual buckets; sprint and stage use 14-day and 30-day planning buckets while server scheduling remains date-based. | Implemented |
 | Timeline header grouping | Month/year/week grouping. | Implemented |
 | Ignored periods | Exclude configured periods from progress/date calculations. | Backlog |
 

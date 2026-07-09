@@ -42,7 +42,10 @@ function addScaleUnits(start: Date, units: number, scale: TimelineScale) {
 }
 
 function unitDays(scale: TimelineScale) {
+  if (scale === "minute") return 1 / 48;
   if (scale === "hour") return 0.25;
+  if (scale === "sprint") return 14;
+  if (scale === "stage") return 30;
   if (scale === "year") return 365;
   if (scale === "quarter") return 91;
   if (scale === "month") return 30;

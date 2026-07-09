@@ -1,7 +1,7 @@
 import { timelineScales, type TimelineScale } from "./planningGanttModel";
 
 export const timelineScaleOptions = timelineScales.map((value) => ({ value, label: value }));
-const zoomScaleOrder: TimelineScale[] = ["year", "quarter", "month", "week", "day", "hour"];
+const zoomScaleOrder: TimelineScale[] = ["year", "quarter", "month", "stage", "sprint", "week", "day", "hour", "minute"];
 
 export function scaleToZoomValue(scale: TimelineScale) {
   return Math.max(0, zoomScaleOrder.indexOf(scale));

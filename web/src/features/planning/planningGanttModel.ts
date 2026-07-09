@@ -1,8 +1,22 @@
 import type { PlanningSchedule, PlanningTask } from "./types";
 import type { ViewDensity } from "./planningTimelineModel";
+import {
+  addUnit,
+  cellWidth,
+  dragDeltaDays,
+  endOfUnit,
+  groupLabel,
+  startOfUnit,
+  timelineScales,
+  unitDays,
+  unitKey,
+  unitLabel,
+  unitMs,
+  type TimelineScale,
+  type TimelineUnit,
+} from "./planningTimelineScaleModel";
 
-export const timelineScales = ["hour", "day", "week", "month", "quarter", "year"] as const;
-export type TimelineScale = typeof timelineScales[number];
+export { timelineScales, type TimelineScale, type TimelineUnit } from "./planningTimelineScaleModel";
 export type PlanningGridColumn = {
   id: string;
   label: string;
@@ -11,14 +25,6 @@ export type PlanningGridColumn = {
   maxWidth: number;
   pinned?: boolean;
   resizable?: boolean;
-};
-export type TimelineUnit = {
-  key: string;
-  label: string;
-  group: string;
-  date: Date;
-  weekend: boolean;
-  holiday: boolean;
 };
 export type DragState = {
   taskId: string;
@@ -166,112 +172,14 @@ export function isoDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
-function unitDays(scale: TimelineScale) {
-  if (scale === "hour") return 0.25;
-  if (scale === "year") return 365;
-  if (scale === "quarter") return 91;
-  if (scale === "month") return 30;
-  if (scale === "week") return 7;
-  return 1;
-}
-
-function unitLabel(date: Date, scale: TimelineScale) {
-  if (scale === "hour") return String(date.getHours()).padStart(2, "0");
-  if (scale === "year") return String(date.getFullYear());
-  if (scale === "quarter") return `Q${Math.floor(date.getMonth() / 3) + 1}`;
-  if (scale === "month") return date.toLocaleString("en-US", { month: "short" });
-  if (scale === "week") return `W${weekNumber(date)}`;
-  return String(date.getDate());
-}
-
-function groupLabel(date: Date, scale: TimelineScale) {
-  if (scale === "hour") return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  if (scale === "month" || scale === "quarter" || scale === "year") return String(date.getFullYear());
-  return date.toLocaleString("en-US", { month: "long", year: "numeric" });
-}
-
-function startOfUnit(date: Date, scale: TimelineScale) {
-  const next = new Date(date);
-  if (scale === "week") next.setDate(next.getDate() - next.getDay());
-  if (scale === "month") next.setDate(1);
-  if (scale === "quarter") next.setMonth(Math.floor(next.getMonth() / 3) * 3, 1);
-  if (scale === "year") next.setMonth(0, 1);
-  next.setHours(0, 0, 0, 0);
-  return next;
-}
-
-function endOfUnit(date: Date, scale: TimelineScale) {
-  const next = new Date(date);
-  if (scale === "week") next.setDate(next.getDate() + (6 - next.getDay()));
-  if (scale === "month") next.setMonth(next.getMonth() + 1, 0);
-  if (scale === "quarter") next.setMonth(Math.floor(next.getMonth() / 3) * 3 + 3, 0);
-  if (scale === "year") next.setMonth(11, 31);
-  next.setHours(scale === "hour" ? 18 : 0, 0, 0, 0);
-  return next;
-}
-
-function addUnit(date: Date, scale: TimelineScale) {
-  if (scale === "hour") return addHours(date, 6);
-  if (scale === "year") return addYears(date, 1);
-  if (scale === "quarter") return addMonths(date, 3);
-  if (scale === "month") return addMonths(date, 1);
-  return addDays(date, unitDays(scale));
-}
-
-function addHours(date: Date, hours: number) {
-  const next = new Date(date);
-  next.setHours(next.getHours() + hours);
-  return next;
-}
-
 function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
   return next;
 }
 
-function addMonths(date: Date, months: number) {
-  const next = new Date(date);
-  next.setMonth(next.getMonth() + months);
-  return next;
-}
-
-function addYears(date: Date, years: number) {
-  const next = new Date(date);
-  next.setFullYear(next.getFullYear() + years);
-  return next;
-}
-
-function dragDeltaDays(deltaCells: number, scale: TimelineScale) {
-  if (scale === "hour") return Math.trunc(deltaCells / 4);
-  return deltaCells * unitDays(scale);
-}
-
-function unitMs(scale: TimelineScale) {
-  return unitDays(scale) * 86_400_000;
-}
-
-function unitKey(date: Date, scale: TimelineScale) {
-  if (scale !== "hour") return isoDate(date);
-  return `${isoDate(date)}T${String(date.getHours()).padStart(2, "0")}`;
-}
-
-function cellWidth(scale: TimelineScale, viewDensity: ViewDensity) {
-  if (scale === "hour") return viewDensity === "compact" ? 28 : 34;
-  if (scale === "year") return 180;
-  if (scale === "quarter") return 150;
-  if (scale === "month") return 120;
-  if (scale === "week") return 92;
-  return viewDensity === "compact" ? 44 : 52;
-}
-
 function dateDiffDays(start: Date, end: Date) {
   return Math.round((end.getTime() - start.getTime()) / 86_400_000);
-}
-
-function weekNumber(value: Date) {
-  const first = new Date(value.getFullYear(), 0, 1);
-  return Math.ceil((((value.getTime() - first.getTime()) / 86_400_000) + first.getDay() + 1) / 7);
 }
 
 function gridColumn(id: string, label: string, defaultWidth: number, minWidth: number, maxWidth: number, pinned = false): PlanningGridColumn {

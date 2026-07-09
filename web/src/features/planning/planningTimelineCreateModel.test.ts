@@ -21,6 +21,15 @@ describe("timelineCreateDraft", () => {
       width: 110,
     });
   });
+
+  it("maps sprint-scale drags to whole-date ranges", () => {
+    expect(timelineCreateDraft(0, 220, new Date("2026-07-30T00:00:00"), "sprint", 110)).toMatchObject({
+      start: "2026-07-30",
+      end: "2026-08-13",
+      x: 0,
+      width: 220,
+    });
+  });
 });
 
 describe("timelineTaskPayload", () => {

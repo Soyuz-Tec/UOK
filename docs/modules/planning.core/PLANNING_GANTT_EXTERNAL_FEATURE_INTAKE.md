@@ -37,7 +37,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Drag-to-create dependency links | Implemented | Taskbar connector handles create finish-to-start links through server validation. |
 | Progress bar editing | Implemented | Keep progress drag handle and inspector edits. |
 | Lightbox/task editor | Partial | UOK equivalent is the inspector plus inline grid edits for title, dates, status, and progress; richer compact edit flows remain later. |
-| Configurable scales from hour to year | Implemented | UOK-owned hour, day, week, month, quarter, and year modes exist without changing the renderer boundary. |
+| Configurable scales from minute to year | Implemented | UOK-owned minute, hour, day, week, sprint, stage, month, quarter, and year visual modes exist without changing the renderer boundary or Python scheduling authority. |
 | Timeline cell templates and task templates | Partial | Use UOK-owned render helpers and status indicators; avoid third-party template API cloning. |
 | Tooltips and quick info | Implemented | UOK renders accessible first-party taskbar hover/focus detail. |
 | Keyboard navigation | Implemented | Grid rows support arrow/home/end focus movement plus common task hotkeys. |
@@ -65,7 +65,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Interactive drag-and-drop editing | Implemented | Keep all edits server-validated. |
 | Customizable task edit form | Partial | UOK inspector supports task edit; make forms denser and safer over time. |
 | Hierarchical subtasks | Implemented | Summary hierarchy and collapse/expand exist. |
-| Configurable scales including hours/minutes/sprints/stages | Partial | Hour mode exists; minutes, sprints, and stages remain UOK-specific backlog. |
+| Configurable scales including hours/minutes/sprints/stages | Implemented | UOK-owned minute, hour, day, week, sprint, stage, month, quarter, and year visual scale controls exist while task scheduling remains date-based. |
 | Customizable grid columns | Implemented | Field presets, visibility, resize, and autofit exist. |
 | Grid sorting and task filtering | Implemented | Search/filter plus visible-column sorting are implemented for current field presets. |
 | Toolbar and context menu | Implemented | Toolbar and task row context menu exist with server-routed planning actions. |
@@ -126,7 +126,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Grid | Column sorting/filtering | column id, direction, filter mode, query, status/resource criteria | Search/filter and visible-column sorting use UOK-owned read-model helpers | Implemented |
 | Grid | Branch ordering / row drag | dragged task id, drop parent, before/after mode, valid WBS target, audit event | Later WBS reorder command with Python validation | Backlog |
 | Grid | Row resize | row id, height, min/max, global density fallback, persisted override | First-party row-height helper, row-bottom separators, keyboard resize, and proof tests | Implemented |
-| Timeline | Time scales | scale id, unit, step, label, group label, cell width, zoom order | Hour/day/week/month/quarter/year scale model | Implemented |
+| Timeline | Time scales | scale id, unit, step, label, group label, cell width, zoom order | Minute/hour/day/week/sprint/stage/month/quarter/year scale model | Implemented |
 | Timeline | Timeline templates | header label, cell class, task shape class, weekend/holiday class | UOK-owned render helpers and CSS tokens | Partial |
 | Timeline | Markers | today, project bounds, milestones, deadlines, vertical event markers | Today, project boundary markers, and derived visible-task due/variance/milestone markers exist; arbitrary user event markers remain later | Partial |
 | Timeline | Drag timeline and scroll zoom | pointer panning, wheel modifier, scale bounds, scroll preservation | Empty-space panning, Ctrl/Command wheel scale stepping, and Shift-drag task creation are implemented | Implemented |
@@ -162,7 +162,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 2. Dependency drag creation: implemented with taskbar connector handles and the existing Python-validated dependency API.
 3. Context row menu: implemented with a reusable workspace context menu primitive and planning task actions.
 4. Keyboard hotkeys and focus movement: implemented for Gantt grid row navigation and common task actions.
-5. Additional scales: hour, quarter, and year implemented; later minutes, sprints, and stages remain backlog.
+5. Additional scales: minute, hour, sprint, stage, quarter, and year visual scales are implemented; time-of-day task duration editing remains a later model change.
 6. Fullscreen/focus mode: implemented as a UOK-owned dense workspace overlay with saved-view persistence.
 7. Column reorder and pinned WBS/task columns implemented with shared table primitives.
 8. Selected dependency-chain highlighting: implemented as a UOK-owned SVG/grid overlay before heavier scheduling features.
