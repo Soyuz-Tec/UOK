@@ -14,7 +14,7 @@ from uok.security import Actor, current_actor, require_permission
 
 from .ics_codec import export_ics
 from .read_model import event_or_error, freebusy_rows, list_calendars, occurrence_rows, serialize_event
-from .schemas import CalendarWriteRequest, EventPatchRequest, EventWriteRequest, ReminderWriteRequest
+from .schemas import CalendarPatchRequest, CalendarWriteRequest, EventPatchRequest, EventWriteRequest, ReminderWriteRequest
 from .validation import as_utc_datetime
 
 router = APIRouter(prefix="/api/calendar", tags=["calendar"])
@@ -49,7 +49,7 @@ def create_calendar(req: CalendarWriteRequest, actor: Actor = Depends(current_ac
 
 
 @router.patch("/calendars/{calendar_id}")
-def update_calendar(calendar_id: str, req: CalendarWriteRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+def update_calendar(calendar_id: str, req: CalendarPatchRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
     payload = req.model_dump(exclude_none=True)
     payload["calendar_id"] = calendar_id
     return run_calendar_command(db, actor, "UpdateCalendar", payload)
