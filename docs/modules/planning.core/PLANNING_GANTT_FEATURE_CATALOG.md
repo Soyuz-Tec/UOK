@@ -10,6 +10,8 @@ This artifact catalogs the Gantt chart features UOK has identified from common p
 
 UOK must implement these features as first-party React, TypeScript, SVG, HTML, CSS, and Python scheduling code. External tools may inform feature vocabulary and user expectations only.
 
+External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `docs/modules/planning.core/PLANNING_GANTT_EXTERNAL_FEATURE_INTAKE.md`.
+
 ## Implementation Rules
 
 - Scheduling authority stays in Python.
@@ -90,6 +92,7 @@ UOK must implement these features as first-party React, TypeScript, SVG, HTML, C
 | Status color coding | Not started, in progress, complete, overdue, blocked, critical. | Implemented |
 | Non-color indicators | Labels/icons/patterns so status does not depend on color alone. | Implemented |
 | Selected/hover/focus states | Visible selected and keyboard focus states. | Implemented |
+| Taskbar tooltips | Hover/focus task detail with status, dates, and progress. | Implemented |
 | Resize start/end handles | Drag bar edges to change duration. | Implemented |
 | Progress drag handle | Drag progress handle to update percent through server validation. | Implemented |
 

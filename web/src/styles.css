@@ -20,4 +20,5 @@
 @import "./styles/planning/read-views.css";
 @import "./styles/planning/saved-views.css";
 @import "./styles/planning/toolbar.css";
+@import "./styles/planning/tooltips.css";
 @import "./styles/responsive.css";

@@ -55,6 +55,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` | Contacts module roadmap and scope | Contacts behavior, workflows, module ownership, or acceptance changes |
 | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` | Planning Core module roadmap and scope | Gantt, scheduling, dependency, project, baseline, calendar, or planning verification behavior changes |
 | `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md` | Planning Gantt feature inventory and implementation status | Gantt grid, timeline, scheduling, dependency, resource, baseline, color, or workspace feature status changes |
+| `docs/modules/planning.core/PLANNING_GANTT_EXTERNAL_FEATURE_INTAKE.md` | DHTMLX/SVAR-inspired Gantt feature intake and UOK implementation mapping | External Gantt feature research is added, promoted, or reprioritized for planning.core |
 | `modules/<module-name>/**/README.md` | Module-local implementation ownership | Module package layout, test ownership, migration ownership, or web ownership changes |
 | `docs/architecture/UOK_OPEN_SOURCE_ERP_QUALITY_RATING_CHART.md` | Peer quality comparison snapshot | Peer comparison or scoring basis changes |
 | `docs/architecture/UOK_PEER_CODE_FOLDER_STRUCTURE_COMPARISON.md` | Peer folder-structure comparison | Folder-structure comparison or peer scope changes |

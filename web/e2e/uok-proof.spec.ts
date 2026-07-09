@@ -144,6 +144,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-progress-handle")).toHaveCount(3);
     await expect(page.locator(".planning-owned-status-code")).toHaveCount(4);
     await expect(page.locator(".planning-owned-status-code").getByText("CRIT")).toHaveCount(3);
+    await expect(page.locator(".planning-owned-tooltip")).toHaveCount(4);
     await page.getByLabel("Search planning tasks").fill("integrated");
     await expect(page.locator(".planning-owned-grid-body").getByText("Build integrated Gantt with dependency validation")).toBeVisible();
     await page.getByLabel("Search planning tasks").fill("");

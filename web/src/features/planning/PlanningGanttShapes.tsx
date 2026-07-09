@@ -113,6 +113,7 @@ export function TaskShape({
         <polygon points={`${centerX},${y} ${x + barHeight},${centerY} ${centerX},${y + barHeight} ${x},${centerY}`} />
         <TaskStatusCode x={x + barHeight + 6} y={y + 1} indicator={indicator} />
         <text x={x + barHeight + statusCodeWidth(indicator.code) + 14} y={centerY + 4}>{task.title}</text>
+        <TaskTooltip task={task} x={x} y={Math.max(4, y - 50)} indicator={indicator} />
       </g>
     );
   }
@@ -137,6 +138,7 @@ export function TaskShape({
       <circle className="planning-owned-progress-handle" cx={x + progressWidth} cy={y + barHeight / 2} r="5" onPointerDown={(event) => onDragStart(task.id, "progress", event.clientX, width)} />
       <text x={x + 8} y={y + barHeight / 2 + 4}>{task.title}</text>
       <TaskStatusCode x={indicatorX} y={y + Math.max(2, (barHeight - 18) / 2)} indicator={indicator} />
+      <TaskTooltip task={task} x={x} y={Math.max(4, y - 50)} indicator={indicator} />
     </g>
   );
 }
@@ -153,6 +155,16 @@ function TaskStatusCode({ x, y, indicator }: { x: number; y: number; indicator: 
 
 function statusCodeWidth(code: string) {
   return Math.max(34, code.length * 7 + 12);
+}
+
+function TaskTooltip({ task, x, y, indicator }: { task: PlanningTask; x: number; y: number; indicator: { code: string; label: string } }) {
+  return (
+    <g className="planning-owned-tooltip" aria-hidden="true">
+      <rect x={x} y={y} width="224" height="42" rx="6" />
+      <text x={x + 10} y={y + 16}>{task.wbs ? `${task.wbs} ` : ""}{task.title}</text>
+      <text className="muted" x={x + 10} y={y + 32}>{indicator.label} · {task.start} to {task.end} · {task.progress}%</text>
+    </g>
+  );
 }
 
 function selectOnKey(event: KeyboardEvent<SVGGElement>, taskId: string, onSelect: (taskId: string) => void) {
