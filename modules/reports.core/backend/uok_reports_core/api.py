@@ -33,7 +33,9 @@ def formats(actor: Actor = Depends(current_actor)) -> dict[str, object]:
 @router.post("/generate")
 def generate(req: GenerateReportRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, object]:
     try:
-        return generate_report(db, actor, req)
+        result = generate_report(db, actor, req)
+        db.commit()
+        return result
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
     except ValueError as exc:
