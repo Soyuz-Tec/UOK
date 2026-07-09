@@ -13,6 +13,8 @@
 @import "./styles/shared/tables.css";
 @import "./styles/apps-manager.css";
 @import "./styles/contacts.css";
+@import "./styles/calendar.css";
+@import "./styles/calendar-workflows.css";
 @import "./styles/planning.css";
 @import "./styles/planning/filters.css";
 @import "./styles/planning/focus-mode.css";

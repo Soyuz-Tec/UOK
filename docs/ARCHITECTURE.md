@@ -33,7 +33,7 @@ Operator browser
 
 - `apps.manager` is the only required control module.
 - `contacts.core` is the first optional capability module.
-- `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, reminders, free-busy, availability, and iCalendar export.
+- `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, reminders, free-busy, availability, iCalendar export, and a traditional Calendar workspace.
 - `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
@@ -74,6 +74,7 @@ Operator browser
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
 - Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 - Planning Core module plan: `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
+- Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 
 ## Verification

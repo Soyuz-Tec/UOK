@@ -1,15 +1,19 @@
-import { CalendarPlus, Download, RefreshCw } from "lucide-react";
+import { Download } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-import { EmptyState } from "../../shared/data-display/EmptyState";
-import { StatusPill } from "../../shared/data-display/StatusPill";
-import { Pane } from "../../shared/layout/Pane";
-import { CommandButton } from "../../shared/primitives/CommandButton";
+import { EmptyState, StatusPill } from "../../shared/data-display";
+import { Pane } from "../../shared/layout";
+import { CommandButton } from "../../shared/primitives";
 import type { ModuleStatus } from "../../shared/types";
+import { CalendarAgendaView } from "./CalendarAgendaView";
+import { CalendarEventEditor } from "./CalendarEventEditor";
+import { CalendarMiniMonth } from "./CalendarMiniMonth";
+import { CalendarMonthView } from "./CalendarMonthView";
+import { CalendarTimeGrid } from "./CalendarTimeGrid";
+import { CalendarToolbar } from "./CalendarToolbar";
 import { CALENDAR_MODULE_ID } from "./calendarModule";
-
-type CalendarRecord = { id: string; name: string; status: string; timezone: string };
-type CalendarEventRecord = { id: string; title: string; occurrence_start: string; occurrence_end: string; status: string; location?: string | null };
+import { addDays, addMonths, durationDays, eventStart, localInputValue, rangeForView, startOfDay } from "./calendarDates";
+import type { CalendarDraft, CalendarEventRecord, CalendarRecord, CalendarView } from "./calendarTypes";
 
 type Props = {
   token: string;
@@ -22,17 +26,42 @@ function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 }
 
-function localDateTime(offsetHours = 0) {
-  const value = new Date(Date.now() + offsetHours * 60 * 60 * 1000);
-  value.setMinutes(0, 0, 0);
-  return value.toISOString().slice(0, 16);
+function emptyDraft(date = new Date(), hour = 9): CalendarDraft {
+  const start = new Date(date);
+  start.setHours(hour, 0, 0, 0);
+  const end = new Date(start);
+  end.setHours(start.getHours() + 1);
+  return {
+    title: "",
+    description: "",
+    location: "",
+    startsAt: localInputValue(start),
+    endsAt: localInputValue(end),
+    allDay: false,
+    transparency: "busy",
+    recurrence: "",
+    recurrenceUntil: "",
+    reminderMinutes: "",
+    participantName: "",
+    participantEmail: "",
+  };
 }
 
-function monthWindow() {
-  const now = new Date();
+function draftFromEvent(event: CalendarEventRecord): CalendarDraft {
   return {
-    from_at: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(),
-    to_at: new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString()
+    id: event.id,
+    title: event.title,
+    description: event.description || "",
+    location: event.location || "",
+    startsAt: localInputValue(new Date(event.occurrence_start || event.starts_at || "")),
+    endsAt: localInputValue(new Date(event.occurrence_end || event.ends_at || "")),
+    allDay: Boolean(event.all_day),
+    transparency: event.transparency === "free" ? "free" : "busy",
+    recurrence: event.recurrence_rule?.includes("FREQ=") ? event.recurrence_rule.split("FREQ=")[1]?.split(";")[0] as CalendarDraft["recurrence"] : "",
+    recurrenceUntil: event.recurrence_until ? localInputValue(new Date(event.recurrence_until)) : "",
+    reminderMinutes: event.reminders?.[0]?.trigger_minutes_before != null ? String(event.reminders[0].trigger_minutes_before) : "",
+    participantName: event.participants?.[0]?.display_name || "",
+    participantEmail: event.participants?.[0]?.email || "",
   };
 }
 
@@ -42,13 +71,14 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const [calendars, setCalendars] = useState<CalendarRecord[]>([]);
   const [events, setEvents] = useState<CalendarEventRecord[]>([]);
-  const [selectedCalendarId, setSelectedCalendarId] = useState("");
-  const [title, setTitle] = useState("New meeting");
-  const [startsAt, setStartsAt] = useState(localDateTime(1));
-  const [endsAt, setEndsAt] = useState(localDateTime(2));
-  const [message, setMessage] = useState<unknown>("Ready");
-  const activeCalendarId = selectedCalendarId || calendars[0]?.id || "";
-
+  const [activeCalendarId, setActiveCalendarId] = useState("");
+  const [view, setView] = useState<CalendarView>("month");
+  const [cursorDate, setCursorDate] = useState(startOfDay(new Date()));
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEventRecord | undefined>();
+  const [draft, setDraft] = useState<CalendarDraft>(emptyDraft());
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [busyCount, setBusyCount] = useState(0);
+  const [message, setMessage] = useState("Ready");
   const eventRows = useMemo(() => events.slice().sort((a, b) => a.occurrence_start.localeCompare(b.occurrence_start)), [events]);
 
   async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -58,21 +88,26 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
     return data as T;
   }
 
-  async function refreshCalendar() {
+  async function refreshCalendar(calendarId = activeCalendarId) {
     if (!token || !operational) return;
     try {
       const rows = await api<CalendarRecord[]>("/api/calendar/calendars");
       setCalendars(rows);
-      const calendarId = selectedCalendarId || rows[0]?.id || "";
-      if (calendarId) {
-        const params = new URLSearchParams({ ...monthWindow(), calendar_id: calendarId });
+      const nextCalendarId = calendarId || rows[0]?.id || "";
+      setActiveCalendarId(nextCalendarId);
+      if (nextCalendarId) {
+        const range = rangeForView(view, cursorDate);
+        const params = new URLSearchParams({ from_at: range.from.toISOString(), to_at: range.to.toISOString(), calendar_id: nextCalendarId, include_canceled: "true" });
         setEvents(await api<CalendarEventRecord[]>(`/api/calendar/events?${params.toString()}`));
+        const freebusy = await api<{ busy: unknown[] }>(`/api/calendar/freebusy?${params.toString()}`);
+        setBusyCount(freebusy.busy.length);
       } else {
         setEvents([]);
+        setBusyCount(0);
       }
-      setMessage({ status: "loaded", calendars: rows.length });
+      setMessage(`Loaded ${rows.length} calendars and ${durationDays(rangeForView(view, cursorDate).from, rangeForView(view, cursorDate).to)} visible days.`);
     } catch (error) {
-      setMessage(error);
+      setMessage(errorMessage(error));
     }
   }
 
@@ -80,106 +115,176 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
     try {
       const row = await api<CalendarRecord>("/api/calendar/calendars", {
         method: "POST",
-        body: JSON.stringify({ name: "Default Calendar", timezone, visibility_scope: "organization" })
+        body: JSON.stringify({ name: calendars.length ? `Calendar ${calendars.length + 1}` : "Default Calendar", timezone, visibility_scope: "organization" })
       });
-      setSelectedCalendarId(row.id);
-      await refreshCalendar();
+      await refreshCalendar(row.id);
+      setMessage(`Created ${row.name}.`);
     } catch (error) {
-      setMessage(error);
+      setMessage(errorMessage(error));
     }
   }
 
-  async function createEvent() {
-    if (!activeCalendarId || !title.trim()) return;
-    const start = new Date(startsAt);
-    const end = new Date(endsAt);
-    if (Number.isNaN(start.valueOf()) || Number.isNaN(end.valueOf()) || end <= start) {
-      setMessage({ error: "Enter a valid start and end time; end must be after start." });
-      return;
-    }
+  async function saveEvent() {
+    if (!activeCalendarId || !draft.title.trim()) return setMessage("Enter a title before saving.");
+    const startsAt = new Date(draft.startsAt);
+    const endsAt = new Date(draft.endsAt);
+    if (Number.isNaN(startsAt.valueOf()) || Number.isNaN(endsAt.valueOf()) || endsAt <= startsAt) return setMessage("End time must be after start time.");
+    const payload = eventPayload(draft, activeCalendarId, timezone);
     try {
-      await api("/api/calendar/events", {
-        method: "POST",
-        body: JSON.stringify({
-          calendar_id: activeCalendarId,
-          title,
-          starts_at: start.toISOString(),
-          ends_at: end.toISOString(),
-          timezone
-        })
-      });
+      const saved = draft.id
+        ? await api<CalendarEventRecord>(`/api/calendar/events/${draft.id}`, { method: "PATCH", body: JSON.stringify(payload) })
+        : await api<CalendarEventRecord>("/api/calendar/events", { method: "POST", body: JSON.stringify(payload) });
+      const reminderMinutes = draft.reminderMinutes === "" ? null : Number(draft.reminderMinutes);
+      const reminderExists = selectedEvent?.reminders?.some((reminder) => reminder.trigger_minutes_before === reminderMinutes);
+      if (reminderMinutes != null && saved.id && !reminderExists) {
+        await api(`/api/calendar/events/${saved.id}/reminders`, { method: "POST", body: JSON.stringify({ reminder_type: "in_app", trigger_minutes_before: reminderMinutes }) });
+      }
+      setEditorOpen(false);
+      setSelectedEvent(undefined);
       await refreshCalendar();
-      setMessage({ status: "event_created", title });
+      setMessage(draft.id ? "Event updated." : "Event created.");
     } catch (error) {
-      setMessage(error);
+      setMessage(errorMessage(error));
     }
+  }
+
+  async function cancelEvent() {
+    if (!draft.id) return;
+    await api(`/api/calendar/events/${draft.id}/cancel`, { method: "POST" });
+    setEditorOpen(false);
+    await refreshCalendar();
+    setMessage("Event canceled.");
+  }
+
+  async function restoreEvent() {
+    if (!draft.id) return;
+    await api(`/api/calendar/events/${draft.id}/restore`, { method: "POST" });
+    setEditorOpen(false);
+    await refreshCalendar();
+    setMessage("Event restored.");
+  }
+
+  async function selectEvent(event: CalendarEventRecord) {
+    const detail = await api<CalendarEventRecord>(`/api/calendar/events/${event.id}`);
+    const merged = { ...event, ...detail };
+    setSelectedEvent(merged);
+    setDraft(draftFromEvent(merged));
+    setEditorOpen(true);
+  }
+
+  function newEvent(date = cursorDate, hour = 9) {
+    setSelectedEvent(undefined);
+    setDraft(emptyDraft(date, hour));
+    setEditorOpen(true);
+  }
+
+  async function exportIcs() {
+    const range = rangeForView(view, cursorDate);
+    const params = new URLSearchParams({ from_at: range.from.toISOString(), to_at: range.to.toISOString(), calendar_id: activeCalendarId });
+    const res = await fetch(`/api/calendar/ics/export?${params.toString()}`, { headers: authHeaders(token) });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "uok-calendar.ics";
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   useEffect(() => {
     void refreshCalendar();
-  }, [token, operational, selectedCalendarId]);
+  }, [token, operational, view, cursorDate]);
 
   if (!token) return <EmptyState text="Sign in to open Calendar." />;
-
-  if (!operational) {
-    return (
-      <section aria-label="Calendar">
-        <Pane title="Calendar" description="Module state" wide>
-          <div className="module-row">
-            <div className="module-main">
-              <div className="module-title-line">
-                <h2 className="module-name">calendar.core</h2>
-                <StatusPill label={module?.status || "available"} tone="info" />
-              </div>
-              <p className="module-meta">capability_module - {module?.version || "not loaded"}</p>
-            </div>
-            <div className="module-actions">
-              <CommandButton icon={Download} onClick={onInstall} loading={busyAction === "calendar.core:install"}>Install</CommandButton>
-            </div>
-          </div>
-        </Pane>
-      </section>
-    );
-  }
+  if (!operational) return <CalendarModuleState module={module} busyAction={busyAction} onInstall={onInstall} />;
 
   return (
-    <section aria-label="Calendar" className="contacts-workspace">
-      <div className="contacts-controls">
-        <label className="field compact">
-          <span>Calendar</span>
-          <select value={activeCalendarId} onChange={(event) => setSelectedCalendarId(event.target.value)}>
-            {calendars.map((calendar) => <option key={calendar.id} value={calendar.id}>{calendar.name}</option>)}
-          </select>
-        </label>
-        <CommandButton icon={CalendarPlus} onClick={createDefaultCalendar}>New calendar</CommandButton>
-        <CommandButton icon={RefreshCw} onClick={refreshCalendar}>Refresh</CommandButton>
+    <section aria-label="Calendar" className="calendar-workspace">
+      <CalendarToolbar
+        calendars={calendars}
+        activeCalendarId={activeCalendarId}
+        view={view}
+        cursorDate={cursorDate}
+        onCalendarChange={(id) => void refreshCalendar(id)}
+        onViewChange={setView}
+        onToday={() => setCursorDate(startOfDay(new Date()))}
+        onMove={(direction) => setCursorDate(view === "month" || view === "agenda" ? addMonths(cursorDate, direction) : addDays(cursorDate, direction * (view === "week" ? 7 : 1)))}
+        onCreate={() => newEvent()}
+        onRefresh={() => void refreshCalendar()}
+        onExport={() => void exportIcs()}
+      />
+      <div className={editorOpen ? "calendar-layout" : "calendar-layout editor-closed"}>
+        <CalendarMiniMonth
+          cursorDate={cursorDate}
+          calendars={calendars}
+          activeCalendarId={activeCalendarId}
+          onDateChange={setCursorDate}
+          onCalendarChange={(id) => void refreshCalendar(id)}
+          onCreateCalendar={createDefaultCalendar}
+        />
+        <main className="calendar-main" aria-label="Calendar events">
+          <div className="calendar-summary">
+            <span>{eventRows.length} events</span>
+            <span>{busyCount} busy blocks</span>
+            <span>{message}</span>
+          </div>
+          {view === "month" && <CalendarMonthView cursorDate={cursorDate} events={eventRows} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
+          {view === "week" && <CalendarTimeGrid view="week" cursorDate={cursorDate} events={eventRows} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
+          {view === "day" && <CalendarTimeGrid view="day" cursorDate={cursorDate} events={eventRows} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
+          {view === "agenda" && <CalendarAgendaView events={eventRows} selectedEventId={selectedEvent?.id} onSelectEvent={(event) => void selectEvent(event)} />}
+        </main>
+        {editorOpen ? <CalendarEventEditor draft={draft} selectedEvent={selectedEvent} onDraftChange={setDraft} onSave={saveEvent} onCancel={cancelEvent} onRestore={restoreEvent} onClose={() => setEditorOpen(false)} /> : null}
       </div>
+    </section>
+  );
+}
 
-      <div className="contacts-utility-grid">
-        <Pane title="Create Event" description="Event form">
-          <label className="field"><span>Title</span><input value={title} onChange={(event) => setTitle(event.target.value)} /></label>
-          <label className="field"><span>Starts</span><input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /></label>
-          <label className="field"><span>Ends</span><input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label>
-          <CommandButton icon={CalendarPlus} onClick={createEvent} disabled={!activeCalendarId}>Create event</CommandButton>
-        </Pane>
-
-        <Pane title="This Month" description="Calendar events">
-          {eventRows.length ? (
-            <div className="review-items">
-              {eventRows.map((event) => (
-                <div key={`${event.id}-${event.occurrence_start}`} className="review-chip">
-                  <strong>{event.title}</strong>
-                  <span>{new Date(event.occurrence_start).toLocaleString()} - {new Date(event.occurrence_end).toLocaleTimeString()}</span>
-                </div>
-              ))}
+function CalendarModuleState({ module, busyAction, onInstall }: { module?: ModuleStatus; busyAction: string; onInstall: () => void }) {
+  return (
+    <section aria-label="Calendar">
+      <Pane title="Calendar" description="Module state" wide>
+        <div className="module-row">
+          <div className="module-main">
+            <div className="module-title-line">
+              <h2 className="module-name">calendar.core</h2>
+              <StatusPill label={module?.status || "available"} tone="info" />
             </div>
-          ) : <EmptyState text="No calendar events found for this month." />}
-        </Pane>
-      </div>
-
-      <Pane title="Calendar Status" description="Last calendar operation" wide>
-        <pre className="json-block">{typeof message === "string" ? message : JSON.stringify(message, null, 2)}</pre>
+            <p className="module-meta">capability_module - {module?.version || "not loaded"}</p>
+          </div>
+          <div className="module-actions">
+            <CommandButton icon={Download} onClick={onInstall} loading={busyAction === "calendar.core:install"}>Install</CommandButton>
+          </div>
+        </div>
       </Pane>
     </section>
   );
+}
+
+function eventPayload(draft: CalendarDraft, calendarId: string, timezone: string) {
+  return {
+    calendar_id: calendarId,
+    title: draft.title.trim(),
+    description: draft.description || undefined,
+    location: draft.location || undefined,
+    starts_at: new Date(draft.startsAt).toISOString(),
+    ends_at: new Date(draft.endsAt).toISOString(),
+    timezone,
+    all_day: draft.allDay,
+    transparency: draft.transparency,
+    recurrence_rule: draft.recurrence ? `FREQ=${draft.recurrence}` : "",
+    recurrence_until: draft.recurrenceUntil ? new Date(draft.recurrenceUntil).toISOString() : undefined,
+    participants: draft.participantEmail ? [{
+      participant_type: "person",
+      email: draft.participantEmail,
+      display_name: draft.participantName || draft.participantEmail,
+      role: "required",
+      response_status: "needs_action",
+    }] : [],
+  };
+}
+
+function errorMessage(error: unknown) {
+  if (typeof error === "string") return error;
+  if (error && typeof error === "object" && "detail" in error) return JSON.stringify((error as { detail: unknown }).detail);
+  return "Calendar operation failed.";
 }
