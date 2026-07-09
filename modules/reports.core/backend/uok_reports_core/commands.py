@@ -41,3 +41,11 @@ def command_handlers() -> dict[str, CommandHandler]:
         "DeleteReportArtifact": cmd_delete_report_artifact,
         "VerifyReportArtifact": cmd_verify_report_artifact,
     }
+
+
+def command_permissions() -> dict[str, str]:
+    return {
+        "GenerateReport": "reports.render",
+        "DeleteReportArtifact": "reports.delete",
+        "VerifyReportArtifact": "reports.manage",
+    }
