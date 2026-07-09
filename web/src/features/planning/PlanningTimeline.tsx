@@ -8,6 +8,8 @@ import { PlanningFilters } from "./PlanningFilters";
 import { PlanningGantt } from "./PlanningGantt";
 import { PlanningReadModelView } from "./PlanningReadModelViews";
 import { PlanningSavedViews } from "./PlanningSavedViews";
+import type { TimelineScale } from "./planningGanttModel";
+import { maxZoomValue, scaleToZoomValue, timelineScaleOptions, zoomValueToScale } from "./planningScaleOptions";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import { exportScheduleCsv, planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningView, type ViewDensity } from "./planningTimelineModel";
@@ -42,13 +44,13 @@ export function PlanningTimeline({
   projects: PlanningProject[];
   schedule: PlanningSchedule;
   appearance: Appearance;
-  scale: "day" | "week" | "month";
+  scale: TimelineScale;
   showCritical: boolean;
   showBaselines: boolean;
   selectedTaskId: string;
   selectedProjectId: string;
   busy: string;
-  onScaleChange: (scale: "day" | "week" | "month") => void;
+  onScaleChange: (scale: TimelineScale) => void;
   onToggleCritical: () => void;
   onToggleBaselines: () => void;
   onTaskSelect: (taskId: string) => void;
@@ -185,16 +187,16 @@ export function PlanningTimeline({
             <input
               type="range"
               min="0"
-              max="2"
-              value={scale === "month" ? 0 : scale === "week" ? 1 : 2}
+              max={maxZoomValue()}
+              value={scaleToZoomValue(scale)}
               aria-label="Timeline zoom"
-              onChange={(event) => onScaleChange(event.target.value === "0" ? "month" : event.target.value === "1" ? "week" : "day")}
+              onChange={(event) => onScaleChange(zoomValueToScale(event.target.value))}
             />
           </label>
           <div className="planning-segmented-control" aria-label="Timeline scale">
-            {(["day", "week", "month"] as const).map((item) => (
-              <button key={item} type="button" className={scale === item ? "selected" : ""} onClick={() => onScaleChange(item)}>
-                {item}
+            {timelineScaleOptions.map((item) => (
+              <button key={item.value} type="button" className={scale === item.value ? "selected" : ""} onClick={() => onScaleChange(item.value)}>
+                {item.label}
               </button>
             ))}
           </div>

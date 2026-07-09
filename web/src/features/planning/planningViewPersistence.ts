@@ -1,5 +1,5 @@
 import type { SavedSearchView } from "../../shared/forms";
-import type { TimelineScale } from "./planningGanttModel";
+import { timelineScales, type TimelineScale } from "./planningGanttModel";
 import { planningViews, type FieldPreset, type FilterMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 
 export type PlanningSavedViewConfig = {
@@ -20,7 +20,7 @@ export type PlanningSavedViewConfig = {
 
 const fieldPresets: FieldPreset[] = ["core", "progress", "resources"];
 const filterModes: FilterMode[] = ["all", "critical", "milestones"];
-const scales: TimelineScale[] = ["day", "week", "month"];
+const scales: readonly TimelineScale[] = timelineScales;
 const viewDensities: ViewDensity[] = ["compact", "standard", "roomy"];
 
 export function createPlanningSavedView(name: string, config: PlanningSavedViewConfig): SavedSearchView {

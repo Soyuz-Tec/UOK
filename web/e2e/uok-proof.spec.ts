@@ -189,9 +189,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await page.getByRole("button", { name: "Task", exact: true }).focus();
     await expect(page.getByRole("button", { name: "Task", exact: true })).toBeFocused();
     await expect.poll(() => page.locator(".planning-gantt-shell").getByText("Build integrated Gantt with dependency validation").count()).toBeGreaterThan(0);
-    await expect(page.getByRole("button", { name: "day", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "week", exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "month", exact: true })).toBeVisible();
+    for (const scale of ["hour", "day", "week", "month", "quarter", "year"]) {
+      await expect(page.getByRole("button", { name: scale, exact: true })).toBeVisible();
+    }
     await expect(page.getByLabel("Task editor")).toBeVisible();
     await page.getByRole("tab", { name: "Links" }).click();
     await expect(page.getByLabel("Dependency editor")).toBeVisible();

@@ -1,7 +1,8 @@
 import type { PlanningSchedule, PlanningTask } from "./types";
 import type { ViewDensity } from "./planningTimelineModel";
 
-export type TimelineScale = "day" | "week" | "month";
+export const timelineScales = ["hour", "day", "week", "month", "quarter", "year"] as const;
+export type TimelineScale = typeof timelineScales[number];
 export type PlanningGridColumn = {
   id: string;
   label: string;
@@ -31,12 +32,12 @@ export type TaskStatusIndicator = {
 
 export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity) {
   const start = startOfUnit(dateValue(schedule.project.start), scale);
-  const end = addDays(endOfUnit(dateValue(schedule.project.end), scale), unitDays(scale));
+  const end = addUnit(endOfUnit(dateValue(schedule.project.end), scale), scale);
   const holidays = new Set(schedule.calendar?.holidays || []);
   const units: TimelineUnit[] = [];
-  for (let cursor = new Date(start); cursor <= end; cursor = addDays(cursor, unitDays(scale))) {
+  for (let cursor = new Date(start); cursor <= end; cursor = addUnit(cursor, scale)) {
     units.push({
-      key: isoDate(cursor),
+      key: unitKey(cursor, scale),
       label: unitLabel(cursor, scale),
       group: groupLabel(cursor, scale),
       date: new Date(cursor),
@@ -44,7 +45,7 @@ export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, 
       holiday: holidays.has(isoDate(cursor)),
     });
   }
-  return { start, units, cellWidth: scale === "month" ? 120 : scale === "week" ? 92 : viewDensity === "compact" ? 44 : 52 };
+  return { start, units, cellWidth: cellWidth(scale, viewDensity) };
 }
 
 export function visibleRows(tasks: PlanningTask[], summaryExpanded: boolean) {
@@ -111,7 +112,8 @@ export function finishDrag(
   }
   const deltaCells = Math.round((clientX - drag.startX) / cellWidth);
   if (!deltaCells) return;
-  const deltaDays = deltaCells * unitDays(scale);
+  const deltaDays = dragDeltaDays(deltaCells, scale);
+  if (!deltaDays) return;
   const currentStart = dateValue(task.start);
   const currentEnd = dateValue(task.end);
   if (drag.mode === "resize-start") {
@@ -150,7 +152,7 @@ export function taskStatusIndicator(task: PlanningTask, showCritical = false): T
 }
 
 export function xForDate(date: Date, start: Date, scale: TimelineScale, cellWidth: number) {
-  return Math.round(dateDiffDays(start, date) / unitDays(scale)) * cellWidth;
+  return Math.round((date.getTime() - start.getTime()) / unitMs(scale)) * cellWidth;
 }
 
 export function durationUnits(task: PlanningTask, scale: TimelineScale) {
@@ -170,19 +172,26 @@ export function isoDate(date: Date) {
 }
 
 function unitDays(scale: TimelineScale) {
+  if (scale === "hour") return 0.25;
+  if (scale === "year") return 365;
+  if (scale === "quarter") return 91;
   if (scale === "month") return 30;
   if (scale === "week") return 7;
   return 1;
 }
 
 function unitLabel(date: Date, scale: TimelineScale) {
+  if (scale === "hour") return String(date.getHours()).padStart(2, "0");
+  if (scale === "year") return String(date.getFullYear());
+  if (scale === "quarter") return `Q${Math.floor(date.getMonth() / 3) + 1}`;
   if (scale === "month") return date.toLocaleString("en-US", { month: "short" });
   if (scale === "week") return `W${weekNumber(date)}`;
   return String(date.getDate());
 }
 
 function groupLabel(date: Date, scale: TimelineScale) {
-  if (scale === "month") return String(date.getFullYear());
+  if (scale === "hour") return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  if (scale === "month" || scale === "quarter" || scale === "year") return String(date.getFullYear());
   return date.toLocaleString("en-US", { month: "long", year: "numeric" });
 }
 
@@ -190,6 +199,8 @@ function startOfUnit(date: Date, scale: TimelineScale) {
   const next = new Date(date);
   if (scale === "week") next.setDate(next.getDate() - next.getDay());
   if (scale === "month") next.setDate(1);
+  if (scale === "quarter") next.setMonth(Math.floor(next.getMonth() / 3) * 3, 1);
+  if (scale === "year") next.setMonth(0, 1);
   next.setHours(0, 0, 0, 0);
   return next;
 }
@@ -198,7 +209,23 @@ function endOfUnit(date: Date, scale: TimelineScale) {
   const next = new Date(date);
   if (scale === "week") next.setDate(next.getDate() + (6 - next.getDay()));
   if (scale === "month") next.setMonth(next.getMonth() + 1, 0);
-  next.setHours(0, 0, 0, 0);
+  if (scale === "quarter") next.setMonth(Math.floor(next.getMonth() / 3) * 3 + 3, 0);
+  if (scale === "year") next.setMonth(11, 31);
+  next.setHours(scale === "hour" ? 18 : 0, 0, 0, 0);
+  return next;
+}
+
+function addUnit(date: Date, scale: TimelineScale) {
+  if (scale === "hour") return addHours(date, 6);
+  if (scale === "year") return addYears(date, 1);
+  if (scale === "quarter") return addMonths(date, 3);
+  if (scale === "month") return addMonths(date, 1);
+  return addDays(date, unitDays(scale));
+}
+
+function addHours(date: Date, hours: number) {
+  const next = new Date(date);
+  next.setHours(next.getHours() + hours);
   return next;
 }
 
@@ -206,6 +233,41 @@ function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
   return next;
+}
+
+function addMonths(date: Date, months: number) {
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + months);
+  return next;
+}
+
+function addYears(date: Date, years: number) {
+  const next = new Date(date);
+  next.setFullYear(next.getFullYear() + years);
+  return next;
+}
+
+function dragDeltaDays(deltaCells: number, scale: TimelineScale) {
+  if (scale === "hour") return Math.trunc(deltaCells / 4);
+  return deltaCells * unitDays(scale);
+}
+
+function unitMs(scale: TimelineScale) {
+  return unitDays(scale) * 86_400_000;
+}
+
+function unitKey(date: Date, scale: TimelineScale) {
+  if (scale !== "hour") return isoDate(date);
+  return `${isoDate(date)}T${String(date.getHours()).padStart(2, "0")}`;
+}
+
+function cellWidth(scale: TimelineScale, viewDensity: ViewDensity) {
+  if (scale === "hour") return viewDensity === "compact" ? 28 : 34;
+  if (scale === "year") return 180;
+  if (scale === "quarter") return 150;
+  if (scale === "month") return 120;
+  if (scale === "week") return 92;
+  return viewDensity === "compact" ? 44 : 52;
 }
 
 function dateDiffDays(start: Date, end: Date) {

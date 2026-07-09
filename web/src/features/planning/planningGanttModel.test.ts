@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { finishDrag, taskStatusIndicator, type DragState } from "./planningGanttModel";
-import type { PlanningTask } from "./types";
+import { buildTimeline, finishDrag, taskStatusIndicator, type DragState } from "./planningGanttModel";
+import type { PlanningSchedule, PlanningTask } from "./types";
 
 const task: PlanningTask = {
   id: "task-1",
@@ -39,6 +39,22 @@ describe("planning Gantt drag model", () => {
     finishDrag(150, { ...drag("progress"), barWidth: 200 }, 60, "day", [task], () => undefined, (_taskId, progress) => progresses.push(progress));
     expect(progresses).toEqual([85]);
   });
+
+  it("snaps hour-scale date changes to whole days", () => {
+    const reschedules: string[][] = [];
+    finishDrag(195, drag("move"), 34, "hour", [task], (taskId, start, end) => reschedules.push([taskId, start, end]), () => undefined);
+    expect(reschedules).toEqual([["task-1", "2026-08-04", "2026-08-06"]]);
+  });
+});
+
+describe("planning Gantt scales", () => {
+  it("builds owned hour, quarter, and year timeline units", () => {
+    const hourLabels = buildTimeline(schedule(), "hour", "standard").units.map((unit) => unit.label);
+    expect(hourLabels.slice(0, 4)).toEqual(["00", "06", "12", "18"]);
+    expect(hourLabels.at(-2)).toBe("18");
+    expect(buildTimeline(schedule(), "quarter", "standard").units[0]).toMatchObject({ label: "Q3", group: "2026" });
+    expect(buildTimeline(schedule(), "year", "standard").units[0]).toMatchObject({ label: "2026", group: "2026" });
+  });
 });
 
 describe("planning Gantt status indicators", () => {
@@ -53,4 +69,17 @@ describe("planning Gantt status indicators", () => {
 
 function drag(mode: DragState["mode"]): DragState {
   return { taskId: "task-1", mode, startX: 60 };
+}
+
+function schedule(): PlanningSchedule {
+  return {
+    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-03", end: "2026-09-09" },
+    tasks: [task],
+    dependencies: [],
+    resources: [],
+    assignments: [],
+    baselines: [],
+    calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },
+    validation: { ok: true, violations: [], warnings: [] },
+  };
 }

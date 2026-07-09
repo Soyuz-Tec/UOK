@@ -36,7 +36,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Drag-to-create dependency links | Implemented | Taskbar connector handles create finish-to-start links through server validation. |
 | Progress bar editing | Implemented | Keep progress drag handle and inspector edits. |
 | Lightbox/task editor | Partial | UOK equivalent is the inspector; improve compact edit workflows and inline grid edit. |
-| Configurable scales from hour to year | Backlog | Add hour, quarter, and year modes without changing the renderer boundary. |
+| Configurable scales from hour to year | Implemented | UOK-owned hour, day, week, month, quarter, and year modes exist without changing the renderer boundary. |
 | Timeline cell templates and task templates | Partial | Use UOK-owned render helpers and status indicators; avoid third-party template API cloning. |
 | Tooltips and quick info | Implemented | UOK renders accessible first-party taskbar hover/focus detail. |
 | Keyboard navigation | Implemented | Grid rows support arrow/home/end focus movement plus common task hotkeys. |
@@ -57,7 +57,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Interactive drag-and-drop editing | Implemented | Keep all edits server-validated. |
 | Customizable task edit form | Partial | UOK inspector supports task edit; make forms denser and safer over time. |
 | Hierarchical subtasks | Implemented | Summary hierarchy and collapse/expand exist. |
-| Configurable scales including hours/minutes/sprints/stages | Backlog | Add scale modes as UOK planning-specific options. |
+| Configurable scales including hours/minutes/sprints/stages | Partial | Hour mode exists; minutes, sprints, and stages remain UOK-specific backlog. |
 | Customizable grid columns | Implemented | Field presets, visibility, resize, and autofit exist. |
 | Grid sorting and task filtering | Partial | Search/filter implemented; richer column sorting remains. |
 | Toolbar and context menu | Implemented | Toolbar and task row context menu exist with server-routed planning actions. |
@@ -80,7 +80,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 2. Dependency drag creation: implemented with taskbar connector handles and the existing Python-validated dependency API.
 3. Context row menu: implemented with a reusable workspace context menu primitive and planning task actions.
 4. Keyboard hotkeys and focus movement: implemented for Gantt grid row navigation and common task actions.
-5. Additional scales: hour, quarter, year, and later sprints/stages.
+5. Additional scales: hour, quarter, and year implemented; later minutes, sprints, and stages remain backlog.
 6. Column reorder and pinned columns: continue grid maturity using shared table primitives.
 7. Virtualization and timeline panning: performance work after feature behavior stabilizes.
 

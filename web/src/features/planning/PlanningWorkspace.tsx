@@ -22,6 +22,7 @@ import {
 import { PlanningInspector, type PlanningInspectorTab } from "./PlanningInspector";
 import { PlanningModuleState } from "./PlanningModuleState";
 import { PlanningTimeline } from "./PlanningTimeline";
+import type { TimelineScale } from "./planningGanttModel";
 import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningProject, PlanningSchedule, PlanningTask, PlanningWorkspaceProps } from "./types";
 
@@ -32,7 +33,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
   const [selectedTaskId, setSelectedTaskId] = useState("");
   const [inspectorTab, setInspectorTab] = useState<PlanningInspectorTab>("task");
   const [newTaskType, setNewTaskType] = useState<"task" | "milestone">("task");
-  const [timelineScale, setTimelineScale] = useState<"day" | "week" | "month">("day");
+  const [timelineScale, setTimelineScale] = useState<TimelineScale>("day");
   const [showCritical, setShowCritical] = useState(true);
   const [showBaselines, setShowBaselines] = useState(true);
   const [status, setStatus] = useState<unknown>("Planning module ready.");
