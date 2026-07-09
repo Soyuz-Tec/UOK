@@ -150,6 +150,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByRole("button", { name: "WBS order", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Cascade scheduling", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Level", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Undo", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Redo", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Export CSV", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Template", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Project JSON", exact: true })).toBeVisible();
@@ -286,6 +288,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByRole("button", { name: "Task actions for Define schedule scope" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Save task" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Level", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Undo", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Redo", exact: true })).toBeDisabled();
     await expect(page.locator(".planning-owned-resize-handle")).toHaveCount(0);
     await expect(page.locator(".planning-owned-progress-handle")).toHaveCount(0);
     await expect(page.locator(".planning-owned-link-handle")).toHaveCount(0);

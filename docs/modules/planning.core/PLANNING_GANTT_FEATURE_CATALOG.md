@@ -40,7 +40,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Critical path | Implemented | Critical flags, highlighting, zero-slack counts, and a Dashboard critical-path explanation panel exist. |
 | Calendars | Implemented | Project working days, holidays, and ignored periods drive scheduling, propagation, read models, and timeline shading. Resource calendars remain a separate resource-planning backlog item. |
 | Resources | Implemented | Resource creation, assignment, allocation display, daily workload lanes, and over-allocation warnings exist. |
-| Export | Partial | Visible schedule CSV export, CSV import template, UOK project JSON exchange, timeline SVG image export, and HTML schedule document export exist through shared export primitives; PDF and richer office document pipelines remain later. |
+| Export/import | External global boundary | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning consumes that boundary and owns only schedule-specific payloads/read-model mapping. |
 | UI proof | Implemented | Playwright proof covers rendering, controls, inspector tabs, responsiveness, and console cleanliness. |
 
 ## Grid And Column Features
@@ -143,10 +143,10 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Review/edit mode | Toolbar toggle prevents schedule mutations by disabling task creation, edit commands, row action menus, drag handles, progress handles, dependency handles, and inspector editor controls. | Implemented |
 | Bulk selection | Select visible rows and apply safe server-validated bulk completion, status/progress changes, and date shifts. | Implemented |
 | Bulk edit | Change status, progress, completion state, and shifted dates for selected tasks through server validation. Owner, priority, and calendar edits remain later because those fields are not yet first-class task fields. | Partial |
-| Undo/redo | Reversible local command stack with server reconciliation. | Backlog |
+| Undo/redo | Reversible local command stack computes before/after read-model deltas, replays safe inverse task/dependency/calendar/resource-allocation operations through server APIs, and exposes toolbar Undo/Redo controls disabled in review mode. Irreversible creation/deletion cases without safe identity recovery are intentionally skipped. | Implemented |
 | Saved views | Store filters, density, fields, scale, and grouping. | Implemented |
 | Search/filter/group | Search task titles; filter by status, critical, resource, milestone. | Implemented |
-| Export | CSV, import template, UOK project JSON exchange, timeline SVG image, and HTML schedule document now; later PDF/richer office documents via global export boundary. | Partial |
+| Export/import | Planning uses the separately deployed global artifact boundary for PDF, PNG, HTML/office documents, Excel, iCal, MS Project, and CSV needs; no planning-specific redeployment is required. | External global boundary |
 | Audit history | Planning schedule events are recorded. | Implemented |
 
 ## Validation

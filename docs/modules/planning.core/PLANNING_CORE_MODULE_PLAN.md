@@ -22,7 +22,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - project list
 - project schedule read model
 - editable task grid and inspector path for create, update, delete, hierarchy, status, progress, and task type
-- traditional Gantt workspace with compact project command bar, Gantt view tab rail, project metadata chips, selection control, grid/timeline, keyboard row navigation, task command toolbar, task row context menu, expand/collapse, cascade sorting, field presets, filters, export, hour/day/week/month/quarter/year scale controls, today/fit/focus controls, critical and baseline toggles, read-model Board/List/Calendar/Workload/People/Dashboard views, and tabbed inspector panels
+- traditional Gantt workspace with compact project command bar, Gantt view tab rail, project metadata chips, selection control, grid/timeline, keyboard row navigation, task command toolbar, task row context menu, expand/collapse, cascade sorting, field presets, filters, undo/redo, global export/import boundary use, hour/day/week/month/quarter/year scale controls, today/fit/focus controls, critical and baseline toggles, read-model Board/List/Calendar/Workload/People/Dashboard views, and tabbed inspector panels
 - Gantt bars
 - milestone and summary task model
 - dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead
@@ -31,7 +31,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - hierarchy validation, WBS read model, and summary rollups
 - CPM read model fields for early dates, late dates, slack, and critical flags
 - baseline capture, baseline variance read-model fields, per-row timeline lanes, and variance badges
-- resource creation, assignment, allocation display, and over-allocation warnings
+- resource creation, assignment, allocation display, over-allocation warnings, and explicit resource leveling for later auto-scheduled assigned tasks
 - drag-to-reschedule path through server validation
 - command-bus writes and idempotency
 - planning audit events
@@ -79,9 +79,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 ## Deferred Work
 
-- full resource leveling and capacity calendars
+- richer resource capacity calendars
 - multi-baseline comparison and richer baseline history controls
 - richer critical path dependency-chain explanation beyond the current Dashboard summary
-- bulk edit, undo, and import/export flows
+- richer bulk edit fields after owner, priority, and calendar become first-class task fields
+- planning adapters for the separately deployed global import/export capability as needed
 - richer keyboard grid editing beyond the current inspector workflow
 - module-root frontend source packaging

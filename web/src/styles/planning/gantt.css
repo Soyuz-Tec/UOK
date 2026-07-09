@@ -236,7 +236,7 @@
   background: color-mix(in srgb, var(--uok-accent) 14%, var(--uok-bg-elevated));
 }
 
-.planning-toolbar-toggle:disabled { color: var(--uok-text-placeholder); background: var(--uok-bg-grouped-secondary); cursor: not-allowed; }
+.planning-icon-button:disabled, .planning-toolbar-toggle:disabled { color: var(--uok-text-placeholder); background: var(--uok-bg-grouped-secondary); cursor: not-allowed; }
 
 .planning-gantt-shell {
   min-width: 0;

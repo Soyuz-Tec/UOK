@@ -1,4 +1,4 @@
-import { Baseline, FolderKanban, GitBranch, Link2, Maximize2, Milestone, Minimize2, Plus, RefreshCw, Rows3, Star, Users } from "lucide-react";
+import { Baseline, FolderKanban, GitBranch, Link2, Maximize2, Milestone, Minimize2, Plus, Redo2, RefreshCw, Rows3, Star, Undo2, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
@@ -10,6 +10,7 @@ import { PlanningReadModelView } from "./PlanningReadModelViews";
 import { PlanningTimelineUtilities } from "./PlanningTimelineUtilities";
 import type { TimelineScale } from "./planningGanttModel";
 import { summaryTaskIds } from "./planningGanttTree";
+import type { PlanningHistoryState } from "./planningHistory";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import { planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningLayoutMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
@@ -26,6 +27,7 @@ export function PlanningTimeline({
   selectedTaskId,
   selectedProjectId,
   busy,
+  history,
   onScaleChange,
   onToggleCritical,
   onToggleBaselines,
@@ -46,6 +48,8 @@ export function PlanningTimeline({
   onCreateBaseline,
   onOpenResources,
   onLevelResources,
+  onUndo,
+  onRedo,
 }: {
   projects: PlanningProject[];
   schedule: PlanningSchedule;
@@ -57,6 +61,7 @@ export function PlanningTimeline({
   selectedTaskId: string;
   selectedProjectId: string;
   busy: string;
+  history: PlanningHistoryState;
   onScaleChange: (scale: TimelineScale) => void;
   onToggleCritical: () => void;
   onToggleBaselines: () => void;
@@ -77,6 +82,8 @@ export function PlanningTimeline({
   onCreateBaseline: () => void;
   onOpenResources: () => void;
   onLevelResources: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
 }) {
   const [activeView, setActiveView] = useState<PlanningView>("Gantt chart");
   const [fieldPreset, setFieldPreset] = useState<FieldPreset>("core");
@@ -148,6 +155,12 @@ export function PlanningTimeline({
           <CommandButton icon={RefreshCw} onClick={onRefresh} loading={busy === "refresh"}>
             Refresh
           </CommandButton>
+          <button type="button" className="planning-icon-button planning-history-control" aria-label="Undo" title={history.undoLabel ? `Undo ${history.undoLabel}` : "Undo"} onClick={onUndo} disabled={reviewMode || !history.canUndo || busy === "undo"}>
+            <Undo2 size={16} aria-hidden="true" />
+          </button>
+          <button type="button" className="planning-icon-button planning-history-control" aria-label="Redo" title={history.redoLabel ? `Redo ${history.redoLabel}` : "Redo"} onClick={onRedo} disabled={reviewMode || !history.canRedo || busy === "redo"}>
+            <Redo2 size={16} aria-hidden="true" />
+          </button>
         </div>
         <nav className="planning-view-tabs" aria-label="Planning views">
           {planningViews.map((view) => {

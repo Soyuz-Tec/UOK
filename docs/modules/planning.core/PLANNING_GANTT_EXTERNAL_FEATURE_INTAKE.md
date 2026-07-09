@@ -45,7 +45,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Drag timeline / click-drag new task | Implemented | Timeline panning, Ctrl/Command wheel zoom, and Shift-drag empty-space task creation are implemented through UOK-owned interactions. |
 | Smart rendering / large data performance | Backlog | Add virtualization only after current features stabilize. |
 | Data loading/saving and REST sync | Implemented | UOK uses FastAPI read models and command writes, not direct client-owned persistence. |
-| Export to document/image/project formats | Partial | CSV export, an import template, UOK project JSON exchange, timeline SVG image export, and HTML schedule document export exist through shared export primitives; PDF and richer office documents remain later. |
+| Export to document/image/project formats | External global boundary | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning should consume that boundary without redeploying it. |
 | Locales/accessibility/touch | Partial | Continue ARIA, focus, and responsive proof; localization remains backlog. |
 | Event system | Partial | UOK equivalent is command bus plus planning audit events. |
 | Row resize | Implemented | UOK row-height model supports per-project row overrides, drag/keyboard resize handles, and double-click/Enter row fit without third-party code. |
@@ -79,8 +79,8 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Critical path, slack, baselines | Implemented | CPM read model, critical-path explanation, slack counts, per-row baseline lanes, and variance badges exist. |
 | Resource planning and workload | Implemented | Resource assignment, warnings, first-party daily workload lanes, and explicit resource leveling exist. |
 | Task grouping, rollups, split tasks, unscheduled tasks | Backlog | Add only after core dependency/constraint model is stronger. |
-| Undo/redo | Backlog | Needs command stack with server reconciliation. |
-| Export/import | Partial | CSV export, an import template, UOK project JSON exchange, timeline SVG image export, and HTML schedule document export exist; PDF/richer office documents and external project equivalents remain later. |
+| Undo/redo | Implemented | Planning now computes reversible before/after read-model deltas, replays safe inverse task/dependency/calendar/resource-allocation operations through server APIs, and exposes toolbar Undo/Redo controls disabled in review mode. |
+| Export/import | External global boundary | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are handled by the separately deployed global artifact capability; planning owns only schedule-specific payload mapping. |
 | Header menu for visible columns | Implemented | UOK now has a first-party per-column header menu for sort, quick action, width reset, hide, and show-all column controls. |
 | No-grid and read-only/prevent-actions modes | Implemented | Timeline-only no-grid mode and review/edit mode are implemented; deeper role-derived permission policy remains a future authorization layer. |
 | Custom task templates and cell borders | Partial | UOK owns task/status templates and timeline grid borders through CSS tokens. |
@@ -111,7 +111,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Performance | Smart rendering, virtualization, lazy loading, dynamic loading, large data mode | visible row window, visible time window, overscan, row height, total counts, loading boundary | Virtualized rows, loading placeholder, stable scrollbars, large-schedule proof |
 | Accessibility/localization | WAI-ARIA, keyboard navigation, hotkeys, touch support, 32/localized labels, RTL | aria labels, focus target, keyboard command map, locale id, text direction, date/number format | Focus rings, keyboard row movement, translated labels later, touch-sized handles |
 | Export/import | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, import validation | export format, visible fields, date range, import row mapping, validation summary | Export menu, import wizard later, downloaded artifact status |
-| Advanced scheduling | Auto-schedule, critical path, slack, calendars, constraints, resource planning, workload, backward planning, undo/redo | dependency graph, calendar, resource capacity, slack, constraint type/date, scheduling direction, undo command stack | Critical overlays, workload lane, constraint indicators, undo/redo buttons later |
+| Advanced scheduling | Auto-schedule, critical path, slack, calendars, constraints, resource planning, workload, backward planning, undo/redo | dependency graph, calendar, resource capacity, slack, constraint type/date, scheduling direction, undo command stack | Critical overlays, workload lane, constraint indicators, undo/redo toolbar buttons |
 
 | Capability family | Feature/function | Typical properties/elements to model | UOK implementation target | Status |
 |---|---|---|---|---:|
@@ -153,8 +153,8 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Accessibility | Keyboard/touch/ARIA | row navigation, focus rings, button labels, touch target size, non-color cues | Keyboard and ARIA proof exists; touch/localization later | Partial |
 | Data integration | REST sync and events | read model, command write, audit event, optimistic state rules | UOK command bus and audit events, no client-owned persistence | Implemented |
 | Data integration | Provider/batch sync modes | backend source, batch transaction, conflict state, local rollback | Selected-task bulk completion, status/progress updates, and date shifts use existing server-validated task writes; richer conflict UX and atomic batch endpoint later | Partial |
-| Export/import | Output formats | visible CSV, PDF/image, HTML/office documents, Excel, project exchange, import validation | CSV export, import template, UOK project JSON exchange, timeline SVG image export, and HTML schedule document export exist through the global export boundary; PDF/richer office documents later | Partial |
-| History | Undo/redo | command stack, reversible payload, server reconciliation, audit correlation | Needs explicit command-stack design | Backlog |
+| Export/import | Output formats | visible CSV, PDF/image, HTML/office documents, Excel, project exchange, import validation | Deployed separately as a global artifact/import-export capability; planning consumes it without redeploying. | External global boundary |
+| History | Undo/redo | command stack, reversible payload, server reconciliation, audit correlation | First-party local command stack stores reversible schedule deltas for safe task, dependency, calendar, resource allocation, and leveling changes, then reconciles through validated server APIs. | Implemented |
 
 ## Near-Term UOK Implementation Order
 
