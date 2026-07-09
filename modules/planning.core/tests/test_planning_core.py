@@ -120,7 +120,7 @@ def test_planning_core_gantt_improvements(client: TestClient) -> None:
         client,
         ops,
         "SetPlanningCalendar",
-        {"project_id": project_id, "working_days": [1, 2, 3, 4, 5], "holidays": ["2026-08-14"]},
+        {"project_id": project_id, "working_days": [1, 2, 3, 4, 5], "holidays": ["2026-08-14"], "ignored_periods": ["2026-08-19..2026-08-20"]},
         f"planning-calendar-{suffix}",
     )
     assert calendar.status_code == 200, calendar.text
@@ -134,6 +134,11 @@ def test_planning_core_gantt_improvements(client: TestClient) -> None:
     holiday_row = {task["id"]: task for task in holiday_schedule["tasks"]}[holiday_task]
     assert holiday_row["start"] == "2026-08-17"
     assert holiday_row["end"] == "2026-08-17"
+    ignored_task = _create_task(client, ops, project_id, suffix, "Ignored start", "2026-08-19", "2026-08-19", "task", 6)
+    ignored_schedule = client.get(f"/api/planning/projects/{project_id}/schedule", headers=ops).json()
+    ignored_row = {task["id"]: task for task in ignored_schedule["tasks"]}[ignored_task]
+    assert ignored_row["start"] == "2026-08-21"
+    assert ignored_schedule["calendar"]["ignored_periods"] == [{"start": "2026-08-19", "end": "2026-08-20"}]
 
     linked = command(
         client,
@@ -240,6 +245,7 @@ def test_planning_core_gantt_improvements(client: TestClient) -> None:
     assert final_schedule["validation"]["ok"] is True
     assert final_schedule["validation"]["warnings"]
     assert final_schedule["calendar"]["holidays"] == ["2026-08-14"]
+    assert final_schedule["calendar"]["ignored_periods"] == [{"start": "2026-08-19", "end": "2026-08-20"}]
 
 
 def _create_task(

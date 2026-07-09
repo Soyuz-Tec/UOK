@@ -986,6 +986,8 @@ export interface components {
         PlanningCalendarRequest: {
             /** Holidays */
             holidays?: string[];
+            /** Ignored Periods */
+            ignored_periods?: string[];
             /**
              * Name
              * @default Standard

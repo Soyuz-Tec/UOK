@@ -38,7 +38,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Milestones | Implemented | Milestone task type and diamond rendering. |
 | Baselines | Implemented | Baseline capture, variance fields, per-row timeline lanes, and non-color variance badges render on task rows. |
 | Critical path | Implemented | Critical flags, highlighting, zero-slack counts, and a Dashboard critical-path explanation panel exist. |
-| Calendars | Implemented | Project working days and holidays drive scheduling, propagation, and holiday shading. Resource calendars remain a separate resource-planning backlog item. |
+| Calendars | Implemented | Project working days, holidays, and ignored periods drive scheduling, propagation, read models, and timeline shading. Resource calendars remain a separate resource-planning backlog item. |
 | Resources | Implemented | Resource creation, assignment, allocation display, daily workload lanes, and over-allocation warnings exist. |
 | Export | Partial | Visible schedule CSV export, CSV import template, UOK project JSON exchange, timeline SVG image export, and HTML schedule document export exist through shared export primitives; PDF and richer office document pipelines remain later. |
 | UI proof | Implemented | Playwright proof covers rendering, controls, inspector tabs, responsiveness, and console cleanliness. |
@@ -90,7 +90,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Holiday shading | Calendar holiday visual bands. | Implemented |
 | Minute/sprint/stage scales | Additional specialized visual scale modes. Minute view uses 30-minute visual buckets; sprint and stage use 14-day and 30-day planning buckets while server scheduling remains date-based. | Implemented |
 | Timeline header grouping | Month/year/week grouping. | Implemented |
-| Ignored periods | Exclude configured periods from progress/date calculations. | Backlog |
+| Ignored periods | Project calendar ignored ranges are persisted, returned in the read model, expanded into non-working dates, and shaded in the timeline. | Implemented |
 
 ## Task Shape And Color Features
 

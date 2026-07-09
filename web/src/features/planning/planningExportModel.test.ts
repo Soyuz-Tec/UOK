@@ -50,6 +50,7 @@ describe("planning export model", () => {
     expect(html).toContain("<h2>Project summary</h2>");
     expect(html).toContain("<h2>Tasks</h2>");
     expect(html).toContain("Scope, design");
+    expect(html).toContain("2026-08-05 to 2026-08-06");
     expect(html).toContain("2026-08-01T00:00:00.000Z");
   });
 });
@@ -59,7 +60,7 @@ function schedule(): PlanningSchedule {
     project: { id: "project-1", name: "Pilot Delivery", status: "planned", start: "2026-08-01", end: "2026-08-10" },
     tasks: [task()],
     dependencies: [],
-    calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },
+    calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [], ignored_periods: [{ start: "2026-08-05", end: "2026-08-06" }] },
     resources: [],
     assignments: [],
     baselines: [],

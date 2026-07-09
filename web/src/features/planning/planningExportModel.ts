@@ -105,6 +105,7 @@ export function planningScheduleDocumentHtml(schedule: PlanningSchedule, generat
           ["Calendar", schedule.calendar?.name || "Not configured"],
           ["Working days", schedule.calendar?.working_days.join(", ") || "-"],
           ["Holidays", schedule.calendar?.holidays.join(", ") || "-"],
+          ["Ignored periods", schedule.calendar?.ignored_periods?.map((period) => `${period.start} to ${period.end}`).join(", ") || "-"],
         ],
       },
     ],

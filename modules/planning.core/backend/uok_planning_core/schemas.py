@@ -48,6 +48,7 @@ class PlanningCalendarRequest(BaseModel):
     name: str = Field(default="Standard", max_length=120)
     working_days: list[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5])
     holidays: list[str] = Field(default_factory=list)
+    ignored_periods: list[str] = Field(default_factory=list)
 
 
 class PlanningBaselineRequest(BaseModel):

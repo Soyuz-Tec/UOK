@@ -40,7 +40,7 @@ export type TaskStatusIndicator = {
 export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity) {
   const start = startOfUnit(dateValue(schedule.project.start), scale);
   const end = addUnit(endOfUnit(dateValue(schedule.project.end), scale), scale);
-  const holidays = new Set(schedule.calendar?.holidays || []);
+  const holidays = calendarExcludedDates(schedule);
   const units: TimelineUnit[] = [];
   for (let cursor = new Date(start); cursor <= end; cursor = addUnit(cursor, scale)) {
     units.push({
@@ -53,6 +53,19 @@ export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, 
     });
   }
   return { start, units, cellWidth: cellWidth(scale, viewDensity) };
+}
+
+function calendarExcludedDates(schedule: PlanningSchedule) {
+  const values = new Set(schedule.calendar?.holidays || []);
+  for (const period of schedule.calendar?.ignored_periods || []) {
+    let current = dateValue(period.start);
+    const end = dateValue(period.end);
+    while (current <= end) {
+      values.add(isoDate(current));
+      current = new Date(current.getFullYear(), current.getMonth(), current.getDate() + 1);
+    }
+  }
+  return values;
 }
 
 export function gridColumns(fieldPreset: "core" | "progress" | "resources"): PlanningGridColumn[] {

@@ -24,7 +24,10 @@ def cmd_set_calendar(db: Session, actor: Actor, payload: dict[str, Any], command
         db.add(row)
     row.name = str(payload.get("name") or "Standard")[:120]
     row.working_days_json = dumps(_working_days(payload.get("working_days")))
-    row.holidays_json = dumps([parse_planning_date(item, "holiday").date().isoformat() for item in payload.get("holidays", [])])
+    row.holidays_json = dumps({
+        "holidays": [parse_planning_date(item, "holiday").date().isoformat() for item in payload.get("holidays", [])],
+        "ignored_periods": _ignored_periods(payload.get("ignored_periods", [])),
+    })
     db.flush()
     changed = apply_schedule(db, actor, project.id)
     _emit(db, actor, "PlanningCalendarUpdated", "PlanningCalendar", row.id, {"project_id": project.id})
@@ -112,6 +115,26 @@ def _working_days(value: Any) -> list[int]:
     if not days or any(item < 1 or item > 7 for item in days):
         raise ValueError("working_days must contain ISO weekday numbers from 1 to 7")
     return sorted(set(days))
+
+
+def _ignored_periods(value: Any) -> list[dict[str, str]]:
+    periods: list[dict[str, str]] = []
+    for index, item in enumerate(value or [], start=1):
+        text = str(item).strip()
+        if not text:
+            continue
+        if ".." in text:
+            start_text, end_text = [part.strip() for part in text.split("..", 1)]
+        else:
+            start_text = end_text = text
+        start = parse_planning_date(start_text, f"ignored_period_{index}_start").date()
+        end = parse_planning_date(end_text, f"ignored_period_{index}_end").date()
+        if end < start:
+            raise ValueError("ignored period end must be on or after start")
+        if (end - start).days > 366:
+            raise ValueError("ignored periods must be 366 days or fewer")
+        periods.append({"start": start.isoformat(), "end": end.isoformat()})
+    return periods
 
 
 def _emit(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:

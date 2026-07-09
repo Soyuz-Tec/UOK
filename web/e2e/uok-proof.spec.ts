@@ -104,7 +104,7 @@ const sampleSchedule = {
       lag_days: 1,
     },
   ],
-  calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: ["2026-08-14"] },
+  calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: ["2026-08-14"], ignored_periods: [{ start: "2026-08-17", end: "2026-08-18" }] },
   resources: [{ id: "resource-1", project_id: sampleProject.id, name: "Planner", role: "Scheduling" }],
   assignments: [{ id: "assignment-1", task_id: "task-2", resource_id: "resource-1", allocation_percent: 120 }],
   baselines: [{ id: "baseline-1", project_id: sampleProject.id, name: "Initial baseline", created_at: "2026-08-01T00:00:00Z" }],
@@ -390,6 +390,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByLabel("Dependency editor")).toBeVisible();
     await page.getByRole("tab", { name: "Calendar" }).click();
     await expect(page.getByLabel("Calendar and baseline")).toBeVisible();
+    await expect(page.getByLabel("Ignored periods")).toHaveValue("2026-08-17..2026-08-18");
     await page.getByRole("tab", { name: "Resources" }).click();
     await expect(page.getByLabel("Resource assignments")).toBeVisible();
     await page.getByRole("tab", { name: "Status" }).click();

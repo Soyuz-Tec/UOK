@@ -7,6 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .calendar_payload import calendar_holidays, calendar_ignored_periods
 from .models import (
     PlanningAssignment,
     PlanningBaseline,
@@ -147,12 +148,14 @@ def _calendar_row(db: Session, actor: Actor, project_id: str) -> dict[str, Any]:
         PlanningCalendar.project_id == project_id,
     )).first()
     if not row:
-        return {"name": "Standard", "working_days": [1, 2, 3, 4, 5], "holidays": []}
+        return {"name": "Standard", "working_days": [1, 2, 3, 4, 5], "holidays": [], "ignored_periods": []}
+    raw_holidays = loads(row.holidays_json, [])
     return {
         "id": row.id,
         "name": row.name,
         "working_days": loads(row.working_days_json, [1, 2, 3, 4, 5]),
-        "holidays": loads(row.holidays_json, []),
+        "holidays": calendar_holidays(raw_holidays),
+        "ignored_periods": calendar_ignored_periods(raw_holidays),
     }
 
 

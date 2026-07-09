@@ -7,6 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .calendar_payload import calendar_holidays, calendar_ignored_dates
 from .models import PlanningCalendar, PlanningProject, PlanningTask, PlanningTaskDependency
 from .schedule_math import (
     CalendarSpec,
@@ -80,7 +81,9 @@ def project_calendar(db: Session, actor: Actor, project_id: str) -> CalendarSpec
     if not row:
         return default_calendar()
     working_days = {int(item) for item in loads(row.working_days_json, [1, 2, 3, 4, 5]) if 1 <= int(item) <= 7}
-    holidays = {date.fromisoformat(str(item)) for item in loads(row.holidays_json, [])}
+    raw_holidays = loads(row.holidays_json, [])
+    holidays = {date.fromisoformat(item) for item in calendar_holidays(raw_holidays)}
+    holidays.update(calendar_ignored_dates(raw_holidays))
     return CalendarSpec(frozenset(working_days or {1, 2, 3, 4, 5}), frozenset(holidays))
 
 def apply_schedule(db: Session, actor: Actor, project_id: str, cascade_dependencies: bool = True) -> set[str]:

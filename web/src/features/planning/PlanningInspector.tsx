@@ -201,14 +201,16 @@ function CalendarBaselinePanel({ schedule, busy, onSetCalendar, onCreateBaseline
   onSetCalendar: (payload: Record<string, unknown>) => Promise<void>;
   onCreateBaseline: (payload: Record<string, unknown>) => Promise<void>;
 }) {
-  const calendar = schedule.calendar || { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] };
+  const calendar = schedule.calendar || { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [], ignored_periods: [] };
   const [holidays, setHolidays] = useState(calendar.holidays.join("\n"));
+  const [ignoredPeriods, setIgnoredPeriods] = useState((calendar.ignored_periods || []).map((period) => `${period.start}..${period.end}`).join("\n"));
   return (
     <section className="planning-editor" aria-label="Calendar and baseline">
       <h3>Calendar and baseline</h3>
       <label className="field"><span>Holidays</span><textarea value={holidays} onChange={(event) => setHolidays(event.target.value)} /></label>
+      <label className="field"><span>Ignored periods</span><textarea aria-label="Ignored periods" value={ignoredPeriods} onChange={(event) => setIgnoredPeriods(event.target.value)} /></label>
       <div className="planning-action-row">
-        <CommandButton icon={CalendarDays} loading={busy === "calendar"} onClick={() => onSetCalendar({ name: calendar.name, working_days: calendar.working_days, holidays: holidays.split(/\s+/).filter(Boolean) })}>
+        <CommandButton icon={CalendarDays} loading={busy === "calendar"} onClick={() => onSetCalendar({ name: calendar.name, working_days: calendar.working_days, holidays: holidays.split(/\s+/).filter(Boolean), ignored_periods: ignoredPeriods.split(/\s+/).filter(Boolean) })}>
           Save calendar
         </CommandButton>
         <CommandButton icon={Flag} loading={busy === "baseline"} onClick={() => onCreateBaseline({ name: `Baseline ${schedule.baselines.length + 1}` })}>

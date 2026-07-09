@@ -48,6 +48,7 @@ export type PlanningCalendar = {
   name: string;
   working_days: number[];
   holidays: string[];
+  ignored_periods?: Array<{ start: string; end: string }>;
 };
 
 export type PlanningResource = {

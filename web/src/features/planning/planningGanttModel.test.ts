@@ -59,6 +59,16 @@ describe("planning Gantt scales", () => {
     expect(buildTimeline(schedule(), "quarter", "standard").units[0]).toMatchObject({ label: "Q3", group: "2026" });
     expect(buildTimeline(schedule(), "year", "standard").units[0]).toMatchObject({ label: "2026", group: "2026" });
   });
+
+  it("treats ignored periods as excluded timeline dates", () => {
+    const units = buildTimeline({
+      ...schedule(),
+      calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [], ignored_periods: [{ start: "2026-08-10", end: "2026-08-11" }] },
+    }, "day", "standard").units;
+
+    expect(units.find((unit) => unit.key === "2026-08-10")).toMatchObject({ holiday: true });
+    expect(units.find((unit) => unit.key === "2026-08-11")).toMatchObject({ holiday: true });
+  });
 });
 
 describe("planning Gantt status indicators", () => {

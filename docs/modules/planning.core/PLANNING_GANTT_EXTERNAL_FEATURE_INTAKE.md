@@ -75,7 +75,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Virtualization for large data sets | Backlog | Add only with measurable performance need and tests. |
 | Localization | Backlog | Requires UOK-wide localization approach, not planning-only strings. |
 | Light/dark themes | Implemented | UOK appearance tokens and UI proof cover light/dark behavior. |
-| Work-time calendars and resource calendars | Partial | Project work-time calendar scheduling and propagation exist; resource calendars remain backlog. |
+| Work-time calendars and resource calendars | Partial | Project work-time calendar scheduling, holidays, ignored periods, and propagation exist; resource calendars remain backlog. |
 | Critical path, slack, baselines | Implemented | CPM read model, critical-path explanation, slack counts, per-row baseline lanes, and variance badges exist. |
 | Resource planning and workload | Implemented | Resource assignment, warnings, and first-party daily workload lanes exist; automatic leveling remains a separate scheduling backlog item. |
 | Task grouping, rollups, split tasks, unscheduled tasks | Backlog | Add only after core dependency/constraint model is stronger. |
@@ -144,7 +144,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Dependencies | Chain highlighting | predecessor/successor path, selected task emphasis, critical chain | Selected predecessor/successor rows, task bars, and dependency paths highlight in the first-party renderer | Implemented |
 | Scheduling | Auto scheduling | dependency propagation, calendar rules, manual/auto mode, constraints | Python dependency propagation, project calendar rules, and a cascade scheduling toggle exist; constraints/manual mode later | Partial |
 | Scheduling | CPM and slack | early/late dates, total slack, critical flag, variance | CPM read model and Dashboard critical-path/slack explanation are implemented | Implemented |
-| Scheduling | Calendars | working days, holidays, resource calendars, ignored/non-linear periods | Project working days and holidays drive task normalization, propagation, read models, and shading; resource calendars remain later | Partial |
+| Scheduling | Calendars | working days, holidays, resource calendars, ignored/non-linear periods | Project working days, holidays, and ignored periods drive task normalization, propagation, read models, and shading; resource calendars remain later | Partial |
 | Scheduling | Backward planning and fixed project limits | direction, project start/end bounds, constraint violation messages | Later Python scheduling policy extension | Backlog |
 | Resources | Assignments | resource id/name, role, allocation, capacity, warnings, workload lane | Assignments, warnings, and workload lanes are implemented from the validated schedule read model | Implemented |
 | Resources | Resource panel/load chart | resource row, load cell, chart mode, allocation template, overload state | First-party Workload view renders resource lanes, daily allocation cells, peak load, and overload status from existing assignments | Implemented |
