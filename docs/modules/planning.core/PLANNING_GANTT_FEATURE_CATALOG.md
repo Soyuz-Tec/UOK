@@ -40,7 +40,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Critical path | Implemented | Critical flags, highlighting, zero-slack counts, and a Dashboard critical-path explanation panel exist. |
 | Calendars | Implemented | Project working days and holidays drive scheduling, propagation, and holiday shading. Resource calendars remain a separate resource-planning backlog item. |
 | Resources | Implemented | Resource creation, assignment, allocation display, daily workload lanes, and over-allocation warnings exist. |
-| Export | Partial | Visible schedule CSV export, CSV import template, UOK project JSON exchange, and timeline SVG image export exist through shared export primitives; PDF/document remain later. |
+| Export | Partial | Visible schedule CSV export, CSV import template, UOK project JSON exchange, timeline SVG image export, and HTML schedule document export exist through shared export primitives; PDF and richer office document pipelines remain later. |
 | UI proof | Implemented | Playwright proof covers rendering, controls, inspector tabs, responsiveness, and console cleanliness. |
 
 ## Grid And Column Features
@@ -146,7 +146,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Undo/redo | Reversible local command stack with server reconciliation. | Backlog |
 | Saved views | Store filters, density, fields, scale, and grouping. | Implemented |
 | Search/filter/group | Search task titles; filter by status, critical, resource, milestone. | Implemented |
-| Export | CSV, import template, UOK project JSON exchange, and timeline SVG image now; later PDF/document via global export boundary. | Partial |
+| Export | CSV, import template, UOK project JSON exchange, timeline SVG image, and HTML schedule document now; later PDF/richer office documents via global export boundary. | Partial |
 | Audit history | Planning schedule events are recorded. | Implemented |
 
 ## Validation

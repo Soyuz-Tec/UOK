@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { csvContent, exportFilename, jsonContent, textArtifact, xmlText } from "./exportArtifacts";
+import { csvContent, exportFilename, htmlDocumentContent, jsonContent, textArtifact, xmlText } from "./exportArtifacts";
 
 describe("shared export artifacts", () => {
   it("builds stable export filenames", () => {
@@ -19,5 +19,23 @@ describe("shared export artifacts", () => {
 
   it("escapes XML text and attribute content", () => {
     expect(xmlText("A&B <C> \"D\"")).toBe("A&amp;B &lt;C&gt; &quot;D&quot;");
+  });
+
+  it("builds escaped reusable HTML documents", () => {
+    const html = htmlDocumentContent({
+      title: "Pilot <Delivery>",
+      subtitle: "Schedule & proof",
+      generatedAt: "2026-08-01T00:00:00.000Z",
+      sections: [{
+        heading: "Tasks",
+        definitionList: [["Owner", "Ops & Planning"]],
+        tables: [{ headers: ["Task"], rows: [["Scope <design>"]] }],
+      }],
+    });
+
+    expect(html).toContain("<!doctype html>");
+    expect(html).toContain("Pilot &lt;Delivery&gt;");
+    expect(html).toContain("Schedule &amp; proof");
+    expect(html).toContain("Scope &lt;design&gt;");
   });
 });

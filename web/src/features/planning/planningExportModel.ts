@@ -1,4 +1,4 @@
-import { csvContent, downloadExportArtifact, exportFilename, jsonContent, textArtifact, xmlText } from "../../shared/exporting";
+import { csvContent, downloadExportArtifact, exportFilename, htmlDocumentContent, jsonContent, textArtifact, xmlText } from "../../shared/exporting";
 import { buildTimeline, dateValue, durationUnits, taskColorClass, xForDate, type TimelineScale } from "./planningGanttModel";
 import type { ViewDensity } from "./planningTimelineModel";
 import type { PlanningSchedule } from "./types";
@@ -26,6 +26,88 @@ export function planningProjectExchangeJson(schedule: PlanningSchedule) {
     resources: schedule.resources,
     assignments: schedule.assignments,
     baselines: schedule.baselines,
+  });
+}
+
+export function planningScheduleDocumentHtml(schedule: PlanningSchedule, generatedAt?: string) {
+  const taskById = new Map(schedule.tasks.map((task) => [task.id, task]));
+  const resourcesById = new Map(schedule.resources.map((resource) => [resource.id, resource]));
+  const assignmentRows = schedule.assignments.map((assignment) => {
+    const task = taskById.get(assignment.task_id);
+    const resource = resourcesById.get(assignment.resource_id);
+    return [
+      task?.wbs || "-",
+      task?.title || assignment.task_id,
+      resource?.name || assignment.resource_id,
+      resource?.role || "-",
+      `${assignment.allocation_percent}%`,
+    ];
+  });
+
+  return htmlDocumentContent({
+    title: `${schedule.project.name} schedule`,
+    subtitle: "UOK planning schedule document",
+    generatedAt,
+    sections: [
+      {
+        heading: "Project summary",
+        definitionList: [
+          ["Project", schedule.project.name],
+          ["Status", schedule.project.status || "No status"],
+          ["Date range", `${schedule.project.start} to ${schedule.project.end}`],
+          ["Tasks", `${schedule.tasks.length}`],
+          ["Dependencies", `${schedule.dependencies.length}`],
+          ["Resources", `${schedule.resources.length}`],
+          ["Validation", schedule.validation.ok ? "Valid" : "Needs review"],
+        ],
+      },
+      {
+        heading: "Tasks",
+        tables: [{
+          headers: ["WBS", "Task", "Type", "Status", "Start", "End", "Duration", "Progress", "Critical"],
+          rows: [...schedule.tasks]
+            .sort((a, b) => a.sort_order - b.sort_order)
+            .map((task) => [
+              task.wbs || "-",
+              task.title,
+              task.task_type,
+              task.status,
+              task.start,
+              task.end,
+              `${task.duration_days}d`,
+              `${task.progress}%`,
+              task.critical ? "yes" : "no",
+            ]),
+        }],
+      },
+      {
+        heading: "Dependencies",
+        tables: [{
+          headers: ["Predecessor", "Successor", "Type", "Lag days"],
+          rows: schedule.dependencies.map((dependency) => [
+            taskLabel(taskById.get(dependency.predecessor_task_id), dependency.predecessor_task_id),
+            taskLabel(taskById.get(dependency.successor_task_id), dependency.successor_task_id),
+            dependency.dependency_type,
+            `${dependency.lag_days}`,
+          ]),
+        }],
+      },
+      {
+        heading: "Resources",
+        tables: [{
+          headers: ["WBS", "Task", "Resource", "Role", "Allocation"],
+          rows: assignmentRows,
+        }],
+      },
+      {
+        heading: "Calendar",
+        definitionList: [
+          ["Calendar", schedule.calendar?.name || "Not configured"],
+          ["Working days", schedule.calendar?.working_days.join(", ") || "-"],
+          ["Holidays", schedule.calendar?.holidays.join(", ") || "-"],
+        ],
+      },
+    ],
   });
 }
 
@@ -85,10 +167,19 @@ export function exportPlanningTimelineSvg(schedule: PlanningSchedule) {
   downloadExportArtifact(textArtifact(planningExportFilename(schedule, "timeline", "svg"), planningTimelineSvg(schedule), "image/svg+xml;charset=utf-8"));
 }
 
+export function exportPlanningScheduleDocument(schedule: PlanningSchedule) {
+  downloadExportArtifact(textArtifact(planningExportFilename(schedule, "schedule-document", "html"), planningScheduleDocumentHtml(schedule, new Date().toISOString()), "text/html;charset=utf-8"));
+}
+
 function statusColor(status: string) {
   if (status === "complete") return "#15803d";
   if (status === "overdue") return "#b91c1c";
   if (status === "blocked") return "#92400e";
   if (status === "in-progress") return "#2563eb";
   return "#64748b";
+}
+
+function taskLabel(task: PlanningSchedule["tasks"][number] | undefined, fallback: string) {
+  if (!task) return fallback;
+  return `${task.wbs || "-"} ${task.title}`;
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { planningExportFilename, planningImportTemplateCsv, planningProjectExchangeJson, planningScheduleCsv, planningTimelineSvg } from "./planningExportModel";
+import { planningExportFilename, planningImportTemplateCsv, planningProjectExchangeJson, planningScheduleCsv, planningScheduleDocumentHtml, planningTimelineSvg } from "./planningExportModel";
 import type { PlanningSchedule, PlanningTask } from "./types";
 
 describe("planning export model", () => {
@@ -40,6 +40,17 @@ describe("planning export model", () => {
     expect(svg).toContain("Pilot Delivery");
     expect(svg).toContain("Scope, design");
     expect(svg).toContain("2026-08-01 to 2026-08-10");
+  });
+
+  it("exports a first-party HTML schedule document", () => {
+    const html = planningScheduleDocumentHtml(schedule(), "2026-08-01T00:00:00.000Z");
+
+    expect(html).toContain("<title>Pilot Delivery schedule</title>");
+    expect(html).toContain("UOK planning schedule document");
+    expect(html).toContain("<h2>Project summary</h2>");
+    expect(html).toContain("<h2>Tasks</h2>");
+    expect(html).toContain("Scope, design");
+    expect(html).toContain("2026-08-01T00:00:00.000Z");
   });
 });
 

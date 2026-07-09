@@ -1,8 +1,8 @@
-import { Baseline, CalendarClock, ChevronDown, Columns3, Download, Flag, Lock, Maximize2, Minimize2, Target, Unlock } from "lucide-react";
+import { Baseline, CalendarClock, ChevronDown, Columns3, Download, FileText, Flag, Lock, Maximize2, Minimize2, Target, Unlock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { FieldVisibilityMenu, type ColumnVisibilityMap } from "../../shared/tables";
-import { exportPlanningImportTemplate, exportPlanningProjectJson, exportPlanningTimelineSvg, exportScheduleCsv } from "./planningExportModel";
+import { exportPlanningImportTemplate, exportPlanningProjectJson, exportPlanningScheduleDocument, exportPlanningTimelineSvg, exportScheduleCsv } from "./planningExportModel";
 import { PlanningFilters } from "./PlanningFilters";
 import { PlanningSavedViews } from "./PlanningSavedViews";
 import type { TimelineScale } from "./planningGanttModel";
@@ -151,6 +151,10 @@ export function PlanningTimelineUtilities({
       <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningTimelineSvg(schedule)}>
         <Download size={16} aria-hidden="true" />
         <span>Timeline SVG</span>
+      </button>
+      <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningScheduleDocument(schedule)}>
+        <FileText size={16} aria-hidden="true" />
+        <span>Document</span>
       </button>
       <label className="planning-toolbar-select">
         <ChevronDown size={16} aria-hidden="true" />
