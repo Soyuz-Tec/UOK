@@ -473,8 +473,10 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
         ganttTop: gantt?.top || 0,
         ganttWidth: gantt?.width || 0,
         ganttHeight: gantt?.height || 0,
+        ganttThemeWidth: ganttTheme?.width || 0,
         ganttThemeHeight: ganttTheme?.height || 0,
         firstGanttRowHeight: firstGanttRow?.height || 0,
+        firstGanttChartWidth: firstGanttChart?.width || 0,
         firstGanttChartHeight: firstGanttChart?.height || 0,
         overlap: Boolean(gantt && inspector && !(gantt.right <= inspector.left || inspector.right <= gantt.left || gantt.bottom <= inspector.top || inspector.bottom <= gantt.top)),
       };
@@ -487,6 +489,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     }
     expect(layout.ganttWidth).toBeGreaterThan(viewport.width > 680 ? 280 : 150);
     expect(layout.ganttHeight).toBeGreaterThan(viewport.width > 680 ? Math.max(500, viewport.height - 260) : 460);
+    expect(layout.ganttThemeWidth).toBeGreaterThanOrEqual(layout.firstGanttChartWidth - 2);
     expect(layout.ganttThemeHeight).toBeGreaterThan(layout.ganttHeight - 40);
     expect(layout.firstGanttRowHeight).toBeGreaterThanOrEqual(48);
     expect(layout.firstGanttChartHeight).toBeGreaterThan(viewport.width > 680 ? layout.ganttHeight - 40 : 300);

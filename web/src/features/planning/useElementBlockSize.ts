@@ -1,15 +1,17 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 
 export function useElementBlockSize<T extends HTMLElement>() {
-  const ref = useRef<T | null>(null);
+  const [element, setElement] = useState<T | null>(null);
   const [blockSize, setBlockSize] = useState(0);
+  const [inlineSize, setInlineSize] = useState(0);
 
   useLayoutEffect(() => {
-    const element = ref.current;
     if (!element) return undefined;
 
     const update = () => {
-      setBlockSize(Math.round(element.getBoundingClientRect().height));
+      const rect = element.getBoundingClientRect();
+      setBlockSize(Math.round(rect.height));
+      setInlineSize(Math.round(rect.width));
     };
     update();
 
@@ -21,7 +23,7 @@ export function useElementBlockSize<T extends HTMLElement>() {
     const observer = new ResizeObserver(update);
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [element]);
 
-  return [ref, blockSize] as const;
+  return [setElement, blockSize, inlineSize] as const;
 }

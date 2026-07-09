@@ -37,22 +37,19 @@ export type TaskStatusIndicator = {
   label: string;
 };
 
-export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity) {
+export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity, minVisibleWidth = 0) {
   const start = startOfUnit(dateValue(schedule.project.start), scale);
   const end = addUnit(endOfUnit(dateValue(schedule.project.end), scale), scale);
   const holidays = calendarExcludedDates(schedule);
   const units: TimelineUnit[] = [];
-  for (let cursor = new Date(start); cursor <= end; cursor = addUnit(cursor, scale)) {
-    units.push({
-      key: unitKey(cursor, scale),
-      label: unitLabel(cursor, scale),
-      group: groupLabel(cursor, scale),
-      date: new Date(cursor),
-      weekend: cursor.getDay() === 0 || cursor.getDay() === 6,
-      holiday: holidays.has(isoDate(cursor)),
-    });
+  const width = cellWidth(scale, viewDensity);
+  const minUnits = Math.max(1, Math.ceil(minVisibleWidth / width));
+  let cursor = new Date(start);
+  while (cursor <= end || units.length < minUnits) {
+    units.push(timelineUnit(cursor, scale, holidays));
+    cursor = addUnit(cursor, scale);
   }
-  return { start, units, cellWidth: cellWidth(scale, viewDensity) };
+  return { start, units, cellWidth: width };
 }
 
 function calendarExcludedDates(schedule: PlanningSchedule) {
@@ -66,6 +63,17 @@ function calendarExcludedDates(schedule: PlanningSchedule) {
     }
   }
   return values;
+}
+
+function timelineUnit(cursor: Date, scale: TimelineScale, holidays: Set<string>): TimelineUnit {
+  return {
+    key: unitKey(cursor, scale),
+    label: unitLabel(cursor, scale),
+    group: groupLabel(cursor, scale),
+    date: new Date(cursor),
+    weekend: cursor.getDay() === 0 || cursor.getDay() === 6,
+    holiday: holidays.has(isoDate(cursor)),
+  };
 }
 
 export function gridColumns(fieldPreset: "core" | "progress" | "resources"): PlanningGridColumn[] {

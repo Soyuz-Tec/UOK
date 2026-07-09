@@ -69,6 +69,16 @@ describe("planning Gantt scales", () => {
     expect(units.find((unit) => unit.key === "2026-08-10")).toMatchObject({ holiday: true });
     expect(units.find((unit) => unit.key === "2026-08-11")).toMatchObject({ holiday: true });
   });
+
+  it("extends timeline units to fill the visible chart width", () => {
+    const units = buildTimeline({
+      ...schedule(),
+      project: { id: "project-1", name: "Short", status: "planned", start: "2026-08-03", end: "2026-08-05" },
+    }, "day", "standard", 900).units;
+
+    expect(units.length).toBeGreaterThan(10);
+    expect(units.at(-1)).toMatchObject({ key: "2026-08-20", label: "20" });
+  });
 });
 
 describe("planning Gantt status indicators", () => {

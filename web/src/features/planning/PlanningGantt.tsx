@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 
 import { useColumnOrder, useResizableColumns } from "../../shared/tables";
 import type { PlanningTask } from "./types";
@@ -64,7 +64,8 @@ export function PlanningGantt({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
-  const [shellRef, shellBlockSize] = useElementBlockSize<HTMLDivElement>();
+  const [setShellElement, shellBlockSize] = useElementBlockSize<HTMLDivElement>();
+  const [setChartSizeElement, , chartInlineSize] = useElementBlockSize<HTMLDivElement>();
   const [drag, setDrag] = useState<DragState | null>(null);
   const [linkDrag, setLinkDrag] = useState<DependencyLinkDrag | null>(null);
   const [sort, setSort] = useState<PlanningGridSort>(null);
@@ -77,7 +78,7 @@ export function PlanningGantt({
   const { resetColumnWidth, setColumnWidth, totalWidth, widths } = useResizableColumns(resizeColumns, `planning.gantt.${fieldPreset}`);
   const pinnedOffsets = useMemo(() => pinnedColumnOffsets(columns, widths), [columns, widths]);
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
-  const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity), [scale, schedule, viewDensity]);
+  const chart = useMemo(() => buildTimeline(schedule, scale, viewDensity, chartInlineSize), [chartInlineSize, scale, schedule, viewDensity]);
   const visibleTasks = useMemo(() => sortPlanningTasks(visibleRows(schedule.tasks, collapsedSummaryIds), sort, assignedByTask), [assignedByTask, collapsedSummaryIds, schedule.tasks, sort]);
   const { resetRowHeight, rowHeights, setRowHeight } = usePlanningRowHeights(schedule.project.id);
   const rowLayoutState = useMemo(() => planningRowLayouts(visibleTasks, rowSize, rowHeights), [rowHeights, rowSize, visibleTasks]);
@@ -99,6 +100,10 @@ export function PlanningGantt({
     onScaleChange,
     scale,
   });
+  const setChartElement = useCallback((element: HTMLDivElement | null) => {
+    scrollRef.current = element;
+    setChartSizeElement(element);
+  }, [setChartSizeElement]);
 
   usePlanningGanttNavigation({
     cellWidth: chart.cellWidth,
@@ -119,7 +124,7 @@ export function PlanningGantt({
   return (
     <div
       className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance} ${readOnly ? "planning-readonly-mode" : ""} ${linkDrag ? "planning-linking" : ""}`}
-      ref={shellRef}
+      ref={setShellElement}
       aria-label="Planning Gantt chart"
       aria-readonly={readOnly}
       style={{ "--planning-gantt-content-height": `${shellHeight}px`, "--planning-grid-width": `${gridWidth}px` } as CSSProperties}
@@ -172,7 +177,7 @@ export function PlanningGantt({
       </div>
       <div
         className={`planning-owned-chart ${timelineInteraction.panning ? "panning" : ""}`}
-        ref={scrollRef}
+        ref={setChartElement}
         aria-label="Planning timeline"
         title="Drag empty timeline space to pan. Hold Shift and drag empty space to create a task. Hold Ctrl or Command and use the wheel to zoom."
         onPointerDown={timelineInteraction.onPointerDown}
