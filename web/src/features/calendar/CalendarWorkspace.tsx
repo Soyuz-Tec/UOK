@@ -12,7 +12,9 @@ import { CalendarMonthView } from "./CalendarMonthView";
 import { CalendarTimeGrid } from "./CalendarTimeGrid";
 import { CalendarToolbar } from "./CalendarToolbar";
 import { CALENDAR_MODULE_ID } from "./calendarModule";
-import { addDays, addMonths, durationDays, eventStart, localInputValue, rangeForView, startOfDay } from "./calendarDates";
+import { addDays, addMonths, durationDays, eventStart, rangeForView, startOfDay } from "./calendarDates";
+import { draftFromEvent, emptyDraft, eventPayload } from "./calendarDrafts";
+import { filterCalendarEvents } from "./calendarFilters";
 import type { CalendarDraft, CalendarEventRecord, CalendarRecord, CalendarView } from "./calendarTypes";
 
 type Props = {
@@ -26,45 +28,6 @@ function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 }
 
-function emptyDraft(date = new Date(), hour = 9): CalendarDraft {
-  const start = new Date(date);
-  start.setHours(hour, 0, 0, 0);
-  const end = new Date(start);
-  end.setHours(start.getHours() + 1);
-  return {
-    title: "",
-    description: "",
-    location: "",
-    startsAt: localInputValue(start),
-    endsAt: localInputValue(end),
-    allDay: false,
-    transparency: "busy",
-    recurrence: "",
-    recurrenceUntil: "",
-    reminderMinutes: "",
-    participantName: "",
-    participantEmail: "",
-  };
-}
-
-function draftFromEvent(event: CalendarEventRecord): CalendarDraft {
-  return {
-    id: event.id,
-    title: event.title,
-    description: event.description || "",
-    location: event.location || "",
-    startsAt: localInputValue(new Date(event.occurrence_start || event.starts_at || "")),
-    endsAt: localInputValue(new Date(event.occurrence_end || event.ends_at || "")),
-    allDay: Boolean(event.all_day),
-    transparency: event.transparency === "free" ? "free" : "busy",
-    recurrence: event.recurrence_rule?.includes("FREQ=") ? event.recurrence_rule.split("FREQ=")[1]?.split(";")[0] as CalendarDraft["recurrence"] : "",
-    recurrenceUntil: event.recurrence_until ? localInputValue(new Date(event.recurrence_until)) : "",
-    reminderMinutes: event.reminders?.[0]?.trigger_minutes_before != null ? String(event.reminders[0].trigger_minutes_before) : "",
-    participantName: event.participants?.[0]?.display_name || "",
-    participantEmail: event.participants?.[0]?.email || "",
-  };
-}
-
 export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: Props) {
   const module = moduleRows.find((row) => row.name === CALENDAR_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
@@ -73,13 +36,16 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
   const [events, setEvents] = useState<CalendarEventRecord[]>([]);
   const [activeCalendarId, setActiveCalendarId] = useState("");
   const [view, setView] = useState<CalendarView>("month");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [cursorDate, setCursorDate] = useState(startOfDay(new Date()));
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventRecord | undefined>();
   const [draft, setDraft] = useState<CalendarDraft>(emptyDraft());
   const [editorOpen, setEditorOpen] = useState(false);
   const [busyCount, setBusyCount] = useState(0);
   const [message, setMessage] = useState("Ready");
-  const eventRows = useMemo(() => events.slice().sort((a, b) => a.occurrence_start.localeCompare(b.occurrence_start)), [events]);
+  const eventRows = useMemo(() => filterCalendarEvents(events, query, statusFilter, availabilityFilter).sort((a, b) => a.occurrence_start.localeCompare(b.occurrence_start)), [events, query, statusFilter, availabilityFilter]);
 
   async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
     const res = await fetch(path, { ...options, headers: { ...authHeaders(token), ...(options.headers || {}) } });
@@ -205,8 +171,19 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
         activeCalendarId={activeCalendarId}
         view={view}
         cursorDate={cursorDate}
+        query={query}
+        statusFilter={statusFilter}
+        availabilityFilter={availabilityFilter}
         onCalendarChange={(id) => void refreshCalendar(id)}
         onViewChange={setView}
+        onQueryChange={setQuery}
+        onStatusFilterChange={setStatusFilter}
+        onAvailabilityFilterChange={setAvailabilityFilter}
+        onClearFilters={() => {
+          setQuery("");
+          setStatusFilter("active");
+          setAvailabilityFilter("all");
+        }}
         onToday={() => setCursorDate(startOfDay(new Date()))}
         onMove={(direction) => setCursorDate(view === "month" || view === "agenda" ? addMonths(cursorDate, direction) : addDays(cursorDate, direction * (view === "week" ? 7 : 1)))}
         onCreate={() => newEvent()}
@@ -258,29 +235,6 @@ function CalendarModuleState({ module, busyAction, onInstall }: { module?: Modul
       </Pane>
     </section>
   );
-}
-
-function eventPayload(draft: CalendarDraft, calendarId: string, timezone: string) {
-  return {
-    calendar_id: calendarId,
-    title: draft.title.trim(),
-    description: draft.description || undefined,
-    location: draft.location || undefined,
-    starts_at: new Date(draft.startsAt).toISOString(),
-    ends_at: new Date(draft.endsAt).toISOString(),
-    timezone,
-    all_day: draft.allDay,
-    transparency: draft.transparency,
-    recurrence_rule: draft.recurrence ? `FREQ=${draft.recurrence}` : "",
-    recurrence_until: draft.recurrenceUntil ? new Date(draft.recurrenceUntil).toISOString() : undefined,
-    participants: draft.participantEmail ? [{
-      participant_type: "person",
-      email: draft.participantEmail,
-      display_name: draft.participantName || draft.participantEmail,
-      role: "required",
-      response_status: "needs_action",
-    }] : [],
-  };
 }
 
 function errorMessage(error: unknown) {
