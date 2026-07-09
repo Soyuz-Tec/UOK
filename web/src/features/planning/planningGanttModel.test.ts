@@ -54,8 +54,8 @@ describe("planning Gantt scales", () => {
     const hourLabels = buildTimeline(schedule(), "hour", "standard").units.map((unit) => unit.label);
     expect(hourLabels.slice(0, 4)).toEqual(["00", "06", "12", "18"]);
     expect(hourLabels.at(-2)).toBe("18");
-    expect(buildTimeline(schedule(), "sprint", "standard").units[0]).toMatchObject({ label: "S15", group: "2026" });
-    expect(buildTimeline(schedule(), "stage", "standard").units[0]).toMatchObject({ label: "Stage 7", group: "2026" });
+    expect(buildTimeline(schedule(), "sprint", "standard").units[0]).toMatchObject({ label: "S16", group: "2026" });
+    expect(buildTimeline(schedule(), "stage", "standard").units[0]).toMatchObject({ label: "Stage 8", group: "2026" });
     expect(buildTimeline(schedule(), "quarter", "standard").units[0]).toMatchObject({ label: "Q3", group: "2026" });
     expect(buildTimeline(schedule(), "year", "standard").units[0]).toMatchObject({ label: "2026", group: "2026" });
   });

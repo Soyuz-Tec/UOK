@@ -149,8 +149,8 @@ function blockNumber(date: Date, blockDays: number) {
 }
 
 function dayOfYear(date: Date) {
-  const start = new Date(date.getFullYear(), 0, 1);
-  return Math.floor((date.getTime() - start.getTime()) / 86_400_000) + 1;
+  const year = date.getFullYear();
+  return Math.floor((Date.UTC(year, date.getMonth(), date.getDate()) - Date.UTC(year, 0, 1)) / 86_400_000) + 1;
 }
 
 function isoDatePart(date: Date) {
