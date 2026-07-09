@@ -1,3 +1,5 @@
+ . (Join-Path $PSScriptRoot "UokCandidateContacts.Support.ps1")
+
 function Invoke-UokContactsCandidateScenario {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Headers,
@@ -81,7 +83,7 @@ function Invoke-UokContactsCandidateScenario {
             party_id = $contactId
             phone = "+1 555 0100"
             website = "https://example.test"
-            note = "Updated during UOK Contacts alpha.2 verification."
+            note = "Updated during UOK Contacts alpha.3 verification."
         }
         idempotency_key = "uok-update-contact-$Stamp"
     }
@@ -106,6 +108,36 @@ function Invoke-UokContactsCandidateScenario {
     if (-not $linked.result.relationship_id) {
         throw "Contact relationship failed: $($linked | ConvertTo-Json -Depth 20)"
     }
+    $relationshipId = $linked.result.relationship_id
+
+    $relationshipUpdated = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "UpdateContactRelationship"
+        payload = @{ relationship_id = $relationshipId; from_party_id = $contactId; to_party_id = $companyId; relationship_type = "billing_contact" }
+        idempotency_key = "uok-update-relationship-$Stamp"
+    }
+    if ($relationshipUpdated.result.updated_count -lt 1) {
+        throw "Contact relationship update failed: $($relationshipUpdated | ConvertTo-Json -Depth 20)"
+    }
+
+    $relationshipRemoved = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "RemoveContactRelationship"
+        payload = @{ relationship_id = $relationshipId }
+        idempotency_key = "uok-remove-relationship-$Stamp"
+    }
+    if ($relationshipRemoved.result.removed_count -lt 1) {
+        throw "Contact relationship unlink failed: $($relationshipRemoved | ConvertTo-Json -Depth 20)"
+    }
+
+    $relinked = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "LinkContactRelationship"
+        payload = @{ from_party_id = $contactId; to_party_id = $companyId; relationship_type = "primary_contact" }
+        idempotency_key = "uok-relink-contact-$Stamp"
+    }
+    if (-not $relinked.result.relationship_id) {
+        throw "Contact relationship relink failed: $($relinked | ConvertTo-Json -Depth 20)"
+    }
+
+    Invoke-UokContactsCandidateGroupScenario -OpsHeaders $OpsHeaders -ContactId $contactId -Stamp $Stamp
 
     $archived = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
         command_type = "ArchiveContact"
@@ -126,7 +158,7 @@ function Invoke-UokContactsCandidateScenario {
     }
 
     $imported = Invoke-UokJson -Method "POST" -Path "/api/contacts/import-csv" -Headers $OpsHeaders -Body @{
-        filename = "contacts-alpha2.csv"
+        filename = "contacts-alpha3.csv"
         csv_text = "display_name,email,company,phone`nImported Contact $Stamp,imported-$Stamp@example.test,Imported Account $Stamp,+1 555 9999`n"
     }
     if ($imported.imported_count -lt 1) {

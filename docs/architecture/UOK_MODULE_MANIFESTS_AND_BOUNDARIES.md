@@ -1,6 +1,6 @@
 # UOK Module Manifests and Source Boundaries
 
-**Target:** `UOK-3.1.0-alpha.2`
+**Target:** `UOK-3.1.0-alpha.3`
 
 This record keeps file-backed module manifests and source-boundary verification aligned with mature modular platforms such as Odoo, while preserving UOK's command/event/audit core.
 
@@ -26,6 +26,8 @@ The `.yaml` file stores a strict dependency-light YAML subset. The runtime loade
 - `evidence_provider`
 - `model_exports`
 - `candidate_verifier_script`
+
+`agents.core` currently declares a scaffold boundary only. It has ownership folders, permissions, lifecycle metadata, and a data-retention policy, but no runtime API, command handlers, migrations, or candidate verifier until the first behavior increment is implemented.
 
 ## Loader checks
 
@@ -64,6 +66,6 @@ The source-boundary scan must remain a strict candidate gate before any product 
 This candidate still has two intentional bridges:
 
 - module-specific React source is composed through `web/src/features/modules/moduleSurfaceRegistry.tsx` and feature folders under `web/src/features`;
-- Contacts pytest behavior tests still live in top-level `tests/`, while the module candidate verifier scenario now lives under `modules/contacts.core/tests/verify`.
+- Contacts pytest behavior tests and the module candidate verifier scenario now live under `modules/contacts.core/tests`.
 
-Future module expansion should move more module-owned UI, migrations, and behavior tests behind module roots without weakening the shared shell and kernel boundaries.
+Future module expansion should move more module-owned UI behind module roots without weakening the shared shell and runtime boundaries. Module-owned migrations and behavior tests are now active baseline requirements.

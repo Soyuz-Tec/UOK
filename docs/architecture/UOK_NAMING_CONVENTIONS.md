@@ -2,7 +2,7 @@
 
 **Convention version:** `2026-07-05.v1`
 
-**Current target:** `UOK-3.1.0-alpha.2`
+**Current target:** `UOK-3.1.0-alpha.3`
 
 Naming is an architecture boundary in UOK. UOK names must stay generic, while product-specific terms belong inside product modules and product metadata.
 

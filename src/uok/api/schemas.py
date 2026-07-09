@@ -7,8 +7,12 @@ from pydantic import BaseModel, Field
 from ..commands import MAX_IDEMPOTENCY_KEY_LENGTH
 from ..contact_api_schemas import (  # noqa: F401
     ContactCsvImportRequest,
+    ContactGroupMembersRequest,
+    ContactGroupUpdateRequest,
+    ContactGroupWriteRequest,
     ContactNoteRequest,
     ContactRelationshipRequest,
+    ContactRelationshipUpdateRequest,
     ContactWriteRequest,
 )
 

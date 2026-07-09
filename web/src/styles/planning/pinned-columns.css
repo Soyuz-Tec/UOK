@@ -1,0 +1,20 @@
+.planning-owned-grid-header > .planning-owned-pinned-column,
+.planning-owned-grid-row > .planning-owned-pinned-column {
+  position: sticky;
+  z-index: 3;
+  background: var(--uok-bg-elevated);
+  box-shadow: 1px 0 0 var(--uok-row-separator-color);
+}
+
+.planning-owned-grid-header > .planning-owned-pinned-column {
+  z-index: 4;
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-owned-grid-row.summary > .planning-owned-pinned-column {
+  background: color-mix(in srgb, var(--uok-accent) 8%, var(--uok-bg-elevated));
+}
+
+.planning-owned-grid-row.selected > .planning-owned-pinned-column {
+  background: color-mix(in srgb, var(--uok-accent) 16%, var(--uok-bg-elevated));
+}

@@ -1,0 +1,35 @@
+name: agents.core
+kind: capability_module
+version: APP_VERSION
+description: "Optional AI agent governance capability for programmable runbooks, human approval gates, compliance evidence, and controlled business-operation automation."
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands: []
+events: []
+dependencies: []
+backend_path: modules/agents.core/backend
+web_path: modules/agents.core/web
+migrations_path: modules/agents.core/migrations
+tests_path: modules/agents.core/tests
+api_prefixes: []
+permissions:
+  - agents.read
+  - agents.manage
+  - agents.approve
+  - agents.audit
+owned_tables: []
+extension_points:
+  - manifest
+  - permissions
+  - web_surface
+  - tests
+data_retention_policy: "Agent runbooks, runs, approvals, and evidence will be retained for compliance review; future purge or anonymization workflows must require explicit admin approval and audit evidence."

@@ -32,6 +32,8 @@ The UOK implementation must not copy Apple assets or imply Apple platform brandi
 
 For implementation decisions, developers must use `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md` as the mandatory technical reference for component state, layout, interaction, accessibility, appearance, and verification rules.
 
+For execution discipline, developers and coding agents must use `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md` to decide specialist review roles, workspace anatomy, reusable primitive promotion, source ownership, and UI verification gates.
+
 ## Mandatory Principles
 
 1. Clarity first
@@ -111,6 +113,10 @@ The next UI iteration must introduce or preserve:
 
 - `web/src/design-tokens.css` or equivalent token module
 - Shared shell components: app shell, sidebar, toolbar, panel, table/list, status pill, workflow stepper, command button, icon-bearing navigation/control patterns
+- Shared compact section headings for sidebars, panels, filter areas, and module workspace sections. These headings must use the shared heading primitive and tokenized shaded heading style for eyebrow text, title font, icon/action alignment, separator, radius, and light/dark surface treatment.
+- Shared row rhythm for side-by-side work surfaces. Comparable list rails, table rows, card-list rows, and grouped sidebar rows must use the shared row-height and separator tokens (`--uok-row-height`, `--uok-header-row-height`, and `--uok-row-separator-color`) or the reusable row-rhythm classes instead of one-off pixel heights. Separators must not change measured row height, so adjacent lists and tables remain visually aligned in light and dark modes.
+- Master-detail result lists must avoid repeating full detail facts. Use the list for selection identity, the detail panel for full record facts, tables for column comparison, and cards for rich preview.
+- Shared module-neutral workflow primitives for repeated module behavior, including workflow headers, search fields, inline field messages, confirmed destructive commands, inline text editing, reusable in-workspace pop-ups for record detail/edit workflows, and reusable data tables with accessible resizable columns. Current homes: `web/src/shared/*`.
 - Module surface registry entries that keep module navigation and rendering out of the generic shell component
 - Shared component states: default, hover, focus-visible, pressed, selected/on, expanded/open, disabled, loading, invalid, destructive, and primary
 - Light and dark mode foundations

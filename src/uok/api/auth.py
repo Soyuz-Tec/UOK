@@ -75,10 +75,12 @@ def session_user_payload(user: User, membership: Membership) -> dict[str, str | 
 
 @router.post("/login")
 def login(req: LoginRequest, db: Session = Depends(get_db)) -> dict[str, object]:
-    rate_limit_auth(auth_rate_key("login", req.username))
+    rate_key = auth_rate_key("login", req.username)
+    rate_limit_auth(rate_key)
     user = db.scalar(select(User).where(User.username == req.username))
     if not user or not verify_password(req.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid username or password")
+    AUTH_ATTEMPTS.pop(rate_key, None)
     if password_needs_rehash(user.password_hash):
         user.password_hash = hash_password(req.password)
         db.commit()
@@ -93,7 +95,8 @@ def login(req: LoginRequest, db: Session = Depends(get_db)) -> dict[str, object]
 def register(req: RegisterRequest, db: Session = Depends(get_db)) -> dict[str, object]:
     if not env_flag("UOK_SELF_REGISTRATION"):
         raise HTTPException(status_code=403, detail="Self-registration is disabled")
-    rate_limit_auth(auth_rate_key("register", req.email))
+    rate_key = auth_rate_key("register", req.email)
+    rate_limit_auth(rate_key)
     display_name = req.display_name.strip()
     email = normalized_email(req.email)
     if len(display_name) < 2:
@@ -114,5 +117,6 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)) -> dict[str, o
     membership = Membership(organization_id=org.id, user_id=user.id, role="pending_user")
     db.add(membership)
     db.commit()
+    AUTH_ATTEMPTS.pop(rate_key, None)
     actor = Actor(user_id=user.id, username=user.username, organization_id=membership.organization_id, role=membership.role)
     return {"access_token": issue_token(actor), "user": session_user_payload(user, membership)}

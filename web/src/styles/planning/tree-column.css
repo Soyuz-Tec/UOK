@@ -1,0 +1,25 @@
+.planning-owned-tree-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+}
+
+.planning-owned-summary-toggle {
+  display: inline-grid;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  border: var(--uok-line);
+  border-radius: 4px;
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
+}
+
+.planning-owned-summary-toggle:hover,
+.planning-owned-summary-toggle:focus-visible {
+  color: var(--uok-accent);
+  border-color: color-mix(in srgb, var(--uok-accent) 42%, var(--uok-row-separator-color));
+  outline: none;
+}

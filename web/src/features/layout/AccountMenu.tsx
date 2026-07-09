@@ -108,7 +108,7 @@ export function AccountMenu({ user, appearance, busy, onAppearanceChange, onRefr
       )}
       <button ref={triggerRef} type="button" className="session-user-trigger" aria-expanded={expanded} aria-controls={menuId} aria-label={`${expanded ? "Close" : "Open"} account menu for ${displayName}`} onClick={() => setExpanded((value) => !value)}>
         <span className="account-avatar" aria-hidden="true">{initial}</span>
-        <span className="account-meta">
+        <span className="account-meta" aria-hidden="true">
           <strong>{displayName}</strong>
           <small>{triggerDetail}</small>
         </span>

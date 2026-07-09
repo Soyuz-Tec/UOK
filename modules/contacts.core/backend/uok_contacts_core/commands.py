@@ -19,7 +19,22 @@ from .facade import (
     touch_party,
     validate_contact_payload_lengths,
 )
-from .models import PartyNote, PartyRelationship, utcnow
+from .models import PartyNote, utcnow
+from .duplicate_commands import cmd_merge_duplicate_contact, cmd_rollback_duplicate_merge
+from .group_commands import (
+    cmd_add_contacts_to_group,
+    cmd_archive_contact_group,
+    cmd_create_contact_group,
+    cmd_group_contacts_by_business_email_domain,
+    cmd_group_contacts_by_smart_rule,
+    cmd_remove_contact_from_group,
+    cmd_update_contact_group,
+)
+from .relationship_commands import (
+    cmd_link_contact_relationship,
+    cmd_remove_contact_relationship,
+    cmd_update_contact_relationship,
+)
 from uok.security import Actor
 from uok.util import dumps, loads
 
@@ -51,7 +66,7 @@ def cmd_update_contact(db: Session, actor: Actor, payload: dict[str, Any], comma
         attrs[field] = value
     if "party_type" in payload:
         party.party_type = choose_party_type(payload)
-    if any(field in payload for field in ("display_name", "given_name", "family_name", "organization_name", "email", "phone", "website", "address", "note")):
+    if any(field in payload for field in ("display_name", "given_name", "family_name", "organization_name", "email", "phone", "website", "address", "birthday", "important_date", "instant_message", "tags", "note")):
         merged_payload = {**attrs, **payload, "display_name": payload.get("display_name", party.display_name)}
         if not has_meaningful_contact_value(merged_payload):
             raise ValueError("at least one meaningful contact field is required")
@@ -65,6 +80,12 @@ def cmd_update_contact(db: Session, actor: Actor, payload: dict[str, Any], comma
         party.team_id = bounded_text(payload.get("team_id"), "team_id") or None
     if "visibility_scope" in payload:
         party.visibility_scope = contact_visibility_scope(payload.get("visibility_scope"))
+    if "source" in payload:
+        party.source = bounded_text(payload.get("source"), "source") or party.source
+    if "client_reference" in payload:
+        party.client_reference = bounded_text(payload.get("client_reference"), "client_reference") or None
+    if "sync_state" in payload:
+        party.sync_state = bounded_text(payload.get("sync_state"), "sync_state") or party.sync_state
     party.attrs_json = dumps(attrs)
     touch_party(party)
     _emit_event(db, actor, "ContactUpdated", "Party", party.id, {"display_name": party.display_name, "review_state": party.review_state})
@@ -122,33 +143,6 @@ def cmd_add_contact_note(db: Session, actor: Actor, payload: dict[str, Any], com
     return {"note_id": note.id, "party": serialize_party(db, party, include_detail=True, actor=actor)}
 
 
-def cmd_link_contact_relationship(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
-    validate_contact_payload_lengths(payload)
-    from_party = _party(db, actor, bounded_text(payload.get("from_party_id"), "party_id"), "from_party_id")
-    to_party = _party(db, actor, bounded_text(payload.get("to_party_id"), "party_id"), "to_party_id")
-    relationship_type = bounded_text(payload.get("relationship_type"), "relationship_type")
-    if not relationship_type:
-        raise ValueError("relationship_type is required")
-    rel = PartyRelationship(
-        organization_id=actor.organization_id,
-        from_party_id=from_party.id,
-        to_party_id=to_party.id,
-        relationship_type=relationship_type,
-        attrs_json=dumps({"description": bounded_text(payload.get("description"), "description")}),
-        created_at=utcnow(),
-    )
-    db.add(rel)
-    touch_party(from_party)
-    touch_party(to_party)
-    db.flush()
-    _emit_event(db, actor, "ContactRelationshipLinked", "PartyRelationship", rel.id, {
-        "from_party_id": from_party.id,
-        "to_party_id": to_party.id,
-        "relationship_type": relationship_type,
-    })
-    return {"relationship_id": rel.id, "from_party": serialize_party(db, from_party), "to_party": serialize_party(db, to_party)}
-
-
 def cmd_import_contacts_csv(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     from .import_commands import cmd_import_contacts_csv as import_handler
 
@@ -157,25 +151,47 @@ def cmd_import_contacts_csv(db: Session, actor: Actor, payload: dict[str, Any], 
 
 def command_handlers() -> dict[str, CommandHandler]:
     return {
+        "AddContactsToGroup": cmd_add_contacts_to_group,
+        "ArchiveContactGroup": cmd_archive_contact_group,
         "CreateContact": cmd_create_contact,
+        "CreateContactGroup": cmd_create_contact_group,
+        "GroupContactsByBusinessEmailDomain": cmd_group_contacts_by_business_email_domain,
+        "GroupContactsBySmartRule": cmd_group_contacts_by_smart_rule,
         "UpdateContact": cmd_update_contact,
+        "UpdateContactGroup": cmd_update_contact_group,
         "ArchiveContact": cmd_archive_contact,
         "RestoreContact": cmd_restore_contact,
         "PurgeContact": cmd_purge_contact,
         "AddContactNote": cmd_add_contact_note,
+        "RemoveContactFromGroup": cmd_remove_contact_from_group,
         "LinkContactRelationship": cmd_link_contact_relationship,
+        "MergeDuplicateContact": cmd_merge_duplicate_contact,
+        "RollbackDuplicateMerge": cmd_rollback_duplicate_merge,
+        "UpdateContactRelationship": cmd_update_contact_relationship,
+        "RemoveContactRelationship": cmd_remove_contact_relationship,
         "ImportContactsCsv": cmd_import_contacts_csv,
     }
 
 
 def command_permissions() -> dict[str, str]:
     return {
+        "AddContactsToGroup": "contacts.manage",
+        "ArchiveContactGroup": "contacts.manage",
         "CreateContact": "contacts.manage",
+        "CreateContactGroup": "contacts.manage",
+        "GroupContactsByBusinessEmailDomain": "contacts.manage",
+        "GroupContactsBySmartRule": "contacts.manage",
         "UpdateContact": "contacts.manage",
+        "UpdateContactGroup": "contacts.manage",
         "ArchiveContact": "contacts.manage",
         "RestoreContact": "contacts.restore",
         "PurgeContact": "contacts.purge",
         "AddContactNote": "contacts.manage",
+        "RemoveContactFromGroup": "contacts.manage",
         "LinkContactRelationship": "contacts.manage",
+        "MergeDuplicateContact": "contacts.manage",
+        "RollbackDuplicateMerge": "contacts.restore",
+        "UpdateContactRelationship": "contacts.manage",
+        "RemoveContactRelationship": "contacts.manage",
         "ImportContactsCsv": "contacts.import",
     }

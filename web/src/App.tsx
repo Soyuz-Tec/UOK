@@ -6,7 +6,8 @@ import { AuthScreen } from "./features/auth/AuthScreen";
 import { AccountMenu } from "./features/layout/AccountMenu";
 import { moduleSections, renderModuleSurface } from "./features/modules/moduleSurfaceRegistry";
 import { coreSections } from "./shared/options";
-import { JsonBlock, MetricGrid, Pane, StatusRow } from "./shared/ui";
+import { JsonBlock, MetricGrid, StatusRow } from "./shared/data-display";
+import { Pane } from "./shared/layout";
 
 export function App() {
   const workbench = useWorkbench();
@@ -49,7 +50,7 @@ export function App() {
         <div className="sidebar-top">
           <button type="button" className="brand" aria-label="Home" title="Home" onClick={() => workbench.setActive("overview")}>
             <span className="brand-mark" aria-hidden="true">K</span>
-            <span className="brand-label">
+            <span className="brand-label" aria-hidden="true">
               <strong>UOK</strong>
             </span>
           </button>
@@ -78,7 +79,7 @@ export function App() {
                 onClick={() => workbench.setActive(section.id)}
               >
                 <Icon size={18} aria-hidden="true" />
-                <span className="nav-label">{section.label}</span>
+                <span className="nav-label" aria-hidden="true">{section.label}</span>
               </button>
             );
           })}
@@ -129,9 +130,6 @@ export function App() {
           </section>
         )}
 
-        <Pane title="Last Result" description="Latest command or API response" wide>
-          <JsonBlock value={workbench.out} />
-        </Pane>
       </main>
     </div>
   );

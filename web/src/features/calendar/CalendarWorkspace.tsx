@@ -1,8 +1,11 @@
 import { CalendarPlus, Download, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
+import { EmptyState } from "../../shared/data-display/EmptyState";
+import { StatusPill } from "../../shared/data-display/StatusPill";
+import { Pane } from "../../shared/layout/Pane";
+import { CommandButton } from "../../shared/primitives/CommandButton";
 import type { ModuleStatus } from "../../shared/types";
-import { CommandButton, EmptyState, Pane, StatusPill } from "../../shared/ui";
 import { CALENDAR_MODULE_ID } from "./calendarModule";
 
 type CalendarRecord = { id: string; name: string; status: string; timezone: string };

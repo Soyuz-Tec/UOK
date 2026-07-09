@@ -22,13 +22,14 @@ KERNEL_MODULE_FACADE_FILES = {
     "src/uok/contact_read_model.py",
     "src/uok/contact_validation.py",
 }
+BASELINE_MODULES = ["agents.core", "apps.manager", "calendar.core", "contacts.core", "planning.core", "reports.core"]
 
 
 def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     root = modules_root()
     manifests = load_module_manifests(root)
 
-    assert sorted(manifests) == ["apps.manager", "contacts.core"]
+    assert sorted(manifests) == BASELINE_MODULES
     for module_name in manifests:
         module_dir = root / module_name
         assert (module_dir / "manifest.yaml").is_file()
@@ -38,6 +39,22 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
         assert (module_dir / "tests").is_dir()
 
     assert manifests["apps.manager"]["required"] is True
+    assert manifests["agents.core"]["required"] is False
+    assert manifests["agents.core"]["backend_path"] == "modules/agents.core/backend"
+    assert manifests["agents.core"]["commands"] == []
+    assert manifests["agents.core"]["events"] == []
+    assert "agents.manage" in manifests["agents.core"]["permissions"]
+    assert "web_surface" in manifests["agents.core"]["extension_points"]
+    assert manifests["calendar.core"]["required"] is False
+    assert manifests["calendar.core"]["backend_path"] == "modules/calendar.core/backend"
+    assert manifests["calendar.core"]["api_router"] == "uok_calendar_core.api:router"
+    assert manifests["calendar.core"]["command_handlers"] == "uok_calendar_core.commands:command_handlers"
+    assert manifests["calendar.core"]["command_permissions"] == "uok_calendar_core.commands:command_permissions"
+    assert manifests["calendar.core"]["role_grants"] == "uok_calendar_core.policy:role_grants"
+    assert manifests["calendar.core"]["model_exports"] == "uok_calendar_core.models:owned_models"
+    assert "/api/calendar" in manifests["calendar.core"]["api_prefixes"]
+    assert "CreateCalendarEvent" in manifests["calendar.core"]["commands"]
+    assert "calendar.read" in manifests["calendar.core"]["permissions"]
     assert manifests["contacts.core"]["required"] is False
     assert "CreateContact" in manifests["contacts.core"]["commands"]
     assert "ContactCreated" in manifests["contacts.core"]["events"]
@@ -51,6 +68,29 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert manifests["contacts.core"]["model_exports"] == "uok_contacts_core.models:owned_models"
     assert manifests["contacts.core"]["candidate_verifier_script"] == "modules/contacts.core/tests/verify/UokCandidateContacts.ps1"
     assert "contacts.manage" in manifests["contacts.core"]["permissions"]
+    assert (root / "contacts.core" / "migrations" / "001_contacts_core_operational_indexes.sql").is_file()
+    assert manifests["planning.core"]["required"] is False
+    assert manifests["planning.core"]["backend_path"] == "modules/planning.core/backend"
+    assert manifests["planning.core"]["dependencies"] == ["calendar.core"]
+    assert manifests["planning.core"]["api_router"] == "uok_planning_core.api:router"
+    assert manifests["planning.core"]["command_handlers"] == "uok_planning_core.commands:command_handlers"
+    assert manifests["planning.core"]["candidate_verifier_script"] == "modules/planning.core/tests/verify/UokCandidatePlanning.ps1"
+    assert "CreatePlanningProject" in manifests["planning.core"]["commands"]
+    assert "PlanningTaskLinked" in manifests["planning.core"]["events"]
+    assert "planning.manage" in manifests["planning.core"]["permissions"]
+    assert manifests["reports.core"]["required"] is False
+    assert manifests["reports.core"]["kind"] == "capability_module"
+    assert "GenerateReport" in manifests["reports.core"]["commands"]
+    assert "ReportGenerated" in manifests["reports.core"]["events"]
+    assert manifests["reports.core"]["backend_path"] == "modules/reports.core/backend"
+    assert "/api/reports" in manifests["reports.core"]["api_prefixes"]
+    assert manifests["reports.core"]["api_router"] == "uok_reports_core.api:router"
+    assert manifests["reports.core"]["command_handlers"] == "uok_reports_core.commands:command_handlers"
+    assert manifests["reports.core"]["command_permissions"] == "uok_reports_core.commands:command_permissions"
+    assert manifests["reports.core"]["role_grants"] == "uok_reports_core.policy:role_grants"
+    assert manifests["reports.core"]["model_exports"] == "uok_reports_core.models:owned_models"
+    assert manifests["reports.core"]["candidate_verifier_script"] == "modules/reports.core/tests/verify/UokCandidateReports.ps1"
+    assert "reports.render" in manifests["reports.core"]["permissions"]
 
 
 def test_contacts_core_backend_loads_from_physical_module_root() -> None:
@@ -91,6 +131,9 @@ def test_kernel_imports_module_backends_only_in_declared_facades() -> None:
             if child.is_dir() and (child / "__init__.py").is_file():
                 package_names.add(child.name)
     assert "uok_contacts_core" in package_names
+    assert "uok_calendar_core" in package_names
+    assert "uok_planning_core" in package_names
+    assert "uok_reports_core" in package_names
 
     import_pattern = re.compile(rf"^\s*(?:from|import)\s+(?:{'|'.join(sorted(package_names))})\b", re.MULTILINE)
     offenders = sorted(
@@ -106,7 +149,7 @@ def test_module_routers_mount_from_manifest_declarations() -> None:
     manifests = load_module_manifests()
     routers = load_module_routers()
 
-    assert [module_name for module_name, _ in routers] == ["contacts.core"]
+    assert [module_name for module_name, _ in routers] == ["calendar.core", "contacts.core", "planning.core", "reports.core"]
     for module_name, router in routers:
         prefixes = manifests[module_name]["api_prefixes"]
         assert router.routes
@@ -120,13 +163,38 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     grants = module_role_grants()
 
     assert "CreateContact" in handlers
+    assert "CreateCalendarEvent" in handlers
     assert "ImportContactsCsv" in handlers
+    assert "GenerateReport" in handlers
+    assert "DeleteReportArtifact" in handlers
     assert permissions["CreateContact"] == "contacts.manage"
+    assert permissions["CreateCalendarEvent"] == "calendar.event.create"
+    assert permissions["CreatePlanningProject"] == "planning.manage"
     assert permissions["RestoreContact"] == "contacts.restore"
+    assert permissions["GenerateReport"] == "reports.render"
+    assert permissions["DeleteReportArtifact"] == "reports.delete"
     assert permissions["VerifyBaseline"] == "migration.verify"
     assert "contacts.manage" in grants["ops_manager"]
+    assert "calendar.manage" in grants["ops_manager"]
+    assert "planning.manage" in grants["ops_manager"]
+    assert "reports.manage" in grants["ops_manager"]
     assert "contacts.read" in grants["viewer"]
-    assert {"parties", "party_notes", "party_relationships", "contact_import_batches"}.issubset(declared_module_table_names())
+    assert "calendar.read" in grants["viewer"]
+    assert "reports.read" in grants["viewer"]
+    assert {
+        "calendars",
+        "calendar_events",
+        "calendar_event_participants",
+        "calendar_reminders",
+        "parties",
+        "party_notes",
+        "party_relationships",
+        "contact_import_batches",
+        "planning_projects",
+        "planning_tasks",
+        "planning_task_dependencies",
+        "report_artifacts",
+    }.issubset(declared_module_table_names())
 
 
 def test_app_composes_module_routes_without_kernel_module_references() -> None:
@@ -134,7 +202,10 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
 
     app_paths = set(app.openapi()["paths"])
     assert "/api/contacts" in app_paths
+    assert "/api/calendar/calendars" in app_paths
     assert "/api/contacts/review-queue" in app_paths
+    assert "/api/planning/projects" in app_paths
+    assert "/api/reports/formats" in app_paths
 
     main_source = (repo_root() / "src" / "uok" / "main.py").read_text(encoding="utf-8")
     assert "contacts" not in main_source.lower()

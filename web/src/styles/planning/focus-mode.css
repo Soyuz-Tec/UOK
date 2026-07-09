@@ -1,0 +1,25 @@
+.planning-timeline-workbench.focus-mode {
+  position: fixed;
+  inset: var(--uok-space-2);
+  z-index: 100;
+  overflow: auto;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-2);
+  background: var(--uok-bg-grouped);
+  box-shadow: var(--uok-shadow-lg);
+}
+
+.planning-timeline-workbench.focus-mode .planning-gantt-shell {
+  height: max(540px, calc(100vh - 238px));
+}
+
+@media (max-width: 680px) {
+  .planning-timeline-workbench.focus-mode {
+    inset: var(--uok-space-1);
+  }
+
+  .planning-timeline-workbench.focus-mode .planning-gantt-shell {
+    height: 560px;
+  }
+}

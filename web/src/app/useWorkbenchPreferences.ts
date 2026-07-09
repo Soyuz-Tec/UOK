@@ -2,35 +2,51 @@ import { useEffect, useState } from "react";
 
 import {
   appearanceKey,
+  contactsGroupByKey,
   contactsViewKey,
   sidebarCollapsedKey
 } from "../shared/session";
-import type { Appearance, ContactsView } from "../shared/types";
+import { readStorageString, writeStorageString } from "../shared/storage";
+import type { Appearance, ContactGroupBy, ContactsView } from "../shared/types";
 
 export function useWorkbenchPreferences() {
-  const [appearance, setAppearance] = useState<Appearance>(() => (localStorage.getItem(appearanceKey) as Appearance | null) || "system");
-  const [contactsView, setContactsView] = useState<ContactsView>(() => (localStorage.getItem(contactsViewKey) as ContactsView | null) || "split");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem(sidebarCollapsedKey) === "true");
+  const [appearance, setAppearance] = useState<Appearance>(() => readPreference(appearanceKey, "system", ["dark", "light", "system"]));
+  const [contactsView, setContactsView] = useState<ContactsView>(() => readPreference(contactsViewKey, "split", ["cards", "quality", "split", "table"]));
+  const [contactGroupBy, setContactGroupBy] = useState<ContactGroupBy>(() => readPreference(contactsGroupByKey, "none", ["none", "organization", "review_state", "source", "type"]));
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => readStorageString("local", sidebarCollapsedKey) === "true");
 
   useEffect(() => {
     document.documentElement.dataset.appearance = appearance;
-    localStorage.setItem(appearanceKey, appearance);
+    writeStorageString("local", appearanceKey, appearance);
   }, [appearance]);
 
   useEffect(() => {
-    localStorage.setItem(contactsViewKey, contactsView);
+    writeStorageString("local", contactsViewKey, contactsView);
   }, [contactsView]);
 
   useEffect(() => {
-    localStorage.setItem(sidebarCollapsedKey, String(sidebarCollapsed));
+    writeStorageString("local", contactsGroupByKey, contactGroupBy);
+  }, [contactGroupBy]);
+
+  useEffect(() => {
+    writeStorageString("local", sidebarCollapsedKey, String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
   return {
     appearance,
+    contactGroupBy,
     contactsView,
     setAppearance,
+    setContactGroupBy,
     setContactsView,
     setSidebarCollapsed,
     sidebarCollapsed
   };
+}
+
+export type WorkbenchPreferences = ReturnType<typeof useWorkbenchPreferences>;
+
+function readPreference<T extends string>(key: string, fallback: T, allowedValues: T[]) {
+  const value = readStorageString("local", key, fallback);
+  return allowedValues.includes(value as T) ? value as T : fallback;
 }

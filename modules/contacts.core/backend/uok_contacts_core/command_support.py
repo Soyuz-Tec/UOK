@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .facade import (
@@ -18,7 +18,7 @@ from .facade import (
     validate_contact_payload_lengths,
 )
 from .models import Party, PartyNote, PartyRelationship, utcnow
-from uok.models import EventRecord
+from uok.module_events import emit_module_event
 from uok.security import Actor
 from uok.util import dumps
 
@@ -26,15 +26,7 @@ CommandHandler = Callable[[Session, Actor, dict[str, Any], str], dict[str, Any]]
 
 
 def _emit_event(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:
-    last = db.scalar(select(func.max(EventRecord.sequence)).where(EventRecord.organization_id == actor.organization_id)) or 0
-    db.add(EventRecord(
-        organization_id=actor.organization_id,
-        sequence=int(last) + 1,
-        event_type=event_type,
-        object_type=object_type,
-        object_id=object_id,
-        payload_json=dumps(payload),
-    ))
+    emit_module_event(db, actor, event_type, object_type, object_id, payload)
 
 
 def _party(db: Session, actor: Actor, party_id: str, field: str, allowed_types: set[str] | None = None) -> Party:

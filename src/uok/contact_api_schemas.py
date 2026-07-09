@@ -6,7 +6,11 @@ ensure_module_backend_paths()
 
 from uok_contacts_core.api_schemas import (  # noqa: F401,E402
     ContactCsvImportRequest,
+    ContactGroupMembersRequest,
+    ContactGroupUpdateRequest,
+    ContactGroupWriteRequest,
     ContactNoteRequest,
     ContactRelationshipRequest,
+    ContactRelationshipUpdateRequest,
     ContactWriteRequest,
 )

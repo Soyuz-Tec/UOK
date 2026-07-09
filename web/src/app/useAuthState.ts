@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 
 import { storedToken, storedUser, tokenKey, userKey } from "../shared/session";
+import { removeStorageItem } from "../shared/storage";
 import type { AuthMode, SessionUser } from "../shared/types";
 
 export function useAuthState() {
@@ -16,9 +17,9 @@ export function useAuthState() {
   const [registerError, setRegisterError] = useState("");
 
   const clearAuthState = useCallback(() => {
-    localStorage.removeItem(tokenKey);
-    sessionStorage.removeItem(tokenKey);
-    localStorage.removeItem(userKey);
+    removeStorageItem("local", tokenKey);
+    removeStorageItem("session", tokenKey);
+    removeStorageItem("local", userKey);
     setToken("");
     setCurrentUser(null);
     setPassword("");

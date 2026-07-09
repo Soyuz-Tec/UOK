@@ -1,0 +1,22 @@
+.planning-owned-chart {
+  cursor: grab;
+}
+
+.planning-owned-chart.panning {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.planning-owned-create-draft rect {
+  fill: color-mix(in srgb, var(--uok-accent) 14%, transparent);
+  stroke: var(--uok-accent);
+  stroke-dasharray: 6 4;
+  stroke-width: 1.5;
+}
+
+.planning-owned-create-draft text {
+  fill: var(--uok-text-primary);
+  font-size: 12px;
+  font-weight: 700;
+  pointer-events: none;
+}

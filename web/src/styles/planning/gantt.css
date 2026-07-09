@@ -1,0 +1,279 @@
+.planning-timeline-workbench {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--uok-space-2);
+  min-width: 0;
+  min-height: 100%;
+}
+
+.planning-gantt-toolbar,
+.planning-toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--uok-space-2);
+}
+
+.planning-gantt-toolbar {
+  display: grid;
+  grid-template-areas:
+    "title meta project plan"
+    "views commands commands controls";
+  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 280px) auto;
+  column-gap: var(--uok-space-2);
+  row-gap: var(--uok-space-1);
+  justify-content: stretch;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  background: var(--uok-bg-elevated);
+}
+
+.planning-toolbar-title {
+  display: grid;
+  grid-area: title;
+  gap: 2px;
+  min-width: 0;
+}
+
+.planning-toolbar-title h2 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-headline);
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-toolbar-title span:not(.eyebrow) {
+  overflow: hidden;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-project-meta {
+  display: flex;
+  grid-area: meta;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--uok-space-1);
+}
+
+.planning-status-chip,
+.planning-owner-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-grouped-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.planning-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
+}
+
+.planning-project-picker {
+  display: grid;
+  grid-area: project;
+  gap: 2px;
+  min-width: 0;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 700;
+}
+
+.planning-project-picker select {
+  width: 100%;
+  min-height: 34px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+  font: inherit;
+}
+
+.planning-gantt-toolbar .command-button,
+.planning-toolbar-toggle,
+.planning-segmented-control button {
+  min-height: 34px;
+  padding-inline: var(--uok-space-2);
+  font-size: var(--uok-callout);
+}
+
+.planning-view-tabs {
+  display: flex;
+  grid-area: views;
+  align-self: center;
+  gap: var(--uok-space-3);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.planning-view-tabs button {
+  min-width: max-content;
+  min-height: 28px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 0 0 2px;
+  color: var(--uok-text-tertiary);
+  background: transparent;
+  font: 700 var(--uok-caption) var(--uok-font-family);
+  cursor: pointer;
+}
+
+.planning-view-tabs button.selected {
+  color: var(--uok-accent);
+  border-bottom-color: var(--uok-accent);
+}
+
+.planning-view-tabs button[aria-disabled="true"] {
+  cursor: default;
+}
+
+.planning-gantt-toolbar [aria-label="Schedule commands"] {
+  grid-area: commands;
+}
+
+.planning-gantt-toolbar [aria-label="Timeline utilities"] {
+  grid-area: controls;
+  min-width: 0;
+}
+
+.planning-selection-toggle, .planning-toolbar-select, .planning-zoom-control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+  min-height: 36px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  font-size: var(--uok-callout);
+  font-weight: 700;
+}
+
+.planning-selection-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--uok-accent);
+}
+
+.planning-toolbar-select select {
+  min-height: 28px;
+  border: 0;
+  color: var(--uok-text-primary);
+  background: transparent;
+  font: inherit;
+}
+
+.planning-zoom-control input {
+  width: 84px;
+  accent-color: var(--uok-accent);
+}
+
+.planning-segmented-control {
+  display: inline-flex;
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-segmented-control button, .planning-toolbar-toggle {
+  min-height: 36px;
+  border: 0;
+  color: var(--uok-text-secondary);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.planning-segmented-control button {
+  padding: 0 var(--uok-space-3);
+  text-transform: capitalize;
+}
+
+.planning-segmented-control button + button {
+  border-left: var(--uok-line);
+}
+
+.planning-toolbar-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-3);
+}
+
+.planning-segmented-control button.selected, .planning-toolbar-toggle.selected {
+  color: var(--uok-text-primary);
+  background: color-mix(in srgb, var(--uok-accent) 14%, var(--uok-bg-elevated));
+}
+
+.planning-icon-button:disabled, .planning-toolbar-toggle:disabled { color: var(--uok-text-placeholder); background: var(--uok-bg-grouped-secondary); cursor: not-allowed; }
+
+.planning-gantt-shell {
+  min-width: 0;
+  height: max(var(--planning-gantt-content-height, 560px), calc(100vh - 168px));
+  min-height: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  overflow: hidden;
+  background: var(--uok-bg-elevated);
+  scrollbar-gutter: stable both-edges;
+}
+
+@media (max-width: 1260px) {
+  .planning-gantt-toolbar {
+    grid-template-areas: "title meta" "project plan" "views views" "commands commands" "controls controls";
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .planning-gantt-toolbar [aria-label="Timeline utilities"] {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 680px) {
+  .planning-gantt-shell {
+    height: max(var(--planning-gantt-content-height, 480px), calc(100vh - 240px));
+  }
+
+  .planning-gantt-toolbar {
+    grid-template-columns: 1fr;
+    grid-template-areas: "title" "meta" "project" "views" "plan" "commands" "controls";
+    align-items: stretch;
+  }
+
+  .planning-project-picker, .planning-toolbar-group, .planning-toolbar-group .command-button,
+  .planning-selection-toggle, .planning-toolbar-select, .planning-toolbar-select select,
+  .planning-zoom-control, .planning-toolbar-toggle, .planning-segmented-control {
+    width: 100%;
+  }
+
+  .planning-segmented-control button {
+    flex: 1 1 0;
+  }
+}

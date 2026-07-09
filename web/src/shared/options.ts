@@ -12,14 +12,15 @@ import {
   ShieldCheck,
   Store,
   Sun,
-  Table2
+  Table2,
+  WandSparkles
 } from "lucide-react";
 
 import type { Appearance, ContactDetailPane, ContactsView, Section } from "./types";
 
 export type Option<T extends string> = { id: T; label: string; icon: ElementType };
 
-export const coreSections: Array<Option<Exclude<Section, "contacts">>> = [
+export const coreSections: Array<Option<Exclude<Section, "contacts" | "planning">>> = [
   { id: "overview", label: "Overview", icon: Database },
   { id: "apps", label: "Apps Manager", icon: Store },
   { id: "evidence", label: "Evidence", icon: Archive },
@@ -35,11 +36,13 @@ export const appearanceOptions: Array<Option<Appearance>> = [
 export const contactsViewOptions: Array<Option<ContactsView>> = [
   { id: "split", label: "List + Detail", icon: ListIcon },
   { id: "table", label: "Table", icon: Table2 },
-  { id: "cards", label: "Cards", icon: Grid2X2 }
+  { id: "cards", label: "Cards", icon: Grid2X2 },
+  { id: "quality", label: "Quality", icon: WandSparkles }
 ];
 
 export const contactDetailPaneOptions: Array<Option<ContactDetailPane>> = [
-  { id: "overview", label: "Overview", icon: Info },
+  { id: "overview", label: "Details", icon: Info },
+  { id: "intelligence", label: "Intelligence", icon: WandSparkles },
   { id: "activity", label: "Activity", icon: FileCheck2 },
   { id: "relationships", label: "Relationships", icon: Link2 }
 ];

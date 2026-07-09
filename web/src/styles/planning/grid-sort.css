@@ -1,0 +1,23 @@
+.planning-owned-sort-button {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: var(--uok-radius-1);
+  color: var(--uok-text-tertiary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.planning-owned-sort-button:hover,
+.planning-owned-sort-button:focus-visible,
+.planning-owned-grid-header > span[aria-sort="ascending"] .planning-owned-sort-button,
+.planning-owned-grid-header > span[aria-sort="descending"] .planning-owned-sort-button {
+  color: var(--uok-accent);
+  background: color-mix(in srgb, var(--uok-accent) 10%, transparent);
+}

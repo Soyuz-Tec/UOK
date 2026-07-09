@@ -27,6 +27,8 @@ This policy is based on the current UOK implementation and the following primary
 
 The policy intentionally uses concepts from these sources, not copied vendor examples. UOK implementation decisions must be validated against the current local codebase, the executable `/api/architecture/language-stack` contract, and candidate verification scripts.
 
+Code quality, line-of-code integrity, source-size gates, and technology-audit execution are owned by `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`.
+
 ## Selected Stack
 
 | Layer | Mandatory stack | Current UOK location | Role |
@@ -226,7 +228,7 @@ A candidate is not acceptable if it:
 Before packaging a candidate, developers must run or preserve equivalent evidence for:
 
 ```powershell
-python -m compileall -q src modules tests
+python -m compileall -q src modules tests conftest.py
 $env:PYTHONPATH='src'; python -m pytest -q
 npm --prefix web test
 npm --prefix web run build:static
@@ -246,7 +248,7 @@ Changing this stack requires:
 
 ## Current Decision
 
-For `UOK-3.1.0-alpha.2` and the next local production-candidate iterations, the approved stack is:
+For `UOK-3.1.0-alpha.3` and the next local production-candidate iterations, the approved stack is:
 
 ```text
 Backend:  Python + FastAPI + Pydantic + SQLAlchemy + PostgreSQL

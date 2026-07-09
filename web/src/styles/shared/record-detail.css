@@ -1,0 +1,263 @@
+.record-profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--uok-space-4);
+  min-height: 124px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-5);
+  background: var(--uok-bg-elevated);
+}
+
+.record-profile-main {
+  display: flex;
+  align-items: center;
+  gap: var(--uok-space-4);
+  min-width: 0;
+}
+
+.record-profile-avatar {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  color: var(--uok-text-tertiary);
+  background: var(--uok-bg-grouped-secondary);
+  font-size: var(--uok-title-1);
+  font-weight: 760;
+}
+
+.record-profile-copy,
+.record-profile-title,
+.record-profile-meta {
+  min-width: 0;
+}
+
+.record-profile-copy {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.record-profile-title h3,
+.record-profile-title .inline-edit-display {
+  margin: 0;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-title-2);
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.record-profile-subtitle {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-callout);
+}
+
+.record-profile-meta,
+.record-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--uok-space-2);
+}
+
+.record-profile-actions {
+  justify-content: flex-end;
+}
+
+.record-fact-list {
+  display: grid;
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+}
+
+.record-fact-list.compact {
+  gap: var(--uok-space-1);
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.record-fact-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: var(--uok-space-3);
+  align-items: start;
+  min-height: 58px;
+  border-bottom: var(--uok-line);
+  padding: var(--uok-space-3);
+  break-inside: avoid;
+}
+
+.record-fact-row:last-child {
+  border-bottom: 0;
+}
+
+.record-fact-list.compact .record-fact-row {
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: var(--uok-space-2);
+  min-height: 0;
+  border-bottom: 0;
+  padding: 0;
+}
+
+.record-fact-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--uok-accent);
+  background: color-mix(in srgb, var(--uok-accent) 10%, transparent);
+}
+
+.record-fact-list.compact .record-fact-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--uok-text-secondary);
+  background: transparent;
+}
+
+.record-fact-copy {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-width: 0;
+}
+
+.record-fact-copy span {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.record-fact-copy strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-callout);
+  font-weight: 650;
+}
+
+.record-fact-list.compact .record-fact-copy {
+  display: block;
+}
+
+.record-fact-list.compact .record-fact-copy span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.record-fact-list.compact .record-fact-copy strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-fact-empty,
+.record-tag-empty {
+  margin: 0;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-callout);
+}
+
+.record-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--uok-space-2);
+}
+
+.record-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+  min-height: 36px;
+  max-width: 100%;
+  border: var(--uok-line);
+  border-radius: 999px;
+  padding: 0 var(--uok-space-1) 0 var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  font-size: var(--uok-callout);
+  font-weight: 650;
+}
+
+.record-tag.system {
+  color: var(--uok-text-tertiary);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.record-tag > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-tag .icon-button {
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+@media (max-width: 680px) {
+  .record-profile-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .record-profile-main {
+    align-items: flex-start;
+  }
+
+  .record-profile-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media print {
+  .record-profile-header,
+  .record-fact-list,
+  .record-tag,
+  .detail-grid,
+  .detail-item {
+    border-color: #d0d5dd;
+    background: #fff;
+    color: #111827;
+    box-shadow: none;
+  }
+
+  .record-profile-actions,
+  .record-tag .icon-button,
+  .contact-inspector-actions,
+  .contact-group-membership-add,
+  .segmented-control,
+  .contact-manage-disclosure,
+  .contact-technical-details summary::-webkit-details-marker {
+    display: none !important;
+  }
+
+  .record-profile-header,
+  .record-fact-row,
+  .record-tag-list,
+  .detail-grid,
+  .detail-item,
+  .contact-group-membership {
+    break-inside: avoid;
+  }
+
+  .record-profile-avatar,
+  .record-fact-icon {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -1,87 +1,97 @@
-import { Archive, FileCheck2, Link2, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { FileCheck2 } from "lucide-react";
 
 import { contactDetailPaneOptions } from "../../shared/options";
 import { formatLabel } from "../../shared/format";
-import { CommandButton, DetailItem, EmptyState, SegmentedControl } from "../../shared/ui";
+import { DetailItem, EmptyState } from "../../shared/data-display";
+import { CommandButton, IconButton, SegmentedControl } from "../../shared/primitives";
+import { ContactActivityTimeline } from "./ContactActivityTimeline";
+import { ContactBusinessIntelligenceProfilePanel } from "./ContactBusinessIntelligenceProfile";
+import { ContactFactRows } from "./ContactFactRows";
 import { ContactForm } from "./ContactForm";
+import { ContactGroupMembership } from "./ContactGroupMembership";
+import { ContactInspectorHeader } from "./ContactInspectorHeader";
+import { ContactRelationshipsPanel } from "./ContactRelationshipsPanel";
+import { ContactReviewGuidance } from "./ContactReviewGuidance";
+import { contactFacts } from "./contactPresentation";
 import type { ContactsWorkspaceProps } from "./types";
 
 export function ContactDetailPanel(props: ContactsWorkspaceProps) {
   const contact = props.selectedContact;
+
   return (
     <div className="contact-detail" aria-label="Contact detail">
-      <div className="contact-detail-header">
-        <div>
-          <h3>{contact?.display_name || "New contact"}</h3>
-        </div>
-        <div className="contacts-actions">
-          {contact && <CommandButton icon={Pencil} onClick={props.onEdit}>Edit</CommandButton>}
-          {contact?.status === "archived" ? (
-            <CommandButton icon={RotateCcw} onClick={props.onRestore}>Restore</CommandButton>
-          ) : (
-            <CommandButton icon={Archive} onClick={props.onArchive} disabled={!contact} destructive>Delete</CommandButton>
-          )}
-          <CommandButton icon={Trash2} onClick={props.onPurge} disabled={!contact} destructive>Purge</CommandButton>
-        </div>
-      </div>
+      <ContactInspectorHeader
+        contact={contact}
+        editing={props.editing}
+        onEdit={props.onEdit}
+        onArchive={props.onArchive}
+        onRestore={props.onRestore}
+        onPurge={props.onPurge}
+        onInlineUpdate={props.onInlineUpdate}
+      />
 
       {props.editing ? (
-        <ContactForm draft={props.draft} onChange={props.onDraftChange} onSave={props.onSave} onCancel={props.onCancelEdit} busy={props.busyAction === "CreateContact" || props.busyAction === "UpdateContact"} />
+        <ContactForm
+          draft={props.draft}
+          formKey={contact?.id || "new-contact"}
+          onChange={props.onDraftChange}
+          onSave={props.onSave}
+          onCancel={props.onCancelEdit}
+          busy={props.busyAction === "CreateContact" || props.busyAction === "UpdateContact"}
+        />
       ) : contact ? (
         <>
           <SegmentedControl value={props.detailPane} onChange={props.onDetailPaneChange} options={contactDetailPaneOptions} label="Contact detail pane" />
           {props.detailPane === "overview" && (
-            <div className="detail-grid">
-              <DetailItem label="Type" value={formatLabel(contact.party_type)} />
-              <DetailItem label="Email" value={contact.email || "-"} />
-              <DetailItem label="Phone" value={contact.phone || "-"} />
-              <DetailItem label="Website" value={contact.website || "-"} />
-              <DetailItem label="Address" value={contact.address || "-"} />
-              <DetailItem label="Status" value={formatLabel(contact.status)} />
-              <DetailItem label="Review" value={formatLabel(contact.review_state)} />
-              <DetailItem label="Source" value={formatLabel(contact.source)} />
-              {contact.duplicate_candidates?.length ? <DetailItem label="Duplicates" value={contact.duplicate_candidates.map((item) => item.display_name).join(", ")} /> : null}
+            <div className="contact-overview-profile">
+              <ContactReviewGuidance contact={contact} />
+              <section aria-label="Contact facts">
+                <ContactFactRows facts={contactFacts(contact)} />
+              </section>
+              <section aria-label="Contact groups">
+                <ContactGroupMembership
+                  contact={contact}
+                  groups={props.contactGroups}
+                  onAddToGroup={props.onAddSelectedContactToGroup}
+                  onRemoveFromGroup={props.onRemoveSelectedContactFromGroup}
+                />
+              </section>
+              <details className="contact-technical-details">
+                <summary>Technical details</summary>
+                <div className="detail-grid contact-operational-grid">
+                  <DetailItem label="Type" value={formatLabel(contact.party_type)} />
+                  <DetailItem label="Status" value={formatLabel(contact.status)} />
+                  <DetailItem label="Review" value={formatLabel(contact.review_state)} />
+                  <DetailItem label="Source" value={formatLabel(contact.source)} />
+                  {contact.duplicate_candidates?.length ? <DetailItem label="Duplicates" value={contact.duplicate_candidates.map((item) => item.display_name).join(", ")} /> : null}
+                </div>
+              </details>
             </div>
+          )}
+          {props.detailPane === "intelligence" && contact && (
+            <ContactBusinessIntelligenceProfilePanel contact={contact} />
           )}
           {props.detailPane === "activity" && (
             <div className="detail-section pane-section">
               <p className="eyebrow">Notes</p>
               <div className="note-composer">
-                <input value={props.noteText} onChange={(event) => props.onNoteTextChange(event.target.value)} placeholder="Internal note" disabled={!contact} />
+                <label className="field note-field">
+                  <span>Internal note</span>
+                  <input value={props.noteText} onChange={(event) => props.onNoteTextChange(event.target.value)} disabled={!contact} />
+                </label>
                 <CommandButton icon={FileCheck2} onClick={props.onAddNote} disabled={!contact || !props.noteText.trim()}>Add</CommandButton>
               </div>
-              <div className="record-list">
-                {contact.notes?.length ? contact.notes.map((note) => <div className="record-row" key={note.id}>{note.body}</div>) : <EmptyState text="No notes." />}
-              </div>
+              <ContactActivityTimeline contact={contact} />
             </div>
           )}
           {props.detailPane === "relationships" && (
-            <div className="detail-section pane-section">
-              <p className="eyebrow">Relationships</p>
-              <div className="relationship-composer">
-                <select value={props.relationshipTarget} onChange={(event) => props.onRelationshipTargetChange(event.target.value)} disabled={!contact}>
-                  <option value="">Select contact</option>
-                  {props.contacts.filter((row) => row.id !== contact.id).map((row) => <option key={row.id} value={row.id}>{row.display_name}</option>)}
-                </select>
-                <select value={props.relationshipType} onChange={(event) => props.onRelationshipTypeChange(event.target.value)} disabled={!contact}>
-                  <option value="primary_contact">Primary contact</option>
-                  <option value="works_for">Works for</option>
-                  <option value="billing_contact">Billing contact</option>
-                  <option value="decision_maker">Decision maker</option>
-                  <option value="advisor">Advisor</option>
-                  <option value="customer">Customer</option>
-                  <option value="supplier">Supplier</option>
-                </select>
-                <CommandButton icon={Link2} onClick={props.onLinkRelationship} disabled={!contact || !props.relationshipTarget}>Link</CommandButton>
-              </div>
-              <div className="record-list">
-                {contact.relationships?.length ? contact.relationships.map((rel) => <div className="record-row" key={rel.id}>{formatLabel(rel.relationship_type)}</div>) : <EmptyState text="No relationships." />}
-              </div>
-            </div>
+            <ContactRelationshipsPanel {...props} contact={contact} />
           )}
         </>
       ) : (
-        <EmptyState text="Select or create a contact." />
+        <div className="contact-detail-empty">
+          <EmptyState text="Select a contact or create a new one." />
+        </div>
       )}
     </div>
   );

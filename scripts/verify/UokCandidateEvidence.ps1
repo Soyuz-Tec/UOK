@@ -72,7 +72,14 @@ function Assert-UokCandidateEvidence {
     ) {
         throw "Baseline evidence failed: $($evidence | ConvertTo-Json -Depth 30)"
     }
-    if (-not $migration.ok -or -not $migration.checks.single_active_baseline -or -not $migration.checks.baseline_has_no_business_module_tables) {
+    if (
+        -not $migration.ok `
+        -or -not $migration.checks.single_active_baseline `
+        -or -not $migration.checks.baseline_has_no_business_module_tables `
+        -or -not $migration.checks.module_migration_directories_present `
+        -or -not $migration.checks.module_migration_files_scoped `
+        -or -not $migration.checks.contacts_core_module_migration_present
+    ) {
         throw "Migration discipline failed: $($migration | ConvertTo-Json -Depth 30)"
     }
     if (-not $verify.result.ok -or -not $verify.result.checks.module_neutral_baseline -or -not $verify.result.checks.module_lifecycle_ok) {
@@ -80,5 +87,16 @@ function Assert-UokCandidateEvidence {
     }
     if ($ui.Content -notmatch "UOK" -or $ui.Content -match $forbiddenRetiredUokName -or $ui.Content -notmatch "Apps Manager" -or $ui.Content -notmatch "Contacts" -or $ui.Content -match $forbiddenSpecificCargoName -or $ui.Content -match $forbiddenCombinedLabel) {
         throw "UI marker check failed"
+    }
+
+    $artifacts = Invoke-UokJson -Path "/api/contacts?query=$Stamp&status=active" -Headers $Headers
+    foreach ($artifact in $artifacts) {
+        if ($artifact.display_name -match "^(UOK Contact|UOK Account|Imported Contact) $Stamp$") {
+            Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+                command_type = "ArchiveContact"
+                payload = @{ party_id = $artifact.id }
+                idempotency_key = "uok-cleanup-contact-$($artifact.id)-$Stamp"
+            } | Out-Null
+        }
     }
 }

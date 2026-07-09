@@ -1,4 +1,4 @@
--- UOK-3.1.0-alpha.2
+-- UOK-3.1.0-alpha.3
 -- Initial baseline: UOK services plus Contacts bootstrap module only.
 
 CREATE TABLE IF NOT EXISTS organizations (

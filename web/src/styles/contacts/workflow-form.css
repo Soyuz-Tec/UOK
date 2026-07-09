@@ -1,36 +1,54 @@
-.workflow-disclosure {
+.contact-form-disclosure {
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
   background: var(--uok-bg-elevated);
   overflow: hidden;
 }
 
-.workflow-disclosure summary {
+.contact-form-disclosure summary {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--uok-space-3);
-  align-items: center;
-  min-height: 64px;
+  gap: var(--uok-space-1);
+  min-height: 56px;
   padding: var(--uok-space-4);
   cursor: pointer;
 }
 
-.workflow-disclosure summary strong,
-.workflow-disclosure summary span {
+.contact-form-disclosure summary strong,
+.contact-form-disclosure summary span {
   display: block;
 }
 
-.workflow-disclosure[open] summary {
+.contact-form-disclosure summary span {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-footnote);
+}
+
+.contact-form-disclosure summary:focus-visible {
+  outline: var(--uok-focus-ring);
+  outline-offset: -3px;
+}
+
+.contact-form-disclosure[open] summary {
   border-bottom: var(--uok-line);
 }
 
-.workflow-disclosure .contacts-utility-grid {
+.contact-form-disclosure:not([open]) > :not(summary) {
+  display: none;
+}
+
+.contact-form-disclosure .form-field-grid {
   padding: var(--uok-space-4);
 }
 
 .contact-form {
   display: grid;
   gap: var(--uok-space-3);
+}
+
+.form-hint {
+  margin: 0;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-callout);
 }
 
 .form-section {
@@ -64,10 +82,51 @@
 
 .contact-form .field input,
 .contact-form .field select,
-.contact-form .field textarea,
-.contacts-utility-grid .field input,
-.contacts-utility-grid .field textarea {
+.contact-form .field textarea {
   width: 100%;
+}
+
+.contact-form-addable-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: var(--uok-space-2);
+}
+
+.contact-form-add-section {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--uok-space-2);
+  min-height: 58px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  text-align: left;
+}
+
+.contact-form-add-section:hover {
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.contact-form-add-section:focus-visible {
+  outline: 3px solid var(--uok-focus-ring);
+  outline-offset: 2px;
+}
+
+.contact-form-add-section span {
+  display: grid;
+  min-width: 0;
+}
+
+.contact-form-add-section strong {
+  color: var(--uok-text-primary);
+}
+
+.contact-form-add-section small {
+  color: var(--uok-text-tertiary);
 }
 
 .wide-field,

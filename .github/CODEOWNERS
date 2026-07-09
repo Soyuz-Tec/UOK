@@ -1,0 +1,16 @@
+# UOK repository ownership.
+#
+# If this repository later uses GitHub teams, replace @Soyuz-Tec with the
+# exact owning team handles while keeping these ownership boundaries.
+
+* @Soyuz-Tec
+
+/.github/ @Soyuz-Tec
+/docs/architecture/ @Soyuz-Tec
+/docs/design/ @Soyuz-Tec
+/docs/operations/ @Soyuz-Tec
+/src/uok/ @Soyuz-Tec
+/modules/ @Soyuz-Tec
+/web/src/shared/ @Soyuz-Tec
+/migrations/ @Soyuz-Tec
+/scripts/ @Soyuz-Tec
