@@ -45,6 +45,7 @@ export function PlanningTimeline({
   onOpenDependencies,
   onCreateBaseline,
   onOpenResources,
+  onLevelResources,
 }: {
   projects: PlanningProject[];
   schedule: PlanningSchedule;
@@ -75,6 +76,7 @@ export function PlanningTimeline({
   onOpenDependencies: () => void;
   onCreateBaseline: () => void;
   onOpenResources: () => void;
+  onLevelResources: () => void;
 }) {
   const [activeView, setActiveView] = useState<PlanningView>("Gantt chart");
   const [fieldPreset, setFieldPreset] = useState<FieldPreset>("core");
@@ -190,6 +192,7 @@ export function PlanningTimeline({
           </button>
           <CommandButton icon={Baseline} onClick={onCreateBaseline} disabled={reviewMode}>Baseline</CommandButton>
           <CommandButton icon={Users} onClick={onOpenResources} disabled={reviewMode}>Resources</CommandButton>
+          <CommandButton icon={Users} onClick={onLevelResources} loading={busy === "level"} disabled={reviewMode}>Level</CommandButton>
         </div>
         <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} layoutMode={layoutMode} reviewMode={reviewMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onToggleLayoutMode={() => setLayoutMode((value) => value === "split" ? "timeline" : "split")} onToggleReviewMode={() => onReviewModeChange(!reviewMode)} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} viewDensity={viewDensity} />
       </div>

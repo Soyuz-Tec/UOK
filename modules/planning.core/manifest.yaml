@@ -25,6 +25,7 @@ commands:
   - CreatePlanningBaseline
   - CreatePlanningResource
   - AssignPlanningResource
+  - LevelPlanningResources
 events:
   - PlanningProjectCreated
   - PlanningTaskCreated
@@ -37,6 +38,7 @@ events:
   - PlanningBaselineCreated
   - PlanningResourceCreated
   - PlanningResourceAssigned
+  - PlanningResourcesLeveled
 dependencies: []
 backend_path: modules/planning.core/backend
 web_path: modules/planning.core/web

@@ -77,7 +77,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Light/dark themes | Implemented | UOK appearance tokens and UI proof cover light/dark behavior. |
 | Work-time calendars and resource calendars | Partial | Project work-time calendar scheduling, holidays, ignored periods, and propagation exist; resource calendars remain backlog. |
 | Critical path, slack, baselines | Implemented | CPM read model, critical-path explanation, slack counts, per-row baseline lanes, and variance badges exist. |
-| Resource planning and workload | Implemented | Resource assignment, warnings, and first-party daily workload lanes exist; automatic leveling remains a separate scheduling backlog item. |
+| Resource planning and workload | Implemented | Resource assignment, warnings, first-party daily workload lanes, and explicit resource leveling exist. |
 | Task grouping, rollups, split tasks, unscheduled tasks | Backlog | Add only after core dependency/constraint model is stronger. |
 | Undo/redo | Backlog | Needs command stack with server reconciliation. |
 | Export/import | Partial | CSV export, an import template, UOK project JSON exchange, timeline SVG image export, and HTML schedule document export exist; PDF/richer office documents and external project equivalents remain later. |

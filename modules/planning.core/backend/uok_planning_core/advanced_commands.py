@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 
 from .models import PlanningAssignment, PlanningBaseline, PlanningCalendar, PlanningResource, PlanningScheduleEvent
 from .read_model import baseline_snapshot, schedule_read_model
-from .scheduler import apply_schedule, parse_planning_date, project_or_error, project_tasks, task_or_error
+from .resource_leveling import level_resource_allocations
+from .scheduler import apply_schedule, parse_planning_date, project_calendar, project_dependencies, project_or_error, project_tasks, task_or_error, validate_schedule
 from uok.models import EventRecord
 from uok.security import Actor
 from uok.util import dumps
@@ -84,6 +85,25 @@ def cmd_assign_resource(db: Session, actor: Actor, payload: dict[str, Any], comm
     return schedule_read_model(db, actor, project_or_error(db, actor, task.project_id))
 
 
+def cmd_level_resources(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
+    project = project_or_error(db, actor, clean_text(payload.get("project_id"), "project_id", 36))
+    changed = apply_schedule(db, actor, project.id)
+    for _ in range(5):
+        tasks = project_tasks(db, actor, project.id)
+        leveled = level_resource_allocations(tasks, _project_assignments(db, actor, tasks), project_calendar(db, actor, project.id))
+        if not leveled:
+            break
+        changed.update(leveled)
+        db.flush()
+        changed.update(apply_schedule(db, actor, project.id))
+    violations = validate_schedule(project_tasks(db, actor, project.id), project_dependencies(db, actor, project.id), project_calendar(db, actor, project.id))
+    if violations:
+        raise ValueError("; ".join(violations))
+    _emit(db, actor, "PlanningResourcesLeveled", "PlanningProject", project.id, {"project_id": project.id})
+    _schedule_event(db, actor, project.id, "resources_leveled", {"changed_task_ids": sorted(changed)})
+    return schedule_read_model(db, actor, project)
+
+
 def clean_text(value: Any, field: str, limit: int) -> str:
     text = str(value or "").strip()
     if not text:
@@ -108,6 +128,16 @@ def _resource_or_error(db: Session, actor: Actor, resource_id: str) -> PlanningR
     if not resource or resource.organization_id != actor.organization_id:
         raise ValueError("resource_id not found")
     return resource
+
+
+def _project_assignments(db: Session, actor: Actor, tasks: list[Any]) -> list[PlanningAssignment]:
+    task_ids = [task.id for task in tasks]
+    if not task_ids:
+        return []
+    return list(db.scalars(select(PlanningAssignment).where(
+        PlanningAssignment.organization_id == actor.organization_id,
+        PlanningAssignment.task_id.in_(task_ids),
+    )).all())
 
 
 def _working_days(value: Any) -> list[int]:

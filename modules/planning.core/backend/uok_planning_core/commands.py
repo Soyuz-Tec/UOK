@@ -5,7 +5,7 @@ from typing import Any, Callable
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_set_calendar
+from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_level_resources, cmd_set_calendar
 from .models import (
     PlanningAssignment,
     PlanningProject,
@@ -186,6 +186,7 @@ def command_handlers() -> dict[str, CommandHandler]:
         "CreatePlanningBaseline": cmd_create_baseline,
         "CreatePlanningResource": cmd_create_resource,
         "AssignPlanningResource": cmd_assign_resource,
+        "LevelPlanningResources": cmd_level_resources,
     }
 
 

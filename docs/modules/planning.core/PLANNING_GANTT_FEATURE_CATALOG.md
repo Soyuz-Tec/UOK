@@ -129,7 +129,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | CPM read model | Early/late dates, total slack, critical flags. | Implemented |
 | Calendar-aware propagation | Respect working days and holidays. | Implemented |
 | Resource over-allocation | Warn when allocation exceeds capacity. | Implemented |
-| Resource leveling | Automatically adjust schedule to resolve allocation conflicts. | Backlog |
+| Resource leveling | Explicit Level command moves later auto-scheduled assigned tasks forward to resolve daily resource over-allocation where capacity allows, then reruns server validation and audit events. | Implemented |
 | Constraints | Must-start, must-finish, start/finish no-earlier-than, and start/finish no-later-than constraints are stored per task, enforced by Python scheduling, returned in read models, editable in the inspector, and exported. | Implemented |
 | Manual/auto scheduling | Per-task auto/manual scheduling mode is stored with each task; auto tasks participate in dependency propagation, while manual tasks keep their dates and surface validation conflicts. | Implemented |
 

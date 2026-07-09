@@ -31,6 +31,28 @@ def test_manual_tasks_are_not_moved_by_dependency_propagation(client: TestClient
     assert manual_row["scheduling_mode"] == "manual"
 
 
+def test_resource_leveling_moves_later_auto_tasks(client: TestClient) -> None:
+    suffix = str(uuid4())[:8]
+    admin = auth(client, "admin", "admin")
+    ops = auth(client, "ops", "ops123")
+    assert client.post("/api/modules/planning.core/install", headers=admin).status_code == 200
+    project = command(client, ops, "CreatePlanningProject", {"name": f"Level Plan {suffix}", "start": "2026-08-03", "end": "2026-08-20"}, f"level-project-{suffix}")
+    project_id = project.json()["result"]["id"]
+    first = _task(client, ops, project_id, suffix, "First assigned", "2026-08-03", "2026-08-05", "auto")
+    second = _task(client, ops, project_id, suffix, "Second assigned", "2026-08-04", "2026-08-06", "auto")
+    resource = command(client, ops, "CreatePlanningResource", {"project_id": project_id, "name": "Planner", "role": "Scheduling"}, f"level-resource-{suffix}")
+    resource_id = resource.json()["result"]["resources"][0]["id"]
+    assert command(client, ops, "AssignPlanningResource", {"task_id": first, "resource_id": resource_id, "allocation_percent": 100}, f"level-first-{suffix}").status_code == 200
+    assigned = command(client, ops, "AssignPlanningResource", {"task_id": second, "resource_id": resource_id, "allocation_percent": 100}, f"level-second-{suffix}")
+    assert "allocated 200%" in str(assigned.json()["result"]["validation"]["warnings"])
+    leveled = command(client, ops, "LevelPlanningResources", {"project_id": project_id}, f"level-run-{suffix}")
+    assert leveled.status_code == 200, leveled.text
+    tasks = {task["id"]: task for task in leveled.json()["result"]["tasks"]}
+    assert tasks[first]["start"] == "2026-08-03"
+    assert tasks[second]["start"] == "2026-08-06"
+    assert not leveled.json()["result"]["validation"]["warnings"]
+
+
 def _task(client: TestClient, headers: dict[str, str], project_id: str, suffix: str, title: str, start: str, end: str, mode: str) -> str:
     response = command(client, headers, "CreatePlanningTask", {"project_id": project_id, "title": title, "start": start, "end": end, "scheduling_mode": mode}, f"mode-task-{title}-{suffix}")
     assert response.status_code == 200, response.text

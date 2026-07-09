@@ -27,6 +27,7 @@ import type { TimelineScale } from "./planningGanttModel";
 import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import { timelineTaskPayload } from "./planningTimelineCreateModel";
 import type { PlanningProject, PlanningSchedule, PlanningTask, PlanningWorkspaceProps } from "./types";
+import { resultId, taskPayload, withCascade } from "./planningWorkspaceHelpers";
 
 export function PlanningWorkspace({ token, appearance, module, busyAction, onActivate }: PlanningWorkspaceProps) {
   const [projects, setProjects] = useState<PlanningProject[]>([]);
@@ -143,6 +144,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               onOpenDependencies={() => setInspectorTab("links")}
               onCreateBaseline={() => void addBaseline({ name: `Baseline ${schedule.baselines.length + 1}` })}
               onOpenResources={() => setInspectorTab("resources")}
+              onLevelResources={() => void levelResources()}
             />
           )}
           secondary={(
@@ -259,6 +261,10 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
     await mutate("resource", () => assignPlanningResource(token, payload), { action: "resource_assigned" });
   }
 
+  async function levelResources() {
+    await mutate("level", () => planningCommand<PlanningSchedule>(token, "LevelPlanningResources", { project_id: selectedProjectId }, "planning-level"), { action: "resources_leveled" });
+  }
+
   async function runTaskMenuAction(action: PlanningTaskMenuAction, task: PlanningTask) {
     const mutation = planningTaskMenuMutation(action, task);
     if (!mutation) return;
@@ -281,16 +287,4 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
       setBusy("");
     }
   }
-}
-
-function taskPayload(title: string, start: string, end: string, progress: number, sortOrder: number, taskType = "task", parentTaskId?: string) {
-  return { title, start, end, progress, sort_order: sortOrder, task_type: taskType, parent_task_id: parentTaskId };
-}
-
-function resultId(value: unknown) {
-  return String((value as { id?: string; result?: { id?: string } }).id || (value as { result?: { id?: string } }).result?.id || "");
-}
-
-function withCascade(payload: Record<string, unknown>, cascade: boolean) {
-  return payload.start || payload.end ? { ...payload, cascade } : payload;
 }
