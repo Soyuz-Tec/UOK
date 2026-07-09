@@ -2,11 +2,12 @@ import { Baseline, CalendarClock, ChevronDown, Columns3, Download, Flag, Lock, M
 import { useEffect, useState } from "react";
 
 import { FieldVisibilityMenu, type ColumnVisibilityMap } from "../../shared/tables";
+import { exportPlanningImportTemplate, exportScheduleCsv } from "./planningExportModel";
 import { PlanningFilters } from "./PlanningFilters";
 import { PlanningSavedViews } from "./PlanningSavedViews";
 import type { TimelineScale } from "./planningGanttModel";
 import { maxZoomValue, scaleToZoomValue, timelineScaleOptions, zoomValueToScale } from "./planningScaleOptions";
-import { exportScheduleCsv, type FieldPreset, type PlanningFilterState, type PlanningLayoutMode, type ViewDensity } from "./planningTimelineModel";
+import type { FieldPreset, PlanningFilterState, PlanningLayoutMode, ViewDensity } from "./planningTimelineModel";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import type { PlanningSchedule } from "./types";
 
@@ -137,7 +138,11 @@ export function PlanningTimelineUtilities({
       </button>
       <button type="button" className="planning-toolbar-toggle" onClick={() => exportScheduleCsv(schedule)}>
         <Download size={16} aria-hidden="true" />
-        <span>Export</span>
+        <span>Export CSV</span>
+      </button>
+      <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningImportTemplate(schedule)}>
+        <Download size={16} aria-hidden="true" />
+        <span>Template</span>
       </button>
       <label className="planning-toolbar-select">
         <ChevronDown size={16} aria-hidden="true" />

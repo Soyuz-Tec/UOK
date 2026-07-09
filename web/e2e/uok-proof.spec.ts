@@ -144,6 +144,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByRole("button", { name: "Columns", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Timeline only", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Review mode", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Export CSV", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Template", exact: true })).toBeVisible();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
     await expect(page.locator(".planning-owned-grid-header .column-resize-handle")).toHaveCount(4);
     await expect(page.locator(".planning-owned-resize-handle")).toHaveCount(6);

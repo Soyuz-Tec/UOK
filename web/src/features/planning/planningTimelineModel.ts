@@ -44,19 +44,6 @@ export function projectScheduleView(schedule: PlanningSchedule, filterState: Pla
   };
 }
 
-export function exportScheduleCsv(schedule: PlanningSchedule) {
-  const header = ["WBS", "Task", "Type", "Status", "Start", "End", "Progress", "Critical"];
-  const rows = schedule.tasks.map((task) => [task.wbs || "", task.title, task.task_type, task.status, task.start, task.end, `${task.progress}`, task.critical ? "yes" : "no"]);
-  const csv = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `${schedule.project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-schedule.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
 function taskMatchesFilter(task: PlanningTask, filterState: PlanningFilterState, resourceTaskIds: Set<string>) {
   if (filterState.mode === "critical" && !task.critical) return false;
   if (filterState.mode === "milestones" && task.task_type !== "milestone") return false;
@@ -69,8 +56,4 @@ function taskMatchesFilter(task: PlanningTask, filterState: PlanningFilterState,
 
 function compareWbs(a: PlanningTask, b: PlanningTask) {
   return String(a.wbs || a.sort_order).localeCompare(String(b.wbs || b.sort_order), undefined, { numeric: true, sensitivity: "base" });
-}
-
-function csvCell(value: string) {
-  return `"${value.replace(/"/g, '""')}"`;
 }
