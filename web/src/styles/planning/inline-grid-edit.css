@@ -1,0 +1,60 @@
+.planning-owned-inline-cell {
+  display: block;
+  min-width: 0;
+}
+
+.planning-owned-inline-cell .inline-edit-display {
+  min-height: 30px;
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0 var(--uok-space-1);
+  border-color: transparent;
+  background: transparent;
+  font: inherit;
+}
+
+.planning-owned-inline-cell .inline-edit-display:hover,
+.planning-owned-inline-cell .inline-edit-display:focus-visible {
+  border-color: var(--uok-border);
+  background: var(--uok-bg-elevated);
+}
+
+.planning-owned-inline-cell .inline-edit-display span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-owned-inline-cell .inline-edit-form {
+  display: grid;
+  grid-template-columns: minmax(92px, 1fr) auto;
+  align-items: center;
+  gap: var(--uok-space-1);
+}
+
+.planning-owned-inline-cell .field {
+  gap: 0;
+}
+
+.planning-owned-inline-cell .field > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.planning-owned-inline-cell .field input {
+  min-height: 30px;
+  padding: 0 var(--uok-space-1);
+}
+
+.planning-owned-inline-cell .inline-edit-actions {
+  display: flex;
+  gap: var(--uok-space-1);
+}
+
+.planning-owned-inline-cell .inline-edit-actions .command-button {
+  min-height: 30px;
+  padding-inline: var(--uok-space-2);
+}

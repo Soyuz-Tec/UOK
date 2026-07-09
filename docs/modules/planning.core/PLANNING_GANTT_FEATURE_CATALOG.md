@@ -55,7 +55,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Column reorder | Drag headers to reorder columns; order persists locally per field preset. | Implemented |
 | Pinned columns | Keep WBS/task pinned ahead of reordered fields and sticky inside the grid. | Implemented |
 | Sort by columns | Sort visible rows by WBS, task, dates, duration, progress, critical flag, assignee, and status. | Implemented |
-| Inline grid edit | Edit task cells directly in grid with server validation. | Backlog |
+| Inline grid edit | Edit task title, start, end, progress, and status cells directly in the grid with server validation; derived/read-only cells stay locked. | Implemented |
 | Context row menu | Add below, add child, duplicate, delete, convert to milestone, and status actions. | Implemented |
 
 ## Row And Density Features

@@ -29,13 +29,13 @@ This artifact does not permit copying third-party source code, vendoring third-p
 
 | Feature idea | UOK status | UOK target |
 |---|---:|---|
-| Configurable task grid with tree/task column | Partial | Continue first-party grid work: inline edit remains; pinned WBS/task columns are implemented. |
+| Configurable task grid with tree/task column | Implemented | First-party grid supports pinned WBS/task columns plus inline edits for core mutable task fields. |
 | Projects/summary tasks and milestones | Implemented | Keep summary and milestone rendering first-party. |
 | Four dependency types plus lag | Implemented | Keep validation in Python and UI editing in inspector. |
 | Drag scheduling and resize | Implemented | Continue server-validated move/resize/progress behavior. |
 | Drag-to-create dependency links | Implemented | Taskbar connector handles create finish-to-start links through server validation. |
 | Progress bar editing | Implemented | Keep progress drag handle and inspector edits. |
-| Lightbox/task editor | Partial | UOK equivalent is the inspector; improve compact edit workflows and inline grid edit. |
+| Lightbox/task editor | Partial | UOK equivalent is the inspector plus inline grid edits for title, dates, status, and progress; richer compact edit flows remain later. |
 | Configurable scales from hour to year | Implemented | UOK-owned hour, day, week, month, quarter, and year modes exist without changing the renderer boundary. |
 | Timeline cell templates and task templates | Partial | Use UOK-owned render helpers and status indicators; avoid third-party template API cloning. |
 | Tooltips and quick info | Implemented | UOK renders accessible first-party taskbar hover/focus detail. |
@@ -121,7 +121,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Grid | Header menu | column id, checked state, hide/show action, reset widths, sort action, keyboard access | First-party per-column menu complements field controls and shared column primitives | Implemented |
 | Grid | Add-task/action column | command button, row action menu, add child/add below, disabled/read-only states | Row menu exists; add-column control later if density allows | Partial |
 | Grid | Tree column | WBS code, indentation, summary marker, expand/collapse state, parent id | Summary rows and WBS sorting; richer per-parent expand state later | Partial |
-| Grid | Inline cell editing | editable field, validation state, commit/cancel, keyboard handling, server command | Defer until command-level validation and audit messages are tighter | Backlog |
+| Grid | Inline cell editing | editable field, validation state, commit/cancel, keyboard handling, server command | Title, start, end, progress, and status cells use shared inline editing and existing server task validation | Implemented |
 | Grid | Column sorting/filtering | column id, direction, filter mode, query, status/resource criteria | Search/filter and visible-column sorting use UOK-owned read-model helpers | Implemented |
 | Grid | Branch ordering / row drag | dragged task id, drop parent, before/after mode, valid WBS target, audit event | Later WBS reorder command with Python validation | Backlog |
 | Grid | Row resize | row id, height, min/max, global density fallback, persisted override | Later row-height helper and proof tests | Backlog |

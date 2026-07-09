@@ -31,6 +31,7 @@ export function PlanningTimeline({
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
+  onTaskInlineEdit,
   onBulkTaskStatus,
   onDependencyCreate,
   onTimelineTaskCreate,
@@ -60,6 +61,7 @@ export function PlanningTimeline({
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
+  onTaskInlineEdit: (taskId: string, payload: Record<string, unknown>) => void;
   onBulkTaskStatus: (taskIds: string[], payload: Record<string, unknown>) => void;
   onDependencyCreate: (payload: Record<string, unknown>) => void;
   onTimelineTaskCreate: (start: string, end: string) => void;
@@ -202,6 +204,7 @@ export function PlanningTimeline({
           onTaskSelect={onTaskSelect}
           onTaskReschedule={onTaskReschedule}
           onTaskProgress={onTaskProgress}
+          onTaskInlineEdit={onTaskInlineEdit}
           onDependencyCreate={onDependencyCreate}
           onTimelineTaskCreate={onTimelineTaskCreate}
           onTaskMenuAction={onTaskMenuAction}

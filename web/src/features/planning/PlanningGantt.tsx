@@ -9,7 +9,6 @@ import {
   buildTimeline,
   finishDrag,
   gridColumns,
-  gridValue,
   rowHeight,
   taskColorClass,
   visibleRows,
@@ -19,6 +18,7 @@ import {
 } from "./planningGanttModel";
 import { DependencyLines, ProjectBoundaryMarkers, TaskShape, TaskTimelineMarkers, TimelineBackground, TimelineCreateDraftShape, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
 import { PlanningGanttEmptyState } from "./PlanningGanttEmptyState";
+import { PlanningGanttGridCell } from "./PlanningGanttGridCell";
 import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
 import type { PlanningGanttProps } from "./planningGanttProps";
 import { selectedDependencyChain, taskDependencyChainClass } from "./planningDependencyChain";
@@ -52,6 +52,7 @@ export function PlanningGantt({
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
+  onTaskInlineEdit,
   onDependencyCreate,
   onTimelineTaskCreate,
   onTaskMenuAction,
@@ -149,9 +150,7 @@ export function PlanningGantt({
               onKeyDown={(event) => handleRowKey(task, event)}
             >
               {columns.map((column) => (
-                <span key={column.id} role="cell" className={pinnedOffsets.has(column.id) ? "planning-owned-pinned-column" : undefined} style={pinnedStyle(column.id)}>
-                  {gridValue(column.id, task, assignedByTask)}
-                </span>
+                <PlanningGanttGridCell key={column.id} assignedByTask={assignedByTask} column={column} pinnedOffsets={pinnedOffsets} readOnly={readOnly} task={task} onTaskEdit={onTaskInlineEdit} />
               ))}
               <button
                 type="button"
@@ -282,8 +281,4 @@ export function PlanningGantt({
     else rowRefs.current.delete(taskId);
   }
 
-  function pinnedStyle(columnId: string): CSSProperties | undefined {
-    const left = pinnedOffsets.get(columnId);
-    return left === undefined ? undefined : { left };
-  }
 }

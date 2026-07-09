@@ -126,6 +126,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               }}
               onTaskReschedule={rescheduleTask}
               onTaskProgress={(taskId, progress) => void saveTask(taskId, { progress })}
+              onTaskInlineEdit={(taskId, payload) => void saveTask(taskId, payload)}
               onBulkTaskStatus={(taskIds, payload) => void saveTaskBatch(taskIds, payload)}
               onDependencyCreate={(payload) => void addDependency(payload)}
               onTimelineTaskCreate={(start, end) => void addTask(timelineTaskPayload(schedule.tasks, start, end))}

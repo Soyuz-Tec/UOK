@@ -163,6 +163,14 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-task-marker text").filter({ hasText: "VAR" })).toHaveCount(1);
     await expect(page.locator(".planning-owned-task-marker text").filter({ hasText: "MS" })).toHaveCount(1);
     if (viewport.width > 980) {
+      const inlineUpdates = taskUpdatePayloads.length;
+      await page.getByRole("button", { name: "Edit Task for Define schedule scope" }).click();
+      const inlineForm = page.locator(".planning-owned-inline-cell .inline-edit-form");
+      await expect(inlineForm).toBeVisible();
+      await page.getByLabel("Task for Define schedule scope").fill("Define schedule scope updated");
+      await inlineForm.getByRole("button", { name: "Save" }).click();
+      await expect.poll(() => taskUpdatePayloads.length).toBe(inlineUpdates + 1);
+      expect(taskUpdatePayloads.at(-1)).toMatchObject({ title: "Define schedule scope updated" });
       const taskRequests = taskPayloads.length;
       await page.getByRole("button", { name: "Task actions for Define schedule scope" }).click();
       await expect(page.getByRole("menu", { name: "Task actions for Define schedule scope" })).toBeVisible();
