@@ -1,4 +1,4 @@
-import { Baseline, CalendarClock, ChevronDown, Columns3, Download, Flag, Maximize2, Minimize2, Target } from "lucide-react";
+import { Baseline, CalendarClock, ChevronDown, Columns3, Download, Flag, Lock, Maximize2, Minimize2, Target, Unlock } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { FieldVisibilityMenu, type ColumnVisibilityMap } from "../../shared/tables";
@@ -18,6 +18,7 @@ export function PlanningTimelineUtilities({
   filters,
   focusMode,
   layoutMode,
+  reviewMode,
   onApplySavedView,
   onDateTarget,
   onFieldPresetChange,
@@ -29,6 +30,7 @@ export function PlanningTimelineUtilities({
   onToggleColumn,
   onToggleFocusMode,
   onToggleLayoutMode,
+  onToggleReviewMode,
   onResetColumns,
   onSelectedTask,
   onToday,
@@ -48,6 +50,7 @@ export function PlanningTimelineUtilities({
   filters: PlanningFilterState;
   focusMode: boolean;
   layoutMode: PlanningLayoutMode;
+  reviewMode: boolean;
   onApplySavedView: (config: PlanningSavedViewConfig) => void;
   onDateTarget: (date: string) => void;
   onFieldPresetChange: (preset: FieldPreset) => void;
@@ -59,6 +62,7 @@ export function PlanningTimelineUtilities({
   onToggleColumn: (columnId: string, visible: boolean) => void;
   onToggleFocusMode: () => void;
   onToggleLayoutMode: () => void;
+  onToggleReviewMode: () => void;
   onResetColumns: () => void;
   onSelectedTask: () => void;
   onToday: () => void;
@@ -91,6 +95,10 @@ export function PlanningTimelineUtilities({
       <button type="button" className={`planning-toolbar-toggle ${layoutMode === "timeline" ? "selected" : ""}`} aria-pressed={layoutMode === "timeline"} onClick={onToggleLayoutMode}>
         {layoutMode === "timeline" ? <Columns3 size={16} aria-hidden="true" /> : <Maximize2 size={16} aria-hidden="true" />}
         <span>{layoutMode === "timeline" ? "Split view" : "Timeline only"}</span>
+      </button>
+      <button type="button" className={`planning-toolbar-toggle ${reviewMode ? "selected" : ""}`} aria-pressed={reviewMode} onClick={onToggleReviewMode}>
+        {reviewMode ? <Unlock size={16} aria-hidden="true" /> : <Lock size={16} aria-hidden="true" />}
+        <span>{reviewMode ? "Edit mode" : "Review mode"}</span>
       </button>
       <label className="planning-zoom-control">
         <span>Zoom</span>

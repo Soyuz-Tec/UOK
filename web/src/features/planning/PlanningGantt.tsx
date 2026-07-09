@@ -47,6 +47,7 @@ export function PlanningGantt({
   fitProjectSignal,
   dateTarget,
   dateTargetSignal,
+  readOnly,
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
@@ -85,7 +86,7 @@ export function PlanningGantt({
   const timelineInteraction = usePlanningTimelineInteraction(scrollRef, svgRef, {
     cellWidth: chart.cellWidth,
     chartStart: chart.start,
-    onCreateTaskRange: onTimelineTaskCreate,
+    onCreateTaskRange: readOnly ? () => undefined : onTimelineTaskCreate,
     onScaleChange,
     scale,
   });
@@ -108,8 +109,9 @@ export function PlanningGantt({
 
   return (
     <div
-      className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance} ${linkDrag ? "planning-linking" : ""}`}
+      className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance} ${readOnly ? "planning-readonly-mode" : ""} ${linkDrag ? "planning-linking" : ""}`}
       aria-label="Planning Gantt chart"
+      aria-readonly={readOnly}
       style={{ "--planning-grid-width": `${Math.max(totalWidth, 340)}px` } as CSSProperties}
     >
       <div className="planning-owned-grid" role="table" aria-label="Planning task grid">
@@ -153,6 +155,7 @@ export function PlanningGantt({
                 type="button"
                 className="planning-owned-row-menu-trigger"
                 aria-label={`Task actions for ${task.title}`}
+                disabled={readOnly}
                 onClick={(event) => openTaskMenu(task.id, event.currentTarget.getBoundingClientRect().left, event.currentTarget.getBoundingClientRect().bottom + 4, event)}
               >
                 <MoreHorizontal size={16} aria-hidden="true" />
@@ -171,7 +174,7 @@ export function PlanningGantt({
         onPointerMove={timelineInteraction.onPointerMove}
         onPointerUp={(event) => {
           timelineInteraction.onPointerUp(event);
-          if (!drag) return;
+          if (!drag || readOnly) return;
           finishDrag(event.clientX, drag, chart.cellWidth, scale, visibleTasks, onTaskReschedule, onTaskProgress);
           setDrag(null);
         }}
@@ -197,36 +200,13 @@ export function PlanningGantt({
           {linkDrag ? <path className="planning-owned-link-draft" d={`M ${linkDrag.sourceX} ${linkDrag.sourceY} L ${linkDrag.pointerX} ${linkDrag.pointerY}`} /> : null}
           {timelineInteraction.createDraft ? <TimelineCreateDraftShape draft={timelineInteraction.createDraft} headerHeight={headerHeight} height={height} /> : null}
           {visibleTasks.map((task, index) => (
-            <TaskShape
-              key={task.id}
-              task={task}
-              index={index}
-              chartStart={chart.start}
-              scale={scale}
-              cellWidth={chart.cellWidth}
-              rowSize={rowSize}
-              headerHeight={headerHeight}
-              selected={task.id === selectedTaskId}
-              chainClass={taskDependencyChainClass(dependencyChain, task.id)}
-              showCritical={showCritical}
-              showBaselines={showBaselines}
-              onSelect={onTaskSelect}
-              onDragStart={(taskId, mode, clientX, barWidth) => setDrag({ taskId, mode, startX: clientX, barWidth })}
-              onLinkStart={startDependencyLink}
-              onLinkFinish={finishDependencyLink}
-            />
+            <TaskShape key={task.id} task={task} index={index} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowSize} headerHeight={headerHeight} selected={task.id === selectedTaskId} chainClass={taskDependencyChainClass(dependencyChain, task.id)} showCritical={showCritical} showBaselines={showBaselines} readOnly={readOnly} onSelect={onTaskSelect} onDragStart={(taskId, mode, clientX, barWidth) => setDrag({ taskId, mode, startX: clientX, barWidth })} onLinkStart={startDependencyLink} onLinkFinish={finishDependencyLink} />
           ))}
           <TodayMarker chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={height} />
         </svg>
         {visibleTasks.length === 0 ? <PlanningGanttEmptyState variant="timeline" /> : null}
       </div>
-      <PlanningTaskContextMenu
-        open={Boolean(taskMenu)}
-        task={menuTask}
-        position={taskMenu ? { x: taskMenu.x, y: taskMenu.y } : { x: 0, y: 0 }}
-        onClose={() => setTaskMenu(null)}
-        onAction={onTaskMenuAction}
-      />
+      <PlanningTaskContextMenu open={Boolean(taskMenu)} task={menuTask} position={taskMenu ? { x: taskMenu.x, y: taskMenu.y } : { x: 0, y: 0 }} onClose={() => setTaskMenu(null)} onAction={onTaskMenuAction} />
     </div>
   );
 
@@ -241,6 +221,7 @@ export function PlanningGantt({
   function startDependencyLink(taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) {
     event.preventDefault();
     event.stopPropagation();
+    if (readOnly) return;
     onTaskSelect(taskId);
     setDrag(null);
     setLinkDrag({ sourceTaskId: taskId, sourceX: x, sourceY: y, pointerX: x + 28, pointerY: y });
@@ -249,7 +230,7 @@ export function PlanningGantt({
   function finishDependencyLink(taskId: string, _x: number, _y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) {
     event.preventDefault();
     event.stopPropagation();
-    if (!linkDrag) return;
+    if (!linkDrag || readOnly) return;
     const payload = dependencyLinkPayload(schedule, linkDrag.sourceTaskId, taskId);
     setLinkDrag(null);
     onTaskSelect(taskId);
@@ -265,6 +246,10 @@ export function PlanningGantt({
   function openTaskMenu(taskId: string, x: number, y: number, event: { preventDefault: () => void; stopPropagation: () => void }) {
     event.preventDefault();
     event.stopPropagation();
+    if (readOnly) {
+      onTaskSelect(taskId);
+      return;
+    }
     onTaskSelect(taskId);
     setTaskMenu({ taskId, x, y });
   }
@@ -275,12 +260,13 @@ export function PlanningGantt({
     event.preventDefault();
     if (command.kind === "select") selectAndFocus(command.taskId);
     else if (command.kind === "open-menu") {
+      if (readOnly) return;
       const rect = event.currentTarget.getBoundingClientRect();
       openTaskMenu(task.id, rect.left + 24, rect.top + 24, event);
     } else if (command.kind === "toggle-summary") {
       onTaskSelect(task.id);
       onSummaryExpandedChange(!summaryExpanded);
-    } else onTaskMenuAction(command.action, task);
+    } else if (!readOnly) onTaskMenuAction(command.action, task);
   }
 
   function selectAndFocus(taskId: string) {

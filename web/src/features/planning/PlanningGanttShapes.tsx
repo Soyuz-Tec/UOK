@@ -75,6 +75,7 @@ export function TaskShape({
   chainClass,
   showCritical,
   showBaselines,
+  readOnly,
   onSelect,
   onDragStart,
   onLinkStart,
@@ -91,6 +92,7 @@ export function TaskShape({
   chainClass: string;
   showCritical: boolean;
   showBaselines: boolean;
+  readOnly: boolean;
   onSelect: (taskId: string) => void;
   onDragStart: (taskId: string, mode: "move" | "resize-start" | "resize-end" | "progress", clientX: number, barWidth?: number) => void;
   onLinkStart: (taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) => void;
@@ -115,13 +117,13 @@ export function TaskShape({
         aria-label={accessibilityLabel}
         onClick={() => onSelect(task.id)}
         onKeyDown={(event) => selectOnKey(event, task.id, onSelect)}
-        onPointerDown={(event) => onDragStart(task.id, "move", event.clientX)}
+        onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)}
       >
         <title>{accessibilityLabel}</title>
         <polygon points={`${centerX},${y} ${x + barHeight},${centerY} ${centerX},${y + barHeight} ${x},${centerY}`} />
         <TaskStatusCode x={x + barHeight + 6} y={y + 1} indicator={indicator} />
         <text x={x + barHeight + statusCodeWidth(indicator.code) + 14} y={centerY + 4}>{task.title}</text>
-        <DependencyHandles task={task} sourceX={x + barHeight + 12} targetX={x - 12} y={centerY} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />
+        {readOnly ? null : <DependencyHandles task={task} sourceX={x + barHeight + 12} targetX={x - 12} y={centerY} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
         <TaskTooltip task={task} x={x} y={Math.max(4, y - 50)} indicator={indicator} />
       </g>
     );
@@ -140,14 +142,14 @@ export function TaskShape({
     >
       <title>{accessibilityLabel}</title>
       {showBaselines && task.baseline_start && task.baseline_end ? <BaselineShape task={task} chartStart={chartStart} scale={scale} cellWidth={cellWidth} y={y + barHeight + 6} /> : null}
-      <rect x={x} y={y} width={width} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} onPointerDown={(event) => onDragStart(task.id, "move", event.clientX)} />
+      <rect x={x} y={y} width={width} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)} />
       <rect className="progress" x={x} y={y} width={progressWidth} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} />
-      <rect className="planning-owned-resize-handle start" x={x - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-start", event.clientX)} />
-      <rect className="planning-owned-resize-handle end" x={x + width - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-end", event.clientX)} />
-      <circle className="planning-owned-progress-handle" cx={x + progressWidth} cy={y + barHeight / 2} r="5" onPointerDown={(event) => onDragStart(task.id, "progress", event.clientX, width)} />
+      {readOnly ? null : <rect className="planning-owned-resize-handle start" x={x - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-start", event.clientX)} />}
+      {readOnly ? null : <rect className="planning-owned-resize-handle end" x={x + width - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-end", event.clientX)} />}
+      {readOnly ? null : <circle className="planning-owned-progress-handle" cx={x + progressWidth} cy={y + barHeight / 2} r="5" onPointerDown={(event) => onDragStart(task.id, "progress", event.clientX, width)} />}
       <text x={x + 8} y={y + barHeight / 2 + 4}>{task.title}</text>
       <TaskStatusCode x={indicatorX} y={y + Math.max(2, (barHeight - 18) / 2)} indicator={indicator} />
-      <DependencyHandles task={task} sourceX={x + width + 12} targetX={x - 12} y={y + barHeight / 2} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />
+      {readOnly ? null : <DependencyHandles task={task} sourceX={x + width + 12} targetX={x - 12} y={y + barHeight / 2} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
       <TaskTooltip task={task} x={x} y={Math.max(4, y - 50)} indicator={indicator} />
     </g>
   );

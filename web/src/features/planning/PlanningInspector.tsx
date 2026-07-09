@@ -21,6 +21,7 @@ export function PlanningInspector(props: {
   newTaskType: "task" | "milestone";
   status: unknown;
   busy: string;
+  readOnly: boolean;
   onTabChange: (tab: PlanningInspectorTab) => void;
   onProjectChange: (projectId: string) => void;
   onSaveTask: (taskId: string, payload: Record<string, unknown>) => Promise<void>;
@@ -34,7 +35,7 @@ export function PlanningInspector(props: {
   onCreateResource: (payload: Record<string, unknown>) => Promise<void>;
   onAssignResource: (payload: Record<string, unknown>) => Promise<void>;
 }) {
-  const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, onProjectChange, onTabChange } = props;
+  const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, readOnly, onProjectChange, onTabChange } = props;
 
   return (
     <Pane title="Inspector" description={schedule.project.name}>
@@ -63,21 +64,13 @@ export function PlanningInspector(props: {
           </button>
         ))}
       </div>
-      {activeTab === "task" && (
-        <TaskEditor
-          key={selectedTask?.id || "new"}
-          schedule={schedule}
-          selectedTask={selectedTask}
-          newTaskType={newTaskType}
-          busy={busy}
-          onSaveTask={props.onSaveTask}
-          onCreateTask={props.onCreateTask}
-          onDeleteTask={props.onDeleteTask}
-        />
-      )}
-      {activeTab === "links" && <DependencyEditor schedule={schedule} busy={busy} onCreateDependency={props.onCreateDependency} onUpdateDependency={props.onUpdateDependency} onRemoveDependency={props.onRemoveDependency} />}
-      {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
-      {activeTab === "resources" && <ResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />}
+      {readOnly ? <span className="planning-muted">Review mode prevents schedule changes.</span> : null}
+      <fieldset className="planning-editor-fieldset" disabled={readOnly} aria-disabled={readOnly}>
+        {activeTab === "task" && <TaskEditor key={selectedTask?.id || "new"} schedule={schedule} selectedTask={selectedTask} newTaskType={newTaskType} busy={busy} onSaveTask={props.onSaveTask} onCreateTask={props.onCreateTask} onDeleteTask={props.onDeleteTask} />}
+        {activeTab === "links" && <DependencyEditor schedule={schedule} busy={busy} onCreateDependency={props.onCreateDependency} onUpdateDependency={props.onUpdateDependency} onRemoveDependency={props.onRemoveDependency} />}
+        {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
+        {activeTab === "resources" && <ResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />}
+      </fieldset>
       {activeTab === "status" && <ValidationPanel schedule={schedule} status={status} />}
     </Pane>
   );

@@ -20,12 +20,14 @@ export function PlanningTimeline({
   scale,
   showCritical,
   showBaselines,
+  reviewMode,
   selectedTaskId,
   selectedProjectId,
   busy,
   onScaleChange,
   onToggleCritical,
   onToggleBaselines,
+  onReviewModeChange,
   onTaskSelect,
   onTaskReschedule,
   onTaskProgress,
@@ -46,12 +48,14 @@ export function PlanningTimeline({
   scale: TimelineScale;
   showCritical: boolean;
   showBaselines: boolean;
+  reviewMode: boolean;
   selectedTaskId: string;
   selectedProjectId: string;
   busy: string;
   onScaleChange: (scale: TimelineScale) => void;
   onToggleCritical: () => void;
   onToggleBaselines: () => void;
+  onReviewModeChange: (reviewMode: boolean) => void;
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
@@ -92,6 +96,7 @@ export function PlanningTimeline({
     focusMode,
     layoutMode,
     query: filters.query,
+    reviewMode,
     resourceId: filters.resourceId,
     status: filters.status,
     scale,
@@ -100,7 +105,7 @@ export function PlanningTimeline({
     showCritical,
     summaryExpanded,
     viewDensity,
-  }), [activeView, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, focusMode, layoutMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
+  }), [activeView, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, focusMode, layoutMode, reviewMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
 
   return (
     <div className={`planning-timeline-workbench planning-layout-${layoutMode} ${focusMode ? "focus-mode" : ""}`}>
@@ -124,7 +129,7 @@ export function PlanningTimeline({
           </select>
         </label>
         <div className="planning-toolbar-group planning-plan-actions" aria-label="Plan actions">
-          <CommandButton icon={FolderKanban} onClick={onCreateDemoSchedule} loading={busy === "demo"}>
+          <CommandButton icon={FolderKanban} onClick={onCreateDemoSchedule} loading={busy === "demo"} disabled={reviewMode}>
             New sample plan
           </CommandButton>
           <CommandButton icon={RefreshCw} onClick={onRefresh} loading={busy === "refresh"}>
@@ -152,9 +157,9 @@ export function PlanningTimeline({
             <input type="checkbox" checked={selectedVisible} onChange={(event) => setSelectedVisible(event.target.checked)} />
             <span>{selectedCount} selected</span>
           </label>
-          <CommandButton icon={Plus} onClick={() => onNewTask("task")} primary>Task</CommandButton>
-          <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")}>Milestone</CommandButton>
-          <CommandButton icon={Link2} onClick={onOpenDependencies}>Link</CommandButton>
+          <CommandButton icon={Plus} onClick={() => onNewTask("task")} disabled={reviewMode} primary>Task</CommandButton>
+          <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")} disabled={reviewMode}>Milestone</CommandButton>
+          <CommandButton icon={Link2} onClick={onOpenDependencies} disabled={reviewMode}>Link</CommandButton>
           <button type="button" className="planning-toolbar-toggle" onClick={() => setSummaryExpanded(true)}>
             <Maximize2 size={16} aria-hidden="true" />
             <span>Expand all</span>
@@ -167,10 +172,10 @@ export function PlanningTimeline({
             <Rows3 size={16} aria-hidden="true" />
             <span>Cascade sorting</span>
           </button>
-          <CommandButton icon={Baseline} onClick={onCreateBaseline}>Baseline</CommandButton>
-          <CommandButton icon={Users} onClick={onOpenResources}>Resources</CommandButton>
+          <CommandButton icon={Baseline} onClick={onCreateBaseline} disabled={reviewMode}>Baseline</CommandButton>
+          <CommandButton icon={Users} onClick={onOpenResources} disabled={reviewMode}>Resources</CommandButton>
         </div>
-        <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} layoutMode={layoutMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onToggleLayoutMode={() => setLayoutMode((value) => value === "split" ? "timeline" : "split")} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} viewDensity={viewDensity} />
+        <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} layoutMode={layoutMode} reviewMode={reviewMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onToggleLayoutMode={() => setLayoutMode((value) => value === "split" ? "timeline" : "split")} onToggleReviewMode={() => onReviewModeChange(!reviewMode)} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} viewDensity={viewDensity} />
       </div>
       {activeView === "Gantt chart" ? (
         <PlanningGantt
@@ -189,6 +194,7 @@ export function PlanningTimeline({
           fitProjectSignal={fitProjectSignal}
           dateTarget={dateTarget}
           dateTargetSignal={dateTargetSignal}
+          readOnly={reviewMode}
           onTaskSelect={onTaskSelect}
           onTaskReschedule={onTaskReschedule}
           onTaskProgress={onTaskProgress}
@@ -214,6 +220,7 @@ export function PlanningTimeline({
     setFilters({ mode: config.filterMode, query: config.query, resourceId: config.resourceId, status: config.status });
     setFocusMode(config.focusMode);
     setLayoutMode(config.layoutMode);
+    onReviewModeChange(config.reviewMode);
     setSelectedVisible(config.selectedVisible);
     setSummaryExpanded(config.summaryExpanded);
     setViewDensity(config.viewDensity);

@@ -37,6 +37,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
   const [timelineScale, setTimelineScale] = useState<TimelineScale>("day");
   const [showCritical, setShowCritical] = useState(true);
   const [showBaselines, setShowBaselines] = useState(true);
+  const [reviewMode, setReviewMode] = useState(false);
   const [status, setStatus] = useState<unknown>("Planning module ready.");
   const [busy, setBusy] = useState("");
   const operational = module?.status === "installed" || module?.status === "upgraded";
@@ -111,12 +112,14 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               scale={timelineScale}
               showCritical={showCritical}
               showBaselines={showBaselines}
+              reviewMode={reviewMode}
               selectedTaskId={selectedTaskId}
               selectedProjectId={selectedProjectId}
               busy={busy}
               onScaleChange={setTimelineScale}
               onToggleCritical={() => setShowCritical((value) => !value)}
               onToggleBaselines={() => setShowBaselines((value) => !value)}
+              onReviewModeChange={setReviewMode}
               onTaskSelect={(taskId) => {
                 setSelectedTaskId(taskId);
                 setInspectorTab("task");
@@ -148,6 +151,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
               newTaskType={newTaskType}
               status={status}
               busy={busy}
+              readOnly={reviewMode}
               onTabChange={setInspectorTab}
               onProjectChange={changeProject}
               onSaveTask={saveTask}

@@ -81,7 +81,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Undo/redo | Backlog | Needs command stack with server reconciliation. |
 | Export/import | Partial | CSV exists; PDF/image/Excel/MS Project equivalents remain later. |
 | Header menu for visible columns | Implemented | UOK now has a first-party per-column header menu for sort, quick action, width reset, hide, and show-all column controls. |
-| No-grid and read-only/prevent-actions modes | Partial | Timeline-only no-grid mode is implemented; permission-aware read-only/prevent-action mode remains later. |
+| No-grid and read-only/prevent-actions modes | Implemented | Timeline-only no-grid mode and review/edit mode are implemented; deeper role-derived permission policy remains a future authorization layer. |
 | Custom task templates and cell borders | Partial | UOK owns task/status templates and timeline grid borders through CSS tokens. |
 | Scroll to date / custom zoom / min scale unit | Partial | Scroll-to-today, scroll-to-selected-task, arbitrary date navigation, project-fit navigation, and scale controls exist; custom zoom bounds remain later. |
 | Editor validation, readonly editor, comments, custom controls | Partial | Inspector validation exists; comments and editor modes remain module backlog. |
@@ -135,7 +135,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Tasks | Taskbar editing | move, resize start/end, progress drag, dependency handles | Implemented through first-party SVG with server validation | Implemented |
 | Tasks | Task status presentation | status code, color token, non-color label, critical flag, selected/focus state | Implemented for bars and grid rows | Implemented |
 | Tasks | Quick info/tooltips | title, WBS, status, progress, start/end, assignee, dependency hints | First-party hover/focus task detail | Implemented |
-| Tasks | Read-only/prevent-actions mode | permission flag, disabled drag handles, disabled context actions, review-only labels | Later permission-aware planning workspace mode | Backlog |
+| Tasks | Read-only/prevent-actions mode | permission flag, disabled drag handles, disabled context actions, review-only labels | Review mode disables schedule mutation controls, chart edit handles, dependency handles, context actions, and inspector editor controls | Implemented |
 | Tasks | Deadline and outside-timescale handling | deadline date, warning marker, clipped label, offscreen indicator | Later marker/edge indicator model | Backlog |
 | Editing | Lightbox/edit form | modal or side panel, title, dates, progress, parent, type, status, resources | UOK inspector path; compact edit improvements later | Partial |
 | Editing | Comments and custom controls | task comment thread, custom fields, validation messages, read-only fields | Later after module comments/custom fields are designed | Backlog |

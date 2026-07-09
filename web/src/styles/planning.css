@@ -65,6 +65,15 @@
   font-size: var(--uok-body);
 }
 
+.planning-editor-fieldset {
+  display: grid;
+  gap: var(--uok-space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
 .planning-inspector-top {
   display: grid;
   gap: var(--uok-space-2);
