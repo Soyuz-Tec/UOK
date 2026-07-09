@@ -1,0 +1,8 @@
+.planning-owned-chart {
+  cursor: grab;
+}
+
+.planning-owned-chart.panning {
+  cursor: grabbing;
+  user-select: none;
+}

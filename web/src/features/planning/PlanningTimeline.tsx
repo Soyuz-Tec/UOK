@@ -258,6 +258,7 @@ export function PlanningTimeline({
           onTaskProgress={onTaskProgress}
           onDependencyCreate={onDependencyCreate}
           onTaskMenuAction={onTaskMenuAction}
+          onScaleChange={onScaleChange}
           onSummaryExpandedChange={setSummaryExpanded}
           onViewDensityChange={setViewDensity}
         />

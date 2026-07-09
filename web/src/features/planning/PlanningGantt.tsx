@@ -1,7 +1,7 @@
 import { MoreHorizontal } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 
-import { useColumnOrder, useResizableColumns, type DataTableColumn } from "../../shared/tables";
+import { useColumnOrder, useResizableColumns } from "../../shared/tables";
 import type { ColumnVisibilityMap } from "../../shared/tables";
 import type { Appearance } from "../../shared/types";
 import type { PlanningSchedule, PlanningTask } from "./types";
@@ -27,6 +27,8 @@ import { dependencyLinkPayload, svgPointer, type DependencyLinkDrag } from "./pl
 import { nextPlanningGridSort, sortPlanningTasks, type PlanningGridSort } from "./planningGridSortModel";
 import { planningKeyboardCommand } from "./planningKeyboardModel";
 import { pinnedColumnOffsets, pinnedGridColumns } from "./planningPinnedColumns";
+import { toResizablePlanningColumn } from "./planningResizableColumns";
+import { usePlanningTimelineInteraction } from "./planningTimelineInteraction";
 import { PlanningTaskContextMenu } from "./PlanningTaskContextMenu";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
@@ -48,6 +50,7 @@ export function PlanningGantt({
   onTaskProgress,
   onDependencyCreate,
   onTaskMenuAction,
+  onScaleChange,
   onSummaryExpandedChange,
   onViewDensityChange,
 }: {
@@ -67,6 +70,7 @@ export function PlanningGantt({
   onTaskProgress: (taskId: string, progress: number) => void;
   onDependencyCreate: (payload: Record<string, unknown>) => void;
   onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningTask) => void;
+  onScaleChange: (scale: TimelineScale) => void;
   onSummaryExpandedChange: (expanded: boolean) => void;
   onViewDensityChange: (density: ViewDensity) => void;
 }) {
@@ -81,7 +85,7 @@ export function PlanningGantt({
   const baseColumns = useMemo(() => gridColumns(fieldPreset), [fieldPreset]);
   const { moveColumnBefore, orderedColumns } = useColumnOrder(baseColumns, `planning.gantt.order.${fieldPreset}`);
   const columns = useMemo(() => pinnedGridColumns(orderedColumns.filter((column) => columnVisibility[column.id] !== false)), [columnVisibility, orderedColumns]);
-  const resizeColumns = useMemo(() => columns.map(toResizableColumn), [columns]);
+  const resizeColumns = useMemo(() => columns.map(toResizablePlanningColumn), [columns]);
   const { setColumnWidth, totalWidth, widths } = useResizableColumns(resizeColumns, `planning.gantt.${fieldPreset}`);
   const pinnedOffsets = useMemo(() => pinnedColumnOffsets(columns, widths), [columns, widths]);
   const assignedByTask = useMemo(() => assignedResourceNames(schedule), [schedule]);
@@ -94,6 +98,7 @@ export function PlanningGantt({
   const height = headerHeight + visibleTasks.length * rowSize;
   const gridTemplateColumns = columns.map((column) => `${widths[column.id]}px`).join(" ");
   const menuTask = taskMenu ? visibleTasks.find((task) => task.id === taskMenu.taskId) || null : null;
+  const timelineInteraction = usePlanningTimelineInteraction(scrollRef, scale, onScaleChange);
 
   useEffect(() => {
     if (!todaySignal || !scrollRef.current) return;
@@ -156,15 +161,20 @@ export function PlanningGantt({
         </div>
       </div>
       <div
-        className="planning-owned-chart"
+        className={`planning-owned-chart ${timelineInteraction.panning ? "panning" : ""}`}
         ref={scrollRef}
         aria-label="Planning timeline"
+        title="Drag empty timeline space to pan. Hold Ctrl or Command and use the wheel to zoom."
+        onPointerDown={timelineInteraction.onPointerDown}
+        onPointerMove={timelineInteraction.onPointerMove}
         onPointerUp={(event) => {
+          timelineInteraction.onPointerUp(event);
           if (!drag) return;
           finishDrag(event.clientX, drag, chart.cellWidth, scale, visibleTasks, onTaskReschedule, onTaskProgress);
           setDrag(null);
         }}
         onPointerCancel={() => {
+          timelineInteraction.onPointerCancel();
           setDrag(null);
           setLinkDrag(null);
         }}
@@ -282,16 +292,4 @@ export function PlanningGantt({
     const left = pinnedOffsets.get(columnId);
     return left === undefined ? undefined : { left };
   }
-}
-
-function toResizableColumn(column: PlanningGridColumn): DataTableColumn<PlanningTask> {
-  return {
-    id: column.id,
-    header: column.label,
-    defaultWidth: column.defaultWidth,
-    minWidth: column.minWidth,
-    maxWidth: column.maxWidth,
-    resizable: column.resizable,
-    renderCell: () => null,
-  };
 }

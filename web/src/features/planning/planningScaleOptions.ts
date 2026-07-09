@@ -14,3 +14,9 @@ export function zoomValueToScale(value: string) {
 export function maxZoomValue() {
   return zoomScaleOrder.length - 1;
 }
+
+export function adjacentTimelineScale(scale: TimelineScale, direction: "in" | "out") {
+  const current = scaleToZoomValue(scale);
+  const delta = direction === "in" ? 1 : -1;
+  return zoomScaleOrder[Math.max(0, Math.min(maxZoomValue(), current + delta))] || scale;
+}

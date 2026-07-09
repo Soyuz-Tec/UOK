@@ -203,6 +203,29 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     for (const scale of ["hour", "day", "week", "month", "quarter", "year"]) {
       await expect(page.getByRole("button", { name: scale, exact: true })).toBeVisible();
     }
+    if (viewport.width > 980) {
+      const chart = page.locator(".planning-owned-chart");
+      await chart.hover();
+      await page.keyboard.down("Control");
+      await page.mouse.wheel(0, -240);
+      await page.keyboard.up("Control");
+      await expect(page.getByRole("button", { name: "hour", exact: true })).toHaveClass(/selected/);
+      const beforePan = await chart.evaluate((node) => node.scrollLeft);
+      const box = await chart.boundingBox();
+      expect(box).not.toBeNull();
+      if (box) {
+        const panY = box.y + Math.min(box.height - 12, 246);
+        await page.mouse.move(box.x + 360, panY);
+        await page.mouse.down();
+        await page.mouse.move(box.x + 120, panY, { steps: 4 });
+        await page.mouse.up();
+      }
+      await expect.poll(() => chart.evaluate((node) => node.scrollLeft)).toBeGreaterThan(beforePan);
+      await page.keyboard.down("Control");
+      await page.mouse.wheel(0, 240);
+      await page.keyboard.up("Control");
+      await expect(page.getByRole("button", { name: "day", exact: true })).toHaveClass(/selected/);
+    }
     await page.getByRole("button", { name: "Focus", exact: true }).click();
     await expect(page.locator(".planning-timeline-workbench")).toHaveClass(/focus-mode/);
     await expect(page.getByRole("button", { name: "Exit focus", exact: true })).toHaveAttribute("aria-pressed", "true");

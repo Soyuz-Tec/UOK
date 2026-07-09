@@ -75,6 +75,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Hour/day/week/month/quarter/year scale | Toolbar scale controls and zoom slider. Hour view uses 6-hour visual buckets while server scheduling remains date-based. | Implemented |
 | Today marker | Current date marker and scroll-to-today command. | Implemented |
 | Fit project | Fit to month/project range. | Partial |
+| Drag timeline and controlled wheel zoom | Drag empty timeline/header space to pan; Ctrl/Command wheel steps the existing zoom scale without breaking normal scroll. | Implemented |
 | Weekend shading | Non-working weekend visual bands. | Implemented |
 | Holiday shading | Calendar holiday visual bands. | Implemented |
 | Minute/sprint/stage scales | Additional specialized scale modes. | Backlog |
