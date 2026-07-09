@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import and_, or_, select
@@ -13,7 +13,15 @@ from .models import Calendar, CalendarEvent, CalendarEventParticipant, CalendarR
 from .recurrence import expanded_starts
 
 
+def stored_utc(value: datetime) -> datetime:
+    if value.tzinfo is None or value.utcoffset() is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
 def iso_or_none(value: Any) -> str | None:
+    if isinstance(value, datetime):
+        return stored_utc(value).isoformat()
     return value.isoformat() if hasattr(value, "isoformat") else None
 
 
@@ -41,8 +49,8 @@ def serialize_event(db: Session, event: CalendarEvent, include_detail: bool = Fa
         "location": event.location,
         "event_type": event.event_type,
         "status": event.status,
-        "starts_at": event.starts_at.isoformat(),
-        "ends_at": event.ends_at.isoformat(),
+        "starts_at": stored_utc(event.starts_at).isoformat(),
+        "ends_at": stored_utc(event.ends_at).isoformat(),
         "timezone": event.timezone,
         "all_day": event.all_day,
         "transparency": event.transparency,
@@ -97,9 +105,10 @@ def event_rows(db: Session, actor: Actor, start: datetime, end: datetime, calend
 def occurrence_rows(db: Session, actor: Actor, start: datetime, end: datetime, calendar_id: str | None = None, include_canceled: bool = False) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for event in event_rows(db, actor, start, end, calendar_id, include_canceled):
-        duration = event.ends_at - event.starts_at
-        window_start = start - duration
-        for occurrence_start in expanded_starts(event.recurrence_rule, event.starts_at, window_start, end):
+        event_start = stored_utc(event.starts_at)
+        event_end = stored_utc(event.ends_at)
+        duration = event_end - event_start
+        for occurrence_start in expanded_starts(event.recurrence_rule, event_start, start - duration, end):
             occurrence_end = occurrence_start + duration
             if occurrence_start < end and occurrence_end > start:
                 item = serialize_event(db, event)
