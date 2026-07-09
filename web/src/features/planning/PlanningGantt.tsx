@@ -85,6 +85,8 @@ export function PlanningGantt({
   const width = Math.max(chart.units.length * chart.cellWidth, 480);
   const headerHeight = 54;
   const height = headerHeight + rowLayoutState.totalHeight;
+  const shellHeight = Math.max(388, Math.min(720, height + 28));
+  const gridWidth = Math.max(totalWidth + 64, 420);
   const gridTemplateColumns = columns.map((column) => `${widths[column.id]}px`).join(" ");
   const menuTask = taskMenu ? visibleTasks.find((task) => task.id === taskMenu.taskId) || null : null;
   const timelineInteraction = usePlanningTimelineInteraction(scrollRef, svgRef, {
@@ -116,7 +118,7 @@ export function PlanningGantt({
       className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance} ${readOnly ? "planning-readonly-mode" : ""} ${linkDrag ? "planning-linking" : ""}`}
       aria-label="Planning Gantt chart"
       aria-readonly={readOnly}
-      style={{ "--planning-grid-width": `${Math.max(totalWidth, 340)}px` } as CSSProperties}
+      style={{ "--planning-gantt-content-height": `${shellHeight}px`, "--planning-grid-width": `${gridWidth}px` } as CSSProperties}
     >
       <div className="planning-owned-grid" role="table" aria-label="Planning task grid">
         <PlanningGanttGridHeader

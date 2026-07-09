@@ -5,12 +5,24 @@
 }
 
 .planning-workspace .workflow-split-view {
-  grid-template-columns: minmax(820px, 1fr) minmax(340px, 392px);
+  grid-template-columns: minmax(980px, 1fr) minmax(320px, 360px);
 }
 
 .planning-workspace .workflow-secondary-region {
   max-height: calc(100vh - (var(--uok-space-4) * 2));
   overflow-y: auto;
+}
+
+.planning-primary-stack,
+.planning-inspector-stack {
+  display: grid;
+  gap: var(--uok-space-2);
+  min-width: 0;
+}
+
+.planning-inspector-toggle-row {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .planning-inspector-tabs button {

@@ -85,88 +85,102 @@ export function PlanningTimelineUtilities({
   useEffect(() => setTargetDate(projectStart), [projectStart]);
 
   return (
-    <div className="planning-toolbar-group" aria-label="Timeline utilities">
-      <PlanningSavedViews current={currentView} onApply={onApplySavedView} />
-      <label className="planning-toolbar-select">
-        <Columns3 size={16} aria-hidden="true" />
-        <span>Fields</span>
-        <select value={fieldPreset} onChange={(event) => onFieldPresetChange(event.target.value as FieldPreset)}>
-          <option value="core">Core</option>
-          <option value="progress">Progress</option>
-          <option value="resources">Resources</option>
-        </select>
-      </label>
-      <FieldVisibilityMenu label="Columns" options={columnOptions} resetLabel="Reset columns" visibility={columnVisibility} onReset={onResetColumns} onToggle={onToggleColumn} />
-      <PlanningFilters filters={filters} schedule={schedule} onChange={onFiltersChange} />
-      <ToggleButton icon={layoutMode === "timeline" ? Columns3 : Maximize2} className="planning-toolbar-toggle" pressed={layoutMode === "timeline"} onClick={onToggleLayoutMode}>
-        {layoutMode === "timeline" ? "Split view" : "Timeline only"}
-      </ToggleButton>
-      <ToggleButton icon={reviewMode ? Unlock : Lock} className="planning-toolbar-toggle" pressed={reviewMode} onClick={onToggleReviewMode}>
-        {reviewMode ? "Edit mode" : "Review mode"}
-      </ToggleButton>
-      <label className="planning-zoom-control">
-        <span>Zoom</span>
-        <input type="range" min="0" max={maxZoomValue()} value={scaleToZoomValue(scale)} aria-label="Timeline zoom" onChange={(event) => onScaleChange(zoomValueToScale(event.target.value))} />
-      </label>
-      <SegmentedControl value={scale} onChange={onScaleChange} options={timelineScaleOptions.map((item) => ({ id: item.value, label: item.label, icon: CalendarClock }))} label="Timeline scale" />
-      <label className="planning-toolbar-select">
-        <CalendarClock size={16} aria-hidden="true" />
-        <span>Date</span>
-        <input type="date" aria-label="Timeline target date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} />
-      </label>
-      <button type="button" className="planning-toolbar-toggle" disabled={!targetDate} onClick={() => onDateTarget(targetDate)}>
-        <Target size={16} aria-hidden="true" />
-        <span>Go</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={onToday}>
-        <CalendarClock size={16} aria-hidden="true" />
-        <span>Today</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" disabled={!selectedTaskId} onClick={onSelectedTask}>
-        <Target size={16} aria-hidden="true" />
-        <span>Selected</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => {
-        onScaleChange("month");
-        onFitProject();
-      }}>
-        <Maximize2 size={16} aria-hidden="true" />
-        <span>Fit</span>
-      </button>
-      <ToggleButton icon={focusMode ? Minimize2 : Maximize2} className="planning-toolbar-toggle" pressed={focusMode} onClick={onToggleFocusMode}>
-        {focusMode ? "Exit focus" : "Focus"}
-      </ToggleButton>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("csv", planningScheduleReportRequest(schedule, ["csv"]))}>
-        <Download size={16} aria-hidden="true" />
-        <span>Export CSV</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("csv", planningImportTemplateReportRequest(schedule, ["csv"]))}>
-        <Download size={16} aria-hidden="true" />
-        <span>Template</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("json", planningProjectReportRequest(schedule, ["json"]))}>
-        <Download size={16} aria-hidden="true" />
-        <span>Project JSON</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningTimelineSvg(schedule)}>
-        <Download size={16} aria-hidden="true" />
-        <span>Timeline SVG</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("md", planningScheduleReportRequest(schedule, ["md"], `${schedule.project.name} schedule document`))}>
-        <FileText size={16} aria-hidden="true" />
-        <span>Document</span>
-      </button>
-      <label className="planning-toolbar-select">
-        <ChevronDown size={16} aria-hidden="true" />
-        <span>View</span>
-        <select value={viewDensity} onChange={(event) => onViewDensityChange(event.target.value as ViewDensity)}>
-          <option value="compact">Compact</option>
-          <option value="standard">Standard</option>
-          <option value="roomy">Roomy</option>
-        </select>
-      </label>
-      <ToggleButton icon={Flag} className="planning-toolbar-toggle" pressed={showCritical} onClick={onToggleCritical}>Critical</ToggleButton>
-      <ToggleButton icon={Baseline} className="planning-toolbar-toggle" pressed={showBaselines} onClick={onToggleBaselines}>Baselines</ToggleButton>
+    <div className="planning-toolbar-group planning-utilities" aria-label="Timeline utilities">
+      <div className="planning-utility-group planning-saved-field-controls" aria-label="Saved views and fields">
+        <PlanningSavedViews current={currentView} onApply={onApplySavedView} />
+        <label className="planning-toolbar-select">
+          <Columns3 size={16} aria-hidden="true" />
+          <span>Fields</span>
+          <select value={fieldPreset} onChange={(event) => onFieldPresetChange(event.target.value as FieldPreset)}>
+            <option value="core">Core</option>
+            <option value="progress">Progress</option>
+            <option value="resources">Resources</option>
+          </select>
+        </label>
+        <FieldVisibilityMenu label="Columns" options={columnOptions} resetLabel="Reset columns" visibility={columnVisibility} onReset={onResetColumns} onToggle={onToggleColumn} />
+      </div>
+      <div className="planning-utility-group planning-filter-controls" aria-label="Planning filters">
+        <PlanningFilters filters={filters} schedule={schedule} onChange={onFiltersChange} />
+      </div>
+      <div className="planning-utility-group planning-mode-controls" aria-label="Planning mode controls">
+        <ToggleButton icon={layoutMode === "timeline" ? Columns3 : Maximize2} className="planning-toolbar-toggle" pressed={layoutMode === "timeline"} onClick={onToggleLayoutMode}>
+          {layoutMode === "timeline" ? "Split view" : "Timeline only"}
+        </ToggleButton>
+        <ToggleButton icon={reviewMode ? Unlock : Lock} className="planning-toolbar-toggle" pressed={reviewMode} onClick={onToggleReviewMode}>
+          {reviewMode ? "Edit mode" : "Review mode"}
+        </ToggleButton>
+        <ToggleButton icon={focusMode ? Minimize2 : Maximize2} className="planning-toolbar-toggle" pressed={focusMode} onClick={onToggleFocusMode}>
+          {focusMode ? "Exit focus" : "Focus"}
+        </ToggleButton>
+      </div>
+      <div className="planning-utility-group planning-scale-controls" aria-label="Timeline scale controls">
+        <label className="planning-zoom-control">
+          <span>Zoom</span>
+          <input type="range" min="0" max={maxZoomValue()} value={scaleToZoomValue(scale)} aria-label="Timeline zoom" onChange={(event) => onScaleChange(zoomValueToScale(event.target.value))} />
+        </label>
+        <SegmentedControl value={scale} onChange={onScaleChange} options={timelineScaleOptions.map((item) => ({ id: item.value, label: item.label, icon: CalendarClock }))} label="Timeline scale" />
+      </div>
+      <div className="planning-utility-group planning-navigation-controls" aria-label="Timeline navigation">
+        <label className="planning-toolbar-select">
+          <CalendarClock size={16} aria-hidden="true" />
+          <span>Date</span>
+          <input type="date" aria-label="Timeline target date" value={targetDate} onChange={(event) => setTargetDate(event.target.value)} />
+        </label>
+        <button type="button" className="planning-toolbar-toggle" disabled={!targetDate} onClick={() => onDateTarget(targetDate)}>
+          <Target size={16} aria-hidden="true" />
+          <span>Go</span>
+        </button>
+        <button type="button" className="planning-toolbar-toggle" onClick={onToday}>
+          <CalendarClock size={16} aria-hidden="true" />
+          <span>Today</span>
+        </button>
+        <button type="button" className="planning-toolbar-toggle" disabled={!selectedTaskId} onClick={onSelectedTask}>
+          <Target size={16} aria-hidden="true" />
+          <span>Selected</span>
+        </button>
+        <button type="button" className="planning-toolbar-toggle" onClick={() => {
+          onScaleChange("month");
+          onFitProject();
+        }}>
+          <Maximize2 size={16} aria-hidden="true" />
+          <span>Fit</span>
+        </button>
+      </div>
+      <div className="planning-utility-group planning-export-controls" aria-label="Schedule exports">
+        <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("csv", planningScheduleReportRequest(schedule, ["csv"]))}>
+          <Download size={16} aria-hidden="true" />
+          <span>Export CSV</span>
+        </button>
+        <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("csv", planningImportTemplateReportRequest(schedule, ["csv"]))}>
+          <Download size={16} aria-hidden="true" />
+          <span>Template</span>
+        </button>
+        <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("json", planningProjectReportRequest(schedule, ["json"]))}>
+          <Download size={16} aria-hidden="true" />
+          <span>Project JSON</span>
+        </button>
+        <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningTimelineSvg(schedule)}>
+          <Download size={16} aria-hidden="true" />
+          <span>Timeline SVG</span>
+        </button>
+        <button type="button" className="planning-toolbar-toggle" onClick={() => void runReport("md", planningScheduleReportRequest(schedule, ["md"], `${schedule.project.name} schedule document`))}>
+          <FileText size={16} aria-hidden="true" />
+          <span>Document</span>
+        </button>
+      </div>
+      <div className="planning-utility-group planning-display-controls" aria-label="Timeline display controls">
+        <label className="planning-toolbar-select">
+          <ChevronDown size={16} aria-hidden="true" />
+          <span>View</span>
+          <select value={viewDensity} onChange={(event) => onViewDensityChange(event.target.value as ViewDensity)}>
+            <option value="compact">Compact</option>
+            <option value="standard">Standard</option>
+            <option value="roomy">Roomy</option>
+          </select>
+        </label>
+        <ToggleButton icon={Flag} className="planning-toolbar-toggle" pressed={showCritical} onClick={onToggleCritical}>Critical</ToggleButton>
+        <ToggleButton icon={Baseline} className="planning-toolbar-toggle" pressed={showBaselines} onClick={onToggleBaselines}>Baselines</ToggleButton>
+      </div>
       {reportStatus ? <span className="planning-muted" aria-live="polite">{reportStatus}</span> : null}
     </div>
   );

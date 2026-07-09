@@ -1,7 +1,11 @@
 .planning-gantt-toolbar [aria-label="Timeline utilities"] {
+  display: flex;
   flex-wrap: nowrap;
+  align-items: center;
   justify-content: flex-start;
   overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
   scrollbar-width: thin;
 }
 
@@ -19,9 +23,75 @@
   justify-content: flex-start;
 }
 
+.planning-utility-group {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: end;
+  gap: var(--uok-space-1);
+  flex: 0 0 auto;
+  min-width: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-1);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-saved-field-controls {
+  flex-basis: auto;
+  order: 1;
+}
+
+.planning-filter-controls {
+  flex-basis: auto;
+  order: 2;
+}
+
+.planning-mode-controls,
+.planning-display-controls {
+  flex-basis: auto;
+}
+
+.planning-mode-controls {
+  order: 6;
+}
+
+.planning-display-controls {
+  order: 7;
+}
+
+.planning-scale-controls {
+  flex-basis: auto;
+  order: 3;
+}
+
+.planning-navigation-controls {
+  flex-basis: auto;
+  order: 4;
+}
+
+.planning-export-controls {
+  flex-basis: auto;
+  order: 5;
+}
+
+.planning-scale-controls .segmented-control {
+  width: max-content;
+  grid-template-columns: repeat(6, minmax(76px, 1fr));
+}
+
 @media (max-width: 1260px) {
   .planning-gantt-toolbar [aria-label="Timeline utilities"] {
-    flex-wrap: wrap;
-    overflow-x: visible;
+    align-items: center;
+  }
+}
+
+@media (max-width: 680px) {
+  .planning-utility-group {
+    order: initial;
+    flex-basis: 100%;
+  }
+
+  .planning-scale-controls .segmented-control {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

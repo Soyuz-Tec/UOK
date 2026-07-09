@@ -9,16 +9,15 @@ export function WorkflowSplitView({
   primaryLabel: string;
   secondaryLabel: string;
   primary: ReactNode;
-  secondary: ReactNode;
+  secondary?: ReactNode;
 }) {
+  const classes = ["workflow-split-view", secondary ? "" : "single-pane"].filter(Boolean).join(" ");
   return (
-    <div className="workflow-split-view">
+    <div className={classes}>
       <section className="workflow-primary-region" aria-label={primaryLabel}>
         {primary}
       </section>
-      <aside className="workflow-secondary-region" aria-label={secondaryLabel}>
-        {secondary}
-      </aside>
+      {secondary ? <aside className="workflow-secondary-region" aria-label={secondaryLabel}>{secondary}</aside> : null}
     </div>
   );
 }

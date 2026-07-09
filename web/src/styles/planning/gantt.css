@@ -15,10 +15,11 @@
 .planning-gantt-toolbar {
   display: grid;
   grid-template-areas:
-    "title meta project plan controls"
-    "views views views views controls"
-    "commands commands commands commands controls";
-  grid-template-columns: minmax(180px, 0.8fr) auto minmax(200px, 260px) auto minmax(640px, 1.6fr);
+    "title meta project plan"
+    "views views views views"
+    "commands commands commands commands"
+    "controls controls controls controls";
+  grid-template-columns: minmax(180px, 0.9fr) auto minmax(220px, 300px) auto;
   column-gap: var(--uok-space-2);
   row-gap: var(--uok-space-1);
   justify-content: stretch;
@@ -159,9 +160,7 @@
   min-width: 0;
 }
 
-.planning-selection-toggle,
-.planning-toolbar-select,
-.planning-zoom-control {
+.planning-selection-toggle, .planning-toolbar-select, .planning-zoom-control {
   display: inline-flex;
   align-items: center;
   gap: var(--uok-space-1);
@@ -202,8 +201,7 @@
   background: var(--uok-bg-grouped-secondary);
 }
 
-.planning-segmented-control button,
-.planning-toolbar-toggle {
+.planning-segmented-control button, .planning-toolbar-toggle {
   min-height: 36px;
   border: 0;
   color: var(--uok-text-secondary);
@@ -230,8 +228,7 @@
   padding: 0 var(--uok-space-3);
 }
 
-.planning-segmented-control button.selected,
-.planning-toolbar-toggle.selected {
+.planning-segmented-control button.selected, .planning-toolbar-toggle.selected {
   color: var(--uok-text-primary);
   background: color-mix(in srgb, var(--uok-accent) 14%, var(--uok-bg-elevated));
 }
@@ -240,7 +237,7 @@
 
 .planning-gantt-shell {
   min-width: 0;
-  height: clamp(420px, 62vh, 720px);
+  height: clamp(388px, var(--planning-gantt-content-height, 62vh), 720px);
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
   overflow: hidden;
@@ -250,12 +247,7 @@
 
 @media (max-width: 1260px) {
   .planning-gantt-toolbar {
-    grid-template-areas:
-      "title meta"
-      "project plan"
-      "views views"
-      "commands commands"
-      "controls controls";
+    grid-template-areas: "title meta" "project plan" "views views" "commands commands" "controls controls";
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
@@ -271,26 +263,13 @@
 
   .planning-gantt-toolbar {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      "title"
-      "meta"
-      "project"
-      "views"
-      "plan"
-      "commands"
-      "controls";
+    grid-template-areas: "title" "meta" "project" "views" "plan" "commands" "controls";
     align-items: stretch;
   }
 
-  .planning-project-picker,
-  .planning-toolbar-group,
-  .planning-toolbar-group .command-button,
-  .planning-selection-toggle,
-  .planning-toolbar-select,
-  .planning-toolbar-select select,
-  .planning-zoom-control,
-  .planning-toolbar-toggle,
-  .planning-segmented-control {
+  .planning-project-picker, .planning-toolbar-group, .planning-toolbar-group .command-button,
+  .planning-selection-toggle, .planning-toolbar-select, .planning-toolbar-select select,
+  .planning-zoom-control, .planning-toolbar-toggle, .planning-segmented-control {
     width: 100%;
   }
 

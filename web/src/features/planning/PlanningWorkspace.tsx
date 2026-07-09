@@ -1,4 +1,4 @@
-import { FolderKanban, RefreshCw } from "lucide-react";
+import { FolderKanban, PanelRightClose, PanelRightOpen, RefreshCw } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { EmptyState } from "../../shared/data-display";
@@ -23,6 +23,7 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
   const [showCritical, setShowCritical] = useState(true);
   const [showBaselines, setShowBaselines] = useState(true);
   const [reviewMode, setReviewMode] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(true);
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const actions = usePlanningWorkspaceMutations({
     token,
@@ -68,77 +69,97 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
         <WorkflowSplitView
           primaryLabel="Planning timeline"
           secondaryLabel="Planning inspector"
-          primary={(
-            <PlanningTimeline
-              projects={projects}
-              schedule={schedule}
-              appearance={appearance}
-              scale={timelineScale}
-              showCritical={showCritical}
-              showBaselines={showBaselines}
-              reviewMode={reviewMode}
-              selectedTaskId={selectedTaskId}
-              selectedProjectId={selectedProjectId}
-              busy={actions.busy}
-              history={actions.history}
-              onScaleChange={setTimelineScale}
-              onToggleCritical={() => setShowCritical((value) => !value)}
-              onToggleBaselines={() => setShowBaselines((value) => !value)}
-              onReviewModeChange={setReviewMode}
-              onTaskSelect={(taskId) => {
-                setSelectedTaskId(taskId);
-                setInspectorTab("task");
-              }}
-              onTaskReschedule={actions.rescheduleTask}
-              onTaskProgress={(taskId, progress) => void actions.saveTask(taskId, { progress })}
-              onTaskInlineEdit={(taskId, payload, cascade) => void actions.saveTask(taskId, payload, cascade)}
-              onBulkTaskEdit={(updates) => void actions.saveTaskBatch(updates)}
-              onDependencyCreate={(payload) => void actions.addDependency(payload)}
-              onTimelineTaskCreate={(start, end) => void actions.addTask(timelineTaskPayload(schedule.tasks, start, end))}
-              onTaskMenuAction={(action, task) => void actions.runTaskMenuAction(action, task)}
-              onProjectChange={(projectId) => void actions.changeProject(projectId)}
-              onCreateDemoSchedule={() => void actions.createDemoSchedule()}
-              onRefresh={() => void actions.refresh()}
-              onNewTask={(taskType) => {
-                setNewTaskType(taskType);
-                setSelectedTaskId("");
-                setInspectorTab("task");
-              }}
-              onOpenDependencies={() => setInspectorTab("links")}
-              onCreateBaseline={() => void actions.addBaseline({ name: `Baseline ${schedule.baselines.length + 1}` })}
-              onOpenResources={() => setInspectorTab("resources")}
-              onLevelResources={() => void actions.levelResources()}
-              onUndo={() => void actions.runHistory("undo")}
-              onRedo={() => void actions.runHistory("redo")}
-              token={token}
-            />
-          )}
-          secondary={(
-            <PlanningInspector
-              projects={projects}
-              schedule={schedule}
-              selectedTask={selectedTask}
-              activeTab={inspectorTab}
-              newTaskType={newTaskType}
-              status={actions.status}
-              busy={actions.busy}
-              readOnly={reviewMode}
-              onTabChange={setInspectorTab}
-              onProjectChange={actions.changeProject}
-              onSaveTask={actions.saveTask}
-              onCreateTask={actions.addTask}
-              onDeleteTask={actions.removeTask}
-              onCreateDependency={actions.addDependency}
-              onUpdateDependency={actions.saveDependency}
-              onRemoveDependency={actions.removeDependency}
-              onSetCalendar={actions.saveCalendar}
-              onCreateBaseline={actions.addBaseline}
-              onCreateResource={actions.addResource}
-              onAssignResource={actions.assignResource}
-            />
-          )}
+          primary={renderPlanningPrimaryPane(schedule)}
+          secondary={inspectorOpen ? renderPlanningInspectorPane(schedule) : undefined}
         />
       )}
     </section>
   );
+
+  function renderPlanningPrimaryPane(activeSchedule: PlanningSchedule) {
+    return (
+      <div className="planning-primary-stack">
+        {!inspectorOpen ? (
+          <div className="planning-inspector-toggle-row">
+            <CommandButton icon={PanelRightOpen} onClick={() => setInspectorOpen(true)}>Show inspector</CommandButton>
+          </div>
+        ) : null}
+        <PlanningTimeline
+          projects={projects}
+          schedule={activeSchedule}
+          appearance={appearance}
+          scale={timelineScale}
+          showCritical={showCritical}
+          showBaselines={showBaselines}
+          reviewMode={reviewMode}
+          selectedTaskId={selectedTaskId}
+          selectedProjectId={selectedProjectId}
+          busy={actions.busy}
+          history={actions.history}
+          onScaleChange={setTimelineScale}
+          onToggleCritical={() => setShowCritical((value) => !value)}
+          onToggleBaselines={() => setShowBaselines((value) => !value)}
+          onReviewModeChange={setReviewMode}
+          onTaskSelect={(taskId) => {
+            setSelectedTaskId(taskId);
+            setInspectorTab("task");
+          }}
+          onTaskReschedule={actions.rescheduleTask}
+          onTaskProgress={(taskId, progress) => void actions.saveTask(taskId, { progress })}
+          onTaskInlineEdit={(taskId, payload, cascade) => void actions.saveTask(taskId, payload, cascade)}
+          onBulkTaskEdit={(updates) => void actions.saveTaskBatch(updates)}
+          onDependencyCreate={(payload) => void actions.addDependency(payload)}
+          onTimelineTaskCreate={(start, end) => void actions.addTask(timelineTaskPayload(activeSchedule.tasks, start, end))}
+          onTaskMenuAction={(action, task) => void actions.runTaskMenuAction(action, task)}
+          onProjectChange={(projectId) => void actions.changeProject(projectId)}
+          onCreateDemoSchedule={() => void actions.createDemoSchedule()}
+          onRefresh={() => void actions.refresh()}
+          onNewTask={(taskType) => {
+            setNewTaskType(taskType);
+            setSelectedTaskId("");
+            setInspectorTab("task");
+          }}
+          onOpenDependencies={() => setInspectorTab("links")}
+          onCreateBaseline={() => void actions.addBaseline({ name: `Baseline ${activeSchedule.baselines.length + 1}` })}
+          onOpenResources={() => setInspectorTab("resources")}
+          onLevelResources={() => void actions.levelResources()}
+          onUndo={() => void actions.runHistory("undo")}
+          onRedo={() => void actions.runHistory("redo")}
+          token={token}
+        />
+      </div>
+    );
+  }
+
+  function renderPlanningInspectorPane(activeSchedule: PlanningSchedule) {
+    return (
+      <div className="planning-inspector-stack">
+        <div className="planning-inspector-toggle-row">
+          <CommandButton icon={PanelRightClose} onClick={() => setInspectorOpen(false)}>Hide inspector</CommandButton>
+        </div>
+        <PlanningInspector
+          projects={projects}
+          schedule={activeSchedule}
+          selectedTask={selectedTask}
+          activeTab={inspectorTab}
+          newTaskType={newTaskType}
+          status={actions.status}
+          busy={actions.busy}
+          readOnly={reviewMode}
+          onTabChange={setInspectorTab}
+          onProjectChange={actions.changeProject}
+          onSaveTask={actions.saveTask}
+          onCreateTask={actions.addTask}
+          onDeleteTask={actions.removeTask}
+          onCreateDependency={actions.addDependency}
+          onUpdateDependency={actions.saveDependency}
+          onRemoveDependency={actions.removeDependency}
+          onSetCalendar={actions.saveCalendar}
+          onCreateBaseline={actions.addBaseline}
+          onCreateResource={actions.addResource}
+          onAssignResource={actions.assignResource}
+        />
+      </div>
+    );
+  }
 }

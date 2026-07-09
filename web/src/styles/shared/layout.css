@@ -124,6 +124,10 @@
   align-items: start;
 }
 
+.workflow-split-view.single-pane {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .workflow-primary-region,
 .workflow-secondary-region {
   min-width: 0;

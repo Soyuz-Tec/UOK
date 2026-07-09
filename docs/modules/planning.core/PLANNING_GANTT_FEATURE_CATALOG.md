@@ -149,6 +149,29 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Export/import | Planning uses the separately deployed global artifact boundary for PDF, PNG, HTML/office documents, Excel, iCal, MS Project, and CSV needs; no planning-specific redeployment is required. | External global boundary |
 | Audit history | Planning schedule events are recorded. | Implemented |
 
+## Current UI Audit And Execution Plan
+
+**Status:** Active alpha.3 polish target.
+
+The live Gantt workspace audit on `http://127.0.0.1:18088/` found these usability issues:
+
+| Issue | Runtime evidence | Execution decision |
+|---|---|---|
+| Timeline utility toolbar hides too many controls behind horizontal scrolling | The utility region was about `640px` wide while its controls measured about `3781px`; roughly 25 of 60 toolbar controls were initially outside the viewport. | Split utilities into named workflow groups and allow them to wrap as a full-width command surface instead of one horizontally scrolling strip. |
+| Controls were grouped by implementation rather than workflow | Saved views, fields, filters, scale, navigation, exports, density, and status toggles shared one long row. | Use grouped command architecture: saved/fields, filters, modes, scale, navigation, exports, and display toggles. |
+| Sparse schedules left excessive blank chart height | A two-task plan rendered inside a roughly `720px` Gantt shell. | Use a content-aware Gantt height variable with a practical minimum and maximum while preserving large-schedule scroll behavior. |
+| Grid felt tight and had hidden horizontal overflow | Task grid measured smaller than its rendered column content. | Include action/resize affordance width in the grid sizing calculation and keep pinned columns readable. |
+| Inspector occupied permanent width even when not needed | The inspector was useful but always consumed the secondary work region on wide screens. | Add Planning-level inspector collapse/show controls using the shared split-view primitive without changing Contacts behavior. |
+
+Acceptance for this polish slice:
+
+- no horizontally hidden primary Gantt toolbar controls at wide desktop widths;
+- grouped toolbar controls remain reachable at tablet and narrow widths;
+- chart height is proportional for small schedules and scrolls for larger ones;
+- grid/timeline alignment remains stable;
+- inspector can be hidden and restored;
+- Playwright UI proof, frontend tests, build, candidate verification, and local rebuild pass.
+
 ## Validation
 
 Before marking a feature slice complete, run the narrow relevant checks and then the broader gate when runtime behavior changes:
