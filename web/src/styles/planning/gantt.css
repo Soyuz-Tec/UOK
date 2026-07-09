@@ -13,11 +13,84 @@
 }
 
 .planning-gantt-toolbar {
-  justify-content: space-between;
+  display: grid;
+  grid-template-areas:
+    "title project plan controls"
+    "commands commands commands controls";
+  grid-template-columns: minmax(164px, 176px) minmax(220px, 280px) auto minmax(460px, 1fr);
+  justify-content: stretch;
   border: var(--uok-line);
   border-radius: var(--uok-radius-2);
   padding: var(--uok-space-2);
   background: var(--uok-bg-elevated);
+}
+
+.planning-toolbar-title {
+  display: grid;
+  grid-area: title;
+  gap: 2px;
+  min-width: 0;
+}
+
+.planning-toolbar-title h2 {
+  margin: 0;
+  overflow: hidden;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-headline);
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-toolbar-title span:not(.eyebrow) {
+  overflow: hidden;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-project-picker {
+  display: grid;
+  grid-area: project;
+  gap: 2px;
+  min-width: 0;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 700;
+}
+
+.planning-project-picker select {
+  width: 100%;
+  min-height: 34px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+  font: inherit;
+}
+
+.planning-gantt-toolbar .command-button,
+.planning-toolbar-toggle,
+.planning-segmented-control button {
+  min-height: 34px;
+  padding-inline: var(--uok-space-2);
+  font-size: var(--uok-callout);
+}
+
+.planning-plan-actions {
+  grid-area: plan;
+  justify-content: flex-start;
+}
+
+.planning-gantt-toolbar [aria-label="Schedule commands"] {
+  grid-area: commands;
+}
+
+.planning-gantt-toolbar [aria-label="Timeline controls"] {
+  grid-area: controls;
+  justify-content: flex-end;
 }
 
 .planning-segmented-control {
@@ -121,15 +194,37 @@
   color: var(--uok-status-warning);
 }
 
+@media (max-width: 1260px) {
+  .planning-gantt-toolbar {
+    grid-template-areas:
+      "title project"
+      "plan controls"
+      "commands commands";
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .planning-gantt-toolbar [aria-label="Timeline controls"] {
+    justify-content: flex-end;
+  }
+}
+
 @media (max-width: 680px) {
   .planning-gantt-shell {
     height: 480px;
   }
 
   .planning-gantt-toolbar {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "project"
+      "plan"
+      "commands"
+      "controls";
     align-items: stretch;
   }
 
+  .planning-project-picker,
   .planning-toolbar-group,
   .planning-toolbar-group .command-button,
   .planning-toolbar-toggle,

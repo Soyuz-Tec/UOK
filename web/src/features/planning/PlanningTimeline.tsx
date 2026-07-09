@@ -1,38 +1,50 @@
-import { Baseline, CalendarClock, Flag, Link2, Maximize2, Milestone, Plus, Users } from "lucide-react";
+import { Baseline, CalendarClock, Flag, FolderKanban, Link2, Maximize2, Milestone, Plus, RefreshCw, Users } from "lucide-react";
 
 import { CommandButton } from "../../shared/primitives";
 import type { Appearance } from "../../shared/types";
 import { PlanningGantt } from "./PlanningGantt";
-import type { PlanningSchedule } from "./types";
+import type { PlanningProject, PlanningSchedule } from "./types";
 
 export function PlanningTimeline({
+  projects,
   schedule,
   appearance,
   scale,
   showCritical,
   showBaselines,
   selectedTaskId,
+  selectedProjectId,
+  busy,
   onScaleChange,
   onToggleCritical,
   onToggleBaselines,
   onTaskSelect,
   onTaskReschedule,
+  onProjectChange,
+  onCreateDemoSchedule,
+  onRefresh,
   onNewTask,
   onOpenDependencies,
   onCreateBaseline,
   onOpenResources,
 }: {
+  projects: PlanningProject[];
   schedule: PlanningSchedule;
   appearance: Appearance;
   scale: "day" | "week" | "month";
   showCritical: boolean;
   showBaselines: boolean;
   selectedTaskId: string;
+  selectedProjectId: string;
+  busy: string;
   onScaleChange: (scale: "day" | "week" | "month") => void;
   onToggleCritical: () => void;
   onToggleBaselines: () => void;
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
+  onProjectChange: (projectId: string) => void;
+  onCreateDemoSchedule: () => void;
+  onRefresh: () => void;
   onNewTask: (taskType: "task" | "milestone") => void;
   onOpenDependencies: () => void;
   onCreateBaseline: () => void;
@@ -41,6 +53,25 @@ export function PlanningTimeline({
   return (
     <div className="planning-timeline-workbench">
       <div className="planning-gantt-toolbar" aria-label="Gantt toolbar">
+        <div className="planning-toolbar-title">
+          <span className="eyebrow">Planning</span>
+          <h2>Project schedule</h2>
+          <span>{schedule.tasks.length} tasks, {schedule.dependencies.length} dependencies</span>
+        </div>
+        <label className="planning-project-picker">
+          <span>Project</span>
+          <select value={selectedProjectId} onChange={(event) => onProjectChange(event.target.value)}>
+            {projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+          </select>
+        </label>
+        <div className="planning-toolbar-group planning-plan-actions" aria-label="Plan actions">
+          <CommandButton icon={FolderKanban} onClick={onCreateDemoSchedule} loading={busy === "demo"}>
+            New sample plan
+          </CommandButton>
+          <CommandButton icon={RefreshCw} onClick={onRefresh} loading={busy === "refresh"}>
+            Refresh
+          </CommandButton>
+        </div>
         <div className="planning-toolbar-group" aria-label="Schedule commands">
           <CommandButton icon={Plus} onClick={() => onNewTask("task")} primary>Task</CommandButton>
           <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")}>Milestone</CommandButton>

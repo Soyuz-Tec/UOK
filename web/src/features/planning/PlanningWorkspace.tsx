@@ -76,36 +76,41 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
 
   return (
     <section className="planning-workspace" aria-label="Planning">
-      <WorkflowHeader
-        eyebrow="Planning"
-        title="Project schedule"
-        summary={schedule ? `${schedule.tasks.length} tasks, ${schedule.dependencies.length} dependencies` : "Create a plan to begin."}
-      >
-        <>
-          <CommandButton icon={FolderKanban} onClick={() => void createDemoSchedule()} loading={busy === "demo"} primary>
-            New sample plan
-          </CommandButton>
-          <CommandButton icon={RefreshCw} onClick={() => void refresh()} loading={busy === "refresh"}>
-            Refresh
-          </CommandButton>
-        </>
-      </WorkflowHeader>
       {!schedule ? (
-        <Pane title="No plans" description="Planning workspace" wide>
-          <EmptyState text="Create a sample plan to load the validated Gantt read model." />
-        </Pane>
+        <>
+          <WorkflowHeader
+            eyebrow="Planning"
+            title="Project schedule"
+            summary="Create a plan to begin."
+          >
+            <>
+              <CommandButton icon={FolderKanban} onClick={() => void createDemoSchedule()} loading={busy === "demo"} primary>
+                New sample plan
+              </CommandButton>
+              <CommandButton icon={RefreshCw} onClick={() => void refresh()} loading={busy === "refresh"}>
+                Refresh
+              </CommandButton>
+            </>
+          </WorkflowHeader>
+          <Pane title="No plans" description="Planning workspace" wide>
+            <EmptyState text="Create a sample plan to load the validated Gantt read model." />
+          </Pane>
+        </>
       ) : (
         <WorkflowSplitView
           primaryLabel="Planning timeline"
           secondaryLabel="Planning inspector"
           primary={(
             <PlanningTimeline
+              projects={projects}
               schedule={schedule}
               appearance={appearance}
               scale={timelineScale}
               showCritical={showCritical}
               showBaselines={showBaselines}
               selectedTaskId={selectedTaskId}
+              selectedProjectId={selectedProjectId}
+              busy={busy}
               onScaleChange={setTimelineScale}
               onToggleCritical={() => setShowCritical((value) => !value)}
               onToggleBaselines={() => setShowBaselines((value) => !value)}
@@ -114,6 +119,9 @@ export function PlanningWorkspace({ token, appearance, module, busyAction, onAct
                 setInspectorTab("task");
               }}
               onTaskReschedule={rescheduleTask}
+              onProjectChange={(projectId) => void changeProject(projectId)}
+              onCreateDemoSchedule={() => void createDemoSchedule()}
+              onRefresh={() => void refresh()}
               onNewTask={(taskType) => {
                 setNewTaskType(taskType);
                 setSelectedTaskId("");

@@ -146,6 +146,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
 
     const layout = await page.evaluate(() => {
       const shell = document.querySelector(".shell")?.getBoundingClientRect();
+      const workflowHeader = document.querySelector(".planning-workspace .workflow-header")?.getBoundingClientRect();
+      const toolbar = document.querySelector(".planning-gantt-toolbar")?.getBoundingClientRect();
       const gantt = document.querySelector(".planning-gantt-shell")?.getBoundingClientRect();
       const ganttTheme = document.querySelector(".planning-gantt-shell .wx-theme")?.getBoundingClientRect();
       const firstGanttRow = document.querySelector(".planning-gantt-shell .wx-table .wx-body .wx-row")?.getBoundingClientRect();
@@ -153,6 +155,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       const inspector = document.querySelector(".workflow-secondary-region")?.getBoundingClientRect();
       return {
         shellWidth: shell?.width || 0,
+        workflowHeaderVisible: Boolean(workflowHeader),
+        toolbarHeight: toolbar?.height || 0,
+        ganttTop: gantt?.top || 0,
         ganttWidth: gantt?.width || 0,
         ganttHeight: gantt?.height || 0,
         ganttThemeHeight: ganttTheme?.height || 0,
@@ -162,6 +167,11 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       };
     });
     expect(layout.shellWidth).toBeGreaterThan(300);
+    expect(layout.workflowHeaderVisible).toBe(false);
+    if (viewport.width > 980) {
+      expect(layout.toolbarHeight).toBeLessThan(180);
+      expect(layout.ganttTop).toBeLessThan(210);
+    }
     expect(layout.ganttWidth).toBeGreaterThan(280);
     expect(layout.ganttHeight).toBeGreaterThan(360);
     expect(layout.ganttThemeHeight).toBeGreaterThan(layout.ganttHeight - 4);

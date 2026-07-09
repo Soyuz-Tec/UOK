@@ -183,7 +183,7 @@
   white-space: pre-wrap;
 }
 
-@media (max-width: 1260px) {
+@media (max-width: 1500px) {
   .planning-workspace .workflow-split-view {
     grid-template-columns: 1fr;
   }
