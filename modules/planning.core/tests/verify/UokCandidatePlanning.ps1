@@ -162,6 +162,15 @@ function Invoke-UokPlanningCandidateScenario {
     if ($schedule.project.revision -lt 5 -or ($schedule.tasks | Where-Object { $_.version -lt 1 }).Count -gt 0) {
         throw "Planning revision/version evidence is invalid: $($schedule | ConvertTo-Json -Depth 20)"
     }
+    if ($schedule.calculation.engine_version -ne "uok-cpm-1" -or $schedule.calculation.independent_validation.ok -ne $true) {
+        throw "Planning canonical CPM validation failed: $($schedule | ConvertTo-Json -Depth 20)"
+    }
+    if (-not $schedule.calculation.calculated_finish -or $schedule.calculation.target_finish -ne $schedule.project.end) {
+        throw "Planning target/calculated finish evidence is invalid: $($schedule | ConvertTo-Json -Depth 20)"
+    }
+    if (($schedule.tasks | Where-Object { $_.task_type -ne "summary" -and $_.critical }).Count -lt 1) {
+        throw "Planning canonical CPM did not identify a critical path: $($schedule | ConvertTo-Json -Depth 20)"
+    }
 
     return @{ project_id = $projectId }
 }

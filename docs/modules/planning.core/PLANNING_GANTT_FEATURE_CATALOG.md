@@ -126,15 +126,15 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 
 | Feature | Target behavior | Status |
 |---|---|---:|
-| Server-side validation | Python validates all schedule mutations before UI accepts them. | Implemented |
-| Topological ordering | Use dependency graph ordering for propagation and cycle checks. | Implemented |
-| CPM read model | Early/late dates, total slack, critical flags. | Implemented |
+| Server-side validation | Python validates all schedule mutations before UI accepts them; a separate result validator recomputes CPM hard invariants. | `integration_tested` |
+| Topological ordering | Use deterministic dependency graph ordering for propagation, CPM, and cycle checks without UI row-order input. | `unit_tested` |
+| CPM read model | Logic-driven early/late dates, total/free float, target variance, engine version, independent validation, and critical flags. | `integration_tested` |
 | Calendar-aware propagation | Respect working days and holidays. | Implemented |
 | Resource over-allocation | Warn when allocation exceeds capacity. | Implemented |
 | Resource leveling | Explicit Level command moves later auto-scheduled assigned tasks forward to resolve daily resource over-allocation where capacity allows, then reruns server validation and audit events. | Implemented |
 | Constraints | Must-start, must-finish, start/finish no-earlier-than, and start/finish no-later-than constraints are stored per task, enforced by Python scheduling, returned in read models, editable in the inspector, and exported. | Implemented |
 | Manual/auto scheduling | Per-task auto/manual scheduling mode is stored with each task; auto tasks participate in dependency propagation, while manual tasks keep their dates and surface validation conflicts. | Implemented |
-| Optimistic concurrency | Project revisions and task versions are persisted; actor-visible schedules return canonical strong ETags; existing-project writes require exact `If-Match` and expose typed 428/412 reload/reapply recovery. | Implemented |
+| Optimistic concurrency | Project revisions and task versions are persisted; actor-visible schedules return canonical strong ETags; existing-project writes require exact `If-Match` and expose typed 428/412 reload/reapply recovery. | `runtime_proven` |
 
 ## Workspace And Professional Features
 

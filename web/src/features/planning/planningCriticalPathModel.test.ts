@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { planningCriticalPathSummary } from "./planningCriticalPathModel";
+import { planningCriticalPathSummary, planningTargetVarianceLabel } from "./planningCriticalPathModel";
 import type { PlanningSchedule, PlanningTask } from "./types";
 
 describe("planning critical path model", () => {
@@ -9,10 +9,21 @@ describe("planning critical path model", () => {
 
     expect(summary.criticalCount).toBe(2);
     expect(summary.zeroSlackCount).toBe(2);
+    expect(summary.calculatedFinish).toBe("2026-08-14");
+    expect(summary.targetFinish).toBe("2026-08-12");
+    expect(summary.targetVarianceDays).toBe(2);
+    expect(summary.engineVersion).toBe("uok-cpm-1");
     expect(summary.items).toEqual([
       { id: "scope", label: "Define scope", slack: 0, wbs: "1.1", window: "2026-08-01 to 2026-08-03" },
       { id: "build", label: "Build Gantt", slack: 0, wbs: "1.2", window: "2026-08-04 to 2026-08-08" },
     ]);
+  });
+
+  it("renders target variance without hiding negative float", () => {
+    expect(planningTargetVarianceLabel(2)).toBe("2d late");
+    expect(planningTargetVarianceLabel(-3)).toBe("3d early");
+    expect(planningTargetVarianceLabel(0)).toBe("On target");
+    expect(planningTargetVarianceLabel(null)).toBe("Not calculated");
   });
 });
 
@@ -28,6 +39,14 @@ function schedule(): PlanningSchedule {
     resources: [],
     assignments: [],
     baselines: [],
+    calculation: {
+      engine_version: "uok-cpm-1",
+      project_start: "2026-08-01",
+      calculated_finish: "2026-08-14",
+      target_finish: "2026-08-12",
+      target_variance_days: 2,
+      independent_validation: { ok: true, violations: [] },
+    },
     calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },
     validation: { ok: true, violations: [], warnings: [] },
   };

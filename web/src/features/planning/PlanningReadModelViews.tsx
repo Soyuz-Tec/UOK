@@ -1,6 +1,6 @@
 import type { PlanningSchedule } from "./types";
 import type { PlanningView } from "./planningTimelineModel";
-import { planningCriticalPathSummary } from "./planningCriticalPathModel";
+import { planningCriticalPathSummary, planningTargetVarianceLabel } from "./planningCriticalPathModel";
 import { planningResourceWorkloads } from "./planningWorkloadModel";
 
 export function PlanningReadModelView({
@@ -122,11 +122,18 @@ function PlanningDashboard({ schedule, onTaskSelect }: { schedule: PlanningSched
         <MetricTile label="Critical" value={String(critical)} detail="Critical path tasks" />
         <MetricTile label="Milestones" value={String(milestones)} detail="Delivery markers" />
         <MetricTile label="Progress" value={`${progress}%`} detail="Average completion" />
+        {criticalPath.targetVarianceDays === null ? null : (
+          <MetricTile
+            label="Target variance"
+            value={planningTargetVarianceLabel(criticalPath.targetVarianceDays)}
+            detail={`${criticalPath.engineVersion} · finish ${criticalPath.calculatedFinish} vs target ${criticalPath.targetFinish}`}
+          />
+        )}
       </div>
       <section className="planning-critical-path-panel" aria-label="Critical path explanation">
         <header>
           <h3>Critical path</h3>
-          <span>{criticalPath.zeroSlackCount} zero-slack tasks</span>
+          <span>{criticalPath.criticalCount} critical · {criticalPath.zeroSlackCount} zero-slack</span>
         </header>
         {criticalPath.items.map((item) => (
           <button key={item.id} type="button" className="planning-critical-path-item" onClick={() => onTaskSelect(item.id)}>

@@ -211,7 +211,8 @@ def test_planning_core_gantt_improvements(client: TestClient) -> None:
     assert tasks[second]["start"] == "2026-08-18"
     assert tasks[summary]["start"] == "2026-08-12"
     assert tasks[summary]["end"] >= tasks[review]["end"]
-    assert tasks[first]["early_start"] == tasks[first]["start"]
+    assert tasks[first]["early_start"] == "2026-08-03"
+    assert tasks[first]["early_start"] != tasks[first]["start"]
     assert any(task["total_slack_days"] == 0 for task in tasks.values())
 
     rejected = command(

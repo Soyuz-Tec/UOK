@@ -30,6 +30,7 @@ export type PlanningTask = {
   late_start?: string;
   late_finish?: string;
   total_slack_days?: number;
+  free_float_days?: number;
   baseline_start?: string | null;
   baseline_end?: string | null;
   start_variance_days?: number | null;
@@ -98,6 +99,17 @@ export type PlanningSchedule = {
   resources: PlanningResource[];
   assignments: PlanningAssignment[];
   baselines: PlanningBaseline[];
+  calculation?: {
+    engine_version: string;
+    project_start: string;
+    calculated_finish: string;
+    target_finish: string;
+    target_variance_days: number;
+    independent_validation: {
+      ok: boolean;
+      violations: Array<{ code: string; message: string; object_ids: string[] }>;
+    };
+  };
   validation: { ok: boolean; violations: string[]; warnings?: string[] };
 };
 

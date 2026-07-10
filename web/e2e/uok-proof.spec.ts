@@ -13,6 +13,14 @@ const sampleProject = {
 const sampleSchedule = {
   project: sampleProject,
   validation: { ok: true, violations: [], warnings: ["Planner is allocated 120% on 2026-08-06"] },
+  calculation: {
+    engine_version: "uok-cpm-1",
+    project_start: "2026-08-03",
+    calculated_finish: "2026-08-13",
+    target_finish: "2026-08-20",
+    target_variance_days: -5,
+    independent_validation: { ok: true, violations: [] },
+  },
   tasks: [
     {
       id: "task-summary",
@@ -286,9 +294,10 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await page.getByRole("button", { name: "Dashboard", exact: true }).click();
     const criticalPath = page.getByLabel("Critical path explanation");
     await expect(criticalPath).toBeVisible();
-    await expect(criticalPath.getByText("3 zero-slack tasks")).toBeVisible();
+    await expect(criticalPath.getByText("3 critical · 3 zero-slack")).toBeVisible();
     await expect(criticalPath.getByText("Define schedule scope")).toBeVisible();
     await expect(criticalPath.getByText("Build integrated Gantt with dependency validation")).toBeVisible();
+    await expect(page.getByText("5d early")).toBeVisible();
     await page.getByRole("button", { name: "Gantt chart", exact: true }).click();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
     await page.getByLabel("Open planning controls").click();

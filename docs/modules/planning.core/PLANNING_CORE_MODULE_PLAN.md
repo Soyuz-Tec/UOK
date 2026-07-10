@@ -33,7 +33,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - working calendar storage with working-day and holiday-aware task normalization and propagation
 - read-only `calendar.core` availability overlay in the project schedule read model for shared busy events and free-busy warnings
 - hierarchy validation, WBS read model, and summary rollups
-- CPM read model fields for early dates, late dates, slack, and critical flags
+- canonical logic-driven CPM read model fields for early/late dates, total/free float, target variance, and critical flags, with a separate hard-constraint validator
 - baseline capture, baseline variance read-model fields, per-row timeline lanes, and variance badges
 - resource creation, assignment, allocation display, over-allocation warnings, and explicit resource leveling for later auto-scheduled assigned tasks
 - drag-to-reschedule path through server validation
@@ -78,6 +78,7 @@ Required checks before handoff:
 ```powershell
 python -m pytest modules/planning.core/tests/test_planning_core.py -q
 python -m pytest modules/planning.core/tests/test_planning_optimistic_concurrency.py -q
+python -m pytest modules/planning.core/tests/test_canonical_cpm.py modules/planning.core/tests/test_cpm_validation.py modules/planning.core/tests/test_planning_cpm_contract.py -q
 python -m pytest modules/planning.core/tests/test_planning_idempotency_contract.py -q
 npm --prefix web run build
 npm --prefix web run test:ui-proof

@@ -49,6 +49,13 @@ def next_working_day(value: date, calendar: CalendarSpec) -> date:
     return current
 
 
+def previous_working_day(value: date, calendar: CalendarSpec) -> date:
+    current = value
+    while not calendar.is_working_day(current):
+        current -= timedelta(days=1)
+    return current
+
+
 def end_for_start(start: date, duration: int, calendar: CalendarSpec) -> date:
     if duration <= 0:
         return start
@@ -69,6 +76,12 @@ def working_distance(start: date, end: date, calendar: CalendarSpec) -> int:
     if end <= start:
         return 0
     return working_duration(shift_working(start, 1, calendar), end, calendar)
+
+
+def signed_working_distance(start: date, end: date, calendar: CalendarSpec) -> int:
+    if end >= start:
+        return working_distance(start, end, calendar)
+    return -working_distance(end, start, calendar)
 
 
 def at_utc(value: date) -> datetime:

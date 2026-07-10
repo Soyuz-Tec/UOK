@@ -22,7 +22,7 @@ from .scheduler import (
     project_calendar,
     project_dependencies,
     project_tasks,
-    schedule_metrics,
+    schedule_analysis,
     validate_schedule,
 )
 from .schedule_math import working_duration
@@ -43,7 +43,14 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     tasks = project_tasks(db, actor, project.id)
     dependencies = project_dependencies(db, actor, project.id)
     calendar = project_calendar(db, actor, project.id)
-    metrics = schedule_metrics(tasks, dependencies, calendar)
+    analysis, independent_issues = schedule_analysis(
+        tasks,
+        dependencies,
+        calendar,
+        project.start_at.date(),
+        project.end_at.date(),
+    )
+    metrics = {task_id: metric.as_dict() for task_id, metric in analysis.task_metrics.items()}
     baselines = _baselines(db, actor, project.id)
     latest_baseline = _baseline_task_index(baselines[0]) if baselines else {}
     resources = _resources(db, actor, project.id)
@@ -51,6 +58,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     availability = calendar_availability_read_model(db, actor, project)
     availability["warnings"] = availability_warnings(tasks, availability)
     violations = validate_schedule(tasks, dependencies, calendar)
+    violations.extend(issue.message for issue in independent_issues)
     warnings = _resource_warnings(tasks, resources, assignments, calendar)
     wbs = _wbs_numbers(tasks)
     return {
@@ -62,6 +70,17 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
         "resources": [serialize_resource(row) for row in resources],
         "assignments": [serialize_assignment(row) for row in assignments],
         "baselines": [serialize_baseline(row) for row in baselines],
+        "calculation": {
+            "engine_version": analysis.engine_version,
+            "project_start": analysis.project_start.isoformat(),
+            "calculated_finish": analysis.calculated_finish.isoformat(),
+            "target_finish": analysis.target_finish.isoformat(),
+            "target_variance_days": analysis.target_variance_days,
+            "independent_validation": {
+                "ok": not independent_issues,
+                "violations": [issue.as_dict() for issue in independent_issues],
+            },
+        },
         "validation": {"ok": not violations, "violations": violations, "warnings": warnings},
     }
 
@@ -99,12 +118,13 @@ def serialize_task(task: PlanningTask, metrics: dict[str, Any] | None = None, ba
         "progress": task.progress,
         "sort_order": task.sort_order,
         "version": int(task.version),
-        "critical": task.task_type != "summary" and slack == 0,
+        "critical": task.task_type != "summary" and bool(metrics.get("critical", slack <= 0)),
         "early_start": _iso(metrics.get("early_start", start)),
         "early_finish": _iso(metrics.get("early_finish", end)),
         "late_start": _iso(metrics.get("late_start", start)),
         "late_finish": _iso(metrics.get("late_finish", end)),
         "total_slack_days": slack,
+        "free_float_days": int(metrics.get("free_float_days", 0)),
         "baseline_start": baseline_start,
         "baseline_end": baseline_end,
         "start_variance_days": _variance_days(baseline_start, start),

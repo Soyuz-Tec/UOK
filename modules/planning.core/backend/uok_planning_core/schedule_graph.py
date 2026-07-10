@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from graphlib import CycleError, TopologicalSorter
+from collections import defaultdict
+from heapq import heapify, heappop, heappush
 from typing import Iterable, Protocol
 
 
@@ -11,13 +12,22 @@ class DependencyLike(Protocol):
 
 def dependency_order(task_ids: Iterable[str], dependencies: Iterable[DependencyLike]) -> list[str] | None:
     ids = set(task_ids)
-    sorter = TopologicalSorter()
-    for task_id in ids:
-        sorter.add(task_id)
+    indegree = {task_id: 0 for task_id in ids}
+    successors: dict[str, set[str]] = defaultdict(set)
     for dep in dependencies:
-        if dep.predecessor_task_id in ids and dep.successor_task_id in ids:
-            sorter.add(dep.successor_task_id, dep.predecessor_task_id)
-    try:
-        return list(sorter.static_order())
-    except CycleError:
-        return None
+        predecessor = dep.predecessor_task_id
+        successor = dep.successor_task_id
+        if predecessor in ids and successor in ids and successor not in successors[predecessor]:
+            successors[predecessor].add(successor)
+            indegree[successor] += 1
+    ready = [task_id for task_id, count in indegree.items() if count == 0]
+    heapify(ready)
+    ordered: list[str] = []
+    while ready:
+        task_id = heappop(ready)
+        ordered.append(task_id)
+        for successor in sorted(successors[task_id]):
+            indegree[successor] -= 1
+            if indegree[successor] == 0:
+                heappush(ready, successor)
+    return ordered if len(ordered) == len(ids) else None

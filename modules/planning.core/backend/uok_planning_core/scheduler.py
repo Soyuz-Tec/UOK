@@ -8,6 +8,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .calendar_payload import calendar_holidays, calendar_ignored_dates
+from .cpm import CpmResult, calculate_cpm
+from .cpm_validation import CpmValidationIssue, validate_cpm_result
 from .models import PlanningCalendar, PlanningProject, PlanningTask, PlanningTaskDependency
 from .schedule_math import (
     CalendarSpec,
@@ -17,7 +19,6 @@ from .schedule_math import (
     next_working_day,
     shift_working,
     start_for_finish,
-    working_distance,
 )
 from .schedule_graph import dependency_order
 from .schedule_hierarchy import hierarchy_violations
@@ -101,6 +102,14 @@ def apply_schedule(db: Session, actor: Actor, project_id: str, cascade_dependenc
         changed.update(_propagate_dependencies(tasks, dependencies, calendar))
         changed.update(enforce_task_constraints(tasks, calendar))
     changed.update(_roll_up_summaries(tasks))
+    violations = validate_schedule(tasks, dependencies, calendar)
+    if violations:
+        raise ValueError("; ".join(violations))
+    project = project_or_error(db, actor, project_id)
+    analysis = calculate_cpm(tasks, dependencies, calendar, project.start_at.date(), project.end_at.date())
+    independent_issues = validate_cpm_result(tasks, dependencies, calendar, analysis)
+    if independent_issues:
+        raise ValueError("independent schedule validation failed: " + "; ".join(item.message for item in independent_issues))
     return changed
 
 def validate_schedule(
@@ -121,6 +130,9 @@ def validate_schedule(
             continue
         if dep.dependency_type not in DEPENDENCY_TYPES:
             violations.append(f"dependency_type {dep.dependency_type} is not supported")
+            continue
+        if task_by_id[dep.predecessor_task_id].task_type == "summary" or task_by_id[dep.successor_task_id].task_type == "summary":
+            violations.append("dependency cannot reference a summary task")
             continue
         violation = _dependency_violation(task_by_id[dep.predecessor_task_id], task_by_id[dep.successor_task_id], dep, calendar)
         if violation:
@@ -143,56 +155,27 @@ def assert_task_dependency_position(task: PlanningTask, tasks: list[PlanningTask
         raise ValueError("; ".join(violations))
 
 
-def schedule_metrics(tasks: list[PlanningTask], dependencies: list[PlanningTaskDependency], calendar: CalendarSpec) -> dict[str, dict[str, Any]]:
-    active = [task for task in tasks if task.task_type != "summary"]
-    by_id = {task.id: task for task in active}
-    successors: dict[str, list[PlanningTaskDependency]] = defaultdict(list)
-    predecessors: dict[str, list[PlanningTaskDependency]] = defaultdict(list)
-    for dep in dependencies:
-        if dep.predecessor_task_id in by_id and dep.successor_task_id in by_id:
-            successors[dep.predecessor_task_id].append(dep)
-            predecessors[dep.successor_task_id].append(dep)
-    project_finish = max((task.end_at.date() for task in active), default=date.today())
-    latest_start: dict[str, date] = {}
-    latest_finish: dict[str, date] = {}
-    order = _dependency_order(active, dependencies) or [task.id for task in active]
-    for task_id in reversed(order):
-        task = by_id[task_id]
-        if not successors[task_id]:
-            latest_finish[task_id] = project_finish
-            latest_start[task_id] = start_for_finish(project_finish, task.duration_days, calendar)
-            continue
-        starts: list[date] = []
-        finishes: list[date] = []
-        for dep in successors[task_id]:
-            successor = by_id[dep.successor_task_id]
-            succ_start = latest_start.get(successor.id, successor.start_at.date())
-            succ_finish = latest_finish.get(successor.id, successor.end_at.date())
-            if dep.dependency_type == "finish_to_start":
-                finishes.append(shift_working(succ_start, -(dep.lag_days + 1), calendar))
-            elif dep.dependency_type == "start_to_start":
-                starts.append(shift_working(succ_start, -dep.lag_days, calendar))
-            elif dep.dependency_type == "finish_to_finish":
-                finishes.append(shift_working(succ_finish, -dep.lag_days, calendar))
-            elif dep.dependency_type == "start_to_finish":
-                starts.append(shift_working(succ_finish, -dep.lag_days, calendar))
-        candidate_start = min(starts) if starts else None
-        candidate_finish = min(finishes) if finishes else None
-        if candidate_finish:
-            finish_based_start = start_for_finish(candidate_finish, task.duration_days, calendar)
-            candidate_start = min([value for value in [candidate_start, finish_based_start] if value])
-        latest_start[task_id] = candidate_start or task.start_at.date()
-        latest_finish[task_id] = end_for_start(latest_start[task_id], task.duration_days, calendar)
-    return {
-        task.id: {
-            "early_start": task.start_at.date(),
-            "early_finish": task.end_at.date(),
-            "late_start": latest_start.get(task.id, task.start_at.date()),
-            "late_finish": latest_finish.get(task.id, task.end_at.date()),
-            "total_slack_days": max(0, working_distance(task.start_at.date(), latest_start.get(task.id, task.start_at.date()), calendar)),
-        }
-        for task in tasks
-    }
+def schedule_analysis(
+    tasks: list[PlanningTask],
+    dependencies: list[PlanningTaskDependency],
+    calendar: CalendarSpec,
+    project_start: date,
+    target_finish: date,
+) -> tuple[CpmResult, list[CpmValidationIssue]]:
+    result = calculate_cpm(tasks, dependencies, calendar, project_start, target_finish)
+    return result, validate_cpm_result(tasks, dependencies, calendar, result)
+
+
+def schedule_metrics(
+    tasks: list[PlanningTask],
+    dependencies: list[PlanningTaskDependency],
+    calendar: CalendarSpec,
+    project_start: date | None = None,
+    target_finish: date | None = None,
+) -> dict[str, dict[str, Any]]:
+    start = project_start or min((task.start_at.date() for task in tasks), default=date.today())
+    result = calculate_cpm(tasks, dependencies, calendar, start, target_finish)
+    return {task_id: metric.as_dict() for task_id, metric in result.task_metrics.items()}
 
 
 def _propagate_dependencies(tasks: list[PlanningTask], dependencies: list[PlanningTaskDependency], calendar: CalendarSpec) -> set[str]:
