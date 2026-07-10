@@ -1,4 +1,4 @@
-import type { PlanningBaselineComparison, PlanningBaselineDetail, PlanningCapabilities, PlanningProject, PlanningSchedule } from "./types";
+import type { PlanningBaselineComparison, PlanningBaselineDetail, PlanningCapabilities, PlanningPartyOption, PlanningProject, PlanningSchedule } from "./types";
 import type {
   PlanningAssignmentCreateRequest,
   PlanningBaselineCreateRequest,
@@ -14,6 +14,9 @@ import type {
   PlanningScheduleMutationResult,
   PlanningTaskCreateRequest,
   PlanningTaskCreateResult,
+  PlanningTaskParticipantCreateRequest,
+  PlanningTaskParticipantCreateResult,
+  PlanningTaskParticipantRemoveResult,
   PlanningTaskDateUpdateRequest,
   PlanningTaskUpdateRequest,
   PlanningTaskUpdateResult,
@@ -86,6 +89,10 @@ export function listPlanningProjects(token: string) {
 
 export function loadPlanningCapabilities(token: string) {
   return planningJson<PlanningCapabilities>(token, "/api/planning/capabilities");
+}
+
+export function loadPlanningPartyOptions(token: string) {
+  return planningJson<PlanningPartyOption[]>(token, "/api/contacts?status=active&limit=200&sort_by=display_name&sort_dir=asc");
 }
 
 export async function loadPlanningSchedule(token: string, projectId: string): Promise<PlanningScheduleSnapshot> {
@@ -166,6 +173,14 @@ export function createPlanningLink(token: string, projectId: string, payload: Pl
 
 export function removePlanningLink(token: string, projectId: string, linkId: string, mutation: PlanningMutationOptions) {
   return planningMutationJson<PlanningLinkRemoveResult>(token, `/api/planning/projects/${projectId}/links/${linkId}`, { method: "DELETE" }, "planning-link-remove", mutation);
+}
+
+export function addPlanningTaskParticipant(token: string, taskId: string, payload: PlanningTaskParticipantCreateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningTaskParticipantCreateResult>(token, `/api/planning/tasks/${taskId}/participants`, { method: "POST", body: JSON.stringify(payload) }, "planning-participant-add", mutation);
+}
+
+export function removePlanningTaskParticipant(token: string, taskId: string, participantId: string, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningTaskParticipantRemoveResult>(token, `/api/planning/tasks/${taskId}/participants/${participantId}`, { method: "DELETE" }, "planning-participant-remove", mutation);
 }
 
 export function batchPlanningTaskUpdates(

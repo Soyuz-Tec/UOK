@@ -128,3 +128,11 @@ class PlanningLinkRequest(BaseModel):
     relationship: str = Field(..., pattern="^(implements|blocks_on|requires|proves|owned_by|moves|occurs_at|discussed_in|publishes_to)$")
     blocking: bool = False
     target: PlanningLinkTargetRequest
+
+
+class PlanningTaskParticipantRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    party_id: str = Field(..., min_length=1, max_length=36)
+    role: str = Field(..., pattern="^(owner|assignee|approver|consulted|informed|external_contact)$")

@@ -11,6 +11,7 @@ from .concurrency import guarded_planning_command
 from .date_commands import cmd_update_planning_task_dates
 from .date_semantics import planning_timezone
 from .link_commands import cmd_create_planning_link, cmd_remove_planning_link
+from .participant_commands import cmd_add_planning_task_participant, cmd_remove_planning_task_participant
 from .models import (
     PlanningAssignment,
     PlanningProject,
@@ -179,6 +180,8 @@ def command_handlers() -> dict[str, CommandHandler]:
         "BatchPlanningOperations": cmd_batch_operations,
         "CreatePlanningLink": cmd_create_planning_link,
         "RemovePlanningLink": cmd_remove_planning_link,
+        "AddPlanningTaskParticipant": cmd_add_planning_task_participant,
+        "RemovePlanningTaskParticipant": cmd_remove_planning_task_participant,
     }
     return {name: guarded_planning_command(name, handler) for name, handler in handlers.items()}
 
@@ -197,6 +200,8 @@ def command_permissions() -> dict[str, str]:
         "CreatePlanningResource",
         "AssignPlanningResource",
         "BatchPlanningOperations",
+        "AddPlanningTaskParticipant",
+        "RemovePlanningTaskParticipant",
     }
     permissions = {command: "planning.edit" for command in edit_commands}
     permissions["CreatePlanningBaseline"] = "planning.baseline.create"

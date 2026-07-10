@@ -102,10 +102,12 @@ function PlanningWorkload({ schedule }: { schedule: PlanningSchedule }) {
 }
 
 function PlanningPeople({ schedule }: { schedule: PlanningSchedule }) {
+  const participants = schedule.participants || [];
   return (
     <div className="planning-read-view planning-metric-grid" aria-label="Planning people">
+      {participants.map((participant) => <MetricTile key={participant.id} label={participant.resolution.display_label || "Protected or unavailable Party"} value={participant.role.replace("_", " ")} detail={`Task participant · ${participant.resolution.status}`} />)}
       {schedule.resources.map((resource) => <MetricTile key={resource.id} label={resource.name} value={resource.role || "Role"} detail="Assigned resource" />)}
-      {!schedule.resources.length ? <MetricTile label="People" value="0" detail="No people in this plan" /> : null}
+      {!participants.length && !schedule.resources.length ? <MetricTile label="People" value="0" detail="No people in this plan" /> : null}
     </div>
   );
 }

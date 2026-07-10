@@ -21,6 +21,11 @@ nullable forecast, actual, and deadline task columns. It enforces forecast and
 actual ordering, requires an actual start before actual finish, and adds the
 deadline access index. Application validation recognizes IANA names and
 requires a reason for actual-date changes.
+`007_planning_task_participants.sql` adds Planning-owned task/Party role
+memberships with controlled role and source checks, same-module project/task
+foreign keys, unique Party/role membership, and organization-first Party and
+task-role indexes. `party_id` intentionally has no foreign key because
+`contacts.core` retains optional-module lifecycle, authorization, and privacy.
 
 For the persistent local PostgreSQL profile, back up first, apply the migration
 before rebuilding an image that selects the new columns, and read the columns
@@ -37,6 +42,8 @@ Get-Content -Raw .\modules\planning.core\migrations\004_planning_database_invari
 Get-Content -Raw .\modules\planning.core\migrations\005_planning_operation_links.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 Get-Content -Raw .\modules\planning.core\migrations\006_planning_date_semantics.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\007_planning_task_participants.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 ```
 

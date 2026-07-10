@@ -9,6 +9,7 @@ from uok.models import (
     PlanningResource,
     PlanningScheduleEvent,
     PlanningTask,
+    PlanningTaskParticipant,
     PlanningTaskDependency,
     utcnow,
 )
@@ -22,6 +23,7 @@ __all__ = [
     "PlanningResource",
     "PlanningScheduleEvent",
     "PlanningTask",
+    "PlanningTaskParticipant",
     "PlanningTaskDependency",
     "owned_models",
     "utcnow",
@@ -38,5 +40,6 @@ def owned_models() -> dict[str, str]:
         "PlanningResource": PlanningResource.__tablename__,
         "PlanningScheduleEvent": PlanningScheduleEvent.__tablename__,
         "PlanningTask": PlanningTask.__tablename__,
+        "PlanningTaskParticipant": PlanningTaskParticipant.__tablename__,
         "PlanningTaskDependency": PlanningTaskDependency.__tablename__,
     }

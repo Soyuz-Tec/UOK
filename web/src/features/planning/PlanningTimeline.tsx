@@ -16,7 +16,6 @@ import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import { planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningLayoutMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningProject, PlanningSchedule } from "./types";
 import type { PlanningDependencyCreateRequest, PlanningTaskUpdateRequest } from "./planningContracts";
-
 export function PlanningTimeline({
   projects,
   schedule,
@@ -92,7 +91,7 @@ export function PlanningTimeline({
 }) {
   const [activeView, setActiveView] = useState<PlanningView>("Gantt chart");
   const [fieldPreset, setFieldPreset] = useState<FieldPreset>("core");
-  const [filters, setFilters] = useState<PlanningFilterState>({ mode: "all", query: "", resourceId: "", status: "" });
+  const [filters, setFilters] = useState<PlanningFilterState>({ mode: "all", query: "", partyId: "", resourceId: "", status: "" });
   const [summaryExpanded, setSummaryExpanded] = useState(true);
   const [collapsedSummaryIds, setCollapsedSummaryIds] = useState<Set<string>>(new Set());
   const [cascadeSort, setCascadeSort] = useState(true);
@@ -121,6 +120,7 @@ export function PlanningTimeline({
     focusMode,
     layoutMode,
     query: filters.query,
+    partyId: filters.partyId,
     reviewMode,
     resourceId: filters.resourceId,
     status: filters.status,
@@ -130,7 +130,7 @@ export function PlanningTimeline({
     showCritical,
     summaryExpanded,
     viewDensity,
-  }), [activeView, cascadeScheduling, cascadeSort, fieldPreset, filters.mode, filters.query, filters.resourceId, filters.status, focusMode, layoutMode, reviewMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
+  }), [activeView, cascadeScheduling, cascadeSort, fieldPreset, filters.mode, filters.partyId, filters.query, filters.resourceId, filters.status, focusMode, layoutMode, reviewMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
 
   return (
     <div className={`planning-timeline-workbench planning-layout-${layoutMode} ${focusMode ? "focus-mode" : ""}`}>
@@ -256,7 +256,7 @@ export function PlanningTimeline({
     setCascadeScheduling(config.cascadeScheduling);
     setCascadeSort(config.cascadeSort);
     setFieldPreset(config.fieldPreset);
-    setFilters({ mode: config.filterMode, query: config.query, resourceId: config.resourceId, status: config.status });
+    setFilters({ mode: config.filterMode, query: config.query, partyId: config.partyId, resourceId: config.resourceId, status: config.status });
     setFocusMode(config.focusMode);
     setLayoutMode(config.layoutMode);
     onReviewModeChange(config.reviewMode);

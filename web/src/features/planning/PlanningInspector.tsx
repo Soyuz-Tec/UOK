@@ -7,6 +7,7 @@ import { PlanningAvailabilityPanel } from "./PlanningAvailabilityPanel";
 import { PlanningTaskEditor } from "./PlanningTaskEditor";
 import { PlanningResourcePanel } from "./PlanningResourcePanel";
 import { PlanningOperationLinksPanel } from "./PlanningOperationLinksPanel";
+import { PlanningParticipantsPanel } from "./PlanningParticipantsPanel";
 import type { PlanningDependency, PlanningDependencyType, PlanningProject, PlanningSchedule, PlanningTask } from "./types";
 import type {
   PlanningAssignmentCreateRequest,
@@ -18,6 +19,7 @@ import type {
   PlanningResourceCreateRequest,
   PlanningTaskCreateRequest,
   PlanningTaskDateUpdateRequest,
+  PlanningTaskParticipantCreateRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
 
@@ -27,11 +29,12 @@ const dependencyTypes: Array<[PlanningDependencyType, string]> = [
   ["finish_to_finish", "Finish to finish"],
   ["start_to_finish", "Start to finish"],
 ];
-export type PlanningInspectorTab = "task" | "dependencies" | "links" | "calendar" | "resources" | "status";
+export type PlanningInspectorTab = "task" | "dependencies" | "links" | "participants" | "calendar" | "resources" | "status";
 
 export function PlanningInspector(props: {
   projects: PlanningProject[];
   schedule: PlanningSchedule;
+  token: string;
   selectedTask: PlanningTask | null;
   activeTab: PlanningInspectorTab;
   newTaskType: "task" | "milestone";
@@ -50,6 +53,8 @@ export function PlanningInspector(props: {
   onRemoveDependency: (dependencyId: string) => Promise<void>;
   onCreatePlanningLink: (payload: PlanningLinkCreateRequest) => Promise<void>;
   onRemovePlanningLink: (linkId: string) => Promise<void>;
+  onAddTaskParticipant: (taskId: string, payload: PlanningTaskParticipantCreateRequest) => Promise<void>;
+  onRemoveTaskParticipant: (taskId: string, participantId: string) => Promise<void>;
   onSetCalendar: (payload: PlanningCalendarUpdateRequest) => Promise<void>;
   onCreateBaseline: (payload: PlanningBaselineCreateRequest) => Promise<void>;
   onCreateResource: (payload: PlanningResourceCreateRequest) => Promise<void>;
@@ -76,6 +81,7 @@ export function PlanningInspector(props: {
           ["task", "Task"],
           ["dependencies", "Dependencies"],
           ["links", "Links"],
+          ["participants", "People"],
           ["calendar", "Calendar"],
           ["resources", "Resources"],
           ["status", "Status"],
@@ -90,6 +96,7 @@ export function PlanningInspector(props: {
         {activeTab === "task" && <PlanningTaskEditor key={selectedTask?.id || "new"} schedule={schedule} selectedTask={selectedTask} newTaskType={newTaskType} busy={busy} onSaveTask={props.onSaveTask} onSaveTaskDates={props.onSaveTaskDates} onCreateTask={props.onCreateTask} onDeleteTask={props.onDeleteTask} />}
         {activeTab === "dependencies" && <DependencyEditor schedule={schedule} busy={busy} onCreateDependency={props.onCreateDependency} onUpdateDependency={props.onUpdateDependency} onRemoveDependency={props.onRemoveDependency} />}
         {activeTab === "links" && <PlanningOperationLinksPanel schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly || linkReadOnly} onCreate={props.onCreatePlanningLink} onRemove={props.onRemovePlanningLink} />}
+        {activeTab === "participants" && <PlanningParticipantsPanel token={props.token} schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly} onAdd={props.onAddTaskParticipant} onRemove={props.onRemoveTaskParticipant} />}
         {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
         {activeTab === "resources" && <PlanningResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />}
       </fieldset>

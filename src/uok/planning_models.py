@@ -210,6 +210,28 @@ class PlanningLink(Base):
     )
 
 
+class PlanningTaskParticipant(Base):
+    __tablename__ = "planning_task_participants"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey("planning_projects.id"), index=True)
+    task_id: Mapped[str] = mapped_column(ForeignKey("planning_tasks.id"), index=True)
+    party_id: Mapped[str] = mapped_column(String(36))
+    role: Mapped[str] = mapped_column(String(40))
+    source_module: Mapped[str] = mapped_column(String(80), default="contacts.core", server_default="contacts.core")
+    attrs_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_by_actor_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
+    __table_args__ = (
+        UniqueConstraint("organization_id", "task_id", "party_id", "role", name="uq_planning_task_participant_role"),
+        CheckConstraint("role IN ('owner', 'assignee', 'approver', 'consulted', 'informed', 'external_contact')", name="ck_planning_task_participant_role"),
+        CheckConstraint("source_module = 'contacts.core'", name="ck_planning_task_participant_source"),
+        Index("ix_planning_task_participants_party", "organization_id", "party_id", "task_id"),
+        Index("ix_planning_task_participants_task_role", "organization_id", "project_id", "task_id", "role"),
+    )
+
+
 class PlanningScheduleEvent(Base):
     __tablename__ = "planning_schedule_events"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_id)

@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A local/runtime evidence verified and Gate B typed links plus execution-date semantics runtime-proven.
+**Status:** Active evidence catalog; Gate A local/runtime evidence verified and Gate B typed links, execution-date semantics, and task participants runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -52,6 +52,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Accessible failure recovery | `runtime_proven` | Chromium proof focuses and announces domain failures with server repair, field, revision, and audit references; stale writes preserve explicit reload/reapply recovery. |
 | Typed operation links | `runtime_proven` | Project/task references use server-selected resolvers, actor-specific safe states, Planning revision/audit evidence, baseline capture, and no foreign keys or copied payloads from optional providers; PostgreSQL and candidate lifecycle proof pass. |
 | Execution date semantics | `runtime_proven` | Planned dates remain scheduler-owned; forecast, reason-audited actual, and deadline facts use a dedicated typed mutation, project IANA timezone, UTC storage, DST-safe conversion, explicit variances, baseline capture, and PostgreSQL/candidate proof. |
+| Task participants | `runtime_proven` | Controlled responsibility roles reference actor-authorized canonical Parties without cross-module foreign keys; revision/version, safe lifecycle states, filtering, baselines, audit, PostgreSQL, candidate, and Chromium proof pass. |
 
 ## Grid And Column Features
 
@@ -164,6 +165,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Audit history | Planning schedule events and source-command references are recorded. | `runtime_proven` |
 | Operation Links inspector | A capability-gated inspector creates and removes typed references, labels resolver state, and exposes an Open action only for authorized ready targets. | `runtime_proven` |
 | Planned/forecast/actual/deadline editor | Task inspector labels planned dates, edits forecast/actual/deadline facts, requires a reason for actual changes, shows project timezone/variance, and states the subday boundary. | `runtime_proven` |
+| People inspector and participant filter | People inspector selects canonical active Parties, assigns controlled roles, shows safe provider states and ready-only jumps; People view and saved participant filter use the same read model. | `runtime_proven` |
 
 ## Current UI Audit And Execution Plan
 

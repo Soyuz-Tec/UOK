@@ -1,4 +1,4 @@
-import type { PlanningDependencyType, PlanningLink, PlanningLinkRelationship, PlanningLinkTargetKind, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskStatus, PlanningTaskType } from "./types";
+import type { PlanningDependencyType, PlanningLink, PlanningLinkRelationship, PlanningLinkTargetKind, PlanningParticipantRole, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskParticipant, PlanningTaskStatus, PlanningTaskType } from "./types";
 
 
 export type PlanningMutationMetadata = {
@@ -78,6 +78,12 @@ export type PlanningLinkCreateRequest = {
   target: { kind: PlanningLinkTargetKind; id: string };
 };
 
+export type PlanningTaskParticipantCreateRequest = {
+  expected_revision?: number;
+  party_id: string;
+  role: PlanningParticipantRole;
+};
+
 export type PlanningTaskCreateResult = PlanningTask & PlanningMutationMetadata;
 export type PlanningTaskUpdateResult = PlanningMutationMetadata & {
   task: PlanningTask;
@@ -86,6 +92,8 @@ export type PlanningTaskUpdateResult = PlanningMutationMetadata & {
 export type PlanningScheduleMutationResult = PlanningSchedule & PlanningMutationMetadata;
 export type PlanningLinkCreateResult = PlanningLink & PlanningMutationMetadata;
 export type PlanningLinkRemoveResult = PlanningMutationMetadata & { id: string; project_id: string; removed: true };
+export type PlanningTaskParticipantCreateResult = PlanningTaskParticipant & PlanningMutationMetadata;
+export type PlanningTaskParticipantRemoveResult = PlanningMutationMetadata & { id: string; project_id: string; task_id: string; removed: true };
 
 export type PlanningDomainErrorDetail = {
   code: string;

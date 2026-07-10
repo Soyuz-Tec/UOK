@@ -6,6 +6,8 @@ import type { PlanningSchedule, PlanningTask } from "./types";
 const summary = task("summary", "1", "Pilot delivery", "summary", "planned", false);
 const scope = task("scope", "1.1", "Define schedule scope", "task", "planned", true);
 const build = task("build", "1.2", "Build pump schedule", "task", "blocked", false);
+build.participant_ids = ["party-1"];
+build.participant_roles = ["owner"];
 const milestone = task("review", "1.3", "Pilot review", "milestone", "planned", true);
 
 const schedule: PlanningSchedule = {
@@ -35,6 +37,11 @@ describe("planning schedule view filters", () => {
     expect(visible.tasks.map((task) => task.id)).toEqual(["summary", "build"]);
   });
 
+  it("filters by canonical task participant", () => {
+    const visible = projectScheduleView(schedule, filters({ partyId: "party-1" }), true);
+    expect(visible.tasks.map((task) => task.id)).toEqual(["summary", "build"]);
+  });
+
   it("filters by milestones and visible dependencies", () => {
     const visible = projectScheduleView(schedule, filters({ mode: "milestones" }), true);
     expect(visible.tasks.map((task) => task.id)).toEqual(["summary", "review"]);
@@ -43,7 +50,7 @@ describe("planning schedule view filters", () => {
 });
 
 function filters(overrides: Partial<PlanningFilterState> = {}): PlanningFilterState {
-  return { mode: "all", query: "", resourceId: "", status: "", ...overrides };
+  return { mode: "all", query: "", partyId: "", resourceId: "", status: "", ...overrides };
 }
 
 function task(id: string, wbs: string, title: string, taskType: PlanningTask["task_type"], status: PlanningTask["status"], critical: boolean): PlanningTask {

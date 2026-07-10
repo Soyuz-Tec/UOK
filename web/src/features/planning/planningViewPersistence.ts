@@ -11,6 +11,7 @@ export type PlanningSavedViewConfig = {
   focusMode: boolean;
   layoutMode: PlanningLayoutMode;
   query: string;
+  partyId: string;
   reviewMode: boolean;
   resourceId: string;
   scale: TimelineScale;
@@ -42,6 +43,7 @@ export function createPlanningSavedView(name: string, config: PlanningSavedViewC
       focusMode: String(config.focusMode),
       layoutMode: config.layoutMode,
       query: config.query,
+      partyId: config.partyId,
       reviewMode: String(config.reviewMode),
       resourceId: config.resourceId,
       scale: config.scale,
@@ -68,6 +70,7 @@ export function planningConfigFromSavedView(view: SavedSearchView, fallback: Pla
     focusMode: booleanValue(view.filters.focusMode, fallback.focusMode),
     layoutMode: oneOf(layoutModes, view.filters.layoutMode, fallback.layoutMode),
     query: stringValue(view.filters.query, fallback.query),
+    partyId: stringValue(view.filters.partyId, fallback.partyId),
     reviewMode: booleanValue(view.filters.reviewMode, fallback.reviewMode),
     resourceId: stringValue(view.filters.resourceId, fallback.resourceId),
     scale: oneOf(scales, view.filters.scale, fallback.scale),

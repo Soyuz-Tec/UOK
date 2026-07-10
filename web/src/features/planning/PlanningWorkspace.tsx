@@ -167,6 +167,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           <CommandButton icon={PanelRightClose} onClick={() => setInspectorOpen(false)}>Hide inspector</CommandButton>
         </div>
         <PlanningInspector
+          token={token}
           projects={projects}
           schedule={activeSchedule}
           selectedTask={selectedTask}
@@ -187,6 +188,8 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onRemoveDependency={actions.removeDependency}
           onCreatePlanningLink={actions.addPlanningLink}
           onRemovePlanningLink={actions.removePlanningLink}
+          onAddTaskParticipant={actions.addTaskParticipant}
+          onRemoveTaskParticipant={actions.removeTaskParticipant}
           onSetCalendar={actions.saveCalendar}
           onCreateBaseline={actions.addBaseline}
           onCreateResource={actions.addResource}

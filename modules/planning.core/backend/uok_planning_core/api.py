@@ -22,6 +22,7 @@ from .schemas import (
     PlanningResourceRequest,
     PlanningTaskRequest,
     PlanningTaskDateUpdateRequest,
+    PlanningTaskParticipantRequest,
     PlanningTaskUpdateRequest,
 )
 from uok.commands import (
@@ -157,6 +158,18 @@ def update_task_dates(task_id: str, req: PlanningTaskDateUpdateRequest, response
     payload = req.model_dump(exclude_unset=True)
     payload["task_id"] = task_id
     return run_planning_command(db, actor, "UpdatePlanningTaskDates", payload, idempotency_key, response, if_match)
+
+
+@router.post("/tasks/{task_id}/participants", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def add_task_participant(task_id: str, req: PlanningTaskParticipantRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
+    payload = req.model_dump(exclude_none=True)
+    payload["task_id"] = task_id
+    return run_planning_command(db, actor, "AddPlanningTaskParticipant", payload, idempotency_key, response, if_match)
+
+
+@router.delete("/tasks/{task_id}/participants/{participant_id}", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def remove_task_participant(task_id: str, participant_id: str, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
+    return run_planning_command(db, actor, "RemovePlanningTaskParticipant", {"task_id": task_id, "participant_id": participant_id}, idempotency_key, response, if_match)
 
 
 @router.delete("/tasks/{task_id}", responses=PLANNING_MUTATION_RESPONSES, response_model=None)

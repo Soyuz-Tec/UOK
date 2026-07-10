@@ -12,6 +12,8 @@ PLANNING_MUTATIONS = {
     ("post", "/api/planning/projects/{project_id}/tasks"),
     ("patch", "/api/planning/tasks/{task_id}"),
     ("patch", "/api/planning/tasks/{task_id}/dates"),
+    ("post", "/api/planning/tasks/{task_id}/participants"),
+    ("delete", "/api/planning/tasks/{task_id}/participants/{participant_id}"),
     ("delete", "/api/planning/tasks/{task_id}"),
     ("post", "/api/planning/projects/{project_id}/dependencies"),
     ("patch", "/api/planning/dependencies/{dependency_id}"),
@@ -51,6 +53,7 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
         assert_capability_read_contract(schema)
         assert_link_contract(schema)
         assert_date_semantics_contract(schema)
+        assert_participant_contract(schema)
 
 
 def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object]) -> None:
@@ -207,3 +210,13 @@ def assert_date_semantics_contract(schema: dict[str, object]) -> None:
     for field in ("forecast_start", "forecast_end", "actual_start", "actual_end", "deadline"):
         value = next(item for item in date_request["properties"][field]["anyOf"] if item.get("type") == "string")
         assert value["minLength"] == value["maxLength"] == 10
+
+
+def assert_participant_contract(schema: dict[str, object]) -> None:
+    operation = schema["paths"]["/api/planning/tasks/{task_id}/participants"]["post"]
+    request = operation["requestBody"]["content"]["application/json"]["schema"]
+    assert request["$ref"] == "#/components/schemas/PlanningTaskParticipantRequest"
+    participant = schema["components"]["schemas"]["PlanningTaskParticipantRequest"]
+    assert participant["additionalProperties"] is False
+    assert set(participant["required"]) == {"party_id", "role"}
+    assert "external_contact" in participant["properties"]["role"]["pattern"]

@@ -17,6 +17,7 @@ export type PlanningDependencyType = "finish_to_start" | "start_to_start" | "fin
 export type PlanningTaskStatus = "planned" | "in_progress" | "blocked" | "complete";
 export type PlanningLinkTargetKind = "operation" | "gate" | "evidence" | "party" | "shipment" | "document" | "location" | "asset" | "agreement" | "communication_thread" | "calendar_event";
 export type PlanningLinkRelationship = "implements" | "blocks_on" | "requires" | "proves" | "owned_by" | "moves" | "occurs_at" | "discussed_in" | "publishes_to";
+export type PlanningParticipantRole = "owner" | "assignee" | "approver" | "consulted" | "informed" | "external_contact";
 
 export type PlanningTask = {
   id: string;
@@ -41,6 +42,8 @@ export type PlanningTask = {
   actual_start_variance_days?: number | null;
   actual_end_variance_days?: number | null;
   deadline_variance_days?: number | null;
+  participant_ids?: string[];
+  participant_roles?: PlanningParticipantRole[];
   duration_days: number;
   progress: number;
   sort_order: number;
@@ -127,6 +130,26 @@ export type PlanningLink = {
   updated_at: string;
 };
 
+export type PlanningTaskParticipant = {
+  id: string;
+  project_id: string;
+  task_id: string;
+  role: PlanningParticipantRole;
+  source_module: "contacts.core";
+  party: { id: string | null; resolver: "contacts.party"; resolver_version: "1" };
+  resolution: {
+    status: "ready" | "unavailable" | "denied" | "missing";
+    display_label: string | null;
+    status_summary: string;
+    checked_at: string;
+    open_path: string | null;
+  };
+  created_at: string;
+  updated_at: string;
+};
+
+export type PlanningPartyOption = { id: string; display_name: string; status: string };
+
 export type PlanningBaseline = {
   id: string;
   project_id: string;
@@ -182,6 +205,7 @@ export type PlanningSchedule = {
   resources: PlanningResource[];
   assignments: PlanningAssignment[];
   links: PlanningLink[];
+  participants?: PlanningTaskParticipant[];
   date_semantics?: {
     precision: "calendar_date";
     project_timezone: string;

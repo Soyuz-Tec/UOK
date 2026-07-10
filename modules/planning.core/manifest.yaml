@@ -1,7 +1,7 @@
 name: planning.core
 kind: capability_module
 version: APP_VERSION
-description: "Optional project planning, task scheduling, execution-date, dependency, baseline, typed operation-link, calendar, and Gantt capability."
+description: "Optional project planning, task participant, scheduling, execution-date, dependency, baseline, typed operation-link, calendar, and Gantt capability."
 installable: true
 uninstallable: true
 updatable: true
@@ -30,6 +30,8 @@ commands:
   - BatchPlanningOperations
   - CreatePlanningLink
   - RemovePlanningLink
+  - AddPlanningTaskParticipant
+  - RemovePlanningTaskParticipant
 events:
   - PlanningProjectCreated
   - PlanningTaskCreated
@@ -47,6 +49,8 @@ events:
   - PlanningBatchApplied
   - PlanningLinkCreated
   - PlanningLinkRemoved
+  - PlanningTaskParticipantAdded
+  - PlanningTaskParticipantRemoved
 dependencies:
   - calendar.core
 backend_path: modules/planning.core/backend
@@ -75,6 +79,7 @@ permissions:
 owned_tables:
   - PlanningProject
   - PlanningTask
+  - PlanningTaskParticipant
   - PlanningTaskDependency
   - PlanningCalendar
   - PlanningLink

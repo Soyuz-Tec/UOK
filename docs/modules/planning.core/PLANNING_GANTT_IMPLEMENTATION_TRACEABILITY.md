@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A local/runtime evidence closure verified 2026-07-10; Gate B typed-link and execution-date slices runtime-proven; hosted CI, review, and merge pending.
+**Status:** Gate A local/runtime evidence closure verified 2026-07-10; Gate B typed-link, execution-date, and task-participant slices runtime-proven; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -90,7 +90,7 @@ requirement.
 |---|---|---|---|---|
 | PLA-B-001 | Typed cross-module links | Additive `PlanningLink` migration/model, server-owned resolver registry, REST/command APIs, typed client, capability-gated inspector, baseline inclusion, and ready/missing/cross-org/denied/disabled-provider tests | PostgreSQL 18 readback and candidate scenario pass; activate real Operation Graph/K Connect providers before claiming those target kinds ready | `runtime_proven` |
 | PLA-B-002 | Planned/forecast/actual/deadline semantics | Additive project timezone/task date migration, scheduler/fact authority split, dedicated audited mutation, variance read model, typed client, explicit UI labels, and visual-only subday disclosure | New York spring/fall DST storage, reason/order/permission/ETag rejection, planned-move actual preservation, PostgreSQL readback, baseline capture, and candidate scenario pass | `runtime_proven` |
-| PLA-B-003 | First-class participants | Party ownership boundary approved by ADR-0004 | Participant migration/API/filter/UI with canonical authorized Party resolution | `planned` |
+| PLA-B-003 | First-class participants | Additive participant model/migration, controlled roles, actor-safe canonical Party resolver, guarded REST/commands, task version/filter read model, baseline/audit evidence, People inspector/view, and saved filter | Same-org ready, cross-org missing, provider-disabled, denied-identity, duplicate, permission, PostgreSQL readback, candidate lifecycle, and Chromium proof pass | `runtime_proven` |
 | PLA-B-004 | Gates and evidence blockers | Link target kinds and blocking intent exist | Requirement state machine, policy-checked approve/reject/waive, readiness impact, and audit proof | `planned` |
 | PLA-B-005 | Communication thread jump | `kconnect.thread` resolver name and unavailable state are reserved | Owning provider, permission contract, correct-thread open action, disabled/denied proof | `planned` |
 
@@ -112,6 +112,15 @@ Current Gate B date-semantics evidence:
 - Typed browser editor proof: `web/src/features/planning/PlanningTaskDateFields.test.tsx` and `web/src/features/planning/planningApi.test.ts`
 - Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningDates.ps1`
 - Persistent PostgreSQL proof: project timezone, five execution-date columns, four checks, and deadline index read back after backup; rebuilt candidate preserved project-local New York dates, rejected an actual correction without a reason, and passed the module verifier.
+
+Current Gate B participant evidence:
+
+- ADR: `docs/architecture/ADR-0006-planning-task-participant-boundary.md`
+- Migration: `modules/planning.core/migrations/007_planning_task_participants.sql`
+- Backend resolution/version/baseline/audit proof: `modules/planning.core/tests/test_planning_participants.py`
+- Typed inspector/filter proof: `web/src/features/planning/PlanningParticipantsPanel.test.tsx`, `planningTimelineModel.test.ts`, and `planningApi.test.ts`
+- Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningParticipants.ps1`
+- Persistent PostgreSQL proof: 11 columns, controlled role/source checks, three same-module foreign keys, unique Party/role membership, and two access indexes read back after backup; rebuilt candidate proved ready/disabled/permission lifecycle and baseline capture.
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence

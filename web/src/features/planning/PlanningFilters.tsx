@@ -15,6 +15,7 @@ export function PlanningFilters({
   onChange: (filters: PlanningFilterState) => void;
 }) {
   const statuses = useMemo(() => Array.from(new Set(schedule.tasks.map((task) => task.status || "planned"))).sort(), [schedule.tasks]);
+  const parties = useMemo(() => Array.from(new Map((schedule.participants || []).filter((row) => row.party.id && row.resolution.display_label).map((row) => [row.party.id as string, row])).values()), [schedule.participants]);
 
   return (
     <div className="planning-filters" aria-label="Planning search and filters">
@@ -38,6 +39,14 @@ export function PlanningFilters({
         <select value={filters.status} onChange={(event) => onChange({ ...filters, status: event.target.value })}>
           <option value="">Any status</option>
           {statuses.map((status) => <option key={status} value={status}>{status}</option>)}
+        </select>
+      </label>
+      <label className="planning-toolbar-select">
+        <Users size={16} aria-hidden="true" />
+        <span>Participant</span>
+        <select value={filters.partyId} onChange={(event) => onChange({ ...filters, partyId: event.target.value })}>
+          <option value="">Any participant</option>
+          {parties.map((participant) => <option key={participant.party.id as string} value={participant.party.id as string}>{participant.resolution.display_label}</option>)}
         </select>
       </label>
       <label className="planning-toolbar-select">

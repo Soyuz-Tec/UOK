@@ -9,6 +9,7 @@ export type ViewDensity = "compact" | "standard" | "roomy";
 export type PlanningFilterState = {
   mode: FilterMode;
   query: string;
+  partyId: string;
   resourceId: string;
   status: string;
 };
@@ -48,6 +49,7 @@ function taskMatchesFilter(task: PlanningTask, filterState: PlanningFilterState,
   if (filterState.mode === "critical" && !task.critical) return false;
   if (filterState.mode === "milestones" && task.task_type !== "milestone") return false;
   if (filterState.status && (task.status || "planned") !== filterState.status) return false;
+  if (filterState.partyId && !(task.participant_ids || []).includes(filterState.partyId)) return false;
   if (filterState.resourceId && !resourceTaskIds.has(task.id)) return false;
   const query = filterState.query.trim().toLocaleLowerCase();
   if (query && !`${task.wbs || ""} ${task.title}`.toLocaleLowerCase().includes(query)) return false;

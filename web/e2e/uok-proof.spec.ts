@@ -109,6 +109,8 @@ const sampleSchedule = {
       baseline_end: "2026-08-12",
       start_variance_days: 1,
       end_variance_days: 1,
+      participant_ids: ["party-proof"],
+      participant_roles: ["approver"],
     },
   ],
   dependencies: [
@@ -125,6 +127,17 @@ const sampleSchedule = {
   resources: [{ id: "resource-1", project_id: sampleProject.id, name: "Planner", role: "Scheduling" }],
   assignments: [{ id: "assignment-1", task_id: "task-2", resource_id: "resource-1", allocation_percent: 120 }],
   links: [],
+  participants: [{
+    id: "participant-proof",
+    project_id: sampleProject.id,
+    task_id: "task-3",
+    role: "approver",
+    source_module: "contacts.core",
+    party: { id: "party-proof", resolver: "contacts.party", resolver_version: "1" },
+    resolution: { status: "ready", display_label: "Pilot approver", status_summary: "Party is active.", checked_at: "2026-08-01T00:00:00Z", open_path: "/?view=contacts&party_id=party-proof" },
+    created_at: "2026-08-01T00:00:00Z",
+    updated_at: "2026-08-01T00:00:00Z",
+  }],
   baselines: [{
     id: "baseline-1",
     project_id: sampleProject.id,
@@ -298,6 +311,8 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     }
     await page.getByRole("button", { name: "Board", exact: true }).click();
     await expect(page.getByLabel("Planning board")).toBeVisible();
+    await page.getByRole("button", { name: "People", exact: true }).click();
+    await expect(page.getByLabel("Planning people")).toContainText("Pilot approver");
     await page.getByRole("button", { name: "Workload", exact: true }).click();
     const workload = page.getByLabel("Planning workload");
     await expect(workload).toBeVisible();
@@ -314,6 +329,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await page.getByRole("button", { name: "Gantt chart", exact: true }).click();
     await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
     await page.getByLabel("Open planning controls").click();
+    await expect(page.getByLabel("Participant")).toBeVisible();
     await page.getByRole("button", { name: "Timeline only", exact: true }).click();
     await expect(page.getByRole("button", { name: "Split view", exact: true })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator(".planning-owned-grid")).toBeHidden();
@@ -457,12 +473,18 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await finalShowInspector.evaluate((button) => (button as HTMLButtonElement).click());
       await expect(page.locator(".workflow-split-view")).toHaveClass(/secondary-open/);
     }
+    await page.getByRole("cell", { name: "1.3", exact: true }).evaluate((cell) => (cell as HTMLElement).click());
+    await expect(page.getByLabel("Selected task")).toContainText("Pilot review milestone");
     await page.getByRole("tab", { name: "Task" }).click();
     await expect(page.getByLabel("Task editor")).toBeVisible();
     await expect(page.getByLabel("Planned start")).toBeVisible();
     await expect(page.getByLabel("Planned end")).toBeVisible();
     await expect(page.getByLabel("Task execution dates")).toBeVisible();
     await expect(page.getByText(/hour and minute zoom are visual only/i)).toBeVisible();
+    await page.getByRole("tab", { name: "People" }).click();
+    const participantsPanel = page.getByLabel("Task participants");
+    await expect(participantsPanel).toContainText("Pilot approver");
+    await expect(participantsPanel.getByRole("link", { name: "Open" })).toHaveAttribute("href", "/?view=contacts&party_id=party-proof");
     await page.getByRole("tab", { name: "Dependencies" }).click();
     await expect(page.getByLabel("Dependency editor")).toBeVisible();
     await page.getByRole("tab", { name: "Calendar" }).click();
@@ -770,7 +792,7 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
     dependencyPayloads.push(route.request().postDataJSON());
     await route.fulfill({ json: { status: "validated" }, headers: { ETag: planningEtag } });
   });
-  await page.route("/api/contacts**", (route) => route.fulfill({ json: [] }));
+  await page.route("/api/contacts**", (route) => route.fulfill({ json: [{ id: "party-proof", display_name: "Pilot approver", status: "active" }] }));
 }
 
 function moduleCatalog() {

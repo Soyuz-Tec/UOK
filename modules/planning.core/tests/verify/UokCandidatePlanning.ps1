@@ -2,6 +2,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningContracts.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningLinks.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningDates.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningParticipants.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -150,6 +151,7 @@ function Invoke-UokPlanningCandidateScenario {
     }
     Assert-UokPlanningLinkContract -ProjectId $projectId -TaskId $first.result.id -Headers $Headers -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     Assert-UokPlanningDateContract -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -Stamp $Stamp
+    Assert-UokPlanningParticipantContract -ProjectId $projectId -TaskId $first.result.id -Headers $Headers -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     Assert-UokPlanningStatusContracts -ProjectId $projectId -TaskId $first.result.id -Headers $OpsHeaders -Stamp $Stamp
 
     $beforeBatch = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $OpsHeaders
@@ -279,6 +281,7 @@ function Invoke-UokPlanningCandidateScenario {
         -or -not $baselineDetail.snapshot.calculation.engine_version `
         -or $baselineDetail.snapshot.project.timezone -ne "America/New_York" `
         -or $baselineDetail.snapshot.date_semantics.subday_scales -ne "visual_only" `
+        -or $baselineDetail.snapshot.participants.Count -lt 1 `
         -or ($baselineDetail.snapshot.tasks | Where-Object { $_.id -eq $first.result.id } | Select-Object -First 1).actual_start -ne "2026-08-02" `
         -or $baselineDetail.snapshot.capture.correlation_id -ne $baseline.command_id
     ) {

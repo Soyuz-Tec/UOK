@@ -182,6 +182,7 @@ from .planning_models import (  # noqa: E402
     PlanningResource,
     PlanningScheduleEvent,
     PlanningTask,
+    PlanningTaskParticipant,
     PlanningTaskDependency,
 )
 
