@@ -43,7 +43,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Keyboard navigation | Implemented | Grid rows support arrow/home/end focus movement plus common task hotkeys. |
 | Fullscreen mode | Implemented | UOK-owned focus mode expands the planning workspace without invoking third-party fullscreen code. |
 | Drag timeline / click-drag new task | Implemented | Timeline panning, Ctrl/Command wheel zoom, and Shift-drag empty-space task creation are implemented through UOK-owned interactions. |
-| Smart rendering / large data performance | Backlog | Add virtualization only after current features stabilize. |
+| Smart rendering / large data performance | Runtime-proven | ADR-0016 records the measured 500-row breach and enables shared grid/timeline row windowing only above 200 visible tasks. |
 | Data loading/saving and REST sync | Implemented | UOK uses FastAPI read models and command writes, not direct client-owned persistence. |
 | Export to document/image/project formats | External global boundary | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning should consume that boundary without redeploying it. |
 | Locales/accessibility/touch | Partial | Continue ARIA, focus, and responsive proof; localization remains backlog. |
@@ -149,7 +149,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Resources | Assignments | resource id/name, role, allocation, capacity, warnings, workload lane | Assignments, warnings, and workload lanes are implemented from the validated schedule read model | Implemented |
 | Resources | Resource panel/load chart | resource row, load cell, chart mode, allocation template, overload state | First-party Workload view renders resource lanes, daily allocation cells, peak load, and overload status from existing assignments | Implemented |
 | Baselines | Baseline overlays | baseline start/end, variance, baseline lane, deadline marker | Capture, per-row timeline lanes, and variance badges are implemented | Implemented |
-| Performance | Smart rendering/virtualization | visible row window, visible column/window, stable row heights, overscan | Defer until data scale requires it and proof covers it | Backlog |
+| Performance | Smart rendering/virtualization | visible row window, visible column/window, stable row heights, overscan | Shared variable-height row window, synchronized scroll, 480px overscan, ARIA counts/indexes, and 500-row Chromium proof | Runtime-proven |
 | Accessibility | Keyboard/touch/ARIA | row navigation, focus rings, button labels, touch target size, non-color cues | Keyboard and ARIA proof exists; touch/localization later | Partial |
 | Data integration | REST sync and events | read model, command write, audit event, optimistic state rules | UOK command bus and audit events, no client-owned persistence | Implemented |
 | Data integration | Provider/batch sync modes | backend source, batch transaction, conflict state, local rollback | Selected-task bulk completion, status/progress updates, and date shifts use existing server-validated task writes; richer conflict UX and atomic batch endpoint later | Partial |

@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and all four Gate D governed-analysis slices runtime-proven.
+**Status:** Active module plan; Gates A-D and the Gate E measured scale/virtualization slice are runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -176,6 +176,16 @@ independently validated preview. `planning.analysis.approve` with a reason is
 separate from `planning.edit` apply/rollback. Exact task-date matching, strong
 ETags, audited revisions, ORM rules, and a PostgreSQL transition trigger make
 stale or unsupported transitions fail closed.
+
+## Measured Scale Boundary
+
+ADR-0016 governs performance claims. A rollback-only benchmark records runtime
+profile and samples for 500/800 schedule reads, 2,000/3,000 validation, and
+100-update atomic batches. The measured backend profile remains inside budget.
+The initial 500-row Chromium path breached budget, so the first-party renderer
+windows aligned grid/timeline rows only above 200 visible tasks with shared row
+geometry, synchronized scroll positions, bounded overscan, and ARIA row count/
+index metadata. Small schedules keep the original complete render path.
 
 ## Calendar Correlation Boundary
 

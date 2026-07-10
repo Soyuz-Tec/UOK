@@ -20,11 +20,13 @@ export function PlanningGanttGridRow({
   pinnedOffsets,
   readOnly,
   rowHeight,
+  rowIndex,
   rowRef,
   rowSize,
   showCritical,
   summaryExpanded,
   task,
+  virtualTop,
   onKeyDown,
   onOpenTaskMenu,
   onSelect,
@@ -42,11 +44,13 @@ export function PlanningGanttGridRow({
   pinnedOffsets: Map<string, number>;
   readOnly: boolean;
   rowHeight: number;
+  rowIndex: number;
   rowRef: (element: HTMLDivElement | null) => void;
   rowSize: number;
   showCritical: boolean;
   summaryExpanded: boolean;
   task: PlanningTask;
+  virtualTop?: number;
   onKeyDown: (task: PlanningTask, event: KeyboardEvent<HTMLDivElement>) => void;
   onOpenTaskMenu: (taskId: string, x: number, y: number, event: { preventDefault: () => void; stopPropagation: () => void }) => void;
   onSelect: (taskId: string) => void;
@@ -63,9 +67,10 @@ export function PlanningGanttGridRow({
       ref={rowRef}
       className={rowClass}
       role="row"
+      aria-rowindex={rowIndex}
       aria-expanded={task.task_type === "summary" ? summaryExpanded : undefined}
       tabIndex={0}
-      style={{ gridTemplateColumns, height: rowHeight, minHeight: rowHeight, minWidth } as CSSProperties}
+      style={{ gridTemplateColumns, height: rowHeight, minHeight: rowHeight, minWidth, ...(virtualTop === undefined ? {} : { position: "absolute", top: virtualTop, left: 0 }) } as CSSProperties}
       onClick={() => onSelect(task.id)}
       onContextMenu={(event) => onOpenTaskMenu(task.id, event.clientX, event.clientY, event)}
       onDoubleClick={() => {

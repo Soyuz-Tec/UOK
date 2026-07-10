@@ -56,6 +56,11 @@
   scrollbar-width: thin;
 }
 
+.planning-owned-grid-body-content {
+  position: relative;
+  min-width: 100%;
+}
+
 .planning-owned-grid-row {
   position: relative;
   width: 100%;

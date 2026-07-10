@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and all four Gate D governed-analysis slices runtime-proven.
+**Status:** Active evidence catalog; Gates A-D and the Gate E measured scale/virtualization slice are runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -50,6 +50,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Governed optimization and recommendations | `runtime_proven` | Dependency-reviewed bounded advisory search records objective/engine/version/limits, explicit completed/timeout/infeasible explanations, independently validated ranked impact/effort/side effects/assumptions and preview; separate reasoned approval, exact stale-safe apply, audit, rollback, database transition guards, benchmark, typed UI, and candidate proof pass. |
 | Export/import | `integration_tested` | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning consumes that boundary and owns only schedule-specific payloads/read-model mapping. |
 | UI proof | `runtime_proven` | Playwright proof covers rendering, controls, inspector tabs, non-drag mutation paths, stale inverse recovery, responsiveness, and console cleanliness. |
+| Measured scale and virtualization | `runtime_proven` | Rollback-only SQLite/PostgreSQL profiles enforce 500/800 read, 2,000/3,000 validation, and 100-update batch p95 budgets. A measured 4.07-second 500-row browser breach justified dependency-free windowing above 200 visible tasks; the full Chromium verification run records 1.920-second interaction, 24 aligned grid/timeline rows, 101 ms maximum long task, and ARIA row metadata. |
 | Server capabilities | `runtime_proven` | Actor-specific read/edit/baseline/level/link/gate/admin capabilities are enforced by command permission, embedded in schedule reads, mirrored by fail-closed UI controls, and probed in the candidate runtime. Local review mode cannot grant authority. |
 | Database invariants | `runtime_proven` | PostgreSQL and SQLAlchemy enforce schedule date/type/progress/lag/allocation/scheduling-mode and uniqueness rules; candidate probes reject invalid direct rows and read back organization-first indexes. |
 | Audit correlation | `runtime_proven` | Candidate PostgreSQL proof joins successful command responses, module events, and Planning schedule events by the same authoritative correlation ID, including derived changes and atomic batches. |

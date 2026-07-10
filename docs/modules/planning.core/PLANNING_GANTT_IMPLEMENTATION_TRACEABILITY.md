@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and all four Gate D governed-analysis slices runtime-proven; hosted CI, review, and merge pending.
+**Status:** Gates A-D and the Gate E measured scale/virtualization slice runtime-proven; remaining Gate E reach/portfolio/production-like closure, hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -228,6 +228,28 @@ Current Gate D optimization/lifecycle evidence:
 - Typed approval workflow proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`
 - Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningOptimization.ps1`
 - Persistent PostgreSQL proof: 23 columns, six checks, six foreign keys, seven indexes, one transition trigger, and direct rolled-back-to-approved rejection read back after backup `uok_pg18_20260710-094209.dump` and additive migration; rebuilt candidate completed propose/approve/apply/rollback.
+
+## Gate E traceability
+
+| ID | Requirement | Current evidence | Required proof before Gate E closure | Status |
+|---|---|---|---|---|
+| PLA-E-001 | Measured performance budgets | Executable rollback-only profile captures database/runtime/hardware, all samples, p95/mean/max, approved thresholds, and zero retained fixture rows for schedule read, deterministic validation, and atomic batch scenarios | Rebuilt PostgreSQL profile and full-gate repeat | `runtime_proven` |
+| PLA-E-002 | Measurement-triggered virtualization | Unwindowed 500-row Chromium breach recorded; dependency-free window activates only above 200 rows with shared variable-height geometry, 480px overscan, synchronized grid/timeline scroll, total row metadata, and full small-schedule fallback | Full Chromium trace with interaction/long-task/mounted-count evidence and accessibility regression proof | `runtime_proven` |
+| PLA-E-003 | Keyboard, touch, accessibility, and responsive closure | Existing non-drag, keyboard, focus, responsive, and ARIA paths are runtime-proven | Dedicated touch/target/reflow/zoom/virtual-boundary verification | `planned` |
+| PLA-E-004 | UOK-wide localization and RTL | UI policy requires scalable text and RTL-safe layout | Shared UOK locale/direction primitives plus representative Planning render | `planned` |
+| PLA-E-005 | Portfolio and multi-project views | Project picker exposes one project at a time | Actor-scoped portfolio read model, typed UI, scale and empty/error proof | `planned` |
+| PLA-E-006 | Production-like closure | Rebuilt PostgreSQL scale profile passes | Performance, accessibility, recovery, observability, compatibility, and full candidate evidence | `planned` |
+
+Current Gate E scale evidence:
+
+- Decision and dependency review: `docs/architecture/ADR-0016-planning-scale-budgets-and-virtualization.md`
+- Repeatable budgets/profile: `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md` and `scripts/planning_scale_benchmark.py`
+- Backend executable proof: `modules/planning.core/tests/test_planning_scale_benchmark.py`
+- Shared virtual window and boundary tests: `web/src/features/planning/planningGanttVirtualization.ts` and `planningGanttVirtualization.test.ts`
+- Aligned renderer integration: `PlanningGantt.tsx`, `PlanningGanttGrid.tsx`, and `PlanningGanttGridRow.tsx`
+- Browser budget/trace: `web/e2e/planning-scale.spec.ts`
+- PostgreSQL profile: read p95 96.51 ms, validation p95 16.52 ms, batch p95 190.75 ms; zero persisted benchmark projects.
+- Full parallel Chromium verification profile: 1,919.80 ms interaction, 24 mounted grid/timeline rows, and 101 ms maximum post-idle long task; unwindowed baseline 4,073.60 ms.
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence

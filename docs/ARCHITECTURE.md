@@ -99,6 +99,7 @@ Operator browser
 - Planning Gate D what-if snapshots are runtime-proven: complete approved state and temporary typed changes are captured as immutable, hash-verified, audit-correlated artifacts, and previews run on detached task copies without changing approved task fields or versions.
 - Planning Gate D risk analysis is runtime-proven: bounded first-party Monte Carlo runs reference verified snapshot checksums and persist normalized distributions, correlations, seed, engine/version, limits, percentiles, confidence assumptions, independent validation, and append-only audit evidence.
 - Planning Gate D governed optimization is runtime-proven: a bounded dependency-free advisory engine returns explicit completed/timeout/infeasible evidence and independently validated ranked recommendations that require reasoned approval before apply, fail closed when stale, and support audited rollback.
+- Planning Gate E scale budgets are runtime-proven in rollback-only SQLite and PostgreSQL profiles; the measured 500-row browser breach activates a dependency-free shared grid/timeline virtual window only above 200 visible tasks, with synchronized scrolling and accessibility row metadata.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

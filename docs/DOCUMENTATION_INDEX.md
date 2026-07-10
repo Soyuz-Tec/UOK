@@ -39,6 +39,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/operations/UOK_STANDARD_OPERATIONS.md` | Standard local operations, audits, GitHub preflight, backup, restore, rebuild, repeatable commands | Operations command, evidence, backup, restore, or GitHub workflow changes |
 | `docs/operations/UOK_ASUH_TEST_EVENTS.md` | Local ASUH incident-drill schedule and event trigger rules | ASUH event types, local schedules, or incident drill expectations change |
 | `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md` | GitHub-facing source-of-truth, ownership, dependency, Scorecard, branch-protection, and evidence controls | GitHub workflows, synchronization policy, CODEOWNERS, dependency monitoring, branch-protection expectations, or engineering evidence change |
+| `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md` | Repeatable Planning backend/browser budgets, profiles, evidence, and rollback-only fixture rules | Planning scale threshold, benchmark profile, virtualization trigger, or performance evidence changes |
 | `docs/architecture/ADR-*` | Material architecture decisions | Boundary, runtime, data model, auth, deployment, framework, or major policy decisions change |
 | `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md` | Planning Gantt and UI proof dependency decision | Planning UI library, scheduling authority, or UI proof automation changes |
 | `docs/architecture/ADR-0003-planning-gate-a-stabilization.md` | Planning Gate A scheduling-correctness, write-safety, and evidence-maturity decision | Gate A scope, sequencing, evidence states, or closure requirements change |
@@ -54,6 +55,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0013-planning-immutable-what-if-snapshots.md` | Immutable analysis source capture, temporary preview evaluation, checksums, permissions, and non-mutation boundary | What-if snapshot, analysis source, preview, integrity, or analysis permission rules change |
 | `docs/architecture/ADR-0014-planning-reproducible-risk-analysis.md` | Seeded bounded Monte Carlo inputs, correlations, limits, percentiles, confidence, integrity, and reproduction contract | Risk engine, distribution, correlation, seed, simulation limit, percentile, or confidence rules change |
 | `docs/architecture/ADR-0015-planning-governed-optimization-and-recommendations.md` | Bounded optimizer, dependency review, objectives, limits, explanations, approval/apply/audit/rollback lifecycle | Optimization engine, dependency, objective, limit, recommendation, approval, apply, audit, or rollback rules change |
+| `docs/architecture/ADR-0016-planning-scale-budgets-and-virtualization.md` | Measured Planning budgets, rollback-only profiles, virtualization trigger/threshold, overscan, alignment, and accessibility metadata | Planning scale budget, fixture, threshold, virtual window, overscan, or scroll-alignment rules change |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -101,6 +103,7 @@ Active policies are mandatory until replaced through an ADR or explicit policy u
 - `docs/operations/UOK_STANDARD_OPERATIONS.md`
 - `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
+- `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md`
 
 Implementation must either comply with these artifacts or update them through the policy-change process.
 
@@ -126,6 +129,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0013-planning-immutable-what-if-snapshots.md`
 - `docs/architecture/ADR-0014-planning-reproducible-risk-analysis.md`
 - `docs/architecture/ADR-0015-planning-governed-optimization-and-recommendations.md`
+- `docs/architecture/ADR-0016-planning-scale-budgets-and-virtualization.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
