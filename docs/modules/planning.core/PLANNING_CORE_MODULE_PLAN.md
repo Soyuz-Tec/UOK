@@ -1,12 +1,14 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan.
+**Status:** Active module plan; Gate A stabilization in progress.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
 ## Purpose
 
 `planning.core` provides project planning, task scheduling, dependencies, audit events, and a Gantt workspace as an optional UOK capability module. It must stay integrated with the existing UOK stack and must not become a separate project-management application.
+
+Planning Gate A is governed by `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`. Requirement maturity, verification evidence, and closure status are tracked in `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`.
 
 ## Stack Contract
 
