@@ -34,7 +34,7 @@ describe("Planning API concurrency and idempotency", () => {
   });
 
   it("loads the server-derived Planning capability matrix", async () => {
-    const capabilities = { read: true, edit: false, baseline_create: false, level: false, link: false, gate_approve: false, admin: false, review_only: true };
+    const capabilities = { read: true, edit: false, baseline_create: false, level: false, link: false, gate_approve: false, admin: false, analyze: false, analysis_approve: false, review_only: true };
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(capabilities));
     vi.stubGlobal("fetch", fetchMock);
 

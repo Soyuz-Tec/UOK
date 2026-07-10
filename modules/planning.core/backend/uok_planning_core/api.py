@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from .api_support import require_planning_read, run_planning_command
+from .analysis_api import router as analysis_router
 from .api_contracts import ETAG_RESPONSE_HEADERS, PLANNING_BATCH_RESPONSES, PLANNING_CREATE_RESPONSES, PLANNING_MUTATION_RESPONSES
 from .baselines import baseline_detail, baseline_or_error, compare_baselines
 from .concurrency import read_locked_schedule_snapshot
@@ -40,6 +41,7 @@ from uok.security import Actor, current_actor
 
 router = APIRouter(prefix="/api/planning", tags=["planning"])
 router.routes.extend(resource_calendar_router.routes)
+router.routes.extend(analysis_router.routes)
 PlanningIdempotencyKey = Annotated[
     str,
     Header(

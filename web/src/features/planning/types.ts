@@ -1,6 +1,8 @@
 import type { Appearance, ModuleStatus } from "../../shared/types";
 import type { PlanningCapacityUnit, PlanningResourceCalendar, PlanningResourceCanonicalKind, PlanningResourceType } from "./resourceTypes";
+import type { PlanningCapabilities } from "./planningCapabilities";
 export type { PlanningCapacityUnit, PlanningResourceCalendar, PlanningResourceCanonicalKind, PlanningResourceType } from "./resourceTypes";
+export type { PlanningCapabilities } from "./planningCapabilities";
 
 export type PlanningProject = {
   id: string;
@@ -222,17 +224,6 @@ export type PlanningBaselineComparison = {
   right: PlanningBaseline;
   limitations: string[];
   changes: Record<string, unknown> | null;
-};
-
-export type PlanningCapabilities = {
-  read: boolean;
-  edit: boolean;
-  baseline_create: boolean;
-  level: boolean;
-  link: boolean;
-  gate_approve: boolean;
-  admin: boolean;
-  review_only: boolean;
 };
 
 export type PlanningSchedule = {

@@ -37,6 +37,7 @@ commands:
   - AdvancePlanningTaskRequirement
   - SetPlanningTaskRequirementLink
   - DecidePlanningTaskRequirement
+  - CreatePlanningWhatIfSnapshot
 events:
   - PlanningProjectCreated
   - PlanningTaskCreated
@@ -61,6 +62,7 @@ events:
   - PlanningTaskRequirementAdvanced
   - PlanningTaskRequirementLinkSet
   - PlanningTaskRequirementDecided
+  - PlanningWhatIfSnapshotCreated
 dependencies:
   - calendar.core
 backend_path: modules/planning.core/backend
@@ -86,6 +88,8 @@ permissions:
   - planning.link
   - planning.gate.approve
   - planning.admin
+  - planning.analyze
+  - planning.analysis.approve
 owned_tables:
   - PlanningProject
   - PlanningTask
@@ -99,6 +103,7 @@ owned_tables:
   - PlanningAssignment
   - PlanningBaseline
   - PlanningScheduleEvent
+  - PlanningWhatIfSnapshot
   - CommandLog:planning.core
   - EventRecord:Planning
 extension_points:

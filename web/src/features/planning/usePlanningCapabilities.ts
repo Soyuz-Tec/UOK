@@ -12,6 +12,8 @@ export const readOnlyPlanningCapabilities: PlanningCapabilities = {
   link: false,
   gate_approve: false,
   admin: false,
+  analyze: false,
+  analysis_approve: false,
   review_only: true,
 };
 

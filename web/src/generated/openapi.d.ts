@@ -1104,6 +1104,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/projects/{project_id}/what-if-snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project What If Snapshots */
+        get: operations["project_what_if_snapshots_api_planning_projects__project_id__what_if_snapshots_get"];
+        put?: never;
+        /** Create Project What If Snapshot */
+        post: operations["create_project_what_if_snapshot_api_planning_projects__project_id__what_if_snapshots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/what-if-snapshots/{snapshot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project What If Snapshot */
+        get: operations["project_what_if_snapshot_api_planning_projects__project_id__what_if_snapshots__snapshot_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/tasks/{task_id}": {
         parameters: {
             query?: never;
@@ -2050,6 +2085,29 @@ export interface components {
             task_type?: string | null;
             /** Title */
             title?: string | null;
+        };
+        /** PlanningWhatIfSnapshotRequest */
+        PlanningWhatIfSnapshotRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /**
+             * Name
+             * @default What-if snapshot
+             */
+            name: string;
+            /** Task Changes */
+            task_changes: components["schemas"]["PlanningWhatIfTaskChangeRequest"][];
+        };
+        /** PlanningWhatIfTaskChangeRequest */
+        PlanningWhatIfTaskChangeRequest: {
+            /** End */
+            end?: string | null;
+            /** Progress */
+            progress?: number | null;
+            /** Start */
+            start?: string | null;
+            /** Task Id */
+            task_id: string;
         };
         /** RegisterRequest */
         RegisterRequest: {
@@ -5460,6 +5518,163 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_what_if_snapshots_api_planning_projects__project_id__what_if_snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_project_what_if_snapshot_api_planning_projects__project_id__what_if_snapshots_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningWhatIfSnapshotRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_what_if_snapshot_api_planning_projects__project_id__what_if_snapshots__snapshot_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                snapshot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

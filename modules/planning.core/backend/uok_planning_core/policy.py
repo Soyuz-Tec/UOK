@@ -8,6 +8,8 @@ PLANNING_CAPABILITY_PERMISSIONS = {
     "link": "planning.link",
     "gate_approve": "planning.gate.approve",
     "admin": "planning.admin",
+    "analyze": "planning.analyze",
+    "analysis_approve": "planning.analysis.approve",
 }
 
 PLANNING_ROLE_GRANTS = {

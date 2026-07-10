@@ -91,6 +91,8 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
         "planning.link",
         "planning.gate.approve",
         "planning.admin",
+        "planning.analyze",
+        "planning.analysis.approve",
     }
     assert manifests["reports.core"]["required"] is False
     assert manifests["reports.core"]["kind"] == "capability_module"
@@ -189,6 +191,7 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert permissions["CreatePlanningProject"] == "planning.edit"
     assert permissions["CreatePlanningBaseline"] == "planning.baseline.create"
     assert permissions["LevelPlanningResources"] == "planning.level"
+    assert permissions["CreatePlanningWhatIfSnapshot"] == "planning.analyze"
     assert permissions["RestoreContact"] == "contacts.restore"
     assert permissions["GenerateReport"] == "reports.render"
     assert permissions["DeleteReportArtifact"] == "reports.delete"
@@ -199,6 +202,8 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "planning.baseline.create" in grants["ops_manager"]
     assert "planning.level" in grants["ops_manager"]
     assert "planning.admin" in grants["ops_manager"]
+    assert "planning.analyze" in grants["ops_manager"]
+    assert "planning.analysis.approve" in grants["ops_manager"]
     assert "communications.edit" in grants["ops_manager"]
     assert grants["trader"] >= {"planning.read", "planning.edit"}
     assert "reports.manage" in grants["ops_manager"]

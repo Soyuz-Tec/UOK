@@ -29,6 +29,8 @@ def test_capability_endpoint_returns_server_authority_by_role(client: TestClient
         "link": False,
         "gate_approve": False,
         "admin": False,
+        "analyze": False,
+        "analysis_approve": False,
         "review_only": False,
     }
     for read_only in (finance, viewer):
@@ -126,6 +128,7 @@ def test_every_planning_command_uses_one_declared_capability() -> None:
     assert permissions["BatchPlanningOperations"] == "planning.edit"
     assert permissions["CreatePlanningBaseline"] == "planning.baseline.create"
     assert permissions["LevelPlanningResources"] == "planning.level"
+    assert permissions["CreatePlanningWhatIfSnapshot"] == "planning.analyze"
     assert set(permissions.values()) <= set(PLANNING_CAPABILITY_PERMISSIONS.values())
     assert "planning.manage" not in permissions.values()
     assert PLANNING_ROLE_GRANTS["trader"] == {"planning.read", "planning.edit"}

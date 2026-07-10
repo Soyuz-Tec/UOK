@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A, all five Gate B slices, and all four Gate C resource-intelligence slices runtime-proven.
+**Status:** Active module plan; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if snapshots runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -144,6 +144,17 @@ overloads. Manual work is never moved. Horizon, project-finish,
 allocation-capacity, and immovable-manual reasons remain explicit. A separate
 validator recomputes schedule and capacity evidence and rolls back mismatched
 reports. Approved baselines remain immutable.
+
+## Advanced Analysis Snapshot Boundary
+
+ADR-0013 governs Gate D analysis sources. What-if creation requires
+`planning.analyze`, a current ETag, and idempotency. It captures the complete
+approved schedule and bounded typed temporary task changes in canonical JSON,
+evaluates detached task copies, stores validated preview results, and protects
+the artifact with SHA-256 plus ORM/PostgreSQL append-only guards. Approved task
+fields and task versions never change. The separate
+`planning.analysis.approve` capability is reserved for governed recommendation
+approval and cannot be inferred from snapshot creation.
 
 ## Calendar Correlation Boundary
 

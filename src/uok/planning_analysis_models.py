@@ -1,0 +1,42 @@
+from __future__ import annotations
+
+from datetime import datetime
+
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, event
+from sqlalchemy.orm import Mapped, mapped_column
+
+from .db import Base
+from .planning_models import planning_id, planning_now
+
+
+class PlanningWhatIfSnapshot(Base):
+    __tablename__ = "planning_what_if_snapshots"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey("planning_projects.id"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    snapshot_json: Mapped[str] = mapped_column(Text)
+    schema_version: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    checksum: Mapped[str] = mapped_column(String(64))
+    source_revision: Mapped[int] = mapped_column(BigInteger)
+    created_by_user_id: Mapped[str] = mapped_column(ForeignKey("users.id"))
+    correlation_id: Mapped[str] = mapped_column(String(36))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
+
+    __table_args__ = (
+        CheckConstraint("schema_version = 1", name="ck_planning_what_if_schema_version"),
+        CheckConstraint("source_revision >= 1", name="ck_planning_what_if_source_revision"),
+        CheckConstraint("length(checksum) = 64", name="ck_planning_what_if_checksum_length"),
+        Index("ix_planning_what_if_org_project_revision", "organization_id", "project_id", "source_revision"),
+        Index("ix_planning_what_if_org_project_created", "organization_id", "project_id", "created_at"),
+    )
+
+
+@event.listens_for(PlanningWhatIfSnapshot, "before_update")
+@event.listens_for(PlanningWhatIfSnapshot, "before_delete")
+def _reject_planning_what_if_mutation(*_args: object) -> None:
+    raise ValueError("Planning what-if snapshots are immutable and append-only")
+
+
+__all__ = ["PlanningWhatIfSnapshot"]

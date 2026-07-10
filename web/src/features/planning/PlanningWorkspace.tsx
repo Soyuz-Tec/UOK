@@ -178,6 +178,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           readOnly={reviewMode || serverReviewOnly}
           linkReadOnly={reviewMode || !capabilities.link || activeSchedule.capabilities?.link !== true}
           canApproveGates={capabilities.gate_approve && activeSchedule.capabilities?.gate_approve === true}
+          canAnalyze={capabilities.analyze && activeSchedule.capabilities?.analyze === true}
           onTabChange={setInspectorTab}
           onProjectChange={actions.changeProject}
           onSaveTask={actions.saveTask}
@@ -200,6 +201,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onCreateResource={actions.addResource}
           onAssignResource={actions.assignResource}
           onSetResourceCalendar={actions.saveResourceCalendar}
+          onCreateWhatIfSnapshot={actions.createWhatIfSnapshot}
         />
       </div>
     );

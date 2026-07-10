@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A, all five Gate B slices, and all four Gate C resource-intelligence slices runtime-proven; hosted CI, review, and merge pending.
+**Status:** Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if snapshots runtime-proven; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -189,6 +189,25 @@ Current Gate C explainable-leveling evidence:
 - Candidate baseline-integrity and infeasibility scenario: `modules/planning.core/tests/verify/UokCandidatePlanningLeveling.ps1`
 - Rebuilt candidate evidence passed explicit infeasibility, configured horizon, remaining overload, capacity/horizon reasons, independent validation, and approved-baseline checksum integrity.
 
+## Gate D traceability
+
+| ID | Requirement | Current evidence | Required proof before Gate D closure | Status |
+|---|---|---|---|---|
+| PLA-D-001 | Immutable what-if snapshots | Additive append-only model/migration, complete approved capture, bounded typed temporary changes, detached CPM/capacity preview, SHA-256 integrity, actor-scoped read API, distinct analysis capability, typed inspector, and audit correlation | PostgreSQL trigger/readback and rebuilt candidate non-mutation proof | `runtime_proven` |
+| PLA-D-002 | Reproducible risk analysis | Snapshot foundation only | Stored seed/distributions/correlations/engine/percentiles plus same-input reproduction | `planned` |
+| PLA-D-003 | Bounded governed optimization | Leveling is explicit but not optimization | ADR/dependency review, engine/version/limits/objective, timeout/infeasible fixtures, benchmarks, and independent validation | `planned` |
+| PLA-D-004 | Governed recommendation lifecycle | Analysis and approval permissions are separated | Analyze to explain to recommend to preview to approve to apply to audit, with rollback | `planned` |
+
+Current Gate D what-if evidence:
+
+- ADR: `docs/architecture/ADR-0013-planning-immutable-what-if-snapshots.md`
+- Model/migration: `src/uok/planning_analysis_models.py` and `modules/planning.core/migrations/011_planning_what_if_snapshots.sql`
+- Canonical capture, detached preview, integrity, and actor-scoped reads: `modules/planning.core/backend/uok_planning_core/what_if.py` and `analysis_api.py`
+- Immutability, idempotency, permissions, non-mutation, and preview proof: `modules/planning.core/tests/test_planning_what_if_snapshots.py`
+- Typed Analysis inspector proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`
+- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningWhatIf.ps1`
+- Persistent PostgreSQL proof: 11 columns, three checks, three foreign keys, five indexes, one immutable trigger, and direct update rejection read back after backup and additive migration; rebuilt candidate preserved approved task fields/version while verifying the preview checksum.
+
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence
 commit changes the branch head.
@@ -259,7 +278,7 @@ schedule failure rolls the transaction back and returns a structured error.
 
 `planning.manage` is replaced by explicit `planning.edit`,
 `planning.baseline.create`, `planning.level`, `planning.link`,
-`planning.gate.approve`, and `planning.admin` permissions alongside
+`planning.gate.approve`, `planning.analyze`, `planning.analysis.approve`, and `planning.admin` permissions alongside
 `planning.read`. Every existing command maps to exactly one declared permission;
 dependency editing remains schedule edit authority, while `planning.link` is
 reserved for Gate B cross-module links.

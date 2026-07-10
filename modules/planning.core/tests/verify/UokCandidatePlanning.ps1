@@ -7,6 +7,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningResources.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningAvailability.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningLeveling.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningWhatIf.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -33,12 +34,14 @@ function Invoke-UokPlanningCandidateScenario {
         -or $opsCapabilities.baseline_create -ne $true `
         -or $opsCapabilities.level -ne $true `
         -or $opsCapabilities.gate_approve -ne $true `
+        -or $opsCapabilities.analyze -ne $true `
+        -or $opsCapabilities.analysis_approve -ne $true `
         -or $opsCapabilities.admin -ne $true `
         -or $opsCapabilities.review_only -ne $false
     ) {
         throw "Operations Planning capability matrix is invalid: $($opsCapabilities | ConvertTo-Json -Depth 20)"
     }
-    if ($viewerCapabilities.read -ne $true -or $viewerCapabilities.review_only -ne $true -or $viewerCapabilities.edit -ne $false) {
+    if ($viewerCapabilities.read -ne $true -or $viewerCapabilities.review_only -ne $true -or $viewerCapabilities.edit -ne $false -or $viewerCapabilities.analyze -ne $false) {
         throw "Viewer Planning capability matrix is invalid: $($viewerCapabilities | ConvertTo-Json -Depth 20)"
     }
 
@@ -283,6 +286,7 @@ function Invoke-UokPlanningCandidateScenario {
     }
 
     Assert-UokPlanningExplainableLeveling -ProjectId $projectId -BaselineId $baselineMetadata.id -BaselineChecksum $baselineMetadata.checksum -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
+    Assert-UokPlanningWhatIfSnapshot -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
 
     return @{ project_id = $projectId }
 }

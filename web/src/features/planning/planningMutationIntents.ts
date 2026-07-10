@@ -22,6 +22,7 @@ import {
   updatePlanningTaskDates,
 } from "./planningApi";
 import { setPlanningResourceCalendar } from "./planningResourceCalendarApi";
+import { createPlanningWhatIfSnapshot } from "./planningAnalysisApi";
 import type { PlanningMutationIntent } from "./planningConcurrencyState";
 import { planningHistoryDiff, planningLevelHistory } from "./planningHistory";
 import { withCascade } from "./planningWorkspaceHelpers";
@@ -46,6 +47,7 @@ import type {
   PlanningTaskDateUpdateRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
+import type { PlanningWhatIfCreateRequest } from "./analysisTypes";
 
 export function rescheduleTaskIntent(token: string, taskId: string, start: string, end: string, cascade: boolean) {
   return intent("reschedule", "Reschedule task", { taskId, start, end, cascade }, (etag) => updatePlanningTask(token, taskId, { start, end, cascade }, { ifMatch: etag }));
@@ -139,6 +141,15 @@ export function levelResourcesIntent(token: string, projectId: string, horizonDa
     (etag) => planningCommand<PlanningLevelingCommandResult, { project_id: string; horizon_days: number }>(token, "LevelPlanningResources", { project_id: projectId, horizon_days: horizonDays }, "planning-level", { ifMatch: etag }),
     planningLevelHistory,
     levelingSuccessStatus,
+  );
+}
+
+export function createWhatIfSnapshotIntent(token: string, projectId: string, payload: PlanningWhatIfCreateRequest) {
+  return intent(
+    "what-if",
+    "Create what-if snapshot",
+    { action: "what_if_snapshot_created" },
+    (etag) => createPlanningWhatIfSnapshot(token, projectId, payload, { ifMatch: etag }),
   );
 }
 

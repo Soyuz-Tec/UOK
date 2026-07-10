@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A, all five Gate B slices, and all four Gate C resource-intelligence slices runtime-proven.
+**Status:** Active evidence catalog; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if snapshots runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -45,6 +45,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Typed resource domain | `runtime_proven` | Controlled human/team/vehicle/equipment/material/budget/time-window/document/location/asset/custom types, compatible capacity units, optional actor-safe canonical references, effective dates, baseline capture, database constraints, generated contracts, typed inspector controls, PostgreSQL readback, and candidate proof pass. |
 | Resource capacity calendars | `runtime_proven` | Per-resource weekdays, holidays, 0–300% default capacity, bounded non-overlapping exceptions, effective-period enforcement, engine v2, independent validation, baseline capture, workload thresholds, calendar-aware leveling, PostgreSQL readback, and rebuilt candidate proof pass. |
 | Resource-specific `calendar.core` warnings | `runtime_proven` | Actor-visible Party-linked participants/resources filter busy occurrences, attach exact task IDs, exclude unrelated events, hide private Party/event identity, and preserve strong ETag behavior without automatic task movement; rebuilt candidate proof passes. |
+| Immutable what-if snapshots | `runtime_proven` | Complete approved schedule plus bounded temporary typed task changes, detached preview evaluation, CPM/capacity validation, canonical SHA-256 integrity, actor-scoped reads, distinct analysis capability, audit correlation, and ORM/PostgreSQL append-only guards pass candidate proof without changing approved tasks. |
 | Export/import | `integration_tested` | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning consumes that boundary and owns only schedule-specific payloads/read-model mapping. |
 | UI proof | `runtime_proven` | Playwright proof covers rendering, controls, inspector tabs, non-drag mutation paths, stale inverse recovery, responsiveness, and console cleanliness. |
 | Server capabilities | `runtime_proven` | Actor-specific read/edit/baseline/level/link/gate/admin capabilities are enforced by command permission, embedded in schedule reads, mirrored by fail-closed UI controls, and probed in the candidate runtime. Local review mode cannot grant authority. |

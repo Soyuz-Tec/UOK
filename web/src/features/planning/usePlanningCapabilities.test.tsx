@@ -20,6 +20,8 @@ describe("usePlanningCapabilities", () => {
       link: false,
       gate_approve: false,
       admin: false,
+      analyze: false,
+      analysis_approve: false,
       review_only: false,
     };
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(server), {

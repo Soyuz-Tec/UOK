@@ -9,6 +9,7 @@ import { PlanningResourcePanel } from "./PlanningResourcePanel";
 import { PlanningOperationLinksPanel } from "./PlanningOperationLinksPanel";
 import { PlanningParticipantsPanel } from "./PlanningParticipantsPanel";
 import { PlanningRequirementsPanel } from "./PlanningRequirementsPanel";
+import { PlanningAnalysisPanel } from "./PlanningAnalysisPanel";
 import type { PlanningDependency, PlanningDependencyType, PlanningProject, PlanningSchedule, PlanningTask } from "./types";
 import type {
   PlanningAssignmentCreateRequest,
@@ -28,6 +29,7 @@ import type {
   PlanningTaskRequirementLinkRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
+import type { PlanningWhatIfCreateRequest } from "./analysisTypes";
 
 const dependencyTypes: Array<[PlanningDependencyType, string]> = [
   ["finish_to_start", "Finish to start"],
@@ -35,7 +37,7 @@ const dependencyTypes: Array<[PlanningDependencyType, string]> = [
   ["finish_to_finish", "Finish to finish"],
   ["start_to_finish", "Start to finish"],
 ];
-export type PlanningInspectorTab = "task" | "dependencies" | "links" | "participants" | "gates" | "calendar" | "resources" | "status";
+export type PlanningInspectorTab = "task" | "dependencies" | "links" | "participants" | "gates" | "calendar" | "resources" | "analysis" | "status";
 
 export function PlanningInspector(props: {
   projects: PlanningProject[];
@@ -49,6 +51,7 @@ export function PlanningInspector(props: {
   readOnly: boolean;
   linkReadOnly: boolean;
   canApproveGates: boolean;
+  canAnalyze: boolean;
   onTabChange: (tab: PlanningInspectorTab) => void;
   onProjectChange: (projectId: string) => void;
   onSaveTask: (taskId: string, payload: PlanningTaskUpdateRequest) => Promise<void>;
@@ -71,6 +74,7 @@ export function PlanningInspector(props: {
   onCreateResource: (payload: PlanningResourceCreateRequest) => Promise<void>;
   onAssignResource: (payload: PlanningAssignmentCreateRequest) => Promise<void>;
   onSetResourceCalendar: (resourceId: string, payload: PlanningResourceCalendarUpdateRequest) => Promise<void>;
+  onCreateWhatIfSnapshot: (payload: PlanningWhatIfCreateRequest) => Promise<void>;
 }) {
   const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, readOnly, linkReadOnly, onProjectChange, onTabChange } = props;
 
@@ -97,6 +101,7 @@ export function PlanningInspector(props: {
           ["gates", "Gates"],
           ["calendar", "Calendar"],
           ["resources", "Resources"],
+          ["analysis", "Analysis"],
           ["status", "Status"],
         ].map(([id, label]) => (
           <button key={id} type="button" role="tab" aria-selected={activeTab === id} className={activeTab === id ? "selected" : ""} onClick={() => onTabChange(id as PlanningInspectorTab)}>
@@ -113,6 +118,7 @@ export function PlanningInspector(props: {
         {activeTab === "gates" && <PlanningRequirementsPanel schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly} canApprove={props.canApproveGates} onCreate={props.onCreateTaskRequirement} onAdvance={props.onAdvanceTaskRequirement} onSetLink={props.onSetTaskRequirementLink} onDecide={props.onDecideTaskRequirement} />}
         {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
         {activeTab === "resources" && <PlanningResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} onSetResourceCalendar={props.onSetResourceCalendar} />}
+        {activeTab === "analysis" && <PlanningAnalysisPanel token={props.token} schedule={schedule} busy={busy} readOnly={readOnly} canAnalyze={props.canAnalyze} onCreate={props.onCreateWhatIfSnapshot} />}
       </fieldset>
       {activeTab === "status" && <ValidationPanel schedule={schedule} status={status} />}
     </Pane>
