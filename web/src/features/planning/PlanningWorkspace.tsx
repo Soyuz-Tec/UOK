@@ -3,11 +3,13 @@ import { useMemo, useState } from "react";
 
 import { EmptyState } from "../../shared/data-display";
 import { Pane, WorkflowHeader, WorkflowSplitView } from "../../shared/layout";
+import { useUokLocalization } from "../../shared/localization";
 import { CommandButton } from "../../shared/primitives";
 import { PlanningConcurrencyNotice } from "./PlanningConcurrencyNotice";
 import { PlanningErrorNotice } from "./PlanningErrorNotice";
 import { PlanningInspector, type PlanningInspectorTab } from "./PlanningInspector";
 import { PlanningModuleState } from "./PlanningModuleState";
+import { PlanningPortfolioView } from "./PlanningPortfolioView";
 import { PlanningTimeline } from "./PlanningTimeline";
 import type { TimelineScale } from "./planningGanttModel";
 import { timelineTaskPayload } from "./planningTimelineCreateModel";
@@ -16,6 +18,7 @@ import { usePlanningWorkspaceMutations } from "./usePlanningWorkspaceMutations";
 import { usePlanningCapabilities } from "./usePlanningCapabilities";
 
 export function PlanningWorkspace({ token, appearance, module, moduleRows, busyAction, onActivate }: PlanningWorkspaceProps) {
+  const { t } = useUokLocalization();
   const [projects, setProjects] = useState<PlanningProject[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [schedule, setSchedule] = useState<PlanningSchedule | null>(null);
@@ -27,6 +30,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
   const [showBaselines, setShowBaselines] = useState(true);
   const [reviewMode, setReviewMode] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [workspaceMode, setWorkspaceMode] = useState<"project" | "portfolio">("project");
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const capabilities = usePlanningCapabilities(token, operational);
   const serverReviewOnly = capabilities.review_only || (schedule ? schedule.capabilities?.edit !== true : false);
@@ -51,7 +55,16 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
   return (
     <section className="planning-workspace" aria-label="Planning">
       <PlanningErrorNotice status={actions.status} />
-      {!schedule ? (
+      <nav className="planning-scope-switch" aria-label={t("planning.scope", "Planning scope")}>
+        <button type="button" aria-current={workspaceMode === "project" ? "page" : undefined} onClick={() => setWorkspaceMode("project")}>{t("planning.projectSchedule", "Project schedule")}</button>
+        <button type="button" aria-current={workspaceMode === "portfolio" ? "page" : undefined} onClick={() => setWorkspaceMode("portfolio")}>{t("planning.portfolio", "Portfolio")}</button>
+      </nav>
+      {workspaceMode === "portfolio" ? (
+        <PlanningPortfolioView token={token} onOpenProject={(projectId) => {
+          setWorkspaceMode("project");
+          void actions.changeProject(projectId);
+        }} />
+      ) : !schedule ? (
         <>
           <WorkflowHeader
             eyebrow="Planning"

@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gates A-D and Gate E measured scale/virtualization plus shared reach/accessibility runtime-proven; remaining portfolio/production-like closure, hosted CI, review, and merge pending.
+**Status:** Gates A-E locally runtime-proven; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -237,8 +237,8 @@ Current Gate D optimization/lifecycle evidence:
 | PLA-E-002 | Measurement-triggered virtualization | Unwindowed 500-row Chromium breach recorded; dependency-free window activates only above 200 rows with shared variable-height geometry, 480px overscan, synchronized grid/timeline scroll, total row metadata, and full small-schedule fallback | Full Chromium trace with interaction/long-task/mounted-count evidence and accessibility regression proof | `runtime_proven` |
 | PLA-E-003 | Keyboard, touch, accessibility, and responsive closure | Non-drag paths plus virtual-boundary focus handoff, ARIA total/index metadata, coarse-pointer 44px row action, touch selection, zero unnamed buttons, 320px reflow, 200% root text, screenshot, and console proof | Full regression/candidate repeat | `runtime_proven` |
 | PLA-E-004 | UOK-wide localization and RTL | Shared English/Arabic provider, workbench preference, English fallback, Arabic numerals, document metadata, translated shell/Planning labels, logical CSS/pinned offsets, and LTR chronology isolate | Representative RTL render, persistence, shared-provider unit test, and policy/ADR | `runtime_proven` |
-| PLA-E-005 | Portfolio and multi-project views | Project picker exposes one project at a time | Actor-scoped portfolio read model, typed UI, scale and empty/error proof | `planned` |
-| PLA-E-006 | Production-like closure | Rebuilt PostgreSQL scale profile passes | Performance, accessibility, recovery, observability, compatibility, and full candidate evidence | `planned` |
+| PLA-E-005 | Portfolio and multi-project views | Actor-scoped bounded aggregate, typed filters/metrics/health/timeline/drill-in UI, diagnostics, Server-Timing, and candidate readback pass | Exact authorization, six-query populated path, component, Chromium, and runtime proof | `runtime_proven` |
+| PLA-E-006 | Production-like closure | Standard operation composes health, candidate contracts, PostgreSQL scale, persistent CPM/concurrency recovery, live Chromium compatibility/accessibility/console checks, and engineering evidence | Full rebuilt candidate repeat and summarized PR evidence | `runtime_proven` |
 
 Current Gate E scale evidence:
 
@@ -260,6 +260,14 @@ Current Gate E reach evidence:
 - Shared unit/persistence proof: `UokLocalization.test.tsx` and `App.test.tsx`
 - Keyboard boundary proof: `web/e2e/planning-scale.spec.ts`
 - Arabic RTL, touch, target, unnamed-button, 320px, 200%-text, persistence, screenshot, and console proof: `web/e2e/planning-reach.spec.ts`
+
+Current Gate E portfolio and release evidence:
+
+- Decision and operations: `docs/architecture/ADR-0018-planning-portfolio-and-release-readiness.md` and `docs/operations/UOK_PLANNING_RELEASE_READINESS.md`
+- Bounded actor-scoped aggregate/API: `portfolio.py`, `portfolio_api.py`, and `test_planning_portfolio.py`
+- Typed UI and focused proof: `PlanningPortfolioView.tsx`, `PlanningPortfolioView.test.tsx`, and `web/e2e/uok-proof.spec.ts`
+- Runtime candidate contract: `modules/planning.core/tests/verify/UokCandidatePlanningPortfolio.ps1`
+- Production-like composition/live proof: `scripts/uok_ops.ps1` action `PlanningReleaseReadiness` and `web/e2e/planning-live.spec.ts`
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence

@@ -11,6 +11,7 @@ from .api_contracts import ETAG_RESPONSE_HEADERS, PLANNING_BATCH_RESPONSES, PLAN
 from .baselines import baseline_detail, baseline_or_error, compare_baselines
 from .concurrency import read_locked_schedule_snapshot
 from .policy import capability_read_model
+from .portfolio_api import router as portfolio_router
 from .read_model import list_projects
 from .resource_calendar_api import router as resource_calendar_router
 from .schemas import (
@@ -42,6 +43,7 @@ from uok.security import Actor, current_actor
 router = APIRouter(prefix="/api/planning", tags=["planning"])
 router.routes.extend(resource_calendar_router.routes)
 router.routes.extend(analysis_router.routes)
+router.routes.extend(portfolio_router.routes)
 PlanningIdempotencyKey = Annotated[
     str,
     Header(

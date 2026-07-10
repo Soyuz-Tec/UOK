@@ -10,6 +10,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningWhatIf.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningRisk.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningOptimization.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningPortfolio.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -291,6 +292,7 @@ function Invoke-UokPlanningCandidateScenario {
     $whatIfEvidence = Assert-UokPlanningWhatIfSnapshot -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     Assert-UokPlanningRiskAnalysis -ProjectId $projectId -TaskId $first.result.id -SnapshotId $whatIfEvidence.snapshot_id -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     Assert-UokPlanningGovernedOptimization -ProjectId $projectId -TaskId $first.result.id -SnapshotId $whatIfEvidence.snapshot_id -OpsHeaders $OpsHeaders -Stamp $Stamp
+    Assert-UokPlanningPortfolio -ProjectId $projectId -ViewerHeaders $ViewerHeaders -Stamp $Stamp
 
     return @{ project_id = $projectId }
 }

@@ -882,6 +882,23 @@ export interface paths {
         patch: operations["update_dependency_api_planning_dependencies__dependency_id__patch"];
         trace?: never;
     };
+    "/api/planning/portfolio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Planning Portfolio */
+        get: operations["planning_portfolio_api_planning_portfolio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/projects": {
         parameters: {
             query?: never;
@@ -2026,6 +2043,118 @@ export interface components {
              * @default 500
              */
             timeout_ms: number;
+        };
+        /** PlanningPortfolioAttention */
+        PlanningPortfolioAttention: {
+            /** Gate Blocker Count */
+            gate_blocker_count: number;
+            /**
+             * Health
+             * @enum {string}
+             */
+            health: "on_track" | "attention" | "blocked";
+            /** Issue Count */
+            issue_count: number;
+            /** Overdue Task Count */
+            overdue_task_count: number;
+            /** Project Overdue */
+            project_overdue: boolean;
+            /** Unavailable Blocking Link Count */
+            unavailable_blocking_link_count: number;
+        };
+        /** PlanningPortfolioDiagnostics */
+        PlanningPortfolioDiagnostics: {
+            /** Elapsed Ms */
+            elapsed_ms: number;
+            /** Query Count */
+            query_count: number;
+            /**
+             * Strategy
+             * @constant
+             */
+            strategy: "bounded_aggregate_v1";
+        };
+        /** PlanningPortfolioMetrics */
+        PlanningPortfolioMetrics: {
+            /** Blocked Task Count */
+            blocked_task_count: number;
+            /** Completed Task Count */
+            completed_task_count: number;
+            /** Completion Percent */
+            completion_percent: number;
+            /** Dependency Count */
+            dependency_count: number;
+            /** In Progress Task Count */
+            in_progress_task_count: number;
+            /** Milestone Count */
+            milestone_count: number;
+            /** Task Count */
+            task_count: number;
+        };
+        /** PlanningPortfolioProject */
+        PlanningPortfolioProject: {
+            attention: components["schemas"]["PlanningPortfolioAttention"];
+            /** End */
+            end: string;
+            /** Id */
+            id: string;
+            metrics: components["schemas"]["PlanningPortfolioMetrics"];
+            /** Name */
+            name: string;
+            /** Revision */
+            revision: number;
+            /** Start */
+            start: string;
+            /** Status */
+            status: string;
+            /** Timezone */
+            timezone: string;
+            /** Updated At */
+            updated_at: string | null;
+        };
+        /** PlanningPortfolioResponse */
+        PlanningPortfolioResponse: {
+            diagnostics: components["schemas"]["PlanningPortfolioDiagnostics"];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Projects */
+            projects: components["schemas"]["PlanningPortfolioProject"][];
+            /** Query */
+            query: string;
+            /** Status */
+            status: string;
+            summary: components["schemas"]["PlanningPortfolioSummary"];
+            /** Total */
+            total: number;
+        };
+        /** PlanningPortfolioSummary */
+        PlanningPortfolioSummary: {
+            /** At Risk Project Count */
+            at_risk_project_count: number;
+            /** Blocked Task Count */
+            blocked_task_count: number;
+            /** Completed Task Count */
+            completed_task_count: number;
+            /** Gate Blocker Count */
+            gate_blocker_count: number;
+            /** Overdue Task Count */
+            overdue_task_count: number;
+            /** Range End */
+            range_end: string | null;
+            /** Range Start */
+            range_start: string | null;
+            /** Status Counts */
+            status_counts: {
+                [key: string]: number;
+            };
+            /** Task Count */
+            task_count: number;
+            /** Total Project Count */
+            total_project_count: number;
+            /** Visible Project Count */
+            visible_project_count: number;
         };
         /** PlanningProjectRequest */
         PlanningProjectRequest: {
@@ -4746,6 +4875,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    planning_portfolio_api_planning_portfolio_get: {
+        parameters: {
+            query?: {
+                query?: string;
+                status?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningPortfolioResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

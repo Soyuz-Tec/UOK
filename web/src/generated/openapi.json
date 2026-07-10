@@ -1775,6 +1775,313 @@
         "title": "PlanningOptimizationRequest",
         "type": "object"
       },
+      "PlanningPortfolioAttention": {
+        "properties": {
+          "gate_blocker_count": {
+            "title": "Gate Blocker Count",
+            "type": "integer"
+          },
+          "health": {
+            "enum": [
+              "on_track",
+              "attention",
+              "blocked"
+            ],
+            "title": "Health",
+            "type": "string"
+          },
+          "issue_count": {
+            "title": "Issue Count",
+            "type": "integer"
+          },
+          "overdue_task_count": {
+            "title": "Overdue Task Count",
+            "type": "integer"
+          },
+          "project_overdue": {
+            "title": "Project Overdue",
+            "type": "boolean"
+          },
+          "unavailable_blocking_link_count": {
+            "title": "Unavailable Blocking Link Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "health",
+          "overdue_task_count",
+          "gate_blocker_count",
+          "unavailable_blocking_link_count",
+          "project_overdue",
+          "issue_count"
+        ],
+        "title": "PlanningPortfolioAttention",
+        "type": "object"
+      },
+      "PlanningPortfolioDiagnostics": {
+        "properties": {
+          "elapsed_ms": {
+            "minimum": 0.0,
+            "title": "Elapsed Ms",
+            "type": "number"
+          },
+          "query_count": {
+            "maximum": 6.0,
+            "minimum": 2.0,
+            "title": "Query Count",
+            "type": "integer"
+          },
+          "strategy": {
+            "const": "bounded_aggregate_v1",
+            "title": "Strategy",
+            "type": "string"
+          }
+        },
+        "required": [
+          "strategy",
+          "query_count",
+          "elapsed_ms"
+        ],
+        "title": "PlanningPortfolioDiagnostics",
+        "type": "object"
+      },
+      "PlanningPortfolioMetrics": {
+        "properties": {
+          "blocked_task_count": {
+            "title": "Blocked Task Count",
+            "type": "integer"
+          },
+          "completed_task_count": {
+            "title": "Completed Task Count",
+            "type": "integer"
+          },
+          "completion_percent": {
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Completion Percent",
+            "type": "integer"
+          },
+          "dependency_count": {
+            "title": "Dependency Count",
+            "type": "integer"
+          },
+          "in_progress_task_count": {
+            "title": "In Progress Task Count",
+            "type": "integer"
+          },
+          "milestone_count": {
+            "title": "Milestone Count",
+            "type": "integer"
+          },
+          "task_count": {
+            "title": "Task Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "task_count",
+          "completed_task_count",
+          "in_progress_task_count",
+          "blocked_task_count",
+          "milestone_count",
+          "dependency_count",
+          "completion_percent"
+        ],
+        "title": "PlanningPortfolioMetrics",
+        "type": "object"
+      },
+      "PlanningPortfolioProject": {
+        "properties": {
+          "attention": {
+            "$ref": "#/components/schemas/PlanningPortfolioAttention"
+          },
+          "end": {
+            "title": "End",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/PlanningPortfolioMetrics"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "start": {
+            "title": "Start",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "start",
+          "end",
+          "timezone",
+          "revision",
+          "updated_at",
+          "metrics",
+          "attention"
+        ],
+        "title": "PlanningPortfolioProject",
+        "type": "object"
+      },
+      "PlanningPortfolioResponse": {
+        "properties": {
+          "diagnostics": {
+            "$ref": "#/components/schemas/PlanningPortfolioDiagnostics"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "projects": {
+            "items": {
+              "$ref": "#/components/schemas/PlanningPortfolioProject"
+            },
+            "title": "Projects",
+            "type": "array"
+          },
+          "query": {
+            "title": "Query",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/PlanningPortfolioSummary"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "query",
+          "status",
+          "projects",
+          "summary",
+          "diagnostics"
+        ],
+        "title": "PlanningPortfolioResponse",
+        "type": "object"
+      },
+      "PlanningPortfolioSummary": {
+        "properties": {
+          "at_risk_project_count": {
+            "title": "At Risk Project Count",
+            "type": "integer"
+          },
+          "blocked_task_count": {
+            "title": "Blocked Task Count",
+            "type": "integer"
+          },
+          "completed_task_count": {
+            "title": "Completed Task Count",
+            "type": "integer"
+          },
+          "gate_blocker_count": {
+            "title": "Gate Blocker Count",
+            "type": "integer"
+          },
+          "overdue_task_count": {
+            "title": "Overdue Task Count",
+            "type": "integer"
+          },
+          "range_end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range End"
+          },
+          "range_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Range Start"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Status Counts",
+            "type": "object"
+          },
+          "task_count": {
+            "title": "Task Count",
+            "type": "integer"
+          },
+          "total_project_count": {
+            "title": "Total Project Count",
+            "type": "integer"
+          },
+          "visible_project_count": {
+            "title": "Visible Project Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "visible_project_count",
+          "total_project_count",
+          "task_count",
+          "completed_task_count",
+          "blocked_task_count",
+          "overdue_task_count",
+          "gate_blocker_count",
+          "at_risk_project_count",
+          "status_counts",
+          "range_start",
+          "range_end"
+        ],
+        "title": "PlanningPortfolioSummary",
+        "type": "object"
+      },
       "PlanningProjectRequest": {
         "properties": {
           "end": {
@@ -7126,6 +7433,102 @@
         "summary": "Update Dependency",
         "tags": [
           "planning"
+        ]
+      }
+    },
+    "/api/planning/portfolio": {
+      "get": {
+        "operationId": "planning_portfolio_api_planning_portfolio_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 80,
+              "title": "Query",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 40,
+              "pattern": "^[a-zA-Z0-9_-]*$",
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 10000,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningPortfolioResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Planning Portfolio",
+        "tags": [
+          "planning-portfolio"
         ]
       }
     },

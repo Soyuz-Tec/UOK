@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
+    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "PlanningReleaseReadiness", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
     [string]$Action = "Audit",
     [string]$BaseUrl = "http://127.0.0.1:18088",
     [string]$ProjectName = "uok",
@@ -43,6 +43,7 @@ function Invoke-UokHealth {
 }
 
 . (Join-Path $PSScriptRoot "uok_db_ops.ps1")
+. (Join-Path $PSScriptRoot "uok_planning_release_ops.ps1")
 
 function Test-UokSourceSize {
     Invoke-UokStep "Source-size guardrail" {
@@ -231,6 +232,7 @@ switch ($Action) {
     "Verify" { Invoke-UokVerify }
     "Rebuild" { Invoke-UokRebuild }
     "Health" { Invoke-UokHealth }
+    "PlanningReleaseReadiness" { Invoke-UokPlanningReleaseReadiness }
     "BackupDb" { Invoke-UokBackupDb }
     "RestoreDb" { Invoke-UokRestoreDb }
     "AsuhTest" { Invoke-UokAsuhTest }

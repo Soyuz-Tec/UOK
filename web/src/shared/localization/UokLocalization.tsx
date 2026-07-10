@@ -16,6 +16,12 @@ const messages: Record<UokLocale, Record<string, string>> = {
     "planning.gantt": "Planning Gantt chart", "planning.grid": "Planning task grid", "planning.timeline": "Planning timeline",
     "planning.column.wbs": "WBS", "planning.column.task": "Task", "planning.column.start": "Start", "planning.column.end": "End",
     "planning.column.duration": "Dur.", "planning.column.progress": "%", "planning.column.critical": "Critical", "planning.column.assigned": "Assigned", "planning.column.status": "Status",
+    "planning.scope": "Planning scope", "planning.projectSchedule": "Project schedule", "planning.portfolio": "Portfolio", "planning.portfolio.eyebrow": "Planning", "planning.portfolio.summary": "Monitor delivery, risk, gates, and schedule windows across projects.",
+    "planning.portfolio.search": "Search projects", "planning.portfolio.status": "Project status", "planning.portfolio.allStatuses": "All statuses", "planning.portfolio.active": "Active",
+    "planning.portfolio.complete": "Complete", "planning.portfolio.archived": "Archived", "planning.portfolio.apply": "Apply filters", "planning.portfolio.projects": "Projects",
+    "planning.portfolio.tasks": "Tasks", "planning.portfolio.atRisk": "At risk", "planning.portfolio.overdue": "Overdue tasks", "planning.portfolio.gates": "Gate blockers",
+    "planning.portfolio.project": "Project", "planning.portfolio.health": "Health", "planning.portfolio.issues": "Issues", "planning.portfolio.open": "Open project",
+    "planning.portfolio.onTrack": "On track", "planning.portfolio.attention": "Attention", "planning.portfolio.blocked": "Blocked", "planning.portfolio.empty": "No projects match these filters.",
   },
   ar: {
     "nav.primary": "التنقل الرئيسي", "nav.overview": "نظرة عامة", "nav.apps": "التطبيقات", "nav.contacts": "جهات الاتصال",
@@ -27,6 +33,12 @@ const messages: Record<UokLocale, Record<string, string>> = {
     "planning.gantt": "مخطط جانت للتخطيط", "planning.grid": "شبكة مهام التخطيط", "planning.timeline": "الخط الزمني للتخطيط",
     "planning.column.wbs": "هيكل العمل", "planning.column.task": "المهمة", "planning.column.start": "البدء", "planning.column.end": "الانتهاء",
     "planning.column.duration": "المدة", "planning.column.progress": "٪", "planning.column.critical": "حرجة", "planning.column.assigned": "المسند", "planning.column.status": "الحالة",
+    "planning.scope": "نطاق التخطيط", "planning.projectSchedule": "جدول المشروع", "planning.portfolio": "المحفظة", "planning.portfolio.eyebrow": "التخطيط", "planning.portfolio.summary": "مراقبة التسليم والمخاطر والبوابات والجداول الزمنية عبر المشاريع.",
+    "planning.portfolio.search": "البحث في المشاريع", "planning.portfolio.status": "حالة المشروع", "planning.portfolio.allStatuses": "كل الحالات", "planning.portfolio.active": "نشط",
+    "planning.portfolio.complete": "مكتمل", "planning.portfolio.archived": "مؤرشف", "planning.portfolio.apply": "تطبيق عوامل التصفية", "planning.portfolio.projects": "المشاريع",
+    "planning.portfolio.tasks": "المهام", "planning.portfolio.atRisk": "معرض للخطر", "planning.portfolio.overdue": "المهام المتأخرة", "planning.portfolio.gates": "عوائق البوابات",
+    "planning.portfolio.project": "المشروع", "planning.portfolio.health": "الصحة", "planning.portfolio.issues": "المشكلات", "planning.portfolio.open": "فتح المشروع",
+    "planning.portfolio.onTrack": "على المسار", "planning.portfolio.attention": "يحتاج انتباها", "planning.portfolio.blocked": "محظور", "planning.portfolio.empty": "لا توجد مشاريع مطابقة.",
   },
 };
 

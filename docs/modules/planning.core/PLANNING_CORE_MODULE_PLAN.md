@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gates A-D and the Gate E measured scale/virtualization plus shared reach/accessibility slices are runtime-proven.
+**Status:** Active module plan; Gates A-E are locally runtime-proven, with hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -23,6 +23,7 @@ Planning Gate A is governed by `docs/architecture/ADR-0003-planning-gate-a-stabi
 Detailed feature inventory and implementation status are tracked in `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md`.
 
 - project list
+- actor-scoped bounded portfolio metrics, explainable health, multi-project timeline, filters, and project drill-in
 - project schedule read model
 - editable task grid and inspector path for create, update, delete, hierarchy, status, progress, and task type
 - traditional Gantt workspace with compact project command bar, Gantt view tab rail, project metadata chips, selection control, grid/timeline, keyboard row navigation, task command toolbar, task row context menu, expand/collapse, cascade sorting, field presets, filters, undo/redo, global export/import boundary use, hour/day/week/month/quarter/year scale controls, today/fit/focus controls, critical and baseline toggles, read-model Board/List/Calendar/Workload/People/Dashboard views, and tabbed inspector panels
@@ -196,6 +197,16 @@ labels, logical grid/pinned layout, and an LTR-isolated chronological timeline
 pass RTL proof. Coarse-pointer controls, non-drag equivalents, virtual-boundary
 keyboard focus, total/index ARIA metadata, unnamed-button audit, 320px reflow,
 200% root text, persistence, screenshot, and console checks pass in Chromium.
+
+## Portfolio And Release-Readiness Boundary
+
+ADR-0018 governs the actor-scoped portfolio and Gate E closure profile. A
+populated portfolio page performs exactly six organization-filtered queries,
+returns diagnostics and explainable health, and renders a typed multi-project
+view that drills into the existing project schedule. The standard
+`PlanningReleaseReadiness` operation composes PostgreSQL performance,
+candidate, recovery, live-browser compatibility/accessibility, observability,
+and engineering-evidence checks without claiming production deployment.
 
 ## Calendar Correlation Boundary
 

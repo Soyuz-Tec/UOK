@@ -187,6 +187,18 @@ const sampleSchedule = {
   }],
 };
 
+const samplePortfolio = {
+  total: 1, limit: 50, offset: 0, query: "", status: "",
+  projects: [{
+    id: sampleProject.id, name: sampleProject.name, status: "active", start: sampleProject.start, end: sampleProject.end,
+    timezone: "America/New_York", revision: 1, updated_at: sampleProject.updated_at,
+    metrics: { task_count: 4, completed_task_count: 0, in_progress_task_count: 0, blocked_task_count: 0, milestone_count: 1, dependency_count: 1, completion_percent: 15 },
+    attention: { health: "blocked", overdue_task_count: 0, gate_blocker_count: 1, unavailable_blocking_link_count: 0, project_overdue: false, issue_count: 1 },
+  }],
+  summary: { visible_project_count: 1, total_project_count: 1, task_count: 4, completed_task_count: 0, blocked_task_count: 0, overdue_task_count: 0, gate_blocker_count: 1, at_risk_project_count: 1, status_counts: { active: 1 }, range_start: sampleProject.start, range_end: sampleProject.end },
+  diagnostics: { strategy: "bounded_aggregate_v1", query_count: 6, elapsed_ms: 8.2 },
+};
+
 test("UOK proof gate covers planning Gantt usability and visual stability", async ({ page }) => {
   const consoleErrors: string[] = [];
   const dependencyPayloads: unknown[] = [];
@@ -614,6 +626,21 @@ test("server review-only capabilities disable Planning writes", async ({ page })
   await expect(page.getByRole("button", { name: "Server review-only", exact: true })).toBeDisabled();
 });
 
+test("Planning portfolio exposes bounded multi-project health and drill-in", async ({ page }) => {
+  await installMockApi(page, [], [], [], []);
+  await openPlanning(page);
+  await page.getByRole("button", { name: "Portfolio", exact: true }).click();
+  const portfolio = page.getByRole("table", { name: "Multi-project delivery portfolio" });
+  await expect(portfolio).toBeVisible();
+  await expect(page.getByLabel("Portfolio metrics")).toContainText("At risk1");
+  await expect(page.getByText("6 queries")).toBeVisible();
+  await expect(portfolio.getByText("Blocked")).toBeVisible();
+  await expect(page.locator(".planning-portfolio-timeline")).toHaveCount(1);
+  await page.getByRole("button", { name: `Open project ${sampleProject.name}` }).click();
+  await expect(page.getByRole("heading", { name: sampleProject.name })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Project schedule", exact: true })).toHaveAttribute("aria-current", "page");
+});
+
 test("Planning opens the exact authorized K Connect thread", async ({ page }) => {
   await installMockApi(page, [], [], [], []);
   await openPlanning(page);
@@ -826,6 +853,7 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
   await page.route("/api/architecture/alignment", (route) => route.fulfill({ json: { ok: true, checks: { module_neutral_baseline: true } } }));
   await page.route("/api/modules/catalog", (route) => route.fulfill({ json: { modules: moduleCatalog() } }));
   await page.route("/api/planning/capabilities", (route) => route.fulfill({ json: sampleSchedule.capabilities }));
+  await page.route("/api/planning/portfolio**", (route) => route.fulfill({ json: samplePortfolio }));
   await page.route("/api/planning/projects", (route) => route.fulfill({ json: [sampleProject] }));
   await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({ json: sampleSchedule, headers: { ETag: planningEtag } }));
   await page.route(`/api/planning/projects/${sampleProject.id}/tasks`, async (route) => {

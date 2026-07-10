@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gates A-D and the Gate E measured scale/virtualization plus shared reach/accessibility slices are runtime-proven.
+**Status:** Active evidence catalog; Gates A-E are locally runtime-proven, with hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -52,6 +52,8 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | UI proof | `runtime_proven` | Playwright proof covers rendering, controls, inspector tabs, non-drag mutation paths, stale inverse recovery, responsiveness, and console cleanliness. |
 | Measured scale and virtualization | `runtime_proven` | Rollback-only SQLite/PostgreSQL profiles enforce 500/800 read, 2,000/3,000 validation, and 100-update batch p95 budgets. A measured 4.07-second 500-row browser breach justified dependency-free windowing above 200 visible tasks; the controlled single-worker Chromium verification run records 1.179-second interaction, 34 aligned grid/timeline rows, no post-idle long task, and ARIA row metadata. |
 | Shared localization, RTL, touch, and reflow | `runtime_proven` | UOK-owned English/Arabic provider, English fallback, Intl formatting, persisted document language/direction, translated shell/Planning labels, logical RTL grid/pinned layout, LTR chronology isolate, coarse-pointer 44px row action, virtual keyboard focus, zero unnamed buttons, 320px/200%-text reflow, screenshot, reload, and console-clean Chromium proof pass without a Planning-local framework. |
+| Portfolio and multi-project view | `runtime_proven` | Actor-scoped two-to-six-query aggregate returns metrics, explainable health, status/search paging, diagnostics, and Server-Timing; typed responsive/RTL-safe UI renders a common timeline and schedule drill-in with API, component, Chromium, and candidate proof. |
+| Production-like release readiness | `runtime_proven` | One standard operation combines candidate contracts, PostgreSQL scale budgets, persistent CPM and concurrency recovery, live Chromium accessibility/compatibility/console checks, and engineering evidence while preserving the separate `production_ready` boundary. |
 | Server capabilities | `runtime_proven` | Actor-specific read/edit/baseline/level/link/gate/admin capabilities are enforced by command permission, embedded in schedule reads, mirrored by fail-closed UI controls, and probed in the candidate runtime. Local review mode cannot grant authority. |
 | Database invariants | `runtime_proven` | PostgreSQL and SQLAlchemy enforce schedule date/type/progress/lag/allocation/scheduling-mode and uniqueness rules; candidate probes reject invalid direct rows and read back organization-first indexes. |
 | Audit correlation | `runtime_proven` | Candidate PostgreSQL proof joins successful command responses, module events, and Planning schedule events by the same authoritative correlation ID, including derived changes and atomic batches. |
