@@ -34,10 +34,10 @@ requirement.
 | PLA-A-005 | Atomic batch mutation | Ordered task updates use one project lock, command/idempotency record, final scheduler/validator pass, revision, ETag, and correlated event; bulk UI and multi-task update history use the endpoint | Expand the operation-kind registry beyond `update_task` while retaining all-or-nothing semantics | `runtime_proven` |
 | PLA-A-006 | Complete immutable baseline | Canonical v2 snapshot includes the complete current schedule graph/context, creator/source revision/correlation metadata, SHA-256 verification, append-only guards, comparison reads, and explicit legacy partial limitations | PostgreSQL migration apply/readback and candidate runtime checksum proof | `runtime_proven` |
 | PLA-A-007 | Server capability enforcement | Server maps every command to `read`, `edit`, `baseline.create`, `level`, `link`, `gate.approve`, or `admin`; schedule/API return actor authority; UI fails closed and local review mode can only reduce it | Candidate runtime role matrix and direct-denial proof | `runtime_proven` |
-| PLA-A-008 | Database invariant enforcement | Initial module migration exists | PostgreSQL 18 apply/readback and invalid-row tests | `source_present` |
+| PLA-A-008 | Database invariant enforcement | Additive migration enforces dates, duration, progress, sort order, task/dependency types, scheduling mode, lag, allocation, unique project calendars/assignments, and supporting indexes | PostgreSQL 18 apply/readback and direct invalid-row probes | `runtime_proven` |
 | PLA-A-009 | Structured Planning errors | Atomic batch failures return stable code, field, object ids, repair, revision, and correlation id through REST and generic command paths | Migrate remaining Planning validation/permission/idempotency errors to the same envelope | `source_present` |
 | PLA-A-010 | Typed Planning client | Planning client contains broad unknown payloads | Generated or explicit typed requests, responses, errors, revisions, and capabilities | `source_present` |
-| PLA-A-011 | End-to-end audit correlation | Commands and Planning events exist | One user intent correlates command, derived changes, event, audit/outbox, revision, and response | `source_present` |
+| PLA-A-011 | End-to-end audit correlation | Every successful Planning response, module event, and schedule event carries the exact command-log ID, including derived task changes and batches | Candidate PostgreSQL join/readback across command, response, and both event streams | `runtime_proven` |
 | PLA-A-012 | Accessible non-drag alternatives | Keyboard and inspector paths exist | Move, resize, progress, dependency, and create flows proven without dragging | `integration_tested` |
 
 ## Current slice evidence
@@ -67,6 +67,9 @@ requirement.
 - Server capability mapping and adversarial direct-call denials: `modules/planning.core/tests/test_planning_capabilities.py`
 - Typed fail-closed capability client and review-only UI proof: `web/src/features/planning/usePlanningCapabilities.test.tsx` and `web/e2e/uok-proof.spec.ts`
 - Candidate runtime proof: operations receives edit/baseline/level/admin, viewer receives read-only, viewer direct project creation remains denied, and module verification passes after rebuild.
+- Database constraint/duplicate rejection and additive migration proof: `modules/planning.core/tests/test_planning_database_invariants.py` and `modules/planning.core/migrations/004_planning_database_invariants.sql`
+- End-to-end command/response/module-event/schedule-event correlation proof: `modules/planning.core/tests/test_planning_audit_correlation.py`
+- Candidate PostgreSQL proof: all 13 invariant constraints and four indexes read back; direct invalid date/progress/scheduling-mode and duplicate calendar/assignment rows were rejected; seven candidate schedule events and seven module events all linked to succeeded commands, with all seven stored responses carrying the same correlation.
 - Generated REST contract: `web/src/generated/openapi.json` and `web/src/generated/openapi.d.ts`
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
@@ -152,6 +155,26 @@ review-only until the server matrix loads, disables specialized baseline and
 leveling actions independently, and cannot use its local review toggle to grant
 server authority. Direct REST and generic-command probes remain denied even
 when callers supply valid IDs, ETags, and idempotency keys.
+
+## Current database and audit boundary
+
+Migration `004_planning_database_invariants.sql` is additive and leaves prior
+numbered migrations unchanged. It enforces project/task date order, nonnegative
+duration and sort order, 0-100 progress, accepted task/dependency types,
+non-self dependencies, -30 to +30 day lag/lead, 1-300 allocation, auto/manual
+scheduling mode, one project calendar, and one assignment per
+organization/task/resource. It also adds organization-first hierarchy,
+predecessor, successor, and resource-assignment indexes. Existing foreign-key
+`NO ACTION` behavior and the manifest retention policy continue to prevent
+implicit destructive cascades.
+
+Every Planning handler now uses one module-local audit adapter. The adapter
+overwrites any caller-provided correlation field with the authoritative command
+log ID and writes it to both event streams. The concurrency wrapper adds the
+same ID to every successful REST/generic result after the final revision and
+ETag are calculated, so response metadata cannot change schedule truth. Failed
+commands remain correlated through their command-log/error contract and are
+handled by the structured-error slice.
 
 ## Current complete baseline boundary
 

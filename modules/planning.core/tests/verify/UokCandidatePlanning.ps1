@@ -89,7 +89,7 @@ function Invoke-UokPlanningCandidateScenario {
         payload = @{ name = "UOK Planning $Stamp"; start = "2026-08-01"; end = "2026-08-20" }
         idempotency_key = "uok-planning-project-$Stamp"
     }
-    if (-not $project.result.id) {
+    if (-not $project.result.id -or $project.result.correlation_id -ne $project.command_id) {
         throw "Planning project creation failed: $($project | ConvertTo-Json -Depth 20)"
     }
     $projectId = $project.result.id
@@ -134,7 +134,12 @@ function Invoke-UokPlanningCandidateScenario {
         }
         idempotency_key = "uok-planning-task-b-$Stamp"
     }
-    if (-not $first.result.id -or -not $second.result.id) {
+    if (
+        -not $first.result.id `
+        -or -not $second.result.id `
+        -or $first.result.correlation_id -ne $first.command_id `
+        -or $second.result.correlation_id -ne $second.command_id
+    ) {
         throw "Planning task creation failed: $($first | ConvertTo-Json -Depth 20) $($second | ConvertTo-Json -Depth 20)"
     }
 

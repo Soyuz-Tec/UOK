@@ -8,11 +8,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .baselines import COMPLETE_BASELINE_SCHEMA_VERSION, baseline_checksum, complete_baseline_snapshot
-from .models import PlanningAssignment, PlanningBaseline, PlanningCalendar, PlanningResource, PlanningScheduleEvent
+from .models import PlanningAssignment, PlanningBaseline, PlanningCalendar, PlanningResource
+from .planning_audit import add_planning_schedule_event, emit_planning_event
 from .read_model import schedule_read_model
 from .resource_leveling import level_resource_allocations
 from .scheduler import apply_schedule, parse_planning_date, project_calendar, project_dependencies, project_or_error, project_tasks, task_or_error, validate_schedule
-from uok.module_events import emit_module_event
 from uok.security import Actor
 from uok.util import dumps
 
@@ -34,8 +34,8 @@ def cmd_set_calendar(db: Session, actor: Actor, payload: dict[str, Any], command
     })
     db.flush()
     changed = apply_schedule(db, actor, project.id)
-    _emit(db, actor, "PlanningCalendarUpdated", "PlanningCalendar", row.id, {"project_id": project.id})
-    _schedule_event(db, actor, project.id, "calendar_updated", {"changed_task_ids": sorted(changed)})
+    emit_planning_event(db, actor, command_id, "PlanningCalendarUpdated", "PlanningCalendar", row.id, {"project_id": project.id})
+    add_planning_schedule_event(db, actor, command_id, project.id, "calendar_updated", {"changed_task_ids": sorted(changed)})
     return schedule_read_model(db, actor, project)
 
 
@@ -75,8 +75,8 @@ def cmd_create_baseline(db: Session, actor: Actor, payload: dict[str, Any], comm
         "checksum": checksum,
         "correlation_id": command_id,
     }
-    _emit(db, actor, "PlanningBaselineCreated", "PlanningBaseline", row.id, evidence)
-    _schedule_event(db, actor, project.id, "baseline_created", {"baseline_id": row.id, **evidence})
+    emit_planning_event(db, actor, command_id, "PlanningBaselineCreated", "PlanningBaseline", row.id, evidence)
+    add_planning_schedule_event(db, actor, command_id, project.id, "baseline_created", {"baseline_id": row.id, **evidence})
     return schedule_read_model(db, actor, project)
 
 
@@ -90,8 +90,8 @@ def cmd_create_resource(db: Session, actor: Actor, payload: dict[str, Any], comm
     )
     db.add(row)
     db.flush()
-    _emit(db, actor, "PlanningResourceCreated", "PlanningResource", row.id, {"project_id": project.id})
-    _schedule_event(db, actor, project.id, "resource_created", {"resource_id": row.id})
+    emit_planning_event(db, actor, command_id, "PlanningResourceCreated", "PlanningResource", row.id, {"project_id": project.id})
+    add_planning_schedule_event(db, actor, command_id, project.id, "resource_created", {"resource_id": row.id})
     return schedule_read_model(db, actor, project)
 
 
@@ -109,8 +109,8 @@ def cmd_assign_resource(db: Session, actor: Actor, payload: dict[str, Any], comm
     assignment.allocation_percent = bounded_int(payload.get("allocation_percent", 100), "allocation_percent", 1, 300)
     db.add(assignment)
     db.flush()
-    _emit(db, actor, "PlanningResourceAssigned", "PlanningAssignment", assignment.id, {"project_id": task.project_id})
-    _schedule_event(db, actor, task.project_id, "resource_assigned", {"assignment_id": assignment.id})
+    emit_planning_event(db, actor, command_id, "PlanningResourceAssigned", "PlanningAssignment", assignment.id, {"project_id": task.project_id})
+    add_planning_schedule_event(db, actor, command_id, task.project_id, "resource_assigned", {"assignment_id": assignment.id})
     return schedule_read_model(db, actor, project_or_error(db, actor, task.project_id))
 
 
@@ -128,8 +128,8 @@ def cmd_level_resources(db: Session, actor: Actor, payload: dict[str, Any], comm
     violations = validate_schedule(project_tasks(db, actor, project.id), project_dependencies(db, actor, project.id), project_calendar(db, actor, project.id))
     if violations:
         raise ValueError("; ".join(violations))
-    _emit(db, actor, "PlanningResourcesLeveled", "PlanningProject", project.id, {"project_id": project.id})
-    _schedule_event(db, actor, project.id, "resources_leveled", {"changed_task_ids": sorted(changed)})
+    emit_planning_event(db, actor, command_id, "PlanningResourcesLeveled", "PlanningProject", project.id, {"project_id": project.id})
+    add_planning_schedule_event(db, actor, command_id, project.id, "resources_leveled", {"changed_task_ids": sorted(changed)})
     return schedule_read_model(db, actor, project)
 
 
@@ -194,16 +194,3 @@ def _ignored_periods(value: Any) -> list[dict[str, str]]:
             raise ValueError("ignored periods must be 366 days or fewer")
         periods.append({"start": start.isoformat(), "end": end.isoformat()})
     return periods
-
-
-def _emit(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:
-    emit_module_event(db, actor, event_type, object_type, object_id, payload)
-
-
-def _schedule_event(db: Session, actor: Actor, project_id: str, event_type: str, payload: dict[str, Any]) -> None:
-    db.add(PlanningScheduleEvent(
-        organization_id=actor.organization_id,
-        project_id=project_id,
-        event_type=event_type,
-        payload_json=dumps(payload),
-    ))

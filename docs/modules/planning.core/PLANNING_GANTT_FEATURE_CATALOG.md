@@ -45,6 +45,8 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Export/import | External global boundary | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning consumes that boundary and owns only schedule-specific payloads/read-model mapping. |
 | UI proof | Implemented | Playwright proof covers rendering, controls, inspector tabs, responsiveness, and console cleanliness. |
 | Server capabilities | Implemented | Actor-specific read/edit/baseline/level/link/gate/admin capabilities are enforced by command permission, embedded in schedule reads, and mirrored by fail-closed UI controls. Local review mode cannot grant authority. |
+| Database invariants | Implemented | PostgreSQL and SQLAlchemy enforce schedule date/type/progress/lag/allocation/scheduling-mode and uniqueness rules; hierarchy, dependency direction, and assignment lookups have organization-first indexes. |
+| Audit correlation | Implemented | Successful command responses, module events, and Planning schedule events carry the same authoritative command-log correlation ID, including derived changes and atomic batches. |
 
 ## Grid And Column Features
 

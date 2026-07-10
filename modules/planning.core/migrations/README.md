@@ -8,6 +8,10 @@ to `1`; it does not rewrite or remove existing Planning data.
 `003_planning_complete_baselines.sql` adds v2 baseline integrity metadata,
 labels existing rows as legacy `partial` snapshots, and installs an append-only
 PostgreSQL trigger that rejects baseline updates and deletes.
+`004_planning_database_invariants.sql` adds validated date, task, dependency,
+allocation, scheduling-mode, and uniqueness constraints plus hierarchy,
+dependency-direction, and resource-assignment indexes. Run the documented
+duplicate/invalid-row preflight before applying it to an existing database.
 
 For the persistent local PostgreSQL profile, back up first, apply the migration
 before rebuilding an image that selects the new columns, and read the columns
@@ -18,6 +22,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 Get-Content -Raw .\modules\planning.core\migrations\002_planning_optimistic_concurrency.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 Get-Content -Raw .\modules\planning.core\migrations\003_planning_complete_baselines.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\004_planning_database_invariants.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 ```
 

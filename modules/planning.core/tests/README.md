@@ -19,4 +19,5 @@ python -m pytest .\modules\planning.core\tests\test_canonical_cpm.py .\modules\p
 python -m pytest .\modules\planning.core\tests\test_planning_atomic_batch.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_complete_baselines.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_capabilities.py -q
+python -m pytest .\modules\planning.core\tests\test_planning_database_invariants.py .\modules\planning.core\tests\test_planning_audit_correlation.py -q
 ```

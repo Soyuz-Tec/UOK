@@ -31,7 +31,7 @@ def guarded_planning_command(command_type: str, handler: PlanningHandler) -> Pla
     def guarded(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
         context = _begin_command(db, actor, command_type, payload)
         result = handler(db, actor, payload, command_id)
-        return _finish_command(db, actor, context, result)
+        return _finish_command(db, actor, context, result, command_id)
 
     return guarded
 
@@ -104,6 +104,7 @@ def _finish_command(
     actor: Actor,
     context: PlanningConcurrencyContext | None,
     result: dict[str, Any],
+    command_id: str,
 ) -> dict[str, Any]:
     db.flush()
     if context is None:
@@ -124,7 +125,7 @@ def _finish_command(
         project.updated_at = utcnow()
         db.flush()
     schedule, etag = read_schedule_snapshot(db, actor, project)
-    return _current_result(result, schedule, etag)
+    return _current_result(result, schedule, etag, command_id)
 
 
 def _require_precondition(project: PlanningProject, payload: dict[str, Any], current_etag: str) -> None:
@@ -248,7 +249,7 @@ def _task_state(task: PlanningTask) -> tuple[Any, ...]:
     )
 
 
-def _current_result(result: dict[str, Any], schedule: dict[str, Any], etag: str) -> dict[str, Any]:
+def _current_result(result: dict[str, Any], schedule: dict[str, Any], etag: str, command_id: str) -> dict[str, Any]:
     tasks = {str(task["id"]): task for task in schedule["tasks"]}
     if {"project", "tasks", "dependencies"}.issubset(result):
         current = dict(schedule)
@@ -267,6 +268,7 @@ def _current_result(result: dict[str, Any], schedule: dict[str, Any], etag: str)
     else:
         current = dict(result)
     current["revision"] = int(schedule["project"]["revision"])
+    current["correlation_id"] = command_id
     current[COMMAND_ETAG_RESULT_KEY] = etag
     return current
 

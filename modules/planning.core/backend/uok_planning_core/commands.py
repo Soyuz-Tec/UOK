@@ -11,11 +11,11 @@ from .concurrency import guarded_planning_command
 from .models import (
     PlanningAssignment,
     PlanningProject,
-    PlanningScheduleEvent,
     PlanningTask,
     PlanningTaskDependency,
     utcnow,
 )
+from .planning_audit import add_planning_schedule_event, emit_planning_event
 from .read_model import schedule_read_model, serialize_project, serialize_task
 from .scheduler import (
     DEPENDENCY_TYPES,
@@ -31,9 +31,7 @@ from .scheduler import (
 )
 from .task_mutations import apply_task_update, assert_parent_valid, planning_task_type, recalculate_task_duration
 from .task_constraints import set_task_planning_attrs
-from uok.module_events import emit_module_event
 from uok.security import Actor
-from uok.util import dumps
 
 CommandHandler = Callable[[Session, Actor, dict[str, Any], str], dict[str, Any]]
 
@@ -47,8 +45,8 @@ def cmd_create_project(db: Session, actor: Actor, payload: dict[str, Any], comma
     project = PlanningProject(organization_id=actor.organization_id, name=name, start_at=start, end_at=end, updated_at=utcnow())
     db.add(project)
     db.flush()
-    _emit(db, actor, "PlanningProjectCreated", "PlanningProject", project.id, {"name": name})
-    _schedule_event(db, actor, project.id, "project_created", {"name": name})
+    emit_planning_event(db, actor, command_id, "PlanningProjectCreated", "PlanningProject", project.id, {"name": name})
+    add_planning_schedule_event(db, actor, command_id, project.id, "project_created", {"name": name})
     return serialize_project(project)
 
 
@@ -62,8 +60,8 @@ def cmd_create_task(db: Session, actor: Actor, payload: dict[str, Any], command_
     db.flush()
     changed = apply_schedule(db, actor, project.id)
     _assert_schedule_valid(db, actor, project.id)
-    _emit(db, actor, "PlanningTaskCreated", "PlanningTask", task.id, {"project_id": project.id, "title": task.title})
-    _schedule_event(db, actor, project.id, "task_created", {"task_id": task.id, "changed_task_ids": sorted(changed)})
+    emit_planning_event(db, actor, command_id, "PlanningTaskCreated", "PlanningTask", task.id, {"project_id": project.id, "title": task.title})
+    add_planning_schedule_event(db, actor, command_id, project.id, "task_created", {"task_id": task.id, "changed_task_ids": sorted(changed)})
     return serialize_task(task)
 
 
@@ -76,8 +74,8 @@ def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_
     assert_task_dependency_position(task, tasks, dependencies, project_calendar(db, actor, project.id))
     changed = apply_schedule(db, actor, project.id, cascade_dependencies=bool(payload.get("cascade", True)))
     _assert_schedule_valid(db, actor, project.id)
-    _emit(db, actor, "PlanningTaskUpdated", "PlanningTask", task.id, {"project_id": project.id, "title": task.title})
-    _schedule_event(db, actor, project.id, "task_updated", {"task_id": task.id, "changed_task_ids": sorted(changed)})
+    emit_planning_event(db, actor, command_id, "PlanningTaskUpdated", "PlanningTask", task.id, {"project_id": project.id, "title": task.title})
+    add_planning_schedule_event(db, actor, command_id, project.id, "task_updated", {"task_id": task.id, "changed_task_ids": sorted(changed)})
     return {"task": serialize_task(task), "validation": schedule_read_model(db, actor, project)["validation"]}
 
 
@@ -100,8 +98,8 @@ def cmd_delete_task(db: Session, actor: Actor, payload: dict[str, Any], command_
     ))
     project.updated_at = utcnow()
     changed = apply_schedule(db, actor, project.id)
-    _emit(db, actor, "PlanningTaskDeleted", "PlanningTask", task.id, {"project_id": project.id})
-    _schedule_event(db, actor, project.id, "task_deleted", {"task_ids": sorted(task_ids), "changed_task_ids": sorted(changed)})
+    emit_planning_event(db, actor, command_id, "PlanningTaskDeleted", "PlanningTask", task.id, {"project_id": project.id})
+    add_planning_schedule_event(db, actor, command_id, project.id, "task_deleted", {"task_ids": sorted(task_ids), "changed_task_ids": sorted(changed)})
     return schedule_read_model(db, actor, project)
 
 
@@ -122,8 +120,8 @@ def cmd_link_tasks(db: Session, actor: Actor, payload: dict[str, Any], command_i
     db.flush()
     changed = apply_schedule(db, actor, project.id)
     _assert_schedule_valid(db, actor, project.id)
-    _emit(db, actor, "PlanningTaskLinked", "PlanningTaskDependency", dep.id, {"project_id": project.id})
-    _schedule_event(db, actor, project.id, "task_linked", {"dependency_id": dep.id, "changed_task_ids": sorted(changed)})
+    emit_planning_event(db, actor, command_id, "PlanningTaskLinked", "PlanningTaskDependency", dep.id, {"project_id": project.id})
+    add_planning_schedule_event(db, actor, command_id, project.id, "task_linked", {"dependency_id": dep.id, "changed_task_ids": sorted(changed)})
     return schedule_read_model(db, actor, project)
 
 
@@ -136,8 +134,8 @@ def cmd_update_dependency(db: Session, actor: Actor, payload: dict[str, Any], co
         dep.lag_days = bounded_int(payload.get("lag_days", 0), "lag_days", -30, 30)
     changed = apply_schedule(db, actor, project.id)
     _assert_schedule_valid(db, actor, project.id)
-    _emit(db, actor, "PlanningDependencyUpdated", "PlanningTaskDependency", dep.id, {"project_id": project.id})
-    _schedule_event(db, actor, project.id, "dependency_updated", {"dependency_id": dep.id, "changed_task_ids": sorted(changed)})
+    emit_planning_event(db, actor, command_id, "PlanningDependencyUpdated", "PlanningTaskDependency", dep.id, {"project_id": project.id})
+    add_planning_schedule_event(db, actor, command_id, project.id, "dependency_updated", {"dependency_id": dep.id, "changed_task_ids": sorted(changed)})
     return schedule_read_model(db, actor, project)
 
 
@@ -147,8 +145,8 @@ def cmd_remove_dependency(db: Session, actor: Actor, payload: dict[str, Any], co
     dep_id = dep.id
     db.delete(dep)
     changed = apply_schedule(db, actor, project.id)
-    _emit(db, actor, "PlanningDependencyRemoved", "PlanningTaskDependency", dep_id, {"project_id": project.id})
-    _schedule_event(db, actor, project.id, "dependency_removed", {"dependency_id": dep_id, "changed_task_ids": sorted(changed)})
+    emit_planning_event(db, actor, command_id, "PlanningDependencyRemoved", "PlanningTaskDependency", dep_id, {"project_id": project.id})
+    add_planning_schedule_event(db, actor, command_id, project.id, "dependency_removed", {"dependency_id": dep_id, "changed_task_ids": sorted(changed)})
     return schedule_read_model(db, actor, project)
 
 
@@ -247,16 +245,3 @@ def _task_subtree_ids(tasks: list[PlanningTask], task_id: str) -> set[str]:
             found.add(child_id)
             stack.append(child_id)
     return found
-
-
-def _emit(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:
-    emit_module_event(db, actor, event_type, object_type, object_id, payload)
-
-
-def _schedule_event(db: Session, actor: Actor, project_id: str, event_type: str, payload: dict[str, Any]) -> None:
-    db.add(PlanningScheduleEvent(
-        organization_id=actor.organization_id,
-        project_id=project_id,
-        event_type=event_type,
-        payload_json=dumps(payload),
-    ))

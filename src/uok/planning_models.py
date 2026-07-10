@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -32,6 +33,7 @@ class PlanningProject(Base):
     __table_args__ = (
         UniqueConstraint("organization_id", "name"),
         CheckConstraint("revision >= 1", name="ck_planning_projects_revision_positive"),
+        CheckConstraint("end_at >= start_at", name="ck_planning_projects_date_order"),
         Index("ix_planning_core_projects_org_status", "organization_id", "status"),
         Index("ix_planning_core_projects_org_revision", "organization_id", "id", "revision"),
     )
@@ -57,9 +59,15 @@ class PlanningTask(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
     __table_args__ = (
         CheckConstraint("version >= 1", name="ck_planning_tasks_version_positive"),
+        CheckConstraint("end_at >= start_at", name="ck_planning_tasks_date_order"),
+        CheckConstraint("duration_days >= 0", name="ck_planning_tasks_duration_nonnegative"),
+        CheckConstraint("progress >= 0 AND progress <= 100", name="ck_planning_tasks_progress_range"),
+        CheckConstraint("sort_order >= 0", name="ck_planning_tasks_sort_order_nonnegative"),
+        CheckConstraint("task_type IN ('task', 'summary', 'milestone')", name="ck_planning_tasks_type"),
         Index("ix_planning_core_tasks_project_order", "organization_id", "project_id", "sort_order"),
         Index("ix_planning_core_tasks_project_status", "organization_id", "project_id", "status"),
         Index("ix_planning_core_tasks_org_project_version", "organization_id", "project_id", "version"),
+        Index("ix_planning_core_tasks_org_project_parent", "organization_id", "project_id", "parent_task_id"),
     )
 
 
@@ -75,6 +83,11 @@ class PlanningTaskDependency(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
     __table_args__ = (
         UniqueConstraint("organization_id", "project_id", "predecessor_task_id", "successor_task_id"),
+        CheckConstraint("predecessor_task_id <> successor_task_id", name="ck_planning_dependencies_distinct_tasks"),
+        CheckConstraint("dependency_type IN ('finish_to_start', 'start_to_start', 'finish_to_finish', 'start_to_finish')", name="ck_planning_dependencies_type"),
+        CheckConstraint("lag_days >= -30 AND lag_days <= 30", name="ck_planning_dependencies_lag_range"),
+        Index("ix_planning_core_dependencies_project_predecessor", "organization_id", "project_id", "predecessor_task_id"),
+        Index("ix_planning_core_dependencies_project_successor", "organization_id", "project_id", "successor_task_id"),
         Index("ix_planning_core_dependencies_successor", "organization_id", "successor_task_id"),
     )
 
@@ -87,6 +100,7 @@ class PlanningCalendar(Base):
     name: Mapped[str] = mapped_column(String(120))
     working_days_json: Mapped[str] = mapped_column(Text, default="[1,2,3,4,5]")
     holidays_json: Mapped[str] = mapped_column(Text, default="[]")
+    __table_args__ = (UniqueConstraint("organization_id", "project_id", name="uq_planning_calendars_org_project"),)
 
 
 class PlanningResource(Base):
@@ -105,6 +119,11 @@ class PlanningAssignment(Base):
     task_id: Mapped[str] = mapped_column(ForeignKey("planning_tasks.id"), index=True)
     resource_id: Mapped[str] = mapped_column(ForeignKey("planning_resources.id"), index=True)
     allocation_percent: Mapped[int] = mapped_column(Integer, default=100)
+    __table_args__ = (
+        UniqueConstraint("organization_id", "task_id", "resource_id", name="uq_planning_assignments_org_task_resource"),
+        CheckConstraint("allocation_percent >= 1 AND allocation_percent <= 300", name="ck_planning_assignments_allocation_range"),
+        Index("ix_planning_core_assignments_org_resource_task", "organization_id", "resource_id", "task_id"),
+    )
 
 
 class PlanningBaseline(Base):
@@ -132,6 +151,17 @@ class PlanningBaseline(Base):
 @event.listens_for(PlanningBaseline, "before_delete")
 def _reject_planning_baseline_mutation(*_args: object) -> None:
     raise ValueError("Planning baselines are immutable and append-only")
+
+
+@event.listens_for(PlanningTask, "before_insert")
+@event.listens_for(PlanningTask, "before_update")
+def _validate_planning_task_attributes(_mapper: object, _connection: object, task: PlanningTask) -> None:
+    try:
+        attributes = json.loads(task.attrs_json or "{}")
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Planning task attributes must be valid JSON") from exc
+    if str(attributes.get("scheduling_mode") or "auto") not in {"auto", "manual"}:
+        raise ValueError("Planning task scheduling_mode must be auto or manual")
 
 
 class PlanningScheduleEvent(Base):

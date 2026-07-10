@@ -5,14 +5,13 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from .advanced_commands import clean_text
-from .models import PlanningProject, PlanningScheduleEvent
+from .models import PlanningProject
+from .planning_audit import add_planning_schedule_event, emit_planning_event
 from .read_model import schedule_read_model
 from .scheduler import apply_schedule, project_or_error, task_or_error
 from .task_mutations import apply_task_update
 from uok.command_context import CommandDomainError
-from uok.module_events import emit_module_event
 from uok.security import Actor
-from uok.util import dumps
 
 MAX_BATCH_OPERATIONS = 500
 TASK_UPDATE_FIELDS = {
@@ -152,13 +151,8 @@ def _emit_batch_events(
         "operation_ids": [row["operation_id"] for row in results],
         "changed_task_ids": sorted(changed_task_ids),
     }
-    emit_module_event(db, actor, "PlanningBatchApplied", "PlanningProject", project_id, payload)
-    db.add(PlanningScheduleEvent(
-        organization_id=actor.organization_id,
-        project_id=project_id,
-        event_type="batch_applied",
-        payload_json=dumps(payload),
-    ))
+    emit_planning_event(db, actor, command_id, "PlanningBatchApplied", "PlanningProject", project_id, payload)
+    add_planning_schedule_event(db, actor, command_id, project_id, "batch_applied", payload)
 
 
 def _batch_error(
