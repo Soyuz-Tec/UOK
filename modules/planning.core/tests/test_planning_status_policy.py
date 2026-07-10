@@ -2,12 +2,33 @@ from __future__ import annotations
 
 from uuid import UUID, uuid4
 
+import pytest
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
+from uok.command_context import CommandDomainError
 from uok.db import SessionLocal
 from uok.models import CommandLog
 from uok.util import loads
+from uok_planning_core.status_policy import TASK_STATUSES, TASK_STATUS_TRANSITIONS, assert_task_status_transition
+
+
+def test_every_task_status_pair_uses_the_controlled_policy() -> None:
+    for source in TASK_STATUSES:
+        for target in (*TASK_STATUSES, "unknown"):
+            allowed = target == source or target in TASK_STATUS_TRANSITIONS[source]
+            if allowed:
+                assert_task_status_transition(
+                    source, target, task_id="task-1", current_revision=3, command_id="command-1",
+                )
+            else:
+                with pytest.raises(CommandDomainError) as rejected:
+                    assert_task_status_transition(
+                        source, target, task_id="task-1", current_revision=3, command_id="command-1",
+                    )
+                assert rejected.value.code == "planning_status_transition_invalid"
+                assert rejected.value.field == "status"
+                assert rejected.value.current_revision == 3
 
 
 def test_task_status_registry_and_transitions_are_server_controlled(client: TestClient) -> None:

@@ -48,6 +48,14 @@ recommendations with database-enforced decision, apply, and rollback states.
 one append-only transactional outbox event per successful Planning command. It
 contains no delivery state or dispatcher claim; upgraded projects begin with
 their first post-migration revision rather than synthetic history.
+`015_planning_project_lifecycle_targets.sql` preflights controlled project/task
+statuses, adds non-null target and calculated finish columns, backfills target
+from the compatible project end, and conservatively backfills calculated finish
+from the maximum non-deleted task end or project start. Apply it only with all
+Planning writers quiesced: older instances do not populate the new columns, so
+this is not a rolling-compatible migration. There is no destructive down
+migration; after apply, application rollback uses a forward fix and a binary
+that understands migration 015 rather than restarting an older writer.
 
 For the persistent local PostgreSQL profile, back up first, apply the migration
 before rebuilding an image that selects the new columns, and read the columns
@@ -80,6 +88,8 @@ Get-Content -Raw .\modules\planning.core\migrations\012_planning_analysis_runs.s
 Get-Content -Raw .\modules\planning.core\migrations\013_planning_analysis_recommendations.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 Get-Content -Raw .\modules\planning.core\migrations\014_planning_revision_outbox.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\015_planning_project_lifecycle_targets.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 ```
 

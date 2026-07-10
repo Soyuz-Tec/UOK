@@ -18,6 +18,7 @@ POWERSHELL_FUNCTION_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z][A-Z
 PYTHON_EXTENSION_FIELDS = {
     "command_handlers": "command_handlers",
     "command_permissions": "permissions",
+    "command_replay_guard": "command_replay_guard",
     "role_grants": "permissions",
     "dashboard_provider": "dashboard_provider",
     "evidence_provider": "evidence_provider",
@@ -64,6 +65,7 @@ def validate_module_extension_contracts() -> dict[str, Any]:
             "events_unique": not any(v["field"] == "events" for v in violations),
             "api_routers_valid": not any(v["field"] == "api_router" for v in violations),
             "command_handlers_valid": not any(v["field"] in {"command_handlers", "command_permissions"} for v in violations),
+            "command_replay_guards_valid": not any(v["field"] == "command_replay_guard" for v in violations),
             "role_grants_valid": not any(v["field"] == "role_grants" for v in violations),
             "dashboard_providers_valid": not any(v["field"] == "dashboard_provider" for v in violations),
             "evidence_providers_valid": not any(v["field"] == "evidence_provider" for v in violations),

@@ -12,7 +12,7 @@ describe("planning critical path model", () => {
     expect(summary.calculatedFinish).toBe("2026-08-14");
     expect(summary.targetFinish).toBe("2026-08-12");
     expect(summary.targetVarianceDays).toBe(2);
-    expect(summary.engineVersion).toBe("uok-cpm-1");
+    expect(summary.engineVersion).toBe("uok-cpm-2");
     expect(summary.items).toEqual([
       { id: "scope", label: "Define scope", slack: 0, wbs: "1.1", window: "2026-08-01 to 2026-08-03" },
       { id: "build", label: "Build Gantt", slack: 0, wbs: "1.2", window: "2026-08-04 to 2026-08-08" },
@@ -29,7 +29,7 @@ describe("planning critical path model", () => {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-01", end: "2026-08-12", revision: 1 },
+    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-12", target_finish: "2026-08-12", calculated_finish: "2026-08-12", revision: 1 },
     tasks: [
       task("review", "Review", "1.3", "2026-08-09", "2026-08-12", false, 2),
       task("build", "Build Gantt", "1.2", "2026-08-04", "2026-08-08", true, 0),
@@ -41,7 +41,7 @@ function schedule(): PlanningSchedule {
     links: [],
     baselines: [],
     calculation: {
-      engine_version: "uok-cpm-1",
+      engine_version: "uok-cpm-2",
       project_start: "2026-08-01",
       calculated_finish: "2026-08-14",
       target_finish: "2026-08-12",

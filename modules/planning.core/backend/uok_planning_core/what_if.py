@@ -15,7 +15,7 @@ from .models import PlanningAssignment, PlanningProject, PlanningResource, Plann
 from .resource_calendar import resource_calendar_specs
 from .resource_capacity import calculate_resource_capacity
 from .resource_capacity_validation import validate_resource_capacity_result
-from .scheduler import parse_planning_date, project_calendar, project_dependencies, project_tasks, schedule_analysis, validate_schedule
+from .scheduler import parse_planning_date, project_calendar, project_dependencies, project_or_error, project_tasks, schedule_analysis, validate_schedule
 from .schedule_math import working_duration
 from uok.security import Actor
 from uok.util import dumps, loads
@@ -79,6 +79,7 @@ def create_what_if_snapshot(
 
 
 def list_what_if_snapshots(db: Session, actor: Actor, project_id: str) -> list[dict[str, Any]]:
+    project_or_error(db, actor, project_id)
     rows = db.scalars(select(PlanningWhatIfSnapshot).where(
         PlanningWhatIfSnapshot.organization_id == actor.organization_id,
         PlanningWhatIfSnapshot.project_id == project_id,
@@ -87,6 +88,7 @@ def list_what_if_snapshots(db: Session, actor: Actor, project_id: str) -> list[d
 
 
 def what_if_or_error(db: Session, actor: Actor, project_id: str, snapshot_id: str) -> PlanningWhatIfSnapshot:
+    project_or_error(db, actor, project_id)
     row = db.scalar(select(PlanningWhatIfSnapshot).where(
         PlanningWhatIfSnapshot.id == snapshot_id,
         PlanningWhatIfSnapshot.organization_id == actor.organization_id,
@@ -155,7 +157,7 @@ def _preview(db: Session, actor: Actor, project: PlanningProject, changes: list[
             raise ValueError(f"task_id {change['task_id']} not found")
         _apply_change(task, change, calendar)
     dependencies = project_dependencies(db, actor, project.id)
-    analysis, cpm_issues = schedule_analysis(tasks, dependencies, calendar, project.start_at.date(), project.end_at.date())
+    analysis, cpm_issues = schedule_analysis(tasks, dependencies, calendar, project.start_at.date(), project.target_finish_at.date())
     resources = list(db.scalars(select(PlanningResource).where(
         PlanningResource.organization_id == actor.organization_id,
         PlanningResource.project_id == project.id,

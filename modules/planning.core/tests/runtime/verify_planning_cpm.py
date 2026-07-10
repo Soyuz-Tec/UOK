@@ -23,7 +23,7 @@ def main() -> None:
         "POST",
         f"{base_url}/api/planning/projects",
         headers={**ops, "Idempotency-Key": f"cpm-runtime-project-{suffix}"},
-        json={"name": f"CPM runtime {suffix}", "start": "2026-08-03", "end": "2026-08-05"},
+        json={"name": f"CPM runtime {suffix}", "start": "2026-08-03", "end": "2026-08-08"},
     )
     project_id = project.json()["id"]
     task = checked_request(
@@ -34,17 +34,17 @@ def main() -> None:
             "Idempotency-Key": f"cpm-runtime-task-{suffix}",
             "If-Match": project.headers["ETag"],
         },
-        json={"title": "Runtime delivery", "start": "2026-08-03", "end": "2026-08-07"},
+        json={"title": "Runtime delivery", "start": "2026-08-03", "end": "2026-08-11"},
     )
     schedule = checked_request("GET", f"{base_url}/api/planning/projects/{project_id}/schedule", headers=ops)
     body = schedule.json()
     calculation = body["calculation"]
     row = body["tasks"][0]
     expected = {
-        "engine_version": "uok-cpm-1",
+        "engine_version": "uok-cpm-2",
         "project_start": "2026-08-03",
-        "calculated_finish": "2026-08-07",
-        "target_finish": "2026-08-05",
+        "calculated_finish": "2026-08-11",
+        "target_finish": "2026-08-08",
         "target_variance_days": 2,
         "independent_validation": {"ok": True, "violations": []},
         "resource_capacity": {
@@ -57,6 +57,13 @@ def main() -> None:
     }
     if calculation != expected:
         raise AssertionError(f"unexpected CPM calculation: {calculation}")
+    project_read_model = body["project"]
+    if project_read_model["end"] != "2026-08-08":
+        raise AssertionError(f"compatibility finish drifted: {project_read_model}")
+    if project_read_model["target_finish"] != calculation["target_finish"]:
+        raise AssertionError(f"target finish authority is inconsistent: {project_read_model}")
+    if project_read_model["calculated_finish"] != calculation["calculated_finish"]:
+        raise AssertionError(f"calculated finish persistence is inconsistent: {project_read_model}")
     if row["total_slack_days"] != -2 or row["free_float_days"] != -2 or row["critical"] is not True:
         raise AssertionError(f"negative-float task evidence is invalid: {row}")
     if not STRONG_ETAG.fullmatch(schedule.headers.get("ETag", "")):
@@ -71,6 +78,8 @@ def main() -> None:
         "calculated_finish": calculation["calculated_finish"],
         "target_finish": calculation["target_finish"],
         "target_variance_days": calculation["target_variance_days"],
+        "persisted_calculated_finish": project_read_model["calculated_finish"],
+        "persisted_target_finish": project_read_model["target_finish"],
         "total_slack_days": row["total_slack_days"],
         "independent_validation": calculation["independent_validation"]["ok"],
     }, sort_keys=True))

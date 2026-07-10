@@ -1,11 +1,13 @@
 import type { KeyboardEvent, PointerEvent } from "react";
 
+import { useUokLocalization } from "../../shared/localization";
 import type { PlanningProject, PlanningSchedule, PlanningTask } from "./types";
 import type { PlanningDependencyChain } from "./planningDependencyChain";
 import type { TimelineCreateDraft } from "./planningTimelineCreateModel";
 import type { PlanningTimelineMarker } from "./planningTimelineMarkers";
 import type { PlanningRowLayout } from "./planningRowHeights";
 import { PlanningBaselineLane } from "./PlanningBaselineLane";
+import { projectBoundaryMarkers } from "./planningBoundaryMarkers";
 import {
   dateValue,
   durationUnits,
@@ -15,6 +17,8 @@ import {
   type TimelineScale,
   type TimelineUnit,
 } from "./planningGanttModel";
+
+export { projectBoundaryMarkers } from "./planningBoundaryMarkers";
 
 export function TimelineHeaders({ units, cellWidth, headerHeight, width }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; width: number }) {
   const groups: { label: string; x: number; width: number }[] = [];
@@ -218,16 +222,20 @@ export function TodayMarker({ chartStart, scale, cellWidth, height }: { chartSta
 }
 
 export function ProjectBoundaryMarkers({ project, chartStart, scale, cellWidth, height }: { project: PlanningProject; chartStart: Date; scale: TimelineScale; cellWidth: number; height: number }) {
-  const markers = [
-    { key: "start", label: "Project start", x: xForDate(dateValue(project.start), chartStart, scale, cellWidth) },
-    { key: "end", label: "Project end", x: xForDate(dateValue(project.end), chartStart, scale, cellWidth) + cellWidth },
-  ];
+  const { t } = useUokLocalization();
+  const markers = projectBoundaryMarkers(project, chartStart, scale, cellWidth, {
+    start: t("planning.gantt.projectStart", "Project start"),
+    end: t("planning.gantt.compatibilityHorizon", "Compatibility horizon"),
+    target: t("planning.gantt.targetFinish", "Target finish"),
+    calculated: t("planning.gantt.calculatedFinish", "Calculated finish"),
+  });
   return (
     <g className="planning-owned-boundary-markers">
       {markers.map((marker) => (
-        <g key={marker.key} className={`planning-owned-boundary-marker ${marker.key}`}>
+        <g key={marker.keys.join("-")} className={`planning-owned-boundary-marker ${marker.keys.join(" ")}`} role="img" aria-label={marker.accessibilityLabel}>
+          <title>{marker.accessibilityLabel}</title>
           <line x1={marker.x} y1="0" x2={marker.x} y2={height} />
-          <text x={marker.x + 6} y="52">{marker.label}</text>
+          <text x={marker.x + 6} y="52">{marker.labels.join(" / ")}</text>
         </g>
       ))}
     </g>

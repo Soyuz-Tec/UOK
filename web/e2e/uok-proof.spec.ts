@@ -7,6 +7,8 @@ const sampleProject = {
   status: "active",
   start: "2026-08-01",
   end: "2026-08-20",
+  target_finish: "2026-08-20",
+  calculated_finish: "2026-08-13",
   updated_at: "2026-08-01T00:00:00Z",
 };
 
@@ -15,7 +17,7 @@ const sampleSchedule = {
   capabilities: { read: true, edit: true, baseline_create: true, level: true, link: true, gate_approve: true, admin: true, review_only: false },
   validation: { ok: true, violations: [], warnings: ["Planner is allocated 120% against 100% capacity on 2026-08-06"] },
   calculation: {
-    engine_version: "uok-cpm-1",
+    engine_version: "uok-cpm-2",
     project_start: "2026-08-03",
     calculated_finish: "2026-08-13",
     target_finish: "2026-08-20",
@@ -191,9 +193,11 @@ const samplePortfolio = {
   total: 1, limit: 50, offset: 0, query: "", status: "",
   projects: [{
     id: sampleProject.id, name: sampleProject.name, status: "active", start: sampleProject.start, end: sampleProject.end,
+    target_finish: sampleProject.target_finish, calculated_finish: sampleProject.calculated_finish,
+    latest_task_finish: "2026-08-13", schedule_horizon: sampleProject.end,
     timezone: "America/New_York", revision: 1, updated_at: sampleProject.updated_at,
     metrics: { task_count: 4, completed_task_count: 0, in_progress_task_count: 0, blocked_task_count: 0, milestone_count: 1, dependency_count: 1, completion_percent: 15 },
-    attention: { health: "blocked", overdue_task_count: 0, gate_blocker_count: 1, unavailable_blocking_link_count: 0, project_overdue: false, issue_count: 1 },
+    attention: { health: "blocked", overdue_task_count: 0, gate_blocker_count: 1, unavailable_blocking_link_count: 0, project_overdue: false, project_late: false, issue_count: 1 },
   }],
   summary: { visible_project_count: 1, total_project_count: 1, task_count: 4, completed_task_count: 0, blocked_task_count: 0, overdue_task_count: 0, gate_blocker_count: 1, at_risk_project_count: 1, status_counts: { active: 1 }, range_start: sampleProject.start, range_end: sampleProject.end },
   diagnostics: { strategy: "bounded_aggregate_v1", query_count: 6, elapsed_ms: 8.2 },
@@ -256,9 +260,15 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-status-code")).toHaveCount(4);
     await expect(page.locator(".planning-owned-status-code").getByText("CRIT")).toHaveCount(3);
     await expect(page.locator(".planning-owned-tooltip")).toHaveCount(4);
-    await expect(page.locator(".planning-owned-boundary-marker")).toHaveCount(2);
-    await expect(page.locator(".planning-owned-boundary-marker").getByText("Project start")).toBeVisible();
-    await expect(page.locator(".planning-owned-boundary-marker").getByText("Project end")).toBeVisible();
+    const boundaryMarkers = page.locator(".planning-owned-boundary-marker");
+    await expect(boundaryMarkers).toHaveCount(3);
+    await expect(page.getByRole("img", { name: "Project start: 2026-08-01" })).toBeVisible();
+    const compatibilityTargetMarker = page.getByRole("img", { name: "Compatibility horizon: 2026-08-20; Target finish: 2026-08-20" });
+    await expect(compatibilityTargetMarker).toBeVisible();
+    await expect(compatibilityTargetMarker).toHaveClass(/\bend\b/);
+    await expect(compatibilityTargetMarker).toHaveClass(/\btarget\b/);
+    await expect(compatibilityTargetMarker.getByText("Compatibility horizon / Target finish", { exact: true })).toBeVisible();
+    await expect(page.getByRole("img", { name: "Calculated finish: 2026-08-13" })).toBeVisible();
     await expect(page.locator(".planning-owned-task-marker")).toHaveCount(3);
     await expect(page.getByLabel("Deadline: Define schedule scope")).toBeVisible();
     await expect(page.getByLabel("Baseline variance: Build integrated Gantt with dependency validation")).toBeVisible();
@@ -622,6 +632,27 @@ test("server review-only capabilities disable Planning writes", async ({ page })
   await expect(page.getByRole("button", { name: "Task", exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Baseline", exact: true })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Level", exact: true })).toBeDisabled();
+  await page.getByLabel("Open planning controls").click();
+  await expect(page.getByRole("button", { name: "Server review-only", exact: true })).toBeDisabled();
+});
+
+test("archived Planning schedules stay readable and disable every mutation surface", async ({ page }) => {
+  const archivedProject = { ...sampleProject, status: "archived" };
+  const archivedSchedule = { ...sampleSchedule, project: archivedProject };
+  await installMockApi(page, [], [], [], []);
+  await page.route("/api/planning/projects", (route) => route.fulfill({ json: [archivedProject] }));
+  await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({
+    json: archivedSchedule,
+    headers: { ETag: `"planning-r1-sha256-${"c".repeat(64)}"` },
+  }));
+
+  await openPlanning(page);
+  await expect(page.getByRole("heading", { name: sampleProject.name })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "Archived project is read-only" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Task", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Baseline", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Level", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Refresh", exact: true })).toBeEnabled();
   await page.getByLabel("Open planning controls").click();
   await expect(page.getByRole("button", { name: "Server review-only", exact: true })).toBeDisabled();
 });

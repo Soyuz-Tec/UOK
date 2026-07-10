@@ -25,12 +25,12 @@ const metadata = {
   integrity: { status: "verified", verified: true, algorithm: "sha256" as const, message: "verified" },
 };
 
-const schedule = {
-  project: { id: "project-1", name: "Plan", status: "active", start: "2026-08-01", end: "2026-08-31", revision: 4 },
+const schedule: PlanningSchedule = {
+  project: { id: "project-1", name: "Plan", status: "active", start: "2026-08-01", end: "2026-08-31", target_finish: "2026-08-31", calculated_finish: "2026-08-31", revision: 4 },
   tasks: [{ id: "task-1", project_id: "project-1", version: 1, title: "Build", task_type: "task", status: "planned", start: "2026-08-03", end: "2026-08-05", duration_days: 3, progress: 0, sort_order: 1, critical: true }],
   dependencies: [], resources: [], assignments: [], links: [], baselines: [],
   validation: { ok: true, violations: [], warnings: [] },
-} as unknown as PlanningSchedule;
+};
 
 const lifecycleProps = {
   canApprove: true,

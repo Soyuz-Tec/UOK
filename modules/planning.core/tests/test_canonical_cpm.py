@@ -121,6 +121,19 @@ def test_early_target_produces_negative_float_without_moving_commitment() -> Non
     assert metric.critical
 
 
+def test_non_working_target_is_preserved_while_late_math_uses_prior_working_anchor() -> None:
+    target = date(2026, 8, 8)  # Saturday
+    result = calculate_cpm([task("delivery", 5)], [], default_calendar(), START, target)
+    metric = result.task_metrics["delivery"]
+
+    assert result.engine_version == "uok-cpm-2"
+    assert result.target_finish == target
+    assert result.calculated_finish.isoformat() == "2026-08-07"
+    assert result.target_variance_days == 0
+    assert metric.late_finish.isoformat() == "2026-08-07"
+    assert metric.total_slack_days == 0
+
+
 def test_cycle_is_rejected_before_metrics_are_published() -> None:
     with pytest.raises(CpmCycleError, match="dependency cycle"):
         calculate_cpm(

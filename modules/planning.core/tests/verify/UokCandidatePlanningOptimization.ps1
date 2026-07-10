@@ -36,7 +36,7 @@ function Assert-UokPlanningGovernedOptimization {
     $recommendation = $metadata.recommendations | Select-Object -First 1
     if (
         $metadata.engine.name -ne "uok-bounded-schedule-optimizer" `
-        -or $metadata.engine.version -ne "1" `
+        -or $metadata.engine.version -ne "2" `
         -or $metadata.status -ne "completed" `
         -or $metadata.integrity.verified -ne $true `
         -or $metadata.recommendation_count -lt 1 `

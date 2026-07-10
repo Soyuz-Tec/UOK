@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildTimeline, finishDrag, taskStatusIndicator, type DragState } from "./planningGanttModel";
+import { buildTimeline, finishDrag, planningScheduleHorizon, taskStatusIndicator, type DragState } from "./planningGanttModel";
 import type { PlanningSchedule, PlanningTask } from "./types";
 
 const task: PlanningTask = {
@@ -74,7 +74,7 @@ describe("planning Gantt scales", () => {
   it("extends timeline units to fill the visible chart width", () => {
     const units = buildTimeline({
       ...schedule(),
-      project: { id: "project-1", name: "Short", status: "planned", start: "2026-08-03", end: "2026-08-05", revision: 1 },
+      project: { id: "project-1", name: "Short", status: "active", start: "2026-08-03", end: "2026-08-05", target_finish: "2026-08-05", calculated_finish: "2026-08-05", revision: 1 },
     }, "day", "standard", 900).units;
 
     expect(units.length).toBeGreaterThan(10);
@@ -82,13 +82,49 @@ describe("planning Gantt scales", () => {
   });
 
   it("uses timeline zoom to expand and contract visible day columns", () => {
-    const shortSchedule = { ...schedule(), project: { id: "project-1", name: "Short", status: "planned", start: "2026-08-03", end: "2026-08-05", revision: 1 } };
+    const shortSchedule: PlanningSchedule = { ...schedule(), project: { id: "project-1", name: "Short", status: "active", start: "2026-08-03", end: "2026-08-05", target_finish: "2026-08-05", calculated_finish: "2026-08-05", revision: 1 } };
     const base = buildTimeline(shortSchedule, "day", "standard", 900);
     const expanded = buildTimeline(shortSchedule, "day", "standard", 900, 0.7);
     const contracted = buildTimeline(shortSchedule, "day", "standard", 900, 1.3);
     expect(expanded.cellWidth).toBeLessThan(base.cellWidth);
     expect(contracted.cellWidth).toBeGreaterThan(base.cellWidth);
     expect(expanded.units.length).toBeGreaterThan(contracted.units.length);
+  });
+
+  it("uses the latest compatibility, target, calculated, or task finish as the schedule horizon", () => {
+    const extended: PlanningSchedule = {
+      ...schedule(),
+      project: { ...schedule().project, end: "2026-09-09", target_finish: "2026-09-10", calculated_finish: "2026-09-11" },
+      tasks: [{ ...task, end: "2026-09-12" }],
+    };
+
+    expect(planningScheduleHorizon(extended)).toBe("2026-09-12");
+    expect(buildTimeline(extended, "day", "standard").units.some((unit) => unit.key === "2026-09-12")).toBe(true);
+  });
+
+  it("ignores absent or invalid runtime horizons without weakening the typed project contract", () => {
+    const legacySchedule = {
+      ...schedule(),
+      project: {
+        ...schedule().project,
+        target_finish: undefined,
+        calculated_finish: "not-a-date",
+        schedule_horizon: "2026-02-31",
+      },
+      tasks: [{ ...task, end: "2026-09-12" }],
+    } as unknown as PlanningSchedule;
+
+    expect(planningScheduleHorizon(legacySchedule)).toBe("2026-09-12");
+    expect(buildTimeline(legacySchedule, "day", "standard").units.every((unit) => Number.isFinite(unit.date.getTime()))).toBe(true);
+  });
+
+  it("accepts a valid runtime schedule horizon when it is the latest finite date", () => {
+    const scheduleWithHorizon = {
+      ...schedule(),
+      project: { ...schedule().project, schedule_horizon: "2026-10-01" },
+    } as PlanningSchedule;
+
+    expect(planningScheduleHorizon(scheduleWithHorizon)).toBe("2026-10-01");
   });
 });
 
@@ -108,7 +144,7 @@ function drag(mode: DragState["mode"]): DragState {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-03", end: "2026-09-09", revision: 1 },
+    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-03", end: "2026-09-09", target_finish: "2026-09-09", calculated_finish: "2026-09-09", revision: 1 },
     tasks: [task],
     dependencies: [],
     resources: [],

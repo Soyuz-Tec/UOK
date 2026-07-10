@@ -15,7 +15,7 @@ def auth(client: TestClient, username: str, password: str) -> dict[str, str]:
 
 def command(client: TestClient, headers: dict[str, str], command_type: str, payload: dict, key: str):
     request_headers = dict(headers)
-    if command_type.startswith(("CreatePlanning", "UpdatePlanning", "DeletePlanning", "LinkPlanning", "RemovePlanning", "SetPlanning", "AssignPlanning", "LevelPlanning", "BatchPlanning", "RunPlanning", "DecidePlanning", "ApplyPlanning", "RollbackPlanning")) and command_type != "CreatePlanningProject":
+    if command_type.startswith(("CreatePlanning", "TransitionPlanning", "UpdatePlanning", "DeletePlanning", "LinkPlanning", "RemovePlanning", "SetPlanning", "AssignPlanning", "LevelPlanning", "BatchPlanning", "RunPlanning", "DecidePlanning", "ApplyPlanning", "RollbackPlanning")) and command_type != "CreatePlanningProject":
         project_id = _planning_project_id(client, headers, payload)
         schedule = client.get(f"/api/planning/projects/{project_id}/schedule", headers=headers)
         assert schedule.status_code == 200, schedule.text

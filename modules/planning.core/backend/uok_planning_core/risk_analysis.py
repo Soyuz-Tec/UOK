@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from .models import PlanningAnalysisRun
 from .risk_engine import RISK_ENGINE_NAME, RISK_ENGINE_VERSION, run_risk_engine, validate_risk_result
+from .scheduler import project_or_error
 from .what_if import what_if_integrity, what_if_or_error
 from uok.security import Actor
 from uok.util import dumps, loads
@@ -51,6 +52,7 @@ def create_risk_analysis(db: Session, actor: Actor, project_id: str, payload: di
 
 
 def list_risk_analyses(db: Session, actor: Actor, project_id: str) -> list[dict[str, Any]]:
+    project_or_error(db, actor, project_id)
     rows = db.scalars(select(PlanningAnalysisRun).where(
         PlanningAnalysisRun.organization_id == actor.organization_id,
         PlanningAnalysisRun.project_id == project_id,
@@ -60,6 +62,7 @@ def list_risk_analyses(db: Session, actor: Actor, project_id: str) -> list[dict[
 
 
 def risk_analysis_or_error(db: Session, actor: Actor, project_id: str, run_id: str) -> PlanningAnalysisRun:
+    project_or_error(db, actor, project_id)
     row = db.scalar(select(PlanningAnalysisRun).where(
         PlanningAnalysisRun.id == run_id,
         PlanningAnalysisRun.organization_id == actor.organization_id,

@@ -68,7 +68,7 @@ def test_recommendation_requires_approval_applies_audits_and_rolls_back(client: 
     assert optimized.status_code == 200, optimized.text
     metadata = optimized.json()["result"]["optimization"]
     assert metadata["status"] == "completed"
-    assert metadata["engine"] == {"name": "uok-bounded-schedule-optimizer", "version": "1"}
+    assert metadata["engine"] == {"name": "uok-bounded-schedule-optimizer", "version": "2"}
     assert metadata["integrity"]["verified"] is True
     recommendation = metadata["recommendations"][0]
     change = recommendation["proposal"]["task_changes"][0]

@@ -5,12 +5,13 @@ import { useUokLocalization } from "../../shared/localization";
 import { CommandButton } from "../../shared/primitives";
 import { loadPlanningPortfolio } from "./planningPortfolioApi";
 import type { PlanningPortfolioHealth, PlanningPortfolioProject, PlanningPortfolioResponse } from "./portfolioTypes";
+import type { PlanningProjectStatus } from "./types";
 
 export function PlanningPortfolioView({ token, onOpenProject }: { token: string; onOpenProject: (projectId: string) => void }) {
   const { formatNumber, t } = useUokLocalization();
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("");
-  const [applied, setApplied] = useState({ query: "", status: "" });
+  const [status, setStatus] = useState<PlanningProjectStatus | "">("");
+  const [applied, setApplied] = useState<{ query: string; status: PlanningProjectStatus | "" }>({ query: "", status: "" });
   const [refreshKey, setRefreshKey] = useState(0);
   const [data, setData] = useState<PlanningPortfolioResponse | null>(null);
   const [error, setError] = useState("");
@@ -55,10 +56,12 @@ export function PlanningPortfolioView({ token, onOpenProject }: { token: string;
         </label>
         <label>
           <span>{t("planning.portfolio.status", "Project status")}</span>
-          <select value={status} onChange={(event) => setStatus(event.target.value)}>
+          <select value={status} onChange={(event) => setStatus(event.target.value as PlanningProjectStatus | "")}>
             <option value="">{t("planning.portfolio.allStatuses", "All statuses")}</option>
+            <option value="draft">{t("planning.portfolio.draft", "Draft")}</option>
             <option value="active">{t("planning.portfolio.active", "Active")}</option>
-            <option value="complete">{t("planning.portfolio.complete", "Complete")}</option>
+            <option value="on_hold">{t("planning.portfolio.onHold", "On hold")}</option>
+            <option value="completed">{t("planning.portfolio.completed", "Completed")}</option>
             <option value="archived">{t("planning.portfolio.archived", "Archived")}</option>
           </select>
         </label>
@@ -113,13 +116,36 @@ function PortfolioTable({ projects, rangeStart, rangeEnd, onOpenProject }: {
         </tr></thead>
         <tbody>{projects.map((project) => {
           const position = timelinePosition(project, rangeStart, rangeEnd);
+          const dates = portfolioProjectDates(project);
+          const compatibilityHorizon = t("planning.portfolio.compatibilityHorizon", "Compatibility horizon");
+          const targetFinish = t("planning.portfolio.targetFinish", "Target finish");
+          const calculatedFinish = t("planning.portfolio.calculatedFinish", "Calculated finish");
+          const latestTaskFinish = t("planning.portfolio.latestTaskFinish", "Latest task finish");
+          const scheduleHorizon = t("planning.portfolio.scheduleHorizon", "Schedule horizon");
+          const projectStart = t("planning.gantt.projectStart", "Project start");
+          const visibleDates = [
+            dates.start && dates.rangeEnd ? `${formatDate(dates.start)} – ${formatDate(dates.rangeEnd)}` : null,
+            dates.compatibilityHorizon ? `${compatibilityHorizon} ${formatDate(dates.compatibilityHorizon)}` : null,
+            dates.targetFinish ? `${targetFinish} ${formatDate(dates.targetFinish)}` : null,
+            dates.calculatedFinish ? `${calculatedFinish} ${formatDate(dates.calculatedFinish)}` : null,
+            dates.latestTaskFinish ? `${latestTaskFinish} ${formatDate(dates.latestTaskFinish)}` : null,
+          ].filter((value): value is string => Boolean(value));
+          const timelineDates = [
+            dates.start ? `${projectStart} ${dates.start}` : null,
+            dates.scheduleHorizon ? `${scheduleHorizon} ${dates.scheduleHorizon}` : null,
+            dates.compatibilityHorizon ? `${compatibilityHorizon} ${dates.compatibilityHorizon}` : null,
+            dates.targetFinish ? `${targetFinish} ${dates.targetFinish}` : null,
+            dates.calculatedFinish ? `${calculatedFinish} ${dates.calculatedFinish}` : null,
+            dates.latestTaskFinish ? `${latestTaskFinish} ${dates.latestTaskFinish}` : null,
+          ].filter((value): value is string => Boolean(value));
+          const timelineLabel = `${project.name}: ${timelineDates.join("; ")}`;
           return <tr key={project.id}>
-            <th scope="row"><strong>{project.name}</strong><span>{formatDate(project.start)} – {formatDate(project.end)}</span></th>
+            <th scope="row"><strong>{project.name}</strong>{visibleDates.length ? <span>{visibleDates.join(" · ")}</span> : null}</th>
             <td><Health value={project.attention.health} /></td>
             <td>{formatNumber(project.metrics.completion_percent)}%</td>
             <td>{formatNumber(project.attention.issue_count)}</td>
             <td>
-              <div className="planning-portfolio-timeline" role="img" aria-label={`${project.name}: ${project.start} to ${project.end}`}>
+              <div className="planning-portfolio-timeline" role="img" aria-label={timelineLabel}>
                 <span style={{ insetInlineStart: `${position.start}%`, inlineSize: `${position.width}%` }} />
               </div>
             </td>
@@ -138,10 +164,38 @@ function Health({ value }: { value: PlanningPortfolioHealth }) {
 }
 
 function timelinePosition(project: PlanningPortfolioProject, rangeStart: string | null, rangeEnd: string | null) {
-  const rangeStartTime = Date.parse(`${rangeStart || project.start}T00:00:00Z`);
-  const rangeEndTime = Date.parse(`${rangeEnd || project.end}T00:00:00Z`);
+  const projectStartTime = portfolioDateTime(project.start);
+  const horizonTime = portfolioDateTime(project.schedule_horizon) ?? portfolioDateTime(project.end);
+  if (projectStartTime === null || horizonTime === null) return { start: 0, width: 2 };
+  const rangeStartTime = portfolioDateTime(rangeStart) ?? projectStartTime;
+  const rangeEndTime = portfolioDateTime(rangeEnd) ?? horizonTime;
   const span = Math.max(1, rangeEndTime - rangeStartTime);
-  const start = Math.max(0, Math.min(100, ((Date.parse(`${project.start}T00:00:00Z`) - rangeStartTime) / span) * 100));
-  const end = Math.max(start, Math.min(100, ((Date.parse(`${project.end}T00:00:00Z`) - rangeStartTime) / span) * 100));
+  const start = Math.max(0, Math.min(100, ((projectStartTime - rangeStartTime) / span) * 100));
+  const end = Math.max(start, Math.min(100, ((horizonTime - rangeStartTime) / span) * 100));
   return { start, width: Math.max(2, end - start) };
+}
+
+function portfolioProjectDates(project: PlanningPortfolioProject) {
+  const start = portfolioDate(project.start);
+  const compatibilityHorizon = portfolioDate(project.end);
+  const scheduleHorizon = portfolioDate(project.schedule_horizon);
+  return {
+    start,
+    compatibilityHorizon,
+    scheduleHorizon,
+    rangeEnd: scheduleHorizon ?? compatibilityHorizon,
+    targetFinish: portfolioDate(project.target_finish),
+    calculatedFinish: portfolioDate(project.calculated_finish),
+    latestTaskFinish: portfolioDate(project.latest_task_finish),
+  };
+}
+
+function portfolioDate(value: string | null | undefined) {
+  return portfolioDateTime(value) === null ? null : value || null;
+}
+
+function portfolioDateTime(value: string | null | undefined) {
+  if (!value) return null;
+  const parsed = Date.parse(`${value}T00:00:00Z`);
+  return Number.isFinite(parsed) ? parsed : null;
 }

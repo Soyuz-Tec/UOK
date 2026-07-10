@@ -32,7 +32,7 @@ def test_schedule_api_exposes_negative_target_float_and_independent_validation(c
     schedule = response.json()
 
     assert schedule["calculation"] == {
-        "engine_version": "uok-cpm-1",
+        "engine_version": "uok-cpm-2",
         "project_start": "2026-08-03",
         "calculated_finish": "2026-08-07",
         "target_finish": "2026-08-05",

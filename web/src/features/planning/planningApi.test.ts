@@ -12,6 +12,7 @@ import {
   PlanningPreconditionError,
   planningCommand,
   removePlanningLink,
+  transitionPlanningProject,
   type PlanningStrongEtag,
   updatePlanningTask,
   updatePlanningTaskDates,
@@ -210,6 +211,20 @@ describe("Planning API concurrency and idempotency", () => {
     const headers = new Headers(fetchMock.mock.calls[0][1].headers);
     expect(headers.get("Idempotency-Key")).toBe("planning-project-intent-1");
     expect(headers.has("If-Match")).toBe(false);
+  });
+
+  it("transitions a project through the strict reasoned endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ id: "project-1", status: "archived", revision: 2 }, 200, etag2));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await transitionPlanningProject("token", "project-1", {
+      target_status: "archived", reason: "Plan retained for audit",
+    }, { ifMatch: etag1, idempotencyKey: "planning-transition-intent-1" });
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/planning/projects/project-1/transitions");
+    const request = fetchMock.mock.calls[0][1] as RequestInit;
+    expect(new Headers(request.headers).get("If-Match")).toBe(etag1);
+    expect(JSON.parse(String(request.body))).toEqual({ target_status: "archived", reason: "Plan retained for audit" });
   });
 });
 

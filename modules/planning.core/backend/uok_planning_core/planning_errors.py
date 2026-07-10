@@ -22,6 +22,7 @@ PLANNING_FIELDS = (
     "decision",
     "due",
     "reason",
+    "target_status",
     "scope_type",
     "relationship",
     "target.kind",

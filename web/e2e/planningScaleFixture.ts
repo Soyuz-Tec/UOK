@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-const project = { id: "scale-project", name: "500 task scale proof", status: "active", start: "2027-01-04", end: "2028-12-31", timezone: "UTC", revision: 1 };
+const project = { id: "scale-project", name: "500 task scale proof", status: "active", start: "2027-01-04", end: "2028-12-31", target_finish: "2028-12-31", calculated_finish: "2028-12-31", timezone: "UTC", revision: 1 };
 const capabilities = { read: true, edit: true, baseline_create: true, level: true, link: true, gate_approve: true, admin: true, analyze: true, analysis_approve: true, review_only: false };
 const tasks = Array.from({ length: 500 }, (_, index) => ({
   id: `scale-task-${index + 1}`, project_id: project.id, version: 1, parent_task_id: null, wbs: String(index + 1), title: `Scale task ${index + 1}`,

@@ -90,7 +90,7 @@ describe("planning history", () => {
 
 function schedule(tasks: PlanningTask[]): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-30", revision: 1 },
+    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-30", target_finish: "2026-08-30", calculated_finish: "2026-08-30", revision: 1 },
     tasks,
     dependencies: [],
     calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },

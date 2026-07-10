@@ -24,6 +24,7 @@ from .models import (
     utcnow,
 )
 from .planning_audit import add_planning_schedule_event, emit_planning_event
+from .project_lifecycle import cmd_transition_project
 from .read_model import schedule_read_model, serialize_project, serialize_task
 from .scheduler import (
     DEPENDENCY_TYPES,
@@ -56,11 +57,13 @@ def cmd_create_project(db: Session, actor: Actor, payload: dict[str, Any], comma
         name=name,
         start_at=start,
         end_at=end,
+        target_finish_at=end,
         timezone_name=planning_timezone(payload.get("timezone")),
         updated_at=utcnow(),
     )
     db.add(project)
     db.flush()
+    apply_schedule(db, actor, project.id)
     emit_planning_event(db, actor, command_id, "PlanningProjectCreated", "PlanningProject", project.id, {"name": name})
     add_planning_schedule_event(db, actor, command_id, project.id, "project_created", {"name": name})
     return serialize_project(project)
@@ -169,6 +172,7 @@ def cmd_remove_dependency(db: Session, actor: Actor, payload: dict[str, Any], co
 def command_handlers() -> dict[str, CommandHandler]:
     handlers = {
         "CreatePlanningProject": cmd_create_project,
+        "TransitionPlanningProject": cmd_transition_project,
         "CreatePlanningTask": cmd_create_task,
         "UpdatePlanningTask": cmd_update_task,
         "UpdatePlanningTaskDates": cmd_update_planning_task_dates,
@@ -204,6 +208,7 @@ def command_handlers() -> dict[str, CommandHandler]:
 def command_permissions() -> dict[str, str]:
     edit_commands = {
         "CreatePlanningProject",
+        "TransitionPlanningProject",
         "CreatePlanningTask",
         "UpdatePlanningTask",
         "UpdatePlanningTaskDates",

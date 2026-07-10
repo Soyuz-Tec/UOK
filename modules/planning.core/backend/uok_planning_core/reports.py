@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from .models import PlanningProject, PlanningScheduleEvent, PlanningTask, PlanningTaskDependency
@@ -17,9 +17,22 @@ def dashboard_counts(db: Session, actor: Actor) -> dict[str, int]:
             PlanningProject.organization_id == actor.organization_id,
             PlanningProject.status != "purged",
         )) or 0,
-        "planning_tasks": db.scalar(select(func.count(PlanningTask.id)).where(
-            PlanningTask.organization_id == actor.organization_id,
-        )) or 0,
+        "planning_tasks": db.scalar(
+            select(func.count(PlanningTask.id))
+            .select_from(PlanningTask)
+            .join(
+                PlanningProject,
+                and_(
+                    PlanningProject.id == PlanningTask.project_id,
+                    PlanningProject.organization_id == PlanningTask.organization_id,
+                ),
+            )
+            .where(
+                PlanningTask.organization_id == actor.organization_id,
+                PlanningProject.organization_id == actor.organization_id,
+                PlanningProject.status != "purged",
+            )
+        ) or 0,
     }
 
 

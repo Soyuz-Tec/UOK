@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, event
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, event, inspect
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -26,6 +26,8 @@ class PlanningProject(Base):
     status: Mapped[str] = mapped_column(String(40), default="active")
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    target_finish_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    calculated_finish_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     timezone_name: Mapped[str] = mapped_column("timezone", String(80), default="UTC", server_default="UTC")
     revision: Mapped[int] = mapped_column(BigInteger, default=1, server_default="1")
     attrs_json: Mapped[str] = mapped_column(Text, default="{}")
@@ -35,6 +37,11 @@ class PlanningProject(Base):
         UniqueConstraint("organization_id", "name"),
         CheckConstraint("revision >= 1", name="ck_planning_projects_revision_positive"),
         CheckConstraint("end_at >= start_at", name="ck_planning_projects_date_order"),
+        CheckConstraint("target_finish_at >= start_at", name="ck_planning_projects_target_finish_order"),
+        CheckConstraint(
+            "status IN ('draft', 'active', 'on_hold', 'completed', 'archived', 'purged')",
+            name="ck_planning_projects_status",
+        ),
         CheckConstraint("length(trim(timezone)) BETWEEN 1 AND 80", name="ck_planning_projects_timezone_nonempty"),
         Index("ix_planning_core_projects_org_status", "organization_id", "status"),
         Index("ix_planning_core_projects_org_revision", "organization_id", "id", "revision"),
@@ -74,6 +81,10 @@ class PlanningTask(Base):
         CheckConstraint("progress >= 0 AND progress <= 100", name="ck_planning_tasks_progress_range"),
         CheckConstraint("sort_order >= 0", name="ck_planning_tasks_sort_order_nonnegative"),
         CheckConstraint("task_type IN ('task', 'summary', 'milestone')", name="ck_planning_tasks_type"),
+        CheckConstraint(
+            "status IN ('planned', 'in_progress', 'blocked', 'complete', 'deleted')",
+            name="ck_planning_tasks_status",
+        ),
         Index("ix_planning_core_tasks_project_order", "organization_id", "project_id", "sort_order"),
         Index("ix_planning_core_tasks_project_status", "organization_id", "project_id", "status"),
         Index("ix_planning_core_tasks_org_project_version", "organization_id", "project_id", "version"),
@@ -150,6 +161,21 @@ def _validate_planning_task_attributes(_mapper: object, _connection: object, tas
         raise ValueError("Planning task attributes must be valid JSON") from exc
     if str(attributes.get("scheduling_mode") or "auto") not in {"auto", "manual"}:
         raise ValueError("Planning task scheduling_mode must be auto or manual")
+
+
+@event.listens_for(PlanningProject, "before_insert")
+def _default_planning_project_finishes(_mapper: object, _connection: object, project: PlanningProject) -> None:
+    project.target_finish_at = project.target_finish_at or project.end_at
+    project.calculated_finish_at = project.calculated_finish_at or project.start_at
+
+
+@event.listens_for(PlanningProject, "before_update")
+def _guard_planning_project_status(_mapper: object, _connection: object, project: PlanningProject) -> None:
+    if not inspect(project).attrs.status.history.has_changes():
+        return
+    if not getattr(project, "_planning_transition_allowed", False):
+        raise ValueError("Planning project status changes require TransitionPlanningProject")
+    project._planning_transition_allowed = False
 
 
 class PlanningLink(Base):

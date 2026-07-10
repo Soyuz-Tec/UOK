@@ -44,6 +44,7 @@ requirement.
 | PLA-A-015 | Accessible focus and state recovery | Inline editing and error notices expose stable focus targets | Successful keyboard edits restore focus; stale mutation and inverse failures focus and announce repair guidance without unsafe automatic replay | `runtime_proven` |
 | PLA-A-016 | Evidence governance and lifecycle | Feature catalog, module plan, architecture index, ADR, module tests, and verifier use one evidence taxonomy and module-owned paths | Ambiguous catalog labels are removed, source-size checks pass, and install/enable/verify/rebuild candidate lifecycle is exercised | `runtime_proven` |
 | PLA-A-017 | Immutable revision and outbox evidence | Every successful guarded command appends one checksummed project-revision ledger row and one schema-v1 internal outbox envelope in the same transaction; history is actor-scoped and raw payloads remain private | Creation/derived-version/correlation checks, post-insert rollback, replay, exact source lookup, poisoning regression, PostgreSQL concurrency/immutability/tenant/envelope probes, and rebuilt candidate proof pass | `runtime_proven` |
+| PLA-A-018 | Controlled project lifecycle and finish authority | Reasoned project transitions, read-only archive/restore, non-disclosing internal purge, exact target commitment, persisted CPM-v2 finish, and compatibility horizon are explicit contracts | Exhaustive guarded transition edges, generated contracts, migration invariants, finish mismatch/repair, immutable-capture rejection, rebuilt candidate lifecycle/finish readback, and both PostgreSQL replay/purge project-lock orderings | `runtime_proven` |
 
 ## Current slice evidence
 
@@ -56,6 +57,7 @@ requirement.
 - Backend revision, task-version, strict ETag, stale-write, replay-order, and route-coverage proof: `modules/planning.core/tests/test_planning_optimistic_concurrency.py`
 - Additive module migration: `modules/planning.core/migrations/002_planning_optimistic_concurrency.sql`
 - Live PostgreSQL two-client row-lock verifier: `modules/planning.core/tests/runtime/verify_planning_postgres_concurrency.py`
+- Live PostgreSQL exact-replay/purge two-order project-lock verifier: `modules/planning.core/tests/runtime/verify_planning_replay_purge_concurrency.py`
 - Typed frontend stale-write recovery and fail-closed multi-write proof: `web/src/features/planning/planningApi.test.ts` and `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`
 - Candidate PostgreSQL proof: two simultaneous writes returned exactly one `200` and one `412`; repeated concurrent reads never observed a mixed revision/schedule snapshot.
 - Candidate/UI gates: `scripts/verify_uok_candidate.ps1` and `web/e2e/uok-proof.spec.ts` pass with atomic bulk controls enabled only through the batch endpoint.
@@ -288,6 +290,16 @@ log schema. They remain required before `production_ready` and are tracked with
 the Gate A audit-correlation work rather than inferred from PLA-A-003's current
 integration evidence.
 
+Command type and canonical request bytes are compared before any module replay
+guard runs, preserving the stable `409` contract for mismatched key reuse. Only
+an exact succeeded replay enters Planning's visibility guard. It resolves newer
+commands through the immutable revision correlation and supports allowlisted
+legacy no-ledger result shapes, including the schedule result retained after a
+dependency was deleted. The guard then takes the project read lock: visible and
+archived projects may replay the original result, while purged projects return
+not-found without recovered project IDs or command correlation. Internal purge
+uses the same project row as its serialization boundary.
+
 ## Current optimistic concurrency boundary
 
 The project schedule is the aggregate revision root. Existing-project Planning
@@ -440,20 +452,31 @@ are complete and hash verified.
 
 ## Current CPM boundary
 
-The `uok-cpm-1` engine calculates a logic-driven earliest schedule from the
+The `uok-cpm-2` engine calculates a logic-driven earliest schedule from the
 project start, task durations, hard date constraints, manual dates, working
 calendar, and the dependency graph. Persisted planned dates remain the approved
 schedule displayed by the Gantt; they are not relabeled as CPM early dates.
 Summary tasks are excluded from the graph and dependency links to summaries are
 rejected.
 
-The project compatibility `end` value remains the explicit target finish.
-When the target is later than the calculated finish, late dates anchor to the
-calculated finish so the longest path remains zero-float and visible. When the
-target is earlier, late dates anchor to the target and negative float is
-reported without moving the commitment or clamping the value. A future
-The Gate B task date migration does not change that project-level target mapping;
-a future explicit project commitment model may replace it through a separate ADR.
+ADR-0020 separates the exact persisted `target_finish` commitment and
+authoritative persisted `calculated_finish` from the compatible project `end`
+horizon. Weekend and holiday targets remain exact; a separate prior-working-day
+anchor drives the backward pass. When calculated finish exceeds target,
+negative float is reported without moving or clamping the commitment. Every
+scheduler mutation persists canonical CPM, while conservative migration
+backfill mismatches remain explicit validation errors and block immutable
+capture until repaired.
+
+Project status is controlled through the reasoned transition command. Archived
+projects remain readable and history-visible but reject every other Planning
+mutation without revision, task-version, or event drift; active restoration is
+explicit. Internal purge has no public transition and hides every public
+project-scoped read family plus exact pre-purge command results. Changed-payload
+idempotency reuse remains a mismatch-first `409`; exact replay is serialized
+with purge on the project row and fails without recovered object or correlation
+identifiers once purge wins. The lifecycle migration requires quiesced writers
+and makes no rolling-deploy or old-binary rollback claim.
 
 The independent validators deliberately live outside their calculation engines.
 One recomputes CPM hard invariants from the published result; the other
@@ -468,12 +491,14 @@ A row may advance only when the evidence is present on the current branch and
 the narrow relevant check passes. `production_ready` requires the production
 hardening profile and cannot be inferred from local alpha tests.
 
-The 2026-07-10 closure sweep passed all Planning tests, all 146 frontend tests,
-the static production build, five Chromium scenarios, TechnologyAudit,
-EngineeringEvidence generation, Rebuild, the live CPM verifier, the full
-candidate verifier, and the repository Verify action. The feature stack remains
-in draft review: hosted CI is externally blocked by the GitHub account billing
-state, and no merge or production deployment was performed.
+The 2026-07-10 closure sweep passed all Planning tests, all 193 frontend tests,
+the static production build, ten runtime-independent Chromium scenarios, the
+live Planning Chromium scenario, TechnologyAudit, EngineeringEvidence
+generation, Rebuild, persistent CPM-v2 and both replay/purge lock-order
+verifiers, the full candidate verifier, and the repository Verify action. The
+feature stack remains in draft review: hosted CI is externally blocked by the
+GitHub account billing state, and no merge or production deployment was
+performed.
 
 Before Gate A closes, link this artifact from:
 

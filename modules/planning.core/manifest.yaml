@@ -15,6 +15,7 @@ lifecycle:
   - uninstalled
 commands:
   - CreatePlanningProject
+  - TransitionPlanningProject
   - CreatePlanningTask
   - UpdatePlanningTask
   - UpdatePlanningTaskDates
@@ -45,6 +46,7 @@ commands:
   - RollbackPlanningRecommendation
 events:
   - PlanningProjectCreated
+  - PlanningProjectTransitioned
   - PlanningTaskCreated
   - PlanningTaskUpdated
   - PlanningTaskDatesUpdated
@@ -84,6 +86,7 @@ api_prefixes:
 api_router: uok_planning_core.api:router
 command_handlers: uok_planning_core.commands:command_handlers
 command_permissions: uok_planning_core.commands:command_permissions
+command_replay_guard: uok_planning_core.replay_visibility:assert_planning_replay_visible
 role_grants: uok_planning_core.policy:role_grants
 dashboard_provider: uok_planning_core.reports:dashboard_counts
 evidence_provider: uok_planning_core.reports:evidence
@@ -124,6 +127,7 @@ extension_points:
   - manifest
   - backend_package
   - command_handlers
+  - command_replay_guard
   - api_router
   - dashboard_provider
   - evidence_provider

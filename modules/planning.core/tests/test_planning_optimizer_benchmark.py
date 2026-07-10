@@ -51,6 +51,7 @@ def _chain_snapshot(count: int) -> dict:
     return {
         "approved": {
             "project": {"id": "project-1", "start": "2026-08-03", "target_finish": "2027-12-31"},
+            "calculation": {"engine_version": "uok-cpm-2"},
             "tasks": tasks,
             "dependencies": dependencies,
             "calendar": {"working_days": [1, 2, 3, 4, 5], "holidays": [], "ignored_periods": []},

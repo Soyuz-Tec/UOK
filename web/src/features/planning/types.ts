@@ -4,12 +4,16 @@ import type { PlanningCapabilities } from "./planningCapabilities";
 export type { PlanningCapacityUnit, PlanningResourceCalendar, PlanningResourceCanonicalKind, PlanningResourceType } from "./resourceTypes";
 export type { PlanningCapabilities } from "./planningCapabilities";
 
+export type PlanningProjectStatus = "draft" | "active" | "on_hold" | "completed" | "archived";
+
 export type PlanningProject = {
   id: string;
   name: string;
-  status: string;
+  status: PlanningProjectStatus;
   start: string;
   end: string;
+  target_finish: string;
+  calculated_finish: string;
   timezone?: string;
   revision: number;
   updated_at?: string | null;

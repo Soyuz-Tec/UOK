@@ -59,7 +59,7 @@ const task: PlanningTask = {
 
 function schedule(requirements: PlanningTaskRequirement[]): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Gates", status: "active", start: "2026-08-03", end: "2026-08-28", revision: 4 },
+    project: { id: "project-1", name: "Gates", status: "active", start: "2026-08-03", end: "2026-08-28", target_finish: "2026-08-28", calculated_finish: "2026-08-28", revision: 4 },
     tasks: [task], dependencies: [], resources: [], assignments: [], baselines: [], participants: [], requirements,
     links: [{
       id: "link-1", project_id: "project-1", task_id: "task-1", scope_type: "task", relationship: "proves", blocking: false,

@@ -17,7 +17,7 @@ from .schedule_math import (
 )
 from .task_constraints import is_auto_scheduled, task_constraint
 
-CPM_ENGINE_VERSION = "uok-cpm-1"
+CPM_ENGINE_VERSION = "uok-cpm-2"
 
 
 class CpmCycleError(ValueError):
@@ -92,7 +92,7 @@ def calculate_cpm(
 
     normalized_start = next_working_day(project_start, calendar)
     if not active:
-        target = previous_working_day(target_finish or normalized_start, calendar)
+        target = target_finish or normalized_start
         return CpmResult(normalized_start, normalized_start, target, signed_working_distance(target, normalized_start, calendar), {})
 
     incoming, outgoing = _dependency_indexes(active_dependencies)
@@ -107,8 +107,8 @@ def calculate_cpm(
         early[task_id] = (start, _finish(task, start, calendar))
 
     calculated_finish = max(finish for _, finish in early.values())
-    target = previous_working_day(target_finish or calculated_finish, calendar)
-    late_anchor = min(target, calculated_finish)
+    target = target_finish or calculated_finish
+    late_anchor = min(previous_working_day(target, calendar), calculated_finish)
     late: dict[str, tuple[date, date]] = {}
     for task_id in reversed(order):
         task = by_id[task_id]

@@ -4,6 +4,9 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+PlanningPublicProjectStatus = Literal["draft", "active", "on_hold", "completed", "archived"]
+PlanningProjectStatusFilter = Literal["", "draft", "active", "on_hold", "completed", "archived"]
+
 
 class PlanningPortfolioMetrics(BaseModel):
     task_count: int
@@ -21,15 +24,20 @@ class PlanningPortfolioAttention(BaseModel):
     gate_blocker_count: int
     unavailable_blocking_link_count: int
     project_overdue: bool
+    project_late: bool
     issue_count: int
 
 
 class PlanningPortfolioProject(BaseModel):
     id: str
     name: str
-    status: str
+    status: PlanningPublicProjectStatus
     start: str
     end: str
+    target_finish: str
+    calculated_finish: str
+    latest_task_finish: str | None
+    schedule_horizon: str
     timezone: str
     revision: int
     updated_at: str | None
@@ -62,7 +70,7 @@ class PlanningPortfolioResponse(BaseModel):
     limit: int
     offset: int
     query: str
-    status: str
+    status: PlanningProjectStatusFilter
     projects: list[PlanningPortfolioProject]
     summary: PlanningPortfolioSummary
     diagnostics: PlanningPortfolioDiagnostics

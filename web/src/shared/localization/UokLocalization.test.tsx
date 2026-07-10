@@ -9,9 +9,28 @@ function Probe() {
   return <div data-testid="probe">{localization.direction}|{localization.t("nav.planning")}|{localization.t("missing", "Fallback")}|{localization.formatNumber(1234)}</div>;
 }
 
+function PlanningProbe() {
+  const { t } = useUokLocalization();
+  return <div data-testid="planning-probe">{t("planning.gantt.targetFinish")}|{t("planning.portfolio.scheduleHorizon")}|{t("planning.review.archived")}</div>;
+}
+
+function DateProbe() {
+  return <div data-testid="date-probe">{useUokLocalization().formatDate("2026-08-31")}</div>;
+}
+
 describe("UOK localization", () => {
   it("provides shared Arabic translation, direction, fallback, and formatting", () => {
     render(<UokLocalizationProvider locale="ar"><Probe /></UokLocalizationProvider>);
     expect(screen.getByTestId("probe")).toHaveTextContent("rtl|التخطيط|Fallback|١٬٢٣٤");
+  });
+
+  it("localizes Planning finish markers and the archived review-only notice", () => {
+    render(<UokLocalizationProvider locale="ar"><PlanningProbe /></UokLocalizationProvider>);
+    expect(screen.getByTestId("planning-probe")).toHaveTextContent("الانتهاء المستهدف|أفق الجدول|المشروع المؤرشف للقراءة فقط");
+  });
+
+  it("formats date-only schedule facts without a UTC day shift", () => {
+    render(<UokLocalizationProvider locale="en-US"><DateProbe /></UokLocalizationProvider>);
+    expect(screen.getByTestId("date-probe")).toHaveTextContent("Aug 31, 2026");
   });
 });

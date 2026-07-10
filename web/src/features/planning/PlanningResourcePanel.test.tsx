@@ -10,7 +10,7 @@ describe("Planning typed resources", () => {
   it("submits controlled type, capacity, canonical target, and effective dates", async () => {
     const onCreateResource = vi.fn().mockResolvedValue(undefined);
     render(<PlanningResourcePanel
-      schedule={{ resources: [] } as unknown as PlanningSchedule}
+      schedule={schedule([])}
       selectedTask={null}
       busy=""
       onCreateResource={onCreateResource}
@@ -43,7 +43,7 @@ describe("Planning typed resources", () => {
   it("submits resource-specific capacity days, holidays, and exceptions", async () => {
     const onSetResourceCalendar = vi.fn().mockResolvedValue(undefined);
     render(<PlanningResourcePanel
-      schedule={{ resources: [resource()] } as unknown as PlanningSchedule}
+      schedule={schedule([resource()])}
       selectedTask={null}
       busy=""
       onCreateResource={vi.fn()}
@@ -65,6 +65,14 @@ describe("Planning typed resources", () => {
     }));
   });
 });
+
+function schedule(resources: PlanningSchedule["resources"]): PlanningSchedule {
+  return {
+    project: { id: "project-1", name: "Resources", status: "active", start: "2026-08-03", end: "2026-08-28", target_finish: "2026-08-28", calculated_finish: "2026-08-28", revision: 1 },
+    tasks: [], dependencies: [], resources, assignments: [], links: [], baselines: [],
+    validation: { ok: true, violations: [], warnings: [] },
+  };
+}
 
 function resource() {
   return {

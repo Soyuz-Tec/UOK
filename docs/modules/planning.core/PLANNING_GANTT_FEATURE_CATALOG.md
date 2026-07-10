@@ -31,6 +31,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 |---|---:|---|
 | First-party renderer | `runtime_proven` | Owned React/SVG/HTML/CSS Gantt renderer behind `PlanningGantt`; Chromium candidate proof exercises the rendered workspace. |
 | Project picker and metadata | `runtime_proven` | Project selector, status chip, owner chip placeholder, and favorite control are exercised in Chromium candidate proof. |
+| Project lifecycle and finish authority | `runtime_proven` | The rebuilt PostgreSQL candidate proves reasoned archive/restore, readable archive with fail-closed writes, stable exact replay, non-disclosing purge lock ordering, exact Saturday target commitment, persisted CPM-v2 finish, negative float, and generated REST contracts. |
 | View tabs | `runtime_proven` | Gantt, Board, List, Calendar, Workload, People, and Dashboard are exercised in Chromium candidate proof. |
 | Task creation commands | `runtime_proven` | Task and milestone creation route through inspector/API flow; keyboard-only creation is covered by Chromium candidate proof. |
 | Dependencies | `integration_tested` | Create/update/remove uses server validation and dependency lines render in Gantt. |
@@ -39,7 +40,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Summary tasks and WBS | `source_present` | Summary rows, WBS sorting, hierarchy validation, collapse/expand controls. |
 | Milestones | `source_present` | Milestone task type and diamond rendering. |
 | Baselines | `runtime_proven` | New captures are immutable, complete v2 canonical snapshots with SHA-256 verification, source revision/creator/correlation metadata, and exact compare reads. Legacy snapshots are labeled partial in API/UI. Variance fields, per-row timeline lanes, and non-color badges render on task rows. |
-| Critical path | `runtime_proven` | Runtime CPM proof covers critical flags and negative float; the Gantt and Dashboard expose the resulting critical-path information. |
+| Critical path | `runtime_proven` | CPM v2 preserves exact weekend/holiday commitments, uses a separate working late anchor, and keeps negative float visible; the Gantt and Dashboard expose the resulting critical-path information. |
 | Calendars | `integration_tested` | Project working days, holidays, and ignored periods drive scheduling, propagation, read models, and timeline shading. Resource-specific capacity calendars are implemented and tracked separately below. |
 | Resources | `runtime_proven` | Resource creation, assignment, allocation display, independently validated daily capacity points, overload warnings, and candidate readback exist. |
 | Typed resource domain | `runtime_proven` | Controlled human/team/vehicle/equipment/material/budget/time-window/document/location/asset/custom types, compatible capacity units, optional actor-safe canonical references, effective dates, baseline capture, database constraints, generated contracts, typed inspector controls, PostgreSQL readback, and candidate proof pass. |

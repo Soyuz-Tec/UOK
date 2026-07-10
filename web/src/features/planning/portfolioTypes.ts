@@ -1,11 +1,17 @@
+import type { PlanningProjectStatus } from "./types";
+
 export type PlanningPortfolioHealth = "on_track" | "attention" | "blocked";
 
 export type PlanningPortfolioProject = {
   id: string;
   name: string;
-  status: string;
+  status: PlanningProjectStatus;
   start: string;
   end: string;
+  target_finish: string;
+  calculated_finish: string;
+  latest_task_finish: string | null;
+  schedule_horizon: string;
   timezone: string;
   revision: number;
   updated_at: string | null;
@@ -24,6 +30,7 @@ export type PlanningPortfolioProject = {
     gate_blocker_count: number;
     unavailable_blocking_link_count: number;
     project_overdue: boolean;
+    project_late: boolean;
     issue_count: number;
   };
 };
@@ -33,7 +40,7 @@ export type PlanningPortfolioResponse = {
   limit: number;
   offset: number;
   query: string;
-  status: string;
+  status: PlanningProjectStatus | "";
   projects: PlanningPortfolioProject[];
   summary: {
     visible_project_count: number;

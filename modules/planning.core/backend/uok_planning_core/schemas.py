@@ -17,6 +17,14 @@ class PlanningProjectRequest(BaseModel):
     timezone: str = Field(default="UTC", min_length=1, max_length=80)
 
 
+class PlanningProjectTransitionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    target_status: Literal["draft", "active", "on_hold", "completed", "archived"]
+    reason: str = Field(..., min_length=1, max_length=500)
+
+
 class PlanningTaskRequest(BaseModel):
     expected_revision: int | None = Field(default=None, ge=1)
     title: str = Field(..., min_length=2, max_length=180)

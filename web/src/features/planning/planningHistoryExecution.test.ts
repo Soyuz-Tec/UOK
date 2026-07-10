@@ -46,10 +46,13 @@ describe("planning history batch execution", () => {
       headers: { "Content-Type": "application/json", ETag: strongEtag(3) },
     }));
     vi.stubGlobal("fetch", fetchMock);
-    const schedule = {
-      project: { id: "project-1" },
-      dependencies: [{ id: "dep-1", predecessor_task_id: "task-1", successor_task_id: "task-2" }],
-    } as PlanningSchedule;
+    const schedule: PlanningSchedule = {
+      project: { id: "project-1", name: "History", status: "active", start: "2026-08-03", end: "2026-08-28", target_finish: "2026-08-28", calculated_finish: "2026-08-28", revision: 2 },
+      tasks: [],
+      dependencies: [{ id: "dep-1", project_id: "project-1", predecessor_task_id: "task-1", successor_task_id: "task-2", dependency_type: "finish_to_start", lag_days: 0 }],
+      resources: [], assignments: [], links: [], baselines: [],
+      validation: { ok: true, violations: [], warnings: [] },
+    };
     const steps: PlanningHistoryStep[] = [
       { kind: "update-task", taskId: "task-1", payload: { progress: 10 } },
       { kind: "remove-dependency", match: { predecessor_task_id: "task-1", successor_task_id: "task-2" } },

@@ -42,6 +42,7 @@ def planning_portfolio_read_model(
         func.sum(case((PlanningTask.task_type == "milestone", 1), else_=0)).label("milestones"),
         func.sum(case((and_(PlanningTask.deadline_at.is_not(None), PlanningTask.deadline_at < utcnow(), PlanningTask.status != "complete"), 1), else_=0)).label("overdue"),
         func.avg(PlanningTask.progress).label("progress"),
+        func.max(PlanningTask.end_at).label("latest_finish"),
     ).where(
         PlanningTask.organization_id == actor.organization_id,
         PlanningTask.project_id.in_(project_ids),
@@ -61,11 +62,21 @@ def _project_row(project: PlanningProject, tasks: Any, dependencies: int, gates:
     task_count = int(tasks.get("task_count") or 0)
     overdue = int(tasks.get("overdue") or 0)
     blocked = int(tasks.get("blocked") or 0)
-    project_overdue = project.end_at.date() < utcnow().date() and project.status not in {"complete", "completed", "archived"}
-    health = "blocked" if blocked or gates or links else "attention" if overdue or project_overdue else "on_track"
+    project_overdue = project.target_finish_at.date() < utcnow().date() and project.status not in {"completed", "archived"}
+    project_late = project.calculated_finish_at.date() > project.target_finish_at.date()
+    latest_task_finish = tasks.get("latest_finish")
+    latest_task_finish_value = latest_task_finish.date().isoformat() if latest_task_finish else None
+    schedule_horizon = max(filter(None, (
+        project.end_at.date().isoformat(), project.target_finish_at.date().isoformat(),
+        project.calculated_finish_at.date().isoformat(), latest_task_finish_value,
+    )))
+    health = "blocked" if blocked or gates or links else "attention" if overdue or project_overdue or project_late else "on_track"
     return {
         "id": project.id, "name": project.name, "status": project.status,
         "start": project.start_at.date().isoformat(), "end": project.end_at.date().isoformat(),
+        "target_finish": project.target_finish_at.date().isoformat(),
+        "calculated_finish": project.calculated_finish_at.date().isoformat(),
+        "latest_task_finish": latest_task_finish_value, "schedule_horizon": schedule_horizon,
         "timezone": project.timezone_name, "revision": int(project.revision),
         "updated_at": project.updated_at.isoformat() if project.updated_at else None,
         "metrics": {
@@ -77,7 +88,8 @@ def _project_row(project: PlanningProject, tasks: Any, dependencies: int, gates:
         "attention": {
             "health": health, "overdue_task_count": overdue, "gate_blocker_count": gates,
             "unavailable_blocking_link_count": links, "project_overdue": project_overdue,
-            "issue_count": overdue + blocked + gates + links + int(project_overdue),
+            "project_late": project_late,
+            "issue_count": overdue + blocked + gates + links + int(project_overdue) + int(project_late),
         },
     }
 
@@ -96,7 +108,7 @@ def _response(rows: list[dict[str, Any]], total: int, query: str, status: str, l
             "at_risk_project_count": sum(row["attention"]["health"] != "on_track" for row in rows),
             "status_counts": dict(statuses),
             "range_start": min((row["start"] for row in rows), default=None),
-            "range_end": max((row["end"] for row in rows), default=None),
+            "range_end": max((row["schedule_horizon"] for row in rows), default=None),
         },
         "diagnostics": {"strategy": "bounded_aggregate_v1", "query_count": query_count, "elapsed_ms": round((perf_counter() - started) * 1000, 2)},
     }

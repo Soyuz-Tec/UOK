@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .command_context import COMMAND_ETAG_RESULT_KEY, COMMAND_IF_MATCH_CONTEXT_KEY, CommandDomainError, CommandPermissionError, CommandPreconditionError
-from .module_commands import command_permissions, load_module_command_handlers
+from .module_commands import assert_command_replay_visible, command_permissions, load_module_command_handlers
 from .module_ops import ensure_command_module_operational
 from .models import CommandLog
 from .security import Actor, require_permission
@@ -63,7 +63,7 @@ def _log_denied_command(db: Session, actor: Actor, command_type: str, key: str, 
 
 def _log_validation_error(db: Session, actor: Actor, command_type: str, key: str, payload: dict[str, Any], exc: ValueError, command_id: str | None = None) -> None:
     db.rollback()
-    if command_id and hasattr(exc, "correlation_id"):
+    if command_id and hasattr(exc, "correlation_id") and getattr(exc, "attach_correlation", True):
         exc.correlation_id = command_id
     error_response = exc.response_body() if isinstance(exc, (CommandDomainError, CommandPreconditionError)) else {"error": str(exc)}
     failed = CommandLog(
@@ -87,7 +87,11 @@ def _authorized_replay_or_none(db: Session, actor: Actor, command_type: str, pay
         return None
     if existing.command_type != command_type or existing.request_json != request_json:
         raise IdempotencyConflictError(existing.id, _command_object_ids(payload))
-    return {"idempotent": True, "status": existing.status, "result": loads(existing.response_json)}
+    result = loads(existing.response_json)
+    assert_command_replay_visible(
+        db, actor, existing.command_type, loads(existing.request_json), result, existing.id,
+    )
+    return {"idempotent": True, "status": existing.status, "result": result}
 
 
 def execute_command(

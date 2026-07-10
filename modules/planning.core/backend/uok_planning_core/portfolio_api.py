@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from .api_support import require_planning_read
 from .portfolio import planning_portfolio_read_model
-from .portfolio_contracts import PlanningPortfolioResponse
+from .portfolio_contracts import PlanningPortfolioResponse, PlanningProjectStatusFilter
 from uok.db import get_db
 from uok.security import Actor, current_actor
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/planning", tags=["planning-portfolio"])
 def planning_portfolio(
     response: Response,
     query: str = Query(default="", max_length=80),
-    status: str = Query(default="", max_length=40, pattern=r"^[a-zA-Z0-9_-]*$"),
+    status: PlanningProjectStatusFilter = Query(default=""),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0, le=10_000),
     actor: Actor = Depends(current_actor),

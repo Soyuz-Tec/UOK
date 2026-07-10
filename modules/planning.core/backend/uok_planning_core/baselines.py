@@ -42,9 +42,11 @@ def complete_baseline_snapshot(
     created_at: datetime,
     correlation_id: str,
 ) -> dict[str, Any]:
+    from .project_calculation import assert_persisted_finish_current
     from .read_model import schedule_read_model
 
     schedule = schedule_read_model(db, actor, project)
+    assert_persisted_finish_current(schedule)
     task_rows = {
         row.id: row
         for row in db.scalars(

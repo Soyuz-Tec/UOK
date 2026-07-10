@@ -6,13 +6,13 @@ from random import Random
 from typing import Any
 
 from .calendar_payload import calendar_holidays, calendar_ignored_dates
-from .cpm import calculate_cpm
+from .cpm import CPM_ENGINE_VERSION, calculate_cpm
 from .models import PlanningTask, PlanningTaskDependency
 from .schedule_math import CalendarSpec, at_utc, working_duration
 from uok.util import dumps
 
 RISK_ENGINE_NAME = "uok-monte-carlo-risk"
-RISK_ENGINE_VERSION = "1"
+RISK_ENGINE_VERSION = "2"
 MIN_ITERATIONS = 100
 MAX_ITERATIONS = 5000
 MAX_RISK_TASKS = 200
@@ -109,6 +109,7 @@ def validate_risk_result(inputs: dict[str, Any], result: dict[str, Any]) -> list
 
 def _snapshot_schedule(snapshot: dict[str, Any]) -> tuple[list[dict[str, Any]], list[PlanningTaskDependency], CalendarSpec, date, date]:
     approved = snapshot["approved"]
+    require_current_snapshot_cpm(approved)
     preview = {str(row["id"]): row for row in snapshot["preview"]["tasks"]}
     templates = [{**row, **preview.get(str(row["id"]), {})} for row in approved["tasks"]]
     dependencies = [PlanningTaskDependency(**{
@@ -121,6 +122,11 @@ def _snapshot_schedule(snapshot: dict[str, Any]) -> tuple[list[dict[str, Any]], 
     holidays.update(calendar_ignored_dates(raw_calendar))
     calendar = CalendarSpec(frozenset(raw_calendar.get("working_days") or [1, 2, 3, 4, 5]), frozenset(holidays))
     return templates, dependencies, calendar, date.fromisoformat(approved["project"]["start"]), date.fromisoformat(approved["project"]["target_finish"])
+
+
+def require_current_snapshot_cpm(approved: dict[str, Any]) -> None:
+    if approved.get("calculation", {}).get("engine_version") != CPM_ENGINE_VERSION:
+        raise ValueError(f"analysis requires a {CPM_ENGINE_VERSION} snapshot; create a new what-if snapshot and rerun analysis")
 
 
 def _task_with_duration(row: dict[str, Any], duration: int | None, calendar: CalendarSpec) -> PlanningTask:
@@ -163,7 +169,7 @@ def _risk_result(finishes: list[date], durations: list[int], target: date, input
         "probability_on_or_before_target": round(sum(value <= target for value in finishes) / len(finishes), 6),
         "target_finish": target.isoformat(),
         "confidence": {"method": "deterministic_empirical_percentiles", "iterations": inputs["iterations"]},
-        "assumptions": {"dependency_engine": "uok-cpm-1", "correlation_method": "bounded_uniform_rank_blend"},
+        "assumptions": {"dependency_engine": CPM_ENGINE_VERSION, "correlation_method": "bounded_uniform_rank_blend"},
     }
 
 
@@ -206,4 +212,4 @@ def _issue(code: str, message: str) -> dict[str, Any]:
     return {"code": code, "message": message, "object_ids": []}
 
 
-__all__ = ["RISK_ENGINE_NAME", "RISK_ENGINE_VERSION", "risk_inputs", "run_risk_engine", "validate_risk_result"]
+__all__ = ["RISK_ENGINE_NAME", "RISK_ENGINE_VERSION", "require_current_snapshot_cpm", "risk_inputs", "run_risk_engine", "validate_risk_result"]

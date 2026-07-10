@@ -24,6 +24,7 @@ from .schemas import (
     PlanningDependencyUpdateRequest,
     PlanningLinkRequest,
     PlanningProjectRequest,
+    PlanningProjectTransitionRequest,
     PlanningResourceRequest,
     PlanningTaskRequest,
     PlanningTaskDateUpdateRequest,
@@ -34,6 +35,7 @@ from .schemas import (
     PlanningTaskRequirementRequest,
     PlanningTaskUpdateRequest,
 )
+from .scheduler import project_or_error
 from uok.commands import (
     MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
     MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
@@ -82,6 +84,13 @@ def projects(actor: Actor = Depends(current_actor), db: Session = Depends(get_db
 @router.post("/projects", responses=PLANNING_CREATE_RESPONSES, response_model=None)
 def create_project(req: PlanningProjectRequest, response: Response, idempotency_key: PlanningIdempotencyKey, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
     return run_planning_command(db, actor, "CreatePlanningProject", req.model_dump(exclude_none=True), idempotency_key, response)
+
+
+@router.post("/projects/{project_id}/transitions", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def transition_project(project_id: str, req: PlanningProjectTransitionRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
+    payload = req.model_dump(exclude_none=True)
+    payload["project_id"] = project_id
+    return run_planning_command(db, actor, "TransitionPlanningProject", payload, idempotency_key, response, if_match)
 
 
 @router.get(
@@ -206,6 +215,7 @@ def compare_project_baselines(
 ) -> dict[str, Any]:
     require_planning_read(db, actor)
     try:
+        project_or_error(db, actor, project_id)
         return compare_baselines(db, actor, project_id, left_baseline_id, right_baseline_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
@@ -220,6 +230,7 @@ def project_baseline(
 ) -> dict[str, Any]:
     require_planning_read(db, actor)
     try:
+        project_or_error(db, actor, project_id)
         return baseline_detail(baseline_or_error(db, actor, project_id, baseline_id))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc

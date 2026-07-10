@@ -10,6 +10,7 @@ import type {
   PlanningLinkCreateResult,
   PlanningLinkRemoveResult,
   PlanningProjectCreateRequest,
+  PlanningProjectTransitionRequest,
   PlanningResourceCreateRequest,
   PlanningScheduleMutationResult,
   PlanningTaskCreateRequest,
@@ -93,6 +94,10 @@ export async function loadPlanningSchedule(token: string, projectId: string): Pr
 
 export function createPlanningProject(token: string, payload: PlanningProjectCreateRequest, mutation: PlanningCreateOptions = {}) {
   return planningCreateJson<PlanningProject & PlanningMutationMetadata>(token, "/api/planning/projects", { method: "POST", body: JSON.stringify(payload) }, "planning-project", mutation);
+}
+
+export function transitionPlanningProject(token: string, projectId: string, payload: PlanningProjectTransitionRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningProject & PlanningMutationMetadata>(token, `/api/planning/projects/${projectId}/transitions`, { method: "POST", body: JSON.stringify(payload) }, "planning-project-transition", mutation);
 }
 
 export async function planningCommand<T, P extends object>(token: string, command_type: string, payload: P, prefix: string, mutation: PlanningMutationOptions) {

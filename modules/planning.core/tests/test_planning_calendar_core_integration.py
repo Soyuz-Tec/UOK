@@ -116,6 +116,46 @@ def test_unlinked_calendar_events_do_not_create_planning_warnings(client: TestCl
     assert schedule["availability"]["warnings"] == []
 
 
+def test_availability_includes_linked_task_conflicts_after_project_target(client: TestClient) -> None:
+    suffix = uuid4().hex[:8]
+    admin, ops = auth(client, "admin", "admin"), auth(client, "ops", "ops123")
+    for module in ("contacts.core", "calendar.core", "planning.core"):
+        assert client.post(f"/api/modules/{module}/install", headers=admin).status_code == 200
+    party_id = _contact(client, ops, suffix, "Late planner")
+    calendar = command(client, ops, "CreateCalendar", {
+        "name": f"Late Calendar {suffix}", "timezone": "UTC",
+    }, f"late-calendar-{suffix}")
+    event = command(client, ops, "CreateCalendarEvent", {
+        "calendar_id": calendar.json()["result"]["id"], "title": "Late conflict",
+        "starts_at": "2027-08-11T13:00:00+00:00", "ends_at": "2027-08-11T14:00:00+00:00",
+        "timezone": "UTC", "participants": [{
+            "participant_type": "party", "participant_id": party_id, "display_name": "Late planner",
+        }],
+    }, f"late-event-{suffix}")
+    assert event.status_code == 200, event.text
+    project = command(client, ops, "CreatePlanningProject", {
+        "name": f"Late Plan {suffix}", "start": "2027-08-03", "end": "2027-08-05",
+    }, f"late-project-{suffix}")
+    project_id = project.json()["result"]["id"]
+    task_id = _task(client, ops, project_id, suffix, "Late linked task")
+    moved = command(client, ops, "UpdatePlanningTask", {
+        "task_id": task_id, "start": "2027-08-10", "end": "2027-08-12", "cascade": False,
+    }, f"late-task-dates-{suffix}")
+    assert moved.status_code == 200, moved.text
+    resource = command(client, ops, "CreatePlanningResource", {
+        "project_id": project_id, "name": "Late party resource", "resource_type": "human",
+        "capacity_unit": "fte", "canonical_target_kind": "party", "canonical_target_id": party_id,
+    }, f"late-resource-{suffix}")
+    resource_id = next(row["id"] for row in resource.json()["result"]["resources"] if row["name"] == "Late party resource")
+    assert command(client, ops, "AssignPlanningResource", {
+        "task_id": task_id, "resource_id": resource_id,
+    }, f"late-assignment-{suffix}").status_code == 200
+    schedule = client.get(f"/api/planning/projects/{project_id}/schedule", headers=ops).json()
+    assert schedule["project"]["target_finish"] == "2027-08-05"
+    assert schedule["availability"]["to"].startswith("2027-08-13")
+    assert any("Late linked task: Late conflict" in warning for warning in schedule["availability"]["warnings"])
+
+
 def _contact(client: TestClient, ops: dict[str, str], suffix: str, name: str) -> str:
     response = command(client, ops, "CreateContact", {
         "display_name": f"{name} {suffix}", "visibility_scope": "organization",

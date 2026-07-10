@@ -26,7 +26,7 @@ describe("planning workload model", () => {
   it("uses server-validated resource capacity instead of a fixed 100 percent threshold", () => {
     const value = schedule();
     value.calculation = {
-      engine_version: "uok-cpm-1", project_start: "2026-08-01", calculated_finish: "2026-08-04", target_finish: "2026-08-08", target_variance_days: 0,
+      engine_version: "uok-cpm-2", project_start: "2026-08-01", calculated_finish: "2026-08-04", target_finish: "2026-08-08", target_variance_days: 0,
       independent_validation: { ok: true, violations: [] },
       resource_capacity: {
         engine_version: "uok-resource-capacity-2", default_capacity_percent: 100, overallocated_count: 1,
@@ -42,7 +42,7 @@ describe("planning workload model", () => {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-01", end: "2026-08-08", revision: 1 },
+    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-08", target_finish: "2026-08-08", calculated_finish: "2026-08-08", revision: 1 },
     tasks: [task("scope", "Scope", "2026-08-01", "2026-08-03"), task("build", "Build", "2026-08-02", "2026-08-04")],
     dependencies: [],
     resources: [{ id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling", resource_type: "human", capacity_value: 1, capacity_unit: "fte", canonical_target_kind: null, canonical_target_id: null, canonical_resolution: null, effective_start: null, effective_end: null, calendar: null }],

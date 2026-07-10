@@ -42,7 +42,7 @@ Operator browser
 - `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.
 - Module metadata is read from `modules/<module_name>/manifest.yaml`.
 - Backend runtime extension points are declared in manifests and resolved from module backend packages.
-- Current declared backend extension surfaces include API routers, command handlers, command permissions, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
+- Current declared backend extension surfaces include API routers, command handlers, command permissions, command replay guards, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
 - The frontend uses a compile-time module surface registry in `web/src/features/modules`; this is intentionally not runtime code loading from YAML yet.
 
 ## Boundaries
@@ -74,6 +74,7 @@ Operator browser
 - ADR-0010: `docs/architecture/ADR-0010-planning-resource-capacity-calendars.md`
 - ADR-0011: `docs/architecture/ADR-0011-planning-resource-calendar-correlation.md`
 - ADR-0019: `docs/architecture/ADR-0019-planning-revision-ledger-and-transactional-outbox.md`
+- ADR-0020: `docs/architecture/ADR-0020-planning-project-lifecycle-and-finish-authority.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -90,6 +91,7 @@ Operator browser
 - Planning Gantt Gate A traceability: `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`
 - Planning Gate B typed links resolve through module-owned adapters; K Connect threads now resolve through `communications.core`, while absent Operation Graph providers remain explicit `unavailable` states rather than simulated source objects.
 - Planning schedule writes append one immutable revision-ledger row and one internal transactional outbox envelope in the same project transaction. This is durable commit evidence only; no dispatcher or external-delivery claim exists.
+- Planning projects use a reasoned controlled lifecycle with recoverable read-only archive semantics and hidden internal purge. Exact target commitment and persisted CPM-v2 calculated finish are separate from the compatible `end` horizon; legacy calculated backfill mismatches fail visible and block immutable capture until a scheduler write repairs them.
 - Planning Gate B execution dates use scheduler-owned planned dates plus separate forecast, reason-audited actual, and deadline facts. Project-local calendar dates are stored as UTC instants through an immutable creation-time IANA timezone; subday Gantt scales remain visual-only.
 - Planning Gate B task participants reference canonical, authorized `contacts.core` Parties through actor-specific resolution without a cross-module foreign key. Responsibility roles remain distinct from Gate C capacity resources.
 - Planning Gate B requirements use a controlled, permissioned state machine and derive fail-closed task/project readiness from required decisions and actor-visible typed-link provider state.

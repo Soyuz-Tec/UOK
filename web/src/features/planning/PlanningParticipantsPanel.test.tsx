@@ -45,7 +45,7 @@ const task: PlanningTask = {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Participants", status: "active", start: "2026-08-03", end: "2026-08-28", revision: 2 },
+    project: { id: "project-1", name: "Participants", status: "active", start: "2026-08-03", end: "2026-08-28", target_finish: "2026-08-28", calculated_finish: "2026-08-28", revision: 2 },
     tasks: [task], dependencies: [], resources: [], assignments: [], links: [], baselines: [],
     participants: [{
       id: "participant-1", project_id: "project-1", task_id: "task-1", role: "owner", source_module: "contacts.core",

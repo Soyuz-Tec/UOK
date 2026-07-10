@@ -61,6 +61,7 @@ Every module manifest must declare:
 | `api_router` | Import target in `<package.module>:<attribute>` form for the module's FastAPI router. UOK resolves it from the module backend package at startup and mounts it; every route must stay inside the module's declared `api_prefixes`, and the module must list the `api_router` extension point. Modules without an `api_router` entry expose no module-mounted API routes. |
 | `command_handlers` | Import target for a provider returning this module's command handler mapping. Every returned command must be declared in `commands`, and every declared command must have one handler. |
 | `command_permissions` | Import target for a provider returning command-to-permission mappings. Every mapped command must be declared in `commands`, and every mapped permission must be declared in `permissions`. |
+| `command_replay_guard` | Optional product-neutral replay-visibility callable invoked only after command type and canonical request bytes exactly match the stored succeeded command. A mismatched reuse remains the kernel's stable `409`; an exact replay may be hidden when lifecycle or retention state makes its former result unavailable. |
 | `role_grants` | Import target for module-owned role permission grants. Grants extend kernel roles without hardcoding module permissions in `src/uok/security.py`. |
 | `dashboard_provider` | Import target for module-owned dashboard count fragments merged into `/api/dashboard`. |
 | `evidence_provider` | Import target for module-owned baseline evidence checks and counts merged into `/api/baseline-evidence`. |
@@ -76,6 +77,7 @@ UOK currently allows these module extension surfaces:
 - `manifest`: module catalog metadata and lifecycle declaration.
 - `backend_package`: module-owned Python package under `modules/<module>/backend`.
 - `command_handlers`: command handlers declared by manifest and dispatched by UOK.
+- `command_replay_guard`: module-owned current-visibility authorization for exact idempotent replay only. It must return a non-disclosing not-found envelope without recovered object IDs or command correlation when retention state hides the result; it does not run for a mismatched-key `409`.
 - `api_router`: FastAPI router composition through a declared route prefix, mounted by UOK from the manifest `api_router` import target instead of hardcoded kernel imports.
 - `dashboard_provider`: module-owned dashboard count fragments.
 - `evidence_provider`: module-owned baseline evidence checks and counts.

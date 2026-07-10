@@ -1293,6 +1293,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/projects/{project_id}/transitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transition Project */
+        post: operations["transition_project_api_planning_projects__project_id__transitions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/projects/{project_id}/what-if-snapshots": {
         parameters: {
             query?: never;
@@ -2345,6 +2362,8 @@ export interface components {
             issue_count: number;
             /** Overdue Task Count */
             overdue_task_count: number;
+            /** Project Late */
+            project_late: boolean;
             /** Project Overdue */
             project_overdue: boolean;
             /** Unavailable Blocking Link Count */
@@ -2382,19 +2401,30 @@ export interface components {
         /** PlanningPortfolioProject */
         PlanningPortfolioProject: {
             attention: components["schemas"]["PlanningPortfolioAttention"];
+            /** Calculated Finish */
+            calculated_finish: string;
             /** End */
             end: string;
             /** Id */
             id: string;
+            /** Latest Task Finish */
+            latest_task_finish: string | null;
             metrics: components["schemas"]["PlanningPortfolioMetrics"];
             /** Name */
             name: string;
             /** Revision */
             revision: number;
+            /** Schedule Horizon */
+            schedule_horizon: string;
             /** Start */
             start: string;
-            /** Status */
-            status: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "active" | "on_hold" | "completed" | "archived";
+            /** Target Finish */
+            target_finish: string;
             /** Timezone */
             timezone: string;
             /** Updated At */
@@ -2411,8 +2441,11 @@ export interface components {
             projects: components["schemas"]["PlanningPortfolioProject"][];
             /** Query */
             query: string;
-            /** Status */
-            status: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "" | "draft" | "active" | "on_hold" | "completed" | "archived";
             summary: components["schemas"]["PlanningPortfolioSummary"];
             /** Total */
             total: number;
@@ -2457,6 +2490,18 @@ export interface components {
              * @default UTC
              */
             timezone: string;
+        };
+        /** PlanningProjectTransitionRequest */
+        PlanningProjectTransitionRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Reason */
+            reason: string;
+            /**
+             * Target Status
+             * @enum {string}
+             */
+            target_status: "draft" | "active" | "on_hold" | "completed" | "archived";
         };
         /** PlanningRecommendationDecisionRequest */
         PlanningRecommendationDecisionRequest: {
@@ -5213,7 +5258,7 @@ export interface operations {
         parameters: {
             query?: {
                 query?: string;
-                status?: string;
+                status?: "" | "draft" | "active" | "on_hold" | "completed" | "archived";
                 limit?: number;
                 offset?: number;
             };
@@ -6844,6 +6889,93 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["PlanningTaskRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    transition_project_api_planning_projects__project_id__transitions_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningProjectTransitionRequest"];
             };
         };
         responses: {

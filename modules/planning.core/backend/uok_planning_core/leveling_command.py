@@ -74,7 +74,7 @@ def _run_leveling_passes(
         passes += 1
         pass_result = level_resource_allocations(
             project_tasks(db, actor, project.id), resources, assignments, calendar, resource_calendars,
-            horizon_days=horizon_days, latest_finish=project.end_at.date(),
+            horizon_days=horizon_days, latest_finish=project.target_finish_at.date(),
         )
         reasons.extend(pass_result.reasons)
         if not pass_result.changed_task_ids:

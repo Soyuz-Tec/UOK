@@ -12,7 +12,7 @@ build.readiness = { ready: false, required_count: 1, blocking_count: 1, blocking
 const milestone = task("review", "1.3", "Pilot review", "milestone", "planned", true);
 
 const schedule: PlanningSchedule = {
-  project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-10", revision: 1 },
+  project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-10", target_finish: "2026-08-10", calculated_finish: "2026-08-10", revision: 1 },
   tasks: [summary, scope, build, milestone],
   dependencies: [
     { id: "dep-1", project_id: "project-1", predecessor_task_id: "scope", successor_task_id: "build", dependency_type: "finish_to_start", lag_days: 0 },

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from .models import PlanningProject, PlanningTask, PlanningTaskDependency
 from .planning_errors import planning_domain_error
+from .project_lifecycle import assert_project_mutation_allowed
 from .revision_completion import finish_project_revision, task_states
 from uok.command_context import (
     COMMAND_ETAG_RESULT_KEY,
@@ -34,7 +35,7 @@ def guarded_planning_command(command_type: str, handler: PlanningHandler) -> Pla
     def guarded(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
         context = None
         try:
-            context = _begin_command(db, actor, command_type, payload)
+            context = _begin_command(db, actor, command_type, payload, command_id)
             result = handler(db, actor, payload, command_id)
             return _finish_command(db, actor, context, result, command_id, command_type, payload)
         except (CommandDomainError, CommandPreconditionError):
@@ -59,6 +60,7 @@ def read_locked_schedule_snapshot(db: Session, actor: Actor, project_id: str) ->
         .where(
             PlanningProject.id == project_id,
             PlanningProject.organization_id == actor.organization_id,
+            PlanningProject.status != "purged",
         )
         .with_for_update(read=True)
         .execution_options(populate_existing=True)
@@ -89,6 +91,7 @@ def _begin_command(
     actor: Actor,
     command_type: str,
     payload: dict[str, Any],
+    command_id: str,
 ) -> PlanningConcurrencyContext | None:
     if command_type == "CreatePlanningProject":
         return None
@@ -104,6 +107,7 @@ def _begin_command(
     )
     if not project:
         raise ValueError("project_id not found")
+    assert_project_mutation_allowed(project, command_type, command_id)
     schedule, current_etag = read_schedule_snapshot(db, actor, project)
     _require_precondition(project, payload, current_etag)
     return PlanningConcurrencyContext(project=project, task_states=task_states(db, actor, project.id))
@@ -204,6 +208,7 @@ def _require_precondition(project: PlanningProject, payload: dict[str, Any], cur
 
 def _command_project_id(db: Session, actor: Actor, command_type: str, payload: dict[str, Any]) -> str:
     project_commands = {
+        "TransitionPlanningProject",
         "CreatePlanningTask",
         "LinkPlanningTasks",
         "SetPlanningCalendar",

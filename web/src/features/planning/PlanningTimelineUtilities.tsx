@@ -22,6 +22,7 @@ export function PlanningTimelineUtilities({
   focusMode,
   layoutMode,
   reviewMode,
+  reviewModeLocked,
   onApplySavedView,
   onDateTarget,
   onFieldPresetChange,
@@ -55,6 +56,7 @@ export function PlanningTimelineUtilities({
   focusMode: boolean;
   layoutMode: PlanningLayoutMode;
   reviewMode: boolean;
+  reviewModeLocked: boolean;
   onApplySavedView: (config: PlanningSavedViewConfig) => void;
   onDateTarget: (date: string) => void;
   onFieldPresetChange: (preset: FieldPreset) => void;
@@ -113,8 +115,8 @@ export function PlanningTimelineUtilities({
             <ToggleButton icon={layoutMode === "timeline" ? Columns3 : Maximize2} className="planning-toolbar-toggle" pressed={layoutMode === "timeline"} onClick={onToggleLayoutMode}>
               {layoutMode === "timeline" ? "Split view" : "Timeline only"}
             </ToggleButton>
-            <ToggleButton icon={reviewMode ? Unlock : Lock} className="planning-toolbar-toggle" pressed={reviewMode} onClick={onToggleReviewMode} disabled={schedule.capabilities?.edit !== true}>
-              {schedule.capabilities?.edit === true ? (reviewMode ? "Edit mode" : "Review mode") : "Server review-only"}
+            <ToggleButton icon={reviewMode ? Unlock : Lock} className="planning-toolbar-toggle" pressed={reviewMode} onClick={onToggleReviewMode} disabled={reviewModeLocked || schedule.capabilities?.edit !== true}>
+              {!reviewModeLocked && schedule.capabilities?.edit === true ? (reviewMode ? "Edit mode" : "Review mode") : "Server review-only"}
             </ToggleButton>
             <ToggleButton icon={focusMode ? Minimize2 : Maximize2} className="planning-toolbar-toggle" pressed={focusMode} onClick={onToggleFocusMode}>
               {focusMode ? "Exit focus" : "Focus"}

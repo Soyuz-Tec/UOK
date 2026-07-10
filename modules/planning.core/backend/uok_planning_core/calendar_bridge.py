@@ -15,12 +15,19 @@ def calendar_availability_read_model(
     db: Session,
     actor: Actor,
     project: PlanningProject,
+    tasks: list[PlanningTask],
     resources: list[PlanningResource],
     assignments: list[PlanningAssignment],
     participants: list[dict[str, Any]],
 ) -> dict[str, Any]:
     start = _stored_utc(project.start_at)
-    end = _stored_utc(project.end_at) + timedelta(days=1)
+    finish_candidates = [
+        _stored_utc(project.end_at),
+        _stored_utc(project.target_finish_at),
+        _stored_utc(project.calculated_finish_at),
+    ]
+    finish_candidates.extend(_stored_utc(task.end_at) for task in tasks if task.status != "deleted")
+    end = max(finish_candidates) + timedelta(days=1)
     base = {
         "source_module": "calendar.core",
         "scope": "task_parties",

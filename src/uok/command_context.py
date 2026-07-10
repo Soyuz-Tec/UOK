@@ -18,6 +18,7 @@ class CommandDomainError(ValueError):
         repair: str,
         current_revision: int | None = None,
         correlation_id: str | None = None,
+        attach_correlation: bool = True,
     ) -> None:
         super().__init__(message)
         self.code = code
@@ -27,6 +28,7 @@ class CommandDomainError(ValueError):
         self.repair = repair
         self.current_revision = current_revision
         self.correlation_id = correlation_id
+        self.attach_correlation = attach_correlation
 
     def response_body(self) -> dict[str, object]:
         return {

@@ -12,6 +12,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningOptimization.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningPortfolio.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningBatch.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningLifecycle.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -244,18 +245,7 @@ function Invoke-UokPlanningCandidateScenario {
     if ($schedule.project.revision -lt 5 -or ($schedule.tasks | Where-Object { $_.version -lt 1 }).Count -gt 0) {
         throw "Planning revision/version evidence is invalid: $($schedule | ConvertTo-Json -Depth 20)"
     }
-    if ($schedule.calculation.engine_version -ne "uok-cpm-1" -or $schedule.calculation.independent_validation.ok -ne $true) {
-        throw "Planning canonical CPM validation failed: $($schedule | ConvertTo-Json -Depth 20)"
-    }
-    if ($schedule.calculation.resource_capacity.engine_version -ne "uok-resource-capacity-2" -or $schedule.calculation.resource_capacity.independent_validation.ok -ne $true) {
-        throw "Planning resource-capacity validation failed: $($schedule | ConvertTo-Json -Depth 20)"
-    }
-    if (-not $schedule.calculation.calculated_finish -or $schedule.calculation.target_finish -ne $schedule.project.end) {
-        throw "Planning target/calculated finish evidence is invalid: $($schedule | ConvertTo-Json -Depth 20)"
-    }
-    if (($schedule.tasks | Where-Object { $_.task_type -ne "summary" -and $_.critical }).Count -lt 1) {
-        throw "Planning canonical CPM did not identify a critical path: $($schedule | ConvertTo-Json -Depth 20)"
-    }
+    Assert-UokPlanningFinishAuthority -Schedule $schedule
 
     $baseline = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
         command_type = "CreatePlanningBaseline"
@@ -295,6 +285,8 @@ function Invoke-UokPlanningCandidateScenario {
     Assert-UokPlanningRiskAnalysis -ProjectId $projectId -TaskId $first.result.id -SnapshotId $whatIfEvidence.snapshot_id -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     Assert-UokPlanningGovernedOptimization -ProjectId $projectId -TaskId $first.result.id -SnapshotId $whatIfEvidence.snapshot_id -OpsHeaders $OpsHeaders -Stamp $Stamp
     Assert-UokPlanningPortfolio -ProjectId $projectId -ViewerHeaders $ViewerHeaders -Stamp $Stamp
+
+    Assert-UokPlanningProjectLifecycle -ProjectId $projectId -TaskId $first.result.id -Schedule $schedule -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
 
     return @{ project_id = $projectId }
 }

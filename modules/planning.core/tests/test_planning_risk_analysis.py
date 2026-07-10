@@ -41,7 +41,7 @@ def test_risk_run_persists_seed_inputs_percentiles_and_integrity(client: TestCli
 
     assert response.status_code == 200, response.text
     metadata = response.json()["risk_analysis"]
-    assert metadata["engine"] == {"name": "uok-monte-carlo-risk", "version": "1"}
+    assert metadata["engine"] == {"name": "uok-monte-carlo-risk", "version": "2"}
     assert metadata["seed"] == 8675309
     assert metadata["status"] == "completed"
     assert metadata["integrity"]["verified"] is True

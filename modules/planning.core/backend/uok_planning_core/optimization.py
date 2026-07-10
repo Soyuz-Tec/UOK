@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 from .models import PlanningAnalysisRecommendation, PlanningAnalysisRun, PlanningTask
 from .optimizer_engine import OPTIMIZER_ENGINE_NAME, OPTIMIZER_ENGINE_VERSION, run_optimizer
 from .risk_analysis import analysis_checksum, analysis_integrity
-from .scheduler import apply_schedule, parse_planning_date, project_calendar, task_or_error
+from .risk_engine import require_current_snapshot_cpm
+from .scheduler import apply_schedule, parse_planning_date, project_calendar, project_or_error, task_or_error
 from .schedule_math import working_duration
 from .what_if import what_if_integrity, what_if_or_error
 from uok.security import Actor
@@ -54,6 +55,7 @@ def create_optimization(db: Session, actor: Actor, project_id: str, payload: dic
 
 
 def list_optimizations(db: Session, actor: Actor, project_id: str) -> list[dict[str, Any]]:
+    project_or_error(db, actor, project_id)
     rows = db.scalars(select(PlanningAnalysisRun).where(
         PlanningAnalysisRun.organization_id == actor.organization_id,
         PlanningAnalysisRun.project_id == project_id,
@@ -63,6 +65,7 @@ def list_optimizations(db: Session, actor: Actor, project_id: str) -> list[dict[
 
 
 def optimization_or_error(db: Session, actor: Actor, project_id: str, run_id: str) -> PlanningAnalysisRun:
+    project_or_error(db, actor, project_id)
     row = db.scalar(select(PlanningAnalysisRun).where(
         PlanningAnalysisRun.id == run_id, PlanningAnalysisRun.organization_id == actor.organization_id,
         PlanningAnalysisRun.project_id == project_id, PlanningAnalysisRun.analysis_type == "optimization",
@@ -95,6 +98,7 @@ def optimization_detail(db: Session, actor: Actor, row: PlanningAnalysisRun) -> 
 
 
 def list_recommendations(db: Session, actor: Actor, project_id: str, run_id: str | None = None) -> list[dict[str, Any]]:
+    project_or_error(db, actor, project_id)
     query = select(PlanningAnalysisRecommendation).where(
         PlanningAnalysisRecommendation.organization_id == actor.organization_id,
         PlanningAnalysisRecommendation.project_id == project_id,
@@ -106,6 +110,7 @@ def list_recommendations(db: Session, actor: Actor, project_id: str, run_id: str
 
 
 def recommendation_or_error(db: Session, actor: Actor, project_id: str, recommendation_id: str) -> PlanningAnalysisRecommendation:
+    project_or_error(db, actor, project_id)
     row = db.scalar(select(PlanningAnalysisRecommendation).where(
         PlanningAnalysisRecommendation.id == recommendation_id,
         PlanningAnalysisRecommendation.organization_id == actor.organization_id,
@@ -129,6 +134,11 @@ def decide_recommendation(row: PlanningAnalysisRecommendation, actor: Actor, dec
 def apply_recommendation(db: Session, actor: Actor, row: PlanningAnalysisRecommendation, current_revision: int) -> set[str]:
     if row.status != "approved":
         raise ValueError("recommendation must be approved before apply")
+    run = db.get(PlanningAnalysisRun, row.analysis_run_id)
+    if not run or run.engine_name != OPTIMIZER_ENGINE_NAME or run.engine_version != OPTIMIZER_ENGINE_VERSION:
+        raise ValueError("legacy recommendation cannot be applied; create a new snapshot and rerun optimization")
+    snapshot = what_if_or_error(db, actor, row.project_id, run.snapshot_id)
+    require_current_snapshot_cpm(loads(snapshot.snapshot_json, {})["approved"])
     _apply_task_changes(db, actor, row, "after")
     changed = apply_schedule(db, actor, row.project_id)
     now = datetime.now(timezone.utc)

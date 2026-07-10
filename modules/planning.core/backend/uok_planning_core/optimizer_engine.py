@@ -10,7 +10,7 @@ from .scheduler import validate_schedule
 from .schedule_math import working_duration
 
 OPTIMIZER_ENGINE_NAME = "uok-bounded-schedule-optimizer"
-OPTIMIZER_ENGINE_VERSION = "1"
+OPTIMIZER_ENGINE_VERSION = "2"
 MAX_OPTIMIZER_CANDIDATES = 100
 MAX_OPTIMIZER_TIMEOUT_MS = 2000
 

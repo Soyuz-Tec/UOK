@@ -48,6 +48,8 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - explicit TypeScript request, mutation-result, domain-error, and precondition contracts propagated through Gantt, inspector, history, resource, baseline, and batch actions
 - accessible domain-failure alert with server repair guidance, field, current revision, and audit reference
 - server-owned planned/in-progress/blocked/complete status vocabulary and transition policy with structured invalid-value/transition rejection
+- reason-required draft/active/on-hold/completed/archived Planning project lifecycle; archived schedules, history, and exact pre-archive command replays remain readable while non-transition writes fail closed, active restoration is explicit, and internal purge stays outside the public transition API and hides exact replay without recovered identifiers
+- exact project target commitment plus separately persisted CPM-v2 calculated finish; compatible `end` remains a horizon, non-working targets stay exact, negative float remains visible, and immutable capture rejects stale persisted calculation evidence
 - revision-aware supported undo/redo operations that carry the source command through one atomic batch, reject stale inverses, preserve latest server state, and fail closed for unsupported/destructive history
 - keyboard/form alternatives for task dates, progress, dependency, and creation mutations, with successful inline focus restoration and announced stale-state recovery
 - Planning-owned typed project/task links with actor-specific `ready`, `unavailable`, `denied`, and `missing` resolver states; live Party, report-artifact/document/evidence, calendar-event, and K Connect thread providers; optional Operation Graph providers remain explicitly unavailable
@@ -74,6 +76,12 @@ Shared shell and reusable controls remain under `web/src/shared` and `web/src/fe
 ## Scheduling Authority
 
 All project, task, dependency, and reschedule changes must pass through Python validation before the UI accepts them. The React Gantt component may initiate drag-style changes, but it must call the planning API or command bus and reload the validated schedule read model after the server accepts the change.
+
+Project `target_finish` is the immutable scheduling commitment for this slice;
+compatible `end` remains the integration horizon. Scheduler writes persist the
+authoritative calculated finish without rewriting either commitment or horizon.
+Planning availability reads through the latest persisted/task finish, and
+resource leveling uses the explicit target as its latest-finish boundary.
 
 ## Operation Link Boundary
 

@@ -14,6 +14,8 @@ export type PlanningProjectCreateRequest = {
   timezone?: string;
 };
 
+export type PlanningProjectTransitionRequest = GeneratedPlanningComponents["schemas"]["PlanningProjectTransitionRequest"];
+
 export type PlanningTaskCreateRequest = {
   expected_revision?: number;
   title: string;

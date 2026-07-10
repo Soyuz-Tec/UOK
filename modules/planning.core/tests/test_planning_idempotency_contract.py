@@ -10,6 +10,7 @@ from uok.main import app
 WRITE_METHODS = {"post", "put", "patch", "delete"}
 PLANNING_MUTATIONS = {
     ("post", "/api/planning/projects"),
+    ("post", "/api/planning/projects/{project_id}/transitions"),
     ("post", "/api/planning/projects/{project_id}/tasks"),
     ("patch", "/api/planning/tasks/{task_id}"),
     ("patch", "/api/planning/tasks/{task_id}/dates"),

@@ -14,6 +14,7 @@ from .link_read_model import planning_links_read_model
 from .participant_resolver import planning_participants_read_model
 from .requirement_read_model import project_requirement_context
 from .policy import capability_read_model
+from .project_calculation import project_schedule_analysis
 from .resource_capacity import calculate_resource_capacity, resource_capacity_warnings
 from .resource_capacity_validation import validate_resource_capacity_result
 from .resource_calendar import resource_calendar_specs
@@ -31,7 +32,6 @@ from .scheduler import (
     project_calendar,
     project_dependencies,
     project_tasks,
-    schedule_analysis,
     validate_schedule,
 )
 from .schedule_math import working_duration
@@ -52,13 +52,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     tasks = project_tasks(db, actor, project.id)
     dependencies = project_dependencies(db, actor, project.id)
     calendar = project_calendar(db, actor, project.id)
-    analysis, cpm_issues = schedule_analysis(
-        tasks,
-        dependencies,
-        calendar,
-        project.start_at.date(),
-        project.end_at.date(),
-    )
+    analysis, cpm_issues = project_schedule_analysis(project, tasks, dependencies, calendar)
     metrics = {task_id: metric.as_dict() for task_id, metric in analysis.task_metrics.items()}
     baselines = _baselines(db, actor, project.id)
     latest_baseline = _baseline_task_index(baselines[0]) if baselines else {}
@@ -74,7 +68,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     capacity = calculate_resource_capacity(tasks, resources, assignments, calendar, resource_calendars)
     capacity_issues = validate_resource_capacity_result(tasks, resources, assignments, calendar, capacity, resource_calendars)
     independent_issues = [*cpm_issues, *capacity_issues]
-    availability = calendar_availability_read_model(db, actor, project, resources, assignments, participants)
+    availability = calendar_availability_read_model(db, actor, project, tasks, resources, assignments, participants)
     availability["warnings"] = availability_warnings(tasks, availability)
     violations = validate_schedule(tasks, dependencies, calendar)
     violations.extend(issue.message for issue in independent_issues)
@@ -124,6 +118,8 @@ def serialize_project(project: PlanningProject) -> dict[str, Any]:
         "status": project.status,
         "start": project.start_at.date().isoformat(),
         "end": project.end_at.date().isoformat(),
+        "target_finish": project.target_finish_at.date().isoformat(),
+        "calculated_finish": project.calculated_finish_at.date().isoformat(),
         "timezone": project.timezone_name,
         "revision": int(project.revision),
         "updated_at": _timestamp(project.updated_at),

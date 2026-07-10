@@ -47,7 +47,7 @@ def parse_planning_date(value: Any, field: str) -> datetime:
 
 def project_or_error(db: Session, actor: Actor, project_id: str) -> PlanningProject:
     project = db.get(PlanningProject, project_id)
-    if not project or project.organization_id != actor.organization_id:
+    if not project or project.organization_id != actor.organization_id or project.status == "purged":
         raise ValueError("project_id not found")
     return project
 
@@ -106,10 +106,11 @@ def apply_schedule(db: Session, actor: Actor, project_id: str, cascade_dependenc
     if violations:
         raise ValueError("; ".join(violations))
     project = project_or_error(db, actor, project_id)
-    analysis = calculate_cpm(tasks, dependencies, calendar, project.start_at.date(), project.end_at.date())
+    analysis = calculate_cpm(tasks, dependencies, calendar, project.start_at.date(), project.target_finish_at.date())
     independent_issues = validate_cpm_result(tasks, dependencies, calendar, analysis)
     if independent_issues:
         raise ValueError("independent schedule validation failed: " + "; ".join(item.message for item in independent_issues))
+    project.calculated_finish_at = at_utc(analysis.calculated_finish)
     return changed
 
 def validate_schedule(

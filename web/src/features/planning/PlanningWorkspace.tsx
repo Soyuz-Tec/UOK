@@ -33,7 +33,8 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
   const [workspaceMode, setWorkspaceMode] = useState<"project" | "portfolio">("project");
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const capabilities = usePlanningCapabilities(token, operational);
-  const serverReviewOnly = capabilities.review_only || (schedule ? schedule.capabilities?.edit !== true : false);
+  const archivedReviewOnly = schedule?.project.status === "archived";
+  const serverReviewOnly = capabilities.review_only || archivedReviewOnly || (schedule ? schedule.capabilities?.edit !== true : false);
   const actions = usePlanningWorkspaceMutations({
     token,
     operational,
@@ -86,7 +87,9 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
         </>
       ) : (
         <>
-          {serverReviewOnly ? <span className="planning-capability-notice" role="status">Server permissions allow review only; write controls are disabled.</span> : null}
+          {serverReviewOnly ? <span className="planning-capability-notice" role="status">{archivedReviewOnly
+            ? t("planning.review.archived", "Archived project is read-only; restore it to active before editing.")
+            : t("planning.review.permissions", "Server permissions allow review only; write controls are disabled.")}</span> : null}
           {actions.staleRecovery ? (
             <PlanningConcurrencyNotice
               recovery={actions.staleRecovery}
@@ -125,6 +128,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           showCritical={showCritical}
           showBaselines={showBaselines}
           reviewMode={reviewMode || serverReviewOnly}
+          reviewModeLocked={serverReviewOnly}
           selectedTaskId={selectedTaskId}
           selectedProjectId={selectedProjectId}
           busy={actions.busy}

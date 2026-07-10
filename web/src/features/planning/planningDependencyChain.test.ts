@@ -24,7 +24,7 @@ describe("planning dependency chain", () => {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-01", end: "2026-08-12", revision: 1 },
+    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-12", target_finish: "2026-08-12", calculated_finish: "2026-08-12", revision: 1 },
     tasks: ["a", "b", "c", "d"].map(task),
     dependencies: [
       { id: "a-b", project_id: "project-1", predecessor_task_id: "a", successor_task_id: "b", dependency_type: "finish_to_start", lag_days: 0 },

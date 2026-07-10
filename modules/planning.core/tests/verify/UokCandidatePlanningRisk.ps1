@@ -35,7 +35,7 @@ function Assert-UokPlanningRiskAnalysis {
     $metadata = $first.result.risk_analysis
     if (
         $metadata.engine.name -ne "uok-monte-carlo-risk" `
-        -or $metadata.engine.version -ne "1" `
+        -or $metadata.engine.version -ne "2" `
         -or $metadata.seed -ne 314159 `
         -or $metadata.status -ne "completed" `
         -or $metadata.integrity.verified -ne $true `

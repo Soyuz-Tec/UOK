@@ -210,7 +210,7 @@ function usePlanningHarness() {
 
 function schedule(revision: number, title = "Original task"): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-30", revision },
+    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-30", target_finish: "2026-08-30", calculated_finish: "2026-08-30", revision },
     tasks: [{
       id: "task-1",
       project_id: "project-1",

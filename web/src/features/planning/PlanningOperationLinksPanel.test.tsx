@@ -51,7 +51,7 @@ const task: PlanningTask = {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Operation", status: "active", start: "2026-08-03", end: "2026-08-28", revision: 4 },
+    project: { id: "project-1", name: "Operation", status: "active", start: "2026-08-03", end: "2026-08-28", target_finish: "2026-08-28", calculated_finish: "2026-08-28", revision: 4 },
     tasks: [task], dependencies: [], resources: [], assignments: [], baselines: [],
     links: [
       link("link-party", "party", "party-1", "ready", "Responsible owner", "Party is active.", "/?view=contacts&party_id=party-1"),

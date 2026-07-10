@@ -216,6 +216,7 @@ def _project_or_error(db: Session, actor: Actor, project_id: str) -> PlanningPro
     project = db.scalar(select(PlanningProject).where(
         PlanningProject.id == project_id,
         PlanningProject.organization_id == actor.organization_id,
+        PlanningProject.status != "purged",
     ))
     if project is None:
         raise PlanningRevisionNotFound("project_id not found")

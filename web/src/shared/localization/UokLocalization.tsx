@@ -17,11 +17,16 @@ const messages: Record<UokLocale, Record<string, string>> = {
     "planning.column.wbs": "WBS", "planning.column.task": "Task", "planning.column.start": "Start", "planning.column.end": "End",
     "planning.column.duration": "Dur.", "planning.column.progress": "%", "planning.column.critical": "Critical", "planning.column.assigned": "Assigned", "planning.column.status": "Status",
     "planning.scope": "Planning scope", "planning.projectSchedule": "Project schedule", "planning.portfolio": "Portfolio", "planning.portfolio.eyebrow": "Planning", "planning.portfolio.summary": "Monitor delivery, risk, gates, and schedule windows across projects.",
-    "planning.portfolio.search": "Search projects", "planning.portfolio.status": "Project status", "planning.portfolio.allStatuses": "All statuses", "planning.portfolio.active": "Active",
-    "planning.portfolio.complete": "Complete", "planning.portfolio.archived": "Archived", "planning.portfolio.apply": "Apply filters", "planning.portfolio.projects": "Projects",
+    "planning.portfolio.search": "Search projects", "planning.portfolio.status": "Project status", "planning.portfolio.allStatuses": "All statuses", "planning.portfolio.draft": "Draft", "planning.portfolio.active": "Active",
+    "planning.portfolio.onHold": "On hold", "planning.portfolio.complete": "Complete", "planning.portfolio.completed": "Completed", "planning.portfolio.archived": "Archived", "planning.portfolio.apply": "Apply filters", "planning.portfolio.projects": "Projects",
     "planning.portfolio.tasks": "Tasks", "planning.portfolio.atRisk": "At risk", "planning.portfolio.overdue": "Overdue tasks", "planning.portfolio.gates": "Gate blockers",
     "planning.portfolio.project": "Project", "planning.portfolio.health": "Health", "planning.portfolio.issues": "Issues", "planning.portfolio.open": "Open project",
     "planning.portfolio.onTrack": "On track", "planning.portfolio.attention": "Attention", "planning.portfolio.blocked": "Blocked", "planning.portfolio.empty": "No projects match these filters.",
+    "planning.portfolio.loading": "Loading portfolio", "planning.portfolio.metrics": "Portfolio metrics", "planning.portfolio.diagnostics": "Bounded aggregate", "planning.portfolio.queries": "queries",
+    "planning.portfolio.table": "Multi-project delivery portfolio", "planning.portfolio.actions": "Actions", "planning.portfolio.error": "Portfolio could not be loaded.",
+    "planning.portfolio.compatibilityHorizon": "Compatibility horizon", "planning.portfolio.targetFinish": "Target finish", "planning.portfolio.calculatedFinish": "Calculated finish", "planning.portfolio.latestTaskFinish": "Latest task finish", "planning.portfolio.scheduleHorizon": "Schedule horizon",
+    "planning.gantt.projectStart": "Project start", "planning.gantt.compatibilityHorizon": "Compatibility horizon", "planning.gantt.targetFinish": "Target finish", "planning.gantt.calculatedFinish": "Calculated finish",
+    "planning.review.archived": "Archived project is read-only; restore it to active before editing.", "planning.review.permissions": "Server permissions allow review only; write controls are disabled.",
   },
   ar: {
     "nav.primary": "التنقل الرئيسي", "nav.overview": "نظرة عامة", "nav.apps": "التطبيقات", "nav.contacts": "جهات الاتصال",
@@ -34,11 +39,16 @@ const messages: Record<UokLocale, Record<string, string>> = {
     "planning.column.wbs": "هيكل العمل", "planning.column.task": "المهمة", "planning.column.start": "البدء", "planning.column.end": "الانتهاء",
     "planning.column.duration": "المدة", "planning.column.progress": "٪", "planning.column.critical": "حرجة", "planning.column.assigned": "المسند", "planning.column.status": "الحالة",
     "planning.scope": "نطاق التخطيط", "planning.projectSchedule": "جدول المشروع", "planning.portfolio": "المحفظة", "planning.portfolio.eyebrow": "التخطيط", "planning.portfolio.summary": "مراقبة التسليم والمخاطر والبوابات والجداول الزمنية عبر المشاريع.",
-    "planning.portfolio.search": "البحث في المشاريع", "planning.portfolio.status": "حالة المشروع", "planning.portfolio.allStatuses": "كل الحالات", "planning.portfolio.active": "نشط",
-    "planning.portfolio.complete": "مكتمل", "planning.portfolio.archived": "مؤرشف", "planning.portfolio.apply": "تطبيق عوامل التصفية", "planning.portfolio.projects": "المشاريع",
+    "planning.portfolio.search": "البحث في المشاريع", "planning.portfolio.status": "حالة المشروع", "planning.portfolio.allStatuses": "كل الحالات", "planning.portfolio.draft": "مسودة", "planning.portfolio.active": "نشط",
+    "planning.portfolio.onHold": "معلّق", "planning.portfolio.complete": "مكتمل", "planning.portfolio.completed": "مكتمل", "planning.portfolio.archived": "مؤرشف", "planning.portfolio.apply": "تطبيق عوامل التصفية", "planning.portfolio.projects": "المشاريع",
     "planning.portfolio.tasks": "المهام", "planning.portfolio.atRisk": "معرض للخطر", "planning.portfolio.overdue": "المهام المتأخرة", "planning.portfolio.gates": "عوائق البوابات",
     "planning.portfolio.project": "المشروع", "planning.portfolio.health": "الصحة", "planning.portfolio.issues": "المشكلات", "planning.portfolio.open": "فتح المشروع",
     "planning.portfolio.onTrack": "على المسار", "planning.portfolio.attention": "يحتاج انتباها", "planning.portfolio.blocked": "محظور", "planning.portfolio.empty": "لا توجد مشاريع مطابقة.",
+    "planning.portfolio.loading": "جارٍ تحميل المحفظة", "planning.portfolio.metrics": "مقاييس المحفظة", "planning.portfolio.diagnostics": "تجميع محدود", "planning.portfolio.queries": "استعلامات",
+    "planning.portfolio.table": "محفظة تسليم متعددة المشاريع", "planning.portfolio.actions": "الإجراءات", "planning.portfolio.error": "تعذر تحميل المحفظة.",
+    "planning.portfolio.compatibilityHorizon": "أفق التوافق", "planning.portfolio.targetFinish": "الانتهاء المستهدف", "planning.portfolio.calculatedFinish": "الانتهاء المحسوب", "planning.portfolio.latestTaskFinish": "آخر انتهاء للمهام", "planning.portfolio.scheduleHorizon": "أفق الجدول",
+    "planning.gantt.projectStart": "بدء المشروع", "planning.gantt.compatibilityHorizon": "أفق التوافق", "planning.gantt.targetFinish": "الانتهاء المستهدف", "planning.gantt.calculatedFinish": "الانتهاء المحسوب",
+    "planning.review.archived": "المشروع المؤرشف للقراءة فقط؛ أعده إلى الحالة النشطة قبل التحرير.", "planning.review.permissions": "تسمح أذونات الخادم بالمراجعة فقط؛ تم تعطيل عناصر التحكم في الكتابة.",
   },
 };
 
@@ -58,9 +68,16 @@ function localizationValue(locale: UokLocale) {
     locale,
     direction: uokLocaleDirection(locale),
     t,
-    formatDate: (value: Date | string) => new Intl.DateTimeFormat(formatLocale, { dateStyle: "medium" }).format(value instanceof Date ? value : new Date(value)),
+    formatDate: (value: Date | string) => new Intl.DateTimeFormat(formatLocale, { dateStyle: "medium" }).format(localizedDate(value)),
     formatNumber: (value: number) => new Intl.NumberFormat(formatLocale).format(value),
   };
+}
+
+function localizedDate(value: Date | string) {
+  if (value instanceof Date) return value;
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!dateOnly) return new Date(value);
+  return new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]), 12);
 }
 
 type UokLocalizationValue = ReturnType<typeof localizationValue>;

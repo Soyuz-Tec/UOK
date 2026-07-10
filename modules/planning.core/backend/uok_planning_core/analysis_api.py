@@ -57,7 +57,10 @@ def project_what_if_snapshots(
     db: Session = Depends(get_db),
 ) -> list[dict[str, Any]]:
     require_planning_read(db, actor)
-    return list_what_if_snapshots(db, actor, project_id)
+    try:
+        return list_what_if_snapshots(db, actor, project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
 
 @router.get("/projects/{project_id}/what-if-snapshots/{snapshot_id}")
@@ -92,7 +95,10 @@ def create_project_risk_analysis(
 @router.get("/projects/{project_id}/risk-analyses")
 def project_risk_analyses(project_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
     require_planning_read(db, actor)
-    return list_risk_analyses(db, actor, project_id)
+    try:
+        return list_risk_analyses(db, actor, project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
 
 @router.get("/projects/{project_id}/risk-analyses/{run_id}")
@@ -112,7 +118,10 @@ def create_project_optimization(project_id: str, req: PlanningOptimizationReques
 @router.get("/projects/{project_id}/optimizations")
 def project_optimizations(project_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
     require_planning_read(db, actor)
-    return list_optimizations(db, actor, project_id)
+    try:
+        return list_optimizations(db, actor, project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
 
 @router.get("/projects/{project_id}/optimizations/{run_id}")
@@ -127,7 +136,10 @@ def project_optimization(project_id: str, run_id: str, actor: Actor = Depends(cu
 @router.get("/projects/{project_id}/recommendations")
 def project_recommendations(project_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
     require_planning_read(db, actor)
-    return list_recommendations(db, actor, project_id)
+    try:
+        return list_recommendations(db, actor, project_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
 
 @router.post("/projects/{project_id}/recommendations/{recommendation_id}/decision", responses=PLANNING_MUTATION_RESPONSES, response_model=None)

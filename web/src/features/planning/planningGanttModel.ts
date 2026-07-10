@@ -39,7 +39,7 @@ export type TaskStatusIndicator = {
 
 export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity, minVisibleWidth = 0, zoom = 1) {
   const start = startOfUnit(dateValue(schedule.project.start), scale);
-  const end = addUnit(endOfUnit(dateValue(schedule.project.end), scale), scale);
+  const end = addUnit(endOfUnit(dateValue(planningScheduleHorizon(schedule)), scale), scale);
   const holidays = calendarExcludedDates(schedule);
   const units: TimelineUnit[] = [];
   const width = cellWidth(scale, viewDensity, zoom);
@@ -50,6 +50,30 @@ export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, 
     cursor = addUnit(cursor, scale);
   }
   return { start, units, cellWidth: width };
+}
+
+export function planningScheduleHorizon(schedule: PlanningSchedule) {
+  const runtimeProject = schedule.project as PlanningSchedule["project"] & { schedule_horizon?: unknown };
+  const candidates: unknown[] = [
+    runtimeProject.schedule_horizon,
+    schedule.project.end,
+    schedule.project.target_finish,
+    schedule.project.calculated_finish,
+    schedule.calculation?.target_finish,
+    schedule.calculation?.calculated_finish,
+    ...schedule.tasks.map((task) => task.end),
+  ];
+  const fallback = [schedule.project.end, schedule.project.start].find(isValidPlanningDate) ?? "1970-01-01";
+  return candidates.reduce<string>((latest, value) => {
+    if (!isValidPlanningDate(value)) return latest;
+    return dateValue(value).getTime() > dateValue(latest).getTime() ? value : latest;
+  }, fallback);
+}
+
+export function isValidPlanningDate(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
 function calendarExcludedDates(schedule: PlanningSchedule) {
