@@ -99,7 +99,7 @@ def test_invalid_operation_rolls_back_every_change_with_structured_error(client:
         assert failed.status == "validation_error"
 
 
-def test_batch_rejects_unsupported_kind_without_mutating(client: TestClient) -> None:
+def test_batch_rejects_unknown_kind_duplicate_ids_and_wrong_source_aggregate(client: TestClient) -> None:
     ops = _planning_users(client)
     suffix = uuid4().hex[:8]
     project_id, _, _ = _project_and_task(client, ops, suffix)
@@ -111,13 +111,30 @@ def test_batch_rejects_unsupported_kind_without_mutating(client: TestClient) -> 
         "BatchPlanningOperations",
         {
             "project_id": project_id,
-            "operations": [{"operation_id": "future-link", "kind": "create_link", "payload": {}}],
+            "operations": [{"operation_id": "unknown-delete", "kind": "delete_task", "payload": {}}],
         },
-        f"planning-batch-unsupported-{suffix}",
+        f"planning-batch-unknown-kind-{suffix}",
     )
 
     assert response.status_code == 400, response.text
     assert response.json()["error"]["code"] == "batch_operation_unsupported"
+    assert _schedule(client, ops, project_id).headers["ETag"] == before.headers["ETag"]
+
+    duplicate_ids = command(
+        client,
+        ops,
+        "BatchPlanningOperations",
+        {
+            "project_id": project_id,
+            "operations": [
+                {"operation_id": "same", "kind": "update_task", "payload": {"task_id": before.json()["tasks"][0]["id"], "progress": 5}},
+                {"operation_id": "same", "kind": "update_task", "payload": {"task_id": before.json()["tasks"][0]["id"], "progress": 10}},
+            ],
+        },
+        f"planning-batch-duplicate-id-{suffix}",
+    )
+    assert duplicate_ids.status_code == 400, duplicate_ids.text
+    assert duplicate_ids.json()["error"]["code"] == "batch_operation_id_invalid"
     assert _schedule(client, ops, project_id).headers["ETag"] == before.headers["ETag"]
 
     unknown_source = command(
@@ -133,6 +150,23 @@ def test_batch_rejects_unsupported_kind_without_mutating(client: TestClient) -> 
     )
     assert unknown_source.status_code == 400, unknown_source.text
     assert unknown_source.json()["error"]["code"] == "batch_source_command_invalid"
+    assert _schedule(client, ops, project_id).headers["ETag"] == before.headers["ETag"]
+
+    _, _, other_source_command_id = _project_and_task(client, ops, f"{suffix}-other")
+    wrong_aggregate = command(
+        client,
+        ops,
+        "BatchPlanningOperations",
+        {
+            "project_id": project_id,
+            "source_command_id": other_source_command_id,
+            "operations": [{"operation_id": "wrong-source", "kind": "update_task", "payload": {"task_id": before.json()["tasks"][0]["id"], "progress": 1}}],
+        },
+        f"planning-batch-wrong-aggregate-{suffix}",
+    )
+    assert wrong_aggregate.status_code == 400, wrong_aggregate.text
+    assert wrong_aggregate.json()["error"]["code"] == "batch_source_command_invalid"
+    assert "this Planning project" in wrong_aggregate.json()["error"]["message"]
     assert _schedule(client, ops, project_id).headers["ETag"] == before.headers["ETag"]
 
 

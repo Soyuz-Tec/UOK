@@ -168,6 +168,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Review/edit mode | Toolbar toggle prevents schedule mutations by disabling task creation, edit commands, row action menus, drag handles, progress handles, dependency handles, and inspector editor controls. | `runtime_proven` |
 | Bulk selection | Select visible rows and submit completion, status/progress, or date-shift intents through one atomic task-update batch. | `runtime_proven` |
 | Bulk edit | Project-scoped task updates commit one revision or roll back every operation; owner, priority, and calendar fields remain later work. | `runtime_proven` |
+| Atomic mixed mutation | The generated ten-kind contract applies ordered task, dependency, resource-assignment, calendar, typed-link, and gate changes in one transaction with one final schedule validation/revision and capability-safe correlated evidence. | `runtime_proven` |
 | Undo/redo | Supported inverse commands use the atomic endpoint with the source command ID and current revision; stale inverses preserve latest server state and unsupported/destructive history kinds fail closed. | `runtime_proven` |
 | Saved views | Store filters, density, fields, scale, and grouping. | `source_present` |
 | Search/filter/group | Search task titles; filter by status, critical, resource, participant, milestone, and not-ready gate blockers. | `integration_tested` |

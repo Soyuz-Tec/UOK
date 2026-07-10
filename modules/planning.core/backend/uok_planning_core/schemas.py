@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Any
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .calendar_schemas import PlanningCalendarFields
 from .resource_contract import resource_definition
 from .resource_calendar import resource_calendar_definition
 
@@ -73,12 +74,8 @@ class PlanningDependencyUpdateRequest(BaseModel):
     lag_days: int | None = Field(default=None, ge=-30, le=30)
 
 
-class PlanningCalendarRequest(BaseModel):
+class PlanningCalendarRequest(PlanningCalendarFields):
     expected_revision: int | None = Field(default=None, ge=1)
-    name: str = Field(default="Standard", max_length=120)
-    working_days: list[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5])
-    holidays: list[str] = Field(default_factory=list)
-    ignored_periods: list[str] = Field(default_factory=list)
 
 
 class PlanningBaselineRequest(BaseModel):
@@ -138,27 +135,10 @@ class PlanningAssignmentRequest(BaseModel):
     allocation_percent: int = Field(default=100, ge=1, le=300)
 
 
-class PlanningBatchOperation(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    operation_id: str = Field(..., min_length=1, max_length=80)
-    kind: str = Field(..., min_length=1, max_length=80, pattern="^[a-z_]+$")
-    payload: dict[str, Any]
-
-
-class PlanningBatchRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    expected_revision: int | None = Field(default=None, ge=1)
-    reason: str | None = Field(default=None, max_length=500)
-    source_command_id: str | None = Field(default=None, min_length=36, max_length=36)
-    operations: list[PlanningBatchOperation] = Field(..., min_length=1, max_length=500)
-
-
 class PlanningLinkTargetRequest(BaseModel):
     model_config = {"extra": "forbid"}
 
-    kind: str = Field(..., pattern="^(operation|gate|evidence|party|shipment|document|location|asset|agreement|communication_thread|calendar_event)$")
+    kind: Literal["operation", "gate", "evidence", "party", "shipment", "document", "location", "asset", "agreement", "communication_thread", "calendar_event"]
     id: str = Field(..., min_length=1, max_length=180)
 
 

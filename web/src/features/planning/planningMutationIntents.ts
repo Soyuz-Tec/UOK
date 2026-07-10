@@ -1,7 +1,6 @@
 import {
   assignPlanningResource,
   addPlanningTaskParticipant,
-  batchPlanningTaskUpdates,
   createPlanningBaseline,
   createPlanningDependency,
   createPlanningLink,
@@ -21,6 +20,7 @@ import {
   updatePlanningTask,
   updatePlanningTaskDates,
 } from "./planningApi";
+import { batchPlanningTaskUpdates } from "./planningBatchApi";
 import { setPlanningResourceCalendar } from "./planningResourceCalendarApi";
 import { applyPlanningRecommendation, createPlanningOptimization, createPlanningRiskAnalysis, createPlanningWhatIfSnapshot, decidePlanningRecommendation, rollbackPlanningRecommendation } from "./planningAnalysisApi";
 import type { PlanningMutationIntent } from "./planningConcurrencyState";

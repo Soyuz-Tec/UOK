@@ -46,6 +46,46 @@ describe("planning history", () => {
       redo: [{ kind: "level-resources", projectId: "project-1" }],
     });
   });
+
+  it("builds reversible assignment add and remove steps for the atomic registry", () => {
+    const base = schedule([task({})]);
+    const assignment = { id: "assignment-1", task_id: "task-1", resource_id: "resource-1", allocation_percent: 80 };
+    const added = { ...base, assignments: [assignment] };
+
+    expect(planningHistoryDiff(base, added, "Assign resource")).toMatchObject({
+      undo: [{ kind: "unassign-resource", taskId: "task-1", resourceId: "resource-1" }],
+      redo: [{ kind: "assign-resource", payload: { task_id: "task-1", resource_id: "resource-1", allocation_percent: 80 } }],
+    });
+    expect(planningHistoryDiff(added, base, "Unassign resource")).toMatchObject({
+      undo: [{ kind: "assign-resource", payload: { task_id: "task-1", resource_id: "resource-1", allocation_percent: 80 } }],
+      redo: [{ kind: "unassign-resource", taskId: "task-1", resourceId: "resource-1" }],
+    });
+  });
+
+  it("correlates recreated dependency and assignment rows by domain identity", () => {
+    const base = schedule([task({})]);
+    const before = {
+      ...base,
+      dependencies: [{ id: "old-dep", project_id: "project-1", predecessor_task_id: "task-1", successor_task_id: "task-2", dependency_type: "finish_to_start" as const, lag_days: 0 }],
+      assignments: [{ id: "old-assignment", task_id: "task-1", resource_id: "resource-1", allocation_percent: 80 }],
+    };
+    const after = {
+      ...base,
+      dependencies: [{ ...before.dependencies[0], id: "new-dep", dependency_type: "start_to_start" as const }],
+      assignments: [{ ...before.assignments[0], id: "new-assignment", allocation_percent: 100 }],
+    };
+
+    const entry = planningHistoryDiff(before, after, "Replace controlled rows");
+    expect(entry?.undo).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: "update-dependency", dependencyId: "new-dep", payload: expect.objectContaining({ dependency_type: "finish_to_start" }) }),
+      { kind: "assign-resource", payload: { task_id: "task-1", resource_id: "resource-1", allocation_percent: 80 } },
+    ]));
+    expect(entry?.redo).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: "update-dependency", dependencyId: "new-dep", payload: expect.objectContaining({ dependency_type: "start_to_start" }) }),
+      { kind: "assign-resource", payload: { task_id: "task-1", resource_id: "resource-1", allocation_percent: 100 } },
+    ]));
+    expect(entry?.redo.some((step) => step.kind === "unassign-resource")).toBe(false);
+  });
 });
 
 function schedule(tasks: PlanningTask[]): PlanningSchedule {

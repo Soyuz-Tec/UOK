@@ -17,6 +17,7 @@ export type PlanningHistoryStep =
   | { kind: "remove-dependency"; dependencyId?: string; match: Record<string, unknown> }
   | { kind: "set-calendar"; projectId: string; payload: PlanningCalendarUpdateRequest }
   | { kind: "assign-resource"; payload: PlanningAssignmentCreateRequest }
+  | { kind: "unassign-resource"; taskId: string; resourceId: string }
   | { kind: "level-resources"; projectId: string };
 
 export type PlanningHistoryEntry = {
@@ -52,7 +53,7 @@ export function planningHistoryDiff(before: PlanningSchedule, after: PlanningSch
   addTaskDiff(before, after, undo, redo);
   addDependencyDiff(before, after, undo, redo);
   addCalendarDiff(before, after, undo, redo);
-  if (!addAssignmentDiff(before, after, undo, redo)) return null;
+  addAssignmentDiff(before, after, undo, redo);
   return undo.length || redo.length ? { label, undo, redo } : null;
 }
 
@@ -148,10 +149,10 @@ function addTaskDiff(before: PlanningSchedule, after: PlanningSchedule, undo: Pl
 }
 
 function addDependencyDiff(before: PlanningSchedule, after: PlanningSchedule, undo: PlanningHistoryStep[], redo: PlanningHistoryStep[]) {
-  const beforeById = new Map(before.dependencies.map((dep) => [dep.id, dep]));
-  const afterById = new Map(after.dependencies.map((dep) => [dep.id, dep]));
+  const beforeByIdentity = new Map(before.dependencies.map((dep) => [dependencyIdentity(dep), dep]));
+  const afterByIdentity = new Map(after.dependencies.map((dep) => [dependencyIdentity(dep), dep]));
   for (const dep of after.dependencies) {
-    const previous = beforeById.get(dep.id);
+    const previous = beforeByIdentity.get(dependencyIdentity(dep));
     if (!previous) {
       undo.push({ kind: "remove-dependency", dependencyId: dep.id, match: dependencyPayload(dep) });
       redo.push({ kind: "create-dependency", projectId: after.project.id, payload: dependencyPayload(dep) });
@@ -161,7 +162,7 @@ function addDependencyDiff(before: PlanningSchedule, after: PlanningSchedule, un
     }
   }
   for (const dep of before.dependencies) {
-    if (afterById.has(dep.id)) continue;
+    if (afterByIdentity.has(dependencyIdentity(dep))) continue;
     undo.push({ kind: "create-dependency", projectId: before.project.id, payload: dependencyPayload(dep) });
     redo.push({ kind: "remove-dependency", dependencyId: dep.id, match: dependencyPayload(dep) });
   }
@@ -174,17 +175,23 @@ function addCalendarDiff(before: PlanningSchedule, after: PlanningSchedule, undo
 }
 
 function addAssignmentDiff(before: PlanningSchedule, after: PlanningSchedule, undo: PlanningHistoryStep[], redo: PlanningHistoryStep[]) {
-  const beforeById = new Map(before.assignments.map((assignment) => [assignment.id, assignment]));
-  const afterById = new Map(after.assignments.map((assignment) => [assignment.id, assignment]));
+  const beforeByIdentity = new Map(before.assignments.map((assignment) => [assignmentIdentity(assignment), assignment]));
+  const afterByIdentity = new Map(after.assignments.map((assignment) => [assignmentIdentity(assignment), assignment]));
   for (const assignment of after.assignments) {
-    const previous = beforeById.get(assignment.id);
-    if (!previous) return false;
-    if (previous.allocation_percent !== assignment.allocation_percent) {
+    const previous = beforeByIdentity.get(assignmentIdentity(assignment));
+    if (!previous) {
+      undo.push({ kind: "unassign-resource", taskId: assignment.task_id, resourceId: assignment.resource_id });
+      redo.push({ kind: "assign-resource", payload: assignmentPayload(assignment) });
+    } else if (previous.allocation_percent !== assignment.allocation_percent) {
       undo.push({ kind: "assign-resource", payload: assignmentPayload(previous) });
       redo.push({ kind: "assign-resource", payload: assignmentPayload(assignment) });
     }
   }
-  return before.assignments.every((assignment) => afterById.has(assignment.id));
+  for (const assignment of before.assignments) {
+    if (afterByIdentity.has(assignmentIdentity(assignment))) continue;
+    undo.push({ kind: "assign-resource", payload: assignmentPayload(assignment) });
+    redo.push({ kind: "unassign-resource", taskId: assignment.task_id, resourceId: assignment.resource_id });
+  }
 }
 
 function removedTasksAreReversible(before: PlanningSchedule, after: PlanningSchedule) {
@@ -209,6 +216,14 @@ function taskFingerprint(task: PlanningTask) {
 
 function dependencyFingerprint(dep: PlanningDependency) {
   return JSON.stringify(dependencyPayload(dep));
+}
+
+function dependencyIdentity(dep: PlanningDependency) {
+  return `${dep.predecessor_task_id}:${dep.successor_task_id}`;
+}
+
+function assignmentIdentity(assignment: PlanningAssignment) {
+  return `${assignment.task_id}:${assignment.resource_id}`;
 }
 
 function mutationCorrelation(value: unknown): string {

@@ -40,7 +40,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - drag-to-reschedule path through server validation
 - command-bus writes and idempotency
 - project-root optimistic concurrency with additive revisions/task versions, canonical strong schedule ETags, exact `If-Match`, and explicit `428`/`412` recovery
-- project-scoped atomic task-update batches with ordered operations, one final schedule validation, one revision/ETag, correlated events, and all-or-nothing rollback
+- project-scoped atomic batches for task updates, dependency create/update/remove, resource assign/unassign, project calendars, typed links, and gate transitions, with ordered operations, one final schedule validation, one revision/ETag, capability-safe correlated events, and all-or-nothing rollback
 - server-derived Planning capability matrix with separate edit, baseline, leveling, cross-module link, gate approval, and administration permissions; UI review mode may only reduce server authority
 - database-enforced Planning date/type/progress/lag/allocation/scheduling-mode and uniqueness invariants with organization-first hierarchy/dependency/assignment indexes
 - one command correlation ID across successful responses, derived schedule changes, module events, and Planning schedule events
@@ -267,7 +267,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 ## Deferred Work
 
-- expand the atomic batch operation registry beyond task updates; unsupported destructive/dependency/calendar/assignment history kinds remain fail closed
+- create/delete-task and resource-leveling history remain fail closed because those actions are intentionally outside the approved atomic batch registry
 - resource calendar time-of-day shifts and recurring exception patterns beyond calendar-date capacity
 - deeper write integration that can publish selected Planning tasks or milestones to `calendar.core` events after user approval
 - richer baseline history and comparison controls beyond the current immutable detail/compare API and legacy warning

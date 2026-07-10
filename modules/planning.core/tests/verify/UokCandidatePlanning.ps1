@@ -11,6 +11,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningRisk.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningOptimization.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningPortfolio.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningBatch.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -231,6 +232,7 @@ function Invoke-UokPlanningCandidateScenario {
     $resourceEvidence = Assert-UokPlanningTypedResourceContract -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -Stamp $Stamp
     $resourceId = $resourceEvidence.resource_id
     Assert-UokPlanningResourceAvailability -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -Stamp $Stamp
+    Assert-UokPlanningMixedBatchContract -ProjectId $projectId -FirstTaskId $first.result.id -SecondTaskId $second.result.id -ResourceId $resourceId -OpsHeaders $OpsHeaders -Stamp $Stamp
 
     $schedule = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $ViewerHeaders
     if ($schedule.validation.ok -ne $true -or $schedule.tasks.Count -lt 2 -or $schedule.dependencies.Count -lt 1) {

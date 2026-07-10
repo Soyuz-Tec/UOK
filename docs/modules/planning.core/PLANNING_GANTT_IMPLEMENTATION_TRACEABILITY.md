@@ -31,7 +31,7 @@ requirement.
 | PLA-A-002 | Independent hard-constraint validation | Separate validators recompute CPM coverage, durations, dependencies, calendars, constraints, manual dates, float, project finish, target variance, and resource/day capacity results on accepted writes/read models | Injected CPM and capacity faults are rejected; candidate readback proves a 120% overload point and a clean post-level result | `runtime_proven` |
 | PLA-A-003 | Stable Planning idempotency | UOK command gateway supports replay | Every REST write requires a client key; module-command missing-key, replay, changed-payload conflict, lost-response retry, and original-command correlation tests pass | `runtime_proven` |
 | PLA-A-004 | Optimistic concurrency | Project revision/task version migration, strong actor-visible ETag, project lock, 428/412 recovery contract, and typed client recovery exist | PostgreSQL two-client race, candidate runtime, and accessible reload/reapply proof | `runtime_proven` |
-| PLA-A-005 | Atomic batch mutation | Ordered task updates use one project lock, command/idempotency record, final scheduler/validator pass, revision, ETag, and correlated event; bulk UI and supported history use the endpoint | 100-operation success/replay, injected rollback, one-revision/task-version, source-command, structured-error, and correlation proofs pass | `runtime_proven` |
+| PLA-A-005 | Atomic batch mutation | The typed ten-kind registry applies ordered task, dependency, assignment, calendar, link, and gate operations under one project lock, command/idempotency record, final scheduler/validator pass, revision, ETag, and correlated evidence; bulk UI and every reversible represented history kind use the endpoint | 100-operation success/replay, all-kind mixed success, late mixed-family rollback, one-revision/task-version, same-project source-command, capability isolation, generated-contract, structured-error, and correlation proofs pass | `runtime_proven` |
 | PLA-A-006 | Complete immutable baseline | Canonical v2 snapshot includes the complete current schedule graph/context, creator/source revision/correlation metadata, SHA-256 verification, append-only guards, comparison reads, and explicit legacy partial limitations | PostgreSQL migration apply/readback and candidate runtime checksum proof | `runtime_proven` |
 | PLA-A-007 | Server capability enforcement | Server maps every command to `read`, `edit`, `baseline.create`, `level`, `link`, `gate.approve`, or `admin`; schedule/API return actor authority; UI fails closed and local review mode can only reduce it | Candidate runtime role matrix and direct-denial proof | `runtime_proven` |
 | PLA-A-008 | Database invariant enforcement | Additive migration enforces dates, duration, progress, sort order, task/dependency types, scheduling mode, lag, allocation, unique project calendars/assignments, and supporting indexes | PostgreSQL 18 apply/readback and direct invalid-row probes | `runtime_proven` |
@@ -300,10 +300,13 @@ wildcards, lists, and malformed tags return `400`. Idempotent replay is checked
 before first-execution precondition validation so a lost successful response can
 still replay with its original tag.
 
-Bulk task edits and multi-task update history now use one project-scoped atomic
-batch. The first batch registry intentionally supports `update_task` only;
-unsupported destructive, dependency, calendar, assignment, link, and gate
-history kinds still fail closed rather than falling back to independent writes.
+Bulk task edits and reversible task, dependency, calendar, and assignment
+history now use one project-scoped atomic batch. The registry supports exactly
+`update_task`, `create_dependency`, `update_dependency`,
+`remove_dependency`, `assign_resource`, `unassign_resource`, `set_calendar`,
+`create_link`, `remove_link`, and `transition_gate`. Create/delete-task and
+resource-leveling history still fail closed because those actions are outside
+the approved registry rather than falling back to independent writes.
 The project lock serializes Planning mutations, but `calendar.core`
 availability remains read-only advisory context and is not locked by a Planning
 transaction.
@@ -312,12 +315,19 @@ transaction.
 
 `POST /api/planning/projects/{project_id}/mutations:batch` accepts 1 to 500
 ordered operations, one stable idempotency key, and the current strong ETag.
-The command applies every task update in one transaction, runs schedule
-propagation and independent validation once over the final proposed state,
-increments the project revision once, increments each materially changed task
-version once, and emits one `PlanningBatchApplied` event plus one module-owned
-schedule event carrying the command correlation id. Any operation or final
-schedule failure rolls the transaction back and returns a structured error.
+The generated OpenAPI contract is a ten-branch discriminated union with a
+strict payload model for every kind. The command applies all operations in one
+transaction, runs schedule propagation and independent validation once over
+the final proposed state, increments the project revision once, increments each
+materially changed task version once, and emits one `PlanningBatchApplied`
+event plus one module-owned schedule event carrying the command correlation id.
+Link and gate operations retain their domain events under that same
+correlation. A source command must be successful, organization-scoped, and
+present in this project's schedule history. Link operations retain
+`planning.link`; gate decisions retain `planning.gate.approve`, so
+`planning.edit` cannot escalate authority through a batch. Any operation or
+final schedule failure rolls the complete transaction back and returns a
+structured error.
 
 ## Required reference schedule cases
 

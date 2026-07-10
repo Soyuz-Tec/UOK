@@ -54,20 +54,6 @@ export type PlanningScheduleSnapshot = {
   etag: PlanningStrongEtag;
 };
 
-export type PlanningBatchTaskUpdate = {
-  taskId: string;
-  payload: PlanningTaskUpdateRequest;
-};
-
-export type PlanningBatchResult = {
-  correlation_id: string;
-  source_command_id: string | null;
-  previous_revision: number;
-  revision: number;
-  operation_results: Array<{ operation_id: string; status: "applied"; object_ids: string[] }>;
-  schedule: PlanningSchedule;
-};
-
 export type PlanningPreconditionDetail = {
   code: string;
   message: string;
@@ -200,32 +186,6 @@ export function setPlanningTaskRequirementLink(token: string, taskId: string, re
 
 export function decidePlanningTaskRequirement(token: string, taskId: string, requirementId: string, payload: PlanningTaskRequirementDecisionRequest, mutation: PlanningMutationOptions) {
   return planningMutationJson<PlanningTaskRequirementMutationResult>(token, `/api/planning/tasks/${taskId}/requirements/${requirementId}/decision`, { method: "POST", body: JSON.stringify(payload) }, "planning-requirement-decision", mutation);
-}
-
-export function batchPlanningTaskUpdates(
-  token: string,
-  projectId: string,
-  updates: PlanningBatchTaskUpdate[],
-  mutation: PlanningMutationOptions,
-  history: { sourceCommandId?: string; reason?: string } = {},
-) {
-  const idempotencyKey = mutation.idempotencyKey || planningMutationKey("planning-task-batch");
-  const operations = updates.map((update, index) => ({
-    operation_id: `${index + 1}:${idempotencyKey.slice(-70)}`,
-    kind: "update_task",
-    payload: { task_id: update.taskId, ...update.payload },
-  }));
-  return planningMutationJson<PlanningBatchResult>(
-    token,
-    `/api/planning/projects/${projectId}/mutations:batch`,
-    { method: "POST", body: JSON.stringify({
-      operations,
-      ...(history.sourceCommandId ? { source_command_id: history.sourceCommandId } : {}),
-      ...(history.reason ? { reason: history.reason } : {}),
-    }) },
-    "planning-task-batch",
-    { ...mutation, idempotencyKey },
-  );
 }
 
 async function planningResponse<T>(token: string, path: string, options: RequestInit = {}) {

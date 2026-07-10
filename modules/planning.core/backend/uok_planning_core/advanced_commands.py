@@ -27,7 +27,7 @@ def cmd_set_calendar(db: Session, actor: Actor, payload: dict[str, Any], command
     if not row:
         row = PlanningCalendar(organization_id=actor.organization_id, project_id=project.id, name="Standard")
         db.add(row)
-    row.name = str(payload.get("name") or "Standard")[:120]
+    row.name = clean_text(payload.get("name") or "Standard", "name", 120)
     row.working_days_json = dumps(_working_days(payload.get("working_days")))
     row.holidays_json = dumps({
         "holidays": [parse_planning_date(item, "holiday").date().isoformat() for item in payload.get("holidays", [])],

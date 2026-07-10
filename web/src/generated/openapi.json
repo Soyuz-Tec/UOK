@@ -1431,13 +1431,11 @@
         "title": "PlanningBaselineRequest",
         "type": "object"
       },
-      "PlanningBatchOperation": {
+      "PlanningBatchAssignResourceOperation": {
         "additionalProperties": false,
         "properties": {
           "kind": {
-            "maxLength": 80,
-            "minLength": 1,
-            "pattern": "^[a-z_]+$",
+            "const": "assign_resource",
             "title": "Kind",
             "type": "string"
           },
@@ -1448,9 +1446,7 @@
             "type": "string"
           },
           "payload": {
-            "additionalProperties": true,
-            "title": "Payload",
-            "type": "object"
+            "$ref": "#/components/schemas/PlanningBatchAssignResourcePayload"
           }
         },
         "required": [
@@ -1458,7 +1454,270 @@
           "kind",
           "payload"
         ],
-        "title": "PlanningBatchOperation",
+        "title": "PlanningBatchAssignResourceOperation",
+        "type": "object"
+      },
+      "PlanningBatchAssignResourcePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "allocation_percent": {
+            "default": 100,
+            "maximum": 300.0,
+            "minimum": 1.0,
+            "title": "Allocation Percent",
+            "type": "integer"
+          },
+          "resource_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Resource Id",
+            "type": "string"
+          },
+          "task_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "resource_id"
+        ],
+        "title": "PlanningBatchAssignResourcePayload",
+        "type": "object"
+      },
+      "PlanningBatchCreateDependencyOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "create_dependency",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PlanningBatchCreateDependencyPayload"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchCreateDependencyOperation",
+        "type": "object"
+      },
+      "PlanningBatchCreateDependencyPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "dependency_type": {
+            "default": "finish_to_start",
+            "enum": [
+              "finish_to_start",
+              "start_to_start",
+              "finish_to_finish",
+              "start_to_finish"
+            ],
+            "title": "Dependency Type",
+            "type": "string"
+          },
+          "lag_days": {
+            "default": 0,
+            "maximum": 30.0,
+            "minimum": -30.0,
+            "title": "Lag Days",
+            "type": "integer"
+          },
+          "predecessor_task_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Predecessor Task Id",
+            "type": "string"
+          },
+          "successor_task_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Successor Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "predecessor_task_id",
+          "successor_task_id"
+        ],
+        "title": "PlanningBatchCreateDependencyPayload",
+        "type": "object"
+      },
+      "PlanningBatchCreateLinkOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "create_link",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PlanningBatchCreateLinkPayload"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchCreateLinkOperation",
+        "type": "object"
+      },
+      "PlanningBatchCreateLinkPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "blocking": {
+            "default": false,
+            "title": "Blocking",
+            "type": "boolean"
+          },
+          "relationship": {
+            "enum": [
+              "implements",
+              "blocks_on",
+              "requires",
+              "proves",
+              "owned_by",
+              "moves",
+              "occurs_at",
+              "discussed_in",
+              "publishes_to"
+            ],
+            "title": "Relationship",
+            "type": "string"
+          },
+          "scope_type": {
+            "enum": [
+              "project",
+              "task"
+            ],
+            "title": "Scope Type",
+            "type": "string"
+          },
+          "target": {
+            "$ref": "#/components/schemas/PlanningLinkTargetRequest"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          }
+        },
+        "required": [
+          "scope_type",
+          "relationship",
+          "target"
+        ],
+        "title": "PlanningBatchCreateLinkPayload",
+        "type": "object"
+      },
+      "PlanningBatchDependencyIdPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "dependency_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Dependency Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dependency_id"
+        ],
+        "title": "PlanningBatchDependencyIdPayload",
+        "type": "object"
+      },
+      "PlanningBatchRemoveDependencyOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "remove_dependency",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PlanningBatchDependencyIdPayload"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchRemoveDependencyOperation",
+        "type": "object"
+      },
+      "PlanningBatchRemoveLinkOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "remove_link",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PlanningBatchRemoveLinkPayload"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchRemoveLinkOperation",
+        "type": "object"
+      },
+      "PlanningBatchRemoveLinkPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "link_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Link Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "link_id"
+        ],
+        "title": "PlanningBatchRemoveLinkPayload",
         "type": "object"
       },
       "PlanningBatchRequest": {
@@ -1478,7 +1737,53 @@
           },
           "operations": {
             "items": {
-              "$ref": "#/components/schemas/PlanningBatchOperation"
+              "discriminator": {
+                "mapping": {
+                  "assign_resource": "#/components/schemas/PlanningBatchAssignResourceOperation",
+                  "create_dependency": "#/components/schemas/PlanningBatchCreateDependencyOperation",
+                  "create_link": "#/components/schemas/PlanningBatchCreateLinkOperation",
+                  "remove_dependency": "#/components/schemas/PlanningBatchRemoveDependencyOperation",
+                  "remove_link": "#/components/schemas/PlanningBatchRemoveLinkOperation",
+                  "set_calendar": "#/components/schemas/PlanningBatchSetCalendarOperation",
+                  "transition_gate": "#/components/schemas/PlanningBatchTransitionGateOperation",
+                  "unassign_resource": "#/components/schemas/PlanningBatchUnassignResourceOperation",
+                  "update_dependency": "#/components/schemas/PlanningBatchUpdateDependencyOperation",
+                  "update_task": "#/components/schemas/PlanningBatchUpdateTaskOperation"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/PlanningBatchUpdateTaskOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanningBatchCreateDependencyOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanningBatchUpdateDependencyOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanningBatchRemoveDependencyOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanningBatchAssignResourceOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanningBatchUnassignResourceOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanningBatchSetCalendarOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanningBatchCreateLinkOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanningBatchRemoveLinkOperation"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanningBatchTransitionGateOperation"
+                }
+              ]
             },
             "maxItems": 500,
             "minItems": 1,
@@ -1517,7 +1822,493 @@
         "title": "PlanningBatchRequest",
         "type": "object"
       },
+      "PlanningBatchSetCalendarOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "set_calendar",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PlanningCalendarFields"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchSetCalendarOperation",
+        "type": "object"
+      },
+      "PlanningBatchTransitionGateOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "transition_gate",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PlanningBatchTransitionGatePayload"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchTransitionGateOperation",
+        "type": "object"
+      },
+      "PlanningBatchTransitionGatePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "submit",
+              "start_review",
+              "satisfy",
+              "reject",
+              "waive"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "requirement_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Requirement Id",
+            "type": "string"
+          },
+          "task_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "requirement_id",
+          "action"
+        ],
+        "title": "PlanningBatchTransitionGatePayload",
+        "type": "object"
+      },
+      "PlanningBatchUnassignResourceOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unassign_resource",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PlanningBatchUnassignResourcePayload"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchUnassignResourceOperation",
+        "type": "object"
+      },
+      "PlanningBatchUnassignResourcePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "assignment_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assignment Id"
+          },
+          "resource_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resource Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          }
+        },
+        "title": "PlanningBatchUnassignResourcePayload",
+        "type": "object"
+      },
+      "PlanningBatchUpdateDependencyOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "update_dependency",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PlanningBatchUpdateDependencyPayload"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchUpdateDependencyOperation",
+        "type": "object"
+      },
+      "PlanningBatchUpdateDependencyPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "dependency_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Dependency Id",
+            "type": "string"
+          },
+          "dependency_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "finish_to_start",
+                  "start_to_start",
+                  "finish_to_finish",
+                  "start_to_finish"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dependency Type"
+          },
+          "lag_days": {
+            "anyOf": [
+              {
+                "maximum": 30.0,
+                "minimum": -30.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lag Days"
+          }
+        },
+        "required": [
+          "dependency_id"
+        ],
+        "title": "PlanningBatchUpdateDependencyPayload",
+        "type": "object"
+      },
+      "PlanningBatchUpdateTaskOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "update_task",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PlanningBatchUpdateTaskPayload"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchUpdateTaskOperation",
+        "type": "object"
+      },
+      "PlanningBatchUpdateTaskPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "cascade": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cascade"
+          },
+          "constraint_date": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constraint Date"
+          },
+          "constraint_type": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Constraint Type"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "parent_task_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Task Id"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "maximum": 100.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Progress"
+          },
+          "scheduling_mode": {
+            "anyOf": [
+              {
+                "enum": [
+                  "auto",
+                  "manual"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduling Mode"
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "planned",
+                  "in_progress",
+                  "blocked",
+                  "complete"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "task_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Task Id",
+            "type": "string"
+          },
+          "task_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "task",
+                  "summary",
+                  "milestone"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Type"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 180,
+                "minLength": 2,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "title": "PlanningBatchUpdateTaskPayload",
+        "type": "object"
+      },
+      "PlanningCalendarFields": {
+        "additionalProperties": false,
+        "properties": {
+          "holidays": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 3660,
+            "title": "Holidays",
+            "type": "array"
+          },
+          "ignored_periods": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Ignored Periods",
+            "type": "array"
+          },
+          "name": {
+            "default": "Standard",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "working_days": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 7,
+            "minItems": 1,
+            "title": "Working Days",
+            "type": "array"
+          }
+        },
+        "title": "PlanningCalendarFields",
+        "type": "object"
+      },
       "PlanningCalendarRequest": {
+        "additionalProperties": false,
         "properties": {
           "expected_revision": {
             "anyOf": [
@@ -1535,6 +2326,7 @@
             "items": {
               "type": "string"
             },
+            "maxItems": 3660,
             "title": "Holidays",
             "type": "array"
           },
@@ -1542,12 +2334,14 @@
             "items": {
               "type": "string"
             },
+            "maxItems": 100,
             "title": "Ignored Periods",
             "type": "array"
           },
           "name": {
             "default": "Standard",
             "maxLength": 120,
+            "minLength": 1,
             "title": "Name",
             "type": "string"
           },
@@ -1555,6 +2349,8 @@
             "items": {
               "type": "integer"
             },
+            "maxItems": 7,
+            "minItems": 1,
             "title": "Working Days",
             "type": "array"
           }
@@ -1715,7 +2511,19 @@
             "type": "string"
           },
           "kind": {
-            "pattern": "^(operation|gate|evidence|party|shipment|document|location|asset|agreement|communication_thread|calendar_event)$",
+            "enum": [
+              "operation",
+              "gate",
+              "evidence",
+              "party",
+              "shipment",
+              "document",
+              "location",
+              "asset",
+              "agreement",
+              "communication_thread",
+              "calendar_event"
+            ],
             "title": "Kind",
             "type": "string"
           }

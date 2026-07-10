@@ -3,23 +3,26 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .advanced_commands import clean_text
-from .models import PlanningProject
+from .batch_operations import (
+    SUPPORTED_BATCH_KINDS,
+    apply_batch_operation,
+    batch_operation_authorized,
+    required_batch_permission,
+)
+from .models import PlanningProject, PlanningScheduleEvent
 from .planning_audit import add_planning_schedule_event, emit_planning_event
 from .read_model import schedule_read_model
-from .scheduler import apply_schedule, project_or_error, task_or_error
-from .task_mutations import apply_task_update
+from .scheduler import apply_schedule, project_or_error
 from uok.command_context import CommandDomainError
 from uok.models import CommandLog
 from uok.security import Actor
+from uok.util import loads
 
 MAX_BATCH_OPERATIONS = 500
-TASK_UPDATE_FIELDS = {
-    "task_id", "title", "task_type", "parent_task_id", "start", "end", "status",
-    "progress", "sort_order", "scheduling_mode", "constraint_type", "constraint_date", "cascade",
-}
 
 
 def cmd_batch_operations(
@@ -32,7 +35,7 @@ def cmd_batch_operations(
     reason = str(payload.get("reason") or "").strip()
     if len(reason) > 500:
         raise _batch_error(project.revision, command_id, "batch_reason_invalid", "reason must be 500 characters or fewer.", "reason", "Shorten the reason and retry the complete batch.")
-    source_command_id = _validated_source_command_id(db, actor, project.revision, payload, command_id)
+    source_command_id = _validated_source_command_id(db, actor, project, payload, command_id)
     operations = payload.get("operations")
     if not isinstance(operations, list) or not 1 <= len(operations) <= MAX_BATCH_OPERATIONS:
         raise _batch_error(
@@ -81,20 +84,32 @@ def _apply_operations(
     cascade_dependencies = False
     for index, operation in enumerate(operations):
         operation_id, kind, operation_payload = _operation_envelope(operation, index, operation_ids, project.revision, command_id)
-        if kind != "update_task":
+        if kind not in SUPPORTED_BATCH_KINDS:
             raise _batch_error(
                 project.revision,
                 command_id,
                 "batch_operation_unsupported",
-                f"Batch operation kind {kind!r} is not available in this slice.",
+                f"Batch operation kind {kind!r} is not supported.",
                 f"operations[{index}].kind",
-                "Use update_task, or submit the unsupported action through its existing single-mutation endpoint.",
+                f"Use one of: {', '.join(SUPPORTED_BATCH_KINDS)}.",
             )
+        _ensure_operation_authorized(actor, project, kind, operation_payload, index, command_id)
         try:
-            _validate_task_payload(operation_payload)
-            task_id = clean_text(operation_payload.get("task_id"), "task_id", 36)
-            task = task_or_error(db, actor, task_id, project.id)
-            apply_task_update(db, actor, project, task, operation_payload, command_id)
+            applied = apply_batch_operation(db, actor, project, kind, operation_payload, command_id)
+        except CommandDomainError as exc:
+            field = f"operations[{index}].payload"
+            if exc.field:
+                field = f"{field}.{exc.field}"
+            raise _batch_error(
+                project.revision,
+                command_id,
+                exc.code,
+                str(exc),
+                field,
+                exc.repair,
+                exc.object_ids,
+                exc.status_code,
+            ) from exc
         except ValueError as exc:
             raise _batch_error(
                 project.revision,
@@ -103,20 +118,30 @@ def _apply_operations(
                 str(exc),
                 f"operations[{index}].payload",
                 "Correct this operation and retry the complete batch with the same current schedule ETag.",
-                [str(operation_payload.get("task_id") or "")],
+                _operation_object_ids(operation_payload),
             ) from exc
-        direct_task_ids.add(task.id)
-        cascade_dependencies = cascade_dependencies or bool(operation_payload.get("cascade", True))
-        results.append({"operation_id": operation_id, "status": "applied", "object_ids": [task.id]})
+        direct_task_ids.update(applied.direct_task_ids)
+        cascade_dependencies = cascade_dependencies or applied.cascade_dependencies
+        results.append({"operation_id": operation_id, "status": "applied", "object_ids": applied.object_ids})
     return results, direct_task_ids, cascade_dependencies
 
 
-def _validate_task_payload(payload: dict[str, Any]) -> None:
-    unknown = sorted(set(payload) - TASK_UPDATE_FIELDS)
-    if unknown:
-        raise ValueError(f"update_task payload contains unsupported fields: {', '.join(unknown)}")
-    if "cascade" in payload and not isinstance(payload["cascade"], bool):
-        raise ValueError("cascade must be true or false")
+def _ensure_operation_authorized(
+    actor: Actor,
+    project: PlanningProject,
+    kind: str,
+    payload: dict[str, Any],
+    index: int,
+    command_id: str,
+) -> None:
+    if batch_operation_authorized(actor, kind, payload):
+        return
+    permission = required_batch_permission(kind, payload)
+    raise _batch_error(
+        project.revision, command_id, "batch_operation_permission_denied",
+        f"Permission denied: {permission}", f"operations[{index}].kind",
+        "Request the required server capability, then retry the complete batch.", status_code=403,
+    )
 
 
 def _operation_envelope(
@@ -155,6 +180,7 @@ def _emit_batch_events(
         "source_command_id": source_command_id,
         "reason": reason,
         "operation_ids": [row["operation_id"] for row in results],
+        "operation_results": results,
         "changed_task_ids": sorted(changed_task_ids),
     }
     emit_planning_event(db, actor, command_id, "PlanningBatchApplied", "PlanningProject", project_id, payload)
@@ -164,7 +190,7 @@ def _emit_batch_events(
 def _validated_source_command_id(
     db: Session,
     actor: Actor,
-    revision: int,
+    project: PlanningProject,
     payload: dict[str, Any],
     command_id: str,
 ) -> str | None:
@@ -174,10 +200,25 @@ def _validated_source_command_id(
     try:
         source_command_id = str(UUID(value))
     except ValueError as exc:
-        raise _batch_error(revision, command_id, "batch_source_command_invalid", "source_command_id must be a command UUID.", "source_command_id", "Use the correlation ID returned by the original successful command.") from exc
+        raise _batch_error(project.revision, command_id, "batch_source_command_invalid", "source_command_id must be a command UUID.", "source_command_id", "Use the correlation ID returned by the original successful command.") from exc
     source = db.get(CommandLog, source_command_id)
     if source is None or source.organization_id != actor.organization_id or source.status != "succeeded":
-        raise _batch_error(revision, command_id, "batch_source_command_invalid", "source_command_id must reference a successful command in the current organization.", "source_command_id", "Use the correlation ID returned by the original successful command.")
+        raise _batch_error(project.revision, command_id, "batch_source_command_invalid", "source_command_id must reference a successful command in the current organization.", "source_command_id", "Use the correlation ID returned by the original successful command.")
+    project_events = db.scalars(select(PlanningScheduleEvent).where(
+        PlanningScheduleEvent.organization_id == actor.organization_id,
+        PlanningScheduleEvent.project_id == project.id,
+        PlanningScheduleEvent.payload_json.contains(source_command_id),
+    )).all()
+    if not any(loads(row.payload_json).get("correlation_id") == source_command_id for row in project_events):
+        raise _batch_error(
+            project.revision,
+            command_id,
+            "batch_source_command_invalid",
+            "source_command_id must reference a successful command for this Planning project.",
+            "source_command_id",
+            "Use a correlation ID from this project's schedule history.",
+            [project.id],
+        )
     return source_command_id
 
 
@@ -189,13 +230,23 @@ def _batch_error(
     field: str,
     repair: str,
     object_ids: list[str] | None = None,
+    status_code: int = 400,
 ) -> CommandDomainError:
     return CommandDomainError(
         code=code,
         message=message,
+        status_code=status_code,
         field=field,
         object_ids=[item for item in (object_ids or []) if item],
         repair=repair,
         current_revision=int(revision),
         correlation_id=command_id,
     )
+
+
+def _operation_object_ids(payload: dict[str, Any]) -> list[str]:
+    return [
+        str(value)
+        for name, value in payload.items()
+        if (name == "id" or name.endswith("_id")) and value not in (None, "")
+    ]

@@ -1,4 +1,5 @@
 import type { PlanningCapacityUnit, PlanningDependencyType, PlanningLink, PlanningLinkRelationship, PlanningLinkTargetKind, PlanningParticipantRole, PlanningRequirementType, PlanningResourceCanonicalKind, PlanningResourceType, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskParticipant, PlanningTaskRequirement, PlanningTaskStatus, PlanningTaskType } from "./types";
+import type { components as GeneratedPlanningComponents } from "../../generated/openapi";
 
 
 export type PlanningMutationMetadata = {
@@ -87,6 +88,9 @@ export type PlanningAssignmentCreateRequest = {
   resource_id: string;
   allocation_percent?: number;
 };
+
+export type PlanningBatchRequest = GeneratedPlanningComponents["schemas"]["PlanningBatchRequest"];
+export type PlanningBatchOperation = PlanningBatchRequest["operations"][number];
 
 export type PlanningLinkCreateRequest = {
   expected_revision?: number;

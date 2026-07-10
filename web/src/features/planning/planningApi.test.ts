@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
-  batchPlanningTaskUpdates,
   comparePlanningBaselines,
   createPlanningLink,
   createPlanningProject,
@@ -88,32 +87,6 @@ describe("Planning API concurrency and idempotency", () => {
     expect(JSON.parse(String(request.body))).toEqual({ forecast_end: "2026-08-12", actual_start: "2026-08-10", reason: "Observed operating start" });
     expect(new Headers(request.headers).get("If-Match")).toBe(etag1);
     expect(new Headers(request.headers).get("Idempotency-Key")).toBe("planning-task-dates-1");
-  });
-
-  it("sends one ordered task batch with stable operation identities", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ operation_results: [], schedule: {} }, 200, etag2));
-    vi.stubGlobal("fetch", fetchMock);
-
-    await batchPlanningTaskUpdates("token", "project-1", [
-      { taskId: "task-1", payload: { progress: 40 } },
-      { taskId: "task-2", payload: { status: "complete", progress: 100 } },
-    ], { ifMatch: etag1, idempotencyKey: "planning-task-batch-intent-1" }, {
-      sourceCommandId: "11111111-1111-4111-8111-111111111111",
-      reason: "Undo task edits",
-    });
-
-    const [path, request] = fetchMock.mock.calls[0] as [string, RequestInit];
-    const headers = new Headers(request.headers);
-    const body = JSON.parse(String(request.body));
-    expect(path).toBe("/api/planning/projects/project-1/mutations:batch");
-    expect(headers.get("If-Match")).toBe(etag1);
-    expect(headers.get("Idempotency-Key")).toBe("planning-task-batch-intent-1");
-    expect(body.source_command_id).toBe("11111111-1111-4111-8111-111111111111");
-    expect(body.reason).toBe("Undo task edits");
-    expect(body.operations).toEqual([
-      { operation_id: "1:planning-task-batch-intent-1", kind: "update_task", payload: { task_id: "task-1", progress: 40 } },
-      { operation_id: "2:planning-task-batch-intent-1", kind: "update_task", payload: { task_id: "task-2", status: "complete", progress: 100 } },
-    ]);
   });
 
   it("uses typed revision-aware create and remove requests for Planning links", async () => {

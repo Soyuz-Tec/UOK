@@ -34,9 +34,11 @@ def run_benchmarks(samples: int = 6) -> dict[str, Any]:
     if samples < 3:
         raise ValueError("samples must be at least 3")
     with SessionLocal() as db:
-        membership = db.scalars(select(Membership).order_by(Membership.id)).first()
+        membership = db.scalars(
+            select(Membership).where(Membership.role == "ops_manager").order_by(Membership.id)
+        ).first()
         if not membership:
-            raise RuntimeError("A seeded organization membership is required for the scale benchmark")
+            raise RuntimeError("A seeded ops_manager membership is required for the scale benchmark")
         actor = Actor(
             user_id=membership.user_id,
             username=membership.user.username,

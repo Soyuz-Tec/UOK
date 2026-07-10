@@ -1932,27 +1932,262 @@ export interface components {
              */
             name: string;
         };
-        /** PlanningBatchOperation */
-        PlanningBatchOperation: {
-            /** Kind */
-            kind: string;
+        /** PlanningBatchAssignResourceOperation */
+        PlanningBatchAssignResourceOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "assign_resource";
             /** Operation Id */
             operation_id: string;
-            /** Payload */
-            payload: {
-                [key: string]: unknown;
-            };
+            payload: components["schemas"]["PlanningBatchAssignResourcePayload"];
+        };
+        /** PlanningBatchAssignResourcePayload */
+        PlanningBatchAssignResourcePayload: {
+            /**
+             * Allocation Percent
+             * @default 100
+             */
+            allocation_percent: number;
+            /** Resource Id */
+            resource_id: string;
+            /** Task Id */
+            task_id: string;
+        };
+        /** PlanningBatchCreateDependencyOperation */
+        PlanningBatchCreateDependencyOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "create_dependency";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchCreateDependencyPayload"];
+        };
+        /** PlanningBatchCreateDependencyPayload */
+        PlanningBatchCreateDependencyPayload: {
+            /**
+             * Dependency Type
+             * @default finish_to_start
+             * @enum {string}
+             */
+            dependency_type: "finish_to_start" | "start_to_start" | "finish_to_finish" | "start_to_finish";
+            /**
+             * Lag Days
+             * @default 0
+             */
+            lag_days: number;
+            /** Predecessor Task Id */
+            predecessor_task_id: string;
+            /** Successor Task Id */
+            successor_task_id: string;
+        };
+        /** PlanningBatchCreateLinkOperation */
+        PlanningBatchCreateLinkOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "create_link";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchCreateLinkPayload"];
+        };
+        /** PlanningBatchCreateLinkPayload */
+        PlanningBatchCreateLinkPayload: {
+            /**
+             * Blocking
+             * @default false
+             */
+            blocking: boolean;
+            /**
+             * Relationship
+             * @enum {string}
+             */
+            relationship: "implements" | "blocks_on" | "requires" | "proves" | "owned_by" | "moves" | "occurs_at" | "discussed_in" | "publishes_to";
+            /**
+             * Scope Type
+             * @enum {string}
+             */
+            scope_type: "project" | "task";
+            target: components["schemas"]["PlanningLinkTargetRequest"];
+            /** Task Id */
+            task_id?: string | null;
+        };
+        /** PlanningBatchDependencyIdPayload */
+        PlanningBatchDependencyIdPayload: {
+            /** Dependency Id */
+            dependency_id: string;
+        };
+        /** PlanningBatchRemoveDependencyOperation */
+        PlanningBatchRemoveDependencyOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "remove_dependency";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchDependencyIdPayload"];
+        };
+        /** PlanningBatchRemoveLinkOperation */
+        PlanningBatchRemoveLinkOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "remove_link";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchRemoveLinkPayload"];
+        };
+        /** PlanningBatchRemoveLinkPayload */
+        PlanningBatchRemoveLinkPayload: {
+            /** Link Id */
+            link_id: string;
         };
         /** PlanningBatchRequest */
         PlanningBatchRequest: {
             /** Expected Revision */
             expected_revision?: number | null;
             /** Operations */
-            operations: components["schemas"]["PlanningBatchOperation"][];
+            operations: (components["schemas"]["PlanningBatchUpdateTaskOperation"] | components["schemas"]["PlanningBatchCreateDependencyOperation"] | components["schemas"]["PlanningBatchUpdateDependencyOperation"] | components["schemas"]["PlanningBatchRemoveDependencyOperation"] | components["schemas"]["PlanningBatchAssignResourceOperation"] | components["schemas"]["PlanningBatchUnassignResourceOperation"] | components["schemas"]["PlanningBatchSetCalendarOperation"] | components["schemas"]["PlanningBatchCreateLinkOperation"] | components["schemas"]["PlanningBatchRemoveLinkOperation"] | components["schemas"]["PlanningBatchTransitionGateOperation"])[];
             /** Reason */
             reason?: string | null;
             /** Source Command Id */
             source_command_id?: string | null;
+        };
+        /** PlanningBatchSetCalendarOperation */
+        PlanningBatchSetCalendarOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "set_calendar";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningCalendarFields"];
+        };
+        /** PlanningBatchTransitionGateOperation */
+        PlanningBatchTransitionGateOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "transition_gate";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchTransitionGatePayload"];
+        };
+        /** PlanningBatchTransitionGatePayload */
+        PlanningBatchTransitionGatePayload: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "submit" | "start_review" | "satisfy" | "reject" | "waive";
+            /** Reason */
+            reason?: string | null;
+            /** Requirement Id */
+            requirement_id: string;
+            /** Task Id */
+            task_id: string;
+        };
+        /** PlanningBatchUnassignResourceOperation */
+        PlanningBatchUnassignResourceOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "unassign_resource";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchUnassignResourcePayload"];
+        };
+        /** PlanningBatchUnassignResourcePayload */
+        PlanningBatchUnassignResourcePayload: {
+            /** Assignment Id */
+            assignment_id?: string | null;
+            /** Resource Id */
+            resource_id?: string | null;
+            /** Task Id */
+            task_id?: string | null;
+        };
+        /** PlanningBatchUpdateDependencyOperation */
+        PlanningBatchUpdateDependencyOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "update_dependency";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchUpdateDependencyPayload"];
+        };
+        /** PlanningBatchUpdateDependencyPayload */
+        PlanningBatchUpdateDependencyPayload: {
+            /** Dependency Id */
+            dependency_id: string;
+            /** Dependency Type */
+            dependency_type?: ("finish_to_start" | "start_to_start" | "finish_to_finish" | "start_to_finish") | null;
+            /** Lag Days */
+            lag_days?: number | null;
+        };
+        /** PlanningBatchUpdateTaskOperation */
+        PlanningBatchUpdateTaskOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "update_task";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchUpdateTaskPayload"];
+        };
+        /** PlanningBatchUpdateTaskPayload */
+        PlanningBatchUpdateTaskPayload: {
+            /** Cascade */
+            cascade?: boolean | null;
+            /** Constraint Date */
+            constraint_date?: string | null;
+            /** Constraint Type */
+            constraint_type?: string | null;
+            /** End */
+            end?: string | null;
+            /** Parent Task Id */
+            parent_task_id?: string | null;
+            /** Progress */
+            progress?: number | null;
+            /** Scheduling Mode */
+            scheduling_mode?: ("auto" | "manual") | null;
+            /** Sort Order */
+            sort_order?: number | null;
+            /** Start */
+            start?: string | null;
+            /** Status */
+            status?: ("planned" | "in_progress" | "blocked" | "complete") | null;
+            /** Task Id */
+            task_id: string;
+            /** Task Type */
+            task_type?: ("task" | "summary" | "milestone") | null;
+            /** Title */
+            title?: string | null;
+        };
+        /** PlanningCalendarFields */
+        PlanningCalendarFields: {
+            /** Holidays */
+            holidays?: string[];
+            /** Ignored Periods */
+            ignored_periods?: string[];
+            /**
+             * Name
+             * @default Standard
+             */
+            name: string;
+            /** Working Days */
+            working_days?: number[];
         };
         /** PlanningCalendarRequest */
         PlanningCalendarRequest: {
@@ -2019,8 +2254,11 @@ export interface components {
         PlanningLinkTargetRequest: {
             /** Id */
             id: string;
-            /** Kind */
-            kind: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "operation" | "gate" | "evidence" | "party" | "shipment" | "document" | "location" | "asset" | "agreement" | "communication_thread" | "calendar_event";
         };
         /** PlanningOptimizationRequest */
         PlanningOptimizationRequest: {

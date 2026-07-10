@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from uok_planning_core.batch_schemas import PlanningBatchRequest
 from uok.main import app
 
 
@@ -38,6 +39,10 @@ PLANNING_MUTATIONS = {
     ("delete", "/api/planning/projects/{project_id}/links/{link_id}"),
 }
 BATCH_MUTATION = ("post", "/api/planning/projects/{project_id}/mutations:batch")
+SUPPORTED_BATCH_KINDS = {
+    "update_task", "create_dependency", "update_dependency", "remove_dependency", "assign_resource",
+    "unassign_resource", "set_calendar", "create_link", "remove_link", "transition_gate",
+}
 CONDITIONAL_MUTATIONS = PLANNING_MUTATIONS - {("post", "/api/planning/projects")}
 READ_ONLY_POST_OPERATIONS: set[tuple[str, str]] = set()
 
@@ -66,6 +71,21 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
         assert_date_semantics_contract(schema)
         assert_participant_contract(schema)
         assert_requirement_contract(schema)
+
+
+def test_batch_contract_preserves_explicit_null_task_fields_without_materializing_unset_defaults() -> None:
+    request = PlanningBatchRequest.model_validate({
+        "operations": [{
+            "operation_id": "clear-parent",
+            "kind": "update_task",
+            "payload": {"task_id": "task-1", "parent_task_id": None, "constraint_date": None},
+        }]
+    })
+
+    payload = request.model_dump(exclude_unset=True)["operations"][0]["payload"]
+    assert payload["parent_task_id"] is None
+    assert payload["constraint_date"] is None
+    assert "title" not in payload
 
 
 def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object]) -> None:
@@ -108,8 +128,21 @@ def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object
             assert request["$ref"] == "#/components/schemas/PlanningBatchRequest"
             batch_schema = schema["components"]["schemas"]["PlanningBatchRequest"]
             assert batch_schema["properties"]["operations"]["maxItems"] == 500
+            assert_batch_operation_union(schema, batch_schema)
             source_command = next(item for item in batch_schema["properties"]["source_command_id"]["anyOf"] if item.get("type") == "string")
             assert source_command["minLength"] == source_command["maxLength"] == 36
+
+
+def assert_batch_operation_union(schema: dict[str, object], batch_schema: dict[str, object]) -> None:
+    items = batch_schema["properties"]["operations"]["items"]
+    assert items["discriminator"]["propertyName"] == "kind"
+    assert set(items["discriminator"]["mapping"]) == SUPPORTED_BATCH_KINDS
+    operation_schemas = [schema["components"]["schemas"][row["$ref"].rsplit("/", 1)[-1]] for row in items["oneOf"]]
+    assert {row["properties"]["kind"]["const"] for row in operation_schemas} == SUPPORTED_BATCH_KINDS
+    for operation in operation_schemas:
+        assert operation["additionalProperties"] is False
+        payload_name = operation["properties"]["payload"]["$ref"].rsplit("/", 1)[-1]
+        assert schema["components"]["schemas"][payload_name]["additionalProperties"] is False
 
 
 def assert_command_contract(schema: dict[str, object]) -> None:
@@ -210,7 +243,10 @@ def assert_link_contract(schema: dict[str, object]) -> None:
     assert request["$ref"] == "#/components/schemas/PlanningLinkRequest"
     target = schema["components"]["schemas"]["PlanningLinkTargetRequest"]
     assert target["additionalProperties"] is False
-    assert "communication_thread" in target["properties"]["kind"]["pattern"]
+    assert set(target["properties"]["kind"]["enum"]) == {
+        "operation", "gate", "evidence", "party", "shipment", "document", "location", "asset",
+        "agreement", "communication_thread", "calendar_event",
+    }
 
 
 def assert_date_semantics_contract(schema: dict[str, object]) -> None:

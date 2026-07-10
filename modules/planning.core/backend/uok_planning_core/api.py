@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from .api_support import require_planning_read, run_planning_command
+from .batch_schemas import PlanningBatchRequest
 from .analysis_api import router as analysis_router
 from .api_contracts import ETAG_RESPONSE_HEADERS, PLANNING_BATCH_RESPONSES, PLANNING_CREATE_RESPONSES, PLANNING_MUTATION_RESPONSES
 from .baselines import baseline_detail, baseline_or_error, compare_baselines
@@ -16,7 +17,6 @@ from .read_model import list_projects
 from .resource_calendar_api import router as resource_calendar_router
 from .schemas import (
     PlanningAssignmentRequest,
-    PlanningBatchRequest,
     PlanningBaselineRequest,
     PlanningCalendarRequest,
     PlanningDependencyRequest,
@@ -237,7 +237,7 @@ def assign_resource(req: PlanningAssignmentRequest, response: Response, idempote
 
 @router.post("/projects/{project_id}/mutations:batch", responses=PLANNING_BATCH_RESPONSES, response_model=None)
 def batch_mutations(project_id: str, req: PlanningBatchRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
-    payload = req.model_dump(exclude_none=True)
+    payload = req.model_dump(exclude_unset=True)
     payload["project_id"] = project_id
     return run_planning_command(db, actor, "BatchPlanningOperations", payload, idempotency_key, response, if_match)
 
