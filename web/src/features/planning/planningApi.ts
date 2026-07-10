@@ -2,6 +2,14 @@ import type { PlanningProject, PlanningSchedule } from "./types";
 
 type CommandResult<T> = { result: T; status: string };
 
+export type PlanningMutationOptions = {
+  idempotencyKey?: string;
+};
+
+export function planningMutationKey(prefix: string) {
+  return `${prefix}:${crypto.randomUUID()}`;
+}
+
 function headers(token: string) {
   return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 }
@@ -21,47 +29,56 @@ export function loadPlanningSchedule(token: string, projectId: string) {
   return planningJson<PlanningSchedule>(token, `/api/planning/projects/${projectId}/schedule`);
 }
 
-export async function planningCommand<T>(token: string, command_type: string, payload: Record<string, unknown>, prefix: string) {
-  const body = JSON.stringify({ command_type, payload, idempotency_key: `${prefix}:${Date.now()}` });
+export async function planningCommand<T>(token: string, command_type: string, payload: Record<string, unknown>, prefix: string, mutation: PlanningMutationOptions = {}) {
+  const idempotencyKey = mutation.idempotencyKey || planningMutationKey(prefix);
+  const body = JSON.stringify({ command_type, payload, idempotency_key: idempotencyKey });
   return planningJson<CommandResult<T>>(token, "/api/commands", { method: "POST", body });
 }
 
-export function updatePlanningTask(token: string, taskId: string, payload: Record<string, unknown>) {
-  return planningJson<unknown>(token, `/api/planning/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(payload) });
+function planningMutationJson<T>(token: string, path: string, options: RequestInit, prefix: string, mutation: PlanningMutationOptions = {}) {
+  const idempotencyKey = mutation.idempotencyKey || planningMutationKey(prefix);
+  return planningJson<T>(token, path, {
+    ...options,
+    headers: { ...options.headers, "Idempotency-Key": idempotencyKey },
+  });
 }
 
-export function createPlanningTask(token: string, projectId: string, payload: Record<string, unknown>) {
-  return planningJson<unknown>(token, `/api/planning/projects/${projectId}/tasks`, { method: "POST", body: JSON.stringify(payload) });
+export function updatePlanningTask(token: string, taskId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, `/api/planning/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(payload) }, "planning-task-update", mutation);
 }
 
-export function deletePlanningTask(token: string, taskId: string) {
-  return planningJson<unknown>(token, `/api/planning/tasks/${taskId}`, { method: "DELETE" });
+export function createPlanningTask(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/tasks`, { method: "POST", body: JSON.stringify(payload) }, "planning-task-create", mutation);
 }
 
-export function createPlanningDependency(token: string, projectId: string, payload: Record<string, unknown>) {
-  return planningJson<unknown>(token, `/api/planning/projects/${projectId}/dependencies`, { method: "POST", body: JSON.stringify(payload) });
+export function deletePlanningTask(token: string, taskId: string, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, `/api/planning/tasks/${taskId}`, { method: "DELETE" }, "planning-task-delete", mutation);
 }
 
-export function updatePlanningDependency(token: string, dependencyId: string, payload: Record<string, unknown>) {
-  return planningJson<unknown>(token, `/api/planning/dependencies/${dependencyId}`, { method: "PATCH", body: JSON.stringify(payload) });
+export function createPlanningDependency(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/dependencies`, { method: "POST", body: JSON.stringify(payload) }, "planning-dependency-create", mutation);
 }
 
-export function removePlanningDependency(token: string, dependencyId: string) {
-  return planningJson<unknown>(token, `/api/planning/dependencies/${dependencyId}`, { method: "DELETE" });
+export function updatePlanningDependency(token: string, dependencyId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, `/api/planning/dependencies/${dependencyId}`, { method: "PATCH", body: JSON.stringify(payload) }, "planning-dependency-update", mutation);
 }
 
-export function setPlanningCalendar(token: string, projectId: string, payload: Record<string, unknown>) {
-  return planningJson<unknown>(token, `/api/planning/projects/${projectId}/calendar`, { method: "PUT", body: JSON.stringify(payload) });
+export function removePlanningDependency(token: string, dependencyId: string, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, `/api/planning/dependencies/${dependencyId}`, { method: "DELETE" }, "planning-dependency-remove", mutation);
 }
 
-export function createPlanningBaseline(token: string, projectId: string, payload: Record<string, unknown>) {
-  return planningJson<unknown>(token, `/api/planning/projects/${projectId}/baselines`, { method: "POST", body: JSON.stringify(payload) });
+export function setPlanningCalendar(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/calendar`, { method: "PUT", body: JSON.stringify(payload) }, "planning-calendar-set", mutation);
 }
 
-export function createPlanningResource(token: string, projectId: string, payload: Record<string, unknown>) {
-  return planningJson<unknown>(token, `/api/planning/projects/${projectId}/resources`, { method: "POST", body: JSON.stringify(payload) });
+export function createPlanningBaseline(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/baselines`, { method: "POST", body: JSON.stringify(payload) }, "planning-baseline-create", mutation);
 }
 
-export function assignPlanningResource(token: string, payload: Record<string, unknown>) {
-  return planningJson<unknown>(token, "/api/planning/assignments", { method: "POST", body: JSON.stringify(payload) });
+export function createPlanningResource(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/resources`, { method: "POST", body: JSON.stringify(payload) }, "planning-resource-create", mutation);
+}
+
+export function assignPlanningResource(token: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions = {}) {
+  return planningMutationJson<unknown>(token, "/api/planning/assignments", { method: "POST", body: JSON.stringify(payload) }, "planning-assignment-create", mutation);
 }
