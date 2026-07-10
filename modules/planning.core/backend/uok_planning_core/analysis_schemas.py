@@ -61,7 +61,32 @@ class PlanningRiskAnalysisRequest(BaseModel):
     correlations: list[PlanningRiskCorrelationRequest] = Field(default_factory=list, max_length=50)
 
 
+class PlanningOptimizationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    snapshot_id: str = Field(..., min_length=1, max_length=36)
+    objective: str = Field(default="minimize_project_finish", pattern="^minimize_project_finish$")
+    timeout_ms: int = Field(default=500, ge=1, le=2000)
+    max_candidates: int = Field(default=50, ge=1, le=100)
+
+
+class PlanningRecommendationDecisionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    decision: str = Field(..., pattern="^(approve|reject)$")
+    reason: str = Field(..., min_length=1, max_length=500)
+
+
+class PlanningRecommendationMutationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+
+
 __all__ = [
+    "PlanningOptimizationRequest", "PlanningRecommendationDecisionRequest", "PlanningRecommendationMutationRequest",
     "PlanningRiskAnalysisRequest", "PlanningRiskCorrelationRequest", "PlanningRiskTaskRequest",
     "PlanningWhatIfSnapshotRequest", "PlanningWhatIfTaskChangeRequest",
 ]

@@ -95,3 +95,46 @@ export type PlanningRiskDetail = PlanningRiskMetadata & {
 };
 
 export type PlanningRiskCreateResult = PlanningMutationMetadata & { risk_analysis: PlanningRiskMetadata };
+
+export type PlanningOptimizationCreateRequest = {
+  expected_revision?: number;
+  snapshot_id: string;
+  objective: "minimize_project_finish";
+  timeout_ms: number;
+  max_candidates: number;
+};
+
+export type PlanningRecommendation = {
+  id: string;
+  project_id: string;
+  analysis_run_id: string;
+  key: string;
+  rank: number;
+  status: "proposed" | "approved" | "rejected" | "applied" | "rolled_back";
+  title: string;
+  source_revision: number;
+  explanation: { why: string; impact: string; side_effects: string[]; assumptions: string[] };
+  proposal: { task_changes: Array<{ task_id: string; before: { start: string; end: string; duration_days: number }; after: { start: string; end: string; duration_days: number } }> };
+  preview: { calculated_finish: string; target_variance_days: number; validation: { ok: boolean; violations: string[] } };
+  decision: { reason: string | null; user_id: string | null; at: string | null };
+  application: { user_id: string | null; at: string | null; revision: number | null };
+  rollback: { user_id: string | null; at: string | null; revision: number | null };
+};
+
+export type PlanningOptimizationMetadata = {
+  id: string;
+  project_id: string;
+  snapshot_id: string;
+  analysis_type: "optimization";
+  status: "completed" | "timeout" | "infeasible";
+  engine: { name: string; version: string };
+  checksum: string;
+  correlation_id: string;
+  objective: { name: string; baseline_finish: string; target_finish: string };
+  recommendation_count: number;
+  recommendations: PlanningRecommendation[];
+  integrity: PlanningWhatIfMetadata["integrity"];
+};
+
+export type PlanningOptimizationCreateResult = PlanningMutationMetadata & { optimization: PlanningOptimizationMetadata };
+export type PlanningRecommendationMutationResult = PlanningMutationMetadata & { recommendation: PlanningRecommendation };

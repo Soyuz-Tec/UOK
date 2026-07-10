@@ -31,6 +31,10 @@ PLANNING_MUTATIONS = {
     ("post", "/api/planning/projects/{project_id}/links"),
     ("post", "/api/planning/projects/{project_id}/what-if-snapshots"),
     ("post", "/api/planning/projects/{project_id}/risk-analyses"),
+    ("post", "/api/planning/projects/{project_id}/optimizations"),
+    ("post", "/api/planning/projects/{project_id}/recommendations/{recommendation_id}/decision"),
+    ("post", "/api/planning/projects/{project_id}/recommendations/{recommendation_id}/apply"),
+    ("post", "/api/planning/projects/{project_id}/recommendations/{recommendation_id}/rollback"),
     ("delete", "/api/planning/projects/{project_id}/links/{link_id}"),
 }
 BATCH_MUTATION = ("post", "/api/planning/projects/{project_id}/mutations:batch")

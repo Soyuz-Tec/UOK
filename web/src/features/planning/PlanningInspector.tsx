@@ -29,7 +29,7 @@ import type {
   PlanningTaskRequirementLinkRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
-import type { PlanningRiskCreateRequest, PlanningWhatIfCreateRequest } from "./analysisTypes";
+import type { PlanningOptimizationCreateRequest, PlanningRiskCreateRequest, PlanningWhatIfCreateRequest } from "./analysisTypes";
 
 const dependencyTypes: Array<[PlanningDependencyType, string]> = [
   ["finish_to_start", "Finish to start"],
@@ -52,6 +52,7 @@ export function PlanningInspector(props: {
   linkReadOnly: boolean;
   canApproveGates: boolean;
   canAnalyze: boolean;
+  canApproveAnalysis: boolean;
   onTabChange: (tab: PlanningInspectorTab) => void;
   onProjectChange: (projectId: string) => void;
   onSaveTask: (taskId: string, payload: PlanningTaskUpdateRequest) => Promise<void>;
@@ -76,6 +77,10 @@ export function PlanningInspector(props: {
   onSetResourceCalendar: (resourceId: string, payload: PlanningResourceCalendarUpdateRequest) => Promise<void>;
   onCreateWhatIfSnapshot: (payload: PlanningWhatIfCreateRequest) => Promise<void>;
   onRunRiskAnalysis: (payload: PlanningRiskCreateRequest) => Promise<void>;
+  onRunOptimization: (payload: PlanningOptimizationCreateRequest) => Promise<void>;
+  onDecideRecommendation: (recommendationId: string, decision: "approve" | "reject", reason: string) => Promise<void>;
+  onApplyRecommendation: (recommendationId: string) => Promise<void>;
+  onRollbackRecommendation: (recommendationId: string) => Promise<void>;
 }) {
   const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, readOnly, linkReadOnly, onProjectChange, onTabChange } = props;
 
@@ -119,7 +124,7 @@ export function PlanningInspector(props: {
         {activeTab === "gates" && <PlanningRequirementsPanel schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly} canApprove={props.canApproveGates} onCreate={props.onCreateTaskRequirement} onAdvance={props.onAdvanceTaskRequirement} onSetLink={props.onSetTaskRequirementLink} onDecide={props.onDecideTaskRequirement} />}
         {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
         {activeTab === "resources" && <PlanningResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} onSetResourceCalendar={props.onSetResourceCalendar} />}
-        {activeTab === "analysis" && <PlanningAnalysisPanel token={props.token} schedule={schedule} busy={busy} readOnly={readOnly} canAnalyze={props.canAnalyze} onCreate={props.onCreateWhatIfSnapshot} onRunRisk={props.onRunRiskAnalysis} />}
+        {activeTab === "analysis" && <PlanningAnalysisPanel token={props.token} schedule={schedule} busy={busy} readOnly={readOnly} canAnalyze={props.canAnalyze} canApprove={props.canApproveAnalysis} onCreate={props.onCreateWhatIfSnapshot} onRunRisk={props.onRunRiskAnalysis} onRunOptimization={props.onRunOptimization} onDecideRecommendation={props.onDecideRecommendation} onApplyRecommendation={props.onApplyRecommendation} onRollbackRecommendation={props.onRollbackRecommendation} />}
       </fieldset>
       {activeTab === "status" && <ValidationPanel schedule={schedule} status={status} />}
     </Pane>

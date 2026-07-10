@@ -179,6 +179,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           linkReadOnly={reviewMode || !capabilities.link || activeSchedule.capabilities?.link !== true}
           canApproveGates={capabilities.gate_approve && activeSchedule.capabilities?.gate_approve === true}
           canAnalyze={capabilities.analyze && activeSchedule.capabilities?.analyze === true}
+          canApproveAnalysis={capabilities.analysis_approve && activeSchedule.capabilities?.analysis_approve === true}
           onTabChange={setInspectorTab}
           onProjectChange={actions.changeProject}
           onSaveTask={actions.saveTask}
@@ -203,6 +204,10 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onSetResourceCalendar={actions.saveResourceCalendar}
           onCreateWhatIfSnapshot={actions.createWhatIfSnapshot}
           onRunRiskAnalysis={actions.runRiskAnalysis}
+          onRunOptimization={actions.runOptimization}
+          onDecideRecommendation={actions.decideRecommendation}
+          onApplyRecommendation={actions.applyRecommendation}
+          onRollbackRecommendation={actions.rollbackRecommendation}
         />
       </div>
     );

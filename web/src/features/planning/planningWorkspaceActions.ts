@@ -16,6 +16,10 @@ import {
   levelResourcesIntent,
   createWhatIfSnapshotIntent,
   runRiskAnalysisIntent,
+  runOptimizationIntent,
+  decideRecommendationIntent,
+  applyRecommendationIntent,
+  rollbackRecommendationIntent,
   removeDependencyIntent,
   removePlanningLinkIntent,
   removeTaskParticipantIntent,
@@ -29,7 +33,7 @@ import {
 } from "./planningMutationIntents";
 import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningTask } from "./types";
-import type { PlanningRiskCreateRequest, PlanningWhatIfCreateRequest } from "./analysisTypes";
+import type { PlanningOptimizationCreateRequest, PlanningRiskCreateRequest, PlanningWhatIfCreateRequest } from "./analysisTypes";
 import type {
   PlanningAssignmentCreateRequest,
   PlanningBaselineCreateRequest,
@@ -83,6 +87,10 @@ export function planningWorkspaceActions({
     levelResources: (horizonDays: number) => mutate(levelResourcesIntent(token, projectId, horizonDays)),
     createWhatIfSnapshot: (payload: PlanningWhatIfCreateRequest) => mutate(createWhatIfSnapshotIntent(token, projectId, payload)),
     runRiskAnalysis: (payload: PlanningRiskCreateRequest) => mutate(runRiskAnalysisIntent(token, projectId, payload)),
+    runOptimization: (payload: PlanningOptimizationCreateRequest) => mutate(runOptimizationIntent(token, projectId, payload)),
+    decideRecommendation: (recommendationId: string, decision: "approve" | "reject", reason: string) => mutate(decideRecommendationIntent(token, projectId, recommendationId, decision, reason)),
+    applyRecommendation: (recommendationId: string) => mutate(applyRecommendationIntent(token, projectId, recommendationId)),
+    rollbackRecommendation: (recommendationId: string) => mutate(rollbackRecommendationIntent(token, projectId, recommendationId)),
     saveTaskBatch: (updates: PlanningBulkTaskUpdate[]) => mutate(batchTaskUpdatesIntent(token, projectId, updates)),
     runTaskMenuAction: async (action: PlanningTaskMenuAction, task: PlanningTask) => {
       const mutation = planningTaskMenuMutation(action, task);

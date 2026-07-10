@@ -2,8 +2,8 @@ import { FlaskConical, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
-import type { PlanningRiskCreateRequest, PlanningRiskMetadata, PlanningWhatIfCreateRequest, PlanningWhatIfDetail, PlanningWhatIfMetadata } from "./analysisTypes";
-import { listPlanningRiskAnalyses, listPlanningWhatIfSnapshots, loadPlanningWhatIfSnapshot } from "./planningAnalysisApi";
+import type { PlanningOptimizationCreateRequest, PlanningRecommendation, PlanningRiskCreateRequest, PlanningRiskMetadata, PlanningWhatIfCreateRequest, PlanningWhatIfDetail, PlanningWhatIfMetadata } from "./analysisTypes";
+import { listPlanningRecommendations, listPlanningRiskAnalyses, listPlanningWhatIfSnapshots, loadPlanningWhatIfSnapshot } from "./planningAnalysisApi";
 import type { PlanningSchedule } from "./types";
 
 export function PlanningAnalysisPanel({
@@ -14,6 +14,11 @@ export function PlanningAnalysisPanel({
   canAnalyze,
   onCreate,
   onRunRisk,
+  onRunOptimization,
+  onDecideRecommendation,
+  onApplyRecommendation,
+  onRollbackRecommendation,
+  canApprove,
 }: {
   token: string;
   schedule: PlanningSchedule;
@@ -22,6 +27,11 @@ export function PlanningAnalysisPanel({
   canAnalyze: boolean;
   onCreate: (payload: PlanningWhatIfCreateRequest) => Promise<void>;
   onRunRisk: (payload: PlanningRiskCreateRequest) => Promise<void>;
+  onRunOptimization: (payload: PlanningOptimizationCreateRequest) => Promise<void>;
+  onDecideRecommendation: (recommendationId: string, decision: "approve" | "reject", reason: string) => Promise<void>;
+  onApplyRecommendation: (recommendationId: string) => Promise<void>;
+  onRollbackRecommendation: (recommendationId: string) => Promise<void>;
+  canApprove: boolean;
 }) {
   const firstTask = schedule.tasks.find((task) => task.task_type !== "summary");
   const [taskId, setTaskId] = useState(firstTask?.id || "");
@@ -35,6 +45,8 @@ export function PlanningAnalysisPanel({
   const [seed, setSeed] = useState(42);
   const [iterations, setIterations] = useState(500);
   const [riskRows, setRiskRows] = useState<PlanningRiskMetadata[]>([]);
+  const [recommendations, setRecommendations] = useState<PlanningRecommendation[]>([]);
+  const [decisionReason, setDecisionReason] = useState("Reviewed with the delivery owner");
 
   useEffect(() => {
     void refresh();
@@ -96,6 +108,27 @@ export function PlanningAnalysisPanel({
           <span>{Math.round(row.result_summary.probability_on_or_before_target * 100)}% on/before target · seed {row.seed} · {row.integrity.status}</span>
         </div>)}
       </div>
+      <h3>Bounded recommendations</h3>
+      <p className="planning-muted">The advisory optimizer searches a bounded candidate set, explains objective impact and side effects, previews hard constraints, and never applies without separate approval.</p>
+      <CommandButton icon={FlaskConical} loading={busy === "optimize"} disabled={readOnly || !canAnalyze || !detail} onClick={() => void optimize()}>
+        Analyze and recommend
+      </CommandButton>
+      <label className="field"><span>Decision reason</span><input value={decisionReason} maxLength={500} onChange={(event) => setDecisionReason(event.target.value)} /></label>
+      <div className="planning-list" aria-label="Optimization recommendations">
+        {recommendations.map((row) => <div key={row.id} className="planning-list-row">
+          <strong>#{row.rank} {row.title}</strong>
+          <span>{row.explanation.impact} · {row.status}</span>
+          <small>{row.explanation.side_effects.join(" ")}</small>
+          <div className="planning-action-row">
+            {row.status === "proposed" ? <>
+              <CommandButton icon={FlaskConical} disabled={readOnly || !canApprove || !decisionReason.trim()} loading={busy === "recommendation-decision"} onClick={() => void decide(row.id, "approve")}>Approve</CommandButton>
+              <CommandButton icon={FlaskConical} disabled={readOnly || !canApprove || !decisionReason.trim()} loading={busy === "recommendation-decision"} onClick={() => void decide(row.id, "reject")}>Reject</CommandButton>
+            </> : null}
+            {row.status === "approved" ? <CommandButton icon={FlaskConical} disabled={readOnly} loading={busy === "recommendation-apply"} onClick={() => void apply(row.id)}>Apply</CommandButton> : null}
+            {row.status === "applied" ? <CommandButton icon={RefreshCw} disabled={readOnly} loading={busy === "recommendation-rollback"} onClick={() => void rollback(row.id)}>Rollback</CommandButton> : null}
+          </div>
+        </div>)}
+      </div>
     </section>
   );
 
@@ -113,6 +146,7 @@ export function PlanningAnalysisPanel({
       if (next[0]) await load(next[0].id);
       else setDetail(null);
       setRiskRows(await listPlanningRiskAnalyses(token, schedule.project.id));
+      setRecommendations(await listPlanningRecommendations(token, schedule.project.id));
     } finally {
       setLoading(false);
     }
@@ -146,5 +180,26 @@ export function PlanningAnalysisPanel({
       correlations: [],
     });
     setRiskRows(await listPlanningRiskAnalyses(token, schedule.project.id));
+  }
+
+  async function optimize() {
+    if (!detail) return;
+    await onRunOptimization({ snapshot_id: detail.id, objective: "minimize_project_finish", timeout_ms: 500, max_candidates: 50 });
+    setRecommendations(await listPlanningRecommendations(token, schedule.project.id));
+  }
+
+  async function decide(recommendationId: string, decision: "approve" | "reject") {
+    await onDecideRecommendation(recommendationId, decision, decisionReason.trim());
+    setRecommendations(await listPlanningRecommendations(token, schedule.project.id));
+  }
+
+  async function apply(recommendationId: string) {
+    await onApplyRecommendation(recommendationId);
+    setRecommendations(await listPlanningRecommendations(token, schedule.project.id));
+  }
+
+  async function rollback(recommendationId: string) {
+    await onRollbackRecommendation(recommendationId);
+    setRecommendations(await listPlanningRecommendations(token, schedule.project.id));
   }
 }

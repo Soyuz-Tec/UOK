@@ -208,6 +208,8 @@ def _command_project_id(db: Session, actor: Actor, command_type: str, payload: d
         "RemovePlanningLink",
         "CreatePlanningWhatIfSnapshot",
         "RunPlanningRiskAnalysis",
+        "RunPlanningOptimization", "DecidePlanningRecommendation",
+        "ApplyPlanningRecommendation", "RollbackPlanningRecommendation",
     }
     task_commands = {"UpdatePlanningTask", "UpdatePlanningTaskDates", "DeletePlanningTask", "AssignPlanningResource", "AddPlanningTaskParticipant", "RemovePlanningTaskParticipant", "CreatePlanningTaskRequirement", "AdvancePlanningTaskRequirement", "SetPlanningTaskRequirementLink", "DecidePlanningTaskRequirement"}
     dependency_commands = {"UpdatePlanningDependency", "RemovePlanningDependency"}
@@ -295,6 +297,3 @@ def _current_result(result: dict[str, Any], schedule: dict[str, Any], etag: str,
     current["correlation_id"] = command_id
     current[COMMAND_ETAG_RESULT_KEY] = etag
     return current
-
-
-__all__ = ["guarded_planning_command", "read_locked_schedule_snapshot", "read_schedule_snapshot", "strong_schedule_etag"]

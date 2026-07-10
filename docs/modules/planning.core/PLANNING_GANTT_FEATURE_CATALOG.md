@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if plus reproducible risk analysis runtime-proven.
+**Status:** Active evidence catalog; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and all four Gate D governed-analysis slices runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -47,6 +47,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Resource-specific `calendar.core` warnings | `runtime_proven` | Actor-visible Party-linked participants/resources filter busy occurrences, attach exact task IDs, exclude unrelated events, hide private Party/event identity, and preserve strong ETag behavior without automatic task movement; rebuilt candidate proof passes. |
 | Immutable what-if snapshots | `runtime_proven` | Complete approved schedule plus bounded temporary typed task changes, detached preview evaluation, CPM/capacity validation, canonical SHA-256 integrity, actor-scoped reads, distinct analysis capability, audit correlation, and ORM/PostgreSQL append-only guards pass candidate proof without changing approved tasks. |
 | Reproducible schedule risk | `runtime_proven` | Verified snapshot checksum, fixed seed, bounded triangular distributions, explicit correlation groups, engine/version/limits, CPM-per-sample P50/P80/P90/P95, target probability, confidence assumptions, independent validation, canonical integrity, typed UI, and append-only candidate evidence pass. |
+| Governed optimization and recommendations | `runtime_proven` | Dependency-reviewed bounded advisory search records objective/engine/version/limits, explicit completed/timeout/infeasible explanations, independently validated ranked impact/effort/side effects/assumptions and preview; separate reasoned approval, exact stale-safe apply, audit, rollback, database transition guards, benchmark, typed UI, and candidate proof pass. |
 | Export/import | `integration_tested` | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning consumes that boundary and owns only schedule-specific payloads/read-model mapping. |
 | UI proof | `runtime_proven` | Playwright proof covers rendering, controls, inspector tabs, non-drag mutation paths, stale inverse recovery, responsiveness, and console cleanliness. |
 | Server capabilities | `runtime_proven` | Actor-specific read/edit/baseline/level/link/gate/admin capabilities are enforced by command permission, embedded in schedule reads, mirrored by fail-closed UI controls, and probed in the candidate runtime. Local review mode cannot grant authority. |

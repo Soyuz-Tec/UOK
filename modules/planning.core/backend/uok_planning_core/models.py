@@ -15,6 +15,7 @@ from uok.models import (
     PlanningTaskDependency,
     PlanningWhatIfSnapshot,
     PlanningAnalysisRun,
+    PlanningAnalysisRecommendation,
     utcnow,
 )
 
@@ -33,6 +34,7 @@ __all__ = [
     "PlanningTaskDependency",
     "PlanningWhatIfSnapshot",
     "PlanningAnalysisRun",
+    "PlanningAnalysisRecommendation",
     "owned_models",
     "utcnow",
 ]
@@ -54,4 +56,5 @@ def owned_models() -> dict[str, str]:
         "PlanningTaskDependency": PlanningTaskDependency.__tablename__,
         "PlanningWhatIfSnapshot": PlanningWhatIfSnapshot.__tablename__,
         "PlanningAnalysisRun": PlanningAnalysisRun.__tablename__,
+        "PlanningAnalysisRecommendation": PlanningAnalysisRecommendation.__tablename__,
     }

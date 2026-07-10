@@ -6,7 +6,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_set_calendar
-from .analysis_commands import cmd_create_what_if_snapshot, cmd_run_risk_analysis
+from .analysis_commands import cmd_apply_recommendation, cmd_create_what_if_snapshot, cmd_decide_recommendation, cmd_rollback_recommendation, cmd_run_optimization, cmd_run_risk_analysis
 from .batch import cmd_batch_operations
 from .concurrency import guarded_planning_command
 from .leveling_command import cmd_level_resources
@@ -193,6 +193,10 @@ def command_handlers() -> dict[str, CommandHandler]:
         "DecidePlanningTaskRequirement": cmd_decide_planning_task_requirement,
         "CreatePlanningWhatIfSnapshot": cmd_create_what_if_snapshot,
         "RunPlanningRiskAnalysis": cmd_run_risk_analysis,
+        "RunPlanningOptimization": cmd_run_optimization,
+        "DecidePlanningRecommendation": cmd_decide_recommendation,
+        "ApplyPlanningRecommendation": cmd_apply_recommendation,
+        "RollbackPlanningRecommendation": cmd_rollback_recommendation,
     }
     return {name: guarded_planning_command(name, handler) for name, handler in handlers.items()}
 
@@ -226,6 +230,10 @@ def command_permissions() -> dict[str, str]:
     permissions["DecidePlanningTaskRequirement"] = "planning.gate.approve"
     permissions["CreatePlanningWhatIfSnapshot"] = "planning.analyze"
     permissions["RunPlanningRiskAnalysis"] = "planning.analyze"
+    permissions["RunPlanningOptimization"] = "planning.analyze"
+    permissions["DecidePlanningRecommendation"] = "planning.analysis.approve"
+    permissions["ApplyPlanningRecommendation"] = "planning.edit"
+    permissions["RollbackPlanningRecommendation"] = "planning.edit"
     return permissions
 
 

@@ -53,6 +53,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0012-planning-explainable-resource-leveling.md` | Simple leveling strategy, configured horizon, explicit outcomes, reason codes, independent validation, and optimizer boundary | Leveling strategy, horizon, outcome, diagnostic, validation, or optimizer rules change |
 | `docs/architecture/ADR-0013-planning-immutable-what-if-snapshots.md` | Immutable analysis source capture, temporary preview evaluation, checksums, permissions, and non-mutation boundary | What-if snapshot, analysis source, preview, integrity, or analysis permission rules change |
 | `docs/architecture/ADR-0014-planning-reproducible-risk-analysis.md` | Seeded bounded Monte Carlo inputs, correlations, limits, percentiles, confidence, integrity, and reproduction contract | Risk engine, distribution, correlation, seed, simulation limit, percentile, or confidence rules change |
+| `docs/architecture/ADR-0015-planning-governed-optimization-and-recommendations.md` | Bounded optimizer, dependency review, objectives, limits, explanations, approval/apply/audit/rollback lifecycle | Optimization engine, dependency, objective, limit, recommendation, approval, apply, audit, or rollback rules change |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -124,6 +125,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0012-planning-explainable-resource-leveling.md`
 - `docs/architecture/ADR-0013-planning-immutable-what-if-snapshots.md`
 - `docs/architecture/ADR-0014-planning-reproducible-risk-analysis.md`
+- `docs/architecture/ADR-0015-planning-governed-optimization-and-recommendations.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`

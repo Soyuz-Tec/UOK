@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if plus reproducible risk analysis runtime-proven; hosted CI, review, and merge pending.
+**Status:** Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and all four Gate D governed-analysis slices runtime-proven; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -195,8 +195,8 @@ Current Gate C explainable-leveling evidence:
 |---|---|---|---|---|
 | PLA-D-001 | Immutable what-if snapshots | Additive append-only model/migration, complete approved capture, bounded typed temporary changes, detached CPM/capacity preview, SHA-256 integrity, actor-scoped read API, distinct analysis capability, typed inspector, and audit correlation | PostgreSQL trigger/readback and rebuilt candidate non-mutation proof | `runtime_proven` |
 | PLA-D-002 | Reproducible risk analysis | Verified snapshot checksum, fixed seed, bounded triangular task inputs, named correlation groups, versioned CPM-per-sample engine, limits, P50/P80/P90/P95, target probability, confidence assumptions, independent validation, typed UI, checksum, and append-only audit record | Exact same-input reproduction, PostgreSQL readback, and candidate percentile proof | `runtime_proven` |
-| PLA-D-003 | Bounded governed optimization | Leveling is explicit but not optimization | ADR/dependency review, engine/version/limits/objective, timeout/infeasible fixtures, benchmarks, and independent validation | `planned` |
-| PLA-D-004 | Governed recommendation lifecycle | Analysis and approval permissions are separated | Analyze to explain to recommend to preview to approve to apply to audit, with rollback | `planned` |
+| PLA-D-003 | Bounded governed optimization | Dependency-reviewed first-party advisory engine, verified snapshot input, objective/engine/version, time/candidate limits, explicit completed/timeout/infeasible, explanations, ranked impact/effort/side effects/assumptions, preview, and independent validation | Representative chain, timeout/infeasible fixtures, 50-task benchmark, PostgreSQL readback, and candidate proof | `runtime_proven` |
+| PLA-D-004 | Governed recommendation lifecycle | Persistent controlled state machine, distinct analyze/approve/edit authority, reasoned decision, stale-safe apply, schedule validation, exact audit correlation, rollback, transition trigger, and typed UI | Unauthorized/early denial plus rebuilt candidate approve/apply/audit/rollback proof | `runtime_proven` |
 
 Current Gate D what-if evidence:
 
@@ -217,6 +217,17 @@ Current Gate D risk evidence:
 - Typed fixed-seed Analysis inspector proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`
 - Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningRisk.ps1`
 - Persistent PostgreSQL proof: 16 columns, four checks, four foreign keys, six indexes, one immutable trigger, and direct update rejection read back after backup `uok_pg18_20260710-092303.dump` and additive migration; two same-input candidate runs produced the same checksum.
+
+Current Gate D optimization/lifecycle evidence:
+
+- ADR/dependency review: `docs/architecture/ADR-0015-planning-governed-optimization-and-recommendations.md`
+- Bounded engine, objectives, limits, timeout/infeasible handling, ranking, and independent checks: `modules/planning.core/backend/uok_planning_core/optimizer_engine.py`
+- Immutable optimization run plus controlled recommendation lifecycle: `modules/planning.core/backend/uok_planning_core/optimization.py` and `analysis_commands.py`
+- Representative, permission, early-apply, approval, apply, audit, rollback, stale, and direct-transition proofs: `modules/planning.core/tests/test_planning_governed_optimization.py`
+- Benchmark: `modules/planning.core/tests/test_planning_optimizer_benchmark.py` measured about 0.25 seconds for 50 candidates across a 50-task chain on the local candidate.
+- Typed approval workflow proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`
+- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningOptimization.ps1`
+- Persistent PostgreSQL proof: 23 columns, six checks, six foreign keys, seven indexes, one transition trigger, and direct rolled-back-to-approved rejection read back after backup `uok_pg18_20260710-094209.dump` and additive migration; rebuilt candidate completed propose/approve/apply/rollback.
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence

@@ -1727,6 +1727,54 @@
         "title": "PlanningLinkTargetRequest",
         "type": "object"
       },
+      "PlanningOptimizationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "max_candidates": {
+            "default": 50,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Max Candidates",
+            "type": "integer"
+          },
+          "objective": {
+            "default": "minimize_project_finish",
+            "pattern": "^minimize_project_finish$",
+            "title": "Objective",
+            "type": "string"
+          },
+          "snapshot_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Snapshot Id",
+            "type": "string"
+          },
+          "timeout_ms": {
+            "default": 500,
+            "maximum": 2000.0,
+            "minimum": 1.0,
+            "title": "Timeout Ms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "snapshot_id"
+        ],
+        "title": "PlanningOptimizationRequest",
+        "type": "object"
+      },
       "PlanningProjectRequest": {
         "properties": {
           "end": {
@@ -1761,6 +1809,59 @@
           "end"
         ],
         "title": "PlanningProjectRequest",
+        "type": "object"
+      },
+      "PlanningRecommendationDecisionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "pattern": "^(approve|reject)$",
+            "title": "Decision",
+            "type": "string"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision",
+          "reason"
+        ],
+        "title": "PlanningRecommendationDecisionRequest",
+        "type": "object"
+      },
+      "PlanningRecommendationMutationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          }
+        },
+        "title": "PlanningRecommendationMutationRequest",
         "type": "object"
       },
       "PlanningResourceCalendarRequest": {
@@ -8293,6 +8394,862 @@
         "summary": "Batch Mutations",
         "tags": [
           "planning"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/optimizations": {
+      "get": {
+        "operationId": "project_optimizations_api_planning_projects__project_id__optimizations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response Project Optimizations Api Planning Projects  Project Id  Optimizations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project Optimizations",
+        "tags": [
+          "planning-analysis"
+        ]
+      },
+      "post": {
+        "operationId": "create_project_optimization_api_planning_projects__project_id__optimizations_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningOptimizationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Create Project Optimization",
+        "tags": [
+          "planning-analysis"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/optimizations/{run_id}": {
+      "get": {
+        "operationId": "project_optimization_api_planning_projects__project_id__optimizations__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Project Optimization Api Planning Projects  Project Id  Optimizations  Run Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project Optimization",
+        "tags": [
+          "planning-analysis"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/recommendations": {
+      "get": {
+        "operationId": "project_recommendations_api_planning_projects__project_id__recommendations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response Project Recommendations Api Planning Projects  Project Id  Recommendations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project Recommendations",
+        "tags": [
+          "planning-analysis"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/recommendations/{recommendation_id}/apply": {
+      "post": {
+        "operationId": "apply_project_recommendation_api_planning_projects__project_id__recommendations__recommendation_id__apply_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "recommendation_id",
+            "required": true,
+            "schema": {
+              "title": "Recommendation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningRecommendationMutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Apply Project Recommendation",
+        "tags": [
+          "planning-analysis"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/recommendations/{recommendation_id}/decision": {
+      "post": {
+        "operationId": "decide_project_recommendation_api_planning_projects__project_id__recommendations__recommendation_id__decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "recommendation_id",
+            "required": true,
+            "schema": {
+              "title": "Recommendation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningRecommendationDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Decide Project Recommendation",
+        "tags": [
+          "planning-analysis"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/recommendations/{recommendation_id}/rollback": {
+      "post": {
+        "operationId": "rollback_project_recommendation_api_planning_projects__project_id__recommendations__recommendation_id__rollback_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "recommendation_id",
+            "required": true,
+            "schema": {
+              "title": "Recommendation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningRecommendationMutationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Rollback Project Recommendation",
+        "tags": [
+          "planning-analysis"
         ]
       }
     },

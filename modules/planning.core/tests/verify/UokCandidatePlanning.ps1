@@ -9,6 +9,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningLeveling.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningWhatIf.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningRisk.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningOptimization.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -289,6 +290,7 @@ function Invoke-UokPlanningCandidateScenario {
     Assert-UokPlanningExplainableLeveling -ProjectId $projectId -BaselineId $baselineMetadata.id -BaselineChecksum $baselineMetadata.checksum -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     $whatIfEvidence = Assert-UokPlanningWhatIfSnapshot -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     Assert-UokPlanningRiskAnalysis -ProjectId $projectId -TaskId $first.result.id -SnapshotId $whatIfEvidence.snapshot_id -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
+    Assert-UokPlanningGovernedOptimization -ProjectId $projectId -TaskId $first.result.id -SnapshotId $whatIfEvidence.snapshot_id -OpsHeaders $OpsHeaders -Stamp $Stamp
 
     return @{ project_id = $projectId }
 }

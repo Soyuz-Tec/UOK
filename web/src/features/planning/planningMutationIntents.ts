@@ -22,7 +22,7 @@ import {
   updatePlanningTaskDates,
 } from "./planningApi";
 import { setPlanningResourceCalendar } from "./planningResourceCalendarApi";
-import { createPlanningRiskAnalysis, createPlanningWhatIfSnapshot } from "./planningAnalysisApi";
+import { applyPlanningRecommendation, createPlanningOptimization, createPlanningRiskAnalysis, createPlanningWhatIfSnapshot, decidePlanningRecommendation, rollbackPlanningRecommendation } from "./planningAnalysisApi";
 import type { PlanningMutationIntent } from "./planningConcurrencyState";
 import { planningHistoryDiff, planningLevelHistory } from "./planningHistory";
 import { withCascade } from "./planningWorkspaceHelpers";
@@ -47,7 +47,7 @@ import type {
   PlanningTaskDateUpdateRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
-import type { PlanningRiskCreateRequest, PlanningWhatIfCreateRequest } from "./analysisTypes";
+import type { PlanningOptimizationCreateRequest, PlanningRiskCreateRequest, PlanningWhatIfCreateRequest } from "./analysisTypes";
 
 export function rescheduleTaskIntent(token: string, taskId: string, start: string, end: string, cascade: boolean) {
   return intent("reschedule", "Reschedule task", { taskId, start, end, cascade }, (etag) => updatePlanningTask(token, taskId, { start, end, cascade }, { ifMatch: etag }));
@@ -160,6 +160,22 @@ export function runRiskAnalysisIntent(token: string, projectId: string, payload:
     { action: "risk_analysis_completed" },
     (etag) => createPlanningRiskAnalysis(token, projectId, payload, { ifMatch: etag }),
   );
+}
+
+export function runOptimizationIntent(token: string, projectId: string, payload: PlanningOptimizationCreateRequest) {
+  return intent("optimize", "Run bounded optimization", { action: "optimization_completed" }, (etag) => createPlanningOptimization(token, projectId, payload, { ifMatch: etag }));
+}
+
+export function decideRecommendationIntent(token: string, projectId: string, recommendationId: string, decision: "approve" | "reject", reason: string) {
+  return intent("recommendation-decision", `${decision} recommendation`, { action: "recommendation_decided", decision }, (etag) => decidePlanningRecommendation(token, projectId, recommendationId, decision, reason, { ifMatch: etag }));
+}
+
+export function applyRecommendationIntent(token: string, projectId: string, recommendationId: string) {
+  return intent("recommendation-apply", "Apply approved recommendation", { action: "recommendation_applied" }, (etag) => applyPlanningRecommendation(token, projectId, recommendationId, { ifMatch: etag }));
+}
+
+export function rollbackRecommendationIntent(token: string, projectId: string, recommendationId: string) {
+  return intent("recommendation-rollback", "Rollback recommendation", { action: "recommendation_rolled_back" }, (etag) => rollbackPlanningRecommendation(token, projectId, recommendationId, { ifMatch: etag }));
 }
 
 export function levelingSuccessStatus(responseData: unknown): Record<string, unknown> {

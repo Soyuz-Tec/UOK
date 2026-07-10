@@ -39,6 +39,10 @@ commands:
   - DecidePlanningTaskRequirement
   - CreatePlanningWhatIfSnapshot
   - RunPlanningRiskAnalysis
+  - RunPlanningOptimization
+  - DecidePlanningRecommendation
+  - ApplyPlanningRecommendation
+  - RollbackPlanningRecommendation
 events:
   - PlanningProjectCreated
   - PlanningTaskCreated
@@ -65,6 +69,10 @@ events:
   - PlanningTaskRequirementDecided
   - PlanningWhatIfSnapshotCreated
   - PlanningRiskAnalysisCompleted
+  - PlanningOptimizationCompleted
+  - PlanningRecommendationDecided
+  - PlanningRecommendationApplied
+  - PlanningRecommendationRolledBack
 dependencies:
   - calendar.core
 backend_path: modules/planning.core/backend
@@ -107,6 +115,7 @@ owned_tables:
   - PlanningScheduleEvent
   - PlanningWhatIfSnapshot
   - PlanningAnalysisRun
+  - PlanningAnalysisRecommendation
   - CommandLog:planning.core
   - EventRecord:Planning
 extension_points:

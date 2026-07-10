@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if plus reproducible risk analysis runtime-proven.
+**Status:** Active module plan; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and all four Gate D governed-analysis slices runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -165,6 +165,17 @@ confidence assumptions. P50/P80/P90/P95 and target probability results are
 independently shape-validated, hash-verified, append-only, actor-scoped, and
 audit-correlated. Risk runs are evidence only; they cannot approve or apply a
 schedule change.
+
+## Governed Optimization Boundary
+
+ADR-0015 governs bounded advisory optimization and the recommendation state
+machine. The dependency-free engine records objective, engine/version, wall and
+candidate limits, evaluated count, explicit completed/timeout/infeasible
+status, explanations, ranked impact/effort/side effects/assumptions, and an
+independently validated preview. `planning.analysis.approve` with a reason is
+separate from `planning.edit` apply/rollback. Exact task-date matching, strong
+ETags, audited revisions, ORM rules, and a PostgreSQL transition trigger make
+stale or unsupported transitions fail closed.
 
 ## Calendar Correlation Boundary
 

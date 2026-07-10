@@ -130,6 +130,10 @@ def test_every_planning_command_uses_one_declared_capability() -> None:
     assert permissions["LevelPlanningResources"] == "planning.level"
     assert permissions["CreatePlanningWhatIfSnapshot"] == "planning.analyze"
     assert permissions["RunPlanningRiskAnalysis"] == "planning.analyze"
+    assert permissions["RunPlanningOptimization"] == "planning.analyze"
+    assert permissions["DecidePlanningRecommendation"] == "planning.analysis.approve"
+    assert permissions["ApplyPlanningRecommendation"] == "planning.edit"
+    assert permissions["RollbackPlanningRecommendation"] == "planning.edit"
     assert set(permissions.values()) <= set(PLANNING_CAPABILITY_PERMISSIONS.values())
     assert "planning.manage" not in permissions.values()
     assert PLANNING_ROLE_GRANTS["trader"] == {"planning.read", "planning.edit"}
