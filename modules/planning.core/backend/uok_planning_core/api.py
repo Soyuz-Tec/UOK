@@ -113,8 +113,7 @@ def require_planning_read(db: Session, actor: Actor) -> None:
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
     except ValueError as exc:
-        status_code = 409 if str(exc).startswith("idempotency_key is already used") else 400
-        raise HTTPException(status_code=status_code, detail={"error": str(exc)}) from exc
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
 
 def run_planning_command(db: Session, actor: Actor, command_type: str, payload: dict[str, Any], idempotency_key: str) -> dict[str, Any]:
@@ -123,4 +122,5 @@ def run_planning_command(db: Session, actor: Actor, command_type: str, payload: 
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+        status_code = 409 if str(exc).startswith("idempotency_key is already used") else 400
+        raise HTTPException(status_code=status_code, detail={"error": str(exc)}) from exc
