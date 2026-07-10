@@ -35,7 +35,8 @@ Operator browser
 - `contacts.core` is the first optional capability module.
 - `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, reminders, free-busy, availability, iCalendar export, and a traditional Calendar workspace.
 - `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
-- Planning Gate A local/runtime closure is verified under ADR-0003; scheduling, write-safety, evidence-governance, and accessibility claims are recorded in the Planning Gantt implementation traceability map. The stacked draft PRs still require hosted CI, review, and merge, and no local alpha result implies production readiness.
+- `communications.core` is an optional K Connect capability module for organization-scoped thread identity, access, lifecycle state, audit evidence, and exact authorized deep links.
+- Planning Gate A local/runtime closure and all five Gate B slices are verified; scheduling, write-safety, evidence-governance, accessibility, operation links, date semantics, participants, gates/readiness, and K Connect thread-jump claims are recorded in the Planning Gantt implementation traceability map. The stacked draft PRs still require hosted CI, review, and merge, and no local alpha result implies production readiness.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
 - `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.
@@ -68,6 +69,7 @@ Operator browser
 - ADR-0005: `docs/architecture/ADR-0005-planning-date-semantics.md`
 - ADR-0006: `docs/architecture/ADR-0006-planning-task-participant-boundary.md`
 - ADR-0007: `docs/architecture/ADR-0007-planning-task-requirements-and-readiness.md`
+- ADR-0008: `docs/architecture/ADR-0008-communications-thread-provider-boundary.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -80,11 +82,13 @@ Operator browser
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
 - Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 - Planning Core module plan: `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
+- Communications Core module plan: `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md`
 - Planning Gantt Gate A traceability: `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`
-- Planning Gate B typed links resolve through module-owned adapters; absent Operation Graph and K Connect providers remain explicit `unavailable` states rather than simulated source objects.
+- Planning Gate B typed links resolve through module-owned adapters; K Connect threads now resolve through `communications.core`, while absent Operation Graph providers remain explicit `unavailable` states rather than simulated source objects.
 - Planning Gate B execution dates use scheduler-owned planned dates plus separate forecast, reason-audited actual, and deadline facts. Project-local calendar dates are stored as UTC instants through an immutable creation-time IANA timezone; subday Gantt scales remain visual-only.
 - Planning Gate B task participants reference canonical, authorized `contacts.core` Parties through actor-specific resolution without a cross-module foreign key. Responsibility roles remain distinct from Gate C capacity resources.
 - Planning Gate B requirements use a controlled, permissioned state machine and derive fail-closed task/project readiness from required decisions and actor-visible typed-link provider state.
+- Planning Gate B communication jumps keep thread identity and authorization in `communications.core`; Planning stores only a typed reference and the shared shell opens the exact actor-authorized K Connect thread.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

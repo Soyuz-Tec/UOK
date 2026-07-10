@@ -22,7 +22,7 @@ KERNEL_MODULE_FACADE_FILES = {
     "src/uok/contact_read_model.py",
     "src/uok/contact_validation.py",
 }
-BASELINE_MODULES = ["agents.core", "apps.manager", "calendar.core", "contacts.core", "planning.core", "reports.core"]
+BASELINE_MODULES = ["agents.core", "apps.manager", "calendar.core", "communications.core", "contacts.core", "planning.core", "reports.core"]
 
 
 def test_file_backed_module_manifests_define_baseline_catalog() -> None:
@@ -55,6 +55,10 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert "/api/calendar" in manifests["calendar.core"]["api_prefixes"]
     assert "CreateCalendarEvent" in manifests["calendar.core"]["commands"]
     assert "calendar.read" in manifests["calendar.core"]["permissions"]
+    assert manifests["communications.core"]["api_router"] == "uok_communications_core.api:router"
+    assert manifests["communications.core"]["command_handlers"] == "uok_communications_core.commands:command_handlers"
+    assert "CreateCommunicationThread" in manifests["communications.core"]["commands"]
+    assert "communications.read" in manifests["communications.core"]["permissions"]
     assert manifests["contacts.core"]["required"] is False
     assert "CreateContact" in manifests["contacts.core"]["commands"]
     assert "ContactCreated" in manifests["contacts.core"]["events"]
@@ -140,6 +144,7 @@ def test_kernel_imports_module_backends_only_in_declared_facades() -> None:
                 package_names.add(child.name)
     assert "uok_contacts_core" in package_names
     assert "uok_calendar_core" in package_names
+    assert "uok_communications_core" in package_names
     assert "uok_planning_core" in package_names
     assert "uok_reports_core" in package_names
 
@@ -157,7 +162,7 @@ def test_module_routers_mount_from_manifest_declarations() -> None:
     manifests = load_module_manifests()
     routers = load_module_routers()
 
-    assert [module_name for module_name, _ in routers] == ["calendar.core", "contacts.core", "planning.core", "reports.core"]
+    assert [module_name for module_name, _ in routers] == ["calendar.core", "communications.core", "contacts.core", "planning.core", "reports.core"]
     for module_name, router in routers:
         prefixes = manifests[module_name]["api_prefixes"]
         assert router.routes
@@ -172,11 +177,13 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
 
     assert "CreateContact" in handlers
     assert "CreateCalendarEvent" in handlers
+    assert "CreateCommunicationThread" in handlers
     assert "ImportContactsCsv" in handlers
     assert "GenerateReport" in handlers
     assert "DeleteReportArtifact" in handlers
     assert permissions["CreateContact"] == "contacts.manage"
     assert permissions["CreateCalendarEvent"] == "calendar.event.create"
+    assert permissions["CreateCommunicationThread"] == "communications.edit"
     assert permissions["CreatePlanningProject"] == "planning.edit"
     assert permissions["CreatePlanningBaseline"] == "planning.baseline.create"
     assert permissions["LevelPlanningResources"] == "planning.level"
@@ -190,6 +197,7 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "planning.baseline.create" in grants["ops_manager"]
     assert "planning.level" in grants["ops_manager"]
     assert "planning.admin" in grants["ops_manager"]
+    assert "communications.edit" in grants["ops_manager"]
     assert grants["trader"] >= {"planning.read", "planning.edit"}
     assert "reports.manage" in grants["ops_manager"]
     assert "contacts.read" in grants["viewer"]
@@ -200,6 +208,7 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
         "calendar_events",
         "calendar_event_participants",
         "calendar_reminders",
+        "communication_threads",
         "parties",
         "party_notes",
         "party_relationships",

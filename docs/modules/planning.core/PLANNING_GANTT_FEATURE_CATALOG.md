@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A local/runtime evidence verified and Gate B typed links, execution-date semantics, task participants, and task requirements runtime-proven.
+**Status:** Active evidence catalog; Gate A local/runtime evidence verified and all five Gate B slices runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -54,6 +54,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Execution date semantics | `runtime_proven` | Planned dates remain scheduler-owned; forecast, reason-audited actual, and deadline facts use a dedicated typed mutation, project IANA timezone, UTC storage, DST-safe conversion, explicit variances, baseline capture, and PostgreSQL/candidate proof. |
 | Task participants | `runtime_proven` | Controlled responsibility roles reference actor-authorized canonical Parties without cross-module foreign keys; revision/version, safe lifecycle states, filtering, baselines, audit, PostgreSQL, candidate, and Chromium proof pass. |
 | Task gates and readiness | `runtime_proven` | Controlled requirements use edit/approve authority, matching typed links, reasoned decisions, provider-aware fail-closed readiness, task/project blocker counts, version/audit/baseline integration, and typed UI actions; PostgreSQL, candidate, and Chromium proof pass. |
+| K Connect thread jump | `runtime_proven` | `communications.core` owns real organization-scoped thread records and permissions; Planning resolves actor-safe typed links and the shell deep-links to the exact authorized K Connect thread; PostgreSQL, candidate lifecycle, and Chromium proof pass. |
 
 ## Grid And Column Features
 
@@ -164,10 +165,11 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Non-drag mutation access | Start/end, progress, dependency, and task-creation changes remain operable by keyboard and form controls without drag gestures. | `runtime_proven` |
 | Focus and stale-state recovery | Successful inline edits restore control focus; rejected stale writes and inverses focus an announced repair alert and do not overwrite latest server state. | `runtime_proven` |
 | Audit history | Planning schedule events and source-command references are recorded. | `runtime_proven` |
-| Operation Links inspector | A capability-gated inspector creates and removes typed references, labels resolver state, and exposes an Open action only for authorized ready targets. | `runtime_proven` |
+| Operation Links inspector | A capability-gated inspector creates and removes typed references, labels resolver state, and exposes an Open action only for authorized ready targets, including K Connect communication threads. | `runtime_proven` |
 | Planned/forecast/actual/deadline editor | Task inspector labels planned dates, edits forecast/actual/deadline facts, requires a reason for actual changes, shows project timezone/variance, and states the subday boundary. | `runtime_proven` |
 | People inspector and participant filter | People inspector selects canonical active Parties, assigns controlled roles, shows safe provider states and ready-only jumps; People view and saved participant filter use the same read model. | `runtime_proven` |
 | Gates inspector and readiness views | Gates inspector creates requirements, advances review state, and exposes approval actions only to authorized actors; List/Dashboard and saved not-ready filtering consume the server readiness rollup. | `runtime_proven` |
+| K Connect exact-thread workspace jump | An authorized ready Planning link selects the K Connect workspace and exact thread; denied, unavailable, and missing targets expose no unsafe Open action. | `runtime_proven` |
 
 ## Current UI Audit And Execution Plan
 

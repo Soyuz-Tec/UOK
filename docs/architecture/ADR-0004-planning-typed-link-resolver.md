@@ -9,10 +9,10 @@
 ## Context
 
 Planning Gate B must connect projects and tasks to operation objects without
-hard foreign keys into optional modules or copying provider payloads. UOK does
-not currently expose an Operation Graph or K Connect thread provider. It does
-have organization-scoped canonical parties, report artifacts, and calendar
-events with module lifecycle and permission boundaries.
+hard foreign keys into optional modules or copying provider payloads. At this
+decision's approval UOK did not expose an Operation Graph or K Connect thread
+provider. It did have organization-scoped canonical parties, report artifacts,
+and calendar events with module lifecycle and permission boundaries.
 
 A Planning link must survive target-module disablement, must not leak target
 details to an unauthorized actor, and must participate in project revision,
@@ -49,11 +49,12 @@ Initial live resolvers are:
 | `party` | `contacts.party` v1 | `contacts.core` canonical Party |
 | `document`, `evidence` | `reports.artifact` v1 | `reports.core` ReportArtifact |
 | `calendar_event` | `calendar.event` v1 | `calendar.core` CalendarEvent |
+| `communication_thread` | `kconnect.thread` v1 | `communications.core` CommunicationThread |
 
-Operation, gate, shipment, location, asset, agreement, and communication-thread
-resolver names are reserved but return `unavailable` until their provider
-modules implement the contract. They must not be presented as resolved source
-objects before then.
+Operation, gate, shipment, location, asset, and agreement resolver names remain
+reserved and return `unavailable` until their provider modules implement the
+contract. `communication_thread` became live under ADR-0008. No target kind may
+be presented as a resolved source object before its provider contract exists.
 
 The ORM mapping remains in the accepted alpha compatibility bridge under
 `src/uok/planning_models.py`; behavior, migration, APIs, resolver logic, tests,
@@ -69,7 +70,8 @@ track eventual physical model relocation.
 - A target provider changing state can change an actor-visible ETag without a
   Planning revision, which is correct for a strong representation validator.
 - Unavailable optional references are honest integration debt, not proof that
-  Operation Graph or K Connect exists.
+  an Operation Graph provider exists. K Connect existence is now proved only
+  through the `communications.core` adapter accepted in ADR-0008.
 
 ## Alternatives
 

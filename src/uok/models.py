@@ -194,6 +194,8 @@ from .calendar_models import (  # noqa: E402
     CalendarReminder,
 )
 
+from .communication_models import CommunicationThread  # noqa: E402
+
 
 class ReportArtifact(Base):
     __tablename__ = "report_artifacts"

@@ -12,9 +12,10 @@ describe("Planning operation links", () => {
     const onRemove = vi.fn().mockResolvedValue(undefined);
     render(<PlanningOperationLinksPanel schedule={schedule()} selectedTask={task} busy="" readOnly={false} onCreate={onCreate} onRemove={onRemove} />);
 
-    expect(screen.getByRole("link", { name: "Open" }).getAttribute("href")).toBe("/?view=contacts&party_id=party-1");
+    expect(screen.getAllByRole("link", { name: "Open" })[0].getAttribute("href")).toBe("/?view=contacts&party_id=party-1");
     expect(screen.getByText(/operation provider is unavailable/i)).toBeTruthy();
-    expect(screen.getAllByRole("link", { name: "Open" })).toHaveLength(1);
+    expect(screen.getAllByRole("link", { name: "Open" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Open" })[1].getAttribute("href")).toBe("/?view=communications&thread_id=thread-1");
 
     fireEvent.change(screen.getByLabelText("Target type"), { target: { value: "document" } });
     fireEvent.change(screen.getByLabelText("Relationship"), { target: { value: "requires" } });
@@ -55,6 +56,7 @@ function schedule(): PlanningSchedule {
     links: [
       link("link-party", "party", "party-1", "ready", "Responsible owner", "Party is active.", "/?view=contacts&party_id=party-1"),
       link("link-operation", "operation", "operation-1", "unavailable", null, "Operation provider is unavailable.", null),
+      link("link-thread", "communication_thread", "thread-1", "ready", "Task control room", "Communication thread is open.", "/?view=communications&thread_id=thread-1"),
     ],
     validation: { ok: true, violations: [] },
   };

@@ -46,6 +46,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0005-planning-date-semantics.md` | Planning planned/forecast/actual/deadline authority, project timezone, UTC storage, DST, variance, and subday-scale boundary | Date-family ownership, timezone conversion, correction policy, or time precision changes |
 | `docs/architecture/ADR-0006-planning-task-participant-boundary.md` | Planning participant roles, canonical Party resolution, authorization, lifecycle, privacy, revision, and resource-separation boundary | Participant role, Party provider, disclosure, retention, or resource-correlation behavior changes |
 | `docs/architecture/ADR-0007-planning-task-requirements-and-readiness.md` | Planning requirement workflow, gate authority, linked-evidence compatibility, provider fail-closed behavior, and derived readiness | Requirement types/states, approval authority, readiness, evidence links, or requirement lifecycle changes |
+| `docs/architecture/ADR-0008-communications-thread-provider-boundary.md` | K Connect thread identity, authorization, lifecycle, Planning adapter, and exact deep-link boundary | Thread ownership, permissions, resolver states, deep links, or communications lifecycle changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -63,6 +64,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` | Contacts-derived intelligence profile guidance | Contact profile contract, derivation sources, or storage boundary changes |
 | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` | Agents Core module roadmap and scope | Agent runbook, governed tool, approval, evidence, or module ownership changes |
 | `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md` | Calendar Core module roadmap and scope | Calendar workspace, events, recurrence, reminders, availability, free/busy, or iCalendar behavior changes |
+| `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` | Communications Core thread-provider roadmap and scope | K Connect thread identity, access, lifecycle, UI, or Planning integration changes |
 | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` | Contacts module roadmap and scope | Contacts behavior, workflows, module ownership, or acceptance changes |
 | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` | Planning Core module roadmap and scope | Gantt, scheduling, dependency, project, baseline, calendar, or planning verification behavior changes |
 | `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md` | Planning Gantt feature inventory and implementation status | Gantt grid, timeline, scheduling, dependency, resource, baseline, color, or workspace feature status changes |
@@ -109,6 +111,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0005-planning-date-semantics.md`
 - `docs/architecture/ADR-0006-planning-task-participant-boundary.md`
 - `docs/architecture/ADR-0007-planning-task-requirements-and-readiness.md`
+- `docs/architecture/ADR-0008-communications-thread-provider-boundary.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
@@ -125,6 +128,7 @@ The current active module plans are:
 
 - `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md`
 - `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
+- `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md`
 - `docs/modules/contacts.core/CONTACTS_APP_PLAN.md`
 - `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
 

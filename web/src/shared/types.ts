@@ -1,4 +1,4 @@
-export type Section = "overview" | "apps" | "contacts" | "calendar" | "planning" | "evidence" | "architecture";
+export type Section = "overview" | "apps" | "contacts" | "calendar" | "communications" | "planning" | "evidence" | "architecture";
 export type Appearance = "system" | "light" | "dark";
 export type AuthMode = "signin" | "register";
 export type ModuleAction = "install" | "uninstall" | "disable" | "enable" | "upgrade";

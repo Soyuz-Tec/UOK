@@ -8,9 +8,10 @@ import { useWorkbenchActions } from "./useWorkbenchActions";
 import { useWorkbenchData } from "./useWorkbenchData";
 import { useWorkbenchPreferences } from "./useWorkbenchPreferences";
 import type { Section } from "../shared/types";
+import { sectionFromSearch } from "./workbenchNavigation";
 
 export function useWorkbench() {
-  const [active, setActive] = useState<Section>("apps");
+  const [active, setActive] = useState<Section>(() => sectionFromSearch(window.location.search));
   const preferences = useWorkbenchPreferences();
   const auth = useAuthState();
   const {

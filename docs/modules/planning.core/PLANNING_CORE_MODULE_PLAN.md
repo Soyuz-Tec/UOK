@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A local/runtime closure verified and Gate B typed-link, execution-date, task-participant, and task-requirement slices runtime-proven.
+**Status:** Active module plan; Gate A local/runtime closure and all five Gate B slices runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -49,7 +49,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - server-owned planned/in-progress/blocked/complete status vocabulary and transition policy with structured invalid-value/transition rejection
 - revision-aware supported undo/redo operations that carry the source command through one atomic batch, reject stale inverses, preserve latest server state, and fail closed for unsupported/destructive history
 - keyboard/form alternatives for task dates, progress, dependency, and creation mutations, with successful inline focus restoration and announced stale-state recovery
-- Planning-owned typed project/task links with actor-specific `ready`, `unavailable`, `denied`, and `missing` resolver states; live Party, report-artifact/document/evidence, and calendar-event providers; optional Operation Graph and K Connect providers remain explicitly unavailable
+- Planning-owned typed project/task links with actor-specific `ready`, `unavailable`, `denied`, and `missing` resolver states; live Party, report-artifact/document/evidence, calendar-event, and K Connect thread providers; optional Operation Graph providers remain explicitly unavailable
 - distinct scheduler-owned planned, planner-owned forecast/deadline, and reason-audited actual dates; project IANA timezone, UTC storage, DST-safe calendar-date conversion, variance fields, and visual-only subday scale disclosure
 - first-class task participants with controlled responsibility roles, canonical actor-authorized Party resolution, project revision/task version/audit/baseline evidence, People inspector/view, and participant filtering
 - first-class task requirements with controlled submission/review/decision states, separate gate approval authority, matching typed evidence links, fail-closed task/project readiness, baseline/audit evidence, Gates inspector, and blocker filtering
@@ -80,9 +80,18 @@ scope, relationship, blocking intent, revision, and audit evidence. Target
 modules own source identity details, authorization, lifecycle, privacy, and
 retention. A disabled or deleted provider target remains visible as an explicit
 unavailable link; an unauthorized actor receives no target identity or label.
-Operation, shipment, asset, location, agreement, and communication-thread
-providers are not present in this candidate and must not be represented as
-resolved objects.
+Operation, shipment, asset, location, and agreement providers are not present
+in this candidate and must not be represented as resolved objects. ADR-0008
+provides the real `communications.core` K Connect thread adapter; Planning still
+owns only the typed link and actor-specific resolver state.
+
+## Communication Thread Boundary
+
+ADR-0008 governs the K Connect provider. `communications.core` owns thread
+identity, title, context, authorization, lifecycle, audit, and retention.
+Planning stores no provider foreign key or payload. A ready link opens the
+exact authorized thread through the shared `view=communications&thread_id=...`
+route; denied, missing, archived, and disabled-provider targets fail closed.
 
 ## Date Semantics Boundary
 
@@ -144,6 +153,7 @@ python -m pytest modules/planning.core/tests/test_planning_links.py -q
 python -m pytest modules/planning.core/tests/test_planning_date_semantics.py -q
 python -m pytest modules/planning.core/tests/test_planning_participants.py -q
 python -m pytest modules/planning.core/tests/test_planning_requirements.py -q
+python -m pytest modules/communications.core/tests modules/planning.core/tests/test_planning_communication_links.py -q
 npm --prefix web run build
 npm --prefix web run test:ui-proof
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
@@ -160,4 +170,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 - planning adapters for the separately deployed global import/export capability as needed
 - spreadsheet-style multi-cell keyboard editing beyond the current keyboard/form alternatives
 - module-root frontend source packaging
-- activate Operation Graph, shipment, asset, location, agreement, and K Connect thread resolvers only when their owning providers expose organization-scoped authorization contracts
+- activate Operation Graph, shipment, asset, location, and agreement resolvers only when their owning providers expose organization-scoped authorization contracts

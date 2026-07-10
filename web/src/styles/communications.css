@@ -1,0 +1,59 @@
+.communications-workspace {
+  display: grid;
+  gap: var(--uok-space-3);
+}
+
+.communications-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.7fr) minmax(360px, 1.3fr);
+  gap: var(--uok-space-3);
+}
+
+.communications-create,
+.communications-thread-list,
+.communications-thread-detail,
+.communications-thread-detail dl {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.communications-thread-list button {
+  display: grid;
+  gap: var(--uok-space-1);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-elevated);
+  text-align: left;
+}
+
+.communications-thread-list button.selected {
+  border-color: var(--uok-accent);
+  background: color-mix(in srgb, var(--uok-accent) 10%, var(--uok-bg-elevated));
+}
+
+.communications-thread-list small,
+.communications-status,
+.communications-thread-detail dt,
+.communications-thread-detail p {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.communications-thread-detail dl div {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: var(--uok-space-2);
+}
+
+.communications-thread-detail dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .communications-layout {
+    grid-template-columns: 1fr;
+  }
+}

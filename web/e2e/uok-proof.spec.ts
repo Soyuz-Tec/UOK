@@ -127,7 +127,18 @@ const sampleSchedule = {
   calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: ["2026-08-14"], ignored_periods: [{ start: "2026-08-17", end: "2026-08-18" }] },
   resources: [{ id: "resource-1", project_id: sampleProject.id, name: "Planner", role: "Scheduling" }],
   assignments: [{ id: "assignment-1", task_id: "task-2", resource_id: "resource-1", allocation_percent: 120 }],
-  links: [],
+  links: [{
+    id: "link-thread-proof",
+    project_id: sampleProject.id,
+    task_id: "task-1",
+    scope_type: "task",
+    relationship: "discussed_in",
+    blocking: false,
+    target: { kind: "communication_thread", id: "thread-proof", resolver: "kconnect.thread", resolver_version: "1" },
+    resolution: { status: "ready", display_label: "Pilot K Connect room", status_summary: "Communication thread is open.", checked_at: "2026-08-01T00:00:00Z", open_path: "/?view=communications&thread_id=thread-proof" },
+    created_at: "2026-08-01T00:00:00Z",
+    updated_at: "2026-08-01T00:00:00Z",
+  }],
   participants: [{
     id: "participant-proof",
     project_id: sampleProject.id,
@@ -598,6 +609,20 @@ test("server review-only capabilities disable Planning writes", async ({ page })
   await expect(page.getByRole("button", { name: "Server review-only", exact: true })).toBeDisabled();
 });
 
+test("Planning opens the exact authorized K Connect thread", async ({ page }) => {
+  await installMockApi(page, [], [], [], []);
+  await openPlanning(page);
+  await page.getByRole("cell", { name: "1.1", exact: true }).click();
+  const showInspector = page.getByRole("button", { name: "Show inspector", exact: true });
+  if (await showInspector.isVisible()) await showInspector.click();
+  await page.getByRole("tab", { name: "Links" }).click();
+  const threadRow = page.locator(".planning-list-row").filter({ hasText: "Pilot K Connect room" });
+  await threadRow.getByRole("link", { name: "Open" }).click();
+  await expect(page).toHaveURL(/view=communications&thread_id=thread-proof/);
+  await expect(page.getByRole("region", { name: "K Connect" })).toBeVisible();
+  await expect(page.locator('[data-thread-id="thread-proof"]')).toContainText("Pilot K Connect room");
+});
+
 test("Planning mutations remain operable without drag gestures", async ({ page }) => {
   const dependencyPayloads: unknown[] = [];
   const taskPayloads: unknown[] = [];
@@ -819,6 +844,10 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
     await route.fulfill({ json: { status: "validated" }, headers: { ETag: planningEtag } });
   });
   await page.route("/api/contacts**", (route) => route.fulfill({ json: [{ id: "party-proof", display_name: "Pilot approver", status: "active" }] }));
+  await page.route("/api/communications/threads", (route) => route.fulfill({ json: [{
+    id: "thread-proof", title: "Pilot K Connect room", status: "open", context_type: "planning.task", context_id: "task-1",
+    created_by_user_id: "user-proof", created_at: "2026-08-01T00:00:00Z", updated_at: "2026-08-01T00:00:00Z",
+  }] }));
 }
 
 function moduleCatalog() {
@@ -827,6 +856,7 @@ function moduleCatalog() {
     "apps.manager": { ...base, name: "apps.manager", status: "installed", kind: "control_module", required: true, uninstallable: false },
     "agents.core": { ...base, name: "agents.core", status: "available", kind: "capability_module" },
     "contacts.core": { ...base, name: "contacts.core", status: "available", kind: "capability_module" },
+    "communications.core": { ...base, name: "communications.core", status: "installed", kind: "capability_module" },
     "planning.core": { ...base, name: "planning.core", status: "installed", kind: "capability_module" },
   };
 }

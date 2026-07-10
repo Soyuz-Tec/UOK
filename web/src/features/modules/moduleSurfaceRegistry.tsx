@@ -1,4 +1,4 @@
-import { CalendarDays, CalendarRange, ContactRound } from "lucide-react";
+import { CalendarDays, CalendarRange, ContactRound, MessageCircleMore } from "lucide-react";
 import type { ReactNode } from "react";
 
 import type { Workbench } from "../../app/useWorkbench";
@@ -8,10 +8,12 @@ import { CalendarWorkspace } from "../calendar/CalendarWorkspace";
 import { CALENDAR_MODULE_ID, CALENDAR_SECTION_ID } from "../calendar/calendarModule";
 import { CONTACTS_MODULE_ID, CONTACTS_SECTION_ID } from "../contacts/contactModule";
 import { ContactsWorkspace } from "../contacts/ContactsWorkspace";
+import { CommunicationsWorkspace } from "../communications/CommunicationsWorkspace";
+import { COMMUNICATIONS_MODULE_ID, COMMUNICATIONS_SECTION_ID } from "../communications/communicationsModule";
 import { PLANNING_MODULE_ID, PLANNING_SECTION_ID } from "../planning/planningModule";
 import { PlanningWorkspace } from "../planning/PlanningWorkspace";
 
-type ModuleSection = Extract<Section, "contacts" | "calendar" | "planning">;
+type ModuleSection = Extract<Section, "contacts" | "calendar" | "communications" | "planning">;
 
 type ModuleSurface = Option<ModuleSection> & {
   moduleName: string;
@@ -112,6 +114,20 @@ export const moduleSurfaces: ModuleSurface[] = [
         moduleRows={workbench.moduleRows}
         busyAction={workbench.busyAction}
         onInstall={() => workbench.moduleAction(CALENDAR_MODULE_ID, "install")}
+      />
+    )
+  },
+  {
+    id: COMMUNICATIONS_SECTION_ID,
+    label: "K Connect",
+    icon: MessageCircleMore,
+    moduleName: COMMUNICATIONS_MODULE_ID,
+    render: (workbench) => (
+      <CommunicationsWorkspace
+        token={workbench.token}
+        moduleRows={workbench.moduleRows}
+        busyAction={workbench.busyAction}
+        onInstall={() => workbench.moduleAction(COMMUNICATIONS_MODULE_ID, "install")}
       />
     )
   },

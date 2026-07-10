@@ -1,0 +1,53 @@
+# Communications Core Module Plan
+
+**Status:** Initial thread-provider slice runtime-proven
+
+**Current candidate:** `UOK-3.1.0-alpha.3`
+
+## Purpose
+
+`communications.core` provides organization-scoped K Connect thread identity
+and access as an optional UOK capability module. ADR-0008 governs its ownership
+boundary and its integration with Planning typed links.
+
+## Current Scope
+
+- idempotent `CreateCommunicationThread` command;
+- organization-scoped thread list and detail reads;
+- controlled open, closed, and archived lifecycle states;
+- operations/trader read-edit, viewer read-only, and fail-closed finance access;
+- correlated `CommunicationThreadCreated` event evidence;
+- module install, enable, disable, and verify lifecycle;
+- K Connect workspace with thread creation, list, exact deep-link selection,
+  and thread context display;
+- Planning `communication_thread` resolution without a cross-module foreign
+  key or copied provider payload.
+
+## Ownership
+
+Module-owned source lives under `modules/communications.core`. The alpha
+SQLAlchemy compatibility mapping lives at `src/uok/communication_models.py`
+and is exported through the module manifest. The K Connect feature surface
+lives under `web/src/features/communications` and is composed through the
+shared module surface registry.
+
+## Deferred Work
+
+- message exchange and attachment records;
+- membership and mention policy;
+- close, reopen, archive, and retention commands;
+- notifications, unread counts, search, and delivery integrations;
+- moving the compatibility ORM mapping under the module root.
+
+## Validation
+
+```powershell
+python -m pytest modules/communications.core/tests modules/planning.core/tests/test_planning_communication_links.py -q
+npm --prefix web test -- --run src/features/communications/CommunicationsWorkspace.test.tsx src/app/workbenchNavigation.test.ts src/features/planning/PlanningOperationLinksPanel.test.tsx
+npm --prefix web run test:ui-proof
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
+```
+
+The candidate verifier proves create/read, audit correlation, role denial,
+provider disable/enable behavior, and the exact Planning-to-K Connect thread
+jump. PostgreSQL catalog readback and the six-scenario Chromium suite also pass.

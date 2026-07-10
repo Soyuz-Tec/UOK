@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .models import PlanningLink
-from uok.models import CalendarEvent, Party, ReportArtifact
+from uok.models import CalendarEvent, CommunicationThread, Party, ReportArtifact
 from uok.module_dependencies import OPERATIONAL_STATUSES, module_record
 from uok.security import Actor, has_permission
 
@@ -84,6 +84,8 @@ def resolve_target(db: Session, actor: Actor, target_kind: str, target_id: str) 
         return _resolve_artifact(db, actor, target_id, checked_at)
     if target_kind == "calendar_event":
         return _resolve_calendar_event(db, actor, target_id, checked_at)
+    if target_kind == "communication_thread":
+        return _resolve_communication_thread(db, actor, target_id, checked_at)
     return LinkResolution("unavailable", None, f"Resolver {spec.name} has no active provider implementation.", checked_at)
 
 
@@ -135,6 +137,18 @@ def _resolve_calendar_event(db: Session, actor: Actor, target_id: str, checked_a
     if row.canceled_at is not None or row.status == "canceled":
         return LinkResolution("unavailable", row.title, "Calendar event is canceled.", checked_at)
     return LinkResolution("ready", row.title, f"Calendar event is {row.status}.", checked_at, f"/?view=calendar&event_id={row.id}")
+
+
+def _resolve_communication_thread(db: Session, actor: Actor, target_id: str, checked_at: str) -> LinkResolution:
+    row = db.scalar(select(CommunicationThread).where(
+        CommunicationThread.id == target_id,
+        CommunicationThread.organization_id == actor.organization_id,
+    ))
+    if row is None:
+        return LinkResolution("missing", None, "The communication thread does not exist in this organization.", checked_at)
+    if row.archived_at is not None or row.status == "archived":
+        return LinkResolution("unavailable", row.title, "Communication thread is archived.", checked_at)
+    return LinkResolution("ready", row.title, f"Communication thread is {row.status}.", checked_at, f"/?view=communications&thread_id={row.id}")
 
 
 def _timestamp(value: datetime) -> str:
