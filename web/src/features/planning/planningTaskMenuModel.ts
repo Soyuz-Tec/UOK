@@ -34,7 +34,7 @@ function taskPayload(
   sortOrder: number,
   taskType: NonNullable<PlanningTaskCreateRequest["task_type"]>,
   parentTaskId?: string,
-  status = "planned",
+  status: PlanningTask["status"] = "planned",
   progress = 0,
 ): PlanningTaskCreateRequest {
   return { title, start, end, progress, status, sort_order: sortOrder, task_type: taskType, parent_task_id: parentTaskId };

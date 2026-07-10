@@ -53,6 +53,10 @@ IDEMPOTENCY_CONFLICT_RESPONSE = {
         "model": CommandDomainErrorResponse,
         "description": "The actor lacks the required Planning capability.",
     },
+    422: {
+        "model": CommandDomainErrorResponse,
+        "description": "The Planning request does not match the generated contract.",
+    },
 }
 PLANNING_CREATE_RESPONSES = {
     **IDEMPOTENCY_CONFLICT_RESPONSE,

@@ -8,6 +8,7 @@ from .advanced_commands import bounded_int, clean_text
 from .models import PlanningProject, PlanningTask, utcnow
 from .schedule_math import working_duration
 from .scheduler import parse_planning_date, project_calendar, task_or_error
+from .status_policy import assert_task_status_transition, planning_task_status
 from .task_constraints import set_task_planning_attrs
 from uok.security import Actor
 
@@ -18,6 +19,7 @@ def apply_task_update(
     project: PlanningProject,
     task: PlanningTask,
     payload: dict[str, Any],
+    command_id: str,
 ) -> None:
     if task.project_id != project.id:
         raise ValueError("task_id is not part of the project")
@@ -36,7 +38,15 @@ def apply_task_update(
     if task.end_at.date() < task.start_at.date():
         raise ValueError("task end must be on or after start")
     if "status" in payload:
-        task.status = clean_text(payload.get("status"), "status", 40)
+        target_status = planning_task_status(payload.get("status"))
+        assert_task_status_transition(
+            task.status,
+            target_status,
+            task_id=task.id,
+            current_revision=int(project.revision),
+            command_id=command_id,
+        )
+        task.status = target_status
     if "progress" in payload:
         task.progress = bounded_int(payload.get("progress"), "progress", 0, 100)
     if "sort_order" in payload:

@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Check, Pencil, X } from "lucide-react";
 
@@ -24,8 +24,17 @@ export function InlineTextEdit({
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const displayRef = useRef<HTMLButtonElement>(null);
+  const restoreFocusRef = useRef(false);
   const inputId = useId();
   const errorId = `${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-inline-error`;
+
+  useEffect(() => {
+    if (!editing && restoreFocusRef.current) {
+      restoreFocusRef.current = false;
+      displayRef.current?.focus();
+    }
+  }, [editing]);
 
   const startEditing = () => {
     setDraft(value);
@@ -36,6 +45,11 @@ export function InlineTextEdit({
   const cancel = () => {
     setDraft(value);
     setError("");
+    finishEditing();
+  };
+
+  const finishEditing = () => {
+    restoreFocusRef.current = true;
     setEditing(false);
   };
 
@@ -48,13 +62,13 @@ export function InlineTextEdit({
       return;
     }
     if (nextValue === value.trim()) {
-      setEditing(false);
+      finishEditing();
       return;
     }
     setSaving(true);
     try {
       await onCommit(nextValue);
-      setEditing(false);
+      finishEditing();
     } catch {
       setError(failureMessage);
     } finally {
@@ -64,7 +78,7 @@ export function InlineTextEdit({
 
   if (!editing) {
     return (
-      <button type="button" className="inline-edit-display" onClick={startEditing} disabled={disabled} aria-label={`Edit ${label}`}>
+      <button ref={displayRef} type="button" className="inline-edit-display" onClick={startEditing} disabled={disabled} aria-label={`Edit ${label}`}>
         <span>{value || "Not set"}</span>
         <Pencil size={15} aria-hidden="true" />
       </button>

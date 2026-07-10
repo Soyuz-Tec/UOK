@@ -25,6 +25,8 @@ def test_planning_command_path_requires_key_and_maps_conflicts(client: TestClien
     }
     missing = client.post("/api/commands", headers=ops, json=payload)
     assert missing.status_code == 422, missing.text
+    assert missing.json()["error"]["code"] == "command_request_invalid"
+    assert missing.json()["error"]["field"] == "idempotency_key"
 
     control_character = client.post(
         "/api/commands",

@@ -38,6 +38,13 @@ def test_schedule_api_exposes_negative_target_float_and_independent_validation(c
         "target_finish": "2026-08-05",
         "target_variance_days": 2,
         "independent_validation": {"ok": True, "violations": []},
+        "resource_capacity": {
+            "engine_version": "uok-resource-capacity-1",
+            "default_capacity_percent": 100,
+            "load_points": [],
+            "overallocated_count": 0,
+            "independent_validation": {"ok": True, "violations": []},
+        },
     }
     assert schedule["tasks"][0]["total_slack_days"] == -2
     assert schedule["tasks"][0]["free_float_days"] == -2

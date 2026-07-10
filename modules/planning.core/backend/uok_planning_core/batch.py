@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy.orm import Session
 
@@ -11,6 +12,7 @@ from .read_model import schedule_read_model
 from .scheduler import apply_schedule, project_or_error, task_or_error
 from .task_mutations import apply_task_update
 from uok.command_context import CommandDomainError
+from uok.models import CommandLog
 from uok.security import Actor
 
 MAX_BATCH_OPERATIONS = 500
@@ -30,6 +32,7 @@ def cmd_batch_operations(
     reason = str(payload.get("reason") or "").strip()
     if len(reason) > 500:
         raise _batch_error(project.revision, command_id, "batch_reason_invalid", "reason must be 500 characters or fewer.", "reason", "Shorten the reason and retry the complete batch.")
+    source_command_id = _validated_source_command_id(db, actor, project.revision, payload, command_id)
     operations = payload.get("operations")
     if not isinstance(operations, list) or not 1 <= len(operations) <= MAX_BATCH_OPERATIONS:
         raise _batch_error(
@@ -55,10 +58,11 @@ def cmd_batch_operations(
             "Revise the ordered operations so their final proposed schedule satisfies every hard constraint.",
             sorted(direct_task_ids),
         ) from exc
-    _emit_batch_events(db, actor, project.id, command_id, reason, results, changed_task_ids)
+    _emit_batch_events(db, actor, project.id, command_id, source_command_id, reason, results, changed_task_ids)
     return {
         "correlation_id": command_id,
         "previous_revision": int(project.revision),
+        "source_command_id": source_command_id,
         "operation_results": results,
         "schedule": schedule_read_model(db, actor, project),
     }
@@ -90,7 +94,7 @@ def _apply_operations(
             _validate_task_payload(operation_payload)
             task_id = clean_text(operation_payload.get("task_id"), "task_id", 36)
             task = task_or_error(db, actor, task_id, project.id)
-            apply_task_update(db, actor, project, task, operation_payload)
+            apply_task_update(db, actor, project, task, operation_payload, command_id)
         except ValueError as exc:
             raise _batch_error(
                 project.revision,
@@ -140,6 +144,7 @@ def _emit_batch_events(
     actor: Actor,
     project_id: str,
     command_id: str,
+    source_command_id: str | None,
     reason: str,
     results: list[dict[str, Any]],
     changed_task_ids: set[str],
@@ -147,12 +152,33 @@ def _emit_batch_events(
     payload = {
         "project_id": project_id,
         "correlation_id": command_id,
+        "source_command_id": source_command_id,
         "reason": reason,
         "operation_ids": [row["operation_id"] for row in results],
         "changed_task_ids": sorted(changed_task_ids),
     }
     emit_planning_event(db, actor, command_id, "PlanningBatchApplied", "PlanningProject", project_id, payload)
     add_planning_schedule_event(db, actor, command_id, project_id, "batch_applied", payload)
+
+
+def _validated_source_command_id(
+    db: Session,
+    actor: Actor,
+    revision: int,
+    payload: dict[str, Any],
+    command_id: str,
+) -> str | None:
+    value = str(payload.get("source_command_id") or "").strip()
+    if not value:
+        return None
+    try:
+        source_command_id = str(UUID(value))
+    except ValueError as exc:
+        raise _batch_error(revision, command_id, "batch_source_command_invalid", "source_command_id must be a command UUID.", "source_command_id", "Use the correlation ID returned by the original successful command.") from exc
+    source = db.get(CommandLog, source_command_id)
+    if source is None or source.organization_id != actor.organization_id or source.status != "succeeded":
+        raise _batch_error(revision, command_id, "batch_source_command_invalid", "source_command_id must reference a successful command in the current organization.", "source_command_id", "Use the correlation ID returned by the original successful command.")
+    return source_command_id
 
 
 def _batch_error(

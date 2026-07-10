@@ -16,6 +16,52 @@ afterEach(() => {
 });
 
 describe("usePlanningWorkspaceMutations concurrency recovery", () => {
+  it("keeps an inverse revision-aware and references the original command", async () => {
+    const batchRequests: RequestInit[] = [];
+    let scheduleReads = 0;
+    const sourceCommandId = "11111111-1111-4111-8111-111111111111";
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
+      const path = String(input);
+      if (path === "/api/planning/projects") return jsonResponse([schedule(1).project]);
+      if (path.endsWith("/schedule")) {
+        scheduleReads += 1;
+        if (scheduleReads === 1) return jsonResponse(schedule(1), 200, etag1);
+        if (scheduleReads === 2) return jsonResponse(schedule(2, "Own edit"), 200, etag2);
+        return jsonResponse(schedule(3, "Remote edit"), 200, etag3);
+      }
+      if (path === "/api/planning/tasks/task-1") {
+        return jsonResponse({ task: { id: "task-1" }, correlation_id: sourceCommandId }, 200, etag2);
+      }
+      if (path.endsWith("/mutations:batch")) {
+        batchRequests.push(init);
+        return preconditionResponse(etag3, 3);
+      }
+      throw new Error(`Unexpected Planning test request: ${path}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(usePlanningHarness);
+    await waitFor(() => expect(result.current.actions.scheduleEtag).toBe(etag1));
+    await act(async () => {
+      await result.current.actions.saveTask("task-1", { title: "Own edit" });
+    });
+    await waitFor(() => expect(result.current.actions.history.canUndo).toBe(true));
+    expect(result.current.selectedTaskId).toBe("task-1");
+
+    await act(async () => {
+      await result.current.actions.runHistory("undo");
+    });
+
+    await waitFor(() => expect(result.current.actions.staleRecovery).toMatchObject({ label: "Undo Edit task", reloadFailed: false }));
+    expect(result.current.schedule?.project.revision).toBe(3);
+    expect(result.current.schedule?.tasks[0].title).toBe("Remote edit");
+    expect(batchRequests).toHaveLength(1);
+    const body = JSON.parse(String(batchRequests[0].body));
+    expect(body.source_command_id).toBe(sourceCommandId);
+    expect(body.reason).toBe("Undo Edit task");
+    expect(result.current.actions.history.canUndo).toBe(false);
+  });
+
   it("surfaces structured domain repair and audit details", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const path = String(input);
@@ -189,20 +235,20 @@ function schedule(revision: number, title = "Original task"): PlanningSchedule {
   };
 }
 
-function preconditionResponse() {
+function preconditionResponse(etag = etag2, revision = 2) {
   return jsonResponse({
     error: {
       code: "stale_precondition",
       message: "The Planning schedule changed after it was loaded.",
       field: "If-Match",
       repair: "Review and explicitly reapply or keep the current version.",
-      current_revision: 2,
-      current_etag: etag2,
+      current_revision: revision,
+      current_etag: etag,
       object_ids: ["project-1"],
       reload_url: "/api/planning/projects/project-1/schedule",
       correlation_id: "stale-correlation-1",
     },
-  }, 412, etag2);
+  }, 412, etag);
 }
 
 function jsonResponse(value: unknown, status = 200, etag?: PlanningStrongEtag) {

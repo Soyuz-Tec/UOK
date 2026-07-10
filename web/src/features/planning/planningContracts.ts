@@ -1,4 +1,4 @@
-import type { PlanningDependencyType, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskType } from "./types";
+import type { PlanningDependencyType, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskStatus, PlanningTaskType } from "./types";
 
 
 export type PlanningMutationMetadata = {
@@ -18,7 +18,7 @@ export type PlanningTaskCreateRequest = {
   start: string;
   end: string;
   task_type?: PlanningTaskType;
-  status?: string;
+  status?: PlanningTaskStatus;
   progress?: number;
   parent_task_id?: string | null;
   sort_order?: number;

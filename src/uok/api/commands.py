@@ -24,6 +24,7 @@ IDEMPOTENCY_CONFLICT_RESPONSE = {
         "description": "Idempotency key conflicts with another command request.",
     },
     403: {"model": CommandDomainErrorResponse, "description": "The actor lacks the command capability."},
+    422: {"model": CommandDomainErrorResponse, "description": "The command request does not match the generated contract."},
     400: {"model": CommandPreconditionResponse, "description": "The command precondition is malformed or inconsistent."},
     412: {"model": CommandPreconditionResponse, "description": "The command precondition is stale."},
     428: {"model": CommandPreconditionResponse, "description": "The command requires a current precondition."},

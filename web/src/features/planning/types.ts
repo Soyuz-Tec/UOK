@@ -13,6 +13,7 @@ export type PlanningProject = {
 export type PlanningTaskType = "task" | "summary" | "milestone";
 export type PlanningSchedulingMode = "auto" | "manual";
 export type PlanningDependencyType = "finish_to_start" | "start_to_start" | "finish_to_finish" | "start_to_finish";
+export type PlanningTaskStatus = "planned" | "in_progress" | "blocked" | "complete";
 
 export type PlanningTask = {
   id: string;
@@ -22,7 +23,7 @@ export type PlanningTask = {
   wbs?: string;
   title: string;
   task_type: PlanningTaskType;
-  status: string;
+  status: PlanningTaskStatus;
   start: string;
   end: string;
   duration_days: number;
@@ -151,6 +152,23 @@ export type PlanningSchedule = {
     independent_validation: {
       ok: boolean;
       violations: Array<{ code: string; message: string; object_ids: string[] }>;
+    };
+    resource_capacity?: {
+      engine_version: string;
+      default_capacity_percent: number;
+      load_points: Array<{
+        resource_id: string;
+        date: string;
+        allocation_percent: number;
+        capacity_percent: number;
+        task_ids: string[];
+        overallocated: boolean;
+      }>;
+      overallocated_count: number;
+      independent_validation: {
+        ok: boolean;
+        violations: Array<{ code: string; message: string; object_ids: string[] }>;
+      };
     };
   };
   validation: { ok: boolean; violations: string[]; warnings?: string[] };

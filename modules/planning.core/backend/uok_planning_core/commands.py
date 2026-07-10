@@ -29,6 +29,7 @@ from .scheduler import (
     task_or_error,
     validate_schedule,
 )
+from .status_policy import planning_task_status
 from .task_mutations import apply_task_update, assert_parent_valid, planning_task_type, recalculate_task_duration
 from .task_constraints import set_task_planning_attrs
 from uok.security import Actor
@@ -68,7 +69,7 @@ def cmd_create_task(db: Session, actor: Actor, payload: dict[str, Any], command_
 def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     task = task_or_error(db, actor, clean_text(payload.get("task_id"), "task_id", 36))
     project = project_or_error(db, actor, task.project_id)
-    apply_task_update(db, actor, project, task, payload)
+    apply_task_update(db, actor, project, task, payload, command_id)
     tasks = project_tasks(db, actor, project.id)
     dependencies = project_dependencies(db, actor, project.id)
     assert_task_dependency_position(task, tasks, dependencies, project_calendar(db, actor, project.id))
@@ -200,7 +201,7 @@ def _task_from_payload(actor: Actor, project_id: str, payload: dict[str, Any], c
         parent_task_id=str(payload["parent_task_id"]) if payload.get("parent_task_id") else None,
         title=clean_text(payload.get("title"), "title", 180),
         task_type=planning_task_type(payload.get("task_type")),
-        status=str(payload.get("status") or "planned")[:40],
+        status=planning_task_status(payload.get("status")),
         start_at=start,
         end_at=end,
         progress=bounded_int(payload.get("progress", 0), "progress", 0, 100),

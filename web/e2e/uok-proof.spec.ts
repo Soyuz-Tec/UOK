@@ -542,6 +542,58 @@ test("server review-only capabilities disable Planning writes", async ({ page })
   await expect(page.getByRole("button", { name: "Server review-only", exact: true })).toBeDisabled();
 });
 
+test("Planning mutations remain operable without drag gestures", async ({ page }) => {
+  const dependencyPayloads: unknown[] = [];
+  const taskPayloads: unknown[] = [];
+  const taskUpdatePayloads: unknown[] = [];
+  await installMockApi(page, dependencyPayloads, taskPayloads, taskUpdatePayloads, []);
+  await openPlanning(page);
+
+  await page.getByRole("button", { name: "Edit Start for Define schedule scope" }).focus();
+  await page.keyboard.press("Enter");
+  await page.getByLabel("Start for Define schedule scope").fill("2026-08-02");
+  await page.locator(".planning-owned-inline-cell .inline-edit-form").getByRole("button", { name: "Save" }).click();
+  await expect.poll(() => taskUpdatePayloads.at(-1)).toMatchObject({ start: "2026-08-02" });
+  await expect(page.getByRole("button", { name: "Edit Start for Define schedule scope" })).toBeFocused();
+
+  await page.getByRole("button", { name: "Edit End for Define schedule scope" }).focus();
+  await page.keyboard.press("Enter");
+  await page.getByLabel("End for Define schedule scope").fill("2026-08-06");
+  await page.locator(".planning-owned-inline-cell .inline-edit-form").getByRole("button", { name: "Save" }).click();
+  await expect.poll(() => taskUpdatePayloads.at(-1)).toMatchObject({ end: "2026-08-06" });
+
+  await page.locator(".planning-owned-grid-row").filter({ hasText: "Define schedule scope" }).first().click();
+  const showInspector = page.getByRole("button", { name: "Show inspector", exact: true });
+  if (await showInspector.isVisible()) await showInspector.click();
+  await page.getByRole("tab", { name: "Task" }).click();
+  const taskEditor = page.getByLabel("Task editor");
+  await taskEditor.getByRole("spinbutton", { name: "Progress" }).fill("55");
+  await page.getByRole("button", { name: "Save task" }).click();
+  await expect.poll(() => taskUpdatePayloads.at(-1)).toMatchObject({ progress: 55 });
+
+  await page.getByRole("button", { name: "Start dependency from Define schedule scope" }).focus();
+  await page.keyboard.press("Enter");
+  await page.getByRole("button", { name: "Finish dependency at Pilot review milestone" }).focus();
+  await page.keyboard.press("Enter");
+  await expect.poll(() => dependencyPayloads.at(-1)).toMatchObject({
+    predecessor_task_id: "task-1",
+    successor_task_id: "task-3",
+    dependency_type: "finish_to_start",
+  });
+
+  await page.getByRole("button", { name: "Task", exact: true }).click();
+  await taskEditor.getByLabel("Title", { exact: true }).fill("Keyboard-created task");
+  await taskEditor.getByLabel("Start", { exact: true }).fill("2026-08-10");
+  await taskEditor.getByLabel("End", { exact: true }).fill("2026-08-12");
+  await page.getByRole("button", { name: "Add task" }).focus();
+  await page.keyboard.press("Enter");
+  await expect.poll(() => taskPayloads.at(-1)).toMatchObject({
+    title: "Keyboard-created task",
+    start: "2026-08-10",
+    end: "2026-08-12",
+  });
+});
+
 test("structured Planning failures expose repair and audit context", async ({ page }) => {
   await installMockApi(page, [], [], [], []);
   await page.route("/api/planning/tasks/task-1", (route) => route.fulfill({
@@ -573,6 +625,96 @@ test("structured Planning failures expose repair and audit context", async ({ pa
   await expect(alert).toContainText("Field: title");
   await expect(alert).toContainText("Current revision: 1");
   await expect(alert).toContainText("Audit reference: proof-command-correlation");
+});
+
+test("revision-aware undo references its source and rejects a stale inverse", async ({ page }) => {
+  const sourceCommandId = "11111111-1111-4111-8111-111111111111";
+  const undoCommandId = "22222222-2222-4222-8222-222222222222";
+  const inversePayloads: Array<Record<string, unknown>> = [];
+  const scheduleState = structuredClone(sampleSchedule);
+  let revision = 1;
+  let etag = proofEtag(revision);
+  await installMockApi(page, [], [], [], []);
+  await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({ json: scheduleState, headers: { ETag: etag } }));
+  await page.route("/api/planning/tasks/task-1", async (route) => {
+    const payload = route.request().postDataJSON() as Record<string, unknown>;
+    Object.assign(scheduleState.tasks.find((task) => task.id === "task-1") as object, payload);
+    revision += 1;
+    scheduleState.project.revision = revision;
+    etag = proofEtag(revision);
+    await route.fulfill({ json: { task: scheduleState.tasks[1], correlation_id: sourceCommandId }, headers: { ETag: etag } });
+  });
+  await page.route(`/api/planning/projects/${sampleProject.id}/mutations:batch`, async (route) => {
+    const payload = route.request().postDataJSON() as Record<string, unknown>;
+    inversePayloads.push(payload);
+    if (route.request().headers()["if-match"] !== etag) {
+      await route.fulfill({
+        status: 412,
+        headers: { ETag: etag },
+        json: {
+          error: {
+            code: "stale_precondition",
+            message: "The Planning schedule changed after the inverse was prepared.",
+            field: "If-Match",
+            repair: "Review the latest schedule before reapplying or keeping it.",
+            current_revision: revision,
+            current_etag: etag,
+            object_ids: [sampleProject.id],
+            reload_url: `/api/planning/projects/${sampleProject.id}/schedule`,
+            correlation_id: "33333333-3333-4333-8333-333333333333",
+          },
+        },
+      });
+      return;
+    }
+    const operations = payload.operations as Array<{ payload: Record<string, unknown> }>;
+    for (const operation of operations) {
+      const { task_id: taskId, ...changes } = operation.payload;
+      Object.assign(scheduleState.tasks.find((task) => task.id === taskId) as object, changes);
+    }
+    const previousRevision = revision;
+    revision += 1;
+    scheduleState.project.revision = revision;
+    etag = proofEtag(revision);
+    await route.fulfill({
+      headers: { ETag: etag },
+      json: {
+        correlation_id: undoCommandId,
+        source_command_id: payload.source_command_id,
+        previous_revision: previousRevision,
+        revision,
+        operation_results: [],
+        schedule: scheduleState,
+      },
+    });
+  });
+
+  await openPlanning(page);
+  await page.getByRole("button", { name: "Edit Task for Define schedule scope" }).click();
+  await page.getByLabel("Task for Define schedule scope").fill("Own audited edit");
+  await page.locator(".planning-owned-inline-cell .inline-edit-form").getByRole("button", { name: "Save" }).click();
+  await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Own audited edit" })).toBeVisible();
+
+  await page.getByLabel("Open planning controls").click();
+  await expect(page.getByRole("button", { name: "Undo", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Define schedule scope" })).toBeVisible();
+  expect(inversePayloads[0]).toMatchObject({ source_command_id: sourceCommandId, reason: "Undo Edit task" });
+  await page.getByRole("button", { name: "Done", exact: true }).click();
+
+  revision += 1;
+  scheduleState.project.revision = revision;
+  scheduleState.tasks[1].title = "Remote authoritative edit";
+  etag = proofEtag(revision);
+  await page.getByLabel("Open planning controls").click();
+  await expect(page.getByRole("button", { name: "Redo", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "Redo", exact: true }).click();
+
+  const alert = page.getByRole("alert", { name: "Planning change needs review" });
+  await expect(alert).toBeVisible();
+  await expect(alert).toBeFocused();
+  await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Remote authoritative edit" })).toBeVisible();
+  expect(inversePayloads[1]).toMatchObject({ source_command_id: undoCommandId, reason: "Redo Edit task" });
 });
 
 async function openPlanning(page: Page) {
@@ -614,7 +756,7 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
   });
   await page.route("/api/planning/tasks/**", async (route) => {
     taskUpdatePayloads.push(route.request().postDataJSON());
-    await route.fulfill({ json: { status: "validated" }, headers: { ETag: planningEtag } });
+    await route.fulfill({ json: { status: "validated", correlation_id: "11111111-1111-4111-8111-111111111111" }, headers: { ETag: planningEtag } });
   });
   await page.route(`/api/planning/projects/${sampleProject.id}/dependencies`, async (route) => {
     dependencyPayloads.push(route.request().postDataJSON());
@@ -631,4 +773,8 @@ function moduleCatalog() {
     "contacts.core": { ...base, name: "contacts.core", status: "available", kind: "capability_module" },
     "planning.core": { ...base, name: "planning.core", status: "installed", kind: "capability_module" },
   };
+}
+
+function proofEtag(revision: number) {
+  return `"planning-r${revision}-sha256-${String(revision).padStart(64, "0")}"`;
 }

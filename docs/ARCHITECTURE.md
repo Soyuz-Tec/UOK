@@ -35,7 +35,7 @@ Operator browser
 - `contacts.core` is the first optional capability module.
 - `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, reminders, free-busy, availability, iCalendar export, and a traditional Calendar workspace.
 - `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
-- Planning Gate A stabilization is active under ADR-0003; scheduling and write-safety claims advance only through evidence recorded in the Planning Gantt implementation traceability map.
+- Planning Gate A local/runtime closure is verified under ADR-0003; scheduling, write-safety, evidence-governance, and accessibility claims are recorded in the Planning Gantt implementation traceability map. The stacked draft PRs still require hosted CI, review, and merge, and no local alpha result implies production readiness.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
 - `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.

@@ -14,8 +14,9 @@ import { createPlanningDemoSchedule } from "./planningDemoSchedule";
 import {
   type PlanningHistoryEntry,
   type PlanningHistoryState,
+  withPlanningHistorySource,
 } from "./planningHistory";
-import { executePlanningHistoryBatch, executePlanningHistoryStep, planningHistoryBatchSupported } from "./planningHistoryExecution";
+import { executePlanningHistoryBatch, planningHistoryBatchSupported } from "./planningHistoryExecution";
 import { planningIntent } from "./planningMutationIntents";
 import { planningWorkspaceActions } from "./planningWorkspaceActions";
 import type { PlanningProject, PlanningSchedule } from "./types";
@@ -52,8 +53,8 @@ export function usePlanningWorkspaceMutations({
   const undoEntry = undoStack.at(-1);
   const redoEntry = redoStack.at(-1);
   const history: PlanningHistoryState = {
-    canUndo: Boolean(undoEntry && planningHistoryBatchSupported(undoEntry.undo)),
-    canRedo: Boolean(redoEntry && planningHistoryBatchSupported(redoEntry.redo)),
+    canUndo: Boolean(undoEntry?.sourceCommandId && planningHistoryBatchSupported(undoEntry.undo)),
+    canRedo: Boolean(redoEntry?.sourceCommandId && planningHistoryBatchSupported(redoEntry.redo)),
     undoLabel: historyLabel(undoEntry, "undo"),
     redoLabel: historyLabel(redoEntry, "redo"),
   };
@@ -143,7 +144,7 @@ export function usePlanningWorkspaceMutations({
       const response = await mutation.run(etagRef.current);
       setCurrentEtag(response.etag);
       const after = await reloadSchedule(selectedProjectId);
-      if (before) pushHistory(mutation.history(before, after, mutation.label));
+      if (before) pushHistory(withPlanningHistorySource(mutation.history(before, after, mutation.label), response.data, after.project.revision));
       clearRecovery();
       setStatus({ status: "validated", ...mutation.okStatus });
     } catch (error) {
@@ -192,7 +193,7 @@ export function usePlanningWorkspaceMutations({
       const response = await mutation.run(etagRef.current);
       setCurrentEtag(response.etag);
       const after = await reloadSchedule(selectedProjectId);
-      if (before) pushHistory(mutation.history(before, after, mutation.label));
+      if (before) pushHistory(withPlanningHistorySource(mutation.history(before, after, mutation.label), response.data, after.project.revision));
       clearRecovery();
       setStatus({ status: "validated", reapplied: true, ...mutation.okStatus });
     } catch (error) {
@@ -214,22 +215,22 @@ export function usePlanningWorkspaceMutations({
     const steps = entry && (direction === "undo" ? entry.undo : entry.redo);
     if (!entry || !steps || !selectedProjectId || !schedule || !etagRef.current) return;
     if (!planningHistoryBatchSupported(steps)) return setStatus({ status: "unavailable", message: "This history entry contains operations not yet supported by the atomic task batch endpoint." });
+    if (!entry.sourceCommandId) return setStatus({ status: "unavailable", message: "This history entry has no source command correlation and cannot be replayed safely." });
     const historyIntent = planningIntent(direction, `${direction === "undo" ? "Undo" : "Redo"} ${entry.label}`, { action: direction, label: entry.label }, (etag) => (
-      steps.length === 1
-        ? executePlanningHistoryStep(token, schedule, steps[0], etag)
-        : executePlanningHistoryBatch(token, schedule, steps, etag)
+      executePlanningHistoryBatch(token, schedule, steps, etag, entry.sourceCommandId as string, `${direction === "undo" ? "Undo" : "Redo"} ${entry.label}`)
     ));
     setBusy(direction);
     try {
       const response = await historyIntent.run(etagRef.current);
       setCurrentEtag(response.etag);
-      await reloadSchedule(selectedProjectId);
+      const after = await reloadSchedule(selectedProjectId);
+      const replayedEntry = withPlanningHistorySource(entry, response.data, after.project.revision) || entry;
       if (direction === "undo") {
         setUndoStack((items) => items.slice(0, -1));
-        setRedoStack((items) => [...items, entry].slice(-historyLimit));
+        setRedoStack((items) => [...items, replayedEntry].slice(-historyLimit));
       } else {
         setRedoStack((items) => items.slice(0, -1));
-        setUndoStack((items) => [...items, entry].slice(-historyLimit));
+        setUndoStack((items) => [...items, replayedEntry].slice(-historyLimit));
       }
       setStatus({ status: "validated", action: direction, label: entry.label });
     } catch (error) {
@@ -265,7 +266,8 @@ export function usePlanningWorkspaceMutations({
 function historyLabel(entry: PlanningHistoryEntry | undefined, direction: "undo" | "redo") {
   if (!entry) return "";
   const steps = direction === "undo" ? entry.undo : entry.redo;
-  return planningHistoryBatchSupported(steps) ? entry.label : `${entry.label} has unsupported history operations`;
+  if (!planningHistoryBatchSupported(steps)) return `${entry.label} has unsupported history operations`;
+  return entry.sourceCommandId ? entry.label : `${entry.label} has no source command correlation`;
 }
 
 function errorStatus(error: unknown) {

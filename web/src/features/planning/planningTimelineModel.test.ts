@@ -45,7 +45,7 @@ function filters(overrides: Partial<PlanningFilterState> = {}): PlanningFilterSt
   return { mode: "all", query: "", resourceId: "", status: "", ...overrides };
 }
 
-function task(id: string, wbs: string, title: string, taskType: PlanningTask["task_type"], status: string, critical: boolean): PlanningTask {
+function task(id: string, wbs: string, title: string, taskType: PlanningTask["task_type"], status: PlanningTask["status"], critical: boolean): PlanningTask {
   return {
     id,
     project_id: "project-1",

@@ -6,7 +6,7 @@ import { Pane } from "../../shared/layout";
 import { PlanningAvailabilityPanel } from "./PlanningAvailabilityPanel";
 import { PlanningTaskConstraintFields } from "./PlanningTaskConstraintFields";
 import { PlanningResourcePanel } from "./PlanningResourcePanel";
-import type { PlanningDependency, PlanningDependencyType, PlanningProject, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskType } from "./types";
+import type { PlanningDependency, PlanningDependencyType, PlanningProject, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskStatus, PlanningTaskType } from "./types";
 import type {
   PlanningAssignmentCreateRequest,
   PlanningBaselineCreateRequest,
@@ -139,7 +139,9 @@ function TaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onC
           <option value="">None</option>
           {schedule.tasks.filter((task) => task.id !== selectedTask?.id).map((task) => <option key={task.id} value={task.id}>{task.wbs} {task.title}</option>)}
         </select></label>
-        <label className="field"><span>Status</span><input value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })} /></label>
+        <label className="field"><span>Status</span><select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as PlanningTaskStatus })}>
+          <option value="planned">Planned</option><option value="in_progress">In progress</option><option value="blocked">Blocked</option><option value="complete">Complete</option>
+        </select></label>
         <label className="field"><span>Start</span><input type="date" value={form.start} onChange={(event) => setForm({ ...form, start: event.target.value })} /></label>
         <label className="field"><span>End</span><input type="date" value={form.end} onChange={(event) => setForm({ ...form, end: event.target.value })} /></label>
         <label className="field"><span>Progress</span><input type="number" min="0" max="100" value={form.progress} onChange={(event) => setForm({ ...form, progress: event.target.value })} /></label>
@@ -264,7 +266,7 @@ type TaskForm = {
   title: string;
   task_type: PlanningTaskType;
   parent_task_id: string;
-  status: string;
+  status: PlanningTaskStatus;
   start: string;
   end: string;
   progress: string;

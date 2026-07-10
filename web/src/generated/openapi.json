@@ -1496,6 +1496,19 @@
               }
             ],
             "title": "Reason"
+          },
+          "source_command_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 36,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Command Id"
           }
         },
         "required": [
@@ -1783,7 +1796,7 @@
           },
           "status": {
             "default": "planned",
-            "maxLength": 40,
+            "pattern": "^(planned|in_progress|blocked|complete)$",
             "title": "Status",
             "type": "string"
           },
@@ -1936,7 +1949,7 @@
           "status": {
             "anyOf": [
               {
-                "maxLength": 40,
+                "pattern": "^(planned|in_progress|blocked|complete)$",
                 "type": "string"
               },
               {
@@ -3433,11 +3446,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The command request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -5730,11 +5743,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -5934,11 +5947,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -6093,11 +6106,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -6262,11 +6275,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           }
         },
         "summary": "Create Project",
@@ -6413,11 +6426,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -6725,11 +6738,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -6886,11 +6899,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -7040,11 +7053,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -7201,11 +7214,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -7430,11 +7443,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -7581,11 +7594,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {
@@ -7740,11 +7753,11 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
-            "description": "Validation Error"
+            "description": "The Planning request does not match the generated contract."
           },
           "428": {
             "content": {

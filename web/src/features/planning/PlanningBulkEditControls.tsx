@@ -2,7 +2,7 @@ import { CalendarDays, CheckCircle2, ListChecks } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
-import type { PlanningTask } from "./types";
+import type { PlanningTask, PlanningTaskStatus } from "./types";
 import type { PlanningTaskUpdateRequest } from "./planningContracts";
 
 export type PlanningBulkTaskUpdate = {
@@ -21,7 +21,7 @@ export function PlanningBulkEditControls({
   selectedTasks: PlanningTask[];
   onBulkTaskEdit: (updates: PlanningBulkTaskUpdate[]) => void;
 }) {
-  const [status, setStatus] = useState("in_progress");
+  const [status, setStatus] = useState<PlanningTaskStatus>("in_progress");
   const [progress, setProgress] = useState(50);
   const [shiftDays, setShiftDays] = useState(1);
   const orderedDateShiftTasks = useMemo(() => {
@@ -39,7 +39,7 @@ export function PlanningBulkEditControls({
       <label className="planning-toolbar-select">
         <ListChecks size={16} aria-hidden="true" />
         <span>Bulk status</span>
-        <select aria-label="Bulk status" value={status} disabled={blocked} onChange={(event) => setStatus(event.target.value)}>
+        <select aria-label="Bulk status" value={status} disabled={blocked} onChange={(event) => setStatus(event.target.value as PlanningTaskStatus)}>
           <option value="planned">Planned</option>
           <option value="in_progress">In progress</option>
           <option value="blocked">Blocked</option>

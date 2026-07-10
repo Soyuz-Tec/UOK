@@ -1,39 +1,5 @@
-function Get-UokPlanningEtag {
-    param(
-        [Parameter(Mandatory = $true)][string]$ProjectId,
-        [Parameter(Mandatory = $true)][hashtable]$Headers
-    )
-    $response = Invoke-WebRequest -UseBasicParsing -Method "GET" -Uri "$BaseUrl/api/planning/projects/$ProjectId/schedule" -Headers $Headers
-    $etag = [string]$response.Headers["ETag"]
-    if (-not $etag -or $etag -notmatch '^"planning-r[1-9][0-9]*-sha256-[a-f0-9]{64}"$') {
-        throw "Planning schedule did not return a valid strong ETag: $etag"
-    }
-    return $etag
-}
-
-function Invoke-UokPlanningCommand {
-    param(
-        [Parameter(Mandatory = $true)][string]$ProjectId,
-        [Parameter(Mandatory = $true)][hashtable]$Headers,
-        [Parameter(Mandatory = $true)][hashtable]$Body
-    )
-    $conditionalHeaders = $Headers.Clone()
-    $conditionalHeaders["If-Match"] = Get-UokPlanningEtag -ProjectId $ProjectId -Headers $Headers
-    return Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $conditionalHeaders -Body $Body
-}
-
-function Invoke-UokPlanningBatch {
-    param(
-        [Parameter(Mandatory = $true)][string]$ProjectId,
-        [Parameter(Mandatory = $true)][hashtable]$Headers,
-        [Parameter(Mandatory = $true)][hashtable]$Body
-    )
-    $conditionalHeaders = $Headers.Clone()
-    $conditionalHeaders["If-Match"] = Get-UokPlanningEtag -ProjectId $ProjectId -Headers $Headers
-    $conditionalHeaders["Idempotency-Key"] = "uok-planning-batch-$($Body.batch_key)"
-    $payload = @{ operations = $Body.operations; reason = $Body.reason }
-    return Invoke-UokJson -Method "POST" -Path "/api/planning/projects/$ProjectId/mutations:batch" -Headers $conditionalHeaders -Body $payload
-}
+. (Join-Path $PSScriptRoot "UokCandidatePlanningHttp.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningContracts.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -110,6 +76,20 @@ function Invoke-UokPlanningCandidateScenario {
     if (-not $projectReplay.idempotent) {
         throw "Planning idempotent replay failed: $($projectReplay | ConvertTo-Json -Depth 20)"
     }
+    $conflictError = Get-UokHttpFailureBody -StatusCode 409 -UnexpectedSuccessMessage "Planning idempotency conflict unexpectedly succeeded" -Action {
+        Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+            command_type = "CreatePlanningProject"
+            payload = @{ name = "Changed UOK Planning $Stamp"; start = "2026-08-01"; end = "2026-08-20" }
+            idempotency_key = "uok-planning-project-$Stamp"
+        }
+    }
+    if (
+        $conflictError.error.code -ne "idempotency_conflict" `
+        -or $conflictError.error.field -ne "idempotency_key" `
+        -or $conflictError.error.correlation_id -ne $project.command_id
+    ) {
+        throw "Planning idempotency conflict contract is invalid: $($conflictError | ConvertTo-Json -Depth 20)"
+    }
     if (
         $invalidError.error.code -ne "planning_validation_failed" `
         -or $invalidError.error.field -ne "name" `
@@ -166,11 +146,13 @@ function Invoke-UokPlanningCandidateScenario {
     ) {
         throw "Planning task creation failed: $($first | ConvertTo-Json -Depth 20) $($second | ConvertTo-Json -Depth 20)"
     }
+    Assert-UokPlanningStatusContracts -ProjectId $projectId -TaskId $first.result.id -Headers $OpsHeaders -Stamp $Stamp
 
     $beforeBatch = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $OpsHeaders
     $batch = Invoke-UokPlanningBatch -ProjectId $projectId -Headers $OpsHeaders -Body @{
         batch_key = $Stamp
         reason = "Candidate atomic task update"
+        source_command_id = $first.command_id
         operations = @(
             @{ operation_id = "candidate-first"; kind = "update_task"; payload = @{ task_id = $first.result.id; progress = 45 } },
             @{ operation_id = "candidate-second"; kind = "update_task"; payload = @{ task_id = $second.result.id; progress = 10 } }
@@ -178,6 +160,9 @@ function Invoke-UokPlanningCandidateScenario {
     }
     if ($batch.revision -ne ($beforeBatch.project.revision + 1) -or $batch.operation_results.Count -ne 2) {
         throw "Planning atomic batch evidence is invalid: $($batch | ConvertTo-Json -Depth 20)"
+    }
+    if ($batch.source_command_id -ne $first.command_id) {
+        throw "Planning atomic batch did not retain its source command: $($batch | ConvertTo-Json -Depth 20)"
     }
     if (($batch.schedule.tasks | Where-Object { $_.id -in @($first.result.id, $second.result.id) -and $_.version -lt 2 }).Count -gt 0) {
         throw "Planning atomic batch did not version changed tasks: $($batch | ConvertTo-Json -Depth 20)"
@@ -225,6 +210,25 @@ function Invoke-UokPlanningCandidateScenario {
         }
     }
 
+    $resource = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
+        command_type = "CreatePlanningResource"
+        payload = @{ project_id = $projectId; name = "Candidate Planner"; role = "Scheduling" }
+        idempotency_key = "uok-planning-resource-$Stamp"
+    }
+    $resourceId = $resource.result.resources[0].id
+    $assigned = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
+        command_type = "AssignPlanningResource"
+        payload = @{ task_id = $first.result.id; resource_id = $resourceId; allocation_percent = 120 }
+        idempotency_key = "uok-planning-assignment-$Stamp"
+    }
+    if (
+        $assigned.result.calculation.resource_capacity.independent_validation.ok -ne $true `
+        -or $assigned.result.calculation.resource_capacity.overallocated_count -lt 1 `
+        -or @($assigned.result.calculation.resource_capacity.load_points | Where-Object { $_.allocation_percent -eq 120 -and $_.overallocated }).Count -lt 1
+    ) {
+        throw "Planning resource-capacity evidence is invalid: $($assigned | ConvertTo-Json -Depth 30)"
+    }
+
     $schedule = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $ViewerHeaders
     if ($schedule.validation.ok -ne $true -or $schedule.tasks.Count -lt 2 -or $schedule.dependencies.Count -lt 1) {
         throw "Planning schedule read model failed: $($schedule | ConvertTo-Json -Depth 20)"
@@ -237,6 +241,9 @@ function Invoke-UokPlanningCandidateScenario {
     }
     if ($schedule.calculation.engine_version -ne "uok-cpm-1" -or $schedule.calculation.independent_validation.ok -ne $true) {
         throw "Planning canonical CPM validation failed: $($schedule | ConvertTo-Json -Depth 20)"
+    }
+    if ($schedule.calculation.resource_capacity.engine_version -ne "uok-resource-capacity-1" -or $schedule.calculation.resource_capacity.independent_validation.ok -ne $true) {
+        throw "Planning resource-capacity validation failed: $($schedule | ConvertTo-Json -Depth 20)"
     }
     if (-not $schedule.calculation.calculated_finish -or $schedule.calculation.target_finish -ne $schedule.project.end) {
         throw "Planning target/calculated finish evidence is invalid: $($schedule | ConvertTo-Json -Depth 20)"

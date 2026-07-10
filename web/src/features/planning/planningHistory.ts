@@ -23,6 +23,8 @@ export type PlanningHistoryEntry = {
   label: string;
   undo: PlanningHistoryStep[];
   redo: PlanningHistoryStep[];
+  sourceCommandId?: string;
+  sourceRevision?: number;
 };
 
 export type PlanningHistoryState = {
@@ -31,6 +33,16 @@ export type PlanningHistoryState = {
   undoLabel: string;
   redoLabel: string;
 };
+
+export function withPlanningHistorySource(
+  entry: PlanningHistoryEntry | null,
+  responseData: unknown,
+  revision: number,
+): PlanningHistoryEntry | null {
+  if (!entry) return null;
+  const sourceCommandId = mutationCorrelation(responseData);
+  return sourceCommandId ? { ...entry, sourceCommandId, sourceRevision: revision } : entry;
+}
 
 export function planningHistoryDiff(before: PlanningSchedule, after: PlanningSchedule, label: string): PlanningHistoryEntry | null {
   if (before.project.id !== after.project.id) return null;
@@ -197,4 +209,15 @@ function taskFingerprint(task: PlanningTask) {
 
 function dependencyFingerprint(dep: PlanningDependency) {
   return JSON.stringify(dependencyPayload(dep));
+}
+
+function mutationCorrelation(value: unknown): string {
+  if (!value || typeof value !== "object") return "";
+  const row = value as Record<string, unknown>;
+  if (typeof row.correlation_id === "string") return row.correlation_id;
+  if (typeof row.command_id === "string") return row.command_id;
+  if (row.result && typeof row.result === "object" && typeof (row.result as Record<string, unknown>).correlation_id === "string") {
+    return String((row.result as Record<string, unknown>).correlation_id);
+  }
+  return "";
 }

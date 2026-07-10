@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A stabilization in progress.
+**Status:** Active module plan; Gate A local/runtime closure verified, Gate B is next.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -35,7 +35,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - hierarchy validation, WBS read model, and summary rollups
 - canonical logic-driven CPM read model fields for early/late dates, total/free float, target variance, and critical flags, with a separate hard-constraint validator
 - immutable v2 baseline capture with complete canonical schedule snapshots, SHA-256 verification, source revision/creator/correlation metadata, explicit legacy partial warnings, comparison reads, baseline variance fields, per-row timeline lanes, and variance badges
-- resource creation, assignment, allocation display, over-allocation warnings, and explicit resource leveling for later auto-scheduled assigned tasks
+- resource creation, assignment, allocation display, independently validated resource/day capacity points, over-allocation warnings, and explicit resource leveling for later auto-scheduled assigned tasks
 - drag-to-reschedule path through server validation
 - command-bus writes and idempotency
 - project-root optimistic concurrency with additive revisions/task versions, canonical strong schedule ETags, exact `If-Match`, and explicit `428`/`412` recovery
@@ -46,6 +46,9 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - one structured error envelope across Planning validation, permission, idempotency, precondition, and batch failures, with the exact failed, denied, or original command-log correlation
 - explicit TypeScript request, mutation-result, domain-error, and precondition contracts propagated through Gantt, inspector, history, resource, baseline, and batch actions
 - accessible domain-failure alert with server repair guidance, field, current revision, and audit reference
+- server-owned planned/in-progress/blocked/complete status vocabulary and transition policy with structured invalid-value/transition rejection
+- revision-aware supported undo/redo operations that carry the source command through one atomic batch, reject stale inverses, preserve latest server state, and fail closed for unsupported/destructive history
+- keyboard/form alternatives for task dates, progress, dependency, and creation mutations, with successful inline focus restoration and announced stale-state recovery
 - planning audit events
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier
 - Playwright UI proof for Gantt rendering, editor panels, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness
@@ -89,6 +92,7 @@ python -m pytest modules/planning.core/tests/test_canonical_cpm.py modules/plann
 python -m pytest modules/planning.core/tests/test_planning_idempotency_contract.py -q
 python -m pytest modules/planning.core/tests/test_planning_structured_errors.py -q
 python -m pytest modules/planning.core/tests/test_planning_complete_baselines.py -q
+python -m pytest modules/planning.core/tests/test_resource_capacity_validation.py modules/planning.core/tests/test_planning_status_policy.py -q
 npm --prefix web run build
 npm --prefix web run test:ui-proof
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
@@ -103,5 +107,5 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 - richer critical path dependency-chain explanation beyond the current Dashboard summary
 - richer bulk edit fields after owner, priority, and calendar become first-class task fields
 - planning adapters for the separately deployed global import/export capability as needed
-- richer keyboard grid editing beyond the current inspector workflow
+- spreadsheet-style multi-cell keyboard editing beyond the current keyboard/form alternatives
 - module-root frontend source packaging

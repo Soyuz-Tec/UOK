@@ -19,6 +19,7 @@ PLANNING_FIELDS = (
     "start",
     "end",
     "progress",
+    "status",
     "task_type",
     "dependency_type",
     "lag_days",

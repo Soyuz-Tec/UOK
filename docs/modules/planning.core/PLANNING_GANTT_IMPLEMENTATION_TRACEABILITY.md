@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Active Gate A evidence map.
+**Status:** Gate A local/runtime evidence closure verified 2026-07-10; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -28,17 +28,21 @@ requirement.
 | ID | Requirement | Initial evidence | Required proof before closure | Status |
 |---|---|---|---|---|
 | PLA-A-001 | Canonical CPM values | Logic-driven, calendar-aware CPM returns ES, EF, LS, LF, total/free float, target variance, and critical flags independent of stored dates and UI order | Independent chain, parallel, merge, lag/lead, calendar, target-date, and cycle fixtures | `runtime_proven` |
-| PLA-A-002 | Independent hard-constraint validation | Separate validator recomputes CPM coverage, durations, dependencies, calendars, constraints, manual dates, float, project finish, and target variance and runs on accepted writes/read models | Add resource-capacity result validation and injected resource violation proof | `unit_tested` |
-| PLA-A-003 | Stable Planning idempotency | UOK command gateway supports replay | Every REST write requires a client key; module-command missing-key, replay, changed-payload conflict, and lost-response retry tests pass | `integration_tested` |
+| PLA-A-002 | Independent hard-constraint validation | Separate validators recompute CPM coverage, durations, dependencies, calendars, constraints, manual dates, float, project finish, target variance, and resource/day capacity results on accepted writes/read models | Injected CPM and capacity faults are rejected; candidate readback proves a 120% overload point and a clean post-level result | `runtime_proven` |
+| PLA-A-003 | Stable Planning idempotency | UOK command gateway supports replay | Every REST write requires a client key; module-command missing-key, replay, changed-payload conflict, lost-response retry, and original-command correlation tests pass | `runtime_proven` |
 | PLA-A-004 | Optimistic concurrency | Project revision/task version migration, strong actor-visible ETag, project lock, 428/412 recovery contract, and typed client recovery exist | PostgreSQL two-client race, candidate runtime, and accessible reload/reapply proof | `runtime_proven` |
-| PLA-A-005 | Atomic batch mutation | Ordered task updates use one project lock, command/idempotency record, final scheduler/validator pass, revision, ETag, and correlated event; bulk UI and multi-task update history use the endpoint | Expand the operation-kind registry beyond `update_task` while retaining all-or-nothing semantics | `runtime_proven` |
+| PLA-A-005 | Atomic batch mutation | Ordered task updates use one project lock, command/idempotency record, final scheduler/validator pass, revision, ETag, and correlated event; bulk UI and supported history use the endpoint | 100-operation success/replay, injected rollback, one-revision/task-version, source-command, structured-error, and correlation proofs pass | `runtime_proven` |
 | PLA-A-006 | Complete immutable baseline | Canonical v2 snapshot includes the complete current schedule graph/context, creator/source revision/correlation metadata, SHA-256 verification, append-only guards, comparison reads, and explicit legacy partial limitations | PostgreSQL migration apply/readback and candidate runtime checksum proof | `runtime_proven` |
 | PLA-A-007 | Server capability enforcement | Server maps every command to `read`, `edit`, `baseline.create`, `level`, `link`, `gate.approve`, or `admin`; schedule/API return actor authority; UI fails closed and local review mode can only reduce it | Candidate runtime role matrix and direct-denial proof | `runtime_proven` |
 | PLA-A-008 | Database invariant enforcement | Additive migration enforces dates, duration, progress, sort order, task/dependency types, scheduling mode, lag, allocation, unique project calendars/assignments, and supporting indexes | PostgreSQL 18 apply/readback and direct invalid-row probes | `runtime_proven` |
 | PLA-A-009 | Structured Planning errors | Planning validation, permission, idempotency, precondition, and atomic-batch failures return stable code, field, object ids, repair, revision, and correlation id through REST and generic command paths; persisted failure logs store the same envelope | Candidate runtime proof for validation, denial, and missing-precondition envelopes | `runtime_proven` |
 | PLA-A-010 | Typed Planning client | Explicit request/result/error contracts cover projects, tasks, dependencies, calendars, baselines, resources, assignments, batches, revisions, capabilities, history, and workspace actions | Candidate UI proof for the accessible repair/audit alert | `runtime_proven` |
 | PLA-A-011 | End-to-end audit correlation | Every successful Planning response, module event, and schedule event carries the exact command-log ID, including derived task changes and batches | Candidate PostgreSQL join/readback across command, response, and both event streams | `runtime_proven` |
-| PLA-A-012 | Accessible non-drag alternatives | Keyboard and inspector paths exist | Move, resize, progress, dependency, and create flows proven without dragging | `integration_tested` |
+| PLA-A-012 | Accessible non-drag alternatives | Keyboard and inspector paths exist | Start/end movement and resize, progress, dependency, and create flows are proven without dragging in Chromium | `runtime_proven` |
+| PLA-A-013 | Controlled task status lifecycle | Status is server-owned and typed across request/read contracts | Unknown values return structured `422`; valid transitions succeed; forbidden transitions return structured errors without mutation; candidate lifecycle probe passes | `runtime_proven` |
+| PLA-A-014 | Revision-aware safe history | Supported inverse operations carry the originating command and execute atomically against the current revision | Chromium proves undo source correlation, redo after a remote revision returns `412`, latest server state remains intact, and unsupported history fails closed | `runtime_proven` |
+| PLA-A-015 | Accessible focus and state recovery | Inline editing and error notices expose stable focus targets | Successful keyboard edits restore focus; stale mutation and inverse failures focus and announce repair guidance without unsafe automatic replay | `runtime_proven` |
+| PLA-A-016 | Evidence governance and lifecycle | Feature catalog, module plan, architecture index, ADR, module tests, and verifier use one evidence taxonomy and module-owned paths | Ambiguous catalog labels are removed, source-size checks pass, and install/enable/verify/rebuild candidate lifecycle is exercised | `runtime_proven` |
 
 ## Current slice evidence
 
@@ -56,6 +60,7 @@ requirement.
 - Candidate/UI gates: `scripts/verify_uok_candidate.ps1` and `web/e2e/uok-proof.spec.ts` pass with atomic bulk controls enabled only through the batch endpoint.
 - Canonical CPM and hand-worked oracle cases: `modules/planning.core/tests/test_canonical_cpm.py`
 - Independent result validation with injected dependency, calendar, constraint, and manual-date faults: `modules/planning.core/tests/test_cpm_validation.py`
+- Independent resource-capacity calculation/validation with valid overload and injected load/flag/coverage faults: `modules/planning.core/tests/test_resource_capacity_validation.py`
 - API target-variance and UI-row-order independence proof: `modules/planning.core/tests/test_planning_cpm_contract.py`
 - Persistent candidate negative-float/independent-validation proof: `modules/planning.core/tests/runtime/verify_planning_cpm.py`
 - Atomic 100-operation success/replay, injected rollback, one-revision/task-version, structured-error, and correlation proof: `modules/planning.core/tests/test_planning_atomic_batch.py`
@@ -72,6 +77,9 @@ requirement.
 - Structured validation/permission/precondition error and persisted command-log parity proof: `modules/planning.core/tests/test_planning_structured_errors.py`
 - Structured idempotency conflict proof: `modules/planning.core/tests/test_planning_command_idempotency.py` and `modules/planning.core/tests/test_planning_rest_idempotency.py`
 - Typed request propagation, typed domain/precondition mapping, repair-status propagation, and accessible alert proof: `web/src/features/planning/planningApi.test.ts`, `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`, and `web/src/features/planning/PlanningErrorNotice.test.tsx`
+- Controlled status registry, request-shape validation, transition enforcement, audit correlation, and no-mutation rejection proof: `modules/planning.core/tests/test_planning_status_policy.py`
+- Revision-aware source-command history and stale inverse proof: `modules/planning.core/tests/test_planning_atomic_batch.py`, `web/src/features/planning/planningHistoryExecution.test.ts`, `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`, and `web/e2e/uok-proof.spec.ts`
+- Keyboard-only mutation and shared focus-restoration proof: `web/src/shared/forms/InlineTextEdit.test.tsx` and `web/e2e/uok-proof.spec.ts`
 - Candidate runtime proof: the module verifier inspected structured `403`, `400`, and `428` bodies and correlations; Chromium focused and announced the repair/field/revision/audit alert after a rejected mutation.
 - Candidate PostgreSQL proof: all 13 invariant constraints and four indexes read back; direct invalid date/progress/scheduling-mode and duplicate calendar/assignment rows were rejected; seven candidate schedule events and seven module events all linked to succeeded commands, with all seven stored responses carrying the same correlation.
 - Generated REST contract: `web/src/generated/openapi.json` and `web/src/generated/openapi.d.ts`
@@ -188,7 +196,9 @@ objects. Each object identifies a stable code, human message, relevant field and
 object IDs, a repair action, the current revision when available, and an audit
 correlation ID. Validation and precondition failures persist the same envelope
 against the attempted command; permission denials persist a denied command; an
-idempotency conflict references the original successful command.
+idempotency conflict references the original successful command. Request-shape
+validation that fails before command acceptance returns the same repair-oriented
+shape with a request correlation but does not claim a persisted command record.
 
 The browser client validates those envelopes at the HTTP boundary and exposes
 typed domain and precondition errors. Mutation intents, history, Gantt inline
@@ -231,17 +241,25 @@ target is earlier, late dates anchor to the target and negative float is
 reported without moving the commitment or clamping the value. A future
 planned/forecast/target date migration will replace this compatibility mapping.
 
-The independent validator deliberately lives outside the CPM implementation and
-recomputes hard invariants from the published result. Resource-capacity
-validation remains open because current over-allocation is an explicit warning,
-not a hard scheduling constraint; PLA-A-002 therefore remains `unit_tested`
-rather than being promoted to integration closure.
+The independent validators deliberately live outside their calculation engines.
+One recomputes CPM hard invariants from the published result; the other
+recomputes resource/day coverage, allocation totals, contributing task IDs,
+capacity, working-day placement, and overload flags. Over-allocation remains an
+explicit warning rather than a hard scheduling constraint, but a corrupted or
+incomplete capacity result now fails independent validation.
 
 ## Closure rule
 
 A row may advance only when the evidence is present on the current branch and
 the narrow relevant check passes. `production_ready` requires the production
 hardening profile and cannot be inferred from local alpha tests.
+
+The 2026-07-10 closure sweep passed all Planning tests, all 146 frontend tests,
+the static production build, five Chromium scenarios, TechnologyAudit,
+EngineeringEvidence generation, Rebuild, the live CPM verifier, the full
+candidate verifier, and the repository Verify action. The feature stack remains
+in draft review: hosted CI is externally blocked by the GitHub account billing
+state, and no merge or production deployment was performed.
 
 Before Gate A closes, link this artifact from:
 

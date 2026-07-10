@@ -33,7 +33,7 @@ function ids(rows: PlanningTask[]) {
   return rows.map((task) => task.id);
 }
 
-function task(id: string, wbs: string, title: string, status: string, start: string, progress: number, critical: boolean): PlanningTask {
+function task(id: string, wbs: string, title: string, status: PlanningTask["status"], start: string, progress: number, critical: boolean): PlanningTask {
   return {
     id,
     project_id: "project-1",

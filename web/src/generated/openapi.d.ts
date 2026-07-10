@@ -1557,6 +1557,8 @@ export interface components {
             operations: components["schemas"]["PlanningBatchOperation"][];
             /** Reason */
             reason?: string | null;
+            /** Source Command Id */
+            source_command_id?: string | null;
         };
         /** PlanningCalendarRequest */
         PlanningCalendarRequest: {
@@ -2529,13 +2531,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The command request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The command requires a current precondition. */
@@ -3827,13 +3829,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -3943,13 +3945,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -4030,13 +4032,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -4137,13 +4139,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
         };
@@ -4215,13 +4217,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -4376,13 +4378,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -4463,13 +4465,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -4550,13 +4552,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -4637,13 +4639,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -4761,13 +4763,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -4844,13 +4846,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */
@@ -4931,13 +4933,13 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description A current strong Planning ETag is required. */

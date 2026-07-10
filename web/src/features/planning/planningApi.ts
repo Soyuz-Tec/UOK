@@ -49,6 +49,7 @@ export type PlanningBatchTaskUpdate = {
 
 export type PlanningBatchResult = {
   correlation_id: string;
+  source_command_id: string | null;
   previous_revision: number;
   revision: number;
   operation_results: Array<{ operation_id: string; status: "applied"; object_ids: string[] }>;
@@ -156,6 +157,7 @@ export function batchPlanningTaskUpdates(
   projectId: string,
   updates: PlanningBatchTaskUpdate[],
   mutation: PlanningMutationOptions,
+  history: { sourceCommandId?: string; reason?: string } = {},
 ) {
   const idempotencyKey = mutation.idempotencyKey || planningMutationKey("planning-task-batch");
   const operations = updates.map((update, index) => ({
@@ -166,7 +168,11 @@ export function batchPlanningTaskUpdates(
   return planningMutationJson<PlanningBatchResult>(
     token,
     `/api/planning/projects/${projectId}/mutations:batch`,
-    { method: "POST", body: JSON.stringify({ operations }) },
+    { method: "POST", body: JSON.stringify({
+      operations,
+      ...(history.sourceCommandId ? { source_command_id: history.sourceCommandId } : {}),
+      ...(history.reason ? { reason: history.reason } : {}),
+    }) },
     "planning-task-batch",
     { ...mutation, idempotencyKey },
   );

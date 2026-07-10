@@ -77,7 +77,10 @@ describe("Planning API concurrency and idempotency", () => {
     await batchPlanningTaskUpdates("token", "project-1", [
       { taskId: "task-1", payload: { progress: 40 } },
       { taskId: "task-2", payload: { status: "complete", progress: 100 } },
-    ], { ifMatch: etag1, idempotencyKey: "planning-task-batch-intent-1" });
+    ], { ifMatch: etag1, idempotencyKey: "planning-task-batch-intent-1" }, {
+      sourceCommandId: "11111111-1111-4111-8111-111111111111",
+      reason: "Undo task edits",
+    });
 
     const [path, request] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = new Headers(request.headers);
@@ -85,6 +88,8 @@ describe("Planning API concurrency and idempotency", () => {
     expect(path).toBe("/api/planning/projects/project-1/mutations:batch");
     expect(headers.get("If-Match")).toBe(etag1);
     expect(headers.get("Idempotency-Key")).toBe("planning-task-batch-intent-1");
+    expect(body.source_command_id).toBe("11111111-1111-4111-8111-111111111111");
+    expect(body.reason).toBe("Undo task edits");
     expect(body.operations).toEqual([
       { operation_id: "1:planning-task-batch-intent-1", kind: "update_task", payload: { task_id: "task-1", progress: 40 } },
       { operation_id: "2:planning-task-batch-intent-1", kind: "update_task", payload: { task_id: "task-2", status: "complete", progress: 100 } },

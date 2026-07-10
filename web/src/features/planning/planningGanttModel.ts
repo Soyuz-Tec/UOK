@@ -156,7 +156,7 @@ export function rowHeight(viewDensity: ViewDensity) {
 }
 
 export function taskColorClass(task: PlanningTask) {
-  if (task.progress >= 100 || task.status === "complete" || task.status === "completed") return "complete";
+  if (task.progress >= 100 || task.status === "complete") return "complete";
   if (dateValue(task.end) < today() && task.progress < 100) return "overdue";
   if (task.status === "blocked") return "blocked";
   if (task.progress > 0) return "in-progress";

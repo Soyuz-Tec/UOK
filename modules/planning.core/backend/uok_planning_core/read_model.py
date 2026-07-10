@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 from .calendar_bridge import availability_warnings, calendar_availability_read_model
 from .calendar_payload import calendar_holidays, calendar_ignored_periods
 from .policy import capability_read_model
+from .resource_capacity import calculate_resource_capacity, resource_capacity_warnings
+from .resource_capacity_validation import validate_resource_capacity_result
 from .models import (
     PlanningAssignment,
     PlanningBaseline,
@@ -44,7 +46,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     tasks = project_tasks(db, actor, project.id)
     dependencies = project_dependencies(db, actor, project.id)
     calendar = project_calendar(db, actor, project.id)
-    analysis, independent_issues = schedule_analysis(
+    analysis, cpm_issues = schedule_analysis(
         tasks,
         dependencies,
         calendar,
@@ -56,11 +58,14 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     latest_baseline = _baseline_task_index(baselines[0]) if baselines else {}
     resources = _resources(db, actor, project.id)
     assignments = _assignments(db, actor, tasks, resources)
+    capacity = calculate_resource_capacity(tasks, resources, assignments, calendar)
+    capacity_issues = validate_resource_capacity_result(tasks, resources, assignments, calendar, capacity)
+    independent_issues = [*cpm_issues, *capacity_issues]
     availability = calendar_availability_read_model(db, actor, project)
     availability["warnings"] = availability_warnings(tasks, availability)
     violations = validate_schedule(tasks, dependencies, calendar)
     violations.extend(issue.message for issue in independent_issues)
-    warnings = _resource_warnings(tasks, resources, assignments, calendar)
+    warnings = resource_capacity_warnings(capacity, resources)
     wbs = _wbs_numbers(tasks)
     return {
         "project": serialize_project(project),
@@ -81,6 +86,13 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
             "independent_validation": {
                 "ok": not independent_issues,
                 "violations": [issue.as_dict() for issue in independent_issues],
+            },
+            "resource_capacity": {
+                **capacity.as_dict(),
+                "independent_validation": {
+                    "ok": not capacity_issues,
+                    "violations": [issue.as_dict() for issue in capacity_issues],
+                },
             },
         },
         "validation": {"ok": not violations, "violations": violations, "warnings": warnings},
@@ -216,26 +228,6 @@ def _assignments(db: Session, actor: Actor, tasks: list[PlanningTask], resources
         PlanningAssignment.task_id.in_(task_ids),
         PlanningAssignment.resource_id.in_(resource_ids),
     )).all())
-
-
-def _resource_warnings(tasks: list[PlanningTask], resources: list[PlanningResource], assignments: list[PlanningAssignment], calendar: Any) -> list[str]:
-    by_task = {task.id: task for task in tasks}
-    by_resource = {resource.id: resource for resource in resources}
-    usage: dict[tuple[str, date], int] = defaultdict(int)
-    for assignment in assignments:
-        task = by_task.get(assignment.task_id)
-        if not task:
-            continue
-        current = task.start_at.date()
-        while current <= task.end_at.date():
-            if calendar.is_working_day(current):
-                usage[(assignment.resource_id, current)] += assignment.allocation_percent
-            current = date.fromordinal(current.toordinal() + 1)
-    warnings: list[str] = []
-    for (resource_id, day), allocation in sorted(usage.items(), key=lambda item: (item[0][0], item[0][1])):
-        if allocation > 100:
-            warnings.append(f"{by_resource[resource_id].name} is allocated {allocation}% on {day.isoformat()}")
-    return warnings
 
 
 def _wbs_numbers(tasks: list[PlanningTask]) -> dict[str, str]:

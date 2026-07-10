@@ -14,7 +14,7 @@ from uok.util import loads
 def test_hundred_operation_batch_commits_one_revision_and_replays_once(client: TestClient) -> None:
     ops = _planning_users(client)
     suffix = uuid4().hex[:8]
-    project_id, task_id = _project_and_task(client, ops, suffix)
+    project_id, task_id, source_command_id = _project_and_task(client, ops, suffix)
     before = _schedule(client, ops, project_id)
     before_revision = before.json()["project"]["revision"]
     operations = [
@@ -26,11 +26,10 @@ def test_hundred_operation_batch_commits_one_revision_and_replays_once(client: T
         for index in range(100)
     ]
     key = f"planning-batch-success-{suffix}"
-
     accepted = client.post(
         f"/api/planning/projects/{project_id}/mutations:batch",
         headers={**ops, "Idempotency-Key": key, "If-Match": before.headers["ETag"]},
-        json={"expected_revision": before_revision, "reason": "100 ordered updates", "operations": operations},
+        json={"expected_revision": before_revision, "source_command_id": source_command_id, "reason": "100 ordered updates", "operations": operations},
     )
 
     assert accepted.status_code == 200, accepted.text
@@ -43,13 +42,14 @@ def test_hundred_operation_batch_commits_one_revision_and_replays_once(client: T
     assert task["progress"] == 99
     assert task["version"] == 2
     assert body["correlation_id"]
+    assert body["source_command_id"] == source_command_id
     assert accepted.headers["ETag"] != before.headers["ETag"]
-    _assert_batch_correlation(body["correlation_id"], project_id, 100)
+    _assert_batch_correlation(body["correlation_id"], source_command_id, project_id, 100)
 
     replay = client.post(
         f"/api/planning/projects/{project_id}/mutations:batch",
         headers={**ops, "Idempotency-Key": key, "If-Match": before.headers["ETag"]},
-        json={"expected_revision": before_revision, "reason": "100 ordered updates", "operations": operations},
+        json={"expected_revision": before_revision, "source_command_id": source_command_id, "reason": "100 ordered updates", "operations": operations},
     )
     assert replay.status_code == 200, replay.text
     assert replay.json() == accepted.json()
@@ -60,7 +60,7 @@ def test_hundred_operation_batch_commits_one_revision_and_replays_once(client: T
 def test_invalid_operation_rolls_back_every_change_with_structured_error(client: TestClient) -> None:
     ops = _planning_users(client)
     suffix = uuid4().hex[:8]
-    project_id, task_id = _project_and_task(client, ops, suffix)
+    project_id, task_id, _ = _project_and_task(client, ops, suffix)
     before = _schedule(client, ops, project_id)
     before_events = _batch_event_count(project_id)
     revision = before.json()["project"]["revision"]
@@ -102,7 +102,7 @@ def test_invalid_operation_rolls_back_every_change_with_structured_error(client:
 def test_batch_rejects_unsupported_kind_without_mutating(client: TestClient) -> None:
     ops = _planning_users(client)
     suffix = uuid4().hex[:8]
-    project_id, _ = _project_and_task(client, ops, suffix)
+    project_id, _, _ = _project_and_task(client, ops, suffix)
     before = _schedule(client, ops, project_id)
 
     response = command(
@@ -120,6 +120,21 @@ def test_batch_rejects_unsupported_kind_without_mutating(client: TestClient) -> 
     assert response.json()["error"]["code"] == "batch_operation_unsupported"
     assert _schedule(client, ops, project_id).headers["ETag"] == before.headers["ETag"]
 
+    unknown_source = command(
+        client,
+        ops,
+        "BatchPlanningOperations",
+        {
+            "project_id": project_id,
+            "source_command_id": str(uuid4()),
+            "operations": [{"operation_id": "unknown-source", "kind": "update_task", "payload": {"task_id": "unused", "progress": 1}}],
+        },
+        f"planning-batch-unknown-source-{suffix}",
+    )
+    assert unknown_source.status_code == 400, unknown_source.text
+    assert unknown_source.json()["error"]["code"] == "batch_source_command_invalid"
+    assert _schedule(client, ops, project_id).headers["ETag"] == before.headers["ETag"]
+
 
 def _planning_users(client: TestClient) -> dict[str, str]:
     admin = auth(client, "admin", "admin")
@@ -129,12 +144,12 @@ def _planning_users(client: TestClient) -> dict[str, str]:
     return ops
 
 
-def _project_and_task(client: TestClient, ops: dict[str, str], suffix: str) -> tuple[str, str]:
+def _project_and_task(client: TestClient, ops: dict[str, str], suffix: str) -> tuple[str, str, str]:
     project = command(client, ops, "CreatePlanningProject", {"name": f"Batch {suffix}", "start": "2026-08-03", "end": "2026-08-28"}, f"batch-project-{suffix}")
     project_id = project.json()["result"]["id"]
     task = command(client, ops, "CreatePlanningTask", {"project_id": project_id, "title": "Atomic task", "start": "2026-08-03", "end": "2026-08-05"}, f"batch-task-{suffix}")
     assert task.status_code == 200, task.text
-    return project_id, task.json()["result"]["id"]
+    return project_id, task.json()["result"]["id"], task.json()["command_id"]
 
 
 def _schedule(client: TestClient, headers: dict[str, str], project_id: str):
@@ -151,7 +166,7 @@ def _batch_event_count(project_id: str) -> int:
         )) or 0)
 
 
-def _assert_batch_correlation(command_id: str, project_id: str, operation_count: int) -> None:
+def _assert_batch_correlation(command_id: str, source_command_id: str, project_id: str, operation_count: int) -> None:
     with SessionLocal() as db:
         log = db.get(CommandLog, command_id)
         event = db.scalar(select(EventRecord).where(EventRecord.event_type == "PlanningBatchApplied", EventRecord.object_id == project_id))
@@ -161,4 +176,5 @@ def _assert_batch_correlation(command_id: str, project_id: str, operation_count:
         assert schedule_event is not None
         payload = loads(schedule_event.payload_json)
         assert payload["correlation_id"] == command_id
+        assert payload["source_command_id"] == source_command_id
         assert len(payload["operation_ids"]) == operation_count

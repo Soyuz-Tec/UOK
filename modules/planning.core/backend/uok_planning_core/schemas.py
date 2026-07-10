@@ -17,7 +17,7 @@ class PlanningTaskRequest(BaseModel):
     start: str = Field(..., min_length=10, max_length=32)
     end: str = Field(..., min_length=10, max_length=32)
     task_type: str = Field(default="task", pattern="^(task|summary|milestone)$")
-    status: str = Field(default="planned", max_length=40)
+    status: str = Field(default="planned", pattern="^(planned|in_progress|blocked|complete)$")
     progress: int = Field(default=0, ge=0, le=100)
     parent_task_id: str | None = Field(default=None, max_length=36)
     sort_order: int = Field(default=0, ge=0)
@@ -33,7 +33,7 @@ class PlanningTaskUpdateRequest(BaseModel):
     end: str | None = Field(default=None, min_length=10, max_length=32)
     task_type: str | None = Field(default=None, pattern="^(task|summary|milestone)$")
     parent_task_id: str | None = Field(default=None, max_length=36)
-    status: str | None = Field(default=None, max_length=40)
+    status: str | None = Field(default=None, pattern="^(planned|in_progress|blocked|complete)$")
     progress: int | None = Field(default=None, ge=0, le=100)
     sort_order: int | None = Field(default=None, ge=0)
     cascade: bool | None = Field(default=None)
@@ -95,4 +95,5 @@ class PlanningBatchRequest(BaseModel):
 
     expected_revision: int | None = Field(default=None, ge=1)
     reason: str | None = Field(default=None, max_length=500)
+    source_command_id: str | None = Field(default=None, min_length=36, max_length=36)
     operations: list[PlanningBatchOperation] = Field(..., min_length=1, max_length=500)

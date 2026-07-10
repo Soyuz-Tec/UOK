@@ -68,6 +68,7 @@ def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object
         assert header["schema"]["pattern"] == r"^[A-Za-z0-9][A-Za-z0-9._:-]*$"
         assert_conflict_response(operation)
         assert_domain_response(operation, "403")
+        assert_domain_response(operation, "422")
         assert operation["responses"]["200"]["headers"]["ETag"]["schema"]["type"] == "string"
         if (method, path) in CONDITIONAL_MUTATIONS:
             if_match = next(
@@ -87,6 +88,8 @@ def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object
             assert request["$ref"] == "#/components/schemas/PlanningBatchRequest"
             batch_schema = schema["components"]["schemas"]["PlanningBatchRequest"]
             assert batch_schema["properties"]["operations"]["maxItems"] == 500
+            source_command = next(item for item in batch_schema["properties"]["source_command_id"]["anyOf"] if item.get("type") == "string")
+            assert source_command["minLength"] == source_command["maxLength"] == 36
 
 
 def assert_command_contract(schema: dict[str, object]) -> None:
@@ -96,6 +99,7 @@ def assert_command_contract(schema: dict[str, object]) -> None:
     assert_conflict_response(command_operation)
     assert_precondition_responses(command_operation)
     assert_domain_response(command_operation, "403")
+    assert_domain_response(command_operation, "422")
     if_match = next(parameter for parameter in command_operation["parameters"] if parameter["name"] == "If-Match")
     assert if_match["required"] is False
     assert "idempotency_key" in command_schema["required"]

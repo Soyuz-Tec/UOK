@@ -4,11 +4,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import APP_VERSION
 from .api.auth import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth
+from .api.errors import uok_request_validation_error_handler
 from .api.auth import router as auth_router
 from .api.commands import router as commands_router
 from .api.modules import router as modules_router
@@ -55,6 +57,9 @@ if STATIC_DIR.exists():
 @app.exception_handler(PermissionError)
 def permission_error_handler(_: Request, exc: PermissionError) -> JSONResponse:
     return JSONResponse(status_code=403, content={"detail": f"Permission denied: {exc}"})
+
+
+app.add_exception_handler(RequestValidationError, uok_request_validation_error_handler)
 
 
 @app.get("/")

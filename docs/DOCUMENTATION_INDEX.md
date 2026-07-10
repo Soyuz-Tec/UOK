@@ -8,7 +8,7 @@ This index explains which Markdown artifact owns each kind of UOK knowledge. It 
 
 The architecture entry point remains `docs/ARCHITECTURE.md`. This index is the navigation layer for policies, decisions, module plans, research records, and verification evidence.
 
-Planning stabilization is currently in Gate A under `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`; evidence maturity and closure status are tracked in `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`.
+Planning Gate A local/runtime closure is verified under `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`; evidence maturity, verification results, and the boundary to hosted CI/review and later production hardening are tracked in `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`.
 
 ## Reading Order For New Work
 

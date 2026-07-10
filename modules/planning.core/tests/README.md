@@ -11,8 +11,9 @@ python .\modules\planning.core\tests\runtime\verify_planning_cpm.py --base-url h
 
 Planning behavior tests and candidate verifier scenarios live in this module-owned test directory.
 
-Canonical CPM reference schedules, injected-invalid independent-validation
-fixtures, and API target/order contracts can be run with:
+Canonical CPM and resource-capacity reference schedules, injected-invalid
+independent-validation fixtures, status lifecycle, safe history, and API
+target/order contracts can be run with:
 
 ```powershell
 python -m pytest .\modules\planning.core\tests\test_canonical_cpm.py .\modules\planning.core\tests\test_cpm_validation.py .\modules\planning.core\tests\test_planning_cpm_contract.py -q
@@ -21,4 +22,14 @@ python -m pytest .\modules\planning.core\tests\test_planning_complete_baselines.
 python -m pytest .\modules\planning.core\tests\test_planning_capabilities.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_database_invariants.py .\modules\planning.core\tests\test_planning_audit_correlation.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_structured_errors.py .\modules\planning.core\tests\test_planning_idempotency_contract.py -q
+python -m pytest .\modules\planning.core\tests\test_resource_capacity_validation.py .\modules\planning.core\tests\test_planning_status_policy.py -q
+npm --prefix web test -- --run src/features/planning/planningHistoryExecution.test.ts src/features/planning/usePlanningWorkspaceMutations.test.tsx src/shared/forms/InlineTextEdit.test.tsx
+npm --prefix web run test:ui-proof
 ```
+
+The candidate verifier is split into one orchestration script plus module-owned
+HTTP and contract helpers so each file stays within the source-size policy:
+
+- `verify/UokCandidatePlanning.ps1`
+- `verify/UokCandidatePlanningHttp.ps1`
+- `verify/UokCandidatePlanningContracts.ps1`

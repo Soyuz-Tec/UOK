@@ -47,6 +47,13 @@ def main() -> None:
         "target_finish": "2026-08-05",
         "target_variance_days": 2,
         "independent_validation": {"ok": True, "violations": []},
+        "resource_capacity": {
+            "engine_version": "uok-resource-capacity-1",
+            "default_capacity_percent": 100,
+            "load_points": [],
+            "overallocated_count": 0,
+            "independent_validation": {"ok": True, "violations": []},
+        },
     }
     if calculation != expected:
         raise AssertionError(f"unexpected CPM calculation: {calculation}")

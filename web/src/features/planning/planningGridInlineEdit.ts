@@ -1,4 +1,4 @@
-import type { PlanningTask } from "./types";
+import type { PlanningTask, PlanningTaskStatus } from "./types";
 import type { PlanningTaskUpdateRequest } from "./planningContracts";
 
 const editableColumns = new Set(["task", "start", "end", "progress", "status"]);
@@ -8,7 +8,7 @@ export function planningGridCellEditPayload(columnId: string, value: string): Pl
   if (columnId === "task") return { title: next };
   if (columnId === "start") return { start: next };
   if (columnId === "end") return { end: next };
-  if (columnId === "status") return { status: next };
+  if (columnId === "status") return { status: next as PlanningTaskStatus };
   if (columnId === "progress") return { progress: Number(next) };
   return {};
 }
@@ -22,6 +22,7 @@ export function planningGridCellEditValidation(columnId: string, value: string) 
     const progress = Number(next);
     if (!Number.isInteger(progress) || progress < 0 || progress > 100) return "Use 0 to 100.";
   }
+  if (columnId === "status" && !["planned", "in_progress", "blocked", "complete"].includes(next)) return "Use planned, in_progress, blocked, or complete.";
   return "";
 }
 
