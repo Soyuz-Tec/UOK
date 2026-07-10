@@ -190,6 +190,7 @@ def _command_project_id(db: Session, actor: Actor, command_type: str, payload: d
         "CreatePlanningBaseline",
         "CreatePlanningResource",
         "LevelPlanningResources",
+        "BatchPlanningOperations",
     }
     task_commands = {"UpdatePlanningTask", "DeletePlanningTask", "AssignPlanningResource"}
     dependency_commands = {"UpdatePlanningDependency", "RemovePlanningDependency"}
@@ -256,6 +257,9 @@ def _current_result(result: dict[str, Any], schedule: dict[str, Any], etag: str)
         task_id = str(result["task"].get("id") or "")
         current["task"] = tasks.get(task_id, result["task"])
         current["validation"] = schedule["validation"]
+    elif isinstance(result.get("schedule"), dict):
+        current = dict(result)
+        current["schedule"] = schedule
     elif str(result.get("id") or "") in tasks:
         current = dict(tasks[str(result["id"])])
     elif str(result.get("id") or "") == str(schedule["project"]["id"]):

@@ -2,6 +2,7 @@ import type { PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
 import type { PlanningMutationIntent } from "./planningConcurrencyState";
 import {
   addBaselineIntent,
+  batchTaskUpdatesIntent,
   addDependencyIntent,
   addResourceIntent,
   addTaskIntent,
@@ -21,12 +22,10 @@ export function planningWorkspaceActions({
   token,
   projectId,
   mutate,
-  setStatus,
 }: {
   token: string;
   projectId: string;
   mutate: (intent: PlanningMutationIntent) => Promise<void>;
-  setStatus: (status: unknown) => void;
 }) {
   const actions = {
     rescheduleTask: (taskId: string, start: string, end: string, cascade = true) => mutate(rescheduleTaskIntent(token, taskId, start, end, cascade)),
@@ -41,9 +40,7 @@ export function planningWorkspaceActions({
     addResource: (payload: Record<string, unknown>) => mutate(addResourceIntent(token, projectId, payload)),
     assignResource: (payload: Record<string, unknown>) => mutate(assignResourceIntent(token, payload)),
     levelResources: () => mutate(levelResourcesIntent(token, projectId)),
-    saveTaskBatch: async (updates: PlanningBulkTaskUpdate[]) => {
-      setStatus({ status: "unavailable", action: "bulk_task_update", tasks: updates.length, message: "Bulk edits are disabled until the atomic Planning batch endpoint is available." });
-    },
+    saveTaskBatch: (updates: PlanningBulkTaskUpdate[]) => mutate(batchTaskUpdatesIntent(token, projectId, updates)),
     runTaskMenuAction: async (action: PlanningTaskMenuAction, task: PlanningTask) => {
       const mutation = planningTaskMenuMutation(action, task);
       if (!mutation) return;

@@ -39,6 +39,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - drag-to-reschedule path through server validation
 - command-bus writes and idempotency
 - project-root optimistic concurrency with additive revisions/task versions, canonical strong schedule ETags, exact `If-Match`, and explicit `428`/`412` recovery
+- project-scoped atomic task-update batches with ordered operations, one final schedule validation, one revision/ETag, correlated events, and all-or-nothing rollback
 - planning audit events
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier
 - Playwright UI proof for Gantt rendering, editor panels, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness
@@ -87,7 +88,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 ## Deferred Work
 
-- project-scoped atomic batch mutation; until it lands, bulk edits and multi-step history replay fail closed rather than partially committing independent conditional writes
+- expand the atomic batch operation registry beyond task updates; unsupported destructive/dependency/calendar/assignment history kinds remain fail closed
 - richer resource capacity calendars
 - deeper write integration that can publish selected Planning tasks or milestones to `calendar.core` events after user approval
 - multi-baseline comparison and richer baseline history controls

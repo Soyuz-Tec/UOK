@@ -4,6 +4,44 @@ COMMAND_IF_MATCH_CONTEXT_KEY = "_uok_if_match"
 COMMAND_ETAG_RESULT_KEY = "_uok_response_etag"
 
 
+class CommandDomainError(ValueError):
+    """Carries a stable, transport-neutral command validation contract."""
+
+    def __init__(
+        self,
+        *,
+        code: str,
+        message: str,
+        status_code: int = 400,
+        field: str | None = None,
+        object_ids: list[str] | None = None,
+        repair: str,
+        current_revision: int | None = None,
+        correlation_id: str | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.status_code = status_code
+        self.field = field
+        self.object_ids = object_ids or []
+        self.repair = repair
+        self.current_revision = current_revision
+        self.correlation_id = correlation_id
+
+    def response_body(self) -> dict[str, object]:
+        return {
+            "error": {
+                "code": self.code,
+                "message": str(self),
+                "field": self.field,
+                "object_ids": self.object_ids,
+                "repair": self.repair,
+                "current_revision": self.current_revision,
+                "correlation_id": self.correlation_id,
+            }
+        }
+
+
 class CommandPreconditionError(ValueError):
     """Carries an HTTP-independent optimistic-concurrency recovery contract."""
 
@@ -42,4 +80,4 @@ class CommandPreconditionError(ValueError):
         }
 
 
-__all__ = ["COMMAND_ETAG_RESULT_KEY", "COMMAND_IF_MATCH_CONTEXT_KEY", "CommandPreconditionError"]
+__all__ = ["COMMAND_ETAG_RESULT_KEY", "COMMAND_IF_MATCH_CONTEXT_KEY", "CommandDomainError", "CommandPreconditionError"]

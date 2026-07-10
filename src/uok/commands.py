@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from .command_context import COMMAND_ETAG_RESULT_KEY, COMMAND_IF_MATCH_CONTEXT_KEY, CommandPreconditionError
+from .command_context import COMMAND_ETAG_RESULT_KEY, COMMAND_IF_MATCH_CONTEXT_KEY, CommandDomainError, CommandPreconditionError
 from .module_commands import command_permissions, load_module_command_handlers
 from .module_ops import ensure_command_module_operational
 from .models import CommandLog
@@ -46,9 +46,10 @@ def _log_denied_command(db: Session, actor: Actor, command_type: str, key: str, 
     db.commit()
 
 
-def _log_validation_error(db: Session, actor: Actor, command_type: str, key: str, payload: dict[str, Any], exc: ValueError) -> None:
+def _log_validation_error(db: Session, actor: Actor, command_type: str, key: str, payload: dict[str, Any], exc: ValueError, command_id: str | None = None) -> None:
     db.rollback()
     failed = CommandLog(
+        **({"id": command_id} if command_id else {}),
         organization_id=actor.organization_id,
         command_type=command_type,
         idempotency_key=f"{key}:validation:{uuid4()}",
@@ -119,7 +120,7 @@ def execute_command(
         db.commit()
         return {"idempotent": False, "command_id": log.id, "status": "succeeded", "result": result}
     except ValueError as exc:
-        _log_validation_error(db, actor, command_type, key, payload, exc)
+        _log_validation_error(db, actor, command_type, key, payload, exc, log.id)
         raise
 
 
@@ -128,6 +129,7 @@ __all__ = [
     "COMMAND_IF_MATCH_CONTEXT_KEY",
     "COMMAND_PERMISSIONS",
     "CommandPreconditionError",
+    "CommandDomainError",
     "IdempotencyConflictError",
     "MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH",
     "MAX_IDEMPOTENCY_KEY_LENGTH",

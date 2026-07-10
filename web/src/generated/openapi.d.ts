@@ -900,6 +900,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/projects/{project_id}/mutations:batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Batch Mutations */
+        post: operations["batch_mutations_api_planning_projects__project_id__mutations_batch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/projects/{project_id}/resources": {
         parameters: {
             query?: never;
@@ -1111,6 +1128,27 @@ export interface components {
              * @default organization
              */
             visibility_scope: string;
+        };
+        /** CommandDomainErrorDetail */
+        CommandDomainErrorDetail: {
+            /** Code */
+            code: string;
+            /** Correlation Id */
+            correlation_id?: string | null;
+            /** Current Revision */
+            current_revision?: number | null;
+            /** Field */
+            field?: string | null;
+            /** Message */
+            message: string;
+            /** Object Ids */
+            object_ids: string[];
+            /** Repair */
+            repair: string;
+        };
+        /** CommandDomainErrorResponse */
+        CommandDomainErrorResponse: {
+            error: components["schemas"]["CommandDomainErrorDetail"];
         };
         /** CommandPreconditionDetail */
         CommandPreconditionDetail: {
@@ -1453,6 +1491,26 @@ export interface components {
              * @default Baseline
              */
             name: string;
+        };
+        /** PlanningBatchOperation */
+        PlanningBatchOperation: {
+            /** Kind */
+            kind: string;
+            /** Operation Id */
+            operation_id: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+        };
+        /** PlanningBatchRequest */
+        PlanningBatchRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Operations */
+            operations: components["schemas"]["PlanningBatchOperation"][];
+            /** Reason */
+            reason?: string | null;
         };
         /** PlanningCalendarRequest */
         PlanningCalendarRequest: {
@@ -4151,6 +4209,84 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    batch_mutations_api_planning_projects__project_id__mutations_batch_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description A batch operation or the final proposed schedule is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */

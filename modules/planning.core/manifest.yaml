@@ -26,6 +26,7 @@ commands:
   - CreatePlanningResource
   - AssignPlanningResource
   - LevelPlanningResources
+  - BatchPlanningOperations
 events:
   - PlanningProjectCreated
   - PlanningTaskCreated
@@ -39,6 +40,7 @@ events:
   - PlanningResourceCreated
   - PlanningResourceAssigned
   - PlanningResourcesLeveled
+  - PlanningBatchApplied
 dependencies:
   - calendar.core
 backend_path: modules/planning.core/backend

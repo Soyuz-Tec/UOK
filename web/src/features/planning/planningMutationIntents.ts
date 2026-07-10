@@ -1,5 +1,6 @@
 import {
   assignPlanningResource,
+  batchPlanningTaskUpdates,
   createPlanningBaseline,
   createPlanningDependency,
   createPlanningResource,
@@ -15,6 +16,7 @@ import type { PlanningMutationIntent } from "./planningConcurrencyState";
 import { planningHistoryDiff, planningLevelHistory } from "./planningHistory";
 import { withCascade } from "./planningWorkspaceHelpers";
 import type { PlanningSchedule } from "./types";
+import type { PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
 
 export function rescheduleTaskIntent(token: string, taskId: string, start: string, end: string, cascade: boolean) {
   return intent("reschedule", "Reschedule task", { taskId, start, end, cascade }, (etag) => updatePlanningTask(token, taskId, { start, end, cascade }, { ifMatch: etag }));
@@ -62,6 +64,15 @@ export function assignResourceIntent(token: string, payload: Record<string, unkn
 
 export function levelResourcesIntent(token: string, projectId: string) {
   return intent("level", "Level resources", { action: "resources_leveled" }, (etag) => planningCommand<PlanningSchedule>(token, "LevelPlanningResources", { project_id: projectId }, "planning-level", { ifMatch: etag }), planningLevelHistory);
+}
+
+export function batchTaskUpdatesIntent(token: string, projectId: string, updates: PlanningBulkTaskUpdate[]) {
+  return intent(
+    "bulk-task",
+    `Update ${updates.length} tasks`,
+    { action: "bulk_task_update", tasks: updates.length },
+    (etag) => batchPlanningTaskUpdates(token, projectId, updates, { ifMatch: etag }),
+  );
 }
 
 export function planningIntent(

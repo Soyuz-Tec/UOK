@@ -1,5 +1,6 @@
 import {
   assignPlanningResource,
+  batchPlanningTaskUpdates,
   createPlanningDependency,
   createPlanningTask,
   deletePlanningTask,
@@ -23,6 +24,24 @@ export function executePlanningHistoryStep(token: string, schedule: PlanningSche
   if (step.kind === "set-calendar") return setPlanningCalendar(token, step.projectId, step.payload, { ifMatch: etag });
   if (step.kind === "assign-resource") return assignPlanningResource(token, step.payload, { ifMatch: etag });
   return planningCommand<PlanningSchedule>(token, "LevelPlanningResources", { project_id: step.projectId }, "planning-level", { ifMatch: etag });
+}
+
+export function planningHistoryBatchSupported(steps: PlanningHistoryStep[]) {
+  return steps.length >= 1 && steps.length <= 500 && steps.every((step) => step.kind === "update-task");
+}
+
+export function executePlanningHistoryBatch(
+  token: string,
+  schedule: PlanningSchedule,
+  steps: PlanningHistoryStep[],
+  etag: PlanningStrongEtag,
+) {
+  if (!planningHistoryBatchSupported(steps)) throw new Error("These history operations are not supported by the atomic task batch endpoint.");
+  const updates = steps.map((step) => {
+    if (step.kind !== "update-task") throw new Error("History batch contains an unsupported operation.");
+    return { taskId: step.taskId, payload: step.payload };
+  });
+  return batchPlanningTaskUpdates(token, schedule.project.id, updates, { ifMatch: etag });
 }
 
 function resolvedTaskId(schedule: PlanningSchedule | null, taskId: string | undefined, match: Record<string, unknown>) {

@@ -25,6 +25,19 @@ export type PlanningScheduleSnapshot = {
   etag: PlanningStrongEtag;
 };
 
+export type PlanningBatchTaskUpdate = {
+  taskId: string;
+  payload: Record<string, unknown>;
+};
+
+export type PlanningBatchResult = {
+  correlation_id: string;
+  previous_revision: number;
+  revision: number;
+  operation_results: Array<{ operation_id: string; status: "applied"; object_ids: string[] }>;
+  schedule: PlanningSchedule;
+};
+
 export type PlanningPreconditionDetail = {
   code: string;
   message: string;
@@ -131,6 +144,27 @@ export function createPlanningResource(token: string, projectId: string, payload
 
 export function assignPlanningResource(token: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
   return planningMutationJson<unknown>(token, "/api/planning/assignments", { method: "POST", body: JSON.stringify(payload) }, "planning-assignment-create", mutation);
+}
+
+export function batchPlanningTaskUpdates(
+  token: string,
+  projectId: string,
+  updates: PlanningBatchTaskUpdate[],
+  mutation: PlanningMutationOptions,
+) {
+  const idempotencyKey = mutation.idempotencyKey || planningMutationKey("planning-task-batch");
+  const operations = updates.map((update, index) => ({
+    operation_id: `${index + 1}:${idempotencyKey.slice(-70)}`,
+    kind: "update_task",
+    payload: { task_id: update.taskId, ...update.payload },
+  }));
+  return planningMutationJson<PlanningBatchResult>(
+    token,
+    `/api/planning/projects/${projectId}/mutations:batch`,
+    { method: "POST", body: JSON.stringify({ operations }) },
+    "planning-task-batch",
+    { ...mutation, idempotencyKey },
+  );
 }
 
 async function planningResponse<T>(token: string, path: string, options: RequestInit = {}) {

@@ -10,6 +10,7 @@ from .read_model import list_projects
 from .concurrency import read_locked_schedule_snapshot
 from .schemas import (
     PlanningAssignmentRequest,
+    PlanningBatchRequest,
     PlanningBaselineRequest,
     PlanningCalendarRequest,
     PlanningDependencyRequest,
@@ -21,13 +22,14 @@ from .schemas import (
 )
 from uok.commands import (
     COMMAND_ETAG_RESULT_KEY,
+    CommandDomainError,
     CommandPreconditionError,
     IdempotencyConflictError,
     MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
     MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
     execute_command,
 )
-from uok.api.schemas import CommandPreconditionResponse, IdempotencyConflictResponse
+from uok.api.schemas import CommandDomainErrorResponse, CommandPreconditionResponse, IdempotencyConflictResponse
 from uok.db import get_db
 from uok.module_ops import ensure_module_operational
 from uok.security import Actor, current_actor, require_permission
@@ -63,6 +65,13 @@ PLANNING_MUTATION_RESPONSES = {
     428: {
         "model": CommandPreconditionResponse,
         "description": "A current strong Planning ETag is required.",
+    },
+}
+PLANNING_BATCH_RESPONSES = {
+    **PLANNING_MUTATION_RESPONSES,
+    400: {
+        "model": CommandDomainErrorResponse,
+        "description": "A batch operation or the final proposed schedule is invalid.",
     },
 }
 PlanningIdempotencyKey = Annotated[
@@ -175,6 +184,13 @@ def assign_resource(req: PlanningAssignmentRequest, response: Response, idempote
     return run_planning_command(db, actor, "AssignPlanningResource", req.model_dump(exclude_none=True), idempotency_key, response, if_match)
 
 
+@router.post("/projects/{project_id}/mutations:batch", responses=PLANNING_BATCH_RESPONSES, response_model=None)
+def batch_mutations(project_id: str, req: PlanningBatchRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
+    payload = req.model_dump(exclude_none=True)
+    payload["project_id"] = project_id
+    return run_planning_command(db, actor, "BatchPlanningOperations", payload, idempotency_key, response, if_match)
+
+
 def require_planning_read(db: Session, actor: Actor) -> None:
     try:
         require_permission(actor, "planning.read")
@@ -213,5 +229,7 @@ def run_planning_command(
             content=exc.response_body(),
             headers={"ETag": exc.current_etag, "Cache-Control": "private, no-store", "Vary": "Authorization"},
         )
+    except CommandDomainError as exc:
+        return JSONResponse(status_code=exc.status_code, content=exc.response_body())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc

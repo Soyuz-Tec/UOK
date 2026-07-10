@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PlanningProjectRequest(BaseModel):
@@ -78,3 +80,19 @@ class PlanningAssignmentRequest(BaseModel):
     task_id: str = Field(..., max_length=36)
     resource_id: str = Field(..., max_length=36)
     allocation_percent: int = Field(default=100, ge=1, le=300)
+
+
+class PlanningBatchOperation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(..., min_length=1, max_length=80)
+    kind: str = Field(..., min_length=1, max_length=80, pattern="^[a-z_]+$")
+    payload: dict[str, Any]
+
+
+class PlanningBatchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    reason: str | None = Field(default=None, max_length=500)
+    operations: list[PlanningBatchOperation] = Field(..., min_length=1, max_length=500)

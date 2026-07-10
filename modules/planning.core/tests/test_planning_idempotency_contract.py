@@ -19,7 +19,9 @@ PLANNING_MUTATIONS = {
     ("post", "/api/planning/projects/{project_id}/baselines"),
     ("post", "/api/planning/projects/{project_id}/resources"),
     ("post", "/api/planning/assignments"),
+    ("post", "/api/planning/projects/{project_id}/mutations:batch"),
 }
+BATCH_MUTATION = ("post", "/api/planning/projects/{project_id}/mutations:batch")
 CONDITIONAL_MUTATIONS = PLANNING_MUTATIONS - {("post", "/api/planning/projects")}
 READ_ONLY_POST_OPERATIONS: set[tuple[str, str]] = set()
 
@@ -39,6 +41,7 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
     for schema_name, schema in (("runtime", runtime_schema), ("generated", generated_schema)):
         assert_conflict_schema(schema)
         assert_precondition_schema(schema)
+        assert_domain_error_schema(schema)
         assert_planning_mutation_contract(schema_name, schema)
         assert_command_contract(schema)
         assert_schedule_read_contract(schema)
@@ -75,7 +78,13 @@ def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object
             )
             assert if_match is not None, f"{schema_name} {method.upper()} {path} omits If-Match"
             assert if_match["required"] is False
-            assert_precondition_responses(operation)
+            assert_precondition_responses(operation, include_bad_request=(method, path) != BATCH_MUTATION)
+        if (method, path) == BATCH_MUTATION:
+            assert operation["responses"]["400"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/CommandDomainErrorResponse"
+            request = operation["requestBody"]["content"]["application/json"]["schema"]
+            assert request["$ref"] == "#/components/schemas/PlanningBatchRequest"
+            batch_schema = schema["components"]["schemas"]["PlanningBatchRequest"]
+            assert batch_schema["properties"]["operations"]["maxItems"] == 500
 
 
 def assert_command_contract(schema: dict[str, object]) -> None:
@@ -108,10 +117,11 @@ def assert_conflict_schema(schema: dict[str, object]) -> None:
     assert detail["properties"]["error"]["type"] == "string"
 
 
-def assert_precondition_responses(operation: dict[str, object]) -> None:
-    response = operation["responses"]["400"]
-    schema = response["content"]["application/json"]["schema"]
-    assert schema["$ref"] == "#/components/schemas/CommandPreconditionResponse"
+def assert_precondition_responses(operation: dict[str, object], include_bad_request: bool = True) -> None:
+    if include_bad_request:
+        response = operation["responses"]["400"]
+        schema = response["content"]["application/json"]["schema"]
+        assert schema["$ref"] == "#/components/schemas/CommandPreconditionResponse"
     for status in ("412", "428"):
         response = operation["responses"][status]
         schema = response["content"]["application/json"]["schema"]
@@ -133,6 +143,15 @@ def assert_precondition_schema(schema: dict[str, object]) -> None:
         "object_ids",
         "reload_url",
     }
+
+
+def assert_domain_error_schema(schema: dict[str, object]) -> None:
+    components = schema["components"]["schemas"]
+    response = components["CommandDomainErrorResponse"]
+    detail = components["CommandDomainErrorDetail"]
+    assert response["required"] == ["error"]
+    assert response["properties"]["error"]["$ref"] == "#/components/schemas/CommandDomainErrorDetail"
+    assert set(detail["required"]) == {"code", "message", "object_ids", "repair"}
 
 
 def assert_schedule_read_contract(schema: dict[str, object]) -> None:

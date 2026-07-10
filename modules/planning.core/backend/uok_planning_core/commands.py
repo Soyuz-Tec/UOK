@@ -6,6 +6,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_level_resources, cmd_set_calendar
+from .batch import cmd_batch_operations
 from .concurrency import guarded_planning_command
 from .models import (
     PlanningAssignment,
@@ -28,7 +29,7 @@ from .scheduler import (
     task_or_error,
     validate_schedule,
 )
-from .schedule_math import working_duration
+from .task_mutations import apply_task_update, assert_parent_valid, planning_task_type, recalculate_task_duration
 from .task_constraints import set_task_planning_attrs
 from uok.module_events import emit_module_event
 from uok.security import Actor
@@ -55,7 +56,7 @@ def cmd_create_task(db: Session, actor: Actor, payload: dict[str, Any], command_
     project = project_or_error(db, actor, clean_text(payload.get("project_id"), "project_id", 36))
     calendar = project_calendar(db, actor, project.id)
     task = _task_from_payload(actor, project.id, payload, calendar)
-    _assert_parent_valid(db, actor, project.id, task.parent_task_id)
+    assert_parent_valid(db, actor, project.id, task.parent_task_id)
     db.add(task)
     project.updated_at = utcnow()
     db.flush()
@@ -69,30 +70,7 @@ def cmd_create_task(db: Session, actor: Actor, payload: dict[str, Any], command_
 def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     task = task_or_error(db, actor, clean_text(payload.get("task_id"), "task_id", 36))
     project = project_or_error(db, actor, task.project_id)
-    if "title" in payload:
-        task.title = clean_text(payload.get("title"), "title", 180)
-    if "task_type" in payload:
-        task.task_type = _task_type(payload.get("task_type"))
-    if "parent_task_id" in payload:
-        parent_id = str(payload["parent_task_id"]) if payload.get("parent_task_id") else None
-        _assert_parent_valid(db, actor, project.id, parent_id, task.id)
-        task.parent_task_id = parent_id
-    if "start" in payload:
-        task.start_at = parse_planning_date(payload.get("start"), "start")
-    if "end" in payload:
-        task.end_at = parse_planning_date(payload.get("end"), "end")
-    if task.end_at.date() < task.start_at.date():
-        raise ValueError("task end must be on or after start")
-    if "status" in payload:
-        task.status = clean_text(payload.get("status"), "status", 40)
-    if "progress" in payload:
-        task.progress = bounded_int(payload.get("progress"), "progress", 0, 100)
-    if "sort_order" in payload:
-        task.sort_order = bounded_int(payload.get("sort_order"), "sort_order", 0, 100000)
-    set_task_planning_attrs(task, payload)
-    _recalculate_duration(task, project_calendar(db, actor, project.id))
-    task.updated_at = utcnow()
-    project.updated_at = task.updated_at
+    apply_task_update(db, actor, project, task, payload)
     tasks = project_tasks(db, actor, project.id)
     dependencies = project_dependencies(db, actor, project.id)
     assert_task_dependency_position(task, tasks, dependencies, project_calendar(db, actor, project.id))
@@ -188,6 +166,7 @@ def command_handlers() -> dict[str, CommandHandler]:
         "CreatePlanningResource": cmd_create_resource,
         "AssignPlanningResource": cmd_assign_resource,
         "LevelPlanningResources": cmd_level_resources,
+        "BatchPlanningOperations": cmd_batch_operations,
     }
     return {name: guarded_planning_command(name, handler) for name, handler in handlers.items()}
 
@@ -206,7 +185,7 @@ def _task_from_payload(actor: Actor, project_id: str, payload: dict[str, Any], c
         project_id=project_id,
         parent_task_id=str(payload["parent_task_id"]) if payload.get("parent_task_id") else None,
         title=clean_text(payload.get("title"), "title", 180),
-        task_type=_task_type(payload.get("task_type")),
+        task_type=planning_task_type(payload.get("task_type")),
         status=str(payload.get("status") or "planned")[:40],
         start_at=start,
         end_at=end,
@@ -214,7 +193,7 @@ def _task_from_payload(actor: Actor, project_id: str, payload: dict[str, Any], c
         sort_order=bounded_int(payload.get("sort_order", 0), "sort_order", 0, 100000),
         updated_at=utcnow(),
     )
-    _recalculate_duration(task, calendar)
+    recalculate_task_duration(task, calendar)
     set_task_planning_attrs(task, payload)
     return task
 
@@ -225,14 +204,6 @@ def _assert_schedule_valid(db: Session, actor: Actor, project_id: str) -> None:
         raise ValueError("; ".join(violations))
 
 
-def _assert_parent_valid(db: Session, actor: Actor, project_id: str, parent_id: str | None, task_id: str | None = None) -> None:
-    if not parent_id:
-        return
-    parent = task_or_error(db, actor, parent_id, project_id)
-    if parent.id == task_id:
-        raise ValueError("task cannot be its own parent")
-
-
 def _dependency_or_error(db: Session, actor: Actor, dependency_id: str) -> PlanningTaskDependency:
     dep = db.get(PlanningTaskDependency, dependency_id)
     if not dep or dep.organization_id != actor.organization_id:
@@ -240,29 +211,11 @@ def _dependency_or_error(db: Session, actor: Actor, dependency_id: str) -> Plann
     return dep
 
 
-def _task_type(value: Any) -> str:
-    task_type = str(value or "task")
-    if task_type not in {"task", "summary", "milestone"}:
-        raise ValueError("task_type must be task, summary, or milestone")
-    return task_type
-
-
 def _dependency_type(value: Any) -> str:
     dependency_type = str(value or "finish_to_start")
     if dependency_type not in DEPENDENCY_TYPES:
         raise ValueError("dependency_type must be finish_to_start, start_to_start, finish_to_finish, or start_to_finish")
     return dependency_type
-
-
-def _recalculate_duration(task: PlanningTask, calendar: Any | None = None) -> None:
-    if task.task_type == "milestone":
-        task.duration_days = 0
-        task.end_at = task.start_at
-        return
-    if calendar:
-        task.duration_days = max(1, working_duration(task.start_at.date(), task.end_at.date(), calendar))
-    else:
-        task.duration_days = max(1, (task.end_at.date() - task.start_at.date()).days + 1)
 
 
 def _task_subtree_ids(tasks: list[PlanningTask], task_id: str) -> set[str]:

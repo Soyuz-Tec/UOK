@@ -144,9 +144,9 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Fullscreen/focus mode | Expand the planning workspace into a dense viewport overlay with an explicit exit action. | Implemented |
 | Layout mode persistence | Saved views include split/timeline-only layout mode with other Gantt workspace preferences. | Implemented |
 | Review/edit mode | Toolbar toggle prevents schedule mutations by disabling task creation, edit commands, row action menus, drag handles, progress handles, dependency handles, and inspector editor controls. | Implemented |
-| Bulk selection | Select visible rows and prepare completion, status/progress, or date-shift intent. Multi-row submission fails closed until the atomic batch endpoint can commit one revision or roll back all operations. | Partial |
-| Bulk edit | Single-row edits remain server validated. Multi-row writes are blocked until project-scoped atomic batch mutation replaces independent requests; owner, priority, and calendar fields also remain later work. | Partial |
-| Undo/redo | Single-step inverse commands are revision-aware. Multi-step replay fails closed until the atomic batch endpoint prevents partial history application; irreversible cases without safe identity recovery remain excluded. | Partial |
+| Bulk selection | Select visible rows and submit completion, status/progress, or date-shift intents through one atomic task-update batch. | `runtime_proven` |
+| Bulk edit | Project-scoped task updates commit one revision or roll back every operation; owner, priority, and calendar fields remain later work. | `runtime_proven` |
+| Undo/redo | Single-step inverse commands remain revision-aware; bounded multi-task update restores use the atomic endpoint, while destructive or unsupported history kinds fail closed. | Partial |
 | Saved views | Store filters, density, fields, scale, and grouping. | Implemented |
 | Search/filter/group | Search task titles; filter by status, critical, resource, milestone. | Implemented |
 | Export/import | Planning uses the separately deployed global artifact boundary for PDF, PNG, HTML/office documents, Excel, iCal, MS Project, and CSV needs; no planning-specific redeployment is required. | External global boundary |

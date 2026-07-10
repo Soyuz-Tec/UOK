@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from ..api.schemas import CommandPreconditionResponse, CommandRequest, IdempotencyConflictResponse
 from ..commands import (
     COMMAND_ETAG_RESULT_KEY,
+    CommandDomainError,
     CommandPreconditionError,
     IdempotencyConflictError,
     clean_command_text,
@@ -67,5 +68,7 @@ def command(
             content=exc.response_body(),
             headers={"ETag": exc.current_etag, "Cache-Control": "private, no-store", "Vary": "Authorization"},
         )
+    except CommandDomainError as exc:
+        return JSONResponse(status_code=exc.status_code, content=exc.response_body())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc

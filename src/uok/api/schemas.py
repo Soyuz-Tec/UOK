@@ -60,3 +60,17 @@ class CommandPreconditionDetail(BaseModel):
 
 class CommandPreconditionResponse(BaseModel):
     error: CommandPreconditionDetail
+
+
+class CommandDomainErrorDetail(BaseModel):
+    code: str
+    message: str
+    field: str | None = None
+    object_ids: list[str]
+    repair: str
+    current_revision: int | None = None
+    correlation_id: str | None = None
+
+
+class CommandDomainErrorResponse(BaseModel):
+    error: CommandDomainErrorDetail

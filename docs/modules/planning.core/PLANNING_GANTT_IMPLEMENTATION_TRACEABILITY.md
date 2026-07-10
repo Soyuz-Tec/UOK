@@ -31,11 +31,11 @@ requirement.
 | PLA-A-002 | Independent hard-constraint validation | Separate validator recomputes CPM coverage, durations, dependencies, calendars, constraints, manual dates, float, project finish, and target variance and runs on accepted writes/read models | Add resource-capacity result validation and injected resource violation proof | `unit_tested` |
 | PLA-A-003 | Stable Planning idempotency | UOK command gateway supports replay | Every REST write requires a client key; module-command missing-key, replay, changed-payload conflict, and lost-response retry tests pass | `integration_tested` |
 | PLA-A-004 | Optimistic concurrency | Project revision/task version migration, strong actor-visible ETag, project lock, 428/412 recovery contract, and typed client recovery exist | PostgreSQL two-client race, candidate runtime, and accessible reload/reapply proof | `runtime_proven` |
-| PLA-A-005 | Atomic batch mutation | UI currently runs independent updates | All-or-nothing rollback and one-revision success tests | `planned` |
+| PLA-A-005 | Atomic batch mutation | Ordered task updates use one project lock, command/idempotency record, final scheduler/validator pass, revision, ETag, and correlated event; bulk UI and multi-task update history use the endpoint | Expand the operation-kind registry beyond `update_task` while retaining all-or-nothing semantics | `runtime_proven` |
 | PLA-A-006 | Complete immutable baseline | Baseline stores a partial task snapshot | Canonical v2 snapshot, hash verification, immutability, and legacy warning tests | `source_present` |
 | PLA-A-007 | Server capability enforcement | `planning.read/manage` exist | Capability matrix and direct adversarial API tests | `source_present` |
 | PLA-A-008 | Database invariant enforcement | Initial module migration exists | PostgreSQL 18 apply/readback and invalid-row tests | `source_present` |
-| PLA-A-009 | Structured Planning errors | Mixed framework/value errors exist | Stable code, field/object context, repair, revision, and correlation contract | `planned` |
+| PLA-A-009 | Structured Planning errors | Atomic batch failures return stable code, field, object ids, repair, revision, and correlation id through REST and generic command paths | Migrate remaining Planning validation/permission/idempotency errors to the same envelope | `source_present` |
 | PLA-A-010 | Typed Planning client | Planning client contains broad unknown payloads | Generated or explicit typed requests, responses, errors, revisions, and capabilities | `source_present` |
 | PLA-A-011 | End-to-end audit correlation | Commands and Planning events exist | One user intent correlates command, derived changes, event, audit/outbox, revision, and response | `source_present` |
 | PLA-A-012 | Accessible non-drag alternatives | Keyboard and inspector paths exist | Move, resize, progress, dependency, and create flows proven without dragging | `integration_tested` |
@@ -58,6 +58,8 @@ requirement.
 - Independent result validation with injected dependency, calendar, constraint, and manual-date faults: `modules/planning.core/tests/test_cpm_validation.py`
 - API target-variance and UI-row-order independence proof: `modules/planning.core/tests/test_planning_cpm_contract.py`
 - Persistent candidate negative-float/independent-validation proof: `modules/planning.core/tests/runtime/verify_planning_cpm.py`
+- Atomic 100-operation success/replay, injected rollback, one-revision/task-version, structured-error, and correlation proof: `modules/planning.core/tests/test_planning_atomic_batch.py`
+- Typed bulk and bounded multi-task history client proof: `web/src/features/planning/planningApi.test.ts`, `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`, and `web/src/features/planning/planningHistoryExecution.test.ts`
 - Generated REST contract: `web/src/generated/openapi.json` and `web/src/generated/openapi.d.ts`
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
@@ -91,11 +93,24 @@ wildcards, lists, and malformed tags return `400`. Idempotent replay is checked
 before first-execution precondition validation so a lost successful response can
 still replay with its original tag.
 
-Bulk edit and multi-step undo/redo fail closed until the project-scoped atomic
-batch slice is available. They must not sequence or parallelize independent
-conditional writes and risk a partial schedule. The project lock serializes
-Planning mutations, but `calendar.core` availability remains read-only advisory
-context and is not locked by a Planning transaction.
+Bulk task edits and multi-task update history now use one project-scoped atomic
+batch. The first batch registry intentionally supports `update_task` only;
+unsupported destructive, dependency, calendar, assignment, link, and gate
+history kinds still fail closed rather than falling back to independent writes.
+The project lock serializes Planning mutations, but `calendar.core`
+availability remains read-only advisory context and is not locked by a Planning
+transaction.
+
+## Current atomic batch boundary
+
+`POST /api/planning/projects/{project_id}/mutations:batch` accepts 1 to 500
+ordered operations, one stable idempotency key, and the current strong ETag.
+The command applies every task update in one transaction, runs schedule
+propagation and independent validation once over the final proposed state,
+increments the project revision once, increments each materially changed task
+version once, and emits one `PlanningBatchApplied` event plus one module-owned
+schedule event carrying the command correlation id. Any operation or final
+schedule failure rolls the transaction back and returns a structured error.
 
 ## Required reference schedule cases
 

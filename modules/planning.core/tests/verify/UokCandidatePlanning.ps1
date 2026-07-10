@@ -22,6 +22,19 @@ function Invoke-UokPlanningCommand {
     return Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $conditionalHeaders -Body $Body
 }
 
+function Invoke-UokPlanningBatch {
+    param(
+        [Parameter(Mandatory = $true)][string]$ProjectId,
+        [Parameter(Mandatory = $true)][hashtable]$Headers,
+        [Parameter(Mandatory = $true)][hashtable]$Body
+    )
+    $conditionalHeaders = $Headers.Clone()
+    $conditionalHeaders["If-Match"] = Get-UokPlanningEtag -ProjectId $ProjectId -Headers $Headers
+    $conditionalHeaders["Idempotency-Key"] = "uok-planning-batch-$($Body.batch_key)"
+    $payload = @{ operations = $Body.operations; reason = $Body.reason }
+    return Invoke-UokJson -Method "POST" -Path "/api/planning/projects/$ProjectId/mutations:batch" -Headers $conditionalHeaders -Body $payload
+}
+
 function Invoke-UokPlanningCandidateScenario {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Headers,
@@ -108,6 +121,22 @@ function Invoke-UokPlanningCandidateScenario {
     }
     if (-not $first.result.id -or -not $second.result.id) {
         throw "Planning task creation failed: $($first | ConvertTo-Json -Depth 20) $($second | ConvertTo-Json -Depth 20)"
+    }
+
+    $beforeBatch = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $OpsHeaders
+    $batch = Invoke-UokPlanningBatch -ProjectId $projectId -Headers $OpsHeaders -Body @{
+        batch_key = $Stamp
+        reason = "Candidate atomic task update"
+        operations = @(
+            @{ operation_id = "candidate-first"; kind = "update_task"; payload = @{ task_id = $first.result.id; progress = 45 } },
+            @{ operation_id = "candidate-second"; kind = "update_task"; payload = @{ task_id = $second.result.id; progress = 10 } }
+        )
+    }
+    if ($batch.revision -ne ($beforeBatch.project.revision + 1) -or $batch.operation_results.Count -ne 2) {
+        throw "Planning atomic batch evidence is invalid: $($batch | ConvertTo-Json -Depth 20)"
+    }
+    if (($batch.schedule.tasks | Where-Object { $_.id -in @($first.result.id, $second.result.id) -and $_.version -lt 2 }).Count -gt 0) {
+        throw "Planning atomic batch did not version changed tasks: $($batch | ConvertTo-Json -Depth 20)"
     }
 
     $linked = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{

@@ -64,19 +64,26 @@ describe("usePlanningWorkspaceMutations concurrency recovery", () => {
     expect(secondHeaders.get("Idempotency-Key")).not.toBe(firstHeaders.get("Idempotency-Key"));
   });
 
-  it("fails closed instead of issuing independent bulk writes", async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+  it("submits bulk updates as one atomic batch and reloads once", async () => {
+    const batchRequests: RequestInit[] = [];
+    let scheduleReads = 0;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
       const path = String(input);
       if (path === "/api/planning/projects") return jsonResponse([schedule(1).project]);
-      if (path.endsWith("/schedule")) return jsonResponse(schedule(1), 200, etag1);
+      if (path.endsWith("/schedule")) {
+        scheduleReads += 1;
+        return scheduleReads === 1 ? jsonResponse(schedule(1), 200, etag1) : jsonResponse(schedule(2, "Bulk update applied"), 200, etag2);
+      }
+      if (path.endsWith("/mutations:batch")) {
+        batchRequests.push(init);
+        return jsonResponse({ correlation_id: "batch-1", previous_revision: 1, revision: 2, operation_results: [], schedule: schedule(2) }, 200, etag2);
+      }
       throw new Error(`Unexpected Planning test request: ${path}`);
     });
     vi.stubGlobal("fetch", fetchMock);
 
     const { result } = renderHook(usePlanningHarness);
     await waitFor(() => expect(result.current.actions.scheduleEtag).toBe(etag1));
-    const requestCount = fetchMock.mock.calls.length;
-
     await act(async () => {
       await result.current.actions.saveTaskBatch([
         { taskId: "task-1", payload: { progress: 25 } },
@@ -84,9 +91,17 @@ describe("usePlanningWorkspaceMutations concurrency recovery", () => {
       ]);
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(requestCount);
-    expect(result.current.actions.status).toMatchObject({ status: "unavailable", action: "bulk_task_update", tasks: 2 });
-    expect(result.current.actions.bulkUpdatesAvailable).toBe(false);
+    expect(batchRequests).toHaveLength(1);
+    expect(new Headers(batchRequests[0].headers).get("If-Match")).toBe(etag1);
+    const body = JSON.parse(String(batchRequests[0].body));
+    expect(body.operations).toHaveLength(2);
+    expect(body.operations).toEqual([
+      expect.objectContaining({ kind: "update_task", payload: { task_id: "task-1", progress: 25 } }),
+      expect.objectContaining({ kind: "update_task", payload: { task_id: "task-2", progress: 25 } }),
+    ]);
+    expect(result.current.actions.status).toMatchObject({ status: "validated", action: "bulk_task_update", tasks: 2 });
+    expect(result.current.actions.bulkUpdatesAvailable).toBe(true);
+    expect(result.current.schedule?.project.revision).toBe(2);
   });
 });
 

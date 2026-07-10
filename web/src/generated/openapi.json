@@ -112,6 +112,82 @@
         "title": "CalendarWriteRequest",
         "type": "object"
       },
+      "CommandDomainErrorDetail": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "correlation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Id"
+          },
+          "current_revision": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Revision"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Object Ids",
+            "type": "array"
+          },
+          "repair": {
+            "title": "Repair",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "object_ids",
+          "repair"
+        ],
+        "title": "CommandDomainErrorDetail",
+        "type": "object"
+      },
+      "CommandDomainErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/CommandDomainErrorDetail"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "CommandDomainErrorResponse",
+        "type": "object"
+      },
       "CommandPreconditionDetail": {
         "properties": {
           "code": {
@@ -1356,6 +1432,79 @@
           }
         },
         "title": "PlanningBaselineRequest",
+        "type": "object"
+      },
+      "PlanningBatchOperation": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "maxLength": 80,
+            "minLength": 1,
+            "pattern": "^[a-z_]+$",
+            "title": "Kind",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          }
+        },
+        "required": [
+          "operation_id",
+          "kind",
+          "payload"
+        ],
+        "title": "PlanningBatchOperation",
+        "type": "object"
+      },
+      "PlanningBatchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "operations": {
+            "items": {
+              "$ref": "#/components/schemas/PlanningBatchOperation"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Operations",
+            "type": "array"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "operations"
+        ],
+        "title": "PlanningBatchRequest",
         "type": "object"
       },
       "PlanningCalendarRequest": {
@@ -6422,6 +6571,150 @@
           }
         },
         "summary": "Link Tasks",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/mutations:batch": {
+      "post": {
+        "operationId": "batch_mutations_api_planning_projects__project_id__mutations_batch_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "A batch operation or the final proposed schedule is invalid."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Batch Mutations",
         "tags": [
           "planning"
         ]

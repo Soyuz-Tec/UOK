@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  batchPlanningTaskUpdates,
   createPlanningProject,
   loadPlanningSchedule,
   PlanningApiError,
@@ -41,6 +42,27 @@ describe("Planning API concurrency and idempotency", () => {
     expect(headers.get("Authorization")).toBe("Bearer token");
     expect(headers.get("Idempotency-Key")).toBe("planning-task-intent-1");
     expect(headers.get("If-Match")).toBe(etag1);
+  });
+
+  it("sends one ordered task batch with stable operation identities", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ operation_results: [], schedule: {} }, 200, etag2));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await batchPlanningTaskUpdates("token", "project-1", [
+      { taskId: "task-1", payload: { progress: 40 } },
+      { taskId: "task-2", payload: { status: "complete", progress: 100 } },
+    ], { ifMatch: etag1, idempotencyKey: "planning-task-batch-intent-1" });
+
+    const [path, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = new Headers(request.headers);
+    const body = JSON.parse(String(request.body));
+    expect(path).toBe("/api/planning/projects/project-1/mutations:batch");
+    expect(headers.get("If-Match")).toBe(etag1);
+    expect(headers.get("Idempotency-Key")).toBe("planning-task-batch-intent-1");
+    expect(body.operations).toEqual([
+      { operation_id: "1:planning-task-batch-intent-1", kind: "update_task", payload: { task_id: "task-1", progress: 40 } },
+      { operation_id: "2:planning-task-batch-intent-1", kind: "update_task", payload: { task_id: "task-2", status: "complete", progress: 100 } },
+    ]);
   });
 
   it("reuses If-Match and the generated key when a lost response triggers one retry", async () => {

@@ -131,10 +131,11 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
   const dependencyPayloads: unknown[] = [];
   const taskPayloads: unknown[] = [];
   const taskUpdatePayloads: unknown[] = [];
+  const batchPayloads: unknown[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
-  await installMockApi(page, dependencyPayloads, taskPayloads, taskUpdatePayloads);
+  await installMockApi(page, dependencyPayloads, taskPayloads, taskUpdatePayloads, batchPayloads);
 
   for (const viewport of [
     { width: 1440, height: 900 },
@@ -332,17 +333,19 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-owned-progress-handle")).toHaveCount(3);
     await expect(page.locator(".planning-owned-link-handle")).toHaveCount(8);
     if (viewport.width > 980) {
-      const bulkUpdates = taskUpdatePayloads.length;
+      const bulkRequests = batchPayloads.length;
       await page.locator(".planning-selection-toggle input").check();
       await expect(page.getByText("4 selected")).toBeVisible();
-      await expect(page.getByText("Bulk edits require atomic batch support.")).toBeVisible();
+      await expect(page.getByText("Bulk edits require atomic batch support.")).toHaveCount(0);
       await expect(page.getByLabel("Bulk status")).toBeVisible();
       await expect(page.getByLabel("Bulk progress")).toBeVisible();
       await expect(page.getByLabel("Bulk shift days")).toBeVisible();
-      await expect(page.getByRole("button", { name: "Complete selected", exact: true })).toBeDisabled();
-      await expect(page.getByRole("button", { name: "Apply bulk", exact: true })).toBeDisabled();
-      await expect(page.getByRole("button", { name: "Shift dates", exact: true })).toBeDisabled();
-      expect(taskUpdatePayloads).toHaveLength(bulkUpdates);
+      await expect(page.getByRole("button", { name: "Complete selected", exact: true })).toBeEnabled();
+      await expect(page.getByRole("button", { name: "Apply bulk", exact: true })).toBeEnabled();
+      await expect(page.getByRole("button", { name: "Shift dates", exact: true })).toBeEnabled();
+      await page.getByRole("button", { name: "Apply bulk", exact: true }).click();
+      await expect.poll(() => batchPayloads.length).toBe(bulkRequests + 1);
+      expect((batchPayloads.at(-1) as { operations: unknown[] }).operations).toHaveLength(4);
       await page.locator(".planning-selection-toggle input").uncheck();
     }
     await page.getByRole("button", { name: "Task", exact: true }).focus();
@@ -515,7 +518,7 @@ async function openPlanning(page: Page) {
   await expect(page.getByRole("region", { name: "Planning", exact: true })).toBeVisible();
 }
 
-async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPayloads: unknown[], taskUpdatePayloads: unknown[]) {
+async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPayloads: unknown[], taskUpdatePayloads: unknown[], batchPayloads: unknown[]) {
   const planningEtag = `"planning-r1-sha256-${"a".repeat(64)}"`;
   await page.addInitScript(() => {
     window.sessionStorage.setItem("uok_token", "proof-token");
@@ -536,6 +539,14 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
   await page.route(`/api/planning/projects/${sampleProject.id}/tasks`, async (route) => {
     taskPayloads.push(route.request().postDataJSON());
     await route.fulfill({ json: { status: "validated" }, headers: { ETag: planningEtag } });
+  });
+  await page.route(`/api/planning/projects/${sampleProject.id}/mutations:batch`, async (route) => {
+    const payload = route.request().postDataJSON();
+    batchPayloads.push(payload);
+    await route.fulfill({
+      json: { correlation_id: "proof-batch", previous_revision: 1, revision: 2, operation_results: [], schedule: sampleSchedule },
+      headers: { ETag: planningEtag },
+    });
   });
   await page.route("/api/planning/tasks/**", async (route) => {
     taskUpdatePayloads.push(route.request().postDataJSON());

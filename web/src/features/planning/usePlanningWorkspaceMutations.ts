@@ -14,7 +14,7 @@ import {
   type PlanningHistoryEntry,
   type PlanningHistoryState,
 } from "./planningHistory";
-import { executePlanningHistoryStep } from "./planningHistoryExecution";
+import { executePlanningHistoryBatch, executePlanningHistoryStep, planningHistoryBatchSupported } from "./planningHistoryExecution";
 import { planningIntent } from "./planningMutationIntents";
 import { planningWorkspaceActions } from "./planningWorkspaceActions";
 import type { PlanningProject, PlanningSchedule } from "./types";
@@ -51,12 +51,12 @@ export function usePlanningWorkspaceMutations({
   const undoEntry = undoStack.at(-1);
   const redoEntry = redoStack.at(-1);
   const history: PlanningHistoryState = {
-    canUndo: Boolean(undoEntry && undoEntry.undo.length === 1),
-    canRedo: Boolean(redoEntry && redoEntry.redo.length === 1),
+    canUndo: Boolean(undoEntry && planningHistoryBatchSupported(undoEntry.undo)),
+    canRedo: Boolean(redoEntry && planningHistoryBatchSupported(redoEntry.redo)),
     undoLabel: historyLabel(undoEntry, "undo"),
     redoLabel: historyLabel(redoEntry, "redo"),
   };
-  const workspaceActions = planningWorkspaceActions({ token, projectId: selectedProjectId, mutate, setStatus });
+  const workspaceActions = planningWorkspaceActions({ token, projectId: selectedProjectId, mutate });
 
   const reloadSchedule = useCallback(async (projectId: string) => {
     const snapshot = await loadPlanningSchedule(token, projectId);
@@ -93,7 +93,7 @@ export function usePlanningWorkspaceMutations({
 
   return {
     ...workspaceActions,
-    bulkUpdatesAvailable: false,
+    bulkUpdatesAvailable: true,
     busy,
     changeProject,
     createDemoSchedule,
@@ -211,9 +211,13 @@ export function usePlanningWorkspaceMutations({
     const source = direction === "undo" ? undoStack : redoStack;
     const entry = source.at(-1);
     const steps = entry && (direction === "undo" ? entry.undo : entry.redo);
-    if (!entry || !steps || !selectedProjectId || !etagRef.current) return;
-    if (steps.length !== 1) return setStatus({ status: "unavailable", message: "Multi-step history is disabled until the atomic Planning batch endpoint is available." });
-    const historyIntent = planningIntent(direction, `${direction === "undo" ? "Undo" : "Redo"} ${entry.label}`, { action: direction, label: entry.label }, (etag) => executePlanningHistoryStep(token, schedule, steps[0], etag));
+    if (!entry || !steps || !selectedProjectId || !schedule || !etagRef.current) return;
+    if (!planningHistoryBatchSupported(steps)) return setStatus({ status: "unavailable", message: "This history entry contains operations not yet supported by the atomic task batch endpoint." });
+    const historyIntent = planningIntent(direction, `${direction === "undo" ? "Undo" : "Redo"} ${entry.label}`, { action: direction, label: entry.label }, (etag) => (
+      steps.length === 1
+        ? executePlanningHistoryStep(token, schedule, steps[0], etag)
+        : executePlanningHistoryBatch(token, schedule, steps, etag)
+    ));
     setBusy(direction);
     try {
       const response = await historyIntent.run(etagRef.current);
@@ -260,7 +264,7 @@ export function usePlanningWorkspaceMutations({
 function historyLabel(entry: PlanningHistoryEntry | undefined, direction: "undo" | "redo") {
   if (!entry) return "";
   const steps = direction === "undo" ? entry.undo : entry.redo;
-  return steps.length === 1 ? entry.label : `${entry.label} requires atomic batch support`;
+  return planningHistoryBatchSupported(steps) ? entry.label : `${entry.label} has unsupported history operations`;
 }
 
 function errorStatus(error: unknown) {
