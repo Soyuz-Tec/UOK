@@ -95,7 +95,7 @@ Required fields and concepts:
 
 ### Contact Facts
 
-The alpha.3 release exposes typed API fields for email, phone, website, address, birthday, important date, instant message, tags, consent status, allowed use, confidence level, title, and note-backed context.
+The alpha.3 release exposes typed API fields for email, phone, website, address, birthday, important date, instant message, tags, consent status, allowed use, confidence level, title, and note-backed context. Contacts normalizes valid phone numbers to E.164 at the module command boundary while preserving bounded non-normalizable alpha, placeholder, or imported values for review.
 
 For alpha.3, many repeated or optional contact facts may remain in module-owned JSON attributes if the API and UI expose stable typed fields. Future releases should split repeated values into dedicated tables when multiple values, consent history, validation, sync, or dedupe require stronger relational behavior.
 
