@@ -1,13 +1,24 @@
-import { CalendarDays, Flag, Link2, Save, Trash2, UserPlus } from "lucide-react";
+import { CalendarDays, Flag, Link2, Save, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
 import { Pane } from "../../shared/layout";
 import { PlanningAvailabilityPanel } from "./PlanningAvailabilityPanel";
 import { PlanningTaskConstraintFields } from "./PlanningTaskConstraintFields";
-import type { PlanningDependency, PlanningProject, PlanningSchedule, PlanningTask } from "./types";
+import { PlanningResourcePanel } from "./PlanningResourcePanel";
+import type { PlanningDependency, PlanningDependencyType, PlanningProject, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskType } from "./types";
+import type {
+  PlanningAssignmentCreateRequest,
+  PlanningBaselineCreateRequest,
+  PlanningCalendarUpdateRequest,
+  PlanningDependencyCreateRequest,
+  PlanningDependencyUpdateRequest,
+  PlanningResourceCreateRequest,
+  PlanningTaskCreateRequest,
+  PlanningTaskUpdateRequest,
+} from "./planningContracts";
 
-const dependencyTypes = [
+const dependencyTypes: Array<[PlanningDependencyType, string]> = [
   ["finish_to_start", "Finish to start"],
   ["start_to_start", "Start to start"],
   ["finish_to_finish", "Finish to finish"],
@@ -26,16 +37,16 @@ export function PlanningInspector(props: {
   readOnly: boolean;
   onTabChange: (tab: PlanningInspectorTab) => void;
   onProjectChange: (projectId: string) => void;
-  onSaveTask: (taskId: string, payload: Record<string, unknown>) => Promise<void>;
-  onCreateTask: (payload: Record<string, unknown>) => Promise<void>;
+  onSaveTask: (taskId: string, payload: PlanningTaskUpdateRequest) => Promise<void>;
+  onCreateTask: (payload: PlanningTaskCreateRequest) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
-  onCreateDependency: (payload: Record<string, unknown>) => Promise<void>;
-  onUpdateDependency: (dependencyId: string, payload: Record<string, unknown>) => Promise<void>;
+  onCreateDependency: (payload: PlanningDependencyCreateRequest) => Promise<void>;
+  onUpdateDependency: (dependencyId: string, payload: PlanningDependencyUpdateRequest) => Promise<void>;
   onRemoveDependency: (dependencyId: string) => Promise<void>;
-  onSetCalendar: (payload: Record<string, unknown>) => Promise<void>;
-  onCreateBaseline: (payload: Record<string, unknown>) => Promise<void>;
-  onCreateResource: (payload: Record<string, unknown>) => Promise<void>;
-  onAssignResource: (payload: Record<string, unknown>) => Promise<void>;
+  onSetCalendar: (payload: PlanningCalendarUpdateRequest) => Promise<void>;
+  onCreateBaseline: (payload: PlanningBaselineCreateRequest) => Promise<void>;
+  onCreateResource: (payload: PlanningResourceCreateRequest) => Promise<void>;
+  onAssignResource: (payload: PlanningAssignmentCreateRequest) => Promise<void>;
 }) {
   const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, readOnly, onProjectChange, onTabChange } = props;
 
@@ -71,7 +82,7 @@ export function PlanningInspector(props: {
         {activeTab === "task" && <TaskEditor key={selectedTask?.id || "new"} schedule={schedule} selectedTask={selectedTask} newTaskType={newTaskType} busy={busy} onSaveTask={props.onSaveTask} onCreateTask={props.onCreateTask} onDeleteTask={props.onDeleteTask} />}
         {activeTab === "links" && <DependencyEditor schedule={schedule} busy={busy} onCreateDependency={props.onCreateDependency} onUpdateDependency={props.onUpdateDependency} onRemoveDependency={props.onRemoveDependency} />}
         {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
-        {activeTab === "resources" && <ResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />}
+        {activeTab === "resources" && <PlanningResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />}
       </fieldset>
       {activeTab === "status" && <ValidationPanel schedule={schedule} status={status} />}
     </Pane>
@@ -94,8 +105,8 @@ function TaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onC
   selectedTask: PlanningTask | null;
   newTaskType: "task" | "milestone";
   busy: string;
-  onSaveTask: (taskId: string, payload: Record<string, unknown>) => Promise<void>;
-  onCreateTask: (payload: Record<string, unknown>) => Promise<void>;
+  onSaveTask: (taskId: string, payload: PlanningTaskUpdateRequest) => Promise<void>;
+  onCreateTask: (payload: PlanningTaskCreateRequest) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
 }) {
   const [form, setForm] = useState(taskForm(selectedTask, schedule.tasks.length + 1, newTaskType));
@@ -121,7 +132,7 @@ function TaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onC
       <h3>Task</h3>
       <div className="planning-form-grid">
         <label className="field"><span>Title</span><input value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label>
-        <label className="field"><span>Type</span><select value={form.task_type} onChange={(event) => setForm({ ...form, task_type: event.target.value })}>
+        <label className="field"><span>Type</span><select value={form.task_type} onChange={(event) => setForm({ ...form, task_type: event.target.value as PlanningTaskType })}>
           <option value="task">Task</option><option value="summary">Summary</option><option value="milestone">Milestone</option>
         </select></label>
         <label className="field"><span>Parent</span><select value={form.parent_task_id} onChange={(event) => setForm({ ...form, parent_task_id: event.target.value })}>
@@ -133,7 +144,7 @@ function TaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onC
         <label className="field"><span>End</span><input type="date" value={form.end} onChange={(event) => setForm({ ...form, end: event.target.value })} /></label>
         <label className="field"><span>Progress</span><input type="number" min="0" max="100" value={form.progress} onChange={(event) => setForm({ ...form, progress: event.target.value })} /></label>
         <label className="field"><span>Order</span><input type="number" min="0" value={form.sort_order} onChange={(event) => setForm({ ...form, sort_order: event.target.value })} /></label>
-        <PlanningTaskConstraintFields mode={form.scheduling_mode} type={form.constraint_type} date={form.constraint_date} onModeChange={(value) => setForm({ ...form, scheduling_mode: value })} onTypeChange={(value) => setForm({ ...form, constraint_type: value })} onDateChange={(value) => setForm({ ...form, constraint_date: value })} />
+        <PlanningTaskConstraintFields mode={form.scheduling_mode} type={form.constraint_type} date={form.constraint_date} onModeChange={(value) => setForm({ ...form, scheduling_mode: value as PlanningSchedulingMode })} onTypeChange={(value) => setForm({ ...form, constraint_type: value })} onDateChange={(value) => setForm({ ...form, constraint_date: value })} />
       </div>
       <div className="planning-action-row">
         <CommandButton icon={Save} loading={busy === "task"} onClick={() => selectedTask ? onSaveTask(selectedTask.id, payload) : onCreateTask(payload)}>
@@ -148,11 +159,11 @@ function TaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onC
 function DependencyEditor({ schedule, busy, onCreateDependency, onUpdateDependency, onRemoveDependency }: {
   schedule: PlanningSchedule;
   busy: string;
-  onCreateDependency: (payload: Record<string, unknown>) => Promise<void>;
-  onUpdateDependency: (dependencyId: string, payload: Record<string, unknown>) => Promise<void>;
+  onCreateDependency: (payload: PlanningDependencyCreateRequest) => Promise<void>;
+  onUpdateDependency: (dependencyId: string, payload: PlanningDependencyUpdateRequest) => Promise<void>;
   onRemoveDependency: (dependencyId: string) => Promise<void>;
 }) {
-  const [form, setForm] = useState({ predecessor_task_id: "", successor_task_id: "", dependency_type: "finish_to_start", lag_days: "0" });
+  const [form, setForm] = useState<{ predecessor_task_id: string; successor_task_id: string; dependency_type: PlanningDependencyType; lag_days: string }>({ predecessor_task_id: "", successor_task_id: "", dependency_type: "finish_to_start", lag_days: "0" });
   const payload = { ...form, lag_days: Number(form.lag_days) };
   return (
     <section className="planning-editor" aria-label="Dependency editor">
@@ -184,7 +195,7 @@ function DependencyRow({ dependency, tasks, busy, onUpdateDependency, onRemoveDe
   dependency: PlanningDependency;
   tasks: PlanningTask[];
   busy: string;
-  onUpdateDependency: (dependencyId: string, payload: Record<string, unknown>) => Promise<void>;
+  onUpdateDependency: (dependencyId: string, payload: PlanningDependencyUpdateRequest) => Promise<void>;
   onRemoveDependency: (dependencyId: string) => Promise<void>;
 }) {
   const [type, setType] = useState(dependency.dependency_type);
@@ -204,8 +215,8 @@ function DependencyRow({ dependency, tasks, busy, onUpdateDependency, onRemoveDe
 function CalendarBaselinePanel({ schedule, busy, onSetCalendar, onCreateBaseline }: {
   schedule: PlanningSchedule;
   busy: string;
-  onSetCalendar: (payload: Record<string, unknown>) => Promise<void>;
-  onCreateBaseline: (payload: Record<string, unknown>) => Promise<void>;
+  onSetCalendar: (payload: PlanningCalendarUpdateRequest) => Promise<void>;
+  onCreateBaseline: (payload: PlanningBaselineCreateRequest) => Promise<void>;
 }) {
   const calendar = schedule.calendar || { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [], ignored_periods: [] };
   const latestBaseline = schedule.baselines[0];
@@ -232,37 +243,6 @@ function CalendarBaselinePanel({ schedule, busy, onSetCalendar, onCreateBaseline
   );
 }
 
-function ResourcePanel({ schedule, selectedTask, busy, onCreateResource, onAssignResource }: {
-  schedule: PlanningSchedule;
-  selectedTask: PlanningTask | null;
-  busy: string;
-  onCreateResource: (payload: Record<string, unknown>) => Promise<void>;
-  onAssignResource: (payload: Record<string, unknown>) => Promise<void>;
-}) {
-  const [resource, setResource] = useState({ name: "", role: "" });
-  const [assignment, setAssignment] = useState({ resource_id: "", allocation_percent: "100" });
-  return (
-    <section className="planning-editor" aria-label="Resource assignments">
-      <h3>Resources</h3>
-      <div className="planning-form-grid">
-        <label className="field"><span>Name</span><input value={resource.name} onChange={(event) => setResource({ ...resource, name: event.target.value })} /></label>
-        <label className="field"><span>Role</span><input value={resource.role} onChange={(event) => setResource({ ...resource, role: event.target.value })} /></label>
-      </div>
-      <CommandButton icon={UserPlus} loading={busy === "resource"} onClick={() => onCreateResource(resource)}>Add resource</CommandButton>
-      <div className="planning-form-grid">
-        <label className="field"><span>Assign</span><select value={assignment.resource_id} onChange={(event) => setAssignment({ ...assignment, resource_id: event.target.value })}>
-          <option value="">Select resource</option>
-          {schedule.resources.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
-        </select></label>
-        <label className="field"><span>Allocation</span><input type="number" min="1" max="300" value={assignment.allocation_percent} onChange={(event) => setAssignment({ ...assignment, allocation_percent: event.target.value })} /></label>
-      </div>
-      <CommandButton icon={Save} disabled={!selectedTask} loading={busy === "resource"} onClick={() => selectedTask && onAssignResource({ task_id: selectedTask.id, resource_id: assignment.resource_id, allocation_percent: Number(assignment.allocation_percent) })}>
-        Assign selected
-      </CommandButton>
-    </section>
-  );
-}
-
 function TaskSelect({ label, value, tasks, onChange }: { label: string; value: string; tasks: PlanningTask[]; onChange: (value: string) => void }) {
   return (
     <label className="field"><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value)}>
@@ -272,15 +252,29 @@ function TaskSelect({ label, value, tasks, onChange }: { label: string; value: s
   );
 }
 
-function DependencyTypeSelect({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+function DependencyTypeSelect({ value, onChange }: { value: PlanningDependencyType; onChange: (value: PlanningDependencyType) => void }) {
   return (
-    <label className="field"><span>Type</span><select value={value} onChange={(event) => onChange(event.target.value)}>
+    <label className="field"><span>Type</span><select value={value} onChange={(event) => onChange(event.target.value as PlanningDependencyType)}>
       {dependencyTypes.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
     </select></label>
   );
 }
 
-function taskForm(task: PlanningTask | null, order: number, newTaskType: "task" | "milestone") {
+type TaskForm = {
+  title: string;
+  task_type: PlanningTaskType;
+  parent_task_id: string;
+  status: string;
+  start: string;
+  end: string;
+  progress: string;
+  sort_order: string;
+  scheduling_mode: PlanningSchedulingMode;
+  constraint_type: string;
+  constraint_date: string;
+};
+
+function taskForm(task: PlanningTask | null, order: number, newTaskType: "task" | "milestone"): TaskForm {
   return {
     title: task?.title || "",
     task_type: task?.task_type || newTaskType,

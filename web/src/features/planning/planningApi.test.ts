@@ -8,6 +8,7 @@ import {
   loadPlanningBaseline,
   loadPlanningSchedule,
   PlanningApiError,
+  PlanningDomainError,
   PlanningPreconditionError,
   planningCommand,
   type PlanningStrongEtag,
@@ -130,15 +131,35 @@ describe("Planning API concurrency and idempotency", () => {
     });
   });
 
-  it("keeps an HTTP 409 outside stale-write recovery", async () => {
-    const error = { detail: { error: "idempotency conflict" } };
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(error, 409));
+  it.each([
+    [400, "planning_validation_failed", "progress"],
+    [403, "permission_denied", null],
+    [409, "idempotency_conflict", "idempotency_key"],
+  ])("maps HTTP %i to a typed domain error without transport retry", async (status, code, field) => {
+    const fetchMock = vi.fn().mockResolvedValue(domainResponse(status, code, field));
     vi.stubGlobal("fetch", fetchMock);
 
     const request = updatePlanningTask("token", "task-1", { progress: 80 }, { ifMatch: etag1 });
-    await expect(request).rejects.toBeInstanceOf(PlanningApiError);
-    await expect(request).rejects.toMatchObject({ status: 409, message: "idempotency conflict" });
+    await expect(request).rejects.toBeInstanceOf(PlanningDomainError);
+    await expect(request).rejects.toMatchObject({
+      status,
+      message: `${code} message`,
+      detail: {
+        code,
+        field,
+        object_ids: ["project-1", "task-1"],
+        repair: "Correct the request.",
+        current_revision: 2,
+        correlation_id: "command-correlation-1",
+      },
+    });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps an unstructured HTTP failure as the generic API error", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ detail: { error: "legacy conflict" } }, 409)));
+
+    await expect(updatePlanningTask("token", "task-1", { progress: 80 }, { ifMatch: etag1 })).rejects.toBeInstanceOf(PlanningApiError);
   });
 
   it("sends If-Match through the generic Planning command path", async () => {
@@ -175,13 +196,29 @@ function preconditionResponse(status: 412 | 428, code: string) {
     error: {
       code,
       message: "The schedule changed.",
+      field: "If-Match",
       repair: "Reload and review.",
       current_revision: 2,
       current_etag: etag2,
       object_ids: ["project-1"],
       reload_url: "/api/planning/projects/project-1/schedule",
+      correlation_id: "precondition-correlation-1",
     },
   }, status, etag2);
+}
+
+function domainResponse(status: number, code: string, field: string | null) {
+  return jsonResponse({
+    error: {
+      code,
+      message: `${code} message`,
+      field,
+      object_ids: ["project-1", "task-1"],
+      repair: "Correct the request.",
+      current_revision: 2,
+      correlation_id: "command-correlation-1",
+    },
+  }, status);
 }
 
 function jsonResponse(value: unknown, status = 200, etag?: PlanningStrongEtag) {

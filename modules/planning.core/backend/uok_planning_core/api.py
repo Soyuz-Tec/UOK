@@ -25,13 +25,14 @@ from .schemas import (
 from uok.commands import (
     COMMAND_ETAG_RESULT_KEY,
     CommandDomainError,
+    CommandPermissionError,
     CommandPreconditionError,
     IdempotencyConflictError,
     MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
     MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
     execute_command,
 )
-from uok.api.schemas import CommandDomainErrorResponse, CommandPreconditionResponse, IdempotencyConflictResponse
+from uok.api.schemas import CommandDomainErrorResponse, CommandPreconditionResponse
 from uok.db import get_db
 from uok.module_ops import ensure_module_operational
 from uok.security import Actor, current_actor, require_permission
@@ -45,19 +46,27 @@ ETAG_RESPONSE_HEADERS = {
 }
 IDEMPOTENCY_CONFLICT_RESPONSE = {
     409: {
-        "model": IdempotencyConflictResponse,
+        "model": CommandDomainErrorResponse,
         "description": "Idempotency key conflicts with another Planning request.",
-    }
+    },
+    403: {
+        "model": CommandDomainErrorResponse,
+        "description": "The actor lacks the required Planning capability.",
+    },
 }
 PLANNING_CREATE_RESPONSES = {
     **IDEMPOTENCY_CONFLICT_RESPONSE,
     200: {"description": "Project created at revision 1.", "headers": ETAG_RESPONSE_HEADERS},
+    400: {"model": CommandDomainErrorResponse, "description": "The Planning project proposal is invalid."},
 }
 PLANNING_MUTATION_RESPONSES = {
     **IDEMPOTENCY_CONFLICT_RESPONSE,
     400: {
-        "model": CommandPreconditionResponse,
-        "description": "The If-Match validator is malformed or inconsistent with expected_revision.",
+        "description": "The Planning proposal or If-Match validator is invalid.",
+        "content": {"application/json": {"schema": {"oneOf": [
+            {"$ref": "#/components/schemas/CommandPreconditionResponse"},
+            {"$ref": "#/components/schemas/CommandDomainErrorResponse"},
+        ]}}},
     },
     200: {"description": "Mutation accepted and committed once.", "headers": ETAG_RESPONSE_HEADERS},
     412: {
@@ -258,10 +267,12 @@ def run_planning_command(
             response.headers["Cache-Control"] = "private, no-store"
             response.headers["Vary"] = "Authorization"
         return result
+    except CommandPermissionError as exc:
+        return JSONResponse(status_code=exc.status_code, content=exc.response_body())
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
     except IdempotencyConflictError as exc:
-        raise HTTPException(status_code=409, detail={"error": str(exc)}) from exc
+        return JSONResponse(status_code=exc.status_code, content=exc.response_body())
     except CommandPreconditionError as exc:
         return JSONResponse(
             status_code=exc.status_code,

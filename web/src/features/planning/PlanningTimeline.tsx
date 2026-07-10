@@ -15,6 +15,7 @@ import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import { planningColumnVisibilityOptions, planningViews, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningLayoutMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningProject, PlanningSchedule } from "./types";
+import type { PlanningDependencyCreateRequest, PlanningTaskUpdateRequest } from "./planningContracts";
 
 export function PlanningTimeline({
   projects,
@@ -72,9 +73,9 @@ export function PlanningTimeline({
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string, cascade: boolean) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
-  onTaskInlineEdit: (taskId: string, payload: Record<string, unknown>, cascade: boolean) => void;
+  onTaskInlineEdit: (taskId: string, payload: PlanningTaskUpdateRequest, cascade: boolean) => void;
   onBulkTaskEdit: (updates: PlanningBulkTaskUpdate[]) => void;
-  onDependencyCreate: (payload: Record<string, unknown>) => void;
+  onDependencyCreate: (payload: PlanningDependencyCreateRequest) => void;
   onTimelineTaskCreate: (start: string, end: string) => void;
   onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningSchedule["tasks"][number]) => void;
   onProjectChange: (projectId: string) => void;
@@ -268,7 +269,7 @@ export function PlanningTimeline({
     if (showBaselines !== config.showBaselines) onToggleBaselines();
   }
 
-  function shouldCascadeEdit(payload: Record<string, unknown>) {
+  function shouldCascadeEdit(payload: PlanningTaskUpdateRequest) {
     return payload.start || payload.end ? cascadeScheduling : true;
   }
 

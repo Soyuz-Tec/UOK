@@ -55,7 +55,11 @@ def test_planning_rest_writes_require_and_replay_idempotency_key(client: TestCli
         json={**payload, "name": f"Different REST Idempotency {suffix}"},
     )
     assert conflict.status_code == 409, conflict.text
-    assert "different command request" in conflict.json()["detail"]["error"]
+    error = conflict.json()["error"]
+    assert error["code"] == "idempotency_conflict"
+    assert error["field"] == "idempotency_key"
+    assert error["correlation_id"] == created.json()["correlation_id"]
+    assert "different command request" in error["message"]
 
     rows = client.get("/api/planning/projects", headers=ops)
     assert rows.status_code == 200, rows.text

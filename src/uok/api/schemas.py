@@ -40,22 +40,16 @@ class CommandRequest(BaseModel):
     )
 
 
-class IdempotencyConflictDetail(BaseModel):
-    error: str
-
-
-class IdempotencyConflictResponse(BaseModel):
-    detail: IdempotencyConflictDetail
-
-
 class CommandPreconditionDetail(BaseModel):
     code: str
     message: str
+    field: str | None = None
     repair: str
     current_revision: int = Field(..., ge=1)
     current_etag: str
     object_ids: list[str]
     reload_url: str
+    correlation_id: str | None = None
 
 
 class CommandPreconditionResponse(BaseModel):

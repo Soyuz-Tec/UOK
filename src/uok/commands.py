@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from .command_context import COMMAND_ETAG_RESULT_KEY, COMMAND_IF_MATCH_CONTEXT_KEY, CommandDomainError, CommandPreconditionError
+from .command_context import COMMAND_ETAG_RESULT_KEY, COMMAND_IF_MATCH_CONTEXT_KEY, CommandDomainError, CommandPermissionError, CommandPreconditionError
 from .module_commands import command_permissions, load_module_command_handlers
 from .module_ops import ensure_command_module_operational
 from .models import CommandLog
@@ -20,8 +20,19 @@ MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH = 128
 MAX_IDEMPOTENCY_KEY_LENGTH = 180
 
 
-class IdempotencyConflictError(ValueError):
+class IdempotencyConflictError(CommandDomainError):
     """Raised when one idempotency key is reused for different command content."""
+
+    def __init__(self, correlation_id: str | None = None, object_ids: list[str] | None = None) -> None:
+        super().__init__(
+            code="idempotency_conflict",
+            message="idempotency_key is already used for a different command request",
+            status_code=409,
+            field="idempotency_key",
+            object_ids=object_ids,
+            repair="Retry the original payload with this key, or use a new key for a different intent.",
+            correlation_id=correlation_id,
+        )
 
 
 def clean_command_text(value: Any) -> str:
@@ -32,22 +43,29 @@ def command_handlers():
     return load_module_command_handlers()
 
 
-def _log_denied_command(db: Session, actor: Actor, command_type: str, key: str, request_json: str, exc: PermissionError) -> None:
+def _log_denied_command(db: Session, actor: Actor, command_type: str, key: str, request_json: str, payload: dict[str, Any], exc: PermissionError) -> CommandPermissionError:
     db.rollback()
+    denied_id = str(uuid4())
+    error = CommandPermissionError(str(exc), denied_id, _command_object_ids(payload))
     denied = CommandLog(
+        id=denied_id,
         organization_id=actor.organization_id,
         command_type=command_type,
         idempotency_key=f"{key}:denied:{uuid4()}",
         status="denied",
         request_json=request_json,
-        response_json=dumps({"permission": str(exc)}),
+        response_json=dumps(error.response_body()),
     )
     db.add(denied)
     db.commit()
+    return error
 
 
 def _log_validation_error(db: Session, actor: Actor, command_type: str, key: str, payload: dict[str, Any], exc: ValueError, command_id: str | None = None) -> None:
     db.rollback()
+    if command_id and hasattr(exc, "correlation_id"):
+        exc.correlation_id = command_id
+    error_response = exc.response_body() if isinstance(exc, (CommandDomainError, CommandPreconditionError)) else {"error": str(exc)}
     failed = CommandLog(
         **({"id": command_id} if command_id else {}),
         organization_id=actor.organization_id,
@@ -55,7 +73,7 @@ def _log_validation_error(db: Session, actor: Actor, command_type: str, key: str
         idempotency_key=f"{key}:validation:{uuid4()}",
         status="validation_error",
         request_json=dumps(payload),
-        response_json=dumps({"error": str(exc)}),
+        response_json=dumps(error_response),
     )
     db.add(failed)
     db.commit()
@@ -68,7 +86,7 @@ def _authorized_replay_or_none(db: Session, actor: Actor, command_type: str, pay
     if not existing or existing.status != "succeeded":
         return None
     if existing.command_type != command_type or existing.request_json != request_json:
-        raise IdempotencyConflictError("idempotency_key is already used for a different command request")
+        raise IdempotencyConflictError(existing.id, _command_object_ids(payload))
     return {"idempotent": True, "status": existing.status, "result": loads(existing.response_json)}
 
 
@@ -91,8 +109,7 @@ def execute_command(
     try:
         replay = _authorized_replay_or_none(db, actor, command_type, payload, key, request_json)
     except PermissionError as exc:
-        _log_denied_command(db, actor, command_type, key, request_json, exc)
-        raise
+        raise _log_denied_command(db, actor, command_type, key, request_json, payload, exc) from exc
     if replay is not None:
         return replay
 
@@ -124,11 +141,20 @@ def execute_command(
         raise
 
 
+def _command_object_ids(payload: dict[str, Any]) -> list[str]:
+    return [
+        str(value)
+        for name, value in payload.items()
+        if (name == "id" or name.endswith("_id")) and value not in (None, "")
+    ]
+
+
 __all__ = [
     "COMMAND_ETAG_RESULT_KEY",
     "COMMAND_IF_MATCH_CONTEXT_KEY",
     "COMMAND_PERMISSIONS",
     "CommandPreconditionError",
+    "CommandPermissionError",
     "CommandDomainError",
     "IdempotencyConflictError",
     "MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH",

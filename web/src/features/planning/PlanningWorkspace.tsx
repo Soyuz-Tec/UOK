@@ -5,6 +5,7 @@ import { EmptyState } from "../../shared/data-display";
 import { Pane, WorkflowHeader, WorkflowSplitView } from "../../shared/layout";
 import { CommandButton } from "../../shared/primitives";
 import { PlanningConcurrencyNotice } from "./PlanningConcurrencyNotice";
+import { PlanningErrorNotice } from "./PlanningErrorNotice";
 import { PlanningInspector, type PlanningInspectorTab } from "./PlanningInspector";
 import { PlanningModuleState } from "./PlanningModuleState";
 import { PlanningTimeline } from "./PlanningTimeline";
@@ -49,6 +50,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
 
   return (
     <section className="planning-workspace" aria-label="Planning">
+      <PlanningErrorNotice status={actions.status} />
       {!schedule ? (
         <>
           <WorkflowHeader

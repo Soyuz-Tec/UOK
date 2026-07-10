@@ -9,9 +9,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .models import PlanningProject, PlanningTask, PlanningTaskDependency, utcnow
+from .planning_errors import planning_domain_error
 from uok.command_context import (
     COMMAND_ETAG_RESULT_KEY,
     COMMAND_IF_MATCH_CONTEXT_KEY,
+    CommandDomainError,
     CommandPreconditionError,
 )
 from uok.security import Actor
@@ -29,9 +31,16 @@ class PlanningConcurrencyContext:
 
 def guarded_planning_command(command_type: str, handler: PlanningHandler) -> PlanningHandler:
     def guarded(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
-        context = _begin_command(db, actor, command_type, payload)
-        result = handler(db, actor, payload, command_id)
-        return _finish_command(db, actor, context, result, command_id)
+        context = None
+        try:
+            context = _begin_command(db, actor, command_type, payload)
+            result = handler(db, actor, payload, command_id)
+            return _finish_command(db, actor, context, result, command_id)
+        except (CommandDomainError, CommandPreconditionError):
+            raise
+        except ValueError as exc:
+            revision = int(context.project.revision) if context else None
+            raise planning_domain_error(exc, payload, command_id, revision) from exc
 
     return guarded
 

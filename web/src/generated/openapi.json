@@ -194,6 +194,17 @@
             "title": "Code",
             "type": "string"
           },
+          "correlation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Id"
+          },
           "current_etag": {
             "title": "Current Etag",
             "type": "string"
@@ -202,6 +213,17 @@
             "minimum": 1.0,
             "title": "Current Revision",
             "type": "integer"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
           },
           "message": {
             "title": "Message",
@@ -1259,31 +1281,6 @@
           }
         },
         "title": "HTTPValidationError",
-        "type": "object"
-      },
-      "IdempotencyConflictDetail": {
-        "properties": {
-          "error": {
-            "title": "Error",
-            "type": "string"
-          }
-        },
-        "required": [
-          "error"
-        ],
-        "title": "IdempotencyConflictDetail",
-        "type": "object"
-      },
-      "IdempotencyConflictResponse": {
-        "properties": {
-          "detail": {
-            "$ref": "#/components/schemas/IdempotencyConflictDetail"
-          }
-        },
-        "required": [
-          "detail"
-        ],
-        "title": "IdempotencyConflictResponse",
         "type": "object"
       },
       "LoginRequest": {
@@ -3402,11 +3399,21 @@
             },
             "description": "The command precondition is malformed or inconsistent."
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the command capability."
+          },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -5676,17 +5683,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -5863,17 +5887,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -6005,17 +6046,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -6170,11 +6228,31 @@
               }
             }
           },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning project proposal is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -6288,17 +6366,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -6583,17 +6678,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -6727,17 +6839,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -6877,11 +7006,21 @@
             },
             "description": "A batch operation or the final proposed schedule is invalid."
           },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -7015,17 +7154,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -7227,17 +7383,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -7361,17 +7534,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },
@@ -7503,17 +7693,34 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
                 }
               }
             },
-            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
           },
           "409": {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
                 }
               }
             },

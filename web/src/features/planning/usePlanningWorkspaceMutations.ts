@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   isPlanningPreconditionError,
+  isPlanningDomainError,
   loadPlanningSchedule,
   listPlanningProjects,
   PlanningApiError,
@@ -268,6 +269,11 @@ function historyLabel(entry: PlanningHistoryEntry | undefined, direction: "undo"
 }
 
 function errorStatus(error: unknown) {
+  if (isPlanningDomainError(error)) return {
+    status: "error",
+    http_status: error.status,
+    ...error.detail,
+  };
   if (error instanceof PlanningApiError) return { status: "error", http_status: error.status, message: error.message };
   return { status: "error", message: errorMessage(error) };
 }

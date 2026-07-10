@@ -28,7 +28,7 @@ describe("planning history", () => {
   });
 
   it("skips unsafe task delete history when dependencies would reference old task ids", () => {
-    const before = {
+    const before: PlanningSchedule = {
       ...schedule([task({}), task({ id: "task-2", title: "Successor" })]),
       dependencies: [{ id: "dep-1", project_id: "project-1", predecessor_task_id: "task-1", successor_task_id: "task-2", dependency_type: "finish_to_start", lag_days: 0 }],
     };

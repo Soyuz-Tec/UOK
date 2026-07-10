@@ -10,6 +10,10 @@ export type PlanningProject = {
   updated_at?: string | null;
 };
 
+export type PlanningTaskType = "task" | "summary" | "milestone";
+export type PlanningSchedulingMode = "auto" | "manual";
+export type PlanningDependencyType = "finish_to_start" | "start_to_start" | "finish_to_finish" | "start_to_finish";
+
 export type PlanningTask = {
   id: string;
   project_id: string;
@@ -17,7 +21,7 @@ export type PlanningTask = {
   parent_task_id?: string | null;
   wbs?: string;
   title: string;
-  task_type: "task" | "summary" | "milestone" | string;
+  task_type: PlanningTaskType;
   status: string;
   start: string;
   end: string;
@@ -35,7 +39,7 @@ export type PlanningTask = {
   baseline_end?: string | null;
   start_variance_days?: number | null;
   end_variance_days?: number | null;
-  scheduling_mode?: "auto" | "manual" | string | null;
+  scheduling_mode?: PlanningSchedulingMode | null;
   constraint_type?: string | null;
   constraint_date?: string | null;
 };
@@ -45,7 +49,7 @@ export type PlanningDependency = {
   project_id: string;
   predecessor_task_id: string;
   successor_task_id: string;
-  dependency_type: string;
+  dependency_type: PlanningDependencyType;
   lag_days: number;
 };
 

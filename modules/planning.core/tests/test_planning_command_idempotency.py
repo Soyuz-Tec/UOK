@@ -49,7 +49,11 @@ def test_planning_command_path_requires_key_and_maps_conflicts(client: TestClien
     }
     conflict = client.post("/api/commands", headers=ops, json=changed)
     assert conflict.status_code == 409, conflict.text
-    assert "different command request" in conflict.json()["detail"]["error"]
+    error = conflict.json()["error"]
+    assert error["code"] == "idempotency_conflict"
+    assert error["field"] == "idempotency_key"
+    assert error["correlation_id"] == created.json()["command_id"]
+    assert "different command request" in error["message"]
 
 
 def test_command_gateway_recovers_a_same_key_insert_race(

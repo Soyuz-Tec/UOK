@@ -28,6 +28,31 @@ function Assert-UokHttpFailure {
     }
 }
 
+function Get-UokHttpFailureBody {
+    param(
+        [Parameter(Mandatory = $true)][scriptblock]$Action,
+        [Parameter(Mandatory = $true)][int]$StatusCode,
+        [Parameter(Mandatory = $true)][string]$UnexpectedSuccessMessage
+    )
+    try {
+        & $Action | Out-Null
+        throw $UnexpectedSuccessMessage
+    } catch {
+        if (-not $_.Exception.Response -or [int]$_.Exception.Response.StatusCode -ne $StatusCode) {
+            throw
+        }
+        $message = [string]$_.ErrorDetails.Message
+        if (-not $message -and $_.Exception.Response.Content) {
+            $message = $_.Exception.Response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+        }
+        try {
+            return $message | ConvertFrom-Json
+        } catch {
+            throw "Expected a JSON HTTP $StatusCode error body, received: $message"
+        }
+    }
+}
+
 function New-UokAuthHeaders {
     param(
         [Parameter(Mandatory = $true)][string]$Username,

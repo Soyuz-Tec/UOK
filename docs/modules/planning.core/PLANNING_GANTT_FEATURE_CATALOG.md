@@ -47,6 +47,9 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Server capabilities | Implemented | Actor-specific read/edit/baseline/level/link/gate/admin capabilities are enforced by command permission, embedded in schedule reads, and mirrored by fail-closed UI controls. Local review mode cannot grant authority. |
 | Database invariants | Implemented | PostgreSQL and SQLAlchemy enforce schedule date/type/progress/lag/allocation/scheduling-mode and uniqueness rules; hierarchy, dependency direction, and assignment lookups have organization-first indexes. |
 | Audit correlation | Implemented | Successful command responses, module events, and Planning schedule events carry the same authoritative command-log correlation ID, including derived changes and atomic batches. |
+| Structured errors | Implemented | Validation, permission, idempotency, precondition, and batch failures share a stable repair-oriented envelope whose correlation resolves to the persisted failed, denied, or original command. |
+| Typed client contracts | Implemented | Explicit Planning requests, mutation results, domain/precondition errors, revisions, capabilities, history, and workspace actions replace broad payloads at the browser API boundary. |
+| Accessible failure recovery | Implemented | Domain failures focus and announce an alert with the server message, repair, field, revision, and audit reference; stale writes retain explicit reload/reapply recovery. |
 
 ## Grid And Column Features
 

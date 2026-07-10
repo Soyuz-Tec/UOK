@@ -37,9 +37,12 @@ def test_planning_rest_enforces_strong_etags_and_replays_before_stale_checks(cli
         json=task_payload,
     )
     assert missing.status_code == 428, missing.text
-    assert missing.json()["error"] == {
+    missing_error = missing.json()["error"]
+    assert missing_error.pop("correlation_id")
+    assert missing_error == {
         "code": "precondition_required",
         "message": "A current strong Planning ETag is required for this mutation.",
+        "field": "If-Match",
         "repair": "Reload the schedule, review the latest state, and retry with its exact ETag.",
         "current_revision": 1,
         "current_etag": initial_etag,

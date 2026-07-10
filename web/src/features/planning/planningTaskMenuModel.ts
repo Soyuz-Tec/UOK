@@ -1,10 +1,11 @@
 import type { PlanningTask } from "./types";
+import type { PlanningTaskCreateRequest, PlanningTaskUpdateRequest } from "./planningContracts";
 
 export type PlanningTaskMenuAction = "add-below" | "add-child" | "duplicate" | "convert-milestone" | "mark-complete" | "mark-blocked" | "mark-planned" | "delete";
 
 export type PlanningTaskMenuMutation =
-  | { kind: "create"; payload: Record<string, unknown> }
-  | { kind: "update"; taskId: string; payload: Record<string, unknown> }
+  | { kind: "create"; payload: PlanningTaskCreateRequest }
+  | { kind: "update"; taskId: string; payload: PlanningTaskUpdateRequest }
   | { kind: "delete"; taskId: string };
 
 export function planningTaskMenuMutation(action: PlanningTaskMenuAction, task: PlanningTask): PlanningTaskMenuMutation | null {
@@ -26,6 +27,15 @@ export function planningTaskMenuMutation(action: PlanningTaskMenuAction, task: P
   return { kind: "create", payload: taskPayload("New task", task.start, task.end, task.sort_order + 1, "task", task.parent_task_id || undefined) };
 }
 
-function taskPayload(title: string, start: string, end: string, sortOrder: number, taskType: string, parentTaskId?: string, status = "planned", progress = 0) {
+function taskPayload(
+  title: string,
+  start: string,
+  end: string,
+  sortOrder: number,
+  taskType: NonNullable<PlanningTaskCreateRequest["task_type"]>,
+  parentTaskId?: string,
+  status = "planned",
+  progress = 0,
+): PlanningTaskCreateRequest {
   return { title, start, end, progress, status, sort_order: sortOrder, task_type: taskType, parent_task_id: parentTaskId };
 }

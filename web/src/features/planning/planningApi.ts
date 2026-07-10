@@ -1,4 +1,21 @@
 import type { PlanningBaselineComparison, PlanningBaselineDetail, PlanningCapabilities, PlanningProject, PlanningSchedule } from "./types";
+import type {
+  PlanningAssignmentCreateRequest,
+  PlanningBaselineCreateRequest,
+  PlanningCalendarUpdateRequest,
+  PlanningDependencyCreateRequest,
+  PlanningDependencyUpdateRequest,
+  PlanningMutationMetadata,
+  PlanningProjectCreateRequest,
+  PlanningResourceCreateRequest,
+  PlanningScheduleMutationResult,
+  PlanningTaskCreateRequest,
+  PlanningTaskCreateResult,
+  PlanningTaskUpdateRequest,
+  PlanningTaskUpdateResult,
+} from "./planningContracts";
+import { planningError } from "./planningApiErrors";
+export { PlanningApiError, PlanningDomainError, PlanningPreconditionError, isPlanningDomainError, isPlanningPreconditionError } from "./planningApiErrors";
 
 type CommandResult<T> = { result: T; status: string };
 
@@ -27,7 +44,7 @@ export type PlanningScheduleSnapshot = {
 
 export type PlanningBatchTaskUpdate = {
   taskId: string;
-  payload: Record<string, unknown>;
+  payload: PlanningTaskUpdateRequest;
 };
 
 export type PlanningBatchResult = {
@@ -41,39 +58,14 @@ export type PlanningBatchResult = {
 export type PlanningPreconditionDetail = {
   code: string;
   message: string;
+  field: string | null;
   repair: string;
   current_revision: number;
   current_etag: PlanningStrongEtag;
   object_ids: string[];
   reload_url: string;
+  correlation_id: string | null;
 };
-
-export class PlanningApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly payload: unknown,
-    readonly responseEtag: PlanningStrongEtag | null,
-  ) {
-    super(errorMessage(payload, `Planning request failed with HTTP ${status}.`));
-    this.name = "PlanningApiError";
-  }
-}
-
-export class PlanningPreconditionError extends PlanningApiError {
-  constructor(
-    status: 412 | 428,
-    readonly detail: PlanningPreconditionDetail,
-    payload: unknown,
-    responseEtag: PlanningStrongEtag | null,
-  ) {
-    super(status, payload, responseEtag);
-    this.name = "PlanningPreconditionError";
-  }
-}
-
-export function isPlanningPreconditionError(error: unknown): error is PlanningPreconditionError {
-  return error instanceof PlanningPreconditionError;
-}
 
 export function planningMutationKey(prefix: string) {
   return `${prefix}:${crypto.randomUUID()}`;
@@ -96,11 +88,11 @@ export async function loadPlanningSchedule(token: string, projectId: string): Pr
   return { schedule: response.data, etag: requireStrongEtag(response.etag) };
 }
 
-export function createPlanningProject(token: string, payload: Record<string, unknown>, mutation: PlanningCreateOptions = {}) {
-  return planningCreateJson<PlanningProject>(token, "/api/planning/projects", { method: "POST", body: JSON.stringify(payload) }, "planning-project", mutation);
+export function createPlanningProject(token: string, payload: PlanningProjectCreateRequest, mutation: PlanningCreateOptions = {}) {
+  return planningCreateJson<PlanningProject & PlanningMutationMetadata>(token, "/api/planning/projects", { method: "POST", body: JSON.stringify(payload) }, "planning-project", mutation);
 }
 
-export async function planningCommand<T>(token: string, command_type: string, payload: Record<string, unknown>, prefix: string, mutation: PlanningMutationOptions) {
+export async function planningCommand<T, P extends object>(token: string, command_type: string, payload: P, prefix: string, mutation: PlanningMutationOptions) {
   const idempotencyKey = mutation.idempotencyKey || planningMutationKey(prefix);
   const body = JSON.stringify({ command_type, payload, idempotency_key: idempotencyKey });
   return planningMutationRequest<CommandResult<T>>(token, "/api/commands", {
@@ -110,36 +102,36 @@ export async function planningCommand<T>(token: string, command_type: string, pa
   });
 }
 
-export function updatePlanningTask(token: string, taskId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, `/api/planning/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(payload) }, "planning-task-update", mutation);
+export function updatePlanningTask(token: string, taskId: string, payload: PlanningTaskUpdateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningTaskUpdateResult>(token, `/api/planning/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(payload) }, "planning-task-update", mutation);
 }
 
-export function createPlanningTask(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/tasks`, { method: "POST", body: JSON.stringify(payload) }, "planning-task-create", mutation);
+export function createPlanningTask(token: string, projectId: string, payload: PlanningTaskCreateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningTaskCreateResult>(token, `/api/planning/projects/${projectId}/tasks`, { method: "POST", body: JSON.stringify(payload) }, "planning-task-create", mutation);
 }
 
 export function deletePlanningTask(token: string, taskId: string, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, `/api/planning/tasks/${taskId}`, { method: "DELETE" }, "planning-task-delete", mutation);
+  return planningMutationJson<PlanningScheduleMutationResult>(token, `/api/planning/tasks/${taskId}`, { method: "DELETE" }, "planning-task-delete", mutation);
 }
 
-export function createPlanningDependency(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/dependencies`, { method: "POST", body: JSON.stringify(payload) }, "planning-dependency-create", mutation);
+export function createPlanningDependency(token: string, projectId: string, payload: PlanningDependencyCreateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningScheduleMutationResult>(token, `/api/planning/projects/${projectId}/dependencies`, { method: "POST", body: JSON.stringify(payload) }, "planning-dependency-create", mutation);
 }
 
-export function updatePlanningDependency(token: string, dependencyId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, `/api/planning/dependencies/${dependencyId}`, { method: "PATCH", body: JSON.stringify(payload) }, "planning-dependency-update", mutation);
+export function updatePlanningDependency(token: string, dependencyId: string, payload: PlanningDependencyUpdateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningScheduleMutationResult>(token, `/api/planning/dependencies/${dependencyId}`, { method: "PATCH", body: JSON.stringify(payload) }, "planning-dependency-update", mutation);
 }
 
 export function removePlanningDependency(token: string, dependencyId: string, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, `/api/planning/dependencies/${dependencyId}`, { method: "DELETE" }, "planning-dependency-remove", mutation);
+  return planningMutationJson<PlanningScheduleMutationResult>(token, `/api/planning/dependencies/${dependencyId}`, { method: "DELETE" }, "planning-dependency-remove", mutation);
 }
 
-export function setPlanningCalendar(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/calendar`, { method: "PUT", body: JSON.stringify(payload) }, "planning-calendar-set", mutation);
+export function setPlanningCalendar(token: string, projectId: string, payload: PlanningCalendarUpdateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningScheduleMutationResult>(token, `/api/planning/projects/${projectId}/calendar`, { method: "PUT", body: JSON.stringify(payload) }, "planning-calendar-set", mutation);
 }
 
-export function createPlanningBaseline(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/baselines`, { method: "POST", body: JSON.stringify(payload) }, "planning-baseline-create", mutation);
+export function createPlanningBaseline(token: string, projectId: string, payload: PlanningBaselineCreateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningScheduleMutationResult>(token, `/api/planning/projects/${projectId}/baselines`, { method: "POST", body: JSON.stringify(payload) }, "planning-baseline-create", mutation);
 }
 
 export function loadPlanningBaseline(token: string, projectId: string, baselineId: string) {
@@ -151,12 +143,12 @@ export function comparePlanningBaselines(token: string, projectId: string, leftB
   return planningJson<PlanningBaselineComparison>(token, `/api/planning/projects/${projectId}/baselines/compare?${query}`);
 }
 
-export function createPlanningResource(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/resources`, { method: "POST", body: JSON.stringify(payload) }, "planning-resource-create", mutation);
+export function createPlanningResource(token: string, projectId: string, payload: PlanningResourceCreateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningScheduleMutationResult>(token, `/api/planning/projects/${projectId}/resources`, { method: "POST", body: JSON.stringify(payload) }, "planning-resource-create", mutation);
 }
 
-export function assignPlanningResource(token: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
-  return planningMutationJson<unknown>(token, "/api/planning/assignments", { method: "POST", body: JSON.stringify(payload) }, "planning-assignment-create", mutation);
+export function assignPlanningResource(token: string, payload: PlanningAssignmentCreateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningScheduleMutationResult>(token, "/api/planning/assignments", { method: "POST", body: JSON.stringify(payload) }, "planning-assignment-create", mutation);
 }
 
 export function batchPlanningTaskUpdates(
@@ -240,33 +232,6 @@ function mergedHeaders(...sources: Array<HeadersInit | undefined>) {
   return result;
 }
 
-function planningError(status: number, payload: unknown, responseEtag: PlanningStrongEtag | null) {
-  if (status === 412 || status === 428) {
-    const detail = preconditionDetail(payload, responseEtag);
-    if (detail) return new PlanningPreconditionError(status, detail, payload, responseEtag);
-  }
-  return new PlanningApiError(status, payload, responseEtag);
-}
-
-function preconditionDetail(payload: unknown, responseEtag: PlanningStrongEtag | null): PlanningPreconditionDetail | null {
-  if (!payload || typeof payload !== "object" || !("error" in payload)) return null;
-  const detail = payload.error;
-  if (!detail || typeof detail !== "object") return null;
-  const value = detail as Record<string, unknown>;
-  const currentEtag = optionalStrongEtag(typeof value.current_etag === "string" ? value.current_etag : null) || responseEtag;
-  if (!currentEtag || typeof value.code !== "string" || typeof value.message !== "string" || typeof value.repair !== "string"
-    || typeof value.current_revision !== "number" || !Array.isArray(value.object_ids) || typeof value.reload_url !== "string") return null;
-  return {
-    code: value.code,
-    message: value.message,
-    repair: value.repair,
-    current_revision: value.current_revision,
-    current_etag: currentEtag,
-    object_ids: value.object_ids.filter((item): item is string => typeof item === "string"),
-    reload_url: value.reload_url,
-  };
-}
-
 function optionalStrongEtag(value: string | null): PlanningStrongEtag | null {
   if (!value) return null;
   return /^"planning-r[1-9]\d*-sha256-[a-f0-9]{64}"$/.test(value) ? value as PlanningStrongEtag : null;
@@ -275,17 +240,4 @@ function optionalStrongEtag(value: string | null): PlanningStrongEtag | null {
 function requireStrongEtag(value: PlanningStrongEtag | null) {
   if (!value) throw new TypeError("Planning response did not include a valid quoted strong ETag.");
   return value;
-}
-
-function errorMessage(payload: unknown, fallback: string) {
-  if (!payload || typeof payload !== "object") return fallback;
-  const row = payload as Record<string, unknown>;
-  if (typeof row.detail === "string") return row.detail;
-  if (row.detail && typeof row.detail === "object" && typeof (row.detail as Record<string, unknown>).error === "string") {
-    return String((row.detail as Record<string, unknown>).error);
-  }
-  if (row.error && typeof row.error === "object" && typeof (row.error as Record<string, unknown>).message === "string") {
-    return String((row.error as Record<string, unknown>).message);
-  }
-  return fallback;
 }

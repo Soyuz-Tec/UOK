@@ -3,10 +3,11 @@ import { useMemo, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
 import type { PlanningTask } from "./types";
+import type { PlanningTaskUpdateRequest } from "./planningContracts";
 
 export type PlanningBulkTaskUpdate = {
   taskId: string;
-  payload: Record<string, unknown>;
+  payload: PlanningTaskUpdateRequest;
 };
 
 export function PlanningBulkEditControls({
@@ -63,7 +64,7 @@ export function PlanningBulkEditControls({
     </>
   );
 
-  function applySamePayload(payload: Record<string, unknown>) {
+  function applySamePayload(payload: PlanningTaskUpdateRequest) {
     onBulkTaskEdit(selectedTasks.map((task) => ({ taskId: task.id, payload })));
   }
 

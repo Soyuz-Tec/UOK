@@ -16,6 +16,45 @@ afterEach(() => {
 });
 
 describe("usePlanningWorkspaceMutations concurrency recovery", () => {
+  it("surfaces structured domain repair and audit details", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === "/api/planning/projects") return jsonResponse([schedule(1).project]);
+      if (path.endsWith("/schedule")) return jsonResponse(schedule(1), 200, etag1);
+      if (path === "/api/planning/tasks/task-1") return jsonResponse({
+        error: {
+          code: "planning_validation_failed",
+          message: "progress must be between 0 and 100",
+          field: "progress",
+          object_ids: ["project-1", "task-1"],
+          repair: "Set progress to a value from 0 to 100.",
+          current_revision: 1,
+          correlation_id: "command-correlation-1",
+        },
+      }, 400);
+      throw new Error(`Unexpected Planning test request: ${path}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(usePlanningHarness);
+    await waitFor(() => expect(result.current.actions.scheduleEtag).toBe(etag1));
+    await act(async () => {
+      await result.current.actions.saveTask("task-1", { progress: 101 });
+    });
+
+    expect(result.current.actions.status).toEqual({
+      status: "error",
+      http_status: 400,
+      code: "planning_validation_failed",
+      message: "progress must be between 0 and 100",
+      field: "progress",
+      object_ids: ["project-1", "task-1"],
+      repair: "Set progress to a value from 0 to 100.",
+      current_revision: 1,
+      correlation_id: "command-correlation-1",
+    });
+  });
+
   it("reloads a stale schedule and re-applies only after explicit confirmation", async () => {
     const mutationRequests: RequestInit[] = [];
     let scheduleReads = 0;
@@ -155,11 +194,13 @@ function preconditionResponse() {
     error: {
       code: "stale_precondition",
       message: "The Planning schedule changed after it was loaded.",
+      field: "If-Match",
       repair: "Review and explicitly reapply or keep the current version.",
       current_revision: 2,
       current_etag: etag2,
       object_ids: ["project-1"],
       reload_url: "/api/planning/projects/project-1/schedule",
+      correlation_id: "stale-correlation-1",
     },
   }, 412, etag2);
 }

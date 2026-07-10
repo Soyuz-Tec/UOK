@@ -17,6 +17,16 @@ import {
 } from "./planningMutationIntents";
 import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningTask } from "./types";
+import type {
+  PlanningAssignmentCreateRequest,
+  PlanningBaselineCreateRequest,
+  PlanningCalendarUpdateRequest,
+  PlanningDependencyCreateRequest,
+  PlanningDependencyUpdateRequest,
+  PlanningResourceCreateRequest,
+  PlanningTaskCreateRequest,
+  PlanningTaskUpdateRequest,
+} from "./planningContracts";
 
 export function planningWorkspaceActions({
   token,
@@ -29,16 +39,16 @@ export function planningWorkspaceActions({
 }) {
   const actions = {
     rescheduleTask: (taskId: string, start: string, end: string, cascade = true) => mutate(rescheduleTaskIntent(token, taskId, start, end, cascade)),
-    saveTask: (taskId: string, payload: Record<string, unknown>, cascade = true) => mutate(saveTaskIntent(token, taskId, payload, cascade)),
-    addTask: (payload: Record<string, unknown>) => mutate(addTaskIntent(token, projectId, payload)),
+    saveTask: (taskId: string, payload: PlanningTaskUpdateRequest, cascade = true) => mutate(saveTaskIntent(token, taskId, payload, cascade)),
+    addTask: (payload: PlanningTaskCreateRequest) => mutate(addTaskIntent(token, projectId, payload)),
     removeTask: (taskId: string) => mutate(removeTaskIntent(token, taskId)),
-    addDependency: (payload: Record<string, unknown>) => mutate(addDependencyIntent(token, projectId, payload)),
-    saveDependency: (dependencyId: string, payload: Record<string, unknown>) => mutate(saveDependencyIntent(token, dependencyId, payload)),
+    addDependency: (payload: PlanningDependencyCreateRequest) => mutate(addDependencyIntent(token, projectId, payload)),
+    saveDependency: (dependencyId: string, payload: PlanningDependencyUpdateRequest) => mutate(saveDependencyIntent(token, dependencyId, payload)),
     removeDependency: (dependencyId: string) => mutate(removeDependencyIntent(token, dependencyId)),
-    saveCalendar: (payload: Record<string, unknown>) => mutate(saveCalendarIntent(token, projectId, payload)),
-    addBaseline: (payload: Record<string, unknown>) => mutate(addBaselineIntent(token, projectId, payload)),
-    addResource: (payload: Record<string, unknown>) => mutate(addResourceIntent(token, projectId, payload)),
-    assignResource: (payload: Record<string, unknown>) => mutate(assignResourceIntent(token, payload)),
+    saveCalendar: (payload: PlanningCalendarUpdateRequest) => mutate(saveCalendarIntent(token, projectId, payload)),
+    addBaseline: (payload: PlanningBaselineCreateRequest) => mutate(addBaselineIntent(token, projectId, payload)),
+    addResource: (payload: PlanningResourceCreateRequest) => mutate(addResourceIntent(token, projectId, payload)),
+    assignResource: (payload: PlanningAssignmentCreateRequest) => mutate(assignResourceIntent(token, payload)),
     levelResources: () => mutate(levelResourcesIntent(token, projectId)),
     saveTaskBatch: (updates: PlanningBulkTaskUpdate[]) => mutate(batchTaskUpdatesIntent(token, projectId, updates)),
     runTaskMenuAction: async (action: PlanningTaskMenuAction, task: PlanningTask) => {

@@ -1,5 +1,6 @@
 import { isoDate, type TimelineScale } from "./planningGanttModel";
 import type { PlanningTask } from "./types";
+import type { PlanningTaskCreateRequest } from "./planningContracts";
 
 export type TimelineCreateDraft = {
   x: number;
@@ -21,7 +22,7 @@ export function timelineCreateDraft(startX: number, currentX: number, chartStart
   };
 }
 
-export function timelineTaskPayload(tasks: PlanningTask[], start: string, end: string) {
+export function timelineTaskPayload(tasks: PlanningTask[], start: string, end: string): PlanningTaskCreateRequest {
   const nextSortOrder = Math.max(0, ...tasks.map((task) => task.sort_order)) + 1;
   return {
     title: "Timeline task",

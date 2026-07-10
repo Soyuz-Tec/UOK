@@ -4,6 +4,7 @@ import type { TimelineScale } from "./planningGanttModel";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
 import type { PlanningSchedule, PlanningTask } from "./types";
+import type { PlanningDependencyCreateRequest, PlanningTaskUpdateRequest } from "./planningContracts";
 
 export type PlanningGanttProps = {
   schedule: PlanningSchedule;
@@ -25,8 +26,8 @@ export type PlanningGanttProps = {
   onTaskSelect: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
-  onTaskInlineEdit: (taskId: string, payload: Record<string, unknown>) => void;
-  onDependencyCreate: (payload: Record<string, unknown>) => void;
+  onTaskInlineEdit: (taskId: string, payload: PlanningTaskUpdateRequest) => void;
+  onDependencyCreate: (payload: PlanningDependencyCreateRequest) => void;
   onTimelineTaskCreate: (start: string, end: string) => void;
   onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningTask) => void;
   onScaleChange: (scale: TimelineScale) => void;

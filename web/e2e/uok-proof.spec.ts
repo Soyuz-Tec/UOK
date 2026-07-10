@@ -542,6 +542,39 @@ test("server review-only capabilities disable Planning writes", async ({ page })
   await expect(page.getByRole("button", { name: "Server review-only", exact: true })).toBeDisabled();
 });
 
+test("structured Planning failures expose repair and audit context", async ({ page }) => {
+  await installMockApi(page, [], [], [], []);
+  await page.route("/api/planning/tasks/task-1", (route) => route.fulfill({
+    status: 400,
+    json: {
+      error: {
+        code: "planning_validation_failed",
+        message: "title is required",
+        field: "title",
+        object_ids: [sampleProject.id, "task-1"],
+        repair: "Enter a task title, then retry the same user intent.",
+        current_revision: 1,
+        correlation_id: "proof-command-correlation",
+      },
+    },
+  }));
+
+  await openPlanning(page);
+  await page.getByRole("button", { name: "Edit Task for Define schedule scope" }).click();
+  const inlineForm = page.locator(".planning-owned-inline-cell .inline-edit-form");
+  await page.getByLabel("Task for Define schedule scope").fill("Invalid title proposal");
+  await inlineForm.getByRole("button", { name: "Save" }).click();
+
+  const alert = page.getByRole("alert", { name: "Planning change failed" });
+  await expect(alert).toBeVisible();
+  await expect(alert).toBeFocused();
+  await expect(alert).toContainText("title is required");
+  await expect(alert).toContainText("Enter a task title, then retry the same user intent.");
+  await expect(alert).toContainText("Field: title");
+  await expect(alert).toContainText("Current revision: 1");
+  await expect(alert).toContainText("Audit reference: proof-command-correlation");
+});
+
 async function openPlanning(page: Page) {
   await page.goto("/");
   await page.getByRole("button", { name: "Planning" }).click();

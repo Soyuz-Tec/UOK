@@ -1,8 +1,9 @@
 import type { PlanningTask } from "./types";
+import type { PlanningTaskUpdateRequest } from "./planningContracts";
 
 const editableColumns = new Set(["task", "start", "end", "progress", "status"]);
 
-export function planningGridCellEditPayload(columnId: string, value: string) {
+export function planningGridCellEditPayload(columnId: string, value: string): PlanningTaskUpdateRequest {
   const next = value.trim();
   if (columnId === "task") return { title: next };
   if (columnId === "start") return { start: next };

@@ -43,6 +43,9 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - server-derived Planning capability matrix with separate edit, baseline, leveling, cross-module link, gate approval, and administration permissions; UI review mode may only reduce server authority
 - database-enforced Planning date/type/progress/lag/allocation/scheduling-mode and uniqueness invariants with organization-first hierarchy/dependency/assignment indexes
 - one command correlation ID across successful responses, derived schedule changes, module events, and Planning schedule events
+- one structured error envelope across Planning validation, permission, idempotency, precondition, and batch failures, with the exact failed, denied, or original command-log correlation
+- explicit TypeScript request, mutation-result, domain-error, and precondition contracts propagated through Gantt, inspector, history, resource, baseline, and batch actions
+- accessible domain-failure alert with server repair guidance, field, current revision, and audit reference
 - planning audit events
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier
 - Playwright UI proof for Gantt rendering, editor panels, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness
@@ -84,6 +87,7 @@ python -m pytest modules/planning.core/tests/test_planning_core.py -q
 python -m pytest modules/planning.core/tests/test_planning_optimistic_concurrency.py -q
 python -m pytest modules/planning.core/tests/test_canonical_cpm.py modules/planning.core/tests/test_cpm_validation.py modules/planning.core/tests/test_planning_cpm_contract.py -q
 python -m pytest modules/planning.core/tests/test_planning_idempotency_contract.py -q
+python -m pytest modules/planning.core/tests/test_planning_structured_errors.py -q
 python -m pytest modules/planning.core/tests/test_planning_complete_baselines.py -q
 npm --prefix web run build
 npm --prefix web run test:ui-proof

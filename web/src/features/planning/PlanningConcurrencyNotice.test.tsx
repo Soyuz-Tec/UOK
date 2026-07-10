@@ -8,11 +8,13 @@ import type { PlanningStrongEtag } from "./planningApi";
 const detail = {
   code: "stale_precondition",
   message: "The Planning schedule changed after it was loaded.",
+  field: "If-Match",
   repair: "Review and explicitly reapply or keep the current version.",
   current_revision: 2,
   current_etag: `"planning-r2-sha256-${"b".repeat(64)}"` as PlanningStrongEtag,
   object_ids: ["project-1"],
   reload_url: "/api/planning/projects/project-1/schedule",
+  correlation_id: "command-correlation-1",
 };
 
 afterEach(cleanup);

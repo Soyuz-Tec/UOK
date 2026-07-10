@@ -23,7 +23,7 @@ export function executePlanningHistoryStep(token: string, schedule: PlanningSche
   if (step.kind === "remove-dependency") return removePlanningDependency(token, resolvedDependencyId(schedule, step.dependencyId, step.match), { ifMatch: etag });
   if (step.kind === "set-calendar") return setPlanningCalendar(token, step.projectId, step.payload, { ifMatch: etag });
   if (step.kind === "assign-resource") return assignPlanningResource(token, step.payload, { ifMatch: etag });
-  return planningCommand<PlanningSchedule>(token, "LevelPlanningResources", { project_id: step.projectId }, "planning-level", { ifMatch: etag });
+  return planningCommand<PlanningSchedule, { project_id: string }>(token, "LevelPlanningResources", { project_id: step.projectId }, "planning-level", { ifMatch: etag });
 }
 
 export function planningHistoryBatchSupported(steps: PlanningHistoryStep[]) {

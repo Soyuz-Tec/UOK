@@ -6,6 +6,7 @@ import { gridValue, type PlanningGridColumn } from "./planningGanttModel";
 import { isEditablePlanningGridColumn, planningGridCellEditLabel, planningGridCellEditPayload, planningGridCellEditValidation } from "./planningGridInlineEdit";
 import type { PinnedColumnOffsetMap } from "./planningPinnedColumns";
 import type { PlanningTask } from "./types";
+import type { PlanningTaskUpdateRequest } from "./planningContracts";
 
 export function PlanningGanttGridCell({
   assignedByTask,
@@ -24,7 +25,7 @@ export function PlanningGanttGridCell({
   summaryExpanded: boolean;
   task: PlanningTask;
   onSummaryToggle: (taskId: string) => void;
-  onTaskEdit: (taskId: string, payload: Record<string, unknown>) => Promise<void> | void;
+  onTaskEdit: (taskId: string, payload: PlanningTaskUpdateRequest) => Promise<void> | void;
 }) {
   const value = gridValue(column.id, task, assignedByTask);
   const editable = !readOnly && isEditablePlanningGridColumn(column.id);

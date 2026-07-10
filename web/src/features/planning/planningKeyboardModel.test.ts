@@ -35,7 +35,7 @@ function command(key: string, row: PlanningTask, overrides: Partial<KeyboardEven
   return planningKeyboardCommand({ ctrlKey: false, key, metaKey: false, shiftKey: false, ...overrides }, row, tasks);
 }
 
-function task(id: string, title: string, taskType = "task"): PlanningTask {
+function task(id: string, title: string, taskType: PlanningTask["task_type"] = "task"): PlanningTask {
   return {
     id,
     project_id: "project-1",

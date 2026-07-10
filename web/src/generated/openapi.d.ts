@@ -1205,10 +1205,14 @@ export interface components {
         CommandPreconditionDetail: {
             /** Code */
             code: string;
+            /** Correlation Id */
+            correlation_id?: string | null;
             /** Current Etag */
             current_etag: string;
             /** Current Revision */
             current_revision: number;
+            /** Field */
+            field?: string | null;
             /** Message */
             message: string;
             /** Object Ids */
@@ -1481,15 +1485,6 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
-        };
-        /** IdempotencyConflictDetail */
-        IdempotencyConflictDetail: {
-            /** Error */
-            error: string;
-        };
-        /** IdempotencyConflictResponse */
-        IdempotencyConflictResponse: {
-            detail: components["schemas"]["IdempotencyConflictDetail"];
         };
         /** LoginRequest */
         LoginRequest: {
@@ -2507,13 +2502,22 @@ export interface operations {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
+            /** @description The actor lacks the command capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
             /** @description Idempotency key conflicts with another command request. */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The command precondition is stale. */
@@ -3787,13 +3791,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3802,7 +3815,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -3894,13 +3907,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3909,7 +3931,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -3972,13 +3994,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3987,7 +4018,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -4079,13 +4110,31 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
+            /** @description The Planning project proposal is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
             /** @description Idempotency key conflicts with another Planning request. */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Validation Error */
@@ -4130,13 +4179,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4145,7 +4203,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -4282,13 +4340,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4297,7 +4364,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -4360,13 +4427,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4375,7 +4451,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -4447,13 +4523,22 @@ export interface operations {
                     "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
             /** @description Idempotency key conflicts with another Planning request. */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -4516,13 +4601,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4531,7 +4625,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -4631,13 +4725,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4646,7 +4749,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -4705,13 +4808,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4720,7 +4832,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
@@ -4783,13 +4895,22 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            /** @description The Planning proposal or If-Match validator is invalid. */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4798,7 +4919,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
             /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */

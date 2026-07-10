@@ -39,7 +39,6 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
 
     assert write_shaped_operations == PLANNING_MUTATIONS | READ_ONLY_POST_OPERATIONS
     for schema_name, schema in (("runtime", runtime_schema), ("generated", generated_schema)):
-        assert_conflict_schema(schema)
         assert_precondition_schema(schema)
         assert_domain_error_schema(schema)
         assert_planning_mutation_contract(schema_name, schema)
@@ -68,6 +67,7 @@ def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object
         assert header["schema"]["maxLength"] == 128
         assert header["schema"]["pattern"] == r"^[A-Za-z0-9][A-Za-z0-9._:-]*$"
         assert_conflict_response(operation)
+        assert_domain_response(operation, "403")
         assert operation["responses"]["200"]["headers"]["ETag"]["schema"]["type"] == "string"
         if (method, path) in CONDITIONAL_MUTATIONS:
             if_match = next(
@@ -80,7 +80,7 @@ def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object
             )
             assert if_match is not None, f"{schema_name} {method.upper()} {path} omits If-Match"
             assert if_match["required"] is False
-            assert_precondition_responses(operation, include_bad_request=(method, path) != BATCH_MUTATION)
+            assert_planning_precondition_responses(operation, include_bad_request=(method, path) != BATCH_MUTATION)
         if (method, path) == BATCH_MUTATION:
             assert operation["responses"]["400"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/CommandDomainErrorResponse"
             request = operation["requestBody"]["content"]["application/json"]["schema"]
@@ -95,6 +95,7 @@ def assert_command_contract(schema: dict[str, object]) -> None:
     key_schema = command_schema["properties"]["idempotency_key"]
     assert_conflict_response(command_operation)
     assert_precondition_responses(command_operation)
+    assert_domain_response(command_operation, "403")
     if_match = next(parameter for parameter in command_operation["parameters"] if parameter["name"] == "If-Match")
     assert if_match["required"] is False
     assert "idempotency_key" in command_schema["required"]
@@ -104,19 +105,23 @@ def assert_command_contract(schema: dict[str, object]) -> None:
 
 
 def assert_conflict_response(operation: dict[str, object]) -> None:
-    response = operation["responses"]["409"]
+    assert_domain_response(operation, "409")
+
+
+def assert_domain_response(operation: dict[str, object], status: str) -> None:
+    response = operation["responses"][status]
     schema = response["content"]["application/json"]["schema"]
-    assert schema["$ref"] == "#/components/schemas/IdempotencyConflictResponse"
+    assert schema["$ref"] == "#/components/schemas/CommandDomainErrorResponse"
 
 
-def assert_conflict_schema(schema: dict[str, object]) -> None:
-    components = schema["components"]["schemas"]
-    response = components["IdempotencyConflictResponse"]
-    detail = components["IdempotencyConflictDetail"]
-    assert response["required"] == ["detail"]
-    assert response["properties"]["detail"]["$ref"] == "#/components/schemas/IdempotencyConflictDetail"
-    assert detail["required"] == ["error"]
-    assert detail["properties"]["error"]["type"] == "string"
+def assert_planning_precondition_responses(operation: dict[str, object], include_bad_request: bool = True) -> None:
+    if include_bad_request:
+        schema = operation["responses"]["400"]["content"]["application/json"]["schema"]
+        assert schema["oneOf"] == [
+            {"$ref": "#/components/schemas/CommandPreconditionResponse"},
+            {"$ref": "#/components/schemas/CommandDomainErrorResponse"},
+        ]
+    assert_precondition_responses(operation, include_bad_request=False)
 
 
 def assert_precondition_responses(operation: dict[str, object], include_bad_request: bool = True) -> None:

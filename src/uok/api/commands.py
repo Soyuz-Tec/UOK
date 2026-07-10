@@ -4,10 +4,11 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from ..api.schemas import CommandPreconditionResponse, CommandRequest, IdempotencyConflictResponse
+from ..api.schemas import CommandDomainErrorResponse, CommandPreconditionResponse, CommandRequest
 from ..commands import (
     COMMAND_ETAG_RESULT_KEY,
     CommandDomainError,
+    CommandPermissionError,
     CommandPreconditionError,
     IdempotencyConflictError,
     clean_command_text,
@@ -19,9 +20,10 @@ from ..security import Actor, current_actor
 router = APIRouter(tags=["commands"])
 IDEMPOTENCY_CONFLICT_RESPONSE = {
     409: {
-        "model": IdempotencyConflictResponse,
+        "model": CommandDomainErrorResponse,
         "description": "Idempotency key conflicts with another command request.",
     },
+    403: {"model": CommandDomainErrorResponse, "description": "The actor lacks the command capability."},
     400: {"model": CommandPreconditionResponse, "description": "The command precondition is malformed or inconsistent."},
     412: {"model": CommandPreconditionResponse, "description": "The command precondition is stale."},
     428: {"model": CommandPreconditionResponse, "description": "The command requires a current precondition."},
@@ -58,10 +60,12 @@ def command(
             response.headers["Cache-Control"] = "private, no-store"
             response.headers["Vary"] = "Authorization"
         return result
+    except CommandPermissionError as exc:
+        return JSONResponse(status_code=exc.status_code, content=exc.response_body())
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
     except IdempotencyConflictError as exc:
-        raise HTTPException(status_code=409, detail={"error": str(exc)}) from exc
+        return JSONResponse(status_code=exc.status_code, content=exc.response_body())
     except CommandPreconditionError as exc:
         return JSONResponse(
             status_code=exc.status_code,

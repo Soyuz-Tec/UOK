@@ -1,14 +1,22 @@
 import type { PlanningAssignment, PlanningCalendar, PlanningDependency, PlanningSchedule, PlanningTask } from "./types";
+import type {
+  PlanningAssignmentCreateRequest,
+  PlanningCalendarUpdateRequest,
+  PlanningDependencyCreateRequest,
+  PlanningDependencyUpdateRequest,
+  PlanningTaskCreateRequest,
+  PlanningTaskUpdateRequest,
+} from "./planningContracts";
 
 export type PlanningHistoryStep =
-  | { kind: "update-task"; taskId: string; payload: Record<string, unknown> }
-  | { kind: "create-task"; projectId: string; payload: Record<string, unknown> }
+  | { kind: "update-task"; taskId: string; payload: PlanningTaskUpdateRequest }
+  | { kind: "create-task"; projectId: string; payload: PlanningTaskCreateRequest }
   | { kind: "delete-task"; taskId?: string; match: Record<string, unknown> }
-  | { kind: "update-dependency"; dependencyId: string; payload: Record<string, unknown> }
-  | { kind: "create-dependency"; projectId: string; payload: Record<string, unknown> }
+  | { kind: "update-dependency"; dependencyId: string; payload: PlanningDependencyUpdateRequest }
+  | { kind: "create-dependency"; projectId: string; payload: PlanningDependencyCreateRequest }
   | { kind: "remove-dependency"; dependencyId?: string; match: Record<string, unknown> }
-  | { kind: "set-calendar"; projectId: string; payload: Record<string, unknown> }
-  | { kind: "assign-resource"; payload: Record<string, unknown> }
+  | { kind: "set-calendar"; projectId: string; payload: PlanningCalendarUpdateRequest }
+  | { kind: "assign-resource"; payload: PlanningAssignmentCreateRequest }
   | { kind: "level-resources"; projectId: string };
 
 export type PlanningHistoryEntry = {
@@ -49,7 +57,7 @@ export function planningLevelHistory(before: PlanningSchedule, after: PlanningSc
   };
 }
 
-export function taskUpdatePayload(task: PlanningTask) {
+export function taskUpdatePayload(task: PlanningTask): PlanningTaskUpdateRequest {
   return cleanPayload({
     title: task.title,
     task_type: task.task_type,
@@ -66,8 +74,8 @@ export function taskUpdatePayload(task: PlanningTask) {
   });
 }
 
-export function taskCreatePayload(task: PlanningTask) {
-  const payload = taskUpdatePayload(task);
+export function taskCreatePayload(task: PlanningTask): PlanningTaskCreateRequest {
+  const payload = { ...taskUpdatePayload(task) } as PlanningTaskCreateRequest & { cascade?: boolean };
   delete payload.cascade;
   return payload;
 }
@@ -175,8 +183,8 @@ function removedTasksAreReversible(before: PlanningSchedule, after: PlanningSche
     && !before.assignments.some((assignment) => removed.has(assignment.task_id));
 }
 
-function cleanPayload(payload: Record<string, unknown>) {
-  return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined));
+function cleanPayload<T extends object>(payload: T): T {
+  return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined)) as T;
 }
 
 function taskMatch(task: PlanningTask) {

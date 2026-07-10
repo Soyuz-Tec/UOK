@@ -79,7 +79,13 @@ def test_generic_command_rejects_a_conflicting_project_and_target_object(client:
         before_a.headers["ETag"],
     )
     assert rejected.status_code == 400, rejected.text
-    assert "project_id does not match its target object" in rejected.json()["detail"]["error"]
+    error = rejected.json()["error"]
+    assert error["code"] == "planning_validation_failed"
+    assert error["field"] == "project_id"
+    assert error["object_ids"] == [project_a_id, task_id]
+    assert error["current_revision"] is None
+    assert error["correlation_id"]
+    assert "project_id does not match its target object" in error["message"]
     after_a = _schedule(client, ops, project_a_id)
     after_b = _schedule(client, ops, project_b_id)
     assert after_a.headers["ETag"] == before_a.headers["ETag"]

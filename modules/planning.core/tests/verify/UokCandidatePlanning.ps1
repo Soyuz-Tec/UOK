@@ -68,15 +68,23 @@ function Invoke-UokPlanningCandidateScenario {
         throw "Viewer Planning capability matrix is invalid: $($viewerCapabilities | ConvertTo-Json -Depth 20)"
     }
 
-    Assert-UokHttpFailure -StatusCode 403 -UnexpectedSuccessMessage "Viewer planning project creation unexpectedly succeeded" -Action {
+    $deniedError = Get-UokHttpFailureBody -StatusCode 403 -UnexpectedSuccessMessage "Viewer planning project creation unexpectedly succeeded" -Action {
         Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $ViewerHeaders -Body @{
             command_type = "CreatePlanningProject"
             payload = @{ name = "Denied Planning $Stamp"; start = "2026-08-01"; end = "2026-08-20" }
             idempotency_key = "uok-planning-denied-$Stamp"
         }
     }
+    if (
+        $deniedError.error.code -ne "permission_denied" `
+        -or $deniedError.error.field -ne $null `
+        -or -not $deniedError.error.repair `
+        -or -not $deniedError.error.correlation_id
+    ) {
+        throw "Planning permission error contract is invalid: $($deniedError | ConvertTo-Json -Depth 20)"
+    }
 
-    Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Invalid planning project unexpectedly succeeded" -Action {
+    $invalidError = Get-UokHttpFailureBody -StatusCode 400 -UnexpectedSuccessMessage "Invalid planning project unexpectedly succeeded" -Action {
         Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
             command_type = "CreatePlanningProject"
             payload = @{ name = ""; start = "2026-08-20"; end = "2026-08-01" }
@@ -102,13 +110,29 @@ function Invoke-UokPlanningCandidateScenario {
     if (-not $projectReplay.idempotent) {
         throw "Planning idempotent replay failed: $($projectReplay | ConvertTo-Json -Depth 20)"
     }
+    if (
+        $invalidError.error.code -ne "planning_validation_failed" `
+        -or $invalidError.error.field -ne "name" `
+        -or -not $invalidError.error.repair `
+        -or -not $invalidError.error.correlation_id
+    ) {
+        throw "Planning validation error contract is invalid: $($invalidError | ConvertTo-Json -Depth 20)"
+    }
 
-    Assert-UokHttpFailure -StatusCode 428 -UnexpectedSuccessMessage "Planning mutation without If-Match unexpectedly succeeded" -Action {
+    $preconditionError = Get-UokHttpFailureBody -StatusCode 428 -UnexpectedSuccessMessage "Planning mutation without If-Match unexpectedly succeeded" -Action {
         Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
             command_type = "CreatePlanningTask"
             payload = @{ project_id = $projectId; title = "Missing precondition"; start = "2026-08-01"; end = "2026-08-02" }
             idempotency_key = "uok-planning-missing-precondition-$Stamp"
         }
+    }
+    if (
+        $preconditionError.error.code -ne "precondition_required" `
+        -or $preconditionError.error.field -ne "If-Match" `
+        -or $preconditionError.error.object_ids[0] -ne $projectId `
+        -or -not $preconditionError.error.correlation_id
+    ) {
+        throw "Planning precondition error contract is invalid: $($preconditionError | ConvertTo-Json -Depth 20)"
     }
 
     $first = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{

@@ -6,6 +6,7 @@ import { taskColorClass } from "./planningGanttModel";
 import { PlanningGanttGridCell } from "./PlanningGanttGridCell";
 import { fitPlanningRowHeight } from "./planningRowHeights";
 import type { PlanningTask } from "./types";
+import type { PlanningTaskUpdateRequest } from "./planningContracts";
 
 type RowResizeState = { pointerId: number; startY: number; startHeight: number } | null;
 
@@ -50,7 +51,7 @@ export function PlanningGanttGridRow({
   onOpenTaskMenu: (taskId: string, x: number, y: number, event: { preventDefault: () => void; stopPropagation: () => void }) => void;
   onSelect: (taskId: string) => void;
   onSummaryToggle: () => void;
-  onTaskInlineEdit: (taskId: string, payload: Record<string, unknown>) => void;
+  onTaskInlineEdit: (taskId: string, payload: PlanningTaskUpdateRequest) => void;
   onRowHeightChange: (taskId: string, height: number) => void;
   onRowHeightReset: (taskId: string) => void;
 }) {

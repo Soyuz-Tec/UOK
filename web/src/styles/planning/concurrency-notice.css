@@ -19,6 +19,15 @@
   color: var(--uok-status-warning);
 }
 
+.planning-error-notice {
+  border-color: color-mix(in srgb, var(--uok-status-danger) 48%, var(--uok-border));
+  background: color-mix(in srgb, var(--uok-status-danger) 10%, var(--uok-bg-elevated));
+}
+
+.planning-error-notice > svg {
+  color: var(--uok-status-danger);
+}
+
 .planning-concurrency-copy {
   display: grid;
   gap: var(--uok-space-1);
