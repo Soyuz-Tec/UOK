@@ -290,7 +290,7 @@ def _create_task(
             "sort_order": sort_order,
             "parent_task_id": parent_task_id,
         },
-        f"planning-task-{title}-{suffix}",
+        f"planning-task-{title.replace(' ', '-')}-{suffix}",
     )
     assert created.status_code == 200, created.text
     return created.json()["result"]["id"]

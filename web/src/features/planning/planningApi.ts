@@ -16,9 +16,23 @@ function headers(token: string) {
 
 export async function planningJson<T>(token: string, path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(path, { ...options, headers: { ...headers(token), ...(options.headers || {}) } });
-  const data = await response.json().catch(() => ({}));
+  if (response.status === 204) return undefined as T;
+  const data = await response.json().catch(() => {
+    if (response.ok) throw new TypeError("Planning response body was not valid JSON.");
+    return {};
+  });
   if (!response.ok) throw data;
   return data as T;
+}
+
+async function planningMutationRequest<T>(token: string, path: string, options: RequestInit): Promise<T> {
+  const request = () => planningJson<T>(token, path, options);
+  try {
+    return await request();
+  } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    return request();
+  }
 }
 
 export function listPlanningProjects(token: string) {
@@ -32,12 +46,12 @@ export function loadPlanningSchedule(token: string, projectId: string) {
 export async function planningCommand<T>(token: string, command_type: string, payload: Record<string, unknown>, prefix: string, mutation: PlanningMutationOptions = {}) {
   const idempotencyKey = mutation.idempotencyKey || planningMutationKey(prefix);
   const body = JSON.stringify({ command_type, payload, idempotency_key: idempotencyKey });
-  return planningJson<CommandResult<T>>(token, "/api/commands", { method: "POST", body });
+  return planningMutationRequest<CommandResult<T>>(token, "/api/commands", { method: "POST", body });
 }
 
 function planningMutationJson<T>(token: string, path: string, options: RequestInit, prefix: string, mutation: PlanningMutationOptions = {}) {
   const idempotencyKey = mutation.idempotencyKey || planningMutationKey(prefix);
-  return planningJson<T>(token, path, {
+  return planningMutationRequest<T>(token, path, {
     ...options,
     headers: { ...options.headers, "Idempotency-Key": idempotencyKey },
   });

@@ -54,17 +54,38 @@ No feature is promoted beyond the evidence linked from its traceability row.
 ### Idempotency
 
 - Every Planning write accepts a stable client-supplied idempotency key.
+- Client keys contain 16 to 128 characters from ASCII letters, digits, `.`,
+  `_`, `:`, and `-`, beginning with a letter or digit.
+- The generic command endpoint requires a client key for every command; the
+  server does not synthesize one for that path.
 - Replaying the same key and payload returns the original result.
-- Reusing a key for a different command or payload returns a conflict.
-- The same key is reused by any retry of one user intent.
+- Reusing a key for a different command or payload returns HTTP `409`.
+- The same key is reused by any network retry of one user intent.
 
 ### Concurrency
 
 - The project schedule is the aggregate revision root.
 - Every accepted schedule mutation increments the project revision once.
 - Direct task changes also increment the task version.
-- Schedule reads return a revision validator; writes reject a stale expected
-  revision with a structured conflict response.
+- Schedule reads return one quoted strong ETag, never a weak `W/` validator.
+  The tag is a SHA-256 validator over the canonical actor-visible schedule
+  representation, including the project revision and deterministic
+  versions/hashes for contextual contributions such as capabilities and
+  `calendar.core` availability. A revision number alone is not a strong
+  validator while those values share the representation.
+- Meaningful mutations require `If-Match`; a missing precondition returns HTTP
+  `428` and a stale precondition returns HTTP `412` with a structured recovery
+  response.
+- The mutation contract accepts exactly one quoted strong tag. Weak tags,
+  wildcard `*`, and validator lists are invalid because they could bypass the
+  concurrency guarantee.
+- `If-Match` is authoritative. `expected_revision` is optional compatibility
+  metadata; when present it must agree with the revision represented by
+  `If-Match`, or the request fails as an internally inconsistent precondition.
+- HTTP `409` remains reserved for idempotency and domain-state conflicts, not
+  missing or stale revision preconditions.
+- Review-only contracts that allow weak ETags or map a missing/stale revision
+  precondition to HTTP `409` are superseded by this decision.
 
 ### Atomic batch mutations
 
@@ -117,7 +138,8 @@ Existing numbered migrations remain immutable.
 ## Implementation order
 
 1. Add this ADR and the Planning traceability artifact.
-2. Add stable REST idempotency-key propagation and replay tests.
+2. Add stable REST and module-command idempotency-key propagation, lost-response
+   retry, replay, and changed-payload conflict tests.
 3. Add deterministic CPM fixtures and independent validation.
 4. Add additive revision and baseline metadata migration.
 5. Add optimistic concurrency and structured conflicts.
@@ -148,4 +170,3 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 - API clients must retain idempotency and revision metadata.
 - Old baselines remain readable with an explicit partial-completeness warning.
 - Operation Control Workspace work starts only after Gate A exits successfully.
-

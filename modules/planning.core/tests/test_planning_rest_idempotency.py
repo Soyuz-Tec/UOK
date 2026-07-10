@@ -19,7 +19,28 @@ def test_planning_rest_writes_require_and_replay_idempotency_key(client: TestCli
     missing = client.post("/api/planning/projects", headers=ops, json=payload)
     assert missing.status_code == 422, missing.text
 
-    key = f"planning-rest-project-{suffix}"
+    too_short = client.post(
+        "/api/planning/projects",
+        headers={**ops, "Idempotency-Key": "short"},
+        json=payload,
+    )
+    assert too_short.status_code == 422, too_short.text
+
+    whitespace = client.post(
+        "/api/planning/projects",
+        headers={**ops, "Idempotency-Key": " " * 16},
+        json=payload,
+    )
+    assert whitespace.status_code == 422, whitespace.text
+
+    too_long = client.post(
+        "/api/planning/projects",
+        headers={**ops, "Idempotency-Key": "a" * 129},
+        json=payload,
+    )
+    assert too_long.status_code == 422, too_long.text
+
+    key = f"planning-rest-project-{suffix}".ljust(128, "x")
     headers = {**ops, "Idempotency-Key": key}
     created = client.post("/api/planning/projects", headers=headers, json=payload)
     assert created.status_code == 200, created.text

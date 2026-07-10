@@ -1119,8 +1119,11 @@ export interface components {
              * @example CreateContact
              */
             command_type: string;
-            /** Idempotency Key */
-            idempotency_key?: string | null;
+            /**
+             * Idempotency Key
+             * @description Required and reused unchanged for retries of one user intent.
+             */
+            idempotency_key: string;
             /** Payload */
             payload?: {
                 [key: string]: unknown;
@@ -1368,6 +1371,15 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** IdempotencyConflictDetail */
+        IdempotencyConflictDetail: {
+            /** Error */
+            error: string;
+        };
+        /** IdempotencyConflictResponse */
+        IdempotencyConflictResponse: {
+            detail: components["schemas"]["IdempotencyConflictDetail"];
         };
         /** LoginRequest */
         LoginRequest: {
@@ -2337,6 +2349,15 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Idempotency key conflicts with another command request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3566,7 +3587,8 @@ export interface operations {
     assign_resource_api_planning_assignments_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path?: never;
@@ -3589,6 +3611,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3603,7 +3634,8 @@ export interface operations {
     remove_dependency_api_planning_dependencies__dependency_id__delete: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path: {
@@ -3624,6 +3656,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3638,7 +3679,8 @@ export interface operations {
     update_dependency_api_planning_dependencies__dependency_id__patch: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path: {
@@ -3661,6 +3703,15 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3710,7 +3761,8 @@ export interface operations {
     create_project_api_planning_projects_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path?: never;
@@ -3733,6 +3785,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3747,7 +3808,8 @@ export interface operations {
     create_baseline_api_planning_projects__project_id__baselines_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path: {
@@ -3772,6 +3834,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3786,7 +3857,8 @@ export interface operations {
     set_calendar_api_planning_projects__project_id__calendar_put: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path: {
@@ -3811,6 +3883,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3825,7 +3906,8 @@ export interface operations {
     link_tasks_api_planning_projects__project_id__dependencies_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path: {
@@ -3850,6 +3932,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3864,7 +3955,8 @@ export interface operations {
     create_resource_api_planning_projects__project_id__resources_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path: {
@@ -3887,6 +3979,15 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3938,7 +4039,8 @@ export interface operations {
     create_task_api_planning_projects__project_id__tasks_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path: {
@@ -3963,6 +4065,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3977,7 +4088,8 @@ export interface operations {
     delete_task_api_planning_tasks__task_id__delete: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path: {
@@ -3998,6 +4110,15 @@ export interface operations {
                     };
                 };
             };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -4012,7 +4133,8 @@ export interface operations {
     update_task_api_planning_tasks__task_id__patch: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path: {
@@ -4035,6 +4157,15 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
             /** @description Validation Error */

@@ -123,16 +123,12 @@
             "type": "string"
           },
           "idempotency_key": {
-            "anyOf": [
-              {
-                "maxLength": 180,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Idempotency Key"
+            "description": "Required and reused unchanged for retries of one user intent.",
+            "maxLength": 128,
+            "minLength": 16,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+            "title": "Idempotency Key",
+            "type": "string"
           },
           "payload": {
             "additionalProperties": true,
@@ -141,7 +137,8 @@
           }
         },
         "required": [
-          "command_type"
+          "command_type",
+          "idempotency_key"
         ],
         "title": "CommandRequest",
         "type": "object"
@@ -1127,6 +1124,31 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "IdempotencyConflictDetail": {
+        "properties": {
+          "error": {
+            "title": "Error",
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "IdempotencyConflictDetail",
+        "type": "object"
+      },
+      "IdempotencyConflictResponse": {
+        "properties": {
+          "detail": {
+            "$ref": "#/components/schemas/IdempotencyConflictDetail"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "IdempotencyConflictResponse",
         "type": "object"
       },
       "LoginRequest": {
@@ -3045,6 +3067,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another command request."
           },
           "422": {
             "content": {
@@ -5214,6 +5246,18 @@
         "parameters": [
           {
             "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
             "name": "authorization",
             "required": false,
             "schema": {
@@ -5252,6 +5296,16 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5279,6 +5333,18 @@
             "required": true,
             "schema": {
               "title": "Dependency Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
               "type": "string"
             }
           },
@@ -5312,6 +5378,16 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5337,6 +5413,18 @@
             "required": true,
             "schema": {
               "title": "Dependency Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
               "type": "string"
             }
           },
@@ -5379,6 +5467,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
           },
           "422": {
             "content": {
@@ -5455,6 +5553,18 @@
         "parameters": [
           {
             "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
             "name": "authorization",
             "required": false,
             "schema": {
@@ -5493,6 +5603,16 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5520,6 +5640,18 @@
             "required": true,
             "schema": {
               "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
               "type": "string"
             }
           },
@@ -5563,6 +5695,16 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5590,6 +5732,18 @@
             "required": true,
             "schema": {
               "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
               "type": "string"
             }
           },
@@ -5633,6 +5787,16 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5660,6 +5824,18 @@
             "required": true,
             "schema": {
               "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
               "type": "string"
             }
           },
@@ -5703,6 +5879,16 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5730,6 +5916,18 @@
             "required": true,
             "schema": {
               "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
               "type": "string"
             }
           },
@@ -5772,6 +5970,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
           },
           "422": {
             "content": {
@@ -5865,6 +6073,18 @@
           },
           {
             "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
             "name": "authorization",
             "required": false,
             "schema": {
@@ -5903,6 +6123,16 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5930,6 +6160,18 @@
             "required": true,
             "schema": {
               "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
               "type": "string"
             }
           },
@@ -5963,6 +6205,16 @@
             },
             "description": "Successful Response"
           },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5988,6 +6240,18 @@
             "required": true,
             "schema": {
               "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
               "type": "string"
             }
           },
@@ -6030,6 +6294,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdempotencyConflictResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
           },
           "422": {
             "content": {

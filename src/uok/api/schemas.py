@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from ..commands import MAX_IDEMPOTENCY_KEY_LENGTH
+from ..commands import MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH, MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH
 from ..contact_api_schemas import (  # noqa: F401
     ContactCsvImportRequest,
     ContactGroupMembersRequest,
@@ -31,4 +31,18 @@ class RegisterRequest(BaseModel):
 class CommandRequest(BaseModel):
     command_type: str = Field(..., max_length=120, examples=["CreateContact"])
     payload: dict[str, Any] = Field(default_factory=dict)
-    idempotency_key: str | None = Field(default=None, max_length=MAX_IDEMPOTENCY_KEY_LENGTH)
+    idempotency_key: str = Field(
+        ...,
+        min_length=MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+        max_length=MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+        description="Required and reused unchanged for retries of one user intent.",
+    )
+
+
+class IdempotencyConflictDetail(BaseModel):
+    error: str
+
+
+class IdempotencyConflictResponse(BaseModel):
+    detail: IdempotencyConflictDetail

@@ -29,8 +29,8 @@ requirement.
 |---|---|---|---|---|
 | PLA-A-001 | Canonical CPM values | `scheduler.py` contains CPM-like metrics | Independent chain, parallel, merge, lag/lead, calendar, target-date, and cycle fixtures | `source_present` |
 | PLA-A-002 | Independent hard-constraint validation | Schedule validation exists | Independent validator rejects injected dependency, calendar, constraint, and resource violations | `planned` |
-| PLA-A-003 | Stable REST idempotency | UOK command gateway supports replay | Planning write headers, same-key replay, and changed-payload conflict tests | `integration_tested` |
-| PLA-A-004 | Optimistic concurrency | No project revision contract | Migration, ETag/expected revision, stale-write conflict, and UI recovery proof | `planned` |
+| PLA-A-003 | Stable Planning idempotency | UOK command gateway supports replay | Every REST write requires a client key; module-command missing-key, replay, changed-payload conflict, and lost-response retry tests pass | `integration_tested` |
+| PLA-A-004 | Optimistic concurrency | No project revision contract | Migration, strong ETag/If-Match, HTTP 428/412, and typed UI recovery proof | `planned` |
 | PLA-A-005 | Atomic batch mutation | UI currently runs independent updates | All-or-nothing rollback and one-revision success tests | `planned` |
 | PLA-A-006 | Complete immutable baseline | Baseline stores a partial task snapshot | Canonical v2 snapshot, hash verification, immutability, and legacy warning tests | `source_present` |
 | PLA-A-007 | Server capability enforcement | `planning.read/manage` exist | Capability matrix and direct adversarial API tests | `source_present` |
@@ -40,12 +40,28 @@ requirement.
 | PLA-A-011 | End-to-end audit correlation | Commands and Planning events exist | One user intent correlates command, derived changes, event, audit/outbox, revision, and response | `source_present` |
 | PLA-A-012 | Accessible non-drag alternatives | Keyboard and inspector paths exist | Move, resize, progress, dependency, and create flows proven without dragging | `integration_tested` |
 
-## Current branch evidence
+## Current slice evidence
 
-- Draft review: [PR #20](https://github.com/Soyuz-Tec/UOK/pull/20)
-- Verified head: `32664c2e43415e65c9bcb1232a7ed47bdba0e212`
-- [Unified Operating Kernel CI run 382](https://github.com/Soyuz-Tec/UOK/actions/runs/29065310361): passed compilation, audits, engineering evidence, module contract, source-size guardrail, Python tests, PostgreSQL baseline verification, frontend tests, and frontend build.
-- [OpenSSF Scorecard run 127](https://github.com/Soyuz-Tec/UOK/actions/runs/29065310359): passed.
+- Draft review and exact current-head checks: [PR #20](https://github.com/Soyuz-Tec/UOK/pull/20)
+- Backend REST integration proof: `modules/planning.core/tests/test_planning_rest_idempotency.py`
+- Runtime/generated OpenAPI parity proof: `modules/planning.core/tests/test_planning_idempotency_contract.py`
+- Generic command replay/conflict integration and synthetic insert-race recovery regression: `modules/planning.core/tests/test_planning_command_idempotency.py`
+- Shared command-conflict regression: `modules/contacts.core/tests/test_contacts_command_safety.py`
+- Frontend key propagation and lost-response retry proof: `web/src/features/planning/planningApi.test.ts`
+- Generated REST contract: `web/src/generated/openapi.json` and `web/src/generated/openapi.d.ts`
+
+Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
+GitHub check rollup so this durable map does not become stale when an evidence
+commit changes the branch head.
+
+## Current idempotency boundary
+
+The current UOK command log scopes keys by organization and rechecks the
+replaying actor's permission and module state. Persisted actor/application
+scoping and original-actor audit attribution are not yet present in the command
+log schema. They remain required before `production_ready` and are tracked with
+the Gate A audit-correlation work rather than inferred from PLA-A-003's current
+integration evidence.
 
 ## Required reference schedule cases
 
@@ -75,4 +91,3 @@ Before Gate A closes, link this artifact from:
 - `docs/ARCHITECTURE.md`;
 - `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`;
 - `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md`.
-

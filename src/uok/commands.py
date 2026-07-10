@@ -4,6 +4,7 @@ from typing import Any
 from uuid import uuid4
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .module_commands import command_permissions, load_module_command_handlers
@@ -13,7 +14,13 @@ from .security import Actor, require_permission
 from .util import dumps, loads
 
 COMMAND_PERMISSIONS = command_permissions()
+MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH = 16
+MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH = 128
 MAX_IDEMPOTENCY_KEY_LENGTH = 180
+
+
+class IdempotencyConflictError(ValueError):
+    """Raised when one idempotency key is reused for different command content."""
 
 
 def clean_command_text(value: Any) -> str:
@@ -59,7 +66,7 @@ def _authorized_replay_or_none(db: Session, actor: Actor, command_type: str, pay
     if not existing or existing.status != "succeeded":
         return None
     if existing.command_type != command_type or existing.request_json != request_json:
-        raise ValueError("idempotency_key is already used for a different command request")
+        raise IdempotencyConflictError("idempotency_key is already used for a different command request")
     return {"idempotent": True, "status": existing.status, "result": loads(existing.response_json)}
 
 
@@ -88,7 +95,14 @@ def execute_command(db: Session, actor: Actor, command_type: str, payload: dict[
         request_json=request_json,
     )
     db.add(log)
-    db.flush()
+    try:
+        db.flush()
+    except IntegrityError as exc:
+        db.rollback()
+        replay = _authorized_replay_or_none(db, actor, command_type, payload, key, request_json)
+        if replay is not None:
+            return replay
+        raise
     try:
         result = handler(db, actor, payload, log.id)
         log.status = "succeeded"
@@ -102,7 +116,10 @@ def execute_command(db: Session, actor: Actor, command_type: str, payload: dict[
 
 __all__ = [
     "COMMAND_PERMISSIONS",
+    "IdempotencyConflictError",
+    "MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH",
     "MAX_IDEMPOTENCY_KEY_LENGTH",
+    "MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH",
     "clean_command_text",
     "command_handlers",
     "execute_command",

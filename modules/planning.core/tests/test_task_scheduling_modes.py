@@ -56,6 +56,6 @@ def test_resource_leveling_moves_later_auto_tasks(client: TestClient) -> None:
 
 
 def _task(client: TestClient, headers: dict[str, str], project_id: str, suffix: str, title: str, start: str, end: str, mode: str) -> str:
-    response = command(client, headers, "CreatePlanningTask", {"project_id": project_id, "title": title, "start": start, "end": end, "scheduling_mode": mode}, f"mode-task-{title}-{suffix}")
+    response = command(client, headers, "CreatePlanningTask", {"project_id": project_id, "title": title, "start": start, "end": end, "scheduling_mode": mode}, f"mode-task-{title.replace(' ', '-')}-{suffix}")
     assert response.status_code == 200, response.text
     return response.json()["result"]["id"]
