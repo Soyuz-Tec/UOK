@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A local/runtime evidence verified and Gate B typed links runtime-proven.
+**Status:** Active evidence catalog; Gate A local/runtime evidence verified and Gate B typed links plus execution-date semantics runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -51,6 +51,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Typed client contracts | `runtime_proven` | Explicit Planning requests, mutation results, domain/precondition errors, revisions, capabilities, history, and workspace actions replace broad payloads at the browser API boundary and generated OpenAPI is contract-tested. |
 | Accessible failure recovery | `runtime_proven` | Chromium proof focuses and announces domain failures with server repair, field, revision, and audit references; stale writes preserve explicit reload/reapply recovery. |
 | Typed operation links | `runtime_proven` | Project/task references use server-selected resolvers, actor-specific safe states, Planning revision/audit evidence, baseline capture, and no foreign keys or copied payloads from optional providers; PostgreSQL and candidate lifecycle proof pass. |
+| Execution date semantics | `runtime_proven` | Planned dates remain scheduler-owned; forecast, reason-audited actual, and deadline facts use a dedicated typed mutation, project IANA timezone, UTC storage, DST-safe conversion, explicit variances, baseline capture, and PostgreSQL/candidate proof. |
 
 ## Grid And Column Features
 
@@ -85,7 +86,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 
 | Feature | Target behavior | Status |
 |---|---|---:|
-| Hour/day/week/month/quarter/year scale | Toolbar scale controls and zoom slider. Hour view uses 6-hour visual buckets while server scheduling remains date-based. | `source_present` |
+| Hour/day/week/month/quarter/year scale | Toolbar scale controls and zoom slider. Hour view uses 6-hour visual buckets and explicitly states that subday zoom is visual while server scheduling remains date-based. | `source_present` |
 | Today marker | Current date marker and scroll-to-today command. | `source_present` |
 | Fit project | Fit button switches to a project-range scale and aligns the timeline viewport to the validated project start/end range. | `source_present` |
 | Scroll to selected task | Toolbar command centers the selected task's date on the timeline and returns focus to the selected row. | `source_present` |
@@ -162,6 +163,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Focus and stale-state recovery | Successful inline edits restore control focus; rejected stale writes and inverses focus an announced repair alert and do not overwrite latest server state. | `runtime_proven` |
 | Audit history | Planning schedule events and source-command references are recorded. | `runtime_proven` |
 | Operation Links inspector | A capability-gated inspector creates and removes typed references, labels resolver state, and exposes an Open action only for authorized ready targets. | `runtime_proven` |
+| Planned/forecast/actual/deadline editor | Task inspector labels planned dates, edits forecast/actual/deadline facts, requires a reason for actual changes, shows project timezone/variance, and states the subday boundary. | `runtime_proven` |
 
 ## Current UI Audit And Execution Plan
 

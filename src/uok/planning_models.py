@@ -26,6 +26,7 @@ class PlanningProject(Base):
     status: Mapped[str] = mapped_column(String(40), default="active")
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    timezone_name: Mapped[str] = mapped_column("timezone", String(80), default="UTC", server_default="UTC")
     revision: Mapped[int] = mapped_column(BigInteger, default=1, server_default="1")
     attrs_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
@@ -34,6 +35,7 @@ class PlanningProject(Base):
         UniqueConstraint("organization_id", "name"),
         CheckConstraint("revision >= 1", name="ck_planning_projects_revision_positive"),
         CheckConstraint("end_at >= start_at", name="ck_planning_projects_date_order"),
+        CheckConstraint("length(trim(timezone)) BETWEEN 1 AND 80", name="ck_planning_projects_timezone_nonempty"),
         Index("ix_planning_core_projects_org_status", "organization_id", "status"),
         Index("ix_planning_core_projects_org_revision", "organization_id", "id", "revision"),
     )
@@ -50,6 +52,11 @@ class PlanningTask(Base):
     status: Mapped[str] = mapped_column(String(40), default="planned")
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    forecast_start_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    forecast_end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    actual_start_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    actual_end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    deadline_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     duration_days: Mapped[int] = mapped_column(Integer, default=1)
     progress: Mapped[int] = mapped_column(Integer, default=0)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
@@ -60,6 +67,9 @@ class PlanningTask(Base):
     __table_args__ = (
         CheckConstraint("version >= 1", name="ck_planning_tasks_version_positive"),
         CheckConstraint("end_at >= start_at", name="ck_planning_tasks_date_order"),
+        CheckConstraint("forecast_start_at IS NULL OR forecast_end_at IS NULL OR forecast_end_at >= forecast_start_at", name="ck_planning_tasks_forecast_order"),
+        CheckConstraint("actual_end_at IS NULL OR actual_start_at IS NOT NULL", name="ck_planning_tasks_actual_start_required"),
+        CheckConstraint("actual_start_at IS NULL OR actual_end_at IS NULL OR actual_end_at >= actual_start_at", name="ck_planning_tasks_actual_order"),
         CheckConstraint("duration_days >= 0", name="ck_planning_tasks_duration_nonnegative"),
         CheckConstraint("progress >= 0 AND progress <= 100", name="ck_planning_tasks_progress_range"),
         CheckConstraint("sort_order >= 0", name="ck_planning_tasks_sort_order_nonnegative"),
@@ -68,6 +78,7 @@ class PlanningTask(Base):
         Index("ix_planning_core_tasks_project_status", "organization_id", "project_id", "status"),
         Index("ix_planning_core_tasks_org_project_version", "organization_id", "project_id", "version"),
         Index("ix_planning_core_tasks_org_project_parent", "organization_id", "project_id", "parent_task_id"),
+        Index("ix_planning_core_tasks_org_project_deadline", "organization_id", "project_id", "deadline_at"),
     )
 
 

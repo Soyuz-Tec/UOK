@@ -24,8 +24,10 @@ python -m pytest .\modules\planning.core\tests\test_planning_database_invariants
 python -m pytest .\modules\planning.core\tests\test_planning_structured_errors.py .\modules\planning.core\tests\test_planning_idempotency_contract.py -q
 python -m pytest .\modules\planning.core\tests\test_resource_capacity_validation.py .\modules\planning.core\tests\test_planning_status_policy.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_links.py -q
+python -m pytest .\modules\planning.core\tests\test_planning_date_semantics.py -q
 npm --prefix web test -- --run src/features/planning/planningHistoryExecution.test.ts src/features/planning/usePlanningWorkspaceMutations.test.tsx src/shared/forms/InlineTextEdit.test.tsx
 npm --prefix web test -- --run src/features/planning/PlanningOperationLinksPanel.test.tsx src/features/planning/planningApi.test.ts
+npm --prefix web test -- --run src/features/planning/PlanningTaskDateFields.test.tsx src/features/planning/planningApi.test.ts
 npm --prefix web run test:ui-proof
 ```
 
@@ -36,3 +38,4 @@ HTTP and contract helpers so each file stays within the source-size policy:
 - `verify/UokCandidatePlanningHttp.ps1`
 - `verify/UokCandidatePlanningContracts.ps1`
 - `verify/UokCandidatePlanningLinks.ps1`
+- `verify/UokCandidatePlanningDates.ps1`

@@ -204,7 +204,7 @@ def _command_project_id(db: Session, actor: Actor, command_type: str, payload: d
         "CreatePlanningLink",
         "RemovePlanningLink",
     }
-    task_commands = {"UpdatePlanningTask", "DeletePlanningTask", "AssignPlanningResource"}
+    task_commands = {"UpdatePlanningTask", "UpdatePlanningTaskDates", "DeletePlanningTask", "AssignPlanningResource"}
     dependency_commands = {"UpdatePlanningDependency", "RemovePlanningDependency"}
     if command_type in project_commands:
         if not payload.get("project_id"):
@@ -253,6 +253,11 @@ def _task_state(task: PlanningTask) -> tuple[Any, ...]:
         task.status,
         task.start_at,
         task.end_at,
+        task.forecast_start_at,
+        task.forecast_end_at,
+        task.actual_start_at,
+        task.actual_end_at,
+        task.deadline_at,
         task.duration_days,
         task.progress,
         task.sort_order,

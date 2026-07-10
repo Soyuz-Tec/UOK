@@ -11,6 +11,7 @@ PLANNING_MUTATIONS = {
     ("post", "/api/planning/projects"),
     ("post", "/api/planning/projects/{project_id}/tasks"),
     ("patch", "/api/planning/tasks/{task_id}"),
+    ("patch", "/api/planning/tasks/{task_id}/dates"),
     ("delete", "/api/planning/tasks/{task_id}"),
     ("post", "/api/planning/projects/{project_id}/dependencies"),
     ("patch", "/api/planning/dependencies/{dependency_id}"),
@@ -49,6 +50,7 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
         assert_baseline_read_contract(schema)
         assert_capability_read_contract(schema)
         assert_link_contract(schema)
+        assert_date_semantics_contract(schema)
 
 
 def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object]) -> None:
@@ -194,3 +196,14 @@ def assert_link_contract(schema: dict[str, object]) -> None:
     target = schema["components"]["schemas"]["PlanningLinkTargetRequest"]
     assert target["additionalProperties"] is False
     assert "communication_thread" in target["properties"]["kind"]["pattern"]
+
+
+def assert_date_semantics_contract(schema: dict[str, object]) -> None:
+    operation = schema["paths"]["/api/planning/tasks/{task_id}/dates"]["patch"]
+    request = operation["requestBody"]["content"]["application/json"]["schema"]
+    assert request["$ref"] == "#/components/schemas/PlanningTaskDateUpdateRequest"
+    date_request = schema["components"]["schemas"]["PlanningTaskDateUpdateRequest"]
+    assert date_request["additionalProperties"] is False
+    for field in ("forecast_start", "forecast_end", "actual_start", "actual_end", "deadline"):
+        value = next(item for item in date_request["properties"][field]["anyOf"] if item.get("type") == "string")
+        assert value["minLength"] == value["maxLength"] == 10

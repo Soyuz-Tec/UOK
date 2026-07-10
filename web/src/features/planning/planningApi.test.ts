@@ -15,6 +15,7 @@ import {
   removePlanningLink,
   type PlanningStrongEtag,
   updatePlanningTask,
+  updatePlanningTaskDates,
 } from "./planningApi";
 
 const etag1 = strongEtag(1, "a");
@@ -70,6 +71,23 @@ describe("Planning API concurrency and idempotency", () => {
     expect(headers.get("Authorization")).toBe("Bearer token");
     expect(headers.get("Idempotency-Key")).toBe("planning-task-intent-1");
     expect(headers.get("If-Match")).toBe(etag1);
+  });
+
+  it("sends typed execution dates through their dedicated concurrency-guarded route", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ task: { id: "task-1" } }, 200, etag2));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await updatePlanningTaskDates("token", "task-1", {
+      forecast_end: "2026-08-12",
+      actual_start: "2026-08-10",
+      reason: "Observed operating start",
+    }, { ifMatch: etag1, idempotencyKey: "planning-task-dates-1" });
+
+    const [path, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(path).toBe("/api/planning/tasks/task-1/dates");
+    expect(JSON.parse(String(request.body))).toEqual({ forecast_end: "2026-08-12", actual_start: "2026-08-10", reason: "Observed operating start" });
+    expect(new Headers(request.headers).get("If-Match")).toBe(etag1);
+    expect(new Headers(request.headers).get("Idempotency-Key")).toBe("planning-task-dates-1");
   });
 
   it("sends one ordered task batch with stable operation identities", async () => {

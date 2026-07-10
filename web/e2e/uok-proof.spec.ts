@@ -367,6 +367,9 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     for (const scale of ["minute", "hour", "day", "week", "sprint", "stage", "month", "quarter", "year"]) {
       await expect(page.getByRole("button", { name: scale, exact: true })).toBeVisible();
     }
+    await page.getByRole("button", { name: "minute", exact: true }).click();
+    await expect(page.getByText("Subday zoom is visual; schedule changes snap to whole project dates.")).toBeVisible();
+    await page.getByRole("button", { name: "day", exact: true }).click();
     await page.getByRole("button", { name: "Done", exact: true }).click();
     if (viewport.width > 980) {
       const chart = page.locator(".planning-owned-chart");
@@ -456,6 +459,10 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     }
     await page.getByRole("tab", { name: "Task" }).click();
     await expect(page.getByLabel("Task editor")).toBeVisible();
+    await expect(page.getByLabel("Planned start")).toBeVisible();
+    await expect(page.getByLabel("Planned end")).toBeVisible();
+    await expect(page.getByLabel("Task execution dates")).toBeVisible();
+    await expect(page.getByText(/hour and minute zoom are visual only/i)).toBeVisible();
     await page.getByRole("tab", { name: "Dependencies" }).click();
     await expect(page.getByLabel("Dependency editor")).toBeVisible();
     await page.getByRole("tab", { name: "Calendar" }).click();
@@ -584,8 +591,8 @@ test("Planning mutations remain operable without drag gestures", async ({ page }
 
   await page.getByRole("button", { name: "Task", exact: true }).click();
   await taskEditor.getByLabel("Title", { exact: true }).fill("Keyboard-created task");
-  await taskEditor.getByLabel("Start", { exact: true }).fill("2026-08-10");
-  await taskEditor.getByLabel("End", { exact: true }).fill("2026-08-12");
+  await taskEditor.getByLabel("Planned start", { exact: true }).fill("2026-08-10");
+  await taskEditor.getByLabel("Planned end", { exact: true }).fill("2026-08-12");
   await page.getByRole("button", { name: "Add task" }).focus();
   await page.keyboard.press("Enter");
   await expect.poll(() => taskPayloads.at(-1)).toMatchObject({

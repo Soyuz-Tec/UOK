@@ -14,6 +14,7 @@ import type {
   PlanningScheduleMutationResult,
   PlanningTaskCreateRequest,
   PlanningTaskCreateResult,
+  PlanningTaskDateUpdateRequest,
   PlanningTaskUpdateRequest,
   PlanningTaskUpdateResult,
 } from "./planningContracts";
@@ -108,6 +109,10 @@ export async function planningCommand<T, P extends object>(token: string, comman
 
 export function updatePlanningTask(token: string, taskId: string, payload: PlanningTaskUpdateRequest, mutation: PlanningMutationOptions) {
   return planningMutationJson<PlanningTaskUpdateResult>(token, `/api/planning/tasks/${taskId}`, { method: "PATCH", body: JSON.stringify(payload) }, "planning-task-update", mutation);
+}
+
+export function updatePlanningTaskDates(token: string, taskId: string, payload: PlanningTaskDateUpdateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningTaskUpdateResult>(token, `/api/planning/tasks/${taskId}/dates`, { method: "PATCH", body: JSON.stringify(payload) }, "planning-task-dates", mutation);
 }
 
 export function createPlanningTask(token: string, projectId: string, payload: PlanningTaskCreateRequest, mutation: PlanningMutationOptions) {

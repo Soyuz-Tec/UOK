@@ -13,6 +13,7 @@ import {
   setPlanningCalendar,
   updatePlanningDependency,
   updatePlanningTask,
+  updatePlanningTaskDates,
 } from "./planningApi";
 import type { PlanningMutationIntent } from "./planningConcurrencyState";
 import { planningHistoryDiff, planningLevelHistory } from "./planningHistory";
@@ -28,6 +29,7 @@ import type {
   PlanningLinkCreateRequest,
   PlanningResourceCreateRequest,
   PlanningTaskCreateRequest,
+  PlanningTaskDateUpdateRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
 
@@ -37,6 +39,10 @@ export function rescheduleTaskIntent(token: string, taskId: string, start: strin
 
 export function saveTaskIntent(token: string, taskId: string, payload: PlanningTaskUpdateRequest, cascade: boolean) {
   return intent("task", "Edit task", { taskId, cascade }, (etag) => updatePlanningTask(token, taskId, withCascade(payload, cascade), { ifMatch: etag }));
+}
+
+export function saveTaskDatesIntent(token: string, taskId: string, payload: PlanningTaskDateUpdateRequest) {
+  return intent("task-dates", "Edit task execution dates", { taskId, action: "task_dates_updated" }, (etag) => updatePlanningTaskDates(token, taskId, payload, { ifMatch: etag }));
 }
 
 export function addTaskIntent(token: string, projectId: string, payload: PlanningTaskCreateRequest) {

@@ -16,6 +16,7 @@ export async function createPlanningDemoSchedule(token: string) {
     name: `Gantt Pilot ${stamp}`,
     start: "2026-08-03",
     end: "2026-08-28",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
   });
   const projectId = project.data.id;
   let etag = project.etag;

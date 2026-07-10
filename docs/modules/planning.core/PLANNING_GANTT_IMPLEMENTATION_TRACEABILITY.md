@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A local/runtime evidence closure verified 2026-07-10; Gate B typed-link implementation active; hosted CI, review, and merge pending.
+**Status:** Gate A local/runtime evidence closure verified 2026-07-10; Gate B typed-link and execution-date slices runtime-proven; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -89,7 +89,7 @@ requirement.
 | ID | Requirement | Current evidence | Required proof before Gate B closure | Status |
 |---|---|---|---|---|
 | PLA-B-001 | Typed cross-module links | Additive `PlanningLink` migration/model, server-owned resolver registry, REST/command APIs, typed client, capability-gated inspector, baseline inclusion, and ready/missing/cross-org/denied/disabled-provider tests | PostgreSQL 18 readback and candidate scenario pass; activate real Operation Graph/K Connect providers before claiming those target kinds ready | `runtime_proven` |
-| PLA-B-002 | Planned/forecast/actual/deadline semantics | Compatibility decision recorded in review package | Additive fields, mutation authority, variance read model, timezone/DST tests, and UI labels | `planned` |
+| PLA-B-002 | Planned/forecast/actual/deadline semantics | Additive project timezone/task date migration, scheduler/fact authority split, dedicated audited mutation, variance read model, typed client, explicit UI labels, and visual-only subday disclosure | New York spring/fall DST storage, reason/order/permission/ETag rejection, planned-move actual preservation, PostgreSQL readback, baseline capture, and candidate scenario pass | `runtime_proven` |
 | PLA-B-003 | First-class participants | Party ownership boundary approved by ADR-0004 | Participant migration/API/filter/UI with canonical authorized Party resolution | `planned` |
 | PLA-B-004 | Gates and evidence blockers | Link target kinds and blocking intent exist | Requirement state machine, policy-checked approve/reject/waive, readiness impact, and audit proof | `planned` |
 | PLA-B-005 | Communication thread jump | `kconnect.thread` resolver name and unavailable state are reserved | Owning provider, permission contract, correct-thread open action, disabled/denied proof | `planned` |
@@ -103,6 +103,15 @@ Current Gate B link evidence:
 - Typed client and capability-gated inspector proof: `web/src/features/planning/planningApi.test.ts` and `PlanningOperationLinksPanel.test.tsx`
 - Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningLinks.ps1`
 - Persistent PostgreSQL proof: `planning_links`, null-safe identity uniqueness, four checks, three foreign keys, and all three access indexes read back after backup and additive migration; full candidate and five Chromium scenarios passed after rebuild.
+
+Current Gate B date-semantics evidence:
+
+- ADR: `docs/architecture/ADR-0005-planning-date-semantics.md`
+- Migration: `modules/planning.core/migrations/006_planning_date_semantics.sql`
+- Backend contract and DST/audit proof: `modules/planning.core/tests/test_planning_date_semantics.py`
+- Typed browser editor proof: `web/src/features/planning/PlanningTaskDateFields.test.tsx` and `web/src/features/planning/planningApi.test.ts`
+- Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningDates.ps1`
+- Persistent PostgreSQL proof: project timezone, five execution-date columns, four checks, and deadline index read back after backup; rebuilt candidate preserved project-local New York dates, rejected an actual correction without a reason, and passed the module verifier.
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence
@@ -255,12 +264,13 @@ schedule displayed by the Gantt; they are not relabeled as CPM early dates.
 Summary tasks are excluded from the graph and dependency links to summaries are
 rejected.
 
-The project compatibility `end` value is currently the explicit target finish.
+The project compatibility `end` value remains the explicit target finish.
 When the target is later than the calculated finish, late dates anchor to the
 calculated finish so the longest path remains zero-float and visible. When the
 target is earlier, late dates anchor to the target and negative float is
 reported without moving the commitment or clamping the value. A future
-planned/forecast/target date migration will replace this compatibility mapping.
+The Gate B task date migration does not change that project-level target mapping;
+a future explicit project commitment model may replace it through a separate ADR.
 
 The independent validators deliberately live outside their calculation engines.
 One recomputes CPM hard invariants from the published result; the other

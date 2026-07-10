@@ -63,7 +63,7 @@ def complete_baseline_snapshot(
     project_snapshot = {
         **schedule["project"],
         "source_revision": int(project.revision),
-        "timezone": str(project_attrs.get("timezone") or "UTC"),
+        "timezone": project.timezone_name,
         "target_finish": schedule["calculation"]["target_finish"],
         "attributes": project_attrs,
     }
@@ -77,6 +77,7 @@ def complete_baseline_snapshot(
         "resources": sorted(schedule["resources"], key=lambda item: str(item["id"])),
         "assignments": sorted(schedule["assignments"], key=lambda item: str(item["id"])),
         "links": sorted(schedule["links"], key=lambda item: str(item["id"])),
+        "date_semantics": schedule["date_semantics"],
         "calculation": schedule["calculation"],
         "validation": schedule["validation"],
         "creator": {"user_id": actor.user_id, "username": actor.username},

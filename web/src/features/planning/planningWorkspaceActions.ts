@@ -16,6 +16,7 @@ import {
   saveCalendarIntent,
   saveDependencyIntent,
   saveTaskIntent,
+  saveTaskDatesIntent,
 } from "./planningMutationIntents";
 import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningTask } from "./types";
@@ -28,6 +29,7 @@ import type {
   PlanningLinkCreateRequest,
   PlanningResourceCreateRequest,
   PlanningTaskCreateRequest,
+  PlanningTaskDateUpdateRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
 
@@ -43,6 +45,7 @@ export function planningWorkspaceActions({
   const actions = {
     rescheduleTask: (taskId: string, start: string, end: string, cascade = true) => mutate(rescheduleTaskIntent(token, taskId, start, end, cascade)),
     saveTask: (taskId: string, payload: PlanningTaskUpdateRequest, cascade = true) => mutate(saveTaskIntent(token, taskId, payload, cascade)),
+    saveTaskDates: (taskId: string, payload: PlanningTaskDateUpdateRequest) => mutate(saveTaskDatesIntent(token, taskId, payload)),
     addTask: (payload: PlanningTaskCreateRequest) => mutate(addTaskIntent(token, projectId, payload)),
     removeTask: (taskId: string) => mutate(removeTaskIntent(token, taskId)),
     addDependency: (payload: PlanningDependencyCreateRequest) => mutate(addDependencyIntent(token, projectId, payload)),

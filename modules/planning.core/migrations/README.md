@@ -16,6 +16,11 @@ duplicate/invalid-row preflight before applying it to an existing database.
 optional cross-module targets. It stores stable target identity and sanitized
 resolver provenance without foreign keys into optional module tables; target
 modules retain authorization, lifecycle, privacy, and retention ownership.
+`006_planning_date_semantics.sql` adds a defaulted project IANA timezone plus
+nullable forecast, actual, and deadline task columns. It enforces forecast and
+actual ordering, requires an actual start before actual finish, and adds the
+deadline access index. Application validation recognizes IANA names and
+requires a reason for actual-date changes.
 
 For the persistent local PostgreSQL profile, back up first, apply the migration
 before rebuilding an image that selects the new columns, and read the columns
@@ -30,6 +35,8 @@ Get-Content -Raw .\modules\planning.core\migrations\003_planning_complete_baseli
 Get-Content -Raw .\modules\planning.core\migrations\004_planning_database_invariants.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 Get-Content -Raw .\modules\planning.core\migrations\005_planning_operation_links.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\006_planning_date_semantics.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 ```
 

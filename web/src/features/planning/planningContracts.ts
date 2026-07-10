@@ -10,6 +10,7 @@ export type PlanningProjectCreateRequest = {
   name: string;
   start: string;
   end: string;
+  timezone?: string;
 };
 
 export type PlanningTaskCreateRequest = {
@@ -29,6 +30,16 @@ export type PlanningTaskCreateRequest = {
 
 export type PlanningTaskUpdateRequest = Partial<PlanningTaskCreateRequest> & {
   cascade?: boolean;
+};
+
+export type PlanningTaskDateUpdateRequest = {
+  expected_revision?: number;
+  forecast_start?: string | null;
+  forecast_end?: string | null;
+  actual_start?: string | null;
+  actual_end?: string | null;
+  deadline?: string | null;
+  reason?: string | null;
 };
 
 export type PlanningDependencyCreateRequest = {

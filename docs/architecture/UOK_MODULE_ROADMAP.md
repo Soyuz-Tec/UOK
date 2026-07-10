@@ -23,7 +23,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `apps.manager` | control module | required baseline module | `UOK-3.1.0-alpha.3` | UOK bootstrap control module |
 | `agents.core` | capability module | planned scaffold for governed agent operations | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | `contacts.core` | capability module | Contacts MVP hardening in progress | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
-| `planning.core` | capability module | Gate A verified; Gate B typed links runtime-proven | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
+| `planning.core` | capability module | Gate A verified; Gate B typed links and execution-date semantics runtime-proven | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
 | `reports.core` | capability module | secure global report artifact foundation in PR #5 | `UOK-3.1.0-alpha.3` | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` |
 
 ## Current Target

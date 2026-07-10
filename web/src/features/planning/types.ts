@@ -6,6 +6,7 @@ export type PlanningProject = {
   status: string;
   start: string;
   end: string;
+  timezone?: string;
   revision: number;
   updated_at?: string | null;
 };
@@ -28,6 +29,18 @@ export type PlanningTask = {
   status: PlanningTaskStatus;
   start: string;
   end: string;
+  planned_start?: string;
+  planned_end?: string;
+  forecast_start?: string | null;
+  forecast_end?: string | null;
+  actual_start?: string | null;
+  actual_end?: string | null;
+  deadline?: string | null;
+  forecast_start_variance_days?: number | null;
+  forecast_end_variance_days?: number | null;
+  actual_start_variance_days?: number | null;
+  actual_end_variance_days?: number | null;
+  deadline_variance_days?: number | null;
   duration_days: number;
   progress: number;
   sort_order: number;
@@ -169,6 +182,16 @@ export type PlanningSchedule = {
   resources: PlanningResource[];
   assignments: PlanningAssignment[];
   links: PlanningLink[];
+  date_semantics?: {
+    precision: "calendar_date";
+    project_timezone: string;
+    storage_timezone: "UTC";
+    planned: { fields: string[]; authority: "scheduler" };
+    forecast: { fields: string[]; authority: "planner" };
+    actual: { fields: string[]; authority: "explicit_fact_with_reason" };
+    deadline: { fields: string[]; authority: "planner_commitment" };
+    subday_scales: "visual_only";
+  };
   baselines: PlanningBaseline[];
   calculation?: {
     engine_version: string;

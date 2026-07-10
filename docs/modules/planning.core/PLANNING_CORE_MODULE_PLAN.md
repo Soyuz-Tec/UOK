@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A local/runtime closure verified, Gate B typed-link slice runtime-proven.
+**Status:** Active module plan; Gate A local/runtime closure verified, Gate B typed-link and execution-date slices runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -50,6 +50,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - revision-aware supported undo/redo operations that carry the source command through one atomic batch, reject stale inverses, preserve latest server state, and fail closed for unsupported/destructive history
 - keyboard/form alternatives for task dates, progress, dependency, and creation mutations, with successful inline focus restoration and announced stale-state recovery
 - Planning-owned typed project/task links with actor-specific `ready`, `unavailable`, `denied`, and `missing` resolver states; live Party, report-artifact/document/evidence, and calendar-event providers; optional Operation Graph and K Connect providers remain explicitly unavailable
+- distinct scheduler-owned planned, planner-owned forecast/deadline, and reason-audited actual dates; project IANA timezone, UTC storage, DST-safe calendar-date conversion, variance fields, and visual-only subday scale disclosure
 - planning audit events
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier
 - Playwright UI proof for Gantt rendering, editor panels, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness
@@ -81,6 +82,16 @@ Operation, shipment, asset, location, agreement, and communication-thread
 providers are not present in this candidate and must not be represented as
 resolved objects.
 
+## Date Semantics Boundary
+
+ADR-0005 governs execution dates. Existing task `start_at`/`end_at` remain the
+planned schedule and compatible `start`/`end` API. Forecast, actual, and
+deadline values are separate facts and are never changed by dependency
+propagation, summary rollup, or leveling. Actual corrections require an audit
+reason. Project-local ISO dates are converted through the immutable project
+IANA timezone to UTC storage and back; hour and minute Gantt scales do not imply
+time-of-day scheduling.
+
 The current release validates:
 
 - required dates
@@ -106,6 +117,7 @@ python -m pytest modules/planning.core/tests/test_planning_structured_errors.py 
 python -m pytest modules/planning.core/tests/test_planning_complete_baselines.py -q
 python -m pytest modules/planning.core/tests/test_resource_capacity_validation.py modules/planning.core/tests/test_planning_status_policy.py -q
 python -m pytest modules/planning.core/tests/test_planning_links.py -q
+python -m pytest modules/planning.core/tests/test_planning_date_semantics.py -q
 npm --prefix web run build
 npm --prefix web run test:ui-proof
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify

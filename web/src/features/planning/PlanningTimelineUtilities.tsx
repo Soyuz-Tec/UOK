@@ -126,6 +126,7 @@ export function PlanningTimelineUtilities({
               <input type="range" min="0" max={maxZoomValue()} value={scaleToZoomValue(scale)} aria-label="Timeline zoom" onChange={(event) => onScaleChange(zoomValueToScale(event.target.value))} />
             </label>
             <SegmentedControl value={scale} onChange={onScaleChange} options={timelineScaleOptions.map((item) => ({ id: item.value, label: item.label, icon: CalendarClock }))} label="Timeline scale" />
+            {scale === "hour" || scale === "minute" ? <span className="planning-muted" role="status">Subday zoom is visual; schedule changes snap to whole project dates.</span> : null}
           </div>
           <div className="planning-utility-group planning-navigation-controls" aria-label="Timeline navigation">
             <label className="planning-toolbar-select">

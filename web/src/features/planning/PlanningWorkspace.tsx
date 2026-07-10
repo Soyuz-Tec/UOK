@@ -179,6 +179,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onTabChange={setInspectorTab}
           onProjectChange={actions.changeProject}
           onSaveTask={actions.saveTask}
+          onSaveTaskDates={actions.saveTaskDates}
           onCreateTask={actions.addTask}
           onDeleteTask={actions.removeTask}
           onCreateDependency={actions.addDependency}

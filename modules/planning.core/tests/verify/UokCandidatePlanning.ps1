@@ -1,6 +1,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningHttp.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningContracts.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningLinks.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningDates.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -61,7 +62,7 @@ function Invoke-UokPlanningCandidateScenario {
 
     $project = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
         command_type = "CreatePlanningProject"
-        payload = @{ name = "UOK Planning $Stamp"; start = "2026-08-01"; end = "2026-08-20" }
+        payload = @{ name = "UOK Planning $Stamp"; start = "2026-08-01"; end = "2026-08-20"; timezone = "America/New_York" }
         idempotency_key = "uok-planning-project-$Stamp"
     }
     if (-not $project.result.id -or $project.result.correlation_id -ne $project.command_id) {
@@ -71,7 +72,7 @@ function Invoke-UokPlanningCandidateScenario {
 
     $projectReplay = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
         command_type = "CreatePlanningProject"
-        payload = @{ name = "UOK Planning $Stamp"; start = "2026-08-01"; end = "2026-08-20" }
+        payload = @{ name = "UOK Planning $Stamp"; start = "2026-08-01"; end = "2026-08-20"; timezone = "America/New_York" }
         idempotency_key = "uok-planning-project-$Stamp"
     }
     if (-not $projectReplay.idempotent) {
@@ -80,7 +81,7 @@ function Invoke-UokPlanningCandidateScenario {
     $conflictError = Get-UokHttpFailureBody -StatusCode 409 -UnexpectedSuccessMessage "Planning idempotency conflict unexpectedly succeeded" -Action {
         Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
             command_type = "CreatePlanningProject"
-            payload = @{ name = "Changed UOK Planning $Stamp"; start = "2026-08-01"; end = "2026-08-20" }
+            payload = @{ name = "Changed UOK Planning $Stamp"; start = "2026-08-01"; end = "2026-08-20"; timezone = "America/New_York" }
             idempotency_key = "uok-planning-project-$Stamp"
         }
     }
@@ -148,6 +149,7 @@ function Invoke-UokPlanningCandidateScenario {
         throw "Planning task creation failed: $($first | ConvertTo-Json -Depth 20) $($second | ConvertTo-Json -Depth 20)"
     }
     Assert-UokPlanningLinkContract -ProjectId $projectId -TaskId $first.result.id -Headers $Headers -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
+    Assert-UokPlanningDateContract -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -Stamp $Stamp
     Assert-UokPlanningStatusContracts -ProjectId $projectId -TaskId $first.result.id -Headers $OpsHeaders -Stamp $Stamp
 
     $beforeBatch = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $OpsHeaders
@@ -275,6 +277,9 @@ function Invoke-UokPlanningCandidateScenario {
         -or $baselineDetail.snapshot.tasks.Count -lt 2 `
         -or $baselineDetail.snapshot.dependencies.Count -lt 1 `
         -or -not $baselineDetail.snapshot.calculation.engine_version `
+        -or $baselineDetail.snapshot.project.timezone -ne "America/New_York" `
+        -or $baselineDetail.snapshot.date_semantics.subday_scales -ne "visual_only" `
+        -or ($baselineDetail.snapshot.tasks | Where-Object { $_.id -eq $first.result.id } | Select-Object -First 1).actual_start -ne "2026-08-02" `
         -or $baselineDetail.snapshot.capture.correlation_id -ne $baseline.command_id
     ) {
         throw "Planning complete baseline readback failed: $($baselineDetail | ConvertTo-Json -Depth 30)"

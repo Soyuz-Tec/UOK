@@ -1,7 +1,7 @@
 name: planning.core
 kind: capability_module
 version: APP_VERSION
-description: "Optional project planning, task scheduling, dependency, baseline, typed operation-link, calendar, and Gantt capability."
+description: "Optional project planning, task scheduling, execution-date, dependency, baseline, typed operation-link, calendar, and Gantt capability."
 installable: true
 uninstallable: true
 updatable: true
@@ -17,6 +17,7 @@ commands:
   - CreatePlanningProject
   - CreatePlanningTask
   - UpdatePlanningTask
+  - UpdatePlanningTaskDates
   - DeletePlanningTask
   - LinkPlanningTasks
   - UpdatePlanningDependency
@@ -33,6 +34,7 @@ events:
   - PlanningProjectCreated
   - PlanningTaskCreated
   - PlanningTaskUpdated
+  - PlanningTaskDatesUpdated
   - PlanningTaskDeleted
   - PlanningTaskLinked
   - PlanningDependencyUpdated

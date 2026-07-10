@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from .calendar_bridge import availability_warnings, calendar_availability_read_model
 from .calendar_payload import calendar_holidays, calendar_ignored_periods
+from .date_semantics import date_semantics_read_model, task_date_read_model
 from .link_read_model import planning_links_read_model
 from .policy import capability_read_model
 from .resource_capacity import calculate_resource_capacity, resource_capacity_warnings
@@ -72,13 +73,14 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     return {
         "project": serialize_project(project),
         "capabilities": capability_read_model(actor),
-        "tasks": [serialize_task(task, metrics.get(task.id, {}), latest_baseline.get(task.id), wbs.get(task.id, "")) for task in tasks],
+        "tasks": [serialize_task(task, metrics.get(task.id, {}), latest_baseline.get(task.id), wbs.get(task.id, ""), project.timezone_name) for task in tasks],
         "dependencies": [serialize_dependency(dep) for dep in dependencies],
         "calendar": _calendar_row(db, actor, project.id),
         "availability": availability,
         "resources": [serialize_resource(row) for row in resources],
         "assignments": [serialize_assignment(row) for row in assignments],
         "links": links,
+        "date_semantics": date_semantics_read_model(project),
         "baselines": [serialize_baseline(row) for row in baselines],
         "calculation": {
             "engine_version": analysis.engine_version,
@@ -109,12 +111,19 @@ def serialize_project(project: PlanningProject) -> dict[str, Any]:
         "status": project.status,
         "start": project.start_at.date().isoformat(),
         "end": project.end_at.date().isoformat(),
+        "timezone": project.timezone_name,
         "revision": int(project.revision),
         "updated_at": _timestamp(project.updated_at),
     }
 
 
-def serialize_task(task: PlanningTask, metrics: dict[str, Any] | None = None, baseline: dict[str, str] | None = None, wbs: str = "") -> dict[str, Any]:
+def serialize_task(
+    task: PlanningTask,
+    metrics: dict[str, Any] | None = None,
+    baseline: dict[str, str] | None = None,
+    wbs: str = "",
+    project_timezone: str = "UTC",
+) -> dict[str, Any]:
     metrics = metrics or {}
     start = task.start_at.date()
     end = task.end_at.date()
@@ -146,6 +155,7 @@ def serialize_task(task: PlanningTask, metrics: dict[str, Any] | None = None, ba
         "baseline_end": baseline_end,
         "start_variance_days": _variance_days(baseline_start, start),
         "end_variance_days": _variance_days(baseline_end, end),
+        **task_date_read_model(task, project_timezone),
         **serialize_task_constraint(task),
     }
 

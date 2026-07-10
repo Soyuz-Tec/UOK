@@ -21,6 +21,7 @@ from .schemas import (
     PlanningProjectRequest,
     PlanningResourceRequest,
     PlanningTaskRequest,
+    PlanningTaskDateUpdateRequest,
     PlanningTaskUpdateRequest,
 )
 from uok.commands import (
@@ -149,6 +150,13 @@ def update_task(task_id: str, req: PlanningTaskUpdateRequest, response: Response
     payload = req.model_dump(exclude_none=True)
     payload["task_id"] = task_id
     return run_planning_command(db, actor, "UpdatePlanningTask", payload, idempotency_key, response, if_match)
+
+
+@router.patch("/tasks/{task_id}/dates", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def update_task_dates(task_id: str, req: PlanningTaskDateUpdateRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
+    payload = req.model_dump(exclude_unset=True)
+    payload["task_id"] = task_id
+    return run_planning_command(db, actor, "UpdatePlanningTaskDates", payload, idempotency_key, response, if_match)
 
 
 @router.delete("/tasks/{task_id}", responses=PLANNING_MUTATION_RESPONSES, response_model=None)

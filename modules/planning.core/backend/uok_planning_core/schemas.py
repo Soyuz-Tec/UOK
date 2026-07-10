@@ -9,6 +9,7 @@ class PlanningProjectRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=180)
     start: str = Field(..., min_length=10, max_length=32)
     end: str = Field(..., min_length=10, max_length=32)
+    timezone: str = Field(default="UTC", min_length=1, max_length=80)
 
 
 class PlanningTaskRequest(BaseModel):
@@ -40,6 +41,18 @@ class PlanningTaskUpdateRequest(BaseModel):
     scheduling_mode: str | None = Field(default=None, pattern="^(auto|manual)$")
     constraint_type: str | None = Field(default=None, max_length=40)
     constraint_date: str | None = Field(default=None, min_length=10, max_length=32)
+
+
+class PlanningTaskDateUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    forecast_start: str | None = Field(default=None, min_length=10, max_length=10)
+    forecast_end: str | None = Field(default=None, min_length=10, max_length=10)
+    actual_start: str | None = Field(default=None, min_length=10, max_length=10)
+    actual_end: str | None = Field(default=None, min_length=10, max_length=10)
+    deadline: str | None = Field(default=None, min_length=10, max_length=10)
+    reason: str | None = Field(default=None, max_length=500)
 
 
 class PlanningDependencyRequest(BaseModel):

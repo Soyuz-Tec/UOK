@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_level_resources, cmd_set_calendar
 from .batch import cmd_batch_operations
 from .concurrency import guarded_planning_command
+from .date_commands import cmd_update_planning_task_dates
+from .date_semantics import planning_timezone
 from .link_commands import cmd_create_planning_link, cmd_remove_planning_link
 from .models import (
     PlanningAssignment,
@@ -44,7 +46,14 @@ def cmd_create_project(db: Session, actor: Actor, payload: dict[str, Any], comma
     end = parse_planning_date(payload.get("end"), "end")
     if end < start:
         raise ValueError("project end must be on or after start")
-    project = PlanningProject(organization_id=actor.organization_id, name=name, start_at=start, end_at=end, updated_at=utcnow())
+    project = PlanningProject(
+        organization_id=actor.organization_id,
+        name=name,
+        start_at=start,
+        end_at=end,
+        timezone_name=planning_timezone(payload.get("timezone")),
+        updated_at=utcnow(),
+    )
     db.add(project)
     db.flush()
     emit_planning_event(db, actor, command_id, "PlanningProjectCreated", "PlanningProject", project.id, {"name": name})
@@ -64,7 +73,7 @@ def cmd_create_task(db: Session, actor: Actor, payload: dict[str, Any], command_
     _assert_schedule_valid(db, actor, project.id)
     emit_planning_event(db, actor, command_id, "PlanningTaskCreated", "PlanningTask", task.id, {"project_id": project.id, "title": task.title})
     add_planning_schedule_event(db, actor, command_id, project.id, "task_created", {"task_id": task.id, "changed_task_ids": sorted(changed)})
-    return serialize_task(task)
+    return serialize_task(task, project_timezone=project.timezone_name)
 
 
 def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
@@ -78,7 +87,7 @@ def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_
     _assert_schedule_valid(db, actor, project.id)
     emit_planning_event(db, actor, command_id, "PlanningTaskUpdated", "PlanningTask", task.id, {"project_id": project.id, "title": task.title})
     add_planning_schedule_event(db, actor, command_id, project.id, "task_updated", {"task_id": task.id, "changed_task_ids": sorted(changed)})
-    return {"task": serialize_task(task), "validation": schedule_read_model(db, actor, project)["validation"]}
+    return {"task": serialize_task(task, project_timezone=project.timezone_name), "validation": schedule_read_model(db, actor, project)["validation"]}
 
 
 def cmd_delete_task(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
@@ -157,6 +166,7 @@ def command_handlers() -> dict[str, CommandHandler]:
         "CreatePlanningProject": cmd_create_project,
         "CreatePlanningTask": cmd_create_task,
         "UpdatePlanningTask": cmd_update_task,
+        "UpdatePlanningTaskDates": cmd_update_planning_task_dates,
         "DeletePlanningTask": cmd_delete_task,
         "LinkPlanningTasks": cmd_link_tasks,
         "UpdatePlanningDependency": cmd_update_dependency,
@@ -178,6 +188,7 @@ def command_permissions() -> dict[str, str]:
         "CreatePlanningProject",
         "CreatePlanningTask",
         "UpdatePlanningTask",
+        "UpdatePlanningTaskDates",
         "DeletePlanningTask",
         "LinkPlanningTasks",
         "UpdatePlanningDependency",

@@ -23,8 +23,8 @@ export function PlanningTaskGrid({ tasks, resources, assignments, selectedTaskId
             <th>WBS</th>
             <th>Task</th>
             <th>Type</th>
-            <th>Start</th>
-            <th>End</th>
+            <th>Planned start</th>
+            <th>Planned end</th>
             <th>Baseline</th>
             <th>Slack</th>
             <th>Resources</th>

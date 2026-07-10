@@ -1071,6 +1071,23 @@ export interface paths {
         patch: operations["update_task_api_planning_tasks__task_id__patch"];
         trace?: never;
     };
+    "/api/planning/tasks/{task_id}/dates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Task Dates */
+        patch: operations["update_task_dates_api_planning_tasks__task_id__dates_patch"];
+        trace?: never;
+    };
     "/api/reports/artifacts/{artifact_id}": {
         parameters: {
             query?: never;
@@ -1670,6 +1687,11 @@ export interface components {
             name: string;
             /** Start */
             start: string;
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timezone: string;
         };
         /** PlanningResourceRequest */
         PlanningResourceRequest: {
@@ -1682,6 +1704,23 @@ export interface components {
              * @default
              */
             role: string;
+        };
+        /** PlanningTaskDateUpdateRequest */
+        PlanningTaskDateUpdateRequest: {
+            /** Actual End */
+            actual_end?: string | null;
+            /** Actual Start */
+            actual_start?: string | null;
+            /** Deadline */
+            deadline?: string | null;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Forecast End */
+            forecast_end?: string | null;
+            /** Forecast Start */
+            forecast_start?: string | null;
+            /** Reason */
+            reason?: string | null;
         };
         /** PlanningTaskRequest */
         PlanningTaskRequest: {
@@ -5112,6 +5151,93 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["PlanningTaskUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    update_task_dates_api_planning_tasks__task_id__dates_patch: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningTaskDateUpdateRequest"];
             };
         };
         responses: {

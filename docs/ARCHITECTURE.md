@@ -65,6 +65,7 @@ Operator browser
 - ADR-0002: `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`
 - ADR-0003: `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`
 - ADR-0004: `docs/architecture/ADR-0004-planning-typed-link-resolver.md`
+- ADR-0005: `docs/architecture/ADR-0005-planning-date-semantics.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -79,6 +80,7 @@ Operator browser
 - Planning Core module plan: `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
 - Planning Gantt Gate A traceability: `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`
 - Planning Gate B typed links resolve through module-owned adapters; absent Operation Graph and K Connect providers remain explicit `unavailable` states rather than simulated source objects.
+- Planning Gate B execution dates use scheduler-owned planned dates plus separate forecast, reason-audited actual, and deadline facts. Project-local calendar dates are stored as UTC instants through an immutable creation-time IANA timezone; subday Gantt scales remain visual-only.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 
