@@ -8,9 +8,9 @@ from typing import Any, Callable
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import PlanningProject, PlanningTask, PlanningTaskDependency, utcnow
+from .models import PlanningProject, PlanningTask, PlanningTaskDependency
 from .planning_errors import planning_domain_error
-from .task_aggregate_state import task_context_states
+from .revision_completion import finish_project_revision, task_states
 from uok.command_context import (
     COMMAND_ETAG_RESULT_KEY,
     COMMAND_IF_MATCH_CONTEXT_KEY,
@@ -36,7 +36,7 @@ def guarded_planning_command(command_type: str, handler: PlanningHandler) -> Pla
         try:
             context = _begin_command(db, actor, command_type, payload)
             result = handler(db, actor, payload, command_id)
-            return _finish_command(db, actor, context, result, command_id)
+            return _finish_command(db, actor, context, result, command_id, command_type, payload)
         except (CommandDomainError, CommandPreconditionError):
             raise
         except ValueError as exc:
@@ -106,7 +106,7 @@ def _begin_command(
         raise ValueError("project_id not found")
     schedule, current_etag = read_schedule_snapshot(db, actor, project)
     _require_precondition(project, payload, current_etag)
-    return PlanningConcurrencyContext(project=project, task_states=_task_states(db, actor, project.id))
+    return PlanningConcurrencyContext(project=project, task_states=task_states(db, actor, project.id))
 
 
 def _finish_command(
@@ -115,6 +115,8 @@ def _finish_command(
     context: PlanningConcurrencyContext | None,
     result: dict[str, Any],
     command_id: str,
+    command_type: str,
+    payload: dict[str, Any],
 ) -> dict[str, Any]:
     db.flush()
     if context is None:
@@ -125,16 +127,22 @@ def _finish_command(
         ))
         if not project:
             raise ValueError("created project was not found")
+        previous_task_states = None
     else:
         project = context.project
-        current_states = _task_states(db, actor, project.id)
-        for task in _all_project_tasks(db, actor, project.id):
-            previous = context.task_states.get(task.id)
-            if previous is not None and previous != current_states.get(task.id):
-                task.version = int(task.version) + 1
-        project.revision = int(project.revision) + 1
-        project.updated_at = utcnow()
-        db.flush()
+        previous_task_states = context.task_states
+    source_command_id = None
+    if command_type == "BatchPlanningOperations" and result.get("source_command_id"):
+        source_command_id = str(result["source_command_id"])
+    finish_project_revision(
+        db,
+        actor,
+        project,
+        previous_task_states,
+        command_type=command_type,
+        correlation_id=command_id,
+        source_command_id=source_command_id,
+    )
     schedule, etag = read_schedule_snapshot(db, actor, project)
     return _current_result(result, schedule, etag, command_id)
 
@@ -239,39 +247,6 @@ def _consistent_project_id(command_type: str, payload: dict[str, Any], resolved_
     if supplied is not None and str(supplied) != resolved_project_id:
         raise ValueError(f"{command_type} project_id does not match its target object")
     return resolved_project_id
-
-
-def _task_states(db: Session, actor: Actor, project_id: str) -> dict[str, tuple[Any, ...]]:
-    context = task_context_states(db, actor, project_id)
-    return {task.id: _task_state(task, context.get(task.id, ())) for task in _all_project_tasks(db, actor, project_id)}
-
-
-def _all_project_tasks(db: Session, actor: Actor, project_id: str) -> list[PlanningTask]:
-    return list(db.scalars(select(PlanningTask).where(
-        PlanningTask.organization_id == actor.organization_id,
-        PlanningTask.project_id == project_id,
-    )).all())
-
-
-def _task_state(task: PlanningTask, context: tuple[tuple[object, ...], ...] = ()) -> tuple[Any, ...]:
-    return (
-        task.parent_task_id,
-        task.title,
-        task.task_type,
-        task.status,
-        task.start_at,
-        task.end_at,
-        task.forecast_start_at,
-        task.forecast_end_at,
-        task.actual_start_at,
-        task.actual_end_at,
-        task.deadline_at,
-        task.duration_days,
-        task.progress,
-        task.sort_order,
-        task.attrs_json,
-        context,
-    )
 
 
 def _current_result(result: dict[str, Any], schedule: dict[str, Any], etag: str, command_id: str) -> dict[str, Any]:

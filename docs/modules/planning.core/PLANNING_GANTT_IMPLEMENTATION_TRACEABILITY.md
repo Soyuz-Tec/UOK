@@ -43,6 +43,7 @@ requirement.
 | PLA-A-014 | Revision-aware safe history | Supported inverse operations carry the originating command and execute atomically against the current revision | Chromium proves undo source correlation, redo after a remote revision returns `412`, latest server state remains intact, and unsupported history fails closed | `runtime_proven` |
 | PLA-A-015 | Accessible focus and state recovery | Inline editing and error notices expose stable focus targets | Successful keyboard edits restore focus; stale mutation and inverse failures focus and announce repair guidance without unsafe automatic replay | `runtime_proven` |
 | PLA-A-016 | Evidence governance and lifecycle | Feature catalog, module plan, architecture index, ADR, module tests, and verifier use one evidence taxonomy and module-owned paths | Ambiguous catalog labels are removed, source-size checks pass, and install/enable/verify/rebuild candidate lifecycle is exercised | `runtime_proven` |
+| PLA-A-017 | Immutable revision and outbox evidence | Every successful guarded command appends one checksummed project-revision ledger row and one schema-v1 internal outbox envelope in the same transaction; history is actor-scoped and raw payloads remain private | Creation/derived-version/correlation checks, post-insert rollback, replay, exact source lookup, poisoning regression, PostgreSQL concurrency/immutability/tenant/envelope probes, and rebuilt candidate proof pass | `runtime_proven` |
 
 ## Current slice evidence
 
@@ -74,6 +75,11 @@ requirement.
 - Candidate runtime proof: operations receives edit/baseline/level/admin, viewer receives read-only, viewer direct project creation remains denied, and module verification passes after rebuild.
 - Database constraint/duplicate rejection and additive migration proof: `modules/planning.core/tests/test_planning_database_invariants.py` and `modules/planning.core/migrations/004_planning_database_invariants.sql`
 - End-to-end command/response/module-event/schedule-event correlation proof: `modules/planning.core/tests/test_planning_audit_correlation.py`
+- Immutable revision/outbox transaction, checksum, sanitized API, replay, rollback, and source-link poisoning proof: `modules/planning.core/tests/test_planning_revision_outbox.py`
+- PostgreSQL/ORM storage guards and generated public-contract privacy proof: `modules/planning.core/tests/test_planning_revision_storage_guards.py` and `modules/planning.core/tests/test_planning_revision_openapi_contract.py`
+- Additive PostgreSQL ledger/outbox schema and guards: `modules/planning.core/migrations/014_planning_revision_outbox.sql`
+- Rollback-only live PostgreSQL mutation, tenant, source-project, and envelope guard probes: `modules/planning.core/tests/runtime/verify_planning_revision_outbox.sql`
+- Architecture boundary: `docs/architecture/ADR-0019-planning-revision-ledger-and-transactional-outbox.md`
 - Structured validation/permission/precondition error and persisted command-log parity proof: `modules/planning.core/tests/test_planning_structured_errors.py`
 - Structured idempotency conflict proof: `modules/planning.core/tests/test_planning_command_idempotency.py` and `modules/planning.core/tests/test_planning_rest_idempotency.py`
 - Typed request propagation, typed domain/precondition mapping, repair-status propagation, and accessible alert proof: `web/src/features/planning/planningApi.test.ts`, `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`, and `web/src/features/planning/PlanningErrorNotice.test.tsx`
@@ -323,7 +329,8 @@ materially changed task version once, and emits one `PlanningBatchApplied`
 event plus one module-owned schedule event carrying the command correlation id.
 Link and gate operations retain their domain events under that same
 correlation. A source command must be successful, organization-scoped, and
-present in this project's schedule history. Link operations retain
+present by exact correlation in this project's immutable revision ledger;
+schedule-event payload search is not authoritative. Link operations retain
 `planning.link`; gate decisions retain `planning.gate.approve`, so
 `planning.edit` cannot escalate authority through a batch. Any operation or
 final schedule failure rolls the complete transaction back and returns a
@@ -382,6 +389,16 @@ same ID to every successful REST/generic result after the final revision and
 ETag are calculated, so response metadata cannot change schedule truth. Failed
 commands use the same command-log ID as their returned error correlation, and
 the persisted response body is the exact returned structured envelope.
+
+Migration `014_planning_revision_outbox.sql` adds a separate immutable
+revision ledger and one internal outbox envelope for every newly committed
+Planning revision. Both rows are inserted before the command transaction
+commits, so a failure removes schedule, ledger, and outbox together and an
+idempotent replay adds no duplicate. The exact command ID joins the ledger to
+the existing response and event streams. Public history returns sanitized
+metadata and checksums, never raw outbox payloads or actor identity. Existing
+projects are not given synthetic history, and this slice has no dispatcher,
+retry, published-state, broker, or external-delivery claim.
 
 ## Current structured error and typed client boundary
 

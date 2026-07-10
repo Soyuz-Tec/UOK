@@ -7,6 +7,7 @@ the PostgreSQL two-client row-lock proof separately:
 ```powershell
 python .\modules\planning.core\tests\runtime\verify_planning_postgres_concurrency.py --base-url http://127.0.0.1:18088
 python .\modules\planning.core\tests\runtime\verify_planning_cpm.py --base-url http://127.0.0.1:18088
+Get-Content -Raw .\modules\planning.core\tests\runtime\verify_planning_revision_outbox.sql | podman exec -i uok-db-1 psql -U uok -d uok
 ```
 
 Planning behavior tests and candidate verifier scenarios live in this module-owned test directory.
@@ -21,6 +22,7 @@ python -m pytest .\modules\planning.core\tests\test_planning_atomic_batch.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_complete_baselines.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_capabilities.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_database_invariants.py .\modules\planning.core\tests\test_planning_audit_correlation.py -q
+python -m pytest .\modules\planning.core\tests\test_planning_revision_outbox.py .\modules\planning.core\tests\test_planning_revision_storage_guards.py .\modules\planning.core\tests\test_planning_revision_openapi_contract.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_structured_errors.py .\modules\planning.core\tests\test_planning_idempotency_contract.py -q
 python -m pytest .\modules\planning.core\tests\test_resource_capacity_validation.py .\modules\planning.core\tests\test_planning_status_policy.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_links.py -q

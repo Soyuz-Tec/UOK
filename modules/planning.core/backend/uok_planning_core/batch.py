@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .advanced_commands import clean_text
@@ -13,14 +12,14 @@ from .batch_operations import (
     batch_operation_authorized,
     required_batch_permission,
 )
-from .models import PlanningProject, PlanningScheduleEvent
+from .models import PlanningProject
 from .planning_audit import add_planning_schedule_event, emit_planning_event
+from .revision_history import project_revision_for_command
 from .read_model import schedule_read_model
 from .scheduler import apply_schedule, project_or_error
 from uok.command_context import CommandDomainError
 from uok.models import CommandLog
 from uok.security import Actor
-from uok.util import loads
 
 MAX_BATCH_OPERATIONS = 500
 
@@ -204,12 +203,7 @@ def _validated_source_command_id(
     source = db.get(CommandLog, source_command_id)
     if source is None or source.organization_id != actor.organization_id or source.status != "succeeded":
         raise _batch_error(project.revision, command_id, "batch_source_command_invalid", "source_command_id must reference a successful command in the current organization.", "source_command_id", "Use the correlation ID returned by the original successful command.")
-    project_events = db.scalars(select(PlanningScheduleEvent).where(
-        PlanningScheduleEvent.organization_id == actor.organization_id,
-        PlanningScheduleEvent.project_id == project.id,
-        PlanningScheduleEvent.payload_json.contains(source_command_id),
-    )).all()
-    if not any(loads(row.payload_json).get("correlation_id") == source_command_id for row in project_events):
+    if project_revision_for_command(db, actor, project.id, source_command_id) is None:
         raise _batch_error(
             project.revision,
             command_id,

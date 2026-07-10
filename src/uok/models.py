@@ -186,6 +186,7 @@ from .planning_models import (  # noqa: E402
 )
 from .planning_resource_models import PlanningAssignment, PlanningResource, PlanningResourceCalendar  # noqa: E402
 from .planning_analysis_models import PlanningAnalysisRecommendation, PlanningAnalysisRun, PlanningWhatIfSnapshot  # noqa: E402
+from .planning_audit_models import PlanningOutboxEvent, PlanningScheduleRevision  # noqa: E402
 
 from .calendar_models import (  # noqa: E402
     Calendar,

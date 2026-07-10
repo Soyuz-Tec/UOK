@@ -1190,6 +1190,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/projects/{project_id}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Revisions */
+        get: operations["project_revisions_api_planning_projects__project_id__revisions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/revisions/{revision_number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Revision */
+        get: operations["project_revision_api_planning_projects__project_id__revisions__revision_number__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/projects/{project_id}/risk-analyses": {
         parameters: {
             query?: never;
@@ -2282,6 +2316,22 @@ export interface components {
              */
             timeout_ms: number;
         };
+        /** PlanningOutboxMetadata */
+        PlanningOutboxMetadata: {
+            /** Checksum */
+            checksum: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Event Type */
+            event_type: string;
+            /** Id */
+            id: string;
+            /** Schema Version */
+            schema_version: number;
+        };
         /** PlanningPortfolioAttention */
         PlanningPortfolioAttention: {
             /** Gate Blocker Count */
@@ -2488,6 +2538,48 @@ export interface components {
              * @default
              */
             role: string;
+        };
+        /** PlanningRevisionMetadata */
+        PlanningRevisionMetadata: {
+            /** Changed Task Ids */
+            changed_task_ids: string[];
+            /** Command Type */
+            command_type: string;
+            /** Correlation Id */
+            correlation_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: string;
+            outbox: components["schemas"]["PlanningOutboxMetadata"];
+            /** Previous Revision */
+            previous_revision: number;
+            /** Project Id */
+            project_id: string;
+            /** Revision */
+            revision: number;
+            /** Revision Checksum */
+            revision_checksum: string;
+            /** Source Command Id */
+            source_command_id: string | null;
+            /** Task Versions */
+            task_versions: {
+                [key: string]: number;
+            };
+        };
+        /** PlanningRevisionPage */
+        PlanningRevisionPage: {
+            /** Items */
+            items: components["schemas"]["PlanningRevisionMetadata"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Project Id */
+            project_id: string;
         };
         /** PlanningRiskAnalysisRequest */
         PlanningRiskAnalysisRequest: {
@@ -6467,6 +6559,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_revisions_api_planning_projects__project_id__revisions_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningRevisionPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_revision_api_planning_projects__project_id__revisions__revision_number__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                revision_number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningRevisionMetadata"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

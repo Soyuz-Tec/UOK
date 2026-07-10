@@ -55,6 +55,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - first-class task participants with controlled responsibility roles, canonical actor-authorized Party resolution, project revision/task version/audit/baseline evidence, People inspector/view, and participant filtering
 - first-class task requirements with controlled submission/review/decision states, separate gate approval authority, matching typed evidence links, fail-closed task/project readiness, baseline/audit evidence, Gates inspector, and blocker filtering
 - planning audit events
+- immutable per-project revision history plus one same-transaction internal outbox envelope per successful command, exact inverse-source linkage, sanitized history reads, and explicit exclusion of dispatcher/delivery claims
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier
 - Playwright UI proof for Gantt rendering, editor panels, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness
 
@@ -271,6 +272,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 - resource calendar time-of-day shifts and recurring exception patterns beyond calendar-date capacity
 - deeper write integration that can publish selected Planning tasks or milestones to `calendar.core` events after user approval
 - richer baseline history and comparison controls beyond the current immutable detail/compare API and legacy warning
+- external outbox dispatch, delivery state, retries, and broker integration; the current append-only envelope proves only transactional persistence
 - richer critical path dependency-chain explanation beyond the current Dashboard summary
 - richer bulk edit fields after owner, priority, and calendar become first-class task fields
 - planning adapters for the separately deployed global import/export capability as needed

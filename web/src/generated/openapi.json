@@ -2583,6 +2583,41 @@
         "title": "PlanningOptimizationRequest",
         "type": "object"
       },
+      "PlanningOutboxMetadata": {
+        "additionalProperties": false,
+        "properties": {
+          "checksum": {
+            "title": "Checksum",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "title": "Schema Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "event_type",
+          "schema_version",
+          "checksum",
+          "created_at"
+        ],
+        "title": "PlanningOutboxMetadata",
+        "type": "object"
+      },
       "PlanningPortfolioAttention": {
         "properties": {
           "gate_blocker_count": {
@@ -3188,6 +3223,122 @@
           "name"
         ],
         "title": "PlanningResourceRequest",
+        "type": "object"
+      },
+      "PlanningRevisionMetadata": {
+        "additionalProperties": false,
+        "properties": {
+          "changed_task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Changed Task Ids",
+            "type": "array"
+          },
+          "command_type": {
+            "title": "Command Type",
+            "type": "string"
+          },
+          "correlation_id": {
+            "title": "Correlation Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "outbox": {
+            "$ref": "#/components/schemas/PlanningOutboxMetadata"
+          },
+          "previous_revision": {
+            "minimum": 0.0,
+            "title": "Previous Revision",
+            "type": "integer"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "revision": {
+            "minimum": 1.0,
+            "title": "Revision",
+            "type": "integer"
+          },
+          "revision_checksum": {
+            "title": "Revision Checksum",
+            "type": "string"
+          },
+          "source_command_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Command Id"
+          },
+          "task_versions": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Task Versions",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "project_id",
+          "revision",
+          "previous_revision",
+          "correlation_id",
+          "command_type",
+          "source_command_id",
+          "task_versions",
+          "changed_task_ids",
+          "revision_checksum",
+          "created_at",
+          "outbox"
+        ],
+        "title": "PlanningRevisionMetadata",
+        "type": "object"
+      },
+      "PlanningRevisionPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlanningRevisionMetadata"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "limit": {
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id",
+          "items",
+          "limit",
+          "offset"
+        ],
+        "title": "PlanningRevisionPage",
         "type": "object"
       },
       "PlanningRiskAnalysisRequest": {
@@ -10788,6 +10939,155 @@
           }
         },
         "summary": "Set Resource Calendar"
+      }
+    },
+    "/api/planning/projects/{project_id}/revisions": {
+      "get": {
+        "operationId": "project_revisions_api_planning_projects__project_id__revisions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 10000,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningRevisionPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project Revisions",
+        "tags": [
+          "planning-history"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/revisions/{revision_number}": {
+      "get": {
+        "operationId": "project_revision_api_planning_projects__project_id__revisions__revision_number__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "revision_number",
+            "required": true,
+            "schema": {
+              "title": "Revision Number",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningRevisionMetadata"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project Revision",
+        "tags": [
+          "planning-history"
+        ]
       }
     },
     "/api/planning/projects/{project_id}/risk-analyses": {

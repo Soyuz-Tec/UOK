@@ -7,7 +7,7 @@ from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
 from uok.db import SessionLocal
-from uok.models import CommandLog, EventRecord, PlanningScheduleEvent
+from uok.models import CommandLog, EventRecord, PlanningScheduleEvent, PlanningScheduleRevision
 from uok.util import loads
 
 
@@ -29,7 +29,7 @@ def test_hundred_operation_batch_commits_one_revision_and_replays_once(client: T
     accepted = client.post(
         f"/api/planning/projects/{project_id}/mutations:batch",
         headers={**ops, "Idempotency-Key": key, "If-Match": before.headers["ETag"]},
-        json={"expected_revision": before_revision, "source_command_id": source_command_id, "reason": "100 ordered updates", "operations": operations},
+        json={"expected_revision": before_revision, "source_command_id": source_command_id.upper(), "reason": "100 ordered updates", "operations": operations},
     )
 
     assert accepted.status_code == 200, accepted.text
@@ -49,7 +49,7 @@ def test_hundred_operation_batch_commits_one_revision_and_replays_once(client: T
     replay = client.post(
         f"/api/planning/projects/{project_id}/mutations:batch",
         headers={**ops, "Idempotency-Key": key, "If-Match": before.headers["ETag"]},
-        json={"expected_revision": before_revision, "source_command_id": source_command_id, "reason": "100 ordered updates", "operations": operations},
+        json={"expected_revision": before_revision, "source_command_id": source_command_id.upper(), "reason": "100 ordered updates", "operations": operations},
     )
     assert replay.status_code == 200, replay.text
     assert replay.json() == accepted.json()
@@ -205,6 +205,10 @@ def _assert_batch_correlation(command_id: str, source_command_id: str, project_i
         log = db.get(CommandLog, command_id)
         event = db.scalar(select(EventRecord).where(EventRecord.event_type == "PlanningBatchApplied", EventRecord.object_id == project_id))
         schedule_event = db.scalar(select(PlanningScheduleEvent).where(PlanningScheduleEvent.event_type == "batch_applied", PlanningScheduleEvent.project_id == project_id))
+        revision = db.scalar(select(PlanningScheduleRevision).where(
+            PlanningScheduleRevision.project_id == project_id,
+            PlanningScheduleRevision.correlation_id == command_id,
+        ))
         assert log is not None and log.status == "succeeded"
         assert event is not None and loads(event.payload_json)["correlation_id"] == command_id
         assert schedule_event is not None
@@ -212,3 +216,4 @@ def _assert_batch_correlation(command_id: str, source_command_id: str, project_i
         assert payload["correlation_id"] == command_id
         assert payload["source_command_id"] == source_command_id
         assert len(payload["operation_ids"]) == operation_count
+        assert revision is not None and revision.source_command_id == source_command_id

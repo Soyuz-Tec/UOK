@@ -38,6 +38,16 @@ remain compatible as one human FTE.
 with relational organization/project/resource scope, bounded default capacity,
 validated weekday/holiday/exception payloads, uniqueness, and an
 organization-first resource lookup index.
+`011_planning_what_if_snapshots.sql` adds immutable, checksummed schedule
+snapshots for governed analysis without changing live schedule ownership.
+`012_planning_analysis_runs.sql` adds reproducible, bounded risk and optimizer
+run evidence tied to a source snapshot and revision.
+`013_planning_analysis_recommendations.sql` adds governed optimizer
+recommendations with database-enforced decision, apply, and rollback states.
+`014_planning_revision_outbox.sql` adds one immutable revision-ledger row and
+one append-only transactional outbox event per successful Planning command. It
+contains no delivery state or dispatcher claim; upgraded projects begin with
+their first post-migration revision rather than synthetic history.
 
 For the persistent local PostgreSQL profile, back up first, apply the migration
 before rebuilding an image that selects the new columns, and read the columns
@@ -62,6 +72,14 @@ Get-Content -Raw .\modules\planning.core\migrations\008_planning_task_requiremen
 Get-Content -Raw .\modules\planning.core\migrations\009_planning_typed_resources.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 Get-Content -Raw .\modules\planning.core\migrations\010_planning_resource_calendars.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\011_planning_what_if_snapshots.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\012_planning_analysis_runs.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\013_planning_analysis_recommendations.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\014_planning_revision_outbox.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 ```
 

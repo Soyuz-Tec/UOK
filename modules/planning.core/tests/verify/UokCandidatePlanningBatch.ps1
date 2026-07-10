@@ -79,4 +79,22 @@ function Assert-UokPlanningMixedBatchContract {
     ) {
         throw "Planning mixed-batch rollback evidence is invalid: $($failure | ConvertTo-Json -Depth 20)"
     }
+
+    $history = Invoke-UokJson -Path "/api/planning/projects/$ProjectId/revisions?limit=200" -Headers $OpsHeaders
+    $latest = $history.items | Select-Object -First 1
+    $correlations = @($history.items | ForEach-Object { $_.correlation_id })
+    if (
+        $latest.revision -ne $batch.revision `
+        -or $latest.correlation_id -ne $batch.correlation_id `
+        -or $latest.outbox.event_type -ne "PlanningScheduleRevisionCommitted" `
+        -or $latest.outbox.schema_version -ne 1 `
+        -or -not $latest.revision_checksum `
+        -or -not $latest.outbox.checksum `
+        -or $latest.PSObject.Properties.Name -contains "actor_user_id" `
+        -or $latest.PSObject.Properties.Name -contains "payload_json" `
+        -or $latest.outbox.PSObject.Properties.Name -contains "payload_json" `
+        -or $correlations.Count -ne @($correlations | Sort-Object -Unique).Count
+    ) {
+        throw "Planning revision/outbox history evidence is invalid: $($history | ConvertTo-Json -Depth 20)"
+    }
 }

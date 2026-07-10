@@ -110,17 +110,37 @@ def main() -> None:
     final_consistent = final_consistent_response.json()
     if len(final_consistent["tasks"]) != 6:
         raise AssertionError(f"expected six tasks after consistency run, got {len(final_consistent['tasks'])}")
+    final_revision = int(final_consistent["project"]["revision"])
+    history = request_json(
+        "GET",
+        f"{base_url}/api/planning/projects/{project_id}/revisions?limit=200",
+        headers=ops,
+    ).json()["items"]
+    if [int(row["revision"]) for row in history] != list(range(final_revision, 0, -1)):
+        raise AssertionError(f"revision ledger is incomplete or out of sequence: {history}")
+    correlations = [str(row["correlation_id"]) for row in history]
+    if len(correlations) != len(set(correlations)):
+        raise AssertionError(f"revision ledger contains duplicate correlations: {correlations}")
+    for row in history:
+        if row["previous_revision"] != row["revision"] - 1:
+            raise AssertionError(f"revision predecessor is invalid: {row}")
+        if row["outbox"]["event_type"] != "PlanningScheduleRevisionCommitted" or row["outbox"]["schema_version"] != 1:
+            raise AssertionError(f"revision outbox metadata is invalid: {row}")
+        if "payload_json" in row or "actor_user_id" in row or "payload_json" in row["outbox"]:
+            raise AssertionError(f"revision API disclosed private outbox or actor data: {row}")
 
     print(json.dumps({
         "status": "passed",
         "database_profile": "PostgreSQL",
         "project_id": project_id,
         "initial_revision": revision,
-        "final_revision": final_consistent["project"]["revision"],
+        "final_revision": final_revision,
         "statuses": statuses,
         "winner_etag": next(response.headers["ETag"] for response in responses if response.status_code == 200),
         "final_etag": final_consistent_response.headers["ETag"],
         "read_write_consistency": "passed",
+        "revision_outbox_history": "passed",
+        "revision_outbox_rows": len(history),
     }, sort_keys=True))
 
 

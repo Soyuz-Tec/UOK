@@ -73,6 +73,7 @@ Operator browser
 - ADR-0009: `docs/architecture/ADR-0009-planning-typed-resource-boundary.md`
 - ADR-0010: `docs/architecture/ADR-0010-planning-resource-capacity-calendars.md`
 - ADR-0011: `docs/architecture/ADR-0011-planning-resource-calendar-correlation.md`
+- ADR-0019: `docs/architecture/ADR-0019-planning-revision-ledger-and-transactional-outbox.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -88,6 +89,7 @@ Operator browser
 - Communications Core module plan: `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md`
 - Planning Gantt Gate A traceability: `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`
 - Planning Gate B typed links resolve through module-owned adapters; K Connect threads now resolve through `communications.core`, while absent Operation Graph providers remain explicit `unavailable` states rather than simulated source objects.
+- Planning schedule writes append one immutable revision-ledger row and one internal transactional outbox envelope in the same project transaction. This is durable commit evidence only; no dispatcher or external-delivery claim exists.
 - Planning Gate B execution dates use scheduler-owned planned dates plus separate forecast, reason-audited actual, and deadline facts. Project-local calendar dates are stored as UTC instants through an immutable creation-time IANA timezone; subday Gantt scales remain visual-only.
 - Planning Gate B task participants reference canonical, authorized `contacts.core` Parties through actor-specific resolution without a cross-module foreign key. Responsibility roles remain distinct from Gate C capacity resources.
 - Planning Gate B requirements use a controlled, permissioned state machine and derive fail-closed task/project readiness from required decisions and actor-visible typed-link provider state.

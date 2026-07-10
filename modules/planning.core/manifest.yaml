@@ -113,6 +113,8 @@ owned_tables:
   - PlanningAssignment
   - PlanningBaseline
   - PlanningScheduleEvent
+  - PlanningScheduleRevision
+  - PlanningOutboxEvent
   - PlanningWhatIfSnapshot
   - PlanningAnalysisRun
   - PlanningAnalysisRecommendation
