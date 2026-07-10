@@ -67,7 +67,7 @@ export function ContactGroupsPanel({
         }}
       >
         <label className="field">
-          <span>New group</span>
+          <span className="visually-hidden">Group name</span>
           <input
             value={newGroupName}
             maxLength={120}
