@@ -18,7 +18,7 @@ describe("planning critical path model", () => {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-01", end: "2026-08-12" },
+    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-01", end: "2026-08-12", revision: 1 },
     tasks: [
       task("review", "Review", "1.3", "2026-08-09", "2026-08-12", false, 2),
       task("build", "Build Gantt", "1.2", "2026-08-04", "2026-08-08", true, 0),
@@ -37,6 +37,7 @@ function task(id: string, title: string, wbs: string, start: string, end: string
   return {
     id,
     project_id: "project-1",
+    version: 1,
     parent_task_id: null,
     wbs,
     title,

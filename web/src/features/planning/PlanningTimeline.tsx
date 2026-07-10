@@ -28,6 +28,7 @@ export function PlanningTimeline({
   selectedProjectId,
   busy,
   history,
+  bulkUpdatesAvailable,
   onScaleChange,
   onToggleCritical,
   onToggleBaselines,
@@ -63,6 +64,7 @@ export function PlanningTimeline({
   selectedProjectId: string;
   busy: string;
   history: PlanningHistoryState;
+  bulkUpdatesAvailable: boolean;
   onScaleChange: (scale: TimelineScale) => void;
   onToggleCritical: () => void;
   onToggleBaselines: () => void;
@@ -185,7 +187,14 @@ export function PlanningTimeline({
             <input type="checkbox" checked={selectedVisible} onChange={(event) => setSelectedVisible(event.target.checked)} />
             <span>{selectedCount} selected</span>
           </label>
-          {selectedVisible ? <PlanningBulkEditControls busy={busy === "bulk-task"} disabled={reviewMode} selectedTasks={selectedTasks} onBulkTaskEdit={onBulkTaskEdit} /> : null}
+          {selectedVisible ? (
+            <PlanningBulkEditControls
+              busy={busy === "bulk-task"}
+              disabled={reviewMode || !bulkUpdatesAvailable}
+              selectedTasks={selectedTasks}
+              onBulkTaskEdit={onBulkTaskEdit}
+            />
+          ) : null}
           <CommandButton icon={Plus} onClick={() => onNewTask("task")} disabled={reviewMode} primary>Task</CommandButton>
           <CommandButton icon={Milestone} onClick={() => onNewTask("milestone")} disabled={reviewMode}>Milestone</CommandButton>
           <CommandButton icon={Link2} onClick={onOpenDependencies} disabled={reviewMode}>Link</CommandButton>
@@ -197,8 +206,13 @@ export function PlanningTimeline({
           <CommandButton icon={Users} onClick={onOpenResources} disabled={reviewMode}>Resources</CommandButton>
           <CommandButton icon={Users} onClick={onLevelResources} loading={busy === "level"} disabled={reviewMode}>Level</CommandButton>
         </div>
-        <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} layoutMode={layoutMode} reviewMode={reviewMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onToggleLayoutMode={() => setLayoutMode((value) => value === "split" ? "timeline" : "split")} onToggleReviewMode={() => onReviewModeChange(!reviewMode)} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} token={token} viewDensity={viewDensity} />
-      </div>
+          <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} layoutMode={layoutMode} reviewMode={reviewMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onToggleLayoutMode={() => setLayoutMode((value) => value === "split" ? "timeline" : "split")} onToggleReviewMode={() => onReviewModeChange(!reviewMode)} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} token={token} viewDensity={viewDensity} />
+        </div>
+        {selectedVisible && !bulkUpdatesAvailable ? (
+          <div className="planning-bulk-unavailable" role="status">
+            Bulk edits require atomic batch support.
+          </div>
+        ) : null}
       {activeView === "Gantt chart" ? (
         <PlanningGantt
           schedule={visibleSchedule}

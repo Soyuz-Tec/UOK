@@ -59,7 +59,7 @@ describe("planning export model", () => {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Pilot Delivery", status: "planned", start: "2026-08-01", end: "2026-08-10" },
+    project: { id: "project-1", name: "Pilot Delivery", status: "planned", start: "2026-08-01", end: "2026-08-10", revision: 1 },
     tasks: [task()],
     dependencies: [],
     calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [], ignored_periods: [{ start: "2026-08-05", end: "2026-08-06" }] },
@@ -74,6 +74,7 @@ function task(): PlanningTask {
   return {
     id: "task-1",
     project_id: "project-1",
+    version: 1,
     title: "Scope, design",
     task_type: "task",
     status: "planned",

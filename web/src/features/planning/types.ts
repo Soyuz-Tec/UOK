@@ -6,12 +6,14 @@ export type PlanningProject = {
   status: string;
   start: string;
   end: string;
+  revision: number;
   updated_at?: string | null;
 };
 
 export type PlanningTask = {
   id: string;
   project_id: string;
+  version: number;
   parent_task_id?: string | null;
   wbs?: string;
   title: string;

@@ -22,6 +22,7 @@ function task(id: string, title: string, taskType: PlanningTask["task_type"], pa
   return {
     id,
     project_id: "project-1",
+    version: 1,
     parent_task_id: parentTaskId,
     wbs: id,
     title,

@@ -20,6 +20,7 @@ PLANNING_MUTATIONS = {
     ("post", "/api/planning/projects/{project_id}/resources"),
     ("post", "/api/planning/assignments"),
 }
+CONDITIONAL_MUTATIONS = PLANNING_MUTATIONS - {("post", "/api/planning/projects")}
 READ_ONLY_POST_OPERATIONS: set[tuple[str, str]] = set()
 
 
@@ -37,8 +38,10 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
     assert write_shaped_operations == PLANNING_MUTATIONS | READ_ONLY_POST_OPERATIONS
     for schema_name, schema in (("runtime", runtime_schema), ("generated", generated_schema)):
         assert_conflict_schema(schema)
+        assert_precondition_schema(schema)
         assert_planning_mutation_contract(schema_name, schema)
         assert_command_contract(schema)
+        assert_schedule_read_contract(schema)
 
 
 def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object]) -> None:
@@ -60,6 +63,19 @@ def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object
         assert header["schema"]["maxLength"] == 128
         assert header["schema"]["pattern"] == r"^[A-Za-z0-9][A-Za-z0-9._:-]*$"
         assert_conflict_response(operation)
+        assert operation["responses"]["200"]["headers"]["ETag"]["schema"]["type"] == "string"
+        if (method, path) in CONDITIONAL_MUTATIONS:
+            if_match = next(
+                (
+                    parameter
+                    for parameter in parameters
+                    if parameter.get("in") == "header" and parameter.get("name") == "If-Match"
+                ),
+                None,
+            )
+            assert if_match is not None, f"{schema_name} {method.upper()} {path} omits If-Match"
+            assert if_match["required"] is False
+            assert_precondition_responses(operation)
 
 
 def assert_command_contract(schema: dict[str, object]) -> None:
@@ -67,6 +83,9 @@ def assert_command_contract(schema: dict[str, object]) -> None:
     command_schema = schema["components"]["schemas"]["CommandRequest"]
     key_schema = command_schema["properties"]["idempotency_key"]
     assert_conflict_response(command_operation)
+    assert_precondition_responses(command_operation)
+    if_match = next(parameter for parameter in command_operation["parameters"] if parameter["name"] == "If-Match")
+    assert if_match["required"] is False
     assert "idempotency_key" in command_schema["required"]
     assert key_schema["minLength"] == 16
     assert key_schema["maxLength"] == 128
@@ -87,3 +106,35 @@ def assert_conflict_schema(schema: dict[str, object]) -> None:
     assert response["properties"]["detail"]["$ref"] == "#/components/schemas/IdempotencyConflictDetail"
     assert detail["required"] == ["error"]
     assert detail["properties"]["error"]["type"] == "string"
+
+
+def assert_precondition_responses(operation: dict[str, object]) -> None:
+    response = operation["responses"]["400"]
+    schema = response["content"]["application/json"]["schema"]
+    assert schema["$ref"] == "#/components/schemas/CommandPreconditionResponse"
+    for status in ("412", "428"):
+        response = operation["responses"][status]
+        schema = response["content"]["application/json"]["schema"]
+        assert schema["$ref"] == "#/components/schemas/CommandPreconditionResponse"
+
+
+def assert_precondition_schema(schema: dict[str, object]) -> None:
+    components = schema["components"]["schemas"]
+    response = components["CommandPreconditionResponse"]
+    detail = components["CommandPreconditionDetail"]
+    assert response["required"] == ["error"]
+    assert response["properties"]["error"]["$ref"] == "#/components/schemas/CommandPreconditionDetail"
+    assert set(detail["required"]) == {
+        "code",
+        "message",
+        "repair",
+        "current_revision",
+        "current_etag",
+        "object_ids",
+        "reload_url",
+    }
+
+
+def assert_schedule_read_contract(schema: dict[str, object]) -> None:
+    response = schema["paths"]["/api/planning/projects/{project_id}/schedule"]["get"]["responses"]["200"]
+    assert response["headers"]["ETag"]["schema"]["type"] == "string"

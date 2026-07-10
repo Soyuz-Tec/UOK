@@ -46,3 +46,17 @@ class IdempotencyConflictDetail(BaseModel):
 
 class IdempotencyConflictResponse(BaseModel):
     detail: IdempotencyConflictDetail
+
+
+class CommandPreconditionDetail(BaseModel):
+    code: str
+    message: str
+    repair: str
+    current_revision: int = Field(..., ge=1)
+    current_etag: str
+    object_ids: list[str]
+    reload_url: str
+
+
+class CommandPreconditionResponse(BaseModel):
+    error: CommandPreconditionDetail

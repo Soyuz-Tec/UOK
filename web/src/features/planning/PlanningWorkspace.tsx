@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { EmptyState } from "../../shared/data-display";
 import { Pane, WorkflowHeader, WorkflowSplitView } from "../../shared/layout";
 import { CommandButton } from "../../shared/primitives";
+import { PlanningConcurrencyNotice } from "./PlanningConcurrencyNotice";
 import { PlanningInspector, type PlanningInspectorTab } from "./PlanningInspector";
 import { PlanningModuleState } from "./PlanningModuleState";
 import { PlanningTimeline } from "./PlanningTimeline";
@@ -66,14 +67,25 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           </Pane>
         </>
       ) : (
-        <WorkflowSplitView
-          primaryLabel="Planning timeline"
-          secondaryLabel="Planning inspector"
-          primary={renderPlanningPrimaryPane(schedule)}
-          secondary={renderPlanningInspectorPane(schedule)}
-          secondaryOpen={inspectorOpen}
-          secondaryPresentation="slide"
-        />
+        <>
+          {actions.staleRecovery ? (
+            <PlanningConcurrencyNotice
+              recovery={actions.staleRecovery}
+              busy={actions.busy}
+              onReapply={() => void actions.reapplyStaleMutation()}
+              onKeepLatest={actions.keepLatestSchedule}
+              onReload={() => void actions.reloadStaleSchedule()}
+            />
+          ) : null}
+          <WorkflowSplitView
+            primaryLabel="Planning timeline"
+            secondaryLabel="Planning inspector"
+            primary={renderPlanningPrimaryPane(schedule)}
+            secondary={renderPlanningInspectorPane(schedule)}
+            secondaryOpen={inspectorOpen}
+            secondaryPresentation="slide"
+          />
+        </>
       )}
     </section>
   );
@@ -98,6 +110,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           selectedProjectId={selectedProjectId}
           busy={actions.busy}
           history={actions.history}
+          bulkUpdatesAvailable={actions.bulkUpdatesAvailable}
           onScaleChange={setTimelineScale}
           onToggleCritical={() => setShowCritical((value) => !value)}
           onToggleBaselines={() => setShowBaselines((value) => !value)}

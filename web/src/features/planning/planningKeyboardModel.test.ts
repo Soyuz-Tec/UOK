@@ -39,6 +39,7 @@ function task(id: string, title: string, taskType = "task"): PlanningTask {
   return {
     id,
     project_id: "project-1",
+    version: 1,
     title,
     task_type: taskType,
     status: "planned",

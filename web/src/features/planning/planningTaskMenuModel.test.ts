@@ -6,6 +6,7 @@ import type { PlanningTask } from "./types";
 const task: PlanningTask = {
   id: "task-1",
   project_id: "project-1",
+  version: 1,
   parent_task_id: "summary-1",
   title: "Drill borehole",
   task_type: "task",

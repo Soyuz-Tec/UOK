@@ -37,6 +37,7 @@ function task(id: string, wbs: string, title: string, status: string, start: str
   return {
     id,
     project_id: "project-1",
+    version: 1,
     title,
     task_type: "task",
     status,

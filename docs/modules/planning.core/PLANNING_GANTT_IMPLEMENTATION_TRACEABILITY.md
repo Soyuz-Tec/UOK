@@ -30,7 +30,7 @@ requirement.
 | PLA-A-001 | Canonical CPM values | `scheduler.py` contains CPM-like metrics | Independent chain, parallel, merge, lag/lead, calendar, target-date, and cycle fixtures | `source_present` |
 | PLA-A-002 | Independent hard-constraint validation | Schedule validation exists | Independent validator rejects injected dependency, calendar, constraint, and resource violations | `planned` |
 | PLA-A-003 | Stable Planning idempotency | UOK command gateway supports replay | Every REST write requires a client key; module-command missing-key, replay, changed-payload conflict, and lost-response retry tests pass | `integration_tested` |
-| PLA-A-004 | Optimistic concurrency | No project revision contract | Migration, strong ETag/If-Match, HTTP 428/412, and typed UI recovery proof | `planned` |
+| PLA-A-004 | Optimistic concurrency | Project revision/task version migration, strong actor-visible ETag, project lock, 428/412 recovery contract, and typed client recovery exist | PostgreSQL two-client race, candidate runtime, and accessible reload/reapply proof | `runtime_proven` |
 | PLA-A-005 | Atomic batch mutation | UI currently runs independent updates | All-or-nothing rollback and one-revision success tests | `planned` |
 | PLA-A-006 | Complete immutable baseline | Baseline stores a partial task snapshot | Canonical v2 snapshot, hash verification, immutability, and legacy warning tests | `source_present` |
 | PLA-A-007 | Server capability enforcement | `planning.read/manage` exist | Capability matrix and direct adversarial API tests | `source_present` |
@@ -48,6 +48,12 @@ requirement.
 - Generic command replay/conflict integration and synthetic insert-race recovery regression: `modules/planning.core/tests/test_planning_command_idempotency.py`
 - Shared command-conflict regression: `modules/contacts.core/tests/test_contacts_command_safety.py`
 - Frontend key propagation and lost-response retry proof: `web/src/features/planning/planningApi.test.ts`
+- Backend revision, task-version, strict ETag, stale-write, replay-order, and route-coverage proof: `modules/planning.core/tests/test_planning_optimistic_concurrency.py`
+- Additive module migration: `modules/planning.core/migrations/002_planning_optimistic_concurrency.sql`
+- Live PostgreSQL two-client row-lock verifier: `modules/planning.core/tests/runtime/verify_planning_postgres_concurrency.py`
+- Typed frontend stale-write recovery and fail-closed multi-write proof: `web/src/features/planning/planningApi.test.ts` and `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`
+- Candidate PostgreSQL proof: two simultaneous writes returned exactly one `200` and one `412`; repeated concurrent reads never observed a mixed revision/schedule snapshot.
+- Candidate/UI gates: `scripts/verify_uok_candidate.ps1` and `web/e2e/uok-proof.spec.ts` pass with the bulk-mutation boundary visible and disabled until atomic batch support exists.
 - Generated REST contract: `web/src/generated/openapi.json` and `web/src/generated/openapi.d.ts`
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
@@ -62,6 +68,30 @@ scoping and original-actor audit attribution are not yet present in the command
 log schema. They remain required before `production_ready` and are tracked with
 the Gate A audit-correlation work rather than inferred from PLA-A-003's current
 integration evidence.
+
+## Current optimistic concurrency boundary
+
+The project schedule is the aggregate revision root. Existing-project Planning
+commands lock that project row, validate exactly one quoted strong `If-Match`
+tag, execute the Python-authoritative mutation, increment the project revision
+once, and increment every changed existing task version once in the same
+transaction. Project creation starts at revision `1`; new tasks start at version
+`1`.
+
+The validator format is `"planning-r<revision>-sha256-<canonical digest>"`. The
+digest covers the canonical actor-visible schedule, including calendar
+availability context, rather than treating the revision number alone as a
+strong validator. Missing tags return `428`; valid stale tags return `412` with
+the current revision, tag, reload URL, and explicit repair guidance. Weak tags,
+wildcards, lists, and malformed tags return `400`. Idempotent replay is checked
+before first-execution precondition validation so a lost successful response can
+still replay with its original tag.
+
+Bulk edit and multi-step undo/redo fail closed until the project-scoped atomic
+batch slice is available. They must not sequence or parallelize independent
+conditional writes and risk a partial schedule. The project lock serializes
+Planning mutations, but `calendar.core` availability remains read-only advisory
+context and is not locked by a Planning transaction.
 
 ## Required reference schedule cases
 

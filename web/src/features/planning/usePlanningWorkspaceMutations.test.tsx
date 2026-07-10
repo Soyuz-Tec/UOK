@@ -1,0 +1,160 @@
+import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
+import { useState } from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import type { PlanningStrongEtag } from "./planningApi";
+import type { PlanningProject, PlanningSchedule } from "./types";
+import { usePlanningWorkspaceMutations } from "./usePlanningWorkspaceMutations";
+
+const etag1 = strongEtag(1, "a");
+const etag2 = strongEtag(2, "b");
+const etag3 = strongEtag(3, "c");
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+
+describe("usePlanningWorkspaceMutations concurrency recovery", () => {
+  it("reloads a stale schedule and re-applies only after explicit confirmation", async () => {
+    const mutationRequests: RequestInit[] = [];
+    let scheduleReads = 0;
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
+      const path = String(input);
+      if (path === "/api/planning/projects") return jsonResponse([schedule(1).project]);
+      if (path.endsWith("/schedule")) {
+        scheduleReads += 1;
+        if (scheduleReads === 1) return jsonResponse(schedule(1), 200, etag1);
+        if (scheduleReads === 2) return jsonResponse(schedule(2, "Changed by another planner"), 200, etag2);
+        return jsonResponse(schedule(3, "Reapplied task edit"), 200, etag3);
+      }
+      if (path === "/api/planning/tasks/task-1") {
+        mutationRequests.push(init);
+        if (mutationRequests.length === 1) return preconditionResponse();
+        return jsonResponse({ task: { id: "task-1", version: 3 } }, 200, etag3);
+      }
+      throw new Error(`Unexpected Planning test request: ${path}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(usePlanningHarness);
+    await waitFor(() => expect(result.current.actions.scheduleEtag).toBe(etag1));
+
+    await act(async () => {
+      await result.current.actions.saveTask("task-1", { title: "Reapplied task edit" });
+    });
+
+    await waitFor(() => expect(result.current.actions.staleRecovery).toMatchObject({ label: "Edit task", reloadFailed: false }));
+    expect(result.current.schedule?.project.revision).toBe(2);
+    expect(result.current.schedule?.tasks[0].title).toBe("Changed by another planner");
+    expect(mutationRequests).toHaveLength(1);
+    expect(new Headers(mutationRequests[0].headers).get("If-Match")).toBe(etag1);
+
+    await act(async () => {
+      await result.current.actions.reapplyStaleMutation();
+    });
+
+    await waitFor(() => expect(result.current.actions.staleRecovery).toBeNull());
+    expect(result.current.actions.scheduleEtag).toBe(etag3);
+    expect(result.current.schedule?.project.revision).toBe(3);
+    expect(mutationRequests).toHaveLength(2);
+    const firstHeaders = new Headers(mutationRequests[0].headers);
+    const secondHeaders = new Headers(mutationRequests[1].headers);
+    expect(secondHeaders.get("If-Match")).toBe(etag2);
+    expect(secondHeaders.get("Idempotency-Key")).not.toBe(firstHeaders.get("Idempotency-Key"));
+  });
+
+  it("fails closed instead of issuing independent bulk writes", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === "/api/planning/projects") return jsonResponse([schedule(1).project]);
+      if (path.endsWith("/schedule")) return jsonResponse(schedule(1), 200, etag1);
+      throw new Error(`Unexpected Planning test request: ${path}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(usePlanningHarness);
+    await waitFor(() => expect(result.current.actions.scheduleEtag).toBe(etag1));
+    const requestCount = fetchMock.mock.calls.length;
+
+    await act(async () => {
+      await result.current.actions.saveTaskBatch([
+        { taskId: "task-1", payload: { progress: 25 } },
+        { taskId: "task-2", payload: { progress: 25 } },
+      ]);
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(requestCount);
+    expect(result.current.actions.status).toMatchObject({ status: "unavailable", action: "bulk_task_update", tasks: 2 });
+    expect(result.current.actions.bulkUpdatesAvailable).toBe(false);
+  });
+});
+
+function usePlanningHarness() {
+  const [projects, setProjects] = useState<PlanningProject[]>([]);
+  const [scheduleState, setSchedule] = useState<PlanningSchedule | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState("project-1");
+  const [selectedTaskId, setSelectedTaskId] = useState("");
+  const actions = usePlanningWorkspaceMutations({
+    token: "token",
+    operational: true,
+    schedule: scheduleState,
+    selectedProjectId,
+    setProjects,
+    setSchedule,
+    setSelectedProjectId,
+    setSelectedTaskId,
+  });
+  return { actions, projects, schedule: scheduleState, selectedProjectId, selectedTaskId };
+}
+
+function schedule(revision: number, title = "Original task"): PlanningSchedule {
+  return {
+    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-30", revision },
+    tasks: [{
+      id: "task-1",
+      project_id: "project-1",
+      version: revision,
+      parent_task_id: null,
+      wbs: "1",
+      title,
+      task_type: "task",
+      status: "planned",
+      start: "2026-08-01",
+      end: "2026-08-02",
+      duration_days: 2,
+      progress: 0,
+      sort_order: 1,
+      critical: false,
+    }],
+    dependencies: [],
+    resources: [],
+    assignments: [],
+    baselines: [],
+    validation: { ok: true, violations: [] },
+  };
+}
+
+function preconditionResponse() {
+  return jsonResponse({
+    error: {
+      code: "stale_precondition",
+      message: "The Planning schedule changed after it was loaded.",
+      repair: "Review and explicitly reapply or keep the current version.",
+      current_revision: 2,
+      current_etag: etag2,
+      object_ids: ["project-1"],
+      reload_url: "/api/planning/projects/project-1/schedule",
+    },
+  }, 412, etag2);
+}
+
+function jsonResponse(value: unknown, status = 200, etag?: PlanningStrongEtag) {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  if (etag) headers.set("ETag", etag);
+  return new Response(JSON.stringify(value), { status, headers });
+}
+
+function strongEtag(revision: number, character: string) {
+  return `"planning-r${revision}-sha256-${character.repeat(64)}"` as PlanningStrongEtag;
+}

@@ -81,6 +81,18 @@
   scrollbar-width: thin;
 }
 
+.planning-bulk-unavailable {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  border: 1px solid color-mix(in srgb, var(--uok-warning) 44%, var(--uok-border));
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-1) var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: color-mix(in srgb, var(--uok-warning) 10%, var(--uok-bg-elevated));
+  font-size: var(--uok-caption);
+}
+
 .planning-gantt-toolbar .command-button,
 .planning-gantt-toolbar .planning-toolbar-toggle,
 .planning-gantt-toolbar .planning-selection-toggle,

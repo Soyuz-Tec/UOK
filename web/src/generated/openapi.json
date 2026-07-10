@@ -112,6 +112,65 @@
         "title": "CalendarWriteRequest",
         "type": "object"
       },
+      "CommandPreconditionDetail": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "current_etag": {
+            "title": "Current Etag",
+            "type": "string"
+          },
+          "current_revision": {
+            "minimum": 1.0,
+            "title": "Current Revision",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "object_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Object Ids",
+            "type": "array"
+          },
+          "reload_url": {
+            "title": "Reload Url",
+            "type": "string"
+          },
+          "repair": {
+            "title": "Repair",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "repair",
+          "current_revision",
+          "current_etag",
+          "object_ids",
+          "reload_url"
+        ],
+        "title": "CommandPreconditionDetail",
+        "type": "object"
+      },
+      "CommandPreconditionResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/CommandPreconditionDetail"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "CommandPreconditionResponse",
+        "type": "object"
+      },
       "CommandRequest": {
         "properties": {
           "command_type": {
@@ -1244,6 +1303,18 @@
             "title": "Allocation Percent",
             "type": "integer"
           },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
           "resource_id": {
             "maxLength": 36,
             "title": "Resource Id",
@@ -1264,6 +1335,18 @@
       },
       "PlanningBaselineRequest": {
         "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
           "name": {
             "default": "Baseline",
             "maxLength": 120,
@@ -1277,6 +1360,18 @@
       },
       "PlanningCalendarRequest": {
         "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
           "holidays": {
             "items": {
               "type": "string"
@@ -1316,6 +1411,18 @@
             "title": "Dependency Type",
             "type": "string"
           },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
           "lag_days": {
             "default": 0,
             "maximum": 30.0,
@@ -1354,6 +1461,18 @@
               }
             ],
             "title": "Dependency Type"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
           },
           "lag_days": {
             "anyOf": [
@@ -1403,6 +1522,18 @@
       },
       "PlanningResourceRequest": {
         "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
           "name": {
             "maxLength": 160,
             "minLength": 2,
@@ -1454,6 +1585,18 @@
             "minLength": 10,
             "title": "End",
             "type": "string"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
           },
           "parent_task_id": {
             "anyOf": [
@@ -1569,6 +1712,18 @@
               }
             ],
             "title": "End"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
           },
           "parent_task_id": {
             "anyOf": [
@@ -3030,6 +3185,22 @@
         "parameters": [
           {
             "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
             "name": "authorization",
             "required": false,
             "schema": {
@@ -3059,14 +3230,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Command accepted or idempotently replayed.",
+            "headers": {
+              "ETag": {
+                "description": "Strong Planning schedule validator when the command mutates Planning.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Command Api Commands Post",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The command precondition is malformed or inconsistent."
           },
           "409": {
             "content": {
@@ -3078,6 +3263,16 @@
             },
             "description": "Idempotency key conflicts with another command request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The command precondition is stale."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -3087,6 +3282,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The command requires a current precondition."
           }
         },
         "summary": "Command",
@@ -5257,6 +5462,24 @@
             }
           },
           {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -5287,14 +5510,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Assign Resource Api Planning Assignments Post",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -5306,6 +5543,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5315,6 +5562,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Assign Resource",
@@ -5349,6 +5606,24 @@
             }
           },
           {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -5369,14 +5644,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Remove Dependency Api Planning Dependencies  Dependency Id  Delete",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -5388,6 +5677,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5397,6 +5696,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Remove Dependency",
@@ -5426,6 +5735,24 @@
               "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
               "title": "Idempotency-Key",
               "type": "string"
+            }
+          },
+          {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
             }
           },
           {
@@ -5459,14 +5786,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Update Dependency Api Planning Dependencies  Dependency Id  Patch",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -5478,6 +5819,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5487,6 +5838,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Update Dependency",
@@ -5594,14 +5955,18 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Project Api Planning Projects Post",
-                  "type": "object"
-                }
+                "schema": {}
               }
             },
-            "description": "Successful Response"
+            "description": "Project created at revision 1.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "409": {
             "content": {
@@ -5656,6 +6021,24 @@
             }
           },
           {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -5686,14 +6069,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Baseline Api Planning Projects  Project Id  Baselines Post",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -5705,6 +6102,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5714,6 +6121,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Create Baseline",
@@ -5748,6 +6165,24 @@
             }
           },
           {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -5778,14 +6213,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Set Calendar Api Planning Projects  Project Id  Calendar Put",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -5797,6 +6246,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5806,6 +6265,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Set Calendar",
@@ -5840,6 +6309,24 @@
             }
           },
           {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -5870,14 +6357,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Link Tasks Api Planning Projects  Project Id  Dependencies Post",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -5889,6 +6390,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5898,6 +6409,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Link Tasks",
@@ -5932,6 +6453,24 @@
             }
           },
           {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -5962,14 +6501,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Resource Api Planning Projects  Project Id  Resources Post",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -5981,6 +6534,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -5990,6 +6553,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Create Resource",
@@ -6039,7 +6612,15 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Actor-visible schedule snapshot.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "422": {
             "content": {
@@ -6084,6 +6665,24 @@
             }
           },
           {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -6114,14 +6713,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Task Api Planning Projects  Project Id  Tasks Post",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -6133,6 +6746,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -6142,6 +6765,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Create Task",
@@ -6176,6 +6809,24 @@
             }
           },
           {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -6196,14 +6847,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Delete Task Api Planning Tasks  Task Id  Delete",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -6215,6 +6880,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -6224,6 +6899,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Delete Task",
@@ -6253,6 +6938,24 @@
               "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
               "title": "Idempotency-Key",
               "type": "string"
+            }
+          },
+          {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
             }
           },
           {
@@ -6286,14 +6989,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Update Task Api Planning Tasks  Task Id  Patch",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The If-Match validator is malformed or inconsistent with expected_revision."
           },
           "409": {
             "content": {
@@ -6305,6 +7022,16 @@
             },
             "description": "Idempotency key conflicts with another Planning request."
           },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
           "422": {
             "content": {
               "application/json": {
@@ -6314,6 +7041,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
           }
         },
         "summary": "Update Task",

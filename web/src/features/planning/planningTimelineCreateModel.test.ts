@@ -51,6 +51,7 @@ function task(sortOrder: number): PlanningTask {
   return {
     id: `task-${sortOrder}`,
     project_id: "project",
+    version: 1,
     parent_task_id: null,
     wbs: String(sortOrder),
     title: "Task",

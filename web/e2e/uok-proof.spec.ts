@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const sampleProject = {
   id: "project-proof",
+  revision: 1,
   name: "UOK Gantt Proof",
   status: "active",
   start: "2026-08-01",
@@ -16,6 +17,7 @@ const sampleSchedule = {
     {
       id: "task-summary",
       project_id: sampleProject.id,
+      version: 1,
       parent_task_id: null,
       wbs: "1",
       title: "Pilot delivery",
@@ -36,6 +38,7 @@ const sampleSchedule = {
     {
       id: "task-1",
       project_id: sampleProject.id,
+      version: 1,
       parent_task_id: "task-summary",
       wbs: "1.1",
       title: "Define schedule scope",
@@ -59,6 +62,7 @@ const sampleSchedule = {
     {
       id: "task-2",
       project_id: sampleProject.id,
+      version: 1,
       parent_task_id: "task-summary",
       wbs: "1.2",
       title: "Build integrated Gantt with dependency validation",
@@ -79,6 +83,7 @@ const sampleSchedule = {
     {
       id: "task-3",
       project_id: sampleProject.id,
+      version: 1,
       parent_task_id: "task-summary",
       wbs: "1.3",
       title: "Pilot review milestone",
@@ -321,36 +326,14 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       const bulkUpdates = taskUpdatePayloads.length;
       await page.locator(".planning-selection-toggle input").check();
       await expect(page.getByText("4 selected")).toBeVisible();
+      await expect(page.getByText("Bulk edits require atomic batch support.")).toBeVisible();
       await expect(page.getByLabel("Bulk status")).toBeVisible();
       await expect(page.getByLabel("Bulk progress")).toBeVisible();
       await expect(page.getByLabel("Bulk shift days")).toBeVisible();
-      await page.getByRole("button", { name: "Complete selected", exact: true }).click();
-      await expect.poll(() => taskUpdatePayloads.length).toBe(bulkUpdates + 4);
-      expect(taskUpdatePayloads.slice(-4)).toEqual([
-        { status: "complete", progress: 100 },
-        { status: "complete", progress: 100 },
-        { status: "complete", progress: 100 },
-        { status: "complete", progress: 100 },
-      ]);
-      await page.getByLabel("Bulk status").selectOption("blocked");
-      await page.getByLabel("Bulk progress").fill("25");
-      await page.getByRole("button", { name: "Apply bulk", exact: true }).click();
-      await expect.poll(() => taskUpdatePayloads.length).toBe(bulkUpdates + 8);
-      expect(taskUpdatePayloads.slice(-4)).toEqual([
-        { status: "blocked", progress: 25 },
-        { status: "blocked", progress: 25 },
-        { status: "blocked", progress: 25 },
-        { status: "blocked", progress: 25 },
-      ]);
-      await page.getByLabel("Bulk shift days").fill("2");
-      await page.getByRole("button", { name: "Shift dates", exact: true }).click();
-      await expect.poll(() => taskUpdatePayloads.length).toBe(bulkUpdates + 12);
-      expect(taskUpdatePayloads.slice(-4)).toEqual([
-        { start: "2026-08-15", end: "2026-08-15", cascade: false },
-        { start: "2026-08-06", end: "2026-08-12", cascade: false },
-        { start: "2026-08-03", end: "2026-08-05", cascade: false },
-        { start: "2026-08-03", end: "2026-08-15", cascade: false },
-      ]);
+      await expect(page.getByRole("button", { name: "Complete selected", exact: true })).toBeDisabled();
+      await expect(page.getByRole("button", { name: "Apply bulk", exact: true })).toBeDisabled();
+      await expect(page.getByRole("button", { name: "Shift dates", exact: true })).toBeDisabled();
+      expect(taskUpdatePayloads).toHaveLength(bulkUpdates);
       await page.locator(".planning-selection-toggle input").uncheck();
     }
     await page.getByRole("button", { name: "Task", exact: true }).focus();
@@ -524,6 +507,7 @@ async function openPlanning(page: Page) {
 }
 
 async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPayloads: unknown[], taskUpdatePayloads: unknown[]) {
+  const planningEtag = `"planning-r1-sha256-${"a".repeat(64)}"`;
   await page.addInitScript(() => {
     window.sessionStorage.setItem("uok_token", "proof-token");
     window.localStorage.setItem("uok_user", JSON.stringify({
@@ -539,18 +523,18 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
   await page.route("/api/architecture/alignment", (route) => route.fulfill({ json: { ok: true, checks: { module_neutral_baseline: true } } }));
   await page.route("/api/modules/catalog", (route) => route.fulfill({ json: { modules: moduleCatalog() } }));
   await page.route("/api/planning/projects", (route) => route.fulfill({ json: [sampleProject] }));
-  await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({ json: sampleSchedule }));
+  await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({ json: sampleSchedule, headers: { ETag: planningEtag } }));
   await page.route(`/api/planning/projects/${sampleProject.id}/tasks`, async (route) => {
     taskPayloads.push(route.request().postDataJSON());
-    await route.fulfill({ json: { status: "validated" } });
+    await route.fulfill({ json: { status: "validated" }, headers: { ETag: planningEtag } });
   });
   await page.route("/api/planning/tasks/**", async (route) => {
     taskUpdatePayloads.push(route.request().postDataJSON());
-    await route.fulfill({ json: { status: "validated" } });
+    await route.fulfill({ json: { status: "validated" }, headers: { ETag: planningEtag } });
   });
   await page.route(`/api/planning/projects/${sampleProject.id}/dependencies`, async (route) => {
     dependencyPayloads.push(route.request().postDataJSON());
-    await route.fulfill({ json: { status: "validated" } });
+    await route.fulfill({ json: { status: "validated" }, headers: { ETag: planningEtag } });
   });
   await page.route("/api/contacts**", (route) => route.fulfill({ json: [] }));
 }

@@ -27,6 +27,7 @@ function task(overrides: Partial<PlanningTask>): PlanningTask {
   return {
     id: "task-1",
     project_id: "project-1",
+    version: 1,
     title: "Build schedule",
     task_type: "task",
     status: "planned",

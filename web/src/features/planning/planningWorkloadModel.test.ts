@@ -26,7 +26,7 @@ describe("planning workload model", () => {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-01", end: "2026-08-08" },
+    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-01", end: "2026-08-08", revision: 1 },
     tasks: [task("scope", "Scope", "2026-08-01", "2026-08-03"), task("build", "Build", "2026-08-02", "2026-08-04")],
     dependencies: [],
     resources: [{ id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling" }],
@@ -44,6 +44,7 @@ function task(id: string, title: string, start: string, end: string): PlanningTa
   return {
     id,
     project_id: "project-1",
+    version: 1,
     parent_task_id: null,
     wbs: id,
     title,

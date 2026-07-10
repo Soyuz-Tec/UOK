@@ -1,33 +1,23 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
-  assignPlanningResource,
-  createPlanningBaseline,
-  createPlanningDependency,
-  createPlanningResource,
-  createPlanningTask,
-  deletePlanningTask,
+  isPlanningPreconditionError,
   loadPlanningSchedule,
   listPlanningProjects,
-  planningCommand,
-  removePlanningDependency,
-  setPlanningCalendar,
-  updatePlanningDependency,
-  updatePlanningTask,
+  PlanningApiError,
+  type PlanningPreconditionError,
+  type PlanningStrongEtag,
 } from "./planningApi";
-import type { PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
+import type { PlanningMutationIntent, PlanningStaleRecovery } from "./planningConcurrencyState";
+import { createPlanningDemoSchedule } from "./planningDemoSchedule";
 import {
-  findDependencyByMatch,
-  findTaskByMatch,
-  planningHistoryDiff,
-  planningLevelHistory,
   type PlanningHistoryEntry,
   type PlanningHistoryState,
-  type PlanningHistoryStep,
 } from "./planningHistory";
-import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
-import { resultId, taskPayload, withCascade } from "./planningWorkspaceHelpers";
-import type { PlanningProject, PlanningSchedule, PlanningTask } from "./types";
+import { executePlanningHistoryStep } from "./planningHistoryExecution";
+import { planningIntent } from "./planningMutationIntents";
+import { planningWorkspaceActions } from "./planningWorkspaceActions";
+import type { PlanningProject, PlanningSchedule } from "./types";
 
 const historyLimit = 25;
 
@@ -52,20 +42,28 @@ export function usePlanningWorkspaceMutations({
 }) {
   const [status, setStatus] = useState<unknown>("Planning module ready.");
   const [busy, setBusy] = useState("");
+  const [scheduleEtag, setScheduleEtag] = useState<PlanningStrongEtag | null>(null);
+  const [staleRecovery, setStaleRecovery] = useState<PlanningStaleRecovery | null>(null);
   const [undoStack, setUndoStack] = useState<PlanningHistoryEntry[]>([]);
   const [redoStack, setRedoStack] = useState<PlanningHistoryEntry[]>([]);
+  const etagRef = useRef<PlanningStrongEtag | null>(null);
+  const pendingIntentRef = useRef<PlanningMutationIntent | null>(null);
+  const undoEntry = undoStack.at(-1);
+  const redoEntry = redoStack.at(-1);
   const history: PlanningHistoryState = {
-    canUndo: undoStack.length > 0,
-    canRedo: redoStack.length > 0,
-    undoLabel: undoStack.at(-1)?.label || "",
-    redoLabel: redoStack.at(-1)?.label || "",
+    canUndo: Boolean(undoEntry && undoEntry.undo.length === 1),
+    canRedo: Boolean(redoEntry && redoEntry.redo.length === 1),
+    undoLabel: historyLabel(undoEntry, "undo"),
+    redoLabel: historyLabel(redoEntry, "redo"),
   };
+  const workspaceActions = planningWorkspaceActions({ token, projectId: selectedProjectId, mutate, setStatus });
 
   const reloadSchedule = useCallback(async (projectId: string) => {
-    const nextSchedule = await loadPlanningSchedule(token, projectId);
-    setSchedule(nextSchedule);
-    setSelectedTaskId((current) => nextSchedule.tasks.some((task) => task.id === current) ? current : nextSchedule.tasks[0]?.id || "");
-    return nextSchedule;
+    const snapshot = await loadPlanningSchedule(token, projectId);
+    setSchedule(snapshot.schedule);
+    setCurrentEtag(snapshot.etag);
+    setSelectedTaskId((current) => snapshot.schedule.tasks.some((task) => task.id === current) ? current : snapshot.schedule.tasks[0]?.id || "");
+    return snapshot.schedule;
   }, [setSchedule, setSelectedTaskId, token]);
 
   const refresh = useCallback(async () => {
@@ -77,10 +75,13 @@ export function usePlanningWorkspaceMutations({
       const projectId = selectedProjectId || rows[0]?.id || "";
       setSelectedProjectId(projectId);
       if (projectId) await reloadSchedule(projectId);
-      else setSchedule(null);
+      else {
+        setSchedule(null);
+        setCurrentEtag(null);
+      }
       setStatus({ status: "ready", projects: rows.length });
     } catch (error) {
-      setStatus(error);
+      setStatus(errorStatus(error));
     } finally {
       setBusy("");
     }
@@ -91,53 +92,35 @@ export function usePlanningWorkspaceMutations({
   }, [refresh]);
 
   return {
-    addBaseline,
-    addDependency,
-    addResource,
-    addTask,
-    assignResource,
+    ...workspaceActions,
+    bulkUpdatesAvailable: false,
     busy,
     changeProject,
     createDemoSchedule,
     history,
+    keepLatestSchedule,
+    reapplyStaleMutation,
     refresh,
-    removeDependency,
-    removeTask,
-    rescheduleTask,
+    reloadStaleSchedule,
     runHistory,
-    runTaskMenuAction,
-    saveCalendar,
-    saveDependency,
-    saveTask,
-    saveTaskBatch,
+    scheduleEtag,
+    staleRecovery,
     status,
-    levelResources,
   };
 
   async function createDemoSchedule() {
     setBusy("demo");
     try {
-      const stamp = Date.now();
-      const project = await planningCommand<PlanningProject>(token, "CreatePlanningProject", { name: `Gantt Pilot ${stamp}`, start: "2026-08-03", end: "2026-08-28" }, "planning-project");
-      const projectId = project.result.id;
-      await setPlanningCalendar(token, projectId, { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: ["2026-08-14"] });
-      const summary = await createPlanningTask(token, projectId, taskPayload("Pilot delivery", "2026-08-03", "2026-08-20", 0, 1, "summary"));
-      const first = await createPlanningTask(token, projectId, taskPayload("Define schedule scope", "2026-08-03", "2026-08-05", 40, 2, "task", resultId(summary)));
-      const second = await createPlanningTask(token, projectId, taskPayload("Build integrated Gantt", "2026-08-06", "2026-08-12", 10, 3, "task", resultId(summary)));
-      const milestone = await createPlanningTask(token, projectId, taskPayload("Pilot review milestone", "2026-08-13", "2026-08-13", 0, 4, "milestone", resultId(summary)));
-      await createPlanningDependency(token, projectId, { predecessor_task_id: resultId(first), successor_task_id: resultId(second), dependency_type: "finish_to_start", lag_days: 1 });
-      await createPlanningDependency(token, projectId, { predecessor_task_id: resultId(second), successor_task_id: resultId(milestone), dependency_type: "finish_to_start", lag_days: 0 });
-      const resourceSchedule = await createPlanningResource(token, projectId, { name: "Planner", role: "Scheduling" }) as { resources?: { id: string }[] };
-      const resourceId = resourceSchedule.resources?.[0]?.id;
-      if (resourceId) await assignPlanningResource(token, { task_id: resultId(second), resource_id: resourceId, allocation_percent: 100 });
-      await createPlanningBaseline(token, projectId, { name: "Initial baseline" });
+      const created = await createPlanningDemoSchedule(token);
+      setCurrentEtag(created.etag);
       setProjects(await listPlanningProjects(token));
-      setSelectedProjectId(projectId);
-      await reloadSchedule(projectId);
+      setSelectedProjectId(created.projectId);
+      await reloadSchedule(created.projectId);
       clearHistory();
-      setStatus({ status: "created", project_id: projectId });
+      clearRecovery();
+      setStatus({ status: "created", project_id: created.projectId });
     } catch (error) {
-      setStatus(error);
+      setStatus(errorStatus(error));
     } finally {
       setBusy("");
     }
@@ -145,94 +128,96 @@ export function usePlanningWorkspaceMutations({
 
   async function changeProject(projectId: string) {
     setSelectedProjectId(projectId);
+    setCurrentEtag(null);
     await reloadSchedule(projectId);
     clearHistory();
+    clearRecovery();
   }
 
-  async function rescheduleTask(taskId: string, start: string, end: string, cascade = true) {
-    await mutate("reschedule", () => updatePlanningTask(token, taskId, { start, end, cascade }), { taskId, start, end, cascade }, "Reschedule task");
-  }
-
-  async function saveTask(taskId: string, payload: Record<string, unknown>, cascade = true) {
-    await mutate("task", () => updatePlanningTask(token, taskId, withCascade(payload, cascade)), { taskId, cascade }, "Edit task");
-  }
-
-  async function saveTaskBatch(updates: PlanningBulkTaskUpdate[]) {
-    await mutate("bulk-task", () => Promise.all(updates.map((update) => updatePlanningTask(token, update.taskId, update.payload))), { action: "bulk_task_updated", tasks: updates.length }, "Bulk edit tasks");
-  }
-
-  async function addTask(payload: Record<string, unknown>) {
-    await mutate("task", () => createPlanningTask(token, selectedProjectId, payload), { action: "task_created" }, "Create task");
-  }
-
-  async function removeTask(taskId: string) {
-    await mutate("task", () => deletePlanningTask(token, taskId), { taskId, action: "task_deleted" }, "Delete task");
-  }
-
-  async function addDependency(payload: Record<string, unknown>) {
-    await mutate("dependency", () => createPlanningDependency(token, selectedProjectId, payload), { action: "dependency_created" }, "Create dependency");
-  }
-
-  async function saveDependency(dependencyId: string, payload: Record<string, unknown>) {
-    await mutate("dependency", () => updatePlanningDependency(token, dependencyId, payload), { dependencyId }, "Edit dependency");
-  }
-
-  async function removeDependency(dependencyId: string) {
-    await mutate("dependency", () => removePlanningDependency(token, dependencyId), { dependencyId, action: "dependency_removed" }, "Remove dependency");
-  }
-
-  async function saveCalendar(payload: Record<string, unknown>) {
-    await mutate("calendar", () => setPlanningCalendar(token, selectedProjectId, payload), { action: "calendar_updated" }, "Edit calendar");
-  }
-
-  async function addBaseline(payload: Record<string, unknown>) {
-    await mutate("baseline", () => createPlanningBaseline(token, selectedProjectId, payload), { action: "baseline_created" });
-  }
-
-  async function addResource(payload: Record<string, unknown>) {
-    await mutate("resource", () => createPlanningResource(token, selectedProjectId, payload), { action: "resource_created" });
-  }
-
-  async function assignResource(payload: Record<string, unknown>) {
-    await mutate("resource", () => assignPlanningResource(token, payload), { action: "resource_assigned" }, "Assign resource");
-  }
-
-  async function levelResources() {
-    await mutate("level", () => planningCommand<PlanningSchedule>(token, "LevelPlanningResources", { project_id: selectedProjectId }, "planning-level"), { action: "resources_leveled" }, "Level resources", planningLevelHistory);
-  }
-
-  async function runTaskMenuAction(action: PlanningTaskMenuAction, task: PlanningTask) {
-    const mutation = planningTaskMenuMutation(action, task);
-    if (!mutation) return;
-    if (mutation.kind === "create") await addTask(mutation.payload);
-    else if (mutation.kind === "update") await saveTask(mutation.taskId, mutation.payload);
-    else await removeTask(mutation.taskId);
-  }
-
-  async function mutate(action: string, run: () => Promise<unknown>, okStatus: Record<string, unknown>, label?: string, customHistory = planningHistoryDiff) {
-    if (!selectedProjectId) return;
+  async function mutate(mutation: PlanningMutationIntent) {
+    if (!selectedProjectId || !etagRef.current) return setStatus({ status: "unavailable", message: "Reload the schedule before making changes." });
     const before = schedule;
-    setBusy(action);
+    setBusy(mutation.action);
     try {
-      await run();
+      const response = await mutation.run(etagRef.current);
+      setCurrentEtag(response.etag);
       const after = await reloadSchedule(selectedProjectId);
-      if (before && label) pushHistory(customHistory(before, after, label));
-      setStatus({ status: "validated", ...okStatus });
+      if (before) pushHistory(mutation.history(before, after, mutation.label));
+      clearRecovery();
+      setStatus({ status: "validated", ...mutation.okStatus });
     } catch (error) {
-      setStatus(error);
-      await reloadSchedule(selectedProjectId).catch(() => undefined);
+      if (isPlanningPreconditionError(error)) await beginStaleRecovery(error, mutation);
+      else {
+        setStatus(errorStatus(error));
+        await reloadSchedule(selectedProjectId).catch(() => undefined);
+      }
     } finally {
       setBusy("");
     }
   }
 
+  async function beginStaleRecovery(error: PlanningPreconditionError, mutation: PlanningMutationIntent) {
+    pendingIntentRef.current = mutation;
+    clearHistory();
+    setStaleRecovery({ detail: error.detail, label: mutation.label, reloadFailed: true });
+    try {
+      await reloadSchedule(selectedProjectId);
+      setStaleRecovery({ detail: error.detail, label: mutation.label, reloadFailed: false });
+      setStatus({ status: "stale", code: error.detail.code, message: error.detail.message, current_revision: error.detail.current_revision });
+    } catch (reloadError) {
+      setStatus({ status: "reload_failed", message: errorMessage(reloadError) });
+    }
+  }
+
+  async function reloadStaleSchedule() {
+    if (!staleRecovery || !selectedProjectId) return;
+    setBusy("recovery-reload");
+    try {
+      await reloadSchedule(selectedProjectId);
+      setStaleRecovery({ ...staleRecovery, reloadFailed: false });
+    } catch (error) {
+      setStatus({ status: "reload_failed", message: errorMessage(error) });
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function reapplyStaleMutation() {
+    const mutation = pendingIntentRef.current;
+    if (!mutation || staleRecovery?.reloadFailed || !etagRef.current) return;
+    const before = schedule;
+    setBusy("reapply");
+    try {
+      const response = await mutation.run(etagRef.current);
+      setCurrentEtag(response.etag);
+      const after = await reloadSchedule(selectedProjectId);
+      if (before) pushHistory(mutation.history(before, after, mutation.label));
+      clearRecovery();
+      setStatus({ status: "validated", reapplied: true, ...mutation.okStatus });
+    } catch (error) {
+      if (isPlanningPreconditionError(error)) await beginStaleRecovery(error, mutation);
+      else setStatus(errorStatus(error));
+    } finally {
+      setBusy("");
+    }
+  }
+
+  function keepLatestSchedule() {
+    clearRecovery();
+    setStatus({ status: "ready", message: "Kept the latest server schedule." });
+  }
+
   async function runHistory(direction: "undo" | "redo") {
     const source = direction === "undo" ? undoStack : redoStack;
     const entry = source.at(-1);
-    if (!entry || !selectedProjectId) return;
+    const steps = entry && (direction === "undo" ? entry.undo : entry.redo);
+    if (!entry || !steps || !selectedProjectId || !etagRef.current) return;
+    if (steps.length !== 1) return setStatus({ status: "unavailable", message: "Multi-step history is disabled until the atomic Planning batch endpoint is available." });
+    const historyIntent = planningIntent(direction, `${direction === "undo" ? "Undo" : "Redo"} ${entry.label}`, { action: direction, label: entry.label }, (etag) => executePlanningHistoryStep(token, schedule, steps[0], etag));
     setBusy(direction);
     try {
-      for (const step of direction === "undo" ? entry.undo : entry.redo) await runStep(step);
+      const response = await historyIntent.run(etagRef.current);
+      setCurrentEtag(response.etag);
       await reloadSchedule(selectedProjectId);
       if (direction === "undo") {
         setUndoStack((items) => items.slice(0, -1));
@@ -243,37 +228,16 @@ export function usePlanningWorkspaceMutations({
       }
       setStatus({ status: "validated", action: direction, label: entry.label });
     } catch (error) {
-      setStatus(error);
-      await reloadSchedule(selectedProjectId).catch(() => undefined);
+      if (isPlanningPreconditionError(error)) await beginStaleRecovery(error, historyIntent);
+      else setStatus(errorStatus(error));
     } finally {
       setBusy("");
     }
   }
 
-  async function runStep(step: PlanningHistoryStep) {
-    if (step.kind === "update-task") return updatePlanningTask(token, step.taskId, step.payload);
-    if (step.kind === "create-task") return createPlanningTask(token, step.projectId, step.payload);
-    if (step.kind === "delete-task") return deletePlanningTask(token, resolvedTaskId(step.taskId, step.match));
-    if (step.kind === "update-dependency") return updatePlanningDependency(token, step.dependencyId, step.payload);
-    if (step.kind === "create-dependency") return createPlanningDependency(token, step.projectId, step.payload);
-    if (step.kind === "remove-dependency") return removePlanningDependency(token, resolvedDependencyId(step.dependencyId, step.match));
-    if (step.kind === "set-calendar") return setPlanningCalendar(token, step.projectId, step.payload);
-    if (step.kind === "assign-resource") return assignPlanningResource(token, step.payload);
-    return planningCommand<PlanningSchedule>(token, "LevelPlanningResources", { project_id: step.projectId }, "planning-level");
-  }
-
-  function resolvedTaskId(taskId: string | undefined, match: Record<string, unknown>) {
-    if (taskId && schedule?.tasks.some((task) => task.id === taskId)) return taskId;
-    const matchedId = schedule ? findTaskByMatch(schedule, match)?.id : "";
-    if (!matchedId) throw new Error("Undo task match was not found in the current schedule.");
-    return matchedId;
-  }
-
-  function resolvedDependencyId(dependencyId: string | undefined, match: Record<string, unknown>) {
-    if (dependencyId && schedule?.dependencies.some((dep) => dep.id === dependencyId)) return dependencyId;
-    const matchedId = schedule ? findDependencyByMatch(schedule, match)?.id : "";
-    if (!matchedId) throw new Error("Undo dependency match was not found in the current schedule.");
-    return matchedId;
+  function setCurrentEtag(etag: PlanningStrongEtag | null) {
+    etagRef.current = etag;
+    setScheduleEtag(etag);
   }
 
   function pushHistory(entry: PlanningHistoryEntry | null) {
@@ -286,4 +250,24 @@ export function usePlanningWorkspaceMutations({
     setUndoStack([]);
     setRedoStack([]);
   }
+
+  function clearRecovery() {
+    pendingIntentRef.current = null;
+    setStaleRecovery(null);
+  }
+}
+
+function historyLabel(entry: PlanningHistoryEntry | undefined, direction: "undo" | "redo") {
+  if (!entry) return "";
+  const steps = direction === "undo" ? entry.undo : entry.redo;
+  return steps.length === 1 ? entry.label : `${entry.label} requires atomic batch support`;
+}
+
+function errorStatus(error: unknown) {
+  if (error instanceof PlanningApiError) return { status: "error", http_status: error.status, message: error.message };
+  return { status: "error", message: errorMessage(error) };
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Planning request failed.";
 }

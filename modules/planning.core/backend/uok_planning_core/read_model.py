@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Any
 
 from sqlalchemy import select
@@ -73,7 +73,8 @@ def serialize_project(project: PlanningProject) -> dict[str, Any]:
         "status": project.status,
         "start": project.start_at.date().isoformat(),
         "end": project.end_at.date().isoformat(),
-        "updated_at": project.updated_at.isoformat() if project.updated_at else None,
+        "revision": int(project.revision),
+        "updated_at": _timestamp(project.updated_at),
     }
 
 
@@ -97,6 +98,7 @@ def serialize_task(task: PlanningTask, metrics: dict[str, Any] | None = None, ba
         "duration_days": task.duration_days,
         "progress": task.progress,
         "sort_order": task.sort_order,
+        "version": int(task.version),
         "critical": task.task_type != "summary" and slack == 0,
         "early_start": _iso(metrics.get("early_start", start)),
         "early_finish": _iso(metrics.get("early_finish", end)),
@@ -136,7 +138,7 @@ def serialize_assignment(row: PlanningAssignment) -> dict[str, Any]:
 
 
 def serialize_baseline(row: PlanningBaseline) -> dict[str, Any]:
-    return {"id": row.id, "project_id": row.project_id, "name": row.name, "created_at": row.created_at.isoformat()}
+    return {"id": row.id, "project_id": row.project_id, "name": row.name, "created_at": _timestamp(row.created_at)}
 
 
 def baseline_snapshot(tasks: list[PlanningTask]) -> dict[str, Any]:
@@ -240,3 +242,11 @@ def _variance_days(baseline_value: str | None, current: date) -> int | None:
 
 def _iso(value: Any) -> str:
     return value.isoformat() if hasattr(value, "isoformat") else str(value)
+
+
+def _timestamp(value: datetime | None) -> str | None:
+    if value is None:
+        return None
+    if value.tzinfo is None or value.utcoffset() is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc).isoformat()

@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from .command_context import COMMAND_ETAG_RESULT_KEY, COMMAND_IF_MATCH_CONTEXT_KEY, CommandPreconditionError
 from .module_commands import command_permissions, load_module_command_handlers
 from .module_ops import ensure_command_module_operational
 from .models import CommandLog
@@ -70,7 +71,14 @@ def _authorized_replay_or_none(db: Session, actor: Actor, command_type: str, pay
     return {"idempotent": True, "status": existing.status, "result": loads(existing.response_json)}
 
 
-def execute_command(db: Session, actor: Actor, command_type: str, payload: dict[str, Any], idempotency_key: str | None = None) -> dict[str, Any]:
+def execute_command(
+    db: Session,
+    actor: Actor,
+    command_type: str,
+    payload: dict[str, Any],
+    idempotency_key: str | None = None,
+    if_match: str | None = None,
+) -> dict[str, Any]:
     command_type = clean_command_text(command_type)
     handler = command_handlers().get(command_type)
     if not handler:
@@ -104,7 +112,8 @@ def execute_command(db: Session, actor: Actor, command_type: str, payload: dict[
             return replay
         raise
     try:
-        result = handler(db, actor, payload, log.id)
+        execution_payload = {**payload, COMMAND_IF_MATCH_CONTEXT_KEY: if_match}
+        result = handler(db, actor, execution_payload, log.id)
         log.status = "succeeded"
         log.response_json = dumps(result)
         db.commit()
@@ -115,7 +124,10 @@ def execute_command(db: Session, actor: Actor, command_type: str, payload: dict[
 
 
 __all__ = [
+    "COMMAND_ETAG_RESULT_KEY",
+    "COMMAND_IF_MATCH_CONTEXT_KEY",
     "COMMAND_PERMISSIONS",
+    "CommandPreconditionError",
     "IdempotencyConflictError",
     "MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH",
     "MAX_IDEMPOTENCY_KEY_LENGTH",

@@ -140,12 +140,14 @@ Existing numbered migrations remain immutable.
 1. Add this ADR and the Planning traceability artifact.
 2. Add stable REST and module-command idempotency-key propagation, lost-response
    retry, replay, and changed-payload conflict tests.
-3. Add deterministic CPM fixtures and independent validation.
-4. Add additive revision and baseline metadata migration.
-5. Add optimistic concurrency and structured conflicts.
-6. Add atomic batch mutation and replace client parallel bulk edits.
-7. Add complete baseline serialization and verification.
-8. Add server capability split and adversarial tests.
+3. Add the project revision/task version migration, strong schedule ETags,
+   optimistic concurrency, and explicit stale-write recovery.
+4. Add deterministic CPM fixtures and independent validation.
+5. Add structured Planning errors and atomic batch mutation; replace client
+   multi-write bulk/history flows.
+6. Add complete baseline metadata, serialization, and verification.
+7. Add server capability split and adversarial tests.
+8. Add remaining database invariants and audit correlation.
 9. Reclassify feature evidence and run the full candidate gate.
 
 ## Required verification

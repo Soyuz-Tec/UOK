@@ -1112,6 +1112,27 @@ export interface components {
              */
             visibility_scope: string;
         };
+        /** CommandPreconditionDetail */
+        CommandPreconditionDetail: {
+            /** Code */
+            code: string;
+            /** Current Etag */
+            current_etag: string;
+            /** Current Revision */
+            current_revision: number;
+            /** Message */
+            message: string;
+            /** Object Ids */
+            object_ids: string[];
+            /** Reload Url */
+            reload_url: string;
+            /** Repair */
+            repair: string;
+        };
+        /** CommandPreconditionResponse */
+        CommandPreconditionResponse: {
+            error: components["schemas"]["CommandPreconditionDetail"];
+        };
         /** CommandRequest */
         CommandRequest: {
             /**
@@ -1416,6 +1437,8 @@ export interface components {
              * @default 100
              */
             allocation_percent: number;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Resource Id */
             resource_id: string;
             /** Task Id */
@@ -1423,6 +1446,8 @@ export interface components {
         };
         /** PlanningBaselineRequest */
         PlanningBaselineRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
             /**
              * Name
              * @default Baseline
@@ -1431,6 +1456,8 @@ export interface components {
         };
         /** PlanningCalendarRequest */
         PlanningCalendarRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Holidays */
             holidays?: string[];
             /** Ignored Periods */
@@ -1450,6 +1477,8 @@ export interface components {
              * @default finish_to_start
              */
             dependency_type: string;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /**
              * Lag Days
              * @default 0
@@ -1464,6 +1493,8 @@ export interface components {
         PlanningDependencyUpdateRequest: {
             /** Dependency Type */
             dependency_type?: string | null;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Lag Days */
             lag_days?: number | null;
         };
@@ -1478,6 +1509,8 @@ export interface components {
         };
         /** PlanningResourceRequest */
         PlanningResourceRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Name */
             name: string;
             /**
@@ -1494,6 +1527,8 @@ export interface components {
             constraint_type?: string | null;
             /** End */
             end: string;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Parent Task Id */
             parent_task_id?: string | null;
             /**
@@ -1536,6 +1571,8 @@ export interface components {
             constraint_type?: string | null;
             /** End */
             end?: string | null;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Parent Task Id */
             parent_task_id?: string | null;
             /** Progress */
@@ -2329,6 +2366,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path?: never;
@@ -2340,15 +2378,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Command accepted or idempotently replayed. */
             200: {
+                headers: {
+                    /** @description Strong Planning schedule validator when the command mutates Planning. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The command precondition is malformed or inconsistent. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another command request. */
@@ -2360,6 +2407,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The command precondition is stale. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -2367,6 +2423,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description The command requires a current precondition. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -3589,6 +3654,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path?: never;
@@ -3600,15 +3667,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3620,6 +3696,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3627,6 +3712,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -3636,6 +3730,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3645,15 +3741,24 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3665,6 +3770,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3674,6 +3788,15 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     update_dependency_api_planning_dependencies__dependency_id__patch: {
@@ -3681,6 +3804,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3694,15 +3819,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3714,6 +3848,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3721,6 +3864,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -3774,15 +3926,15 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Project created at revision 1. */
             200: {
                 headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": unknown;
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3810,6 +3962,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3823,15 +3977,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3843,6 +4006,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3852,6 +4024,15 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     set_calendar_api_planning_projects__project_id__calendar_put: {
@@ -3859,6 +4040,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3872,15 +4055,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3892,6 +4084,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3901,6 +4102,15 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     link_tasks_api_planning_projects__project_id__dependencies_post: {
@@ -3908,6 +4118,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3921,15 +4133,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3941,6 +4162,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3950,6 +4180,15 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     create_resource_api_planning_projects__project_id__resources_post: {
@@ -3957,6 +4196,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3970,15 +4211,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -3990,6 +4240,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -3997,6 +4256,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -4014,9 +4282,11 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Actor-visible schedule snapshot. */
             200: {
                 headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -4041,6 +4311,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -4054,15 +4326,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4074,6 +4355,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -4081,6 +4371,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -4090,6 +4389,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -4099,15 +4400,24 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4119,6 +4429,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -4128,6 +4447,15 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     update_task_api_planning_tasks__task_id__patch: {
@@ -4135,6 +4463,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -4148,15 +4478,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The If-Match validator is malformed or inconsistent with expected_revision. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Idempotency key conflicts with another Planning request. */
@@ -4168,6 +4507,15 @@ export interface operations {
                     "application/json": components["schemas"]["IdempotencyConflictResponse"];
                 };
             };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
@@ -4175,6 +4523,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };

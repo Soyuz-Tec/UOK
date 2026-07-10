@@ -1,3 +1,27 @@
+function Get-UokPlanningEtag {
+    param(
+        [Parameter(Mandatory = $true)][string]$ProjectId,
+        [Parameter(Mandatory = $true)][hashtable]$Headers
+    )
+    $response = Invoke-WebRequest -UseBasicParsing -Method "GET" -Uri "$BaseUrl/api/planning/projects/$ProjectId/schedule" -Headers $Headers
+    $etag = [string]$response.Headers["ETag"]
+    if (-not $etag -or $etag -notmatch '^"planning-r[1-9][0-9]*-sha256-[a-f0-9]{64}"$') {
+        throw "Planning schedule did not return a valid strong ETag: $etag"
+    }
+    return $etag
+}
+
+function Invoke-UokPlanningCommand {
+    param(
+        [Parameter(Mandatory = $true)][string]$ProjectId,
+        [Parameter(Mandatory = $true)][hashtable]$Headers,
+        [Parameter(Mandatory = $true)][hashtable]$Body
+    )
+    $conditionalHeaders = $Headers.Clone()
+    $conditionalHeaders["If-Match"] = Get-UokPlanningEtag -ProjectId $ProjectId -Headers $Headers
+    return Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $conditionalHeaders -Body $Body
+}
+
 function Invoke-UokPlanningCandidateScenario {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Headers,
@@ -51,7 +75,15 @@ function Invoke-UokPlanningCandidateScenario {
         throw "Planning idempotent replay failed: $($projectReplay | ConvertTo-Json -Depth 20)"
     }
 
-    $first = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+    Assert-UokHttpFailure -StatusCode 428 -UnexpectedSuccessMessage "Planning mutation without If-Match unexpectedly succeeded" -Action {
+        Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+            command_type = "CreatePlanningTask"
+            payload = @{ project_id = $projectId; title = "Missing precondition"; start = "2026-08-01"; end = "2026-08-02" }
+            idempotency_key = "uok-planning-missing-precondition-$Stamp"
+        }
+    }
+
+    $first = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
         command_type = "CreatePlanningTask"
         payload = @{
             project_id = $projectId
@@ -63,7 +95,7 @@ function Invoke-UokPlanningCandidateScenario {
         }
         idempotency_key = "uok-planning-task-a-$Stamp"
     }
-    $second = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+    $second = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
         command_type = "CreatePlanningTask"
         payload = @{
             project_id = $projectId
@@ -78,7 +110,7 @@ function Invoke-UokPlanningCandidateScenario {
         throw "Planning task creation failed: $($first | ConvertTo-Json -Depth 20) $($second | ConvertTo-Json -Depth 20)"
     }
 
-    $linked = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+    $linked = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
         command_type = "LinkPlanningTasks"
         payload = @{
             project_id = $projectId
@@ -92,7 +124,7 @@ function Invoke-UokPlanningCandidateScenario {
     }
 
     Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Planning cycle unexpectedly succeeded" -Action {
-        Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
             command_type = "LinkPlanningTasks"
             payload = @{
                 project_id = $projectId
@@ -103,7 +135,7 @@ function Invoke-UokPlanningCandidateScenario {
         }
     }
 
-    $rescheduled = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+    $rescheduled = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
         command_type = "UpdatePlanningTask"
         payload = @{ task_id = $second.result.id; start = "2026-08-05"; end = "2026-08-11" }
         idempotency_key = "uok-planning-reschedule-$Stamp"
@@ -113,7 +145,7 @@ function Invoke-UokPlanningCandidateScenario {
     }
 
     Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Invalid planning reschedule unexpectedly succeeded" -Action {
-        Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
             command_type = "UpdatePlanningTask"
             payload = @{ task_id = $second.result.id; start = "2026-08-01"; end = "2026-08-02" }
             idempotency_key = "uok-planning-invalid-reschedule-$Stamp"
@@ -126,6 +158,9 @@ function Invoke-UokPlanningCandidateScenario {
     }
     if ($schedule.availability.source_module -ne "calendar.core") {
         throw "Planning did not consume calendar.core availability: $($schedule | ConvertTo-Json -Depth 20)"
+    }
+    if ($schedule.project.revision -lt 5 -or ($schedule.tasks | Where-Object { $_.version -lt 1 }).Count -gt 0) {
+        throw "Planning revision/version evidence is invalid: $($schedule | ConvertTo-Json -Depth 20)"
     }
 
     return @{ project_id = $projectId }

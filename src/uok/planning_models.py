@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -25,12 +25,15 @@ class PlanningProject(Base):
     status: Mapped[str] = mapped_column(String(40), default="active")
     start_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     end_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revision: Mapped[int] = mapped_column(BigInteger, default=1, server_default="1")
     attrs_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
     __table_args__ = (
         UniqueConstraint("organization_id", "name"),
+        CheckConstraint("revision >= 1", name="ck_planning_projects_revision_positive"),
         Index("ix_planning_core_projects_org_status", "organization_id", "status"),
+        Index("ix_planning_core_projects_org_revision", "organization_id", "id", "revision"),
     )
 
 
@@ -48,12 +51,15 @@ class PlanningTask(Base):
     duration_days: Mapped[int] = mapped_column(Integer, default=1)
     progress: Mapped[int] = mapped_column(Integer, default=0)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    version: Mapped[int] = mapped_column(BigInteger, default=1, server_default="1")
     attrs_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
     __table_args__ = (
+        CheckConstraint("version >= 1", name="ck_planning_tasks_version_positive"),
         Index("ix_planning_core_tasks_project_order", "organization_id", "project_id", "sort_order"),
         Index("ix_planning_core_tasks_project_status", "organization_id", "project_id", "status"),
+        Index("ix_planning_core_tasks_org_project_version", "organization_id", "project_id", "version"),
     )
 
 

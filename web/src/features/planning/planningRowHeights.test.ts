@@ -33,6 +33,7 @@ function task(id: string): PlanningTask {
   return {
     id,
     project_id: "project-1",
+    version: 1,
     parent_task_id: null,
     wbs: id,
     title: `Task ${id}`,

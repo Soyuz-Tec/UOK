@@ -6,6 +6,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_level_resources, cmd_set_calendar
+from .concurrency import guarded_planning_command
 from .models import (
     PlanningAssignment,
     PlanningProject,
@@ -80,7 +81,7 @@ def cmd_update_task(db: Session, actor: Actor, payload: dict[str, Any], command_
         task.start_at = parse_planning_date(payload.get("start"), "start")
     if "end" in payload:
         task.end_at = parse_planning_date(payload.get("end"), "end")
-    if task.end_at < task.start_at:
+    if task.end_at.date() < task.start_at.date():
         raise ValueError("task end must be on or after start")
     if "status" in payload:
         task.status = clean_text(payload.get("status"), "status", 40)
@@ -174,7 +175,7 @@ def cmd_remove_dependency(db: Session, actor: Actor, payload: dict[str, Any], co
 
 
 def command_handlers() -> dict[str, CommandHandler]:
-    return {
+    handlers = {
         "CreatePlanningProject": cmd_create_project,
         "CreatePlanningTask": cmd_create_task,
         "UpdatePlanningTask": cmd_update_task,
@@ -188,6 +189,7 @@ def command_handlers() -> dict[str, CommandHandler]:
         "AssignPlanningResource": cmd_assign_resource,
         "LevelPlanningResources": cmd_level_resources,
     }
+    return {name: guarded_planning_command(name, handler) for name, handler in handlers.items()}
 
 
 def command_permissions() -> dict[str, str]:

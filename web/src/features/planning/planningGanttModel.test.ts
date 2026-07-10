@@ -6,6 +6,7 @@ import type { PlanningSchedule, PlanningTask } from "./types";
 const task: PlanningTask = {
   id: "task-1",
   project_id: "project-1",
+  version: 1,
   title: "Schedule task",
   task_type: "task",
   status: "planned",
@@ -73,7 +74,7 @@ describe("planning Gantt scales", () => {
   it("extends timeline units to fill the visible chart width", () => {
     const units = buildTimeline({
       ...schedule(),
-      project: { id: "project-1", name: "Short", status: "planned", start: "2026-08-03", end: "2026-08-05" },
+      project: { id: "project-1", name: "Short", status: "planned", start: "2026-08-03", end: "2026-08-05", revision: 1 },
     }, "day", "standard", 900).units;
 
     expect(units.length).toBeGreaterThan(10);
@@ -81,7 +82,7 @@ describe("planning Gantt scales", () => {
   });
 
   it("uses timeline zoom to expand and contract visible day columns", () => {
-    const shortSchedule = { ...schedule(), project: { id: "project-1", name: "Short", status: "planned", start: "2026-08-03", end: "2026-08-05" } };
+    const shortSchedule = { ...schedule(), project: { id: "project-1", name: "Short", status: "planned", start: "2026-08-03", end: "2026-08-05", revision: 1 } };
     const base = buildTimeline(shortSchedule, "day", "standard", 900);
     const expanded = buildTimeline(shortSchedule, "day", "standard", 900, 0.7);
     const contracted = buildTimeline(shortSchedule, "day", "standard", 900, 1.3);
@@ -107,7 +108,7 @@ function drag(mode: DragState["mode"]): DragState {
 
 function schedule(): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-03", end: "2026-09-09" },
+    project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-03", end: "2026-09-09", revision: 1 },
     tasks: [task],
     dependencies: [],
     resources: [],

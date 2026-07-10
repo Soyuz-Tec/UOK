@@ -50,7 +50,7 @@ describe("planning history", () => {
 
 function schedule(tasks: PlanningTask[]): PlanningSchedule {
   return {
-    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-30" },
+    project: { id: "project-1", name: "Project", status: "active", start: "2026-08-01", end: "2026-08-30", revision: 1 },
     tasks,
     dependencies: [],
     calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },
@@ -65,6 +65,7 @@ function task(overrides: Partial<PlanningTask>): PlanningTask {
   return {
     id: "task-1",
     project_id: "project-1",
+    version: 1,
     title: "Task",
     task_type: "task",
     status: "planned",

@@ -1,100 +1,148 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { planningCommand, updatePlanningTask } from "./planningApi";
+import {
+  createPlanningProject,
+  loadPlanningSchedule,
+  PlanningApiError,
+  PlanningPreconditionError,
+  planningCommand,
+  type PlanningStrongEtag,
+  updatePlanningTask,
+} from "./planningApi";
 
-describe("Planning API idempotency", () => {
+const etag1 = strongEtag(1, "a");
+const etag2 = strongEtag(2, "b");
+
+describe("Planning API concurrency and idempotency", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it("passes one explicit mutation intent key unchanged to a REST write", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ status: "ok" }));
-    vi.stubGlobal("fetch", fetchMock);
+  it("captures the strong schedule ETag with the read model", async () => {
+    const schedule = { project: { id: "project-1", revision: 1 }, tasks: [] };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(schedule, 200, etag1)));
 
-    await updatePlanningTask(
-      "token",
-      "task-1",
-      { progress: 40 },
-      { idempotencyKey: "planning-task-intent-1" },
-    );
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/planning/tasks/task-1",
-      expect.objectContaining({
-        method: "PATCH",
-        headers: expect.objectContaining({
-          Authorization: "Bearer token",
-          "Idempotency-Key": "planning-task-intent-1",
-        }),
-      }),
-    );
+    await expect(loadPlanningSchedule("token", "project-1")).resolves.toEqual({ schedule, etag: etag1 });
   });
 
-  it("passes one explicit mutation intent key unchanged to the command gateway", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ result: {}, status: "succeeded" }));
+  it("sends exact If-Match and one explicit intent key to a REST write", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ status: "ok" }, 200, etag2));
     vi.stubGlobal("fetch", fetchMock);
 
-    await planningCommand(
-      "token",
-      "LevelPlanningResources",
-      { project_id: "project-1" },
-      "planning-level",
-      { idempotencyKey: "planning-level-intent-1" },
-    );
+    await updatePlanningTask("token", "task-1", { progress: 40 }, {
+      ifMatch: etag1,
+      idempotencyKey: "planning-task-intent-1",
+    });
 
-    const [, request] = fetchMock.mock.calls[0];
-    expect(JSON.parse(String(request.body))).toMatchObject({
-      command_type: "LevelPlanningResources",
-      idempotency_key: "planning-level-intent-1",
+    const [path, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const headers = new Headers(request.headers);
+    expect(path).toBe("/api/planning/tasks/task-1");
+    expect(request.method).toBe("PATCH");
+    expect(headers.get("Authorization")).toBe("Bearer token");
+    expect(headers.get("Idempotency-Key")).toBe("planning-task-intent-1");
+    expect(headers.get("If-Match")).toBe(etag1);
+  });
+
+  it("reuses If-Match and the generated key when a lost response triggers one retry", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response("{", { status: 200, headers: { "Content-Type": "application/json", ETag: etag2 } }))
+      .mockResolvedValue(jsonResponse({ status: "ok" }, 200, etag2));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await updatePlanningTask("token", "task-1", { progress: 60 }, { ifMatch: etag1 });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const firstHeaders = new Headers(fetchMock.mock.calls[0][1].headers);
+    const secondHeaders = new Headers(fetchMock.mock.calls[1][1].headers);
+    expect(firstHeaders.get("Idempotency-Key")).toMatch(/^planning-task-update:/);
+    expect(secondHeaders.get("Idempotency-Key")).toBe(firstHeaders.get("Idempotency-Key"));
+    expect(firstHeaders.get("If-Match")).toBe(etag1);
+    expect(secondHeaders.get("If-Match")).toBe(etag1);
+  });
+
+  it("maps stale writes to a typed 412 error without transport retry", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(preconditionResponse(412, "stale_precondition"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const request = updatePlanningTask("token", "task-1", { progress: 80 }, { ifMatch: etag1 });
+
+    await expect(request).rejects.toBeInstanceOf(PlanningPreconditionError);
+    await expect(request).rejects.toMatchObject({
+      status: 412,
+      detail: { code: "stale_precondition", current_revision: 2, current_etag: etag2 },
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("maps a missing precondition response to a typed 428 error", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(preconditionResponse(428, "precondition_required")));
+
+    await expect(updatePlanningTask("token", "task-1", { progress: 80 }, { ifMatch: etag1 })).rejects.toMatchObject({
+      status: 428,
+      detail: { code: "precondition_required", reload_url: "/api/planning/projects/project-1/schedule" },
     });
   });
 
-  it("reuses one generated REST key when a lost response triggers a network retry", async () => {
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response("{", { status: 200, headers: { "Content-Type": "application/json" } }))
-      .mockResolvedValue(jsonResponse({ status: "ok" }));
-    vi.stubGlobal("fetch", fetchMock);
-
-    await updatePlanningTask("token", "task-1", { progress: 60 });
-
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    const firstKey = fetchMock.mock.calls[0][1].headers["Idempotency-Key"];
-    const secondKey = fetchMock.mock.calls[1][1].headers["Idempotency-Key"];
-    expect(firstKey).toMatch(/^planning-task-update:/);
-    expect(secondKey).toBe(firstKey);
-  });
-
-  it("reuses one generated command key when a lost response triggers a network retry", async () => {
-    const fetchMock = vi.fn()
-      .mockRejectedValueOnce(new TypeError("network response lost"))
-      .mockResolvedValue(jsonResponse({ result: {}, status: "succeeded" }));
-    vi.stubGlobal("fetch", fetchMock);
-
-    await planningCommand("token", "LevelPlanningResources", { project_id: "project-1" }, "planning-level");
-
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    const firstBody = JSON.parse(String(fetchMock.mock.calls[0][1].body));
-    const secondBody = JSON.parse(String(fetchMock.mock.calls[1][1].body));
-    expect(firstBody.idempotency_key).toMatch(/^planning-level:/);
-    expect(secondBody.idempotency_key).toBe(firstBody.idempotency_key);
-  });
-
-  it("does not retry an HTTP conflict response", async () => {
+  it("keeps an HTTP 409 outside stale-write recovery", async () => {
     const error = { detail: { error: "idempotency conflict" } };
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(error), {
-      status: 409,
-      headers: { "Content-Type": "application/json" },
-    }));
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(error, 409));
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(updatePlanningTask("token", "task-1", { progress: 80 })).rejects.toEqual(error);
+    const request = updatePlanningTask("token", "task-1", { progress: 80 }, { ifMatch: etag1 });
+    await expect(request).rejects.toBeInstanceOf(PlanningApiError);
+    await expect(request).rejects.toMatchObject({ status: 409, message: "idempotency conflict" });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends If-Match through the generic Planning command path", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ result: {}, status: "succeeded" }, 200, etag2));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await planningCommand("token", "LevelPlanningResources", { project_id: "project-1" }, "planning-level", {
+      ifMatch: etag1,
+      idempotencyKey: "planning-level-intent-1",
+    });
+
+    const request = fetchMock.mock.calls[0][1] as RequestInit;
+    const headers = new Headers(request.headers);
+    expect(headers.get("If-Match")).toBe(etag1);
+    expect(JSON.parse(String(request.body))).toMatchObject({ idempotency_key: "planning-level-intent-1" });
+  });
+
+  it("creates a new aggregate without If-Match and captures its initial ETag", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ id: "project-1", revision: 1 }, 200, etag1));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(createPlanningProject("token", { name: "Plan", start: "2026-08-01", end: "2026-08-02" }, {
+      idempotencyKey: "planning-project-intent-1",
+    })).resolves.toMatchObject({ data: { id: "project-1" }, etag: etag1 });
+
+    const headers = new Headers(fetchMock.mock.calls[0][1].headers);
+    expect(headers.get("Idempotency-Key")).toBe("planning-project-intent-1");
+    expect(headers.has("If-Match")).toBe(false);
   });
 });
 
-function jsonResponse(value: unknown) {
-  return new Response(JSON.stringify(value), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+function preconditionResponse(status: 412 | 428, code: string) {
+  return jsonResponse({
+    error: {
+      code,
+      message: "The schedule changed.",
+      repair: "Reload and review.",
+      current_revision: 2,
+      current_etag: etag2,
+      object_ids: ["project-1"],
+      reload_url: "/api/planning/projects/project-1/schedule",
+    },
+  }, status, etag2);
+}
+
+function jsonResponse(value: unknown, status = 200, etag?: PlanningStrongEtag) {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  if (etag) headers.set("ETag", etag);
+  return new Response(JSON.stringify(value), { status, headers });
+}
+
+function strongEtag(revision: number, character: string) {
+  return `"planning-r${revision}-sha256-${character.repeat(64)}"` as PlanningStrongEtag;
 }

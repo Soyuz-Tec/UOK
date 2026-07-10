@@ -10,6 +10,7 @@ class PlanningProjectRequest(BaseModel):
 
 
 class PlanningTaskRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     title: str = Field(..., min_length=2, max_length=180)
     start: str = Field(..., min_length=10, max_length=32)
     end: str = Field(..., min_length=10, max_length=32)
@@ -24,6 +25,7 @@ class PlanningTaskRequest(BaseModel):
 
 
 class PlanningTaskUpdateRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     title: str | None = Field(default=None, min_length=2, max_length=180)
     start: str | None = Field(default=None, min_length=10, max_length=32)
     end: str | None = Field(default=None, min_length=10, max_length=32)
@@ -39,6 +41,7 @@ class PlanningTaskUpdateRequest(BaseModel):
 
 
 class PlanningDependencyRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     predecessor_task_id: str = Field(..., max_length=36)
     successor_task_id: str = Field(..., max_length=36)
     dependency_type: str = Field(default="finish_to_start", pattern="^(finish_to_start|start_to_start|finish_to_finish|start_to_finish)$")
@@ -46,11 +49,13 @@ class PlanningDependencyRequest(BaseModel):
 
 
 class PlanningDependencyUpdateRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     dependency_type: str | None = Field(default=None, pattern="^(finish_to_start|start_to_start|finish_to_finish|start_to_finish)$")
     lag_days: int | None = Field(default=None, ge=-30, le=30)
 
 
 class PlanningCalendarRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     name: str = Field(default="Standard", max_length=120)
     working_days: list[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5])
     holidays: list[str] = Field(default_factory=list)
@@ -58,15 +63,18 @@ class PlanningCalendarRequest(BaseModel):
 
 
 class PlanningBaselineRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     name: str = Field(default="Baseline", min_length=2, max_length=120)
 
 
 class PlanningResourceRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     name: str = Field(..., min_length=2, max_length=160)
     role: str = Field(default="", max_length=120)
 
 
 class PlanningAssignmentRequest(BaseModel):
+    expected_revision: int | None = Field(default=None, ge=1)
     task_id: str = Field(..., max_length=36)
     resource_id: str = Field(..., max_length=36)
     allocation_percent: int = Field(default=100, ge=1, le=300)

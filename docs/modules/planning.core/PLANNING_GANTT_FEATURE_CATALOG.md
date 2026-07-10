@@ -134,6 +134,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Resource leveling | Explicit Level command moves later auto-scheduled assigned tasks forward to resolve daily resource over-allocation where capacity allows, then reruns server validation and audit events. | Implemented |
 | Constraints | Must-start, must-finish, start/finish no-earlier-than, and start/finish no-later-than constraints are stored per task, enforced by Python scheduling, returned in read models, editable in the inspector, and exported. | Implemented |
 | Manual/auto scheduling | Per-task auto/manual scheduling mode is stored with each task; auto tasks participate in dependency propagation, while manual tasks keep their dates and surface validation conflicts. | Implemented |
+| Optimistic concurrency | Project revisions and task versions are persisted; actor-visible schedules return canonical strong ETags; existing-project writes require exact `If-Match` and expose typed 428/412 reload/reapply recovery. | Implemented |
 
 ## Workspace And Professional Features
 
@@ -143,9 +144,9 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Fullscreen/focus mode | Expand the planning workspace into a dense viewport overlay with an explicit exit action. | Implemented |
 | Layout mode persistence | Saved views include split/timeline-only layout mode with other Gantt workspace preferences. | Implemented |
 | Review/edit mode | Toolbar toggle prevents schedule mutations by disabling task creation, edit commands, row action menus, drag handles, progress handles, dependency handles, and inspector editor controls. | Implemented |
-| Bulk selection | Select visible rows and apply safe server-validated bulk completion, status/progress changes, and date shifts. | Implemented |
-| Bulk edit | Change status, progress, completion state, and shifted dates for selected tasks through server validation. Owner, priority, and calendar edits remain later because those fields are not yet first-class task fields. | Partial |
-| Undo/redo | Reversible local command stack computes before/after read-model deltas, replays safe inverse task/dependency/calendar/resource-allocation operations through server APIs, and exposes toolbar Undo/Redo controls disabled in review mode. Irreversible creation/deletion cases without safe identity recovery are intentionally skipped. | Implemented |
+| Bulk selection | Select visible rows and prepare completion, status/progress, or date-shift intent. Multi-row submission fails closed until the atomic batch endpoint can commit one revision or roll back all operations. | Partial |
+| Bulk edit | Single-row edits remain server validated. Multi-row writes are blocked until project-scoped atomic batch mutation replaces independent requests; owner, priority, and calendar fields also remain later work. | Partial |
+| Undo/redo | Single-step inverse commands are revision-aware. Multi-step replay fails closed until the atomic batch endpoint prevents partial history application; irreversible cases without safe identity recovery remain excluded. | Partial |
 | Saved views | Store filters, density, fields, scale, and grouping. | Implemented |
 | Search/filter/group | Search task titles; filter by status, critical, resource, milestone. | Implemented |
 | Export/import | Planning uses the separately deployed global artifact boundary for PDF, PNG, HTML/office documents, Excel, iCal, MS Project, and CSV needs; no planning-specific redeployment is required. | External global boundary |

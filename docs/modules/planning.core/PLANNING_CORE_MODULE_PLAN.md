@@ -38,6 +38,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - resource creation, assignment, allocation display, over-allocation warnings, and explicit resource leveling for later auto-scheduled assigned tasks
 - drag-to-reschedule path through server validation
 - command-bus writes and idempotency
+- project-root optimistic concurrency with additive revisions/task versions, canonical strong schedule ETags, exact `If-Match`, and explicit `428`/`412` recovery
 - planning audit events
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier
 - Playwright UI proof for Gantt rendering, editor panels, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness
@@ -76,6 +77,8 @@ Required checks before handoff:
 
 ```powershell
 python -m pytest modules/planning.core/tests/test_planning_core.py -q
+python -m pytest modules/planning.core/tests/test_planning_optimistic_concurrency.py -q
+python -m pytest modules/planning.core/tests/test_planning_idempotency_contract.py -q
 npm --prefix web run build
 npm --prefix web run test:ui-proof
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
@@ -83,6 +86,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 ## Deferred Work
 
+- project-scoped atomic batch mutation; until it lands, bulk edits and multi-step history replay fail closed rather than partially committing independent conditional writes
 - richer resource capacity calendars
 - deeper write integration that can publish selected Planning tasks or milestones to `calendar.core` events after user approval
 - multi-baseline comparison and richer baseline history controls
