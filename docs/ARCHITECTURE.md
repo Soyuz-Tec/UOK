@@ -67,6 +67,7 @@ Operator browser
 - ADR-0004: `docs/architecture/ADR-0004-planning-typed-link-resolver.md`
 - ADR-0005: `docs/architecture/ADR-0005-planning-date-semantics.md`
 - ADR-0006: `docs/architecture/ADR-0006-planning-task-participant-boundary.md`
+- ADR-0007: `docs/architecture/ADR-0007-planning-task-requirements-and-readiness.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -83,6 +84,7 @@ Operator browser
 - Planning Gate B typed links resolve through module-owned adapters; absent Operation Graph and K Connect providers remain explicit `unavailable` states rather than simulated source objects.
 - Planning Gate B execution dates use scheduler-owned planned dates plus separate forecast, reason-audited actual, and deadline facts. Project-local calendar dates are stored as UTC instants through an immutable creation-time IANA timezone; subday Gantt scales remain visual-only.
 - Planning Gate B task participants reference canonical, authorized `contacts.core` Parties through actor-specific resolution without a cross-module foreign key. Responsibility roles remain distinct from Gate C capacity resources.
+- Planning Gate B requirements use a controlled, permissioned state machine and derive fail-closed task/project readiness from required decisions and actor-visible typed-link provider state.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

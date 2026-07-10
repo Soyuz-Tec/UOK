@@ -8,8 +8,9 @@ from typing import Any, Callable
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import PlanningProject, PlanningTask, PlanningTaskDependency, PlanningTaskParticipant, utcnow
+from .models import PlanningProject, PlanningTask, PlanningTaskDependency, utcnow
 from .planning_errors import planning_domain_error
+from .task_aggregate_state import task_context_states
 from uok.command_context import (
     COMMAND_ETAG_RESULT_KEY,
     COMMAND_IF_MATCH_CONTEXT_KEY,
@@ -205,7 +206,7 @@ def _command_project_id(db: Session, actor: Actor, command_type: str, payload: d
         "CreatePlanningLink",
         "RemovePlanningLink",
     }
-    task_commands = {"UpdatePlanningTask", "UpdatePlanningTaskDates", "DeletePlanningTask", "AssignPlanningResource", "AddPlanningTaskParticipant", "RemovePlanningTaskParticipant"}
+    task_commands = {"UpdatePlanningTask", "UpdatePlanningTaskDates", "DeletePlanningTask", "AssignPlanningResource", "AddPlanningTaskParticipant", "RemovePlanningTaskParticipant", "CreatePlanningTaskRequirement", "AdvancePlanningTaskRequirement", "SetPlanningTaskRequirementLink", "DecidePlanningTaskRequirement"}
     dependency_commands = {"UpdatePlanningDependency", "RemovePlanningDependency"}
     if command_type in project_commands:
         if not payload.get("project_id"):
@@ -236,13 +237,8 @@ def _consistent_project_id(command_type: str, payload: dict[str, Any], resolved_
 
 
 def _task_states(db: Session, actor: Actor, project_id: str) -> dict[str, tuple[Any, ...]]:
-    memberships: dict[str, list[tuple[str, str, str]]] = {}
-    participants = db.scalars(select(PlanningTaskParticipant).where(
-        PlanningTaskParticipant.organization_id == actor.organization_id, PlanningTaskParticipant.project_id == project_id,
-    )).all()
-    for row in participants:
-        memberships.setdefault(row.task_id, []).append((row.id, row.party_id, row.role))
-    return {task.id: _task_state(task, memberships.get(task.id, [])) for task in _all_project_tasks(db, actor, project_id)}
+    context = task_context_states(db, actor, project_id)
+    return {task.id: _task_state(task, context.get(task.id, ())) for task in _all_project_tasks(db, actor, project_id)}
 
 
 def _all_project_tasks(db: Session, actor: Actor, project_id: str) -> list[PlanningTask]:
@@ -252,7 +248,7 @@ def _all_project_tasks(db: Session, actor: Actor, project_id: str) -> list[Plann
     )).all())
 
 
-def _task_state(task: PlanningTask, participants: list[tuple[str, str, str]] | None = None) -> tuple[Any, ...]:
+def _task_state(task: PlanningTask, context: tuple[tuple[object, ...], ...] = ()) -> tuple[Any, ...]:
     return (
         task.parent_task_id,
         task.title,
@@ -269,7 +265,7 @@ def _task_state(task: PlanningTask, participants: list[tuple[str, str, str]] | N
         task.progress,
         task.sort_order,
         task.attrs_json,
-        tuple(sorted(participants or [])),
+        context,
     )
 
 

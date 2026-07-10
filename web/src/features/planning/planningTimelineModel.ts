@@ -3,7 +3,7 @@ import type { PlanningSchedule, PlanningTask } from "./types";
 export const planningViews = ["Gantt chart", "Board", "List", "Calendar", "Workload", "People", "Dashboard"] as const;
 export type PlanningView = typeof planningViews[number];
 export type FieldPreset = "core" | "progress" | "resources";
-export type FilterMode = "all" | "critical" | "milestones";
+export type FilterMode = "all" | "critical" | "milestones" | "not_ready";
 export type PlanningLayoutMode = "split" | "timeline";
 export type ViewDensity = "compact" | "standard" | "roomy";
 export type PlanningFilterState = {
@@ -48,6 +48,7 @@ export function projectScheduleView(schedule: PlanningSchedule, filterState: Pla
 function taskMatchesFilter(task: PlanningTask, filterState: PlanningFilterState, resourceTaskIds: Set<string>) {
   if (filterState.mode === "critical" && !task.critical) return false;
   if (filterState.mode === "milestones" && task.task_type !== "milestone") return false;
+  if (filterState.mode === "not_ready" && task.readiness?.ready !== false) return false;
   if (filterState.status && (task.status || "planned") !== filterState.status) return false;
   if (filterState.partyId && !(task.participant_ids || []).includes(filterState.partyId)) return false;
   if (filterState.resourceId && !resourceTaskIds.has(task.id)) return false;

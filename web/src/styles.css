@@ -19,6 +19,7 @@
 @import "./styles/planning.css";
 @import "./styles/planning/concurrency-notice.css";
 @import "./styles/planning/filters.css";
+@import "./styles/planning/requirements.css";
 @import "./styles/planning/focus-mode.css";
 @import "./styles/planning/gantt.css";
 @import "./styles/planning/baseline-lanes.css";

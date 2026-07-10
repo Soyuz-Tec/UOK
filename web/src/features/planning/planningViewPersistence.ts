@@ -24,7 +24,7 @@ export type PlanningSavedViewConfig = {
 };
 
 const fieldPresets: FieldPreset[] = ["core", "progress", "resources"];
-const filterModes: FilterMode[] = ["all", "critical", "milestones"];
+const filterModes: FilterMode[] = ["all", "critical", "milestones", "not_ready"];
 const layoutModes: PlanningLayoutMode[] = ["split", "timeline"];
 const scales: readonly TimelineScale[] = timelineScales;
 const viewDensities: ViewDensity[] = ["compact", "standard", "roomy"];

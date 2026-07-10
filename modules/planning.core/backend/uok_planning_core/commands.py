@@ -12,6 +12,7 @@ from .date_commands import cmd_update_planning_task_dates
 from .date_semantics import planning_timezone
 from .link_commands import cmd_create_planning_link, cmd_remove_planning_link
 from .participant_commands import cmd_add_planning_task_participant, cmd_remove_planning_task_participant
+from .requirement_commands import cmd_advance_planning_task_requirement, cmd_create_planning_task_requirement, cmd_decide_planning_task_requirement, cmd_set_planning_task_requirement_link
 from .models import (
     PlanningAssignment,
     PlanningProject,
@@ -182,6 +183,10 @@ def command_handlers() -> dict[str, CommandHandler]:
         "RemovePlanningLink": cmd_remove_planning_link,
         "AddPlanningTaskParticipant": cmd_add_planning_task_participant,
         "RemovePlanningTaskParticipant": cmd_remove_planning_task_participant,
+        "CreatePlanningTaskRequirement": cmd_create_planning_task_requirement,
+        "AdvancePlanningTaskRequirement": cmd_advance_planning_task_requirement,
+        "SetPlanningTaskRequirementLink": cmd_set_planning_task_requirement_link,
+        "DecidePlanningTaskRequirement": cmd_decide_planning_task_requirement,
     }
     return {name: guarded_planning_command(name, handler) for name, handler in handlers.items()}
 
@@ -202,12 +207,16 @@ def command_permissions() -> dict[str, str]:
         "BatchPlanningOperations",
         "AddPlanningTaskParticipant",
         "RemovePlanningTaskParticipant",
+        "CreatePlanningTaskRequirement",
+        "AdvancePlanningTaskRequirement",
+        "SetPlanningTaskRequirementLink",
     }
     permissions = {command: "planning.edit" for command in edit_commands}
     permissions["CreatePlanningBaseline"] = "planning.baseline.create"
     permissions["LevelPlanningResources"] = "planning.level"
     permissions["CreatePlanningLink"] = "planning.link"
     permissions["RemovePlanningLink"] = "planning.link"
+    permissions["DecidePlanningTaskRequirement"] = "planning.gate.approve"
     return permissions
 
 

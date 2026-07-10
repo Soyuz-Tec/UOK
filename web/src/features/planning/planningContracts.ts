@@ -1,4 +1,4 @@
-import type { PlanningDependencyType, PlanningLink, PlanningLinkRelationship, PlanningLinkTargetKind, PlanningParticipantRole, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskParticipant, PlanningTaskStatus, PlanningTaskType } from "./types";
+import type { PlanningDependencyType, PlanningLink, PlanningLinkRelationship, PlanningLinkTargetKind, PlanningParticipantRole, PlanningRequirementType, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskParticipant, PlanningTaskRequirement, PlanningTaskStatus, PlanningTaskType } from "./types";
 
 
 export type PlanningMutationMetadata = {
@@ -84,6 +84,31 @@ export type PlanningTaskParticipantCreateRequest = {
   role: PlanningParticipantRole;
 };
 
+export type PlanningTaskRequirementCreateRequest = {
+  expected_revision?: number;
+  requirement_type: PlanningRequirementType;
+  title: string;
+  required?: boolean;
+  target_link_id?: string | null;
+  due?: string | null;
+};
+
+export type PlanningTaskRequirementAdvanceRequest = {
+  expected_revision?: number;
+  action: "submit" | "start_review";
+};
+
+export type PlanningTaskRequirementLinkRequest = {
+  expected_revision?: number;
+  target_link_id: string | null;
+};
+
+export type PlanningTaskRequirementDecisionRequest = {
+  expected_revision?: number;
+  decision: "satisfy" | "reject" | "waive";
+  reason: string;
+};
+
 export type PlanningTaskCreateResult = PlanningTask & PlanningMutationMetadata;
 export type PlanningTaskUpdateResult = PlanningMutationMetadata & {
   task: PlanningTask;
@@ -94,6 +119,7 @@ export type PlanningLinkCreateResult = PlanningLink & PlanningMutationMetadata;
 export type PlanningLinkRemoveResult = PlanningMutationMetadata & { id: string; project_id: string; removed: true };
 export type PlanningTaskParticipantCreateResult = PlanningTaskParticipant & PlanningMutationMetadata;
 export type PlanningTaskParticipantRemoveResult = PlanningMutationMetadata & { id: string; project_id: string; task_id: string; removed: true };
+export type PlanningTaskRequirementMutationResult = PlanningTaskRequirement & PlanningMutationMetadata;
 
 export type PlanningDomainErrorDetail = {
   code: string;

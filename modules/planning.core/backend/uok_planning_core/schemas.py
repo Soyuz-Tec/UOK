@@ -136,3 +136,36 @@ class PlanningTaskParticipantRequest(BaseModel):
     expected_revision: int | None = Field(default=None, ge=1)
     party_id: str = Field(..., min_length=1, max_length=36)
     role: str = Field(..., pattern="^(owner|assignee|approver|consulted|informed|external_contact)$")
+
+
+class PlanningTaskRequirementRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    requirement_type: str = Field(..., pattern="^(evidence|approval|compliance|finance|shipment|document|custom)$")
+    title: str = Field(..., min_length=2, max_length=180)
+    required: bool = True
+    target_link_id: str | None = Field(default=None, min_length=1, max_length=36)
+    due: str | None = Field(default=None, min_length=10, max_length=10)
+
+
+class PlanningTaskRequirementAdvanceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    action: str = Field(..., pattern="^(submit|start_review)$")
+
+
+class PlanningTaskRequirementLinkRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    target_link_id: str | None = Field(..., min_length=1, max_length=36)
+
+
+class PlanningTaskRequirementDecisionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    decision: str = Field(..., pattern="^(satisfy|reject|waive)$")
+    reason: str = Field(..., min_length=1, max_length=500)

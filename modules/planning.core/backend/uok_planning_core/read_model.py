@@ -12,6 +12,7 @@ from .calendar_payload import calendar_holidays, calendar_ignored_periods
 from .date_semantics import date_semantics_read_model, task_date_read_model
 from .link_read_model import planning_links_read_model
 from .participant_resolver import planning_participants_read_model
+from .requirement_read_model import project_requirement_context
 from .policy import capability_read_model
 from .resource_capacity import calculate_resource_capacity, resource_capacity_warnings
 from .resource_capacity_validation import validate_resource_capacity_result
@@ -66,6 +67,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     participants_by_task: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for participant in participants:
         participants_by_task[str(participant["task_id"])].append(participant)
+    requirements, readiness_by_task, project_readiness = project_requirement_context(db, actor, project.id, links)
     capacity = calculate_resource_capacity(tasks, resources, assignments, calendar)
     capacity_issues = validate_resource_capacity_result(tasks, resources, assignments, calendar, capacity)
     independent_issues = [*cpm_issues, *capacity_issues]
@@ -78,7 +80,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     return {
         "project": serialize_project(project),
         "capabilities": capability_read_model(actor),
-        "tasks": [serialize_task(task, metrics.get(task.id, {}), latest_baseline.get(task.id), wbs.get(task.id, ""), project.timezone_name, participants_by_task.get(task.id, [])) for task in tasks],
+        "tasks": [serialize_task(task, metrics.get(task.id, {}), latest_baseline.get(task.id), wbs.get(task.id, ""), project.timezone_name, participants_by_task.get(task.id, []), readiness_by_task.get(task.id)) for task in tasks],
         "dependencies": [serialize_dependency(dep) for dep in dependencies],
         "calendar": _calendar_row(db, actor, project.id),
         "availability": availability,
@@ -86,6 +88,8 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
         "assignments": [serialize_assignment(row) for row in assignments],
         "links": links,
         "participants": participants,
+        "requirements": requirements,
+        "readiness": project_readiness,
         "date_semantics": date_semantics_read_model(project),
         "baselines": [serialize_baseline(row) for row in baselines],
         "calculation": {
@@ -130,6 +134,7 @@ def serialize_task(
     wbs: str = "",
     project_timezone: str = "UTC",
     participants: list[dict[str, Any]] | None = None,
+    readiness: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     metrics = metrics or {}
     start = task.start_at.date()
@@ -165,6 +170,7 @@ def serialize_task(
         "end_variance_days": _variance_days(baseline_end, end),
         "participant_ids": sorted({str(row["party"]["id"]) for row in participants if row["party"]["id"]}),
         "participant_roles": sorted({str(row["role"]) for row in participants}),
+        "readiness": readiness or {"ready": True, "required_count": 0, "blocking_count": 0, "blocking_requirement_ids": []},
         **task_date_read_model(task, project_timezone),
         **serialize_task_constraint(task),
     }

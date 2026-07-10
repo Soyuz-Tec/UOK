@@ -14,6 +14,10 @@ PLANNING_MUTATIONS = {
     ("patch", "/api/planning/tasks/{task_id}/dates"),
     ("post", "/api/planning/tasks/{task_id}/participants"),
     ("delete", "/api/planning/tasks/{task_id}/participants/{participant_id}"),
+    ("post", "/api/planning/tasks/{task_id}/requirements"),
+    ("post", "/api/planning/tasks/{task_id}/requirements/{requirement_id}/advance"),
+    ("put", "/api/planning/tasks/{task_id}/requirements/{requirement_id}/link"),
+    ("post", "/api/planning/tasks/{task_id}/requirements/{requirement_id}/decision"),
     ("delete", "/api/planning/tasks/{task_id}"),
     ("post", "/api/planning/projects/{project_id}/dependencies"),
     ("patch", "/api/planning/dependencies/{dependency_id}"),
@@ -54,6 +58,7 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
         assert_link_contract(schema)
         assert_date_semantics_contract(schema)
         assert_participant_contract(schema)
+        assert_requirement_contract(schema)
 
 
 def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object]) -> None:
@@ -220,3 +225,21 @@ def assert_participant_contract(schema: dict[str, object]) -> None:
     assert participant["additionalProperties"] is False
     assert set(participant["required"]) == {"party_id", "role"}
     assert "external_contact" in participant["properties"]["role"]["pattern"]
+
+
+def assert_requirement_contract(schema: dict[str, object]) -> None:
+    paths = schema["paths"]
+    create = paths["/api/planning/tasks/{task_id}/requirements"]["post"]
+    advance = paths["/api/planning/tasks/{task_id}/requirements/{requirement_id}/advance"]["post"]
+    decision = paths["/api/planning/tasks/{task_id}/requirements/{requirement_id}/decision"]["post"]
+    link = paths["/api/planning/tasks/{task_id}/requirements/{requirement_id}/link"]["put"]
+    assert create["requestBody"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/PlanningTaskRequirementRequest"
+    assert advance["requestBody"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/PlanningTaskRequirementAdvanceRequest"
+    assert decision["requestBody"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/PlanningTaskRequirementDecisionRequest"
+    assert link["requestBody"]["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/PlanningTaskRequirementLinkRequest"
+    requirement = schema["components"]["schemas"]["PlanningTaskRequirementRequest"]
+    assert requirement["additionalProperties"] is False
+    assert set(requirement["required"]) == {"requirement_type", "title"}
+    assert "shipment" in requirement["properties"]["requirement_type"]["pattern"]
+    assert schema["components"]["schemas"]["PlanningTaskRequirementLinkRequest"]["required"] == ["target_link_id"]
+    assert schema["components"]["schemas"]["PlanningTaskRequirementDecisionRequest"]["properties"]["reason"]["maxLength"] == 500

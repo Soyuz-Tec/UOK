@@ -26,6 +26,9 @@ memberships with controlled role and source checks, same-module project/task
 foreign keys, unique Party/role membership, and organization-first Party and
 task-role indexes. `party_id` intentionally has no foreign key because
 `contacts.core` retains optional-module lifecycle, authorization, and privacy.
+`008_planning_task_requirements.sql` adds Planning-owned task requirements with
+controlled type/state and decision-metadata checks, optional same-module typed
+link references, and organization/project/task state and due-date indexes.
 
 For the persistent local PostgreSQL profile, back up first, apply the migration
 before rebuilding an image that selects the new columns, and read the columns
@@ -44,6 +47,8 @@ Get-Content -Raw .\modules\planning.core\migrations\005_planning_operation_links
 Get-Content -Raw .\modules\planning.core\migrations\006_planning_date_semantics.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 Get-Content -Raw .\modules\planning.core\migrations\007_planning_task_participants.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\008_planning_task_requirements.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 ```
 

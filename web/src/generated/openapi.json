@@ -2035,6 +2035,167 @@
         "title": "PlanningTaskRequest",
         "type": "object"
       },
+      "PlanningTaskRequirementAdvanceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "pattern": "^(submit|start_review)$",
+            "title": "Action",
+            "type": "string"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "PlanningTaskRequirementAdvanceRequest",
+        "type": "object"
+      },
+      "PlanningTaskRequirementDecisionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "pattern": "^(satisfy|reject|waive)$",
+            "title": "Decision",
+            "type": "string"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision",
+          "reason"
+        ],
+        "title": "PlanningTaskRequirementDecisionRequest",
+        "type": "object"
+      },
+      "PlanningTaskRequirementLinkRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "target_link_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Link Id"
+          }
+        },
+        "required": [
+          "target_link_id"
+        ],
+        "title": "PlanningTaskRequirementLinkRequest",
+        "type": "object"
+      },
+      "PlanningTaskRequirementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "due": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "required": {
+            "default": true,
+            "title": "Required",
+            "type": "boolean"
+          },
+          "requirement_type": {
+            "pattern": "^(evidence|approval|compliance|finance|shipment|document|custom)$",
+            "title": "Requirement Type",
+            "type": "string"
+          },
+          "target_link_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Link Id"
+          },
+          "title": {
+            "maxLength": 180,
+            "minLength": 2,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "requirement_type",
+          "title"
+        ],
+        "title": "PlanningTaskRequirementRequest",
+        "type": "object"
+      },
       "PlanningTaskUpdateRequest": {
         "properties": {
           "cascade": {
@@ -8788,6 +8949,677 @@
           }
         },
         "summary": "Remove Task Participant",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/planning/tasks/{task_id}/requirements": {
+      "post": {
+        "operationId": "create_task_requirement_api_planning_tasks__task_id__requirements_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningTaskRequirementRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Create Task Requirement",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/planning/tasks/{task_id}/requirements/{requirement_id}/advance": {
+      "post": {
+        "operationId": "advance_task_requirement_api_planning_tasks__task_id__requirements__requirement_id__advance_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "requirement_id",
+            "required": true,
+            "schema": {
+              "title": "Requirement Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningTaskRequirementAdvanceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Advance Task Requirement",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/planning/tasks/{task_id}/requirements/{requirement_id}/decision": {
+      "post": {
+        "operationId": "decide_task_requirement_api_planning_tasks__task_id__requirements__requirement_id__decision_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "requirement_id",
+            "required": true,
+            "schema": {
+              "title": "Requirement Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningTaskRequirementDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Decide Task Requirement",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
+    "/api/planning/tasks/{task_id}/requirements/{requirement_id}/link": {
+      "put": {
+        "operationId": "set_task_requirement_link_api_planning_tasks__task_id__requirements__requirement_id__link_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "title": "Task Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "requirement_id",
+            "required": true,
+            "schema": {
+              "title": "Requirement Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningTaskRequirementLinkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Set Task Requirement Link",
         "tags": [
           "planning"
         ]

@@ -177,6 +177,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           busy={actions.busy}
           readOnly={reviewMode || serverReviewOnly}
           linkReadOnly={reviewMode || !capabilities.link || activeSchedule.capabilities?.link !== true}
+          canApproveGates={capabilities.gate_approve && activeSchedule.capabilities?.gate_approve === true}
           onTabChange={setInspectorTab}
           onProjectChange={actions.changeProject}
           onSaveTask={actions.saveTask}
@@ -190,6 +191,10 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onRemovePlanningLink={actions.removePlanningLink}
           onAddTaskParticipant={actions.addTaskParticipant}
           onRemoveTaskParticipant={actions.removeTaskParticipant}
+          onCreateTaskRequirement={actions.addTaskRequirement}
+          onAdvanceTaskRequirement={actions.advanceTaskRequirement}
+          onSetTaskRequirementLink={actions.setTaskRequirementLink}
+          onDecideTaskRequirement={actions.decideTaskRequirement}
           onSetCalendar={actions.saveCalendar}
           onCreateBaseline={actions.addBaseline}
           onCreateResource={actions.addResource}

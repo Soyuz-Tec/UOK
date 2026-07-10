@@ -17,6 +17,11 @@ import type {
   PlanningTaskParticipantCreateRequest,
   PlanningTaskParticipantCreateResult,
   PlanningTaskParticipantRemoveResult,
+  PlanningTaskRequirementAdvanceRequest,
+  PlanningTaskRequirementCreateRequest,
+  PlanningTaskRequirementDecisionRequest,
+  PlanningTaskRequirementLinkRequest,
+  PlanningTaskRequirementMutationResult,
   PlanningTaskDateUpdateRequest,
   PlanningTaskUpdateRequest,
   PlanningTaskUpdateResult,
@@ -181,6 +186,20 @@ export function addPlanningTaskParticipant(token: string, taskId: string, payloa
 
 export function removePlanningTaskParticipant(token: string, taskId: string, participantId: string, mutation: PlanningMutationOptions) {
   return planningMutationJson<PlanningTaskParticipantRemoveResult>(token, `/api/planning/tasks/${taskId}/participants/${participantId}`, { method: "DELETE" }, "planning-participant-remove", mutation);
+}
+
+export function createPlanningTaskRequirement(token: string, taskId: string, payload: PlanningTaskRequirementCreateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningTaskRequirementMutationResult>(token, `/api/planning/tasks/${taskId}/requirements`, { method: "POST", body: JSON.stringify(payload) }, "planning-requirement-create", mutation);
+}
+export function advancePlanningTaskRequirement(token: string, taskId: string, requirementId: string, payload: PlanningTaskRequirementAdvanceRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningTaskRequirementMutationResult>(token, `/api/planning/tasks/${taskId}/requirements/${requirementId}/advance`, { method: "POST", body: JSON.stringify(payload) }, "planning-requirement-advance", mutation);
+}
+export function setPlanningTaskRequirementLink(token: string, taskId: string, requirementId: string, payload: PlanningTaskRequirementLinkRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningTaskRequirementMutationResult>(token, `/api/planning/tasks/${taskId}/requirements/${requirementId}/link`, { method: "PUT", body: JSON.stringify(payload) }, "planning-requirement-link", mutation);
+}
+
+export function decidePlanningTaskRequirement(token: string, taskId: string, requirementId: string, payload: PlanningTaskRequirementDecisionRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningTaskRequirementMutationResult>(token, `/api/planning/tasks/${taskId}/requirements/${requirementId}/decision`, { method: "POST", body: JSON.stringify(payload) }, "planning-requirement-decision", mutation);
 }
 
 export function batchPlanningTaskUpdates(

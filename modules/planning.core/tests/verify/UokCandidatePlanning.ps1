@@ -3,6 +3,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningLinks.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningDates.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningParticipants.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningRequirements.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -28,6 +29,7 @@ function Invoke-UokPlanningCandidateScenario {
         $opsCapabilities.edit -ne $true `
         -or $opsCapabilities.baseline_create -ne $true `
         -or $opsCapabilities.level -ne $true `
+        -or $opsCapabilities.gate_approve -ne $true `
         -or $opsCapabilities.admin -ne $true `
         -or $opsCapabilities.review_only -ne $false
     ) {
@@ -149,9 +151,10 @@ function Invoke-UokPlanningCandidateScenario {
     ) {
         throw "Planning task creation failed: $($first | ConvertTo-Json -Depth 20) $($second | ConvertTo-Json -Depth 20)"
     }
-    Assert-UokPlanningLinkContract -ProjectId $projectId -TaskId $first.result.id -Headers $Headers -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
+    $linkProof = Assert-UokPlanningLinkContract -ProjectId $projectId -TaskId $first.result.id -Headers $Headers -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     Assert-UokPlanningDateContract -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -Stamp $Stamp
     Assert-UokPlanningParticipantContract -ProjectId $projectId -TaskId $first.result.id -Headers $Headers -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
+    Assert-UokPlanningRequirementContract -ProjectId $projectId -TaskId $first.result.id -SourceLinkId $linkProof.party_link_id -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     Assert-UokPlanningStatusContracts -ProjectId $projectId -TaskId $first.result.id -Headers $OpsHeaders -Stamp $Stamp
 
     $beforeBatch = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $OpsHeaders
@@ -282,6 +285,7 @@ function Invoke-UokPlanningCandidateScenario {
         -or $baselineDetail.snapshot.project.timezone -ne "America/New_York" `
         -or $baselineDetail.snapshot.date_semantics.subday_scales -ne "visual_only" `
         -or $baselineDetail.snapshot.participants.Count -lt 1 `
+        -or $baselineDetail.snapshot.requirements.Count -lt 1 `
         -or ($baselineDetail.snapshot.tasks | Where-Object { $_.id -eq $first.result.id } | Select-Object -First 1).actual_start -ne "2026-08-02" `
         -or $baselineDetail.snapshot.capture.correlation_id -ne $baseline.command_id
     ) {

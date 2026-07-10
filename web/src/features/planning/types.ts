@@ -18,6 +18,14 @@ export type PlanningTaskStatus = "planned" | "in_progress" | "blocked" | "comple
 export type PlanningLinkTargetKind = "operation" | "gate" | "evidence" | "party" | "shipment" | "document" | "location" | "asset" | "agreement" | "communication_thread" | "calendar_event";
 export type PlanningLinkRelationship = "implements" | "blocks_on" | "requires" | "proves" | "owned_by" | "moves" | "occurs_at" | "discussed_in" | "publishes_to";
 export type PlanningParticipantRole = "owner" | "assignee" | "approver" | "consulted" | "informed" | "external_contact";
+export type PlanningRequirementType = "evidence" | "approval" | "compliance" | "finance" | "shipment" | "document" | "custom";
+export type PlanningRequirementState = "missing" | "submitted" | "under_review" | "satisfied" | "rejected" | "waived";
+export type PlanningReadiness = {
+  ready: boolean;
+  required_count: number;
+  blocking_count: number;
+  blocking_requirement_ids: string[];
+};
 
 export type PlanningTask = {
   id: string;
@@ -44,6 +52,7 @@ export type PlanningTask = {
   deadline_variance_days?: number | null;
   participant_ids?: string[];
   participant_roles?: PlanningParticipantRole[];
+  readiness?: PlanningReadiness;
   duration_days: number;
   progress: number;
   sort_order: number;
@@ -150,6 +159,25 @@ export type PlanningTaskParticipant = {
 
 export type PlanningPartyOption = { id: string; display_name: string; status: string };
 
+export type PlanningTaskRequirement = {
+  id: string;
+  project_id: string;
+  task_id: string;
+  requirement_type: PlanningRequirementType;
+  title: string;
+  state: PlanningRequirementState;
+  required: boolean;
+  blocking: boolean;
+  target_link_id: string | null;
+  target_link_state: "ready" | "unavailable" | "denied" | "missing" | "unlinked";
+  due: string | null;
+  decision_reason: string | null;
+  decided_by_actor_id: string | null;
+  decided_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type PlanningBaseline = {
   id: string;
   project_id: string;
@@ -206,6 +234,8 @@ export type PlanningSchedule = {
   assignments: PlanningAssignment[];
   links: PlanningLink[];
   participants?: PlanningTaskParticipant[];
+  requirements?: PlanningTaskRequirement[];
+  readiness?: PlanningReadiness & { task_blocker_count: number };
   date_semantics?: {
     precision: "calendar_date";
     project_timezone: string;

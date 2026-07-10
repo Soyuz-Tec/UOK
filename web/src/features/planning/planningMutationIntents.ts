@@ -7,6 +7,10 @@ import {
   createPlanningLink,
   createPlanningResource,
   createPlanningTask,
+  createPlanningTaskRequirement,
+  advancePlanningTaskRequirement,
+  decidePlanningTaskRequirement,
+  setPlanningTaskRequirementLink,
   deletePlanningTask,
   planningCommand,
   removePlanningDependency,
@@ -32,6 +36,10 @@ import type {
   PlanningResourceCreateRequest,
   PlanningTaskCreateRequest,
   PlanningTaskParticipantCreateRequest,
+  PlanningTaskRequirementAdvanceRequest,
+  PlanningTaskRequirementCreateRequest,
+  PlanningTaskRequirementDecisionRequest,
+  PlanningTaskRequirementLinkRequest,
   PlanningTaskDateUpdateRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
@@ -82,6 +90,22 @@ export function addTaskParticipantIntent(token: string, taskId: string, payload:
 
 export function removeTaskParticipantIntent(token: string, taskId: string, participantId: string) {
   return intent("participant", "Remove task participant", { taskId, participantId, action: "task_participant_removed" }, (etag) => removePlanningTaskParticipant(token, taskId, participantId, { ifMatch: etag }));
+}
+
+export function addTaskRequirementIntent(token: string, taskId: string, payload: PlanningTaskRequirementCreateRequest) {
+  return intent("requirement", "Create task gate", { taskId, action: "task_requirement_created" }, (etag) => createPlanningTaskRequirement(token, taskId, payload, { ifMatch: etag }));
+}
+
+export function advanceTaskRequirementIntent(token: string, taskId: string, requirementId: string, payload: PlanningTaskRequirementAdvanceRequest) {
+  return intent("requirement", "Advance task gate", { taskId, requirementId, action: "task_requirement_advanced" }, (etag) => advancePlanningTaskRequirement(token, taskId, requirementId, payload, { ifMatch: etag }));
+}
+
+export function decideTaskRequirementIntent(token: string, taskId: string, requirementId: string, payload: PlanningTaskRequirementDecisionRequest) {
+  return intent("requirement-decision", "Decide task gate", { taskId, requirementId, action: "task_requirement_decided" }, (etag) => decidePlanningTaskRequirement(token, taskId, requirementId, payload, { ifMatch: etag }));
+}
+
+export function setTaskRequirementLinkIntent(token: string, taskId: string, requirementId: string, payload: PlanningTaskRequirementLinkRequest) {
+  return intent("requirement", "Update task gate source", { taskId, requirementId, action: "task_requirement_link_set" }, (etag) => setPlanningTaskRequirementLink(token, taskId, requirementId, payload, { ifMatch: etag }));
 }
 
 export function saveCalendarIntent(token: string, projectId: string, payload: PlanningCalendarUpdateRequest) {

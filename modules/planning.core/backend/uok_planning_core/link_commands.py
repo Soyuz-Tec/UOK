@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from .advanced_commands import clean_text
 from .link_resolver import LINK_RELATIONSHIPS, resolve_target, resolver_spec, serialize_link
-from .models import PlanningLink, utcnow
+from .models import PlanningLink, PlanningTaskRequirement, utcnow
 from .planning_audit import add_planning_schedule_event, emit_planning_event
 from .scheduler import project_or_error, task_or_error
 from uok.command_context import CommandDomainError
@@ -83,6 +83,17 @@ def cmd_remove_planning_link(db: Session, actor: Actor, payload: dict[str, Any],
     ))
     if link is None:
         raise ValueError("link_id not found")
+    requirement_id = db.scalar(select(PlanningTaskRequirement.id).where(
+        PlanningTaskRequirement.organization_id == actor.organization_id,
+        PlanningTaskRequirement.target_link_id == link.id,
+    ))
+    if requirement_id:
+        raise CommandDomainError(
+            code="planning_link_in_use", message="This Planning link is attached to a task requirement.",
+            field="link_id", object_ids=[link.id, requirement_id],
+            repair="Complete or replace the requirement workflow before removing its source link.",
+            current_revision=int(project.revision), correlation_id=command_id,
+        )
     link_id = link.id
     event_payload = {"project_id": project.id, "task_id": link.task_id, "link_id": link_id, "target_kind": link.target_kind}
     db.delete(link)

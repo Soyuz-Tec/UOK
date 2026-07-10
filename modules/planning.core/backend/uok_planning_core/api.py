@@ -23,6 +23,10 @@ from .schemas import (
     PlanningTaskRequest,
     PlanningTaskDateUpdateRequest,
     PlanningTaskParticipantRequest,
+    PlanningTaskRequirementAdvanceRequest,
+    PlanningTaskRequirementDecisionRequest,
+    PlanningTaskRequirementLinkRequest,
+    PlanningTaskRequirementRequest,
     PlanningTaskUpdateRequest,
 )
 from uok.commands import (
@@ -170,6 +174,31 @@ def add_task_participant(task_id: str, req: PlanningTaskParticipantRequest, resp
 @router.delete("/tasks/{task_id}/participants/{participant_id}", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
 def remove_task_participant(task_id: str, participant_id: str, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
     return run_planning_command(db, actor, "RemovePlanningTaskParticipant", {"task_id": task_id, "participant_id": participant_id}, idempotency_key, response, if_match)
+
+
+@router.post("/tasks/{task_id}/requirements", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def create_task_requirement(task_id: str, req: PlanningTaskRequirementRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
+    payload = req.model_dump(exclude_none=True)
+    payload["task_id"] = task_id
+    return run_planning_command(db, actor, "CreatePlanningTaskRequirement", payload, idempotency_key, response, if_match)
+
+
+@router.post("/tasks/{task_id}/requirements/{requirement_id}/advance", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def advance_task_requirement(task_id: str, requirement_id: str, req: PlanningTaskRequirementAdvanceRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
+    payload = {**req.model_dump(exclude_none=True), "task_id": task_id, "requirement_id": requirement_id}
+    return run_planning_command(db, actor, "AdvancePlanningTaskRequirement", payload, idempotency_key, response, if_match)
+
+
+@router.put("/tasks/{task_id}/requirements/{requirement_id}/link", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def set_task_requirement_link(task_id: str, requirement_id: str, req: PlanningTaskRequirementLinkRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
+    payload = {**req.model_dump(), "task_id": task_id, "requirement_id": requirement_id}
+    return run_planning_command(db, actor, "SetPlanningTaskRequirementLink", payload, idempotency_key, response, if_match)
+
+
+@router.post("/tasks/{task_id}/requirements/{requirement_id}/decision", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def decide_task_requirement(task_id: str, requirement_id: str, req: PlanningTaskRequirementDecisionRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any] | JSONResponse:
+    payload = {**req.model_dump(exclude_none=True), "task_id": task_id, "requirement_id": requirement_id}
+    return run_planning_command(db, actor, "DecidePlanningTaskRequirement", payload, idempotency_key, response, if_match)
 
 
 @router.delete("/tasks/{task_id}", responses=PLANNING_MUTATION_RESPONSES, response_model=None)

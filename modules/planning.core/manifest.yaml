@@ -32,6 +32,10 @@ commands:
   - RemovePlanningLink
   - AddPlanningTaskParticipant
   - RemovePlanningTaskParticipant
+  - CreatePlanningTaskRequirement
+  - AdvancePlanningTaskRequirement
+  - SetPlanningTaskRequirementLink
+  - DecidePlanningTaskRequirement
 events:
   - PlanningProjectCreated
   - PlanningTaskCreated
@@ -51,6 +55,10 @@ events:
   - PlanningLinkRemoved
   - PlanningTaskParticipantAdded
   - PlanningTaskParticipantRemoved
+  - PlanningTaskRequirementCreated
+  - PlanningTaskRequirementAdvanced
+  - PlanningTaskRequirementLinkSet
+  - PlanningTaskRequirementDecided
 dependencies:
   - calendar.core
 backend_path: modules/planning.core/backend
@@ -80,6 +88,7 @@ owned_tables:
   - PlanningProject
   - PlanningTask
   - PlanningTaskParticipant
+  - PlanningTaskRequirement
   - PlanningTaskDependency
   - PlanningCalendar
   - PlanningLink

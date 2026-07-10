@@ -44,11 +44,11 @@ function PlanningList({ schedule, onTaskSelect }: { schedule: PlanningSchedule; 
   return (
     <div className="planning-read-view" aria-label="Planning list">
       <table className="planning-read-table">
-        <thead><tr><th>WBS</th><th>Task</th><th>Type</th><th>Start</th><th>End</th><th>Progress</th></tr></thead>
+        <thead><tr><th>WBS</th><th>Task</th><th>Type</th><th>Start</th><th>End</th><th>Progress</th><th>Readiness</th></tr></thead>
         <tbody>
           {schedule.tasks.map((task) => (
             <tr key={task.id} onClick={() => onTaskSelect(task.id)}>
-              <td>{task.wbs || "-"}</td><td>{task.title}</td><td>{task.task_type}</td><td>{task.start}</td><td>{task.end}</td><td>{task.progress}%</td>
+              <td>{task.wbs || "-"}</td><td>{task.title}</td><td>{task.task_type}</td><td>{task.start}</td><td>{task.end}</td><td>{task.progress}%</td><td>{task.readiness?.ready === false ? `${task.readiness.blocking_count} blocker(s)` : "Ready"}</td>
             </tr>
           ))}
         </tbody>
@@ -124,6 +124,7 @@ function PlanningDashboard({ schedule, onTaskSelect }: { schedule: PlanningSched
         <MetricTile label="Critical" value={String(critical)} detail="Critical path tasks" />
         <MetricTile label="Milestones" value={String(milestones)} detail="Delivery markers" />
         <MetricTile label="Progress" value={`${progress}%`} detail="Average completion" />
+        <MetricTile label="Gate blockers" value={String(schedule.readiness?.blocking_count || 0)} detail={`${schedule.readiness?.task_blocker_count || 0} task(s) not ready`} />
         {criticalPath.targetVarianceDays === null ? null : (
           <MetricTile
             label="Target variance"

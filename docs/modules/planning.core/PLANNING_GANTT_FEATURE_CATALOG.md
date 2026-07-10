@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A local/runtime evidence verified and Gate B typed links, execution-date semantics, and task participants runtime-proven.
+**Status:** Active evidence catalog; Gate A local/runtime evidence verified and Gate B typed links, execution-date semantics, task participants, and task requirements runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -53,6 +53,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Typed operation links | `runtime_proven` | Project/task references use server-selected resolvers, actor-specific safe states, Planning revision/audit evidence, baseline capture, and no foreign keys or copied payloads from optional providers; PostgreSQL and candidate lifecycle proof pass. |
 | Execution date semantics | `runtime_proven` | Planned dates remain scheduler-owned; forecast, reason-audited actual, and deadline facts use a dedicated typed mutation, project IANA timezone, UTC storage, DST-safe conversion, explicit variances, baseline capture, and PostgreSQL/candidate proof. |
 | Task participants | `runtime_proven` | Controlled responsibility roles reference actor-authorized canonical Parties without cross-module foreign keys; revision/version, safe lifecycle states, filtering, baselines, audit, PostgreSQL, candidate, and Chromium proof pass. |
+| Task gates and readiness | `runtime_proven` | Controlled requirements use edit/approve authority, matching typed links, reasoned decisions, provider-aware fail-closed readiness, task/project blocker counts, version/audit/baseline integration, and typed UI actions; PostgreSQL, candidate, and Chromium proof pass. |
 
 ## Grid And Column Features
 
@@ -158,7 +159,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Bulk edit | Project-scoped task updates commit one revision or roll back every operation; owner, priority, and calendar fields remain later work. | `runtime_proven` |
 | Undo/redo | Supported inverse commands use the atomic endpoint with the source command ID and current revision; stale inverses preserve latest server state and unsupported/destructive history kinds fail closed. | `runtime_proven` |
 | Saved views | Store filters, density, fields, scale, and grouping. | `source_present` |
-| Search/filter/group | Search task titles; filter by status, critical, resource, milestone. | `source_present` |
+| Search/filter/group | Search task titles; filter by status, critical, resource, participant, milestone, and not-ready gate blockers. | `integration_tested` |
 | Export/import | Planning uses the separately deployed global artifact boundary for PDF, PNG, HTML/office documents, Excel, iCal, MS Project, and CSV needs; no planning-specific redeployment is required. | `integration_tested` |
 | Non-drag mutation access | Start/end, progress, dependency, and task-creation changes remain operable by keyboard and form controls without drag gestures. | `runtime_proven` |
 | Focus and stale-state recovery | Successful inline edits restore control focus; rejected stale writes and inverses focus an announced repair alert and do not overwrite latest server state. | `runtime_proven` |
@@ -166,6 +167,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Operation Links inspector | A capability-gated inspector creates and removes typed references, labels resolver state, and exposes an Open action only for authorized ready targets. | `runtime_proven` |
 | Planned/forecast/actual/deadline editor | Task inspector labels planned dates, edits forecast/actual/deadline facts, requires a reason for actual changes, shows project timezone/variance, and states the subday boundary. | `runtime_proven` |
 | People inspector and participant filter | People inspector selects canonical active Parties, assigns controlled roles, shows safe provider states and ready-only jumps; People view and saved participant filter use the same read model. | `runtime_proven` |
+| Gates inspector and readiness views | Gates inspector creates requirements, advances review state, and exposes approval actions only to authorized actors; List/Dashboard and saved not-ready filtering consume the server readiness rollup. | `runtime_proven` |
 
 ## Current UI Audit And Execution Plan
 

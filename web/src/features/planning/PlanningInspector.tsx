@@ -8,6 +8,7 @@ import { PlanningTaskEditor } from "./PlanningTaskEditor";
 import { PlanningResourcePanel } from "./PlanningResourcePanel";
 import { PlanningOperationLinksPanel } from "./PlanningOperationLinksPanel";
 import { PlanningParticipantsPanel } from "./PlanningParticipantsPanel";
+import { PlanningRequirementsPanel } from "./PlanningRequirementsPanel";
 import type { PlanningDependency, PlanningDependencyType, PlanningProject, PlanningSchedule, PlanningTask } from "./types";
 import type {
   PlanningAssignmentCreateRequest,
@@ -20,6 +21,10 @@ import type {
   PlanningTaskCreateRequest,
   PlanningTaskDateUpdateRequest,
   PlanningTaskParticipantCreateRequest,
+  PlanningTaskRequirementAdvanceRequest,
+  PlanningTaskRequirementCreateRequest,
+  PlanningTaskRequirementDecisionRequest,
+  PlanningTaskRequirementLinkRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
 
@@ -29,7 +34,7 @@ const dependencyTypes: Array<[PlanningDependencyType, string]> = [
   ["finish_to_finish", "Finish to finish"],
   ["start_to_finish", "Start to finish"],
 ];
-export type PlanningInspectorTab = "task" | "dependencies" | "links" | "participants" | "calendar" | "resources" | "status";
+export type PlanningInspectorTab = "task" | "dependencies" | "links" | "participants" | "gates" | "calendar" | "resources" | "status";
 
 export function PlanningInspector(props: {
   projects: PlanningProject[];
@@ -42,6 +47,7 @@ export function PlanningInspector(props: {
   busy: string;
   readOnly: boolean;
   linkReadOnly: boolean;
+  canApproveGates: boolean;
   onTabChange: (tab: PlanningInspectorTab) => void;
   onProjectChange: (projectId: string) => void;
   onSaveTask: (taskId: string, payload: PlanningTaskUpdateRequest) => Promise<void>;
@@ -55,6 +61,10 @@ export function PlanningInspector(props: {
   onRemovePlanningLink: (linkId: string) => Promise<void>;
   onAddTaskParticipant: (taskId: string, payload: PlanningTaskParticipantCreateRequest) => Promise<void>;
   onRemoveTaskParticipant: (taskId: string, participantId: string) => Promise<void>;
+  onCreateTaskRequirement: (taskId: string, payload: PlanningTaskRequirementCreateRequest) => Promise<void>;
+  onAdvanceTaskRequirement: (taskId: string, requirementId: string, payload: PlanningTaskRequirementAdvanceRequest) => Promise<void>;
+  onSetTaskRequirementLink: (taskId: string, requirementId: string, payload: PlanningTaskRequirementLinkRequest) => Promise<void>;
+  onDecideTaskRequirement: (taskId: string, requirementId: string, payload: PlanningTaskRequirementDecisionRequest) => Promise<void>;
   onSetCalendar: (payload: PlanningCalendarUpdateRequest) => Promise<void>;
   onCreateBaseline: (payload: PlanningBaselineCreateRequest) => Promise<void>;
   onCreateResource: (payload: PlanningResourceCreateRequest) => Promise<void>;
@@ -82,6 +92,7 @@ export function PlanningInspector(props: {
           ["dependencies", "Dependencies"],
           ["links", "Links"],
           ["participants", "People"],
+          ["gates", "Gates"],
           ["calendar", "Calendar"],
           ["resources", "Resources"],
           ["status", "Status"],
@@ -97,6 +108,7 @@ export function PlanningInspector(props: {
         {activeTab === "dependencies" && <DependencyEditor schedule={schedule} busy={busy} onCreateDependency={props.onCreateDependency} onUpdateDependency={props.onUpdateDependency} onRemoveDependency={props.onRemoveDependency} />}
         {activeTab === "links" && <PlanningOperationLinksPanel schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly || linkReadOnly} onCreate={props.onCreatePlanningLink} onRemove={props.onRemovePlanningLink} />}
         {activeTab === "participants" && <PlanningParticipantsPanel token={props.token} schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly} onAdd={props.onAddTaskParticipant} onRemove={props.onRemoveTaskParticipant} />}
+        {activeTab === "gates" && <PlanningRequirementsPanel schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly} canApprove={props.canApproveGates} onCreate={props.onCreateTaskRequirement} onAdvance={props.onAdvanceTaskRequirement} onSetLink={props.onSetTaskRequirementLink} onDecide={props.onDecideTaskRequirement} />}
         {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
         {activeTab === "resources" && <PlanningResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />}
       </fieldset>

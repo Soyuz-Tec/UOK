@@ -8,6 +8,7 @@ const scope = task("scope", "1.1", "Define schedule scope", "task", "planned", t
 const build = task("build", "1.2", "Build pump schedule", "task", "blocked", false);
 build.participant_ids = ["party-1"];
 build.participant_roles = ["owner"];
+build.readiness = { ready: false, required_count: 1, blocking_count: 1, blocking_requirement_ids: ["requirement-1"] };
 const milestone = task("review", "1.3", "Pilot review", "milestone", "planned", true);
 
 const schedule: PlanningSchedule = {
@@ -46,6 +47,11 @@ describe("planning schedule view filters", () => {
     const visible = projectScheduleView(schedule, filters({ mode: "milestones" }), true);
     expect(visible.tasks.map((task) => task.id)).toEqual(["summary", "review"]);
     expect(visible.dependencies).toEqual([]);
+  });
+
+  it("filters tasks blocked by required gates", () => {
+    const visible = projectScheduleView(schedule, filters({ mode: "not_ready" }), true);
+    expect(visible.tasks.map((task) => task.id)).toEqual(["summary", "build"]);
   });
 });
 

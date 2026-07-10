@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A local/runtime evidence closure verified 2026-07-10; Gate B typed-link, execution-date, and task-participant slices runtime-proven; hosted CI, review, and merge pending.
+**Status:** Gate A local/runtime evidence closure verified 2026-07-10; Gate B typed-link, execution-date, task-participant, and task-requirement slices runtime-proven; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -91,7 +91,7 @@ requirement.
 | PLA-B-001 | Typed cross-module links | Additive `PlanningLink` migration/model, server-owned resolver registry, REST/command APIs, typed client, capability-gated inspector, baseline inclusion, and ready/missing/cross-org/denied/disabled-provider tests | PostgreSQL 18 readback and candidate scenario pass; activate real Operation Graph/K Connect providers before claiming those target kinds ready | `runtime_proven` |
 | PLA-B-002 | Planned/forecast/actual/deadline semantics | Additive project timezone/task date migration, scheduler/fact authority split, dedicated audited mutation, variance read model, typed client, explicit UI labels, and visual-only subday disclosure | New York spring/fall DST storage, reason/order/permission/ETag rejection, planned-move actual preservation, PostgreSQL readback, baseline capture, and candidate scenario pass | `runtime_proven` |
 | PLA-B-003 | First-class participants | Additive participant model/migration, controlled roles, actor-safe canonical Party resolver, guarded REST/commands, task version/filter read model, baseline/audit evidence, People inspector/view, and saved filter | Same-org ready, cross-org missing, provider-disabled, denied-identity, duplicate, permission, PostgreSQL readback, candidate lifecycle, and Chromium proof pass | `runtime_proven` |
-| PLA-B-004 | Gates and evidence blockers | Link target kinds and blocking intent exist | Requirement state machine, policy-checked approve/reject/waive, readiness impact, and audit proof | `planned` |
+| PLA-B-004 | Gates and evidence blockers | Planning-owned requirement model/state machine, separate edit/approve authority, audited evidence-source replacement with review invalidation, matching typed links, provider-aware fail-closed task/project readiness, task version/revision/ETag, audit/baseline integration, typed Gates inspector, dashboard/list status, and not-ready saved filter | PostgreSQL 18 readback, candidate lifecycle, provider-outage re-block, and Chromium proof pass | `runtime_proven` |
 | PLA-B-005 | Communication thread jump | `kconnect.thread` resolver name and unavailable state are reserved | Owning provider, permission contract, correct-thread open action, disabled/denied proof | `planned` |
 
 Current Gate B link evidence:
@@ -121,6 +121,16 @@ Current Gate B participant evidence:
 - Typed inspector/filter proof: `web/src/features/planning/PlanningParticipantsPanel.test.tsx`, `planningTimelineModel.test.ts`, and `planningApi.test.ts`
 - Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningParticipants.ps1`
 - Persistent PostgreSQL proof: 11 columns, controlled role/source checks, three same-module foreign keys, unique Party/role membership, and two access indexes read back after backup; rebuilt candidate proved ready/disabled/permission lifecycle and baseline capture.
+
+Current Gate B requirement/readiness evidence:
+
+- ADR: `docs/architecture/ADR-0007-planning-task-requirements-and-readiness.md`
+- Migration: `modules/planning.core/migrations/008_planning_task_requirements.sql`
+- Lifecycle, authorization, evidence-link, outage, version, baseline, and audit proof: `modules/planning.core/tests/test_planning_requirements.py`
+- Runtime/generated OpenAPI parity: `modules/planning.core/tests/test_planning_idempotency_contract.py`
+- Typed Gates inspector/API/filter proof: `web/src/features/planning/PlanningRequirementsPanel.test.tsx`, `planningRequirementsApi.test.ts`, and `planningTimelineModel.test.ts`
+- Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningRequirements.ps1`
+- Persistent PostgreSQL proof: 17 columns, three controlled type/state/decision checks, four foreign keys, and both organization-first state/due indexes read back after backup and additive migration; rebuilt candidate proved approval lifecycle, permission denial, readiness recovery, and baseline inclusion, while five Chromium scenarios proved the Gates inspector and blocker status.
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence

@@ -232,6 +232,34 @@ class PlanningTaskParticipant(Base):
     )
 
 
+class PlanningTaskRequirement(Base):
+    __tablename__ = "planning_task_requirements"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey("planning_projects.id"), index=True)
+    task_id: Mapped[str] = mapped_column(ForeignKey("planning_tasks.id"), index=True)
+    requirement_type: Mapped[str] = mapped_column(String(40))
+    title: Mapped[str] = mapped_column(String(180))
+    state: Mapped[str] = mapped_column(String(40), default="missing", server_default="missing")
+    required: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    target_link_id: Mapped[str | None] = mapped_column(ForeignKey("planning_links.id"), nullable=True)
+    due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    decision_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    decided_by_actor_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    attrs_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_by_actor_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
+    __table_args__ = (
+        CheckConstraint("requirement_type IN ('evidence', 'approval', 'compliance', 'finance', 'shipment', 'document', 'custom')", name="ck_planning_requirement_type"),
+        CheckConstraint("state IN ('missing', 'submitted', 'under_review', 'satisfied', 'rejected', 'waived')", name="ck_planning_requirement_state"),
+        CheckConstraint("state NOT IN ('satisfied', 'rejected', 'waived') OR (decided_by_actor_id IS NOT NULL AND decided_at IS NOT NULL AND decision_reason IS NOT NULL)", name="ck_planning_requirement_decision"),
+        Index("ix_planning_requirements_task_state", "organization_id", "project_id", "task_id", "state"),
+        Index("ix_planning_requirements_due", "organization_id", "project_id", "required", "due_at"),
+    )
+
+
 class PlanningScheduleEvent(Base):
     __tablename__ = "planning_schedule_events"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_id)

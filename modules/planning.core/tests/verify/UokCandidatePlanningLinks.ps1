@@ -69,4 +69,5 @@ function Assert-UokPlanningLinkContract {
         throw "Disabled target module removed or leaked the Planning link: $($unavailable.links | ConvertTo-Json -Depth 20)"
     }
     Invoke-UokJson -Method "POST" -Path "/api/modules/contacts.core/enable" -Headers $Headers | Out-Null
+    return @{ party_link_id = $link.id }
 }

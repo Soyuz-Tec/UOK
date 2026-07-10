@@ -111,6 +111,7 @@ const sampleSchedule = {
       end_variance_days: 1,
       participant_ids: ["party-proof"],
       participant_roles: ["approver"],
+      readiness: { ready: false, required_count: 1, blocking_count: 1, blocking_requirement_ids: ["requirement-proof"] },
     },
   ],
   dependencies: [
@@ -138,6 +139,25 @@ const sampleSchedule = {
     created_at: "2026-08-01T00:00:00Z",
     updated_at: "2026-08-01T00:00:00Z",
   }],
+  requirements: [{
+    id: "requirement-proof",
+    project_id: sampleProject.id,
+    task_id: "task-3",
+    requirement_type: "approval",
+    title: "Pilot execution approval",
+    state: "under_review",
+    required: true,
+    blocking: true,
+    target_link_id: null,
+    target_link_state: "unlinked",
+    due: "2026-08-13",
+    decision_reason: null,
+    decided_by_actor_id: null,
+    decided_at: null,
+    created_at: "2026-08-01T00:00:00Z",
+    updated_at: "2026-08-01T00:00:00Z",
+  }],
+  readiness: { ready: false, required_count: 1, blocking_count: 1, blocking_requirement_ids: ["requirement-proof"], task_blocker_count: 1 },
   baselines: [{
     id: "baseline-1",
     project_id: sampleProject.id,
@@ -485,6 +505,12 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     const participantsPanel = page.getByLabel("Task participants");
     await expect(participantsPanel).toContainText("Pilot approver");
     await expect(participantsPanel.getByRole("link", { name: "Open" })).toHaveAttribute("href", "/?view=contacts&party_id=party-proof");
+    await page.getByRole("tab", { name: "Gates" }).click();
+    const gatesPanel = page.getByLabel("Task gates and requirements");
+    await expect(gatesPanel).toContainText("Not ready · 1 required blocker(s).");
+    await expect(gatesPanel).toContainText("Pilot execution approval");
+    await gatesPanel.getByLabel("Decision reason").fill("Pilot approval reviewed");
+    await expect(gatesPanel.getByRole("button", { name: "Satisfy" })).toBeEnabled();
     await page.getByRole("tab", { name: "Dependencies" }).click();
     await expect(page.getByLabel("Dependency editor")).toBeVisible();
     await page.getByRole("tab", { name: "Calendar" }).click();

@@ -1,0 +1,21 @@
+.planning-requirement-row[data-blocking="true"] {
+  border-block-start-color: var(--uok-status-warning);
+}
+
+.planning-requirement-row > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+}
+
+.planning-requirement-row .planning-action-row {
+  flex: 1 0 100%;
+}
+
+.planning-requirement-row .planning-action-row .field {
+  flex: 1 1 220px;
+}
+
+.planning-requirement-row .planning-action-row input {
+  width: 100%;
+}

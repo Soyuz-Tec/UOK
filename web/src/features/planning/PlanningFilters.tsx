@@ -32,6 +32,7 @@ export function PlanningFilters({
           <option value="all">All</option>
           <option value="critical">Critical</option>
           <option value="milestones">Milestones</option>
+          <option value="not_ready">Not ready</option>
         </select>
       </label>
       <label className="planning-toolbar-select">
