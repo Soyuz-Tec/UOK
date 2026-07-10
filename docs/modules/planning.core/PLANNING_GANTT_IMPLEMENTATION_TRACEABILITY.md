@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if snapshots runtime-proven; hosted CI, review, and merge pending.
+**Status:** Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if plus reproducible risk analysis runtime-proven; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -194,7 +194,7 @@ Current Gate C explainable-leveling evidence:
 | ID | Requirement | Current evidence | Required proof before Gate D closure | Status |
 |---|---|---|---|---|
 | PLA-D-001 | Immutable what-if snapshots | Additive append-only model/migration, complete approved capture, bounded typed temporary changes, detached CPM/capacity preview, SHA-256 integrity, actor-scoped read API, distinct analysis capability, typed inspector, and audit correlation | PostgreSQL trigger/readback and rebuilt candidate non-mutation proof | `runtime_proven` |
-| PLA-D-002 | Reproducible risk analysis | Snapshot foundation only | Stored seed/distributions/correlations/engine/percentiles plus same-input reproduction | `planned` |
+| PLA-D-002 | Reproducible risk analysis | Verified snapshot checksum, fixed seed, bounded triangular task inputs, named correlation groups, versioned CPM-per-sample engine, limits, P50/P80/P90/P95, target probability, confidence assumptions, independent validation, typed UI, checksum, and append-only audit record | Exact same-input reproduction, PostgreSQL readback, and candidate percentile proof | `runtime_proven` |
 | PLA-D-003 | Bounded governed optimization | Leveling is explicit but not optimization | ADR/dependency review, engine/version/limits/objective, timeout/infeasible fixtures, benchmarks, and independent validation | `planned` |
 | PLA-D-004 | Governed recommendation lifecycle | Analysis and approval permissions are separated | Analyze to explain to recommend to preview to approve to apply to audit, with rollback | `planned` |
 
@@ -207,6 +207,16 @@ Current Gate D what-if evidence:
 - Typed Analysis inspector proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`
 - Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningWhatIf.ps1`
 - Persistent PostgreSQL proof: 11 columns, three checks, three foreign keys, five indexes, one immutable trigger, and direct update rejection read back after backup and additive migration; rebuilt candidate preserved approved task fields/version while verifying the preview checksum.
+
+Current Gate D risk evidence:
+
+- ADR: `docs/architecture/ADR-0014-planning-reproducible-risk-analysis.md`
+- Engine, normalized inputs, correlations, limits, percentiles, and independent checks: `modules/planning.core/backend/uok_planning_core/risk_engine.py`
+- Immutable persistence, checksum, actor-scoped reads, and audit: `modules/planning.core/backend/uok_planning_core/risk_analysis.py`, `analysis_api.py`, and `analysis_commands.py`
+- Exact reproduction, contract rejection, non-mutation, and ORM immutability: `modules/planning.core/tests/test_planning_risk_analysis.py`
+- Typed fixed-seed Analysis inspector proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`
+- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningRisk.ps1`
+- Persistent PostgreSQL proof: 16 columns, four checks, four foreign keys, six indexes, one immutable trigger, and direct update rejection read back after backup `uok_pg18_20260710-092303.dump` and additive migration; two same-input candidate runs produced the same checksum.
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence

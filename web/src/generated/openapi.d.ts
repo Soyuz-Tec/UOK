@@ -1070,6 +1070,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/projects/{project_id}/risk-analyses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Risk Analyses */
+        get: operations["project_risk_analyses_api_planning_projects__project_id__risk_analyses_get"];
+        put?: never;
+        /** Create Project Risk Analysis */
+        post: operations["create_project_risk_analysis_api_planning_projects__project_id__risk_analyses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/risk-analyses/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Risk Analysis */
+        get: operations["project_risk_analysis_api_planning_projects__project_id__risk_analyses__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/projects/{project_id}/schedule": {
         parameters: {
             query?: never;
@@ -1947,6 +1982,49 @@ export interface components {
              * @default
              */
             role: string;
+        };
+        /** PlanningRiskAnalysisRequest */
+        PlanningRiskAnalysisRequest: {
+            /** Correlations */
+            correlations?: components["schemas"]["PlanningRiskCorrelationRequest"][];
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /**
+             * Iterations
+             * @default 1000
+             */
+            iterations: number;
+            /** Seed */
+            seed: number;
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Task Risks */
+            task_risks: components["schemas"]["PlanningRiskTaskRequest"][];
+        };
+        /** PlanningRiskCorrelationRequest */
+        PlanningRiskCorrelationRequest: {
+            /** Coefficient */
+            coefficient: number;
+            /** Group */
+            group: string;
+        };
+        /** PlanningRiskTaskRequest */
+        PlanningRiskTaskRequest: {
+            /** Correlation Group */
+            correlation_group?: string | null;
+            /**
+             * Distribution
+             * @default triangular
+             */
+            distribution: string;
+            /** Maximum Days */
+            maximum_days: number;
+            /** Minimum Days */
+            minimum_days: number;
+            /** Most Likely Days */
+            most_likely_days: number;
+            /** Task Id */
+            task_id: string;
         };
         /** PlanningTaskDateUpdateRequest */
         PlanningTaskDateUpdateRequest: {
@@ -5394,6 +5472,163 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_risk_analyses_api_planning_projects__project_id__risk_analyses_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_project_risk_analysis_api_planning_projects__project_id__risk_analyses_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningRiskAnalysisRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_risk_analysis_api_planning_projects__project_id__risk_analyses__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

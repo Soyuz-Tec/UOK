@@ -97,6 +97,7 @@ Operator browser
 - Planning Gate C `calendar.core` availability is runtime-proven and correlated by actor-visible canonical Party assignments/participants and exact task IDs; unrelated or private events do not become Planning warnings and no event silently moves a task.
 - Planning Gate C simple resource leveling is runtime-proven and returns explicit, independently validated outcomes, exact remaining overloads, stable reasons, and a bounded operator-configured horizon; it remains a deterministic heuristic and is not labeled optimization.
 - Planning Gate D what-if snapshots are runtime-proven: complete approved state and temporary typed changes are captured as immutable, hash-verified, audit-correlated artifacts, and previews run on detached task copies without changing approved task fields or versions.
+- Planning Gate D risk analysis is runtime-proven: bounded first-party Monte Carlo runs reference verified snapshot checksums and persist normalized distributions, correlations, seed, engine/version, limits, percentiles, confidence assumptions, independent validation, and append-only audit evidence.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

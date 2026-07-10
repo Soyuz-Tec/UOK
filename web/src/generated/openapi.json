@@ -1974,6 +1974,145 @@
         "title": "PlanningResourceRequest",
         "type": "object"
       },
+      "PlanningRiskAnalysisRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "correlations": {
+            "items": {
+              "$ref": "#/components/schemas/PlanningRiskCorrelationRequest"
+            },
+            "maxItems": 50,
+            "title": "Correlations",
+            "type": "array"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "iterations": {
+            "default": 1000,
+            "maximum": 5000.0,
+            "minimum": 100.0,
+            "title": "Iterations",
+            "type": "integer"
+          },
+          "seed": {
+            "maximum": 9.223372036854776e+18,
+            "minimum": 0.0,
+            "title": "Seed",
+            "type": "integer"
+          },
+          "snapshot_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Snapshot Id",
+            "type": "string"
+          },
+          "task_risks": {
+            "items": {
+              "$ref": "#/components/schemas/PlanningRiskTaskRequest"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Task Risks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "seed",
+          "task_risks"
+        ],
+        "title": "PlanningRiskAnalysisRequest",
+        "type": "object"
+      },
+      "PlanningRiskCorrelationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "coefficient": {
+            "maximum": 0.95,
+            "minimum": 0.0,
+            "title": "Coefficient",
+            "type": "number"
+          },
+          "group": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Group",
+            "type": "string"
+          }
+        },
+        "required": [
+          "group",
+          "coefficient"
+        ],
+        "title": "PlanningRiskCorrelationRequest",
+        "type": "object"
+      },
+      "PlanningRiskTaskRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "correlation_group": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Group"
+          },
+          "distribution": {
+            "default": "triangular",
+            "pattern": "^triangular$",
+            "title": "Distribution",
+            "type": "string"
+          },
+          "maximum_days": {
+            "maximum": 3650.0,
+            "minimum": 1.0,
+            "title": "Maximum Days",
+            "type": "integer"
+          },
+          "minimum_days": {
+            "maximum": 3650.0,
+            "minimum": 1.0,
+            "title": "Minimum Days",
+            "type": "integer"
+          },
+          "most_likely_days": {
+            "maximum": 3650.0,
+            "minimum": 1.0,
+            "title": "Most Likely Days",
+            "type": "integer"
+          },
+          "task_id": {
+            "maxLength": 36,
+            "minLength": 1,
+            "title": "Task Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "minimum_days",
+          "most_likely_days",
+          "maximum_days"
+        ],
+        "title": "PlanningRiskTaskRequest",
+        "type": "object"
+      },
       "PlanningTaskDateUpdateRequest": {
         "additionalProperties": false,
         "properties": {
@@ -8481,6 +8620,295 @@
           }
         },
         "summary": "Set Resource Calendar"
+      }
+    },
+    "/api/planning/projects/{project_id}/risk-analyses": {
+      "get": {
+        "operationId": "project_risk_analyses_api_planning_projects__project_id__risk_analyses_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "title": "Response Project Risk Analyses Api Planning Projects  Project Id  Risk Analyses Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project Risk Analyses",
+        "tags": [
+          "planning-analysis"
+        ]
+      },
+      "post": {
+        "operationId": "create_project_risk_analysis_api_planning_projects__project_id__risk_analyses_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningRiskAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Create Project Risk Analysis",
+        "tags": [
+          "planning-analysis"
+        ]
+      }
+    },
+    "/api/planning/projects/{project_id}/risk-analyses/{run_id}": {
+      "get": {
+        "operationId": "project_risk_analysis_api_planning_projects__project_id__risk_analyses__run_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "run_id",
+            "required": true,
+            "schema": {
+              "title": "Run Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Project Risk Analysis Api Planning Projects  Project Id  Risk Analyses  Run Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project Risk Analysis",
+        "tags": [
+          "planning-analysis"
+        ]
       }
     },
     "/api/planning/projects/{project_id}/schedule": {

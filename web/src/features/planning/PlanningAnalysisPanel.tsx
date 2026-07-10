@@ -2,8 +2,8 @@ import { FlaskConical, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
-import type { PlanningWhatIfCreateRequest, PlanningWhatIfDetail, PlanningWhatIfMetadata } from "./analysisTypes";
-import { listPlanningWhatIfSnapshots, loadPlanningWhatIfSnapshot } from "./planningAnalysisApi";
+import type { PlanningRiskCreateRequest, PlanningRiskMetadata, PlanningWhatIfCreateRequest, PlanningWhatIfDetail, PlanningWhatIfMetadata } from "./analysisTypes";
+import { listPlanningRiskAnalyses, listPlanningWhatIfSnapshots, loadPlanningWhatIfSnapshot } from "./planningAnalysisApi";
 import type { PlanningSchedule } from "./types";
 
 export function PlanningAnalysisPanel({
@@ -13,6 +13,7 @@ export function PlanningAnalysisPanel({
   readOnly,
   canAnalyze,
   onCreate,
+  onRunRisk,
 }: {
   token: string;
   schedule: PlanningSchedule;
@@ -20,6 +21,7 @@ export function PlanningAnalysisPanel({
   readOnly: boolean;
   canAnalyze: boolean;
   onCreate: (payload: PlanningWhatIfCreateRequest) => Promise<void>;
+  onRunRisk: (payload: PlanningRiskCreateRequest) => Promise<void>;
 }) {
   const firstTask = schedule.tasks.find((task) => task.task_type !== "summary");
   const [taskId, setTaskId] = useState(firstTask?.id || "");
@@ -30,6 +32,9 @@ export function PlanningAnalysisPanel({
   const [rows, setRows] = useState<PlanningWhatIfMetadata[]>([]);
   const [detail, setDetail] = useState<PlanningWhatIfDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [seed, setSeed] = useState(42);
+  const [iterations, setIterations] = useState(500);
+  const [riskRows, setRiskRows] = useState<PlanningRiskMetadata[]>([]);
 
   useEffect(() => {
     void refresh();
@@ -76,6 +81,21 @@ export function PlanningAnalysisPanel({
           <span>Checksum {detail.integrity.verified ? "verified" : "failed"}: {detail.checksum.slice(0, 12)}…</span>
         </div>
       ) : null}
+      <h3>Reproducible schedule risk</h3>
+      <p className="planning-muted">Run bounded Monte Carlo analysis from the selected verified snapshot. Seed, distributions, correlation assumptions, engine, limits, and percentiles are retained.</p>
+      <div className="planning-form-grid">
+        <label className="field"><span>Random seed</span><input type="number" min={0} value={seed} onChange={(event) => setSeed(Number(event.target.value))} /></label>
+        <label className="field"><span>Iterations</span><input type="number" min={100} max={5000} value={iterations} onChange={(event) => setIterations(Number(event.target.value))} /></label>
+      </div>
+      <CommandButton icon={FlaskConical} loading={busy === "risk"} disabled={readOnly || !canAnalyze || !detail || !selected || iterations < 100 || iterations > 5000 || seed < 0} onClick={() => void runRisk()}>
+        Run risk analysis
+      </CommandButton>
+      <div className="planning-list" aria-label="Risk analyses">
+        {riskRows.map((row) => <div key={row.id} className="planning-list-row">
+          <strong>P80 {row.result_summary.finish_percentiles.p80}</strong>
+          <span>{Math.round(row.result_summary.probability_on_or_before_target * 100)}% on/before target · seed {row.seed} · {row.integrity.status}</span>
+        </div>)}
+      </div>
     </section>
   );
 
@@ -92,6 +112,7 @@ export function PlanningAnalysisPanel({
       setRows(next);
       if (next[0]) await load(next[0].id);
       else setDetail(null);
+      setRiskRows(await listPlanningRiskAnalyses(token, schedule.project.id));
     } finally {
       setLoading(false);
     }
@@ -106,5 +127,24 @@ export function PlanningAnalysisPanel({
     setTaskId(nextId);
     setStart(task?.start || "");
     setEnd(task?.end || "");
+  }
+
+  async function runRisk() {
+    if (!detail || !selected) return;
+    const likely = Math.max(1, selected.duration_days);
+    await onRunRisk({
+      snapshot_id: detail.id,
+      seed,
+      iterations,
+      task_risks: [{
+        task_id: selected.id,
+        distribution: "triangular",
+        minimum_days: Math.max(1, likely - 1),
+        most_likely_days: likely,
+        maximum_days: likely + 2,
+      }],
+      correlations: [],
+    });
+    setRiskRows(await listPlanningRiskAnalyses(token, schedule.project.id));
   }
 }

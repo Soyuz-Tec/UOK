@@ -26,4 +26,42 @@ class PlanningWhatIfSnapshotRequest(BaseModel):
     task_changes: list[PlanningWhatIfTaskChangeRequest] = Field(..., min_length=1, max_length=100)
 
 
-__all__ = ["PlanningWhatIfSnapshotRequest", "PlanningWhatIfTaskChangeRequest"]
+class PlanningRiskTaskRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    task_id: str = Field(..., min_length=1, max_length=36)
+    distribution: str = Field(default="triangular", pattern="^triangular$")
+    minimum_days: int = Field(..., ge=1, le=3650)
+    most_likely_days: int = Field(..., ge=1, le=3650)
+    maximum_days: int = Field(..., ge=1, le=3650)
+    correlation_group: str | None = Field(default=None, min_length=1, max_length=80)
+
+    @model_validator(mode="after")
+    def validate_order(self) -> "PlanningRiskTaskRequest":
+        if not self.minimum_days <= self.most_likely_days <= self.maximum_days:
+            raise ValueError("risk duration requires minimum <= most_likely <= maximum")
+        return self
+
+
+class PlanningRiskCorrelationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    group: str = Field(..., min_length=1, max_length=80)
+    coefficient: float = Field(..., ge=0, le=.95)
+
+
+class PlanningRiskAnalysisRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    snapshot_id: str = Field(..., min_length=1, max_length=36)
+    seed: int = Field(..., ge=0, le=9_223_372_036_854_775_807)
+    iterations: int = Field(default=1000, ge=100, le=5000)
+    task_risks: list[PlanningRiskTaskRequest] = Field(..., min_length=1, max_length=200)
+    correlations: list[PlanningRiskCorrelationRequest] = Field(default_factory=list, max_length=50)
+
+
+__all__ = [
+    "PlanningRiskAnalysisRequest", "PlanningRiskCorrelationRequest", "PlanningRiskTaskRequest",
+    "PlanningWhatIfSnapshotRequest", "PlanningWhatIfTaskChangeRequest",
+]

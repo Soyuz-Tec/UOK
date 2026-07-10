@@ -6,7 +6,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_set_calendar
-from .analysis_commands import cmd_create_what_if_snapshot
+from .analysis_commands import cmd_create_what_if_snapshot, cmd_run_risk_analysis
 from .batch import cmd_batch_operations
 from .concurrency import guarded_planning_command
 from .leveling_command import cmd_level_resources
@@ -192,6 +192,7 @@ def command_handlers() -> dict[str, CommandHandler]:
         "SetPlanningTaskRequirementLink": cmd_set_planning_task_requirement_link,
         "DecidePlanningTaskRequirement": cmd_decide_planning_task_requirement,
         "CreatePlanningWhatIfSnapshot": cmd_create_what_if_snapshot,
+        "RunPlanningRiskAnalysis": cmd_run_risk_analysis,
     }
     return {name: guarded_planning_command(name, handler) for name, handler in handlers.items()}
 
@@ -224,6 +225,7 @@ def command_permissions() -> dict[str, str]:
     permissions["RemovePlanningLink"] = "planning.link"
     permissions["DecidePlanningTaskRequirement"] = "planning.gate.approve"
     permissions["CreatePlanningWhatIfSnapshot"] = "planning.analyze"
+    permissions["RunPlanningRiskAnalysis"] = "planning.analyze"
     return permissions
 
 

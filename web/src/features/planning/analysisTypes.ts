@@ -49,3 +49,49 @@ export type PlanningWhatIfDetail = PlanningWhatIfMetadata & {
 export type PlanningWhatIfCreateResult = PlanningMutationMetadata & {
   what_if_snapshot: PlanningWhatIfMetadata;
 };
+
+export type PlanningRiskCreateRequest = {
+  expected_revision?: number;
+  snapshot_id: string;
+  seed: number;
+  iterations: number;
+  task_risks: Array<{
+    task_id: string;
+    distribution: "triangular";
+    minimum_days: number;
+    most_likely_days: number;
+    maximum_days: number;
+    correlation_group?: string;
+  }>;
+  correlations: Array<{ group: string; coefficient: number }>;
+};
+
+export type PlanningRiskMetadata = {
+  id: string;
+  project_id: string;
+  snapshot_id: string;
+  analysis_type: "risk";
+  status: "completed" | "timeout" | "infeasible";
+  engine: { name: string; version: string };
+  seed: number;
+  checksum: string;
+  correlation_id: string;
+  created_at: string;
+  result_summary: {
+    finish_percentiles: Record<"p50" | "p80" | "p90" | "p95", string>;
+    probability_on_or_before_target: number;
+    sample_count: number;
+  };
+  integrity: PlanningWhatIfMetadata["integrity"];
+};
+
+export type PlanningRiskDetail = PlanningRiskMetadata & {
+  inputs: PlanningRiskCreateRequest & { snapshot_checksum: string };
+  limits: Record<string, number>;
+  result: PlanningRiskMetadata["result_summary"] & {
+    duration_percentiles_days: Record<"p50" | "p80" | "p90" | "p95", number>;
+    independent_validation: { ok: boolean; violations: Array<Record<string, unknown>> };
+  };
+};
+
+export type PlanningRiskCreateResult = PlanningMutationMetadata & { risk_analysis: PlanningRiskMetadata };

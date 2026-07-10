@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if snapshots runtime-proven.
+**Status:** Active module plan; Gate A, all five Gate B slices, all four Gate C resource-intelligence slices, and Gate D immutable what-if plus reproducible risk analysis runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -155,6 +155,16 @@ the artifact with SHA-256 plus ORM/PostgreSQL append-only guards. Approved task
 fields and task versions never change. The separate
 `planning.analysis.approve` capability is reserved for governed recommendation
 approval and cannot be inferred from snapshot creation.
+
+## Reproducible Risk Boundary
+
+ADR-0014 governs schedule-risk simulation. The first-party versioned engine
+reruns CPM on detached snapshot tasks using stored seeds, bounded triangular
+duration inputs, explicit correlation groups, and recorded engine/limit/
+confidence assumptions. P50/P80/P90/P95 and target probability results are
+independently shape-validated, hash-verified, append-only, actor-scoped, and
+audit-correlated. Risk runs are evidence only; they cannot approve or apply a
+schedule change.
 
 ## Calendar Correlation Boundary
 

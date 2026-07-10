@@ -29,7 +29,7 @@ import type {
   PlanningTaskRequirementLinkRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
-import type { PlanningWhatIfCreateRequest } from "./analysisTypes";
+import type { PlanningRiskCreateRequest, PlanningWhatIfCreateRequest } from "./analysisTypes";
 
 const dependencyTypes: Array<[PlanningDependencyType, string]> = [
   ["finish_to_start", "Finish to start"],
@@ -75,6 +75,7 @@ export function PlanningInspector(props: {
   onAssignResource: (payload: PlanningAssignmentCreateRequest) => Promise<void>;
   onSetResourceCalendar: (resourceId: string, payload: PlanningResourceCalendarUpdateRequest) => Promise<void>;
   onCreateWhatIfSnapshot: (payload: PlanningWhatIfCreateRequest) => Promise<void>;
+  onRunRiskAnalysis: (payload: PlanningRiskCreateRequest) => Promise<void>;
 }) {
   const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, readOnly, linkReadOnly, onProjectChange, onTabChange } = props;
 
@@ -118,7 +119,7 @@ export function PlanningInspector(props: {
         {activeTab === "gates" && <PlanningRequirementsPanel schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly} canApprove={props.canApproveGates} onCreate={props.onCreateTaskRequirement} onAdvance={props.onAdvanceTaskRequirement} onSetLink={props.onSetTaskRequirementLink} onDecide={props.onDecideTaskRequirement} />}
         {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
         {activeTab === "resources" && <PlanningResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} onSetResourceCalendar={props.onSetResourceCalendar} />}
-        {activeTab === "analysis" && <PlanningAnalysisPanel token={props.token} schedule={schedule} busy={busy} readOnly={readOnly} canAnalyze={props.canAnalyze} onCreate={props.onCreateWhatIfSnapshot} />}
+        {activeTab === "analysis" && <PlanningAnalysisPanel token={props.token} schedule={schedule} busy={busy} readOnly={readOnly} canAnalyze={props.canAnalyze} onCreate={props.onCreateWhatIfSnapshot} onRunRisk={props.onRunRiskAnalysis} />}
       </fieldset>
       {activeTab === "status" && <ValidationPanel schedule={schedule} status={status} />}
     </Pane>

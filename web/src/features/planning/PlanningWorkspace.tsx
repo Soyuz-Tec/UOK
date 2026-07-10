@@ -202,6 +202,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onAssignResource={actions.assignResource}
           onSetResourceCalendar={actions.saveResourceCalendar}
           onCreateWhatIfSnapshot={actions.createWhatIfSnapshot}
+          onRunRiskAnalysis={actions.runRiskAnalysis}
         />
       </div>
     );

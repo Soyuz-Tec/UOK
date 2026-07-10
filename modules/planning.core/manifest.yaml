@@ -38,6 +38,7 @@ commands:
   - SetPlanningTaskRequirementLink
   - DecidePlanningTaskRequirement
   - CreatePlanningWhatIfSnapshot
+  - RunPlanningRiskAnalysis
 events:
   - PlanningProjectCreated
   - PlanningTaskCreated
@@ -63,6 +64,7 @@ events:
   - PlanningTaskRequirementLinkSet
   - PlanningTaskRequirementDecided
   - PlanningWhatIfSnapshotCreated
+  - PlanningRiskAnalysisCompleted
 dependencies:
   - calendar.core
 backend_path: modules/planning.core/backend
@@ -104,6 +106,7 @@ owned_tables:
   - PlanningBaseline
   - PlanningScheduleEvent
   - PlanningWhatIfSnapshot
+  - PlanningAnalysisRun
   - CommandLog:planning.core
   - EventRecord:Planning
 extension_points:

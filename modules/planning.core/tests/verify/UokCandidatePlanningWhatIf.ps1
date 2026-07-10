@@ -53,4 +53,5 @@ function Assert-UokPlanningWhatIfSnapshot {
     ) {
         throw "Planning what-if mutated the approved schedule: $($after | ConvertTo-Json -Depth 30)"
     }
+    return @{ snapshot_id = $metadata.id }
 }

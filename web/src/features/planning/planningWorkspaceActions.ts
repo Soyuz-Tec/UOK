@@ -15,6 +15,7 @@ import {
   assignResourceIntent,
   levelResourcesIntent,
   createWhatIfSnapshotIntent,
+  runRiskAnalysisIntent,
   removeDependencyIntent,
   removePlanningLinkIntent,
   removeTaskParticipantIntent,
@@ -28,7 +29,7 @@ import {
 } from "./planningMutationIntents";
 import { planningTaskMenuMutation, type PlanningTaskMenuAction } from "./planningTaskMenuModel";
 import type { PlanningTask } from "./types";
-import type { PlanningWhatIfCreateRequest } from "./analysisTypes";
+import type { PlanningRiskCreateRequest, PlanningWhatIfCreateRequest } from "./analysisTypes";
 import type {
   PlanningAssignmentCreateRequest,
   PlanningBaselineCreateRequest,
@@ -81,6 +82,7 @@ export function planningWorkspaceActions({
     saveResourceCalendar: (resourceId: string, payload: PlanningResourceCalendarUpdateRequest) => mutate(saveResourceCalendarIntent(token, projectId, resourceId, payload)),
     levelResources: (horizonDays: number) => mutate(levelResourcesIntent(token, projectId, horizonDays)),
     createWhatIfSnapshot: (payload: PlanningWhatIfCreateRequest) => mutate(createWhatIfSnapshotIntent(token, projectId, payload)),
+    runRiskAnalysis: (payload: PlanningRiskCreateRequest) => mutate(runRiskAnalysisIntent(token, projectId, payload)),
     saveTaskBatch: (updates: PlanningBulkTaskUpdate[]) => mutate(batchTaskUpdatesIntent(token, projectId, updates)),
     runTaskMenuAction: async (action: PlanningTaskMenuAction, task: PlanningTask) => {
       const mutation = planningTaskMenuMutation(action, task);

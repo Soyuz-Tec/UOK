@@ -22,7 +22,7 @@ import {
   updatePlanningTaskDates,
 } from "./planningApi";
 import { setPlanningResourceCalendar } from "./planningResourceCalendarApi";
-import { createPlanningWhatIfSnapshot } from "./planningAnalysisApi";
+import { createPlanningRiskAnalysis, createPlanningWhatIfSnapshot } from "./planningAnalysisApi";
 import type { PlanningMutationIntent } from "./planningConcurrencyState";
 import { planningHistoryDiff, planningLevelHistory } from "./planningHistory";
 import { withCascade } from "./planningWorkspaceHelpers";
@@ -47,7 +47,7 @@ import type {
   PlanningTaskDateUpdateRequest,
   PlanningTaskUpdateRequest,
 } from "./planningContracts";
-import type { PlanningWhatIfCreateRequest } from "./analysisTypes";
+import type { PlanningRiskCreateRequest, PlanningWhatIfCreateRequest } from "./analysisTypes";
 
 export function rescheduleTaskIntent(token: string, taskId: string, start: string, end: string, cascade: boolean) {
   return intent("reschedule", "Reschedule task", { taskId, start, end, cascade }, (etag) => updatePlanningTask(token, taskId, { start, end, cascade }, { ifMatch: etag }));
@@ -150,6 +150,15 @@ export function createWhatIfSnapshotIntent(token: string, projectId: string, pay
     "Create what-if snapshot",
     { action: "what_if_snapshot_created" },
     (etag) => createPlanningWhatIfSnapshot(token, projectId, payload, { ifMatch: etag }),
+  );
+}
+
+export function runRiskAnalysisIntent(token: string, projectId: string, payload: PlanningRiskCreateRequest) {
+  return intent(
+    "risk",
+    "Run risk analysis",
+    { action: "risk_analysis_completed" },
+    (etag) => createPlanningRiskAnalysis(token, projectId, payload, { ifMatch: etag }),
   );
 }
 

@@ -192,6 +192,7 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert permissions["CreatePlanningBaseline"] == "planning.baseline.create"
     assert permissions["LevelPlanningResources"] == "planning.level"
     assert permissions["CreatePlanningWhatIfSnapshot"] == "planning.analyze"
+    assert permissions["RunPlanningRiskAnalysis"] == "planning.analyze"
     assert permissions["RestoreContact"] == "contacts.restore"
     assert permissions["GenerateReport"] == "reports.render"
     assert permissions["DeleteReportArtifact"] == "reports.delete"

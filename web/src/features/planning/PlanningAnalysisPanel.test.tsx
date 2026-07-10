@@ -2,12 +2,13 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PlanningAnalysisPanel } from "./PlanningAnalysisPanel";
-import { listPlanningWhatIfSnapshots, loadPlanningWhatIfSnapshot } from "./planningAnalysisApi";
+import { listPlanningRiskAnalyses, listPlanningWhatIfSnapshots, loadPlanningWhatIfSnapshot } from "./planningAnalysisApi";
 import type { PlanningSchedule } from "./types";
 
 vi.mock("./planningAnalysisApi", () => ({
   listPlanningWhatIfSnapshots: vi.fn(),
   loadPlanningWhatIfSnapshot: vi.fn(),
+  listPlanningRiskAnalyses: vi.fn(),
 }));
 
 const metadata = {
@@ -33,6 +34,7 @@ const schedule = {
 describe("PlanningAnalysisPanel", () => {
   beforeEach(() => {
     vi.mocked(listPlanningWhatIfSnapshots).mockResolvedValue([metadata]);
+    vi.mocked(listPlanningRiskAnalyses).mockResolvedValue([]);
     vi.mocked(loadPlanningWhatIfSnapshot).mockResolvedValue({
       ...metadata,
       snapshot: {
@@ -51,7 +53,7 @@ describe("PlanningAnalysisPanel", () => {
 
   it("shows verified immutable snapshots and submits a temporary preview", async () => {
     const onCreate = vi.fn().mockResolvedValue(undefined);
-    render(<PlanningAnalysisPanel token="token" schedule={schedule} busy="" readOnly={false} canAnalyze onCreate={onCreate} />);
+    render(<PlanningAnalysisPanel token="token" schedule={schedule} busy="" readOnly={false} canAnalyze onCreate={onCreate} onRunRisk={vi.fn()} />);
 
     await screen.findByText("revision 4 · verified");
     await screen.findByText("Preview constraints valid");
@@ -65,8 +67,23 @@ describe("PlanningAnalysisPanel", () => {
   });
 
   it("fails closed without server analysis authority", async () => {
-    render(<PlanningAnalysisPanel token="token" schedule={schedule} busy="" readOnly={false} canAnalyze={false} onCreate={vi.fn()} />);
+    render(<PlanningAnalysisPanel token="token" schedule={schedule} busy="" readOnly={false} canAnalyze={false} onCreate={vi.fn()} onRunRisk={vi.fn()} />);
     await screen.findByText("Server analysis capability is required to create snapshots.");
     expect((screen.getByRole("button", { name: "Capture preview" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("submits a bounded fixed-seed triangular risk run", async () => {
+    const onRunRisk = vi.fn().mockResolvedValue(undefined);
+    render(<PlanningAnalysisPanel token="token" schedule={schedule} busy="" readOnly={false} canAnalyze onCreate={vi.fn()} onRunRisk={onRunRisk} />);
+    await screen.findByText("Preview constraints valid");
+    fireEvent.change(screen.getByLabelText("Random seed"), { target: { value: "123" } });
+    fireEvent.click(screen.getByRole("button", { name: "Run risk analysis" }));
+    await waitFor(() => expect(onRunRisk).toHaveBeenCalledWith({
+      snapshot_id: "snapshot-1",
+      seed: 123,
+      iterations: 500,
+      task_risks: [{ task_id: "task-1", distribution: "triangular", minimum_days: 2, most_likely_days: 3, maximum_days: 5 }],
+      correlations: [],
+    }));
   });
 });
