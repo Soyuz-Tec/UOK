@@ -5,9 +5,10 @@ from typing import Any, Callable
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_level_resources, cmd_set_calendar
+from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_set_calendar
 from .batch import cmd_batch_operations
 from .concurrency import guarded_planning_command
+from .leveling_command import cmd_level_resources
 from .date_commands import cmd_update_planning_task_dates
 from .date_semantics import planning_timezone
 from .link_commands import cmd_create_planning_link, cmd_remove_planning_link

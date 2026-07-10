@@ -146,7 +146,7 @@ export function usePlanningWorkspaceMutations({
       const after = await reloadSchedule(selectedProjectId);
       if (before) pushHistory(withPlanningHistorySource(mutation.history(before, after, mutation.label), response.data, after.project.revision));
       clearRecovery();
-      setStatus({ status: "validated", ...mutation.okStatus });
+      setStatus({ status: "validated", ...mutation.okStatus, ...mutation.successStatus?.(response.data) });
     } catch (error) {
       if (isPlanningPreconditionError(error)) await beginStaleRecovery(error, mutation);
       else {
@@ -195,7 +195,7 @@ export function usePlanningWorkspaceMutations({
       const after = await reloadSchedule(selectedProjectId);
       if (before) pushHistory(withPlanningHistorySource(mutation.history(before, after, mutation.label), response.data, after.project.revision));
       clearRecovery();
-      setStatus({ status: "validated", reapplied: true, ...mutation.okStatus });
+      setStatus({ status: "validated", reapplied: true, ...mutation.okStatus, ...mutation.successStatus?.(response.data) });
     } catch (error) {
       if (isPlanningPreconditionError(error)) await beginStaleRecovery(error, mutation);
       else setStatus(errorStatus(error));

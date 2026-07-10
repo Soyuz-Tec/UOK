@@ -179,6 +179,22 @@
   accent-color: var(--uok-accent);
 }
 
+.planning-leveling-control,
+.planning-leveling-control label {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.35rem;
+}
+
+.planning-leveling-control label span,
+.planning-leveling-control label small {
+  font-size: 0.72rem;
+}
+
+.planning-leveling-control input {
+  inline-size: 5.25rem;
+}
+
 .planning-toolbar-select select {
   min-height: 28px;
   border: 0;

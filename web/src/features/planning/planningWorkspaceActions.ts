@@ -77,7 +77,7 @@ export function planningWorkspaceActions({
     addResource: (payload: PlanningResourceCreateRequest) => mutate(addResourceIntent(token, projectId, payload)),
     assignResource: (payload: PlanningAssignmentCreateRequest) => mutate(assignResourceIntent(token, payload)),
     saveResourceCalendar: (resourceId: string, payload: PlanningResourceCalendarUpdateRequest) => mutate(saveResourceCalendarIntent(token, projectId, resourceId, payload)),
-    levelResources: () => mutate(levelResourcesIntent(token, projectId)),
+    levelResources: (horizonDays: number) => mutate(levelResourcesIntent(token, projectId, horizonDays)),
     saveTaskBatch: (updates: PlanningBulkTaskUpdate[]) => mutate(batchTaskUpdatesIntent(token, projectId, updates)),
     runTaskMenuAction: async (action: PlanningTaskMenuAction, task: PlanningTask) => {
       const mutation = planningTaskMenuMutation(action, task);

@@ -18,4 +18,5 @@ export type PlanningMutationIntent = {
   okStatus: Record<string, unknown>;
   run: (etag: PlanningStrongEtag) => Promise<PlanningMutationResponse<unknown>>;
   history: (before: PlanningSchedule, after: PlanningSchedule, label: string) => PlanningHistoryEntry | null;
+  successStatus?: (responseData: unknown) => Record<string, unknown>;
 };

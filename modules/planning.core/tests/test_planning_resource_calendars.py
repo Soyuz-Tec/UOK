@@ -94,6 +94,8 @@ def test_resource_leveling_respects_resource_holidays(client: TestClient) -> Non
     leveled = command(client, ops, "LevelPlanningResources", {"project_id": project_id}, f"level-calendar-run-{suffix}")
     assert leveled.status_code == 200, leveled.text
     body = leveled.json()["result"]
+    assert body["leveling"]["outcome"] == "leveled"
+    assert body["leveling"]["remaining_overloads"] == []
     assert body["calculation"]["resource_capacity"]["overallocated_count"] == 0
     assert body["calculation"]["resource_capacity"]["independent_validation"]["ok"] is True
     assert all(point["capacity_percent"] > 0 for point in body["calculation"]["resource_capacity"]["load_points"])

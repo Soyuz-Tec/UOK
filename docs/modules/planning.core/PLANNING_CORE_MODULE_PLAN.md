@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A, all five Gate B slices, typed resources, resource capacity calendars, and resource-specific calendar correlation runtime-proven.
+**Status:** Active module plan; Gate A, all five Gate B slices, and all four Gate C resource-intelligence slices runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -131,8 +131,19 @@ resource, including weekdays, holidays, default percentage, and bounded
 non-overlapping exceptions. Project working days remain schedule authority;
 resource capacity is an additional hard availability input. Engine v2 and a
 separate validator derive the same daily capacity, workload UI consumes those
-validated points, and explicit leveling avoids zero-capacity dates. Outcome
-classification and infeasibility reasons remain ACC-RES-003.
+validated points, and explicit leveling avoids zero-capacity dates. ADR-0012
+governs the `simple_forward` strategy, bounded operator-configured horizon,
+explicit outcomes, remaining overloads, stable reasons, audit evidence, and
+independent post-level validation. This heuristic is not optimization.
+
+## Explainable Leveling Boundary
+
+`LevelPlanningResources` returns `leveled`, `partially_leveled`, or
+`infeasible` with the exact changed tasks and remaining resource/date/task
+overloads. Manual work is never moved. Horizon, project-finish,
+allocation-capacity, and immovable-manual reasons remain explicit. A separate
+validator recomputes schedule and capacity evidence and rolls back mismatched
+reports. Approved baselines remain immutable.
 
 ## Calendar Correlation Boundary
 

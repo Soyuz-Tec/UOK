@@ -26,6 +26,7 @@ import type { PlanningMutationIntent } from "./planningConcurrencyState";
 import { planningHistoryDiff, planningLevelHistory } from "./planningHistory";
 import { withCascade } from "./planningWorkspaceHelpers";
 import type { PlanningSchedule } from "./types";
+import type { PlanningLevelingCommandResult } from "./levelingTypes";
 import type { PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
 import type {
   PlanningAssignmentCreateRequest,
@@ -130,8 +131,20 @@ export function saveResourceCalendarIntent(token: string, projectId: string, res
   return intent("resource-calendar", "Edit resource capacity calendar", { action: "resource_calendar_updated" }, (etag) => setPlanningResourceCalendar(token, projectId, resourceId, payload, { ifMatch: etag }));
 }
 
-export function levelResourcesIntent(token: string, projectId: string) {
-  return intent("level", "Level resources", { action: "resources_leveled" }, (etag) => planningCommand<PlanningSchedule, { project_id: string }>(token, "LevelPlanningResources", { project_id: projectId }, "planning-level", { ifMatch: etag }), planningLevelHistory);
+export function levelResourcesIntent(token: string, projectId: string, horizonDays: number) {
+  return intent(
+    "level",
+    "Level resources",
+    { action: "resources_leveled" },
+    (etag) => planningCommand<PlanningLevelingCommandResult, { project_id: string; horizon_days: number }>(token, "LevelPlanningResources", { project_id: projectId, horizon_days: horizonDays }, "planning-level", { ifMatch: etag }),
+    planningLevelHistory,
+    levelingSuccessStatus,
+  );
+}
+
+export function levelingSuccessStatus(responseData: unknown): Record<string, unknown> {
+  const leveling = (responseData as Partial<PlanningLevelingCommandResult> | null)?.leveling;
+  return leveling ? { leveling } : {};
 }
 
 export function batchTaskUpdatesIntent(token: string, projectId: string, updates: PlanningBulkTaskUpdate[]) {
@@ -149,8 +162,9 @@ export function planningIntent(
   okStatus: Record<string, unknown>,
   run: PlanningMutationIntent["run"],
   history = planningHistoryDiff,
+  successStatus?: PlanningMutationIntent["successStatus"],
 ): PlanningMutationIntent {
-  return { action, label, okStatus, run, history };
+  return { action, label, okStatus, run, history, successStatus };
 }
 
 const intent = planningIntent;

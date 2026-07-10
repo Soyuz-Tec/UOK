@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A, all five Gate B slices, typed resources, resource capacity calendars, and resource-specific calendar correlation runtime-proven; hosted CI, review, and merge pending.
+**Status:** Gate A, all five Gate B slices, and all four Gate C resource-intelligence slices runtime-proven; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -149,7 +149,7 @@ Current Gate B communication-thread evidence:
 | PLA-C-001 | Typed resources and capacities | Additive resource fields/migration, controlled type-unit and type-reference compatibility, positive decimal capacity, effective dates, actor-specific canonical resolution, generic-command and REST validation, immutable baseline capture, generated client, and typed Resources inspector | PostgreSQL readback and rebuilt candidate round-trip pass | `runtime_proven` |
 | PLA-C-002 | Resource calendars and effective capacity | One resource-scoped capacity calendar, effective-period/weekday/holiday/exception precedence, guarded update command/route, engine v2, independent validation, baseline capture, typed UI/API, and resource-aware leveling | PostgreSQL readback and rebuilt candidate pass | `runtime_proven` |
 | PLA-C-003 | Resource-specific calendar free/busy | Provider-owned Party-filtered occurrence/free-busy facade, actor-visible participant/resource correlation, exact task IDs, unrelated-event exclusion, private Party denial, and linked-context ETag proof | Rebuilt candidate correlation and full gates pass | `runtime_proven` |
-| PLA-C-004 | Explainable leveling outcomes | Existing simple leveling moves auto tasks and validates final schedule | Explicit leveled/partial/infeasible result, configured horizon, reason codes, remaining overloads, and independent post-level proof | `planned` |
+| PLA-C-004 | Explainable leveling outcomes | Versioned `simple_forward` strategy, bounded configured horizon, explicit leveled/partial/infeasible result, exact changed tasks and remaining overloads, stable reasons, immutable-baseline rule, audit evidence, typed UI, and separate post-level validator | Rebuilt candidate feasible/infeasible result and baseline-integrity proof | `runtime_proven` |
 
 Current Gate C typed-resource evidence:
 
@@ -178,6 +178,16 @@ Current Gate C calendar-correlation evidence:
 - Actor-visible context/ETag regression: `modules/planning.core/tests/test_planning_concurrency_guards.py`
 - Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningAvailability.ps1`
 - Rebuilt candidate evidence passed the exact task/Party correlation, unrelated-event exclusion, warning, and full module lifecycle gates.
+
+Current Gate C explainable-leveling evidence:
+
+- ADR: `docs/architecture/ADR-0012-planning-explainable-resource-leveling.md`
+- Strategy and command orchestration: `modules/planning.core/backend/uok_planning_core/resource_leveling.py` and `leveling_command.py`
+- Independent post-level validator and injected hidden-overload fault: `modules/planning.core/backend/uok_planning_core/resource_leveling_validation.py` and `modules/planning.core/tests/test_planning_explainable_leveling.py`
+- Feasible, partial, infeasible, manual, capacity, horizon, and resource-calendar proofs: `modules/planning.core/tests/test_task_scheduling_modes.py`, `test_planning_explainable_leveling.py`, and `test_planning_resource_calendars.py`
+- Configured typed UI and accessible result-status proof: `web/src/features/planning/PlanningLevelingControl.test.tsx`
+- Candidate baseline-integrity and infeasibility scenario: `modules/planning.core/tests/verify/UokCandidatePlanningLeveling.ps1`
+- Rebuilt candidate evidence passed explicit infeasibility, configured horizon, remaining overload, capacity/horizon reasons, independent validation, and approved-baseline checksum integrity.
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence

@@ -95,6 +95,7 @@ Operator browser
 - Planning Gate C typed resources are runtime-proven: they separate responsibility from capacity, enforce controlled type/unit/reference combinations, and preserve optional provider boundaries without cross-module foreign keys.
 - Planning Gate C resource calendars are runtime-proven: they derive effective daily capacity from resource periods, weekdays, holidays, and bounded exceptions; project calendar dates remain scheduling authority and resource-capacity engine v2 is independently validated.
 - Planning Gate C `calendar.core` availability is runtime-proven and correlated by actor-visible canonical Party assignments/participants and exact task IDs; unrelated or private events do not become Planning warnings and no event silently moves a task.
+- Planning Gate C simple resource leveling is runtime-proven and returns explicit, independently validated outcomes, exact remaining overloads, stable reasons, and a bounded operator-configured horizon; it remains a deterministic heuristic and is not labeled optimization.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

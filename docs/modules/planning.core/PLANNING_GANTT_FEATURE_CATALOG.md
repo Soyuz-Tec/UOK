@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A, all five Gate B slices, typed resources, resource capacity calendars, and resource-specific calendar correlation runtime-proven.
+**Status:** Active evidence catalog; Gate A, all five Gate B slices, and all four Gate C resource-intelligence slices runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -145,7 +145,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | CPM read model | Logic-driven early/late dates, total/free float, target variance, engine version, independent validation, and critical flags. | `runtime_proven` |
 | Calendar-aware propagation | Respect working days and holidays. | `integration_tested` |
 | Resource over-allocation | Compute and independently validate per-resource/day load, effective calendar capacity, contributing tasks, and overload warnings. | `runtime_proven` |
-| Resource leveling | Explicit Level command moves later auto-scheduled assigned tasks forward to resolve daily resource over-allocation where capacity allows, then reruns server validation and audit events. | `integration_tested` |
+| Resource leveling | Explicit `simple_forward` command uses a bounded configured horizon, moves only eligible auto tasks, and returns leveled/partial/infeasible, exact changed tasks, remaining overloads, stable reasons, audit evidence, and independent post-level validation without changing approved baselines. | `runtime_proven` |
 | Constraints | Must-start, must-finish, start/finish no-earlier-than, and start/finish no-later-than constraints are stored per task, enforced by Python scheduling, returned in read models, editable in the inspector, and exported. | `integration_tested` |
 | Manual/auto scheduling | Per-task auto/manual scheduling mode is stored with each task; auto tasks participate in dependency propagation, while manual tasks keep their dates and surface validation conflicts. | `integration_tested` |
 | Controlled task status | Planned, in-progress, blocked, and complete values use a server-owned registry and transition policy; unknown values and forbidden transitions return structured errors without schedule mutation. | `runtime_proven` |

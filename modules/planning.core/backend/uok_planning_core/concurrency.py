@@ -274,6 +274,7 @@ def _current_result(result: dict[str, Any], schedule: dict[str, Any], etag: str,
     tasks = {str(task["id"]): task for task in schedule["tasks"]}
     if {"project", "tasks", "dependencies"}.issubset(result):
         current = dict(schedule)
+        current.update({key: value for key, value in result.items() if key not in schedule})
     elif isinstance(result.get("task"), dict):
         current = dict(result)
         task_id = str(result["task"].get("id") or "")

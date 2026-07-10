@@ -151,7 +151,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
             setInspectorTab("resources");
             setInspectorOpen(true);
           }}
-          onLevelResources={() => void actions.levelResources()}
+          onLevelResources={(horizonDays) => void actions.levelResources(horizonDays)}
           onUndo={() => void actions.runHistory("undo")}
           onRedo={() => void actions.runHistory("redo")}
           token={token}

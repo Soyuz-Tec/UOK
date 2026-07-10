@@ -57,6 +57,8 @@ def test_resource_leveling_moves_later_auto_tasks(client: TestClient) -> None:
     tasks = {task["id"]: task for task in leveled.json()["result"]["tasks"]}
     assert tasks[first]["start"] == "2026-08-03"
     assert tasks[second]["start"] == "2026-08-06"
+    assert leveled.json()["result"]["leveling"]["outcome"] == "leveled"
+    assert leveled.json()["result"]["leveling"]["independent_validation"]["ok"] is True
     assert not leveled.json()["result"]["validation"]["warnings"]
     assert leveled.json()["result"]["calculation"]["resource_capacity"]["overallocated_count"] == 0
 

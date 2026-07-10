@@ -6,6 +6,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningRequirements.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningResources.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningAvailability.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningLeveling.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -280,6 +281,8 @@ function Invoke-UokPlanningCandidateScenario {
     ) {
         throw "Planning complete baseline readback failed: $($baselineDetail | ConvertTo-Json -Depth 30)"
     }
+
+    Assert-UokPlanningExplainableLeveling -ProjectId $projectId -BaselineId $baselineMetadata.id -BaselineChecksum $baselineMetadata.checksum -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
 
     return @{ project_id = $projectId }
 }

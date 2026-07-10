@@ -1,11 +1,11 @@
 import { Baseline, FolderKanban, GitBranch, Link2, Maximize2, Milestone, Minimize2, Plus, Redo2, RefreshCw, Rows3, Star, Undo2, Users } from "lucide-react";
 import { useMemo, useState } from "react";
-
 import { CommandButton, ToggleButton } from "../../shared/primitives";
 import { useColumnVisibilityOptions } from "../../shared/tables";
 import type { Appearance } from "../../shared/types";
 import { PlanningBulkEditControls, type PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
 import { PlanningGantt } from "./PlanningGantt";
+import { PlanningLevelingControl } from "./PlanningLevelingControl";
 import { PlanningReadModelView } from "./PlanningReadModelViews";
 import { PlanningTimelineUtilities } from "./PlanningTimelineUtilities";
 import type { TimelineScale } from "./planningGanttModel";
@@ -84,7 +84,7 @@ export function PlanningTimeline({
   onOpenDependencies: () => void;
   onCreateBaseline: () => void;
   onOpenResources: () => void;
-  onLevelResources: () => void;
+  onLevelResources: (horizonDays: number) => void;
   onUndo: () => void;
   onRedo: () => void;
   token: string;
@@ -205,7 +205,7 @@ export function PlanningTimeline({
           <ToggleButton icon={GitBranch} className="planning-toolbar-toggle" aria-label="Cascade scheduling" pressed={cascadeScheduling} onClick={() => setCascadeScheduling((value) => !value)} disabled={reviewMode}>Cascade</ToggleButton>
           <CommandButton icon={Baseline} onClick={onCreateBaseline} disabled={reviewMode || schedule.capabilities?.baseline_create !== true}>Baseline</CommandButton>
           <CommandButton icon={Users} onClick={onOpenResources} disabled={reviewMode}>Resources</CommandButton>
-          <CommandButton icon={Users} onClick={onLevelResources} loading={busy === "level"} disabled={reviewMode || schedule.capabilities?.level !== true}>Level</CommandButton>
+          <PlanningLevelingControl busy={busy === "level"} disabled={reviewMode || schedule.capabilities?.level !== true} onLevel={onLevelResources} />
         </div>
           <PlanningTimelineUtilities columnOptions={columnOptions} columnVisibility={columnVisibility} currentView={savedViewConfig} fieldPreset={fieldPreset} filters={filters} focusMode={focusMode} layoutMode={layoutMode} reviewMode={reviewMode} onApplySavedView={applySavedView} onDateTarget={goToDate} onFieldPresetChange={setFieldPreset} onFitProject={() => setFitProjectSignal((value) => value + 1)} onFiltersChange={setFilters} onScaleChange={onScaleChange} onToggleBaselines={onToggleBaselines} onToggleCritical={onToggleCritical} onToggleColumn={setColumnVisible} onToggleFocusMode={() => setFocusMode((value) => !value)} onToggleLayoutMode={() => setLayoutMode((value) => value === "split" ? "timeline" : "split")} onToggleReviewMode={() => onReviewModeChange(!reviewMode)} onResetColumns={resetColumnVisibility} onSelectedTask={() => setSelectedTaskSignal((value) => value + 1)} onToday={goToToday} onViewDensityChange={setViewDensity} projectStart={schedule.project.start} scale={scale} schedule={visibleSchedule} selectedTaskId={selectedTaskId} showBaselines={showBaselines} showCritical={showCritical} token={token} viewDensity={viewDensity} />
         </div>

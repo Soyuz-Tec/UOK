@@ -24,7 +24,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `agents.core` | capability module | planned scaffold for governed agent operations | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | `communications.core` | capability module | initial K Connect thread provider and Planning deep-link adapter runtime-proven | `UOK-3.1.0-alpha.3` | `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` |
 | `contacts.core` | capability module | Contacts MVP hardening in progress | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
-| `planning.core` | capability module | Gate A/B, typed resources, resource calendars, and resource-specific calendar correlation runtime-proven | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
+| `planning.core` | capability module | Gate A, Gate B, and Gate C resource intelligence runtime-proven | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
 | `reports.core` | capability module | secure global report artifact foundation in PR #5 | `UOK-3.1.0-alpha.3` | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` |
 
 ## Current Target
