@@ -8,6 +8,8 @@ This index explains which Markdown artifact owns each kind of UOK knowledge. It 
 
 The architecture entry point remains `docs/ARCHITECTURE.md`. This index is the navigation layer for policies, decisions, module plans, research records, and verification evidence.
 
+Planning stabilization is currently in Gate A under `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`; evidence maturity and closure status are tracked in `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`.
+
 ## Reading Order For New Work
 
 Before non-trivial implementation, read these in order:
@@ -39,6 +41,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md` | GitHub-facing source-of-truth, ownership, dependency, Scorecard, branch-protection, and evidence controls | GitHub workflows, synchronization policy, CODEOWNERS, dependency monitoring, branch-protection expectations, or engineering evidence change |
 | `docs/architecture/ADR-*` | Material architecture decisions | Boundary, runtime, data model, auth, deployment, framework, or major policy decisions change |
 | `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md` | Planning Gantt and UI proof dependency decision | Planning UI library, scheduling authority, or UI proof automation changes |
+| `docs/architecture/ADR-0003-planning-gate-a-stabilization.md` | Planning Gate A scheduling-correctness, write-safety, and evidence-maturity decision | Gate A scope, sequencing, evidence states, or closure requirements change |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -59,6 +62,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` | Contacts module roadmap and scope | Contacts behavior, workflows, module ownership, or acceptance changes |
 | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` | Planning Core module roadmap and scope | Gantt, scheduling, dependency, project, baseline, calendar, or planning verification behavior changes |
 | `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md` | Planning Gantt feature inventory and implementation status | Gantt grid, timeline, scheduling, dependency, resource, baseline, color, or workspace feature status changes |
+| `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md` | Gate A requirement-to-evidence map and closure status | A Gate A requirement, evidence link, verification result, or maturity state changes |
 | `docs/modules/planning.core/PLANNING_GANTT_EXTERNAL_FEATURE_INTAKE.md` | DHTMLX/SVAR-inspired Gantt feature intake and UOK implementation mapping | External Gantt feature research is added, promoted, or reprioritized for planning.core |
 | `modules/<module-name>/**/README.md` | Module-local implementation ownership | Module package layout, test ownership, migration ownership, or web ownership changes |
 | `docs/architecture/UOK_OPEN_SOURCE_ERP_QUALITY_RATING_CHART.md` | Peer quality comparison snapshot | Peer comparison or scoring basis changes |
@@ -96,6 +100,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`
 - `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`
+- `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
