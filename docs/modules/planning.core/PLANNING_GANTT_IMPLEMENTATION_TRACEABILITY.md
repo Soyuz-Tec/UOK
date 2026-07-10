@@ -29,7 +29,7 @@ requirement.
 |---|---|---|---|---|
 | PLA-A-001 | Canonical CPM values | `scheduler.py` contains CPM-like metrics | Independent chain, parallel, merge, lag/lead, calendar, target-date, and cycle fixtures | `source_present` |
 | PLA-A-002 | Independent hard-constraint validation | Schedule validation exists | Independent validator rejects injected dependency, calendar, constraint, and resource violations | `planned` |
-| PLA-A-003 | Stable REST idempotency | UOK command gateway supports replay | Planning write headers, same-key replay, and changed-payload conflict tests | `source_present` |
+| PLA-A-003 | Stable REST idempotency | UOK command gateway supports replay | Planning write headers, same-key replay, and changed-payload conflict tests | `integration_tested` |
 | PLA-A-004 | Optimistic concurrency | No project revision contract | Migration, ETag/expected revision, stale-write conflict, and UI recovery proof | `planned` |
 | PLA-A-005 | Atomic batch mutation | UI currently runs independent updates | All-or-nothing rollback and one-revision success tests | `planned` |
 | PLA-A-006 | Complete immutable baseline | Baseline stores a partial task snapshot | Canonical v2 snapshot, hash verification, immutability, and legacy warning tests | `source_present` |
@@ -39,6 +39,13 @@ requirement.
 | PLA-A-010 | Typed Planning client | Planning client contains broad unknown payloads | Generated or explicit typed requests, responses, errors, revisions, and capabilities | `source_present` |
 | PLA-A-011 | End-to-end audit correlation | Commands and Planning events exist | One user intent correlates command, derived changes, event, audit/outbox, revision, and response | `source_present` |
 | PLA-A-012 | Accessible non-drag alternatives | Keyboard and inspector paths exist | Move, resize, progress, dependency, and create flows proven without dragging | `integration_tested` |
+
+## Current branch evidence
+
+- Draft review: [PR #20](https://github.com/Soyuz-Tec/UOK/pull/20)
+- Verified head: `32664c2e43415e65c9bcb1232a7ed47bdba0e212`
+- [Unified Operating Kernel CI run 382](https://github.com/Soyuz-Tec/UOK/actions/runs/29065310361): passed compilation, audits, engineering evidence, module contract, source-size guardrail, Python tests, PostgreSQL baseline verification, frontend tests, and frontend build.
+- [OpenSSF Scorecard run 127](https://github.com/Soyuz-Tec/UOK/actions/runs/29065310359): passed.
 
 ## Required reference schedule cases
 
