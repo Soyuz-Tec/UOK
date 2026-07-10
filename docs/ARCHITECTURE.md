@@ -35,6 +35,7 @@ Operator browser
 - `contacts.core` is the first optional capability module.
 - `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, reminders, free-busy, availability, iCalendar export, and a traditional Calendar workspace.
 - `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
+- Planning Gate A stabilization is active under ADR-0003; scheduling and write-safety claims advance only through evidence recorded in the Planning Gantt implementation traceability map.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
 - `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.
@@ -62,6 +63,7 @@ Operator browser
 - Code quality and technology audit standard: `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
 - ADR-0001: `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - ADR-0002: `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`
+- ADR-0003: `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -74,6 +76,7 @@ Operator browser
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
 - Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 - Planning Core module plan: `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
+- Planning Gantt Gate A traceability: `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 
