@@ -56,6 +56,7 @@ function schedule(tasks: PlanningTask[]): PlanningSchedule {
     calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },
     resources: [],
     assignments: [],
+    links: [],
     baselines: [],
     validation: { ok: true, violations: [], warnings: [] },
   };

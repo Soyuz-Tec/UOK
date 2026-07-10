@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from .api_support import require_planning_read, run_planning_command
 from .baselines import baseline_detail, baseline_or_error, compare_baselines
 from .concurrency import read_locked_schedule_snapshot
 from .policy import capability_read_model
@@ -17,25 +17,19 @@ from .schemas import (
     PlanningCalendarRequest,
     PlanningDependencyRequest,
     PlanningDependencyUpdateRequest,
+    PlanningLinkRequest,
     PlanningProjectRequest,
     PlanningResourceRequest,
     PlanningTaskRequest,
     PlanningTaskUpdateRequest,
 )
 from uok.commands import (
-    COMMAND_ETAG_RESULT_KEY,
-    CommandDomainError,
-    CommandPermissionError,
-    CommandPreconditionError,
-    IdempotencyConflictError,
     MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
     MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
-    execute_command,
 )
 from uok.api.schemas import CommandDomainErrorResponse, CommandPreconditionResponse
 from uok.db import get_db
-from uok.module_ops import ensure_module_operational
-from uok.security import Actor, current_actor, require_permission
+from uok.security import Actor, current_actor
 
 router = APIRouter(prefix="/api/planning", tags=["planning"])
 ETAG_RESPONSE_HEADERS = {
@@ -243,47 +237,13 @@ def batch_mutations(project_id: str, req: PlanningBatchRequest, response: Respon
     return run_planning_command(db, actor, "BatchPlanningOperations", payload, idempotency_key, response, if_match)
 
 
-def require_planning_read(db: Session, actor: Actor) -> None:
-    try:
-        require_permission(actor, "planning.read")
-        ensure_module_operational(db, actor.organization_id, "planning.core")
-    except PermissionError as exc:
-        raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+@router.post("/projects/{project_id}/links", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def create_planning_link(project_id: str, req: PlanningLinkRequest, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    payload = req.model_dump(exclude_none=True)
+    payload["project_id"] = project_id
+    return run_planning_command(db, actor, "CreatePlanningLink", payload, idempotency_key, response, if_match)
 
 
-def run_planning_command(
-    db: Session,
-    actor: Actor,
-    command_type: str,
-    payload: dict[str, Any],
-    idempotency_key: str,
-    response: Response,
-    if_match: str | None = None,
-) -> dict[str, Any] | JSONResponse:
-    try:
-        stored = execute_command(db, actor, command_type, payload, idempotency_key, if_match)["result"]
-        result = dict(stored)
-        etag = result.pop(COMMAND_ETAG_RESULT_KEY, None)
-        if etag:
-            response.headers["ETag"] = str(etag)
-            response.headers["Cache-Control"] = "private, no-store"
-            response.headers["Vary"] = "Authorization"
-        return result
-    except CommandPermissionError as exc:
-        return JSONResponse(status_code=exc.status_code, content=exc.response_body())
-    except PermissionError as exc:
-        raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
-    except IdempotencyConflictError as exc:
-        return JSONResponse(status_code=exc.status_code, content=exc.response_body())
-    except CommandPreconditionError as exc:
-        return JSONResponse(
-            status_code=exc.status_code,
-            content=exc.response_body(),
-            headers={"ETag": exc.current_etag, "Cache-Control": "private, no-store", "Vary": "Authorization"},
-        )
-    except CommandDomainError as exc:
-        return JSONResponse(status_code=exc.status_code, content=exc.response_body())
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+@router.delete("/projects/{project_id}/links/{link_id}", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
+def remove_planning_link(project_id: str, link_id: str, response: Response, idempotency_key: PlanningIdempotencyKey, if_match: PlanningIfMatch = None, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+    return run_planning_command(db, actor, "RemovePlanningLink", {"project_id": project_id, "link_id": link_id}, idempotency_key, response, if_match)

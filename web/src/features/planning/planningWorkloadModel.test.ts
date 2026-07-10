@@ -34,6 +34,7 @@ function schedule(): PlanningSchedule {
       { id: "assignment-1", task_id: "scope", resource_id: "resource-1", allocation_percent: 80 },
       { id: "assignment-2", task_id: "build", resource_id: "resource-1", allocation_percent: 50 },
     ],
+    links: [],
     baselines: [],
     calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },
     validation: { ok: true, violations: [], warnings: [] },

@@ -201,6 +201,8 @@ def _command_project_id(db: Session, actor: Actor, command_type: str, payload: d
         "CreatePlanningResource",
         "LevelPlanningResources",
         "BatchPlanningOperations",
+        "CreatePlanningLink",
+        "RemovePlanningLink",
     }
     task_commands = {"UpdatePlanningTask", "DeletePlanningTask", "AssignPlanningResource"}
     dependency_commands = {"UpdatePlanningDependency", "RemovePlanningDependency"}

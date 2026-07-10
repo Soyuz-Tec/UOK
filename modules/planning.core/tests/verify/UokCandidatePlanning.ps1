@@ -1,5 +1,6 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningHttp.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningContracts.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningLinks.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -146,6 +147,7 @@ function Invoke-UokPlanningCandidateScenario {
     ) {
         throw "Planning task creation failed: $($first | ConvertTo-Json -Depth 20) $($second | ConvertTo-Json -Depth 20)"
     }
+    Assert-UokPlanningLinkContract -ProjectId $projectId -TaskId $first.result.id -Headers $Headers -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
     Assert-UokPlanningStatusContracts -ProjectId $projectId -TaskId $first.result.id -Headers $OpsHeaders -Stamp $Stamp
 
     $beforeBatch = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $OpsHeaders

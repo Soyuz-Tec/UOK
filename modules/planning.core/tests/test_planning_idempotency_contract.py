@@ -20,6 +20,8 @@ PLANNING_MUTATIONS = {
     ("post", "/api/planning/projects/{project_id}/resources"),
     ("post", "/api/planning/assignments"),
     ("post", "/api/planning/projects/{project_id}/mutations:batch"),
+    ("post", "/api/planning/projects/{project_id}/links"),
+    ("delete", "/api/planning/projects/{project_id}/links/{link_id}"),
 }
 BATCH_MUTATION = ("post", "/api/planning/projects/{project_id}/mutations:batch")
 CONDITIONAL_MUTATIONS = PLANNING_MUTATIONS - {("post", "/api/planning/projects")}
@@ -46,6 +48,7 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
         assert_schedule_read_contract(schema)
         assert_baseline_read_contract(schema)
         assert_capability_read_contract(schema)
+        assert_link_contract(schema)
 
 
 def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object]) -> None:
@@ -182,3 +185,12 @@ def assert_baseline_read_contract(schema: dict[str, object]) -> None:
 def assert_capability_read_contract(schema: dict[str, object]) -> None:
     operation = schema["paths"]["/api/planning/capabilities"]["get"]
     assert operation["responses"]["200"]["content"]["application/json"]["schema"]["additionalProperties"]["type"] == "boolean"
+
+
+def assert_link_contract(schema: dict[str, object]) -> None:
+    operation = schema["paths"]["/api/planning/projects/{project_id}/links"]["post"]
+    request = operation["requestBody"]["content"]["application/json"]["schema"]
+    assert request["$ref"] == "#/components/schemas/PlanningLinkRequest"
+    target = schema["components"]["schemas"]["PlanningLinkTargetRequest"]
+    assert target["additionalProperties"] is False
+    assert "communication_thread" in target["properties"]["kind"]["pattern"]

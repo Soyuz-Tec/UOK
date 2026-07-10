@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   batchPlanningTaskUpdates,
   comparePlanningBaselines,
+  createPlanningLink,
   createPlanningProject,
   loadPlanningCapabilities,
   loadPlanningBaseline,
@@ -11,6 +12,7 @@ import {
   PlanningDomainError,
   PlanningPreconditionError,
   planningCommand,
+  removePlanningLink,
   type PlanningStrongEtag,
   updatePlanningTask,
 } from "./planningApi";
@@ -94,6 +96,30 @@ describe("Planning API concurrency and idempotency", () => {
       { operation_id: "1:planning-task-batch-intent-1", kind: "update_task", payload: { task_id: "task-1", progress: 40 } },
       { operation_id: "2:planning-task-batch-intent-1", kind: "update_task", payload: { task_id: "task-2", status: "complete", progress: 100 } },
     ]);
+  });
+
+  it("uses typed revision-aware create and remove requests for Planning links", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ id: "link-1", resolution: { status: "ready" } }, 201, etag2))
+      .mockResolvedValueOnce(jsonResponse({ id: "link-1", removed: true }, 200, etag1));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createPlanningLink("token", "project-1", {
+      scope_type: "task",
+      task_id: "task-1",
+      relationship: "owned_by",
+      target: { kind: "party", id: "party-1" },
+    }, { ifMatch: etag1, idempotencyKey: "planning-link-create-1" });
+    await removePlanningLink("token", "project-1", "link-1", { ifMatch: etag2, idempotencyKey: "planning-link-remove-1" });
+
+    const [createPath, createRequest] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [removePath, removeRequest] = fetchMock.mock.calls[1] as [string, RequestInit];
+    expect(createPath).toBe("/api/planning/projects/project-1/links");
+    expect(JSON.parse(String(createRequest.body))).toMatchObject({ relationship: "owned_by", target: { kind: "party", id: "party-1" } });
+    expect(new Headers(createRequest.headers).get("If-Match")).toBe(etag1);
+    expect(removePath).toBe("/api/planning/projects/project-1/links/link-1");
+    expect(removeRequest.method).toBe("DELETE");
+    expect(new Headers(removeRequest.headers).get("Idempotency-Key")).toBe("planning-link-remove-1");
   });
 
   it("reuses If-Match and the generated key when a lost response triggers one retry", async () => {

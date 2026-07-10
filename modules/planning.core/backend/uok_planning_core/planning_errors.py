@@ -11,6 +11,11 @@ PLANNING_FIELDS = (
     "task_id",
     "dependency_id",
     "resource_id",
+    "link_id",
+    "scope_type",
+    "relationship",
+    "target.kind",
+    "target.id",
     "parent_task_id",
     "predecessor_task_id",
     "successor_task_id",
@@ -41,7 +46,7 @@ def planning_domain_error(
     code = "planning_object_not_found" if "not found" in message.lower() else "planning_validation_failed"
     object_ids = [
         str(payload[key])
-        for key in ("project_id", "task_id", "dependency_id", "resource_id")
+        for key in ("project_id", "task_id", "dependency_id", "resource_id", "link_id")
         if payload.get(key)
     ]
     return CommandDomainError(

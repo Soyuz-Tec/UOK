@@ -42,6 +42,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-*` | Material architecture decisions | Boundary, runtime, data model, auth, deployment, framework, or major policy decisions change |
 | `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md` | Planning Gantt and UI proof dependency decision | Planning UI library, scheduling authority, or UI proof automation changes |
 | `docs/architecture/ADR-0003-planning-gate-a-stabilization.md` | Planning Gate A scheduling-correctness, write-safety, and evidence-maturity decision | Gate A scope, sequencing, evidence states, or closure requirements change |
+| `docs/architecture/ADR-0004-planning-typed-link-resolver.md` | Planning Gate B cross-module target identity, resolver state, authorization, lifecycle, and privacy boundary | Link target kind/provider, resolver behavior, disclosure policy, or ownership changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -101,6 +102,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`
 - `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`
+- `docs/architecture/ADR-0004-planning-typed-link-resolver.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`

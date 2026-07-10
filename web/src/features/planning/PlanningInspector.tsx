@@ -6,6 +6,7 @@ import { Pane } from "../../shared/layout";
 import { PlanningAvailabilityPanel } from "./PlanningAvailabilityPanel";
 import { PlanningTaskConstraintFields } from "./PlanningTaskConstraintFields";
 import { PlanningResourcePanel } from "./PlanningResourcePanel";
+import { PlanningOperationLinksPanel } from "./PlanningOperationLinksPanel";
 import type { PlanningDependency, PlanningDependencyType, PlanningProject, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskStatus, PlanningTaskType } from "./types";
 import type {
   PlanningAssignmentCreateRequest,
@@ -13,6 +14,7 @@ import type {
   PlanningCalendarUpdateRequest,
   PlanningDependencyCreateRequest,
   PlanningDependencyUpdateRequest,
+  PlanningLinkCreateRequest,
   PlanningResourceCreateRequest,
   PlanningTaskCreateRequest,
   PlanningTaskUpdateRequest,
@@ -24,7 +26,7 @@ const dependencyTypes: Array<[PlanningDependencyType, string]> = [
   ["finish_to_finish", "Finish to finish"],
   ["start_to_finish", "Start to finish"],
 ];
-export type PlanningInspectorTab = "task" | "links" | "calendar" | "resources" | "status";
+export type PlanningInspectorTab = "task" | "dependencies" | "links" | "calendar" | "resources" | "status";
 
 export function PlanningInspector(props: {
   projects: PlanningProject[];
@@ -35,6 +37,7 @@ export function PlanningInspector(props: {
   status: unknown;
   busy: string;
   readOnly: boolean;
+  linkReadOnly: boolean;
   onTabChange: (tab: PlanningInspectorTab) => void;
   onProjectChange: (projectId: string) => void;
   onSaveTask: (taskId: string, payload: PlanningTaskUpdateRequest) => Promise<void>;
@@ -43,12 +46,14 @@ export function PlanningInspector(props: {
   onCreateDependency: (payload: PlanningDependencyCreateRequest) => Promise<void>;
   onUpdateDependency: (dependencyId: string, payload: PlanningDependencyUpdateRequest) => Promise<void>;
   onRemoveDependency: (dependencyId: string) => Promise<void>;
+  onCreatePlanningLink: (payload: PlanningLinkCreateRequest) => Promise<void>;
+  onRemovePlanningLink: (linkId: string) => Promise<void>;
   onSetCalendar: (payload: PlanningCalendarUpdateRequest) => Promise<void>;
   onCreateBaseline: (payload: PlanningBaselineCreateRequest) => Promise<void>;
   onCreateResource: (payload: PlanningResourceCreateRequest) => Promise<void>;
   onAssignResource: (payload: PlanningAssignmentCreateRequest) => Promise<void>;
 }) {
-  const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, readOnly, onProjectChange, onTabChange } = props;
+  const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, readOnly, linkReadOnly, onProjectChange, onTabChange } = props;
 
   return (
     <Pane title="Inspector" description={schedule.project.name}>
@@ -67,6 +72,7 @@ export function PlanningInspector(props: {
       <div className="planning-inspector-tabs" role="tablist" aria-label="Planning inspector sections">
         {[
           ["task", "Task"],
+          ["dependencies", "Dependencies"],
           ["links", "Links"],
           ["calendar", "Calendar"],
           ["resources", "Resources"],
@@ -80,7 +86,8 @@ export function PlanningInspector(props: {
       {readOnly ? <span className="planning-muted">Review mode prevents schedule changes.</span> : null}
       <fieldset className="planning-editor-fieldset" disabled={readOnly} aria-disabled={readOnly}>
         {activeTab === "task" && <TaskEditor key={selectedTask?.id || "new"} schedule={schedule} selectedTask={selectedTask} newTaskType={newTaskType} busy={busy} onSaveTask={props.onSaveTask} onCreateTask={props.onCreateTask} onDeleteTask={props.onDeleteTask} />}
-        {activeTab === "links" && <DependencyEditor schedule={schedule} busy={busy} onCreateDependency={props.onCreateDependency} onUpdateDependency={props.onUpdateDependency} onRemoveDependency={props.onRemoveDependency} />}
+        {activeTab === "dependencies" && <DependencyEditor schedule={schedule} busy={busy} onCreateDependency={props.onCreateDependency} onUpdateDependency={props.onUpdateDependency} onRemoveDependency={props.onRemoveDependency} />}
+        {activeTab === "links" && <PlanningOperationLinksPanel schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly || linkReadOnly} onCreate={props.onCreatePlanningLink} onRemove={props.onRemovePlanningLink} />}
         {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
         {activeTab === "resources" && <PlanningResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />}
       </fieldset>

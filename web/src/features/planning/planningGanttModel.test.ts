@@ -113,6 +113,7 @@ function schedule(): PlanningSchedule {
     dependencies: [],
     resources: [],
     assignments: [],
+    links: [],
     baselines: [],
     calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },
     validation: { ok: true, violations: [], warnings: [] },

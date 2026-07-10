@@ -6,6 +6,9 @@ import type {
   PlanningDependencyCreateRequest,
   PlanningDependencyUpdateRequest,
   PlanningMutationMetadata,
+  PlanningLinkCreateRequest,
+  PlanningLinkCreateResult,
+  PlanningLinkRemoveResult,
   PlanningProjectCreateRequest,
   PlanningResourceCreateRequest,
   PlanningScheduleMutationResult,
@@ -150,6 +153,14 @@ export function createPlanningResource(token: string, projectId: string, payload
 
 export function assignPlanningResource(token: string, payload: PlanningAssignmentCreateRequest, mutation: PlanningMutationOptions) {
   return planningMutationJson<PlanningScheduleMutationResult>(token, "/api/planning/assignments", { method: "POST", body: JSON.stringify(payload) }, "planning-assignment-create", mutation);
+}
+
+export function createPlanningLink(token: string, projectId: string, payload: PlanningLinkCreateRequest, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningLinkCreateResult>(token, `/api/planning/projects/${projectId}/links`, { method: "POST", body: JSON.stringify(payload) }, "planning-link-create", mutation);
+}
+
+export function removePlanningLink(token: string, projectId: string, linkId: string, mutation: PlanningMutationOptions) {
+  return planningMutationJson<PlanningLinkRemoveResult>(token, `/api/planning/projects/${projectId}/links/${linkId}`, { method: "DELETE" }, "planning-link-remove", mutation);
 }
 
 export function batchPlanningTaskUpdates(

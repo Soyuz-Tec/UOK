@@ -76,7 +76,7 @@ def complete_baseline_snapshot(
         "calendar": calendar,
         "resources": sorted(schedule["resources"], key=lambda item: str(item["id"])),
         "assignments": sorted(schedule["assignments"], key=lambda item: str(item["id"])),
-        "links": [],
+        "links": sorted(schedule["links"], key=lambda item: str(item["id"])),
         "calculation": schedule["calculation"],
         "validation": schedule["validation"],
         "creator": {"user_id": actor.user_id, "username": actor.username},

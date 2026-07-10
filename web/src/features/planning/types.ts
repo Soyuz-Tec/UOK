@@ -14,6 +14,8 @@ export type PlanningTaskType = "task" | "summary" | "milestone";
 export type PlanningSchedulingMode = "auto" | "manual";
 export type PlanningDependencyType = "finish_to_start" | "start_to_start" | "finish_to_finish" | "start_to_finish";
 export type PlanningTaskStatus = "planned" | "in_progress" | "blocked" | "complete";
+export type PlanningLinkTargetKind = "operation" | "gate" | "evidence" | "party" | "shipment" | "document" | "location" | "asset" | "agreement" | "communication_thread" | "calendar_event";
+export type PlanningLinkRelationship = "implements" | "blocks_on" | "requires" | "proves" | "owned_by" | "moves" | "occurs_at" | "discussed_in" | "publishes_to";
 
 export type PlanningTask = {
   id: string;
@@ -88,6 +90,30 @@ export type PlanningAssignment = {
   allocation_percent: number;
 };
 
+export type PlanningLink = {
+  id: string;
+  project_id: string;
+  task_id?: string | null;
+  scope_type: "project" | "task";
+  relationship: PlanningLinkRelationship;
+  blocking: boolean;
+  target: {
+    kind: PlanningLinkTargetKind;
+    id: string | null;
+    resolver: string;
+    resolver_version: string;
+  };
+  resolution: {
+    status: "ready" | "unavailable" | "denied" | "missing";
+    display_label: string | null;
+    status_summary: string;
+    checked_at: string;
+    open_path: string | null;
+  };
+  created_at: string;
+  updated_at: string;
+};
+
 export type PlanningBaseline = {
   id: string;
   project_id: string;
@@ -142,6 +168,7 @@ export type PlanningSchedule = {
   availability?: PlanningAvailability;
   resources: PlanningResource[];
   assignments: PlanningAssignment[];
+  links: PlanningLink[];
   baselines: PlanningBaseline[];
   calculation?: {
     engine_version: string;

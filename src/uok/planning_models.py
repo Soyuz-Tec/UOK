@@ -4,7 +4,7 @@ import json
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, event
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, event
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -162,6 +162,41 @@ def _validate_planning_task_attributes(_mapper: object, _connection: object, tas
         raise ValueError("Planning task attributes must be valid JSON") from exc
     if str(attributes.get("scheduling_mode") or "auto") not in {"auto", "manual"}:
         raise ValueError("Planning task scheduling_mode must be auto or manual")
+
+
+class PlanningLink(Base):
+    __tablename__ = "planning_links"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey("planning_projects.id"), index=True)
+    task_id: Mapped[str | None] = mapped_column(ForeignKey("planning_tasks.id"), nullable=True)
+    scope_type: Mapped[str] = mapped_column(String(20))
+    relationship: Mapped[str] = mapped_column(String(40))
+    target_kind: Mapped[str] = mapped_column(String(40))
+    target_id: Mapped[str] = mapped_column(String(180))
+    resolver: Mapped[str] = mapped_column(String(120))
+    resolver_version: Mapped[str] = mapped_column(String(40), default="1")
+    blocking: Mapped[bool] = mapped_column(Boolean, default=False)
+    resolution_status: Mapped[str] = mapped_column(String(20), default="unavailable")
+    status_summary: Mapped[str | None] = mapped_column(String(240), nullable=True)
+    provenance_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_by_actor_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
+    last_resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    __table_args__ = (
+        UniqueConstraint(
+            "organization_id", "project_id", "scope_type", "task_id", "relationship", "target_kind", "target_id", "resolver",
+            name="uq_planning_links_identity", postgresql_nulls_not_distinct=True,
+        ),
+        CheckConstraint("(scope_type = 'project' AND task_id IS NULL) OR (scope_type = 'task' AND task_id IS NOT NULL)", name="ck_planning_links_scope"),
+        CheckConstraint("relationship IN ('implements', 'blocks_on', 'requires', 'proves', 'owned_by', 'moves', 'occurs_at', 'discussed_in', 'publishes_to')", name="ck_planning_links_relationship"),
+        CheckConstraint("target_kind IN ('operation', 'gate', 'evidence', 'party', 'shipment', 'document', 'location', 'asset', 'agreement', 'communication_thread', 'calendar_event')", name="ck_planning_links_target_kind"),
+        CheckConstraint("resolution_status IN ('ready', 'unavailable', 'denied', 'missing')", name="ck_planning_links_resolution_status"),
+        Index("ix_planning_links_project_task", "organization_id", "project_id", "task_id"),
+        Index("ix_planning_links_target", "organization_id", "target_kind", "target_id", "resolver"),
+        Index("ix_planning_links_blocking", "organization_id", "project_id", "blocking", "resolution_status"),
+    )
 
 
 class PlanningScheduleEvent(Base):

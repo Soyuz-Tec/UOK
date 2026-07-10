@@ -230,6 +230,7 @@ function schedule(revision: number, title = "Original task"): PlanningSchedule {
     dependencies: [],
     resources: [],
     assignments: [],
+    links: [],
     baselines: [],
     validation: { ok: true, violations: [] },
   };

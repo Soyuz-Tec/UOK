@@ -65,6 +65,7 @@ function schedule(): PlanningSchedule {
     calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [], ignored_periods: [{ start: "2026-08-05", end: "2026-08-06" }] },
     resources: [],
     assignments: [],
+    links: [],
     baselines: [],
     validation: { ok: true, violations: [], warnings: [] },
   };

@@ -1,4 +1,4 @@
-import type { PlanningDependencyType, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskStatus, PlanningTaskType } from "./types";
+import type { PlanningDependencyType, PlanningLink, PlanningLinkRelationship, PlanningLinkTargetKind, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskStatus, PlanningTaskType } from "./types";
 
 
 export type PlanningMutationMetadata = {
@@ -58,12 +58,23 @@ export type PlanningAssignmentCreateRequest = {
   allocation_percent?: number;
 };
 
+export type PlanningLinkCreateRequest = {
+  expected_revision?: number;
+  scope_type: "project" | "task";
+  task_id?: string | null;
+  relationship: PlanningLinkRelationship;
+  blocking?: boolean;
+  target: { kind: PlanningLinkTargetKind; id: string };
+};
+
 export type PlanningTaskCreateResult = PlanningTask & PlanningMutationMetadata;
 export type PlanningTaskUpdateResult = PlanningMutationMetadata & {
   task: PlanningTask;
   validation: PlanningSchedule["validation"];
 };
 export type PlanningScheduleMutationResult = PlanningSchedule & PlanningMutationMetadata;
+export type PlanningLinkCreateResult = PlanningLink & PlanningMutationMetadata;
+export type PlanningLinkRemoveResult = PlanningMutationMetadata & { id: string; project_id: string; removed: true };
 
 export type PlanningDomainErrorDetail = {
   code: string;

@@ -143,7 +143,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
             setInspectorOpen(true);
           }}
           onOpenDependencies={() => {
-            setInspectorTab("links");
+            setInspectorTab("dependencies");
             setInspectorOpen(true);
           }}
           onCreateBaseline={() => void actions.addBaseline({ name: `Baseline ${activeSchedule.baselines.length + 1}` })}
@@ -175,6 +175,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           status={actions.status}
           busy={actions.busy}
           readOnly={reviewMode || serverReviewOnly}
+          linkReadOnly={reviewMode || !capabilities.link || activeSchedule.capabilities?.link !== true}
           onTabChange={setInspectorTab}
           onProjectChange={actions.changeProject}
           onSaveTask={actions.saveTask}
@@ -183,6 +184,8 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onCreateDependency={actions.addDependency}
           onUpdateDependency={actions.saveDependency}
           onRemoveDependency={actions.removeDependency}
+          onCreatePlanningLink={actions.addPlanningLink}
+          onRemovePlanningLink={actions.removePlanningLink}
           onSetCalendar={actions.saveCalendar}
           onCreateBaseline={actions.addBaseline}
           onCreateResource={actions.addResource}

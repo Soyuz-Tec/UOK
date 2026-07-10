@@ -97,3 +97,21 @@ class PlanningBatchRequest(BaseModel):
     reason: str | None = Field(default=None, max_length=500)
     source_command_id: str | None = Field(default=None, min_length=36, max_length=36)
     operations: list[PlanningBatchOperation] = Field(..., min_length=1, max_length=500)
+
+
+class PlanningLinkTargetRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    kind: str = Field(..., pattern="^(operation|gate|evidence|party|shipment|document|location|asset|agreement|communication_thread|calendar_event)$")
+    id: str = Field(..., min_length=1, max_length=180)
+
+
+class PlanningLinkRequest(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    scope_type: str = Field(..., pattern="^(project|task)$")
+    task_id: str | None = Field(default=None, min_length=1, max_length=36)
+    relationship: str = Field(..., pattern="^(implements|blocks_on|requires|proves|owned_by|moves|occurs_at|discussed_in|publishes_to)$")
+    blocking: bool = False
+    target: PlanningLinkTargetRequest

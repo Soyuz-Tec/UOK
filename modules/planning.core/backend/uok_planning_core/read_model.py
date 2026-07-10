@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from .calendar_bridge import availability_warnings, calendar_availability_read_model
 from .calendar_payload import calendar_holidays, calendar_ignored_periods
+from .link_read_model import planning_links_read_model
 from .policy import capability_read_model
 from .resource_capacity import calculate_resource_capacity, resource_capacity_warnings
 from .resource_capacity_validation import validate_resource_capacity_result
@@ -58,6 +59,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     latest_baseline = _baseline_task_index(baselines[0]) if baselines else {}
     resources = _resources(db, actor, project.id)
     assignments = _assignments(db, actor, tasks, resources)
+    links = planning_links_read_model(db, actor, project.id)
     capacity = calculate_resource_capacity(tasks, resources, assignments, calendar)
     capacity_issues = validate_resource_capacity_result(tasks, resources, assignments, calendar, capacity)
     independent_issues = [*cpm_issues, *capacity_issues]
@@ -76,6 +78,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
         "availability": availability,
         "resources": [serialize_resource(row) for row in resources],
         "assignments": [serialize_assignment(row) for row in assignments],
+        "links": links,
         "baselines": [serialize_baseline(row) for row in baselines],
         "calculation": {
             "engine_version": analysis.engine_version,

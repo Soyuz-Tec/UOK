@@ -3,11 +3,13 @@ import {
   batchPlanningTaskUpdates,
   createPlanningBaseline,
   createPlanningDependency,
+  createPlanningLink,
   createPlanningResource,
   createPlanningTask,
   deletePlanningTask,
   planningCommand,
   removePlanningDependency,
+  removePlanningLink,
   setPlanningCalendar,
   updatePlanningDependency,
   updatePlanningTask,
@@ -23,6 +25,7 @@ import type {
   PlanningCalendarUpdateRequest,
   PlanningDependencyCreateRequest,
   PlanningDependencyUpdateRequest,
+  PlanningLinkCreateRequest,
   PlanningResourceCreateRequest,
   PlanningTaskCreateRequest,
   PlanningTaskUpdateRequest,
@@ -54,6 +57,14 @@ export function saveDependencyIntent(token: string, dependencyId: string, payloa
 
 export function removeDependencyIntent(token: string, dependencyId: string) {
   return intent("dependency", "Remove dependency", { dependencyId, action: "dependency_removed" }, (etag) => removePlanningDependency(token, dependencyId, { ifMatch: etag }));
+}
+
+export function addPlanningLinkIntent(token: string, projectId: string, payload: PlanningLinkCreateRequest) {
+  return intent("planning-link", "Create operation link", { action: "planning_link_created" }, (etag) => createPlanningLink(token, projectId, payload, { ifMatch: etag }));
+}
+
+export function removePlanningLinkIntent(token: string, projectId: string, linkId: string) {
+  return intent("planning-link", "Remove operation link", { linkId, action: "planning_link_removed" }, (etag) => removePlanningLink(token, projectId, linkId, { ifMatch: etag }));
 }
 
 export function saveCalendarIntent(token: string, projectId: string, payload: PlanningCalendarUpdateRequest) {

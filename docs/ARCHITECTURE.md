@@ -64,6 +64,7 @@ Operator browser
 - ADR-0001: `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - ADR-0002: `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`
 - ADR-0003: `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`
+- ADR-0004: `docs/architecture/ADR-0004-planning-typed-link-resolver.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -77,6 +78,7 @@ Operator browser
 - Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
 - Planning Core module plan: `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
 - Planning Gantt Gate A traceability: `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`
+- Planning Gate B typed links resolve through module-owned adapters; absent Operation Graph and K Connect providers remain explicit `unavailable` states rather than simulated source objects.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

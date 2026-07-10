@@ -177,6 +177,7 @@ from .planning_models import (  # noqa: E402
     PlanningAssignment,
     PlanningBaseline,
     PlanningCalendar,
+    PlanningLink,
     PlanningProject,
     PlanningResource,
     PlanningScheduleEvent,

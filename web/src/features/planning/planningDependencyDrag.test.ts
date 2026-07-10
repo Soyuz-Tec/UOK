@@ -9,6 +9,7 @@ const schedule = {
   dependencies: [{ id: "dep-1", project_id: "project-1", predecessor_task_id: "task-1", successor_task_id: "task-2", dependency_type: "finish_to_start", lag_days: 0 }],
   resources: [],
   assignments: [],
+  links: [],
   baselines: [],
   validation: { ok: true, violations: [] },
 } satisfies PlanningSchedule;

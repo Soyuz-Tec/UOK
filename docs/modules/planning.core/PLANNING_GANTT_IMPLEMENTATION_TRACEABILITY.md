@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A local/runtime evidence closure verified 2026-07-10; hosted CI, review, and merge pending.
+**Status:** Gate A local/runtime evidence closure verified 2026-07-10; Gate B typed-link implementation active; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -83,6 +83,26 @@ requirement.
 - Candidate runtime proof: the module verifier inspected structured `403`, `400`, and `428` bodies and correlations; Chromium focused and announced the repair/field/revision/audit alert after a rejected mutation.
 - Candidate PostgreSQL proof: all 13 invariant constraints and four indexes read back; direct invalid date/progress/scheduling-mode and duplicate calendar/assignment rows were rejected; seven candidate schedule events and seven module events all linked to succeeded commands, with all seven stored responses carrying the same correlation.
 - Generated REST contract: `web/src/generated/openapi.json` and `web/src/generated/openapi.d.ts`
+
+## Gate B traceability
+
+| ID | Requirement | Current evidence | Required proof before Gate B closure | Status |
+|---|---|---|---|---|
+| PLA-B-001 | Typed cross-module links | Additive `PlanningLink` migration/model, server-owned resolver registry, REST/command APIs, typed client, capability-gated inspector, baseline inclusion, and ready/missing/cross-org/denied/disabled-provider tests | PostgreSQL 18 readback and candidate scenario pass; activate real Operation Graph/K Connect providers before claiming those target kinds ready | `runtime_proven` |
+| PLA-B-002 | Planned/forecast/actual/deadline semantics | Compatibility decision recorded in review package | Additive fields, mutation authority, variance read model, timezone/DST tests, and UI labels | `planned` |
+| PLA-B-003 | First-class participants | Party ownership boundary approved by ADR-0004 | Participant migration/API/filter/UI with canonical authorized Party resolution | `planned` |
+| PLA-B-004 | Gates and evidence blockers | Link target kinds and blocking intent exist | Requirement state machine, policy-checked approve/reject/waive, readiness impact, and audit proof | `planned` |
+| PLA-B-005 | Communication thread jump | `kconnect.thread` resolver name and unavailable state are reserved | Owning provider, permission contract, correct-thread open action, disabled/denied proof | `planned` |
+
+Current Gate B link evidence:
+
+- ADR: `docs/architecture/ADR-0004-planning-typed-link-resolver.md`
+- Migration/model/manifest: `modules/planning.core/migrations/005_planning_operation_links.sql`, `src/uok/planning_models.py`, and `modules/planning.core/manifest.yaml`
+- Resolver/API/audit/baseline integration: `modules/planning.core/backend/uok_planning_core/link_resolver.py`, `link_commands.py`, `link_read_model.py`, and `baselines.py`
+- Cross-organization, denied, disabled-provider, correlation, and baseline proof: `modules/planning.core/tests/test_planning_links.py`
+- Typed client and capability-gated inspector proof: `web/src/features/planning/planningApi.test.ts` and `PlanningOperationLinksPanel.test.tsx`
+- Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningLinks.ps1`
+- Persistent PostgreSQL proof: `planning_links`, null-safe identity uniqueness, four checks, three foreign keys, and all three access indexes read back after backup and additive migration; full candidate and five Chromium scenarios passed after rebuild.
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence
@@ -213,8 +233,9 @@ remain a generic API error and cannot enter stale-write recovery.
 New baselines are schema version `2`, immutable, and append-only. Their
 canonical JSON captures project identity/revision/target/timezone, all tasks and
 hierarchy, scheduling modes and constraints, dependencies, the Planning
-calendar and exceptions, resources, assignments, the current empty typed-link
-set, calculated metrics/engine version, creator, timestamp, and command
+calendar and exceptions, resources, assignments, actor-visible typed-link
+identities and resolver states, calculated metrics/engine version, creator,
+timestamp, and command
 correlation. The stored SHA-256 checksum is recomputed for schedule reads,
 detail reads, and comparisons.
 

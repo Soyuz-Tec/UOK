@@ -38,6 +38,7 @@ function schedule(): PlanningSchedule {
     dependencies: [],
     resources: [],
     assignments: [],
+    links: [],
     baselines: [],
     calculation: {
       engine_version: "uok-cpm-1",

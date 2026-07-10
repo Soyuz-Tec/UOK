@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A local/runtime evidence verified.
+**Status:** Active evidence catalog; Gate A local/runtime evidence verified and Gate B typed links runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -50,6 +50,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Structured errors | `runtime_proven` | Validation, permission, idempotency, precondition, and batch failures share a stable repair-oriented envelope whose correlation resolves to the failed, denied, or original command; runtime probes cover the transport contract. |
 | Typed client contracts | `runtime_proven` | Explicit Planning requests, mutation results, domain/precondition errors, revisions, capabilities, history, and workspace actions replace broad payloads at the browser API boundary and generated OpenAPI is contract-tested. |
 | Accessible failure recovery | `runtime_proven` | Chromium proof focuses and announces domain failures with server repair, field, revision, and audit references; stale writes preserve explicit reload/reapply recovery. |
+| Typed operation links | `runtime_proven` | Project/task references use server-selected resolvers, actor-specific safe states, Planning revision/audit evidence, baseline capture, and no foreign keys or copied payloads from optional providers; PostgreSQL and candidate lifecycle proof pass. |
 
 ## Grid And Column Features
 
@@ -160,6 +161,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Non-drag mutation access | Start/end, progress, dependency, and task-creation changes remain operable by keyboard and form controls without drag gestures. | `runtime_proven` |
 | Focus and stale-state recovery | Successful inline edits restore control focus; rejected stale writes and inverses focus an announced repair alert and do not overwrite latest server state. | `runtime_proven` |
 | Audit history | Planning schedule events and source-command references are recorded. | `runtime_proven` |
+| Operation Links inspector | A capability-gated inspector creates and removes typed references, labels resolver state, and exposes an Open action only for authorized ready targets. | `runtime_proven` |
 
 ## Current UI Audit And Execution Plan
 

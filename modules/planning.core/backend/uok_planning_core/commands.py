@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from .advanced_commands import bounded_int, clean_text, cmd_assign_resource, cmd_create_baseline, cmd_create_resource, cmd_level_resources, cmd_set_calendar
 from .batch import cmd_batch_operations
 from .concurrency import guarded_planning_command
+from .link_commands import cmd_create_planning_link, cmd_remove_planning_link
 from .models import (
     PlanningAssignment,
     PlanningProject,
@@ -166,6 +167,8 @@ def command_handlers() -> dict[str, CommandHandler]:
         "AssignPlanningResource": cmd_assign_resource,
         "LevelPlanningResources": cmd_level_resources,
         "BatchPlanningOperations": cmd_batch_operations,
+        "CreatePlanningLink": cmd_create_planning_link,
+        "RemovePlanningLink": cmd_remove_planning_link,
     }
     return {name: guarded_planning_command(name, handler) for name, handler in handlers.items()}
 
@@ -187,6 +190,8 @@ def command_permissions() -> dict[str, str]:
     permissions = {command: "planning.edit" for command in edit_commands}
     permissions["CreatePlanningBaseline"] = "planning.baseline.create"
     permissions["LevelPlanningResources"] = "planning.level"
+    permissions["CreatePlanningLink"] = "planning.link"
+    permissions["RemovePlanningLink"] = "planning.link"
     return permissions
 
 

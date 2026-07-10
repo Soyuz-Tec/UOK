@@ -18,6 +18,7 @@ const schedule: PlanningSchedule = {
   calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },
   resources: [{ id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling" }],
   assignments: [{ id: "assignment-1", task_id: "build", resource_id: "resource-1", allocation_percent: 100 }],
+  links: [],
   baselines: [],
   validation: { ok: true, violations: [] },
 };
