@@ -74,7 +74,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     capacity = calculate_resource_capacity(tasks, resources, assignments, calendar, resource_calendars)
     capacity_issues = validate_resource_capacity_result(tasks, resources, assignments, calendar, capacity, resource_calendars)
     independent_issues = [*cpm_issues, *capacity_issues]
-    availability = calendar_availability_read_model(db, actor, project)
+    availability = calendar_availability_read_model(db, actor, project, resources, assignments, participants)
     availability["warnings"] = availability_warnings(tasks, availability)
     violations = validate_schedule(tasks, dependencies, calendar)
     violations.extend(issue.message for issue in independent_issues)

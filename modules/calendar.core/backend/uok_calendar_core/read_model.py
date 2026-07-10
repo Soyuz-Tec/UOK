@@ -126,6 +126,54 @@ def freebusy_rows(db: Session, actor: Actor, start: datetime, end: datetime, cal
     ]
 
 
+def occurrence_rows_for_participants(
+    db: Session,
+    actor: Actor,
+    start: datetime,
+    end: datetime,
+    participant_ids: set[str],
+) -> list[dict[str, Any]]:
+    if not participant_ids:
+        return []
+    rows = db.execute(select(
+        CalendarEventParticipant.event_id,
+        CalendarEventParticipant.participant_id,
+    ).where(
+        CalendarEventParticipant.organization_id == actor.organization_id,
+        CalendarEventParticipant.participant_type == "party",
+        CalendarEventParticipant.participant_id.in_(participant_ids),
+    )).all()
+    parties_by_event: dict[str, set[str]] = {}
+    for event_id, participant_id in rows:
+        if participant_id:
+            parties_by_event.setdefault(str(event_id), set()).add(str(participant_id))
+    return [
+        {**row, "participant_ids": sorted(parties_by_event[str(row["id"])])}
+        for row in occurrence_rows(db, actor, start, end)
+        if str(row["id"]) in parties_by_event
+    ]
+
+
+def freebusy_rows_for_participants(
+    db: Session,
+    actor: Actor,
+    start: datetime,
+    end: datetime,
+    participant_ids: set[str],
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "event_id": row["id"],
+            "start": row["occurrence_start"],
+            "end": row["occurrence_end"],
+            "title": row["title"],
+            "participant_ids": row["participant_ids"],
+        }
+        for row in occurrence_rows_for_participants(db, actor, start, end, participant_ids)
+        if row["transparency"] == "busy"
+    ]
+
+
 def participant_rows(db: Session, event_id: str) -> list[dict[str, Any]]:
     query = select(CalendarEventParticipant).where(CalendarEventParticipant.event_id == event_id)
     return [

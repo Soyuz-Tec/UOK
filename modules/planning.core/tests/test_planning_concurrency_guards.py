@@ -19,6 +19,20 @@ def test_actor_visible_calendar_context_changes_etag_without_planning_revision(c
         f"context-project-{suffix}",
     )
     project_id = project.json()["result"]["id"]
+    party = command(client, ops, "CreateContact", {
+        "display_name": f"ETag resource party {suffix}", "visibility_scope": "organization",
+    }, f"context-party-{suffix}")
+    party_id = party.json()["result"]["contact_id"]
+    task = command(client, ops, "CreatePlanningTask", {
+        "project_id": project_id, "title": "Context task", "start": "2026-08-10", "end": "2026-08-10",
+    }, f"context-task-{suffix}")
+    resource = command(client, ops, "CreatePlanningResource", {
+        "project_id": project_id, "name": "Context resource", "canonical_target_kind": "party", "canonical_target_id": party_id,
+    }, f"context-resource-{suffix}")
+    resource_id = resource.json()["result"]["resources"][0]["id"]
+    command(client, ops, "AssignPlanningResource", {
+        "task_id": task.json()["result"]["id"], "resource_id": resource_id, "allocation_percent": 100,
+    }, f"context-assignment-{suffix}")
     before = _schedule(client, ops, project_id)
     revision = before.json()["project"]["revision"]
 
@@ -40,6 +54,7 @@ def test_actor_visible_calendar_context_changes_etag_without_planning_revision(c
             "starts_at": "2026-08-10T13:00:00+00:00",
             "ends_at": "2026-08-10T14:00:00+00:00",
             "transparency": "busy",
+            "participants": [{"participant_type": "party", "participant_id": party_id}],
         },
         f"context-event-{suffix}",
     )
@@ -105,6 +120,7 @@ def _planning_users(client: TestClient) -> tuple[dict[str, str], dict[str, str]]
     admin = auth(client, "admin", "admin")
     ops = auth(client, "ops", "ops123")
     assert client.post("/api/modules/calendar.core/install", headers=admin).status_code == 200
+    assert client.post("/api/modules/contacts.core/install", headers=admin).status_code == 200
     assert client.post("/api/modules/planning.core/install", headers=admin).status_code == 200
     return admin, ops
 

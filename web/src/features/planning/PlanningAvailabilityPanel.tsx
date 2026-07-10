@@ -11,12 +11,12 @@ export function PlanningAvailabilityPanel({ availability }: { availability?: Pla
       <h4><CalendarClock size={16} aria-hidden="true" /> calendar.core availability</h4>
       <span className="planning-muted">
         {availability?.status === "ready"
-          ? `${busy.length} busy windows, ${events.length} visible events`
+          ? `${busy.length} party-linked busy windows, ${events.length} visible events`
           : `Unavailable${availability?.reason ? `: ${availability.reason}` : ""}`}
       </span>
       {busy.slice(0, 3).map((row) => (
         <span key={`${row.event_id}-${row.start}`} className="planning-availability-row">
-          {row.title}: {formatDateTime(row.start)} to {formatDateTime(row.end)}
+          {row.title}: {formatDateTime(row.start)} to {formatDateTime(row.end)}{row.task_ids?.length ? ` · ${row.task_ids.length} linked task(s)` : ""}
         </span>
       ))}
       {warnings.slice(0, 3).map((warning) => <span key={warning} className="planning-availability-row">{warning}</span>)}

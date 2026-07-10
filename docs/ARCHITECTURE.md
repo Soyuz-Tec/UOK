@@ -72,6 +72,7 @@ Operator browser
 - ADR-0008: `docs/architecture/ADR-0008-communications-thread-provider-boundary.md`
 - ADR-0009: `docs/architecture/ADR-0009-planning-typed-resource-boundary.md`
 - ADR-0010: `docs/architecture/ADR-0010-planning-resource-capacity-calendars.md`
+- ADR-0011: `docs/architecture/ADR-0011-planning-resource-calendar-correlation.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -93,6 +94,7 @@ Operator browser
 - Planning Gate B communication jumps keep thread identity and authorization in `communications.core`; Planning stores only a typed reference and the shared shell opens the exact actor-authorized K Connect thread.
 - Planning Gate C typed resources are runtime-proven: they separate responsibility from capacity, enforce controlled type/unit/reference combinations, and preserve optional provider boundaries without cross-module foreign keys.
 - Planning Gate C resource calendars are runtime-proven: they derive effective daily capacity from resource periods, weekdays, holidays, and bounded exceptions; project calendar dates remain scheduling authority and resource-capacity engine v2 is independently validated.
+- Planning Gate C `calendar.core` availability is runtime-proven and correlated by actor-visible canonical Party assignments/participants and exact task IDs; unrelated or private events do not become Planning warnings and no event silently moves a task.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

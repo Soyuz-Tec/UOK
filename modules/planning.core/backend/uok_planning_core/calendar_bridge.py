@@ -5,17 +5,25 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from .models import PlanningProject, PlanningTask
+from .link_resolver import resolve_target
+from .models import PlanningAssignment, PlanningProject, PlanningResource, PlanningTask
 from uok.module_ops import ensure_module_operational
 from uok.security import Actor, require_permission
 
 
-def calendar_availability_read_model(db: Session, actor: Actor, project: PlanningProject) -> dict[str, Any]:
+def calendar_availability_read_model(
+    db: Session,
+    actor: Actor,
+    project: PlanningProject,
+    resources: list[PlanningResource],
+    assignments: list[PlanningAssignment],
+    participants: list[dict[str, Any]],
+) -> dict[str, Any]:
     start = _stored_utc(project.start_at)
     end = _stored_utc(project.end_at) + timedelta(days=1)
     base = {
         "source_module": "calendar.core",
-        "scope": "organization",
+        "scope": "task_parties",
         "status": "unavailable",
         "from": start.isoformat(),
         "to": end.isoformat(),
@@ -25,16 +33,19 @@ def calendar_availability_read_model(db: Session, actor: Actor, project: Plannin
     try:
         require_permission(actor, "calendar.freebusy.read")
         ensure_module_operational(db, actor.organization_id, "calendar.core")
-        from uok_calendar_core.facade import freebusy_rows, occurrence_rows
+        from uok_calendar_core.facade import freebusy_rows_for_participants, occurrence_rows_for_participants
     except (ImportError, PermissionError, ValueError) as exc:
         return {**base, "reason": str(exc)}
-    busy = freebusy_rows(db, actor, start, end)
-    events = occurrence_rows(db, actor, start, end)
+    task_parties = _task_party_ids(db, actor, resources, assignments, participants)
+    party_ids = set().union(*task_parties.values()) if task_parties else set()
+    busy = freebusy_rows_for_participants(db, actor, start, end, party_ids)
+    events = occurrence_rows_for_participants(db, actor, start, end, party_ids)
     return {
         **base,
         "status": "ready",
-        "busy": busy,
-        "events": events[:200],
+        "busy": [_with_task_ids(row, task_parties) for row in busy],
+        "events": [_with_task_ids(row, task_parties) for row in events[:200]],
+        "correlation": {"party_count": len(party_ids), "task_count": len(task_parties)},
     }
 
 
@@ -48,11 +59,45 @@ def availability_warnings(tasks: list[PlanningTask], availability: dict[str, Any
         if task.task_type == "summary":
             continue
         for row in busy_rows:
-            if _overlaps_task(task, str(row.get("start", "")), str(row.get("end", ""))):
+            if task.id in row.get("task_ids", []) and _overlaps_task(task, str(row.get("start", "")), str(row.get("end", ""))):
                 title = str(row.get("title") or "busy calendar event")
                 warnings.append(f"Calendar busy time overlaps {task.title}: {title}")
                 break
     return warnings
+
+
+def _task_party_ids(
+    db: Session,
+    actor: Actor,
+    resources: list[PlanningResource],
+    assignments: list[PlanningAssignment],
+    participants: list[dict[str, Any]],
+) -> dict[str, set[str]]:
+    task_parties: dict[str, set[str]] = {}
+    ready_resource_parties = {
+        resource.id: str(resource.canonical_target_id)
+        for resource in resources
+        if resource.canonical_target_kind == "party"
+        and resource.canonical_target_id
+        and resolve_target(db, actor, "party", str(resource.canonical_target_id)).status == "ready"
+    }
+    for assignment in assignments:
+        party_id = ready_resource_parties.get(assignment.resource_id)
+        if party_id:
+            task_parties.setdefault(assignment.task_id, set()).add(party_id)
+    for participant in participants:
+        party_id = participant.get("party", {}).get("id")
+        if party_id and participant.get("resolution", {}).get("status") == "ready":
+            task_parties.setdefault(str(participant["task_id"]), set()).add(str(party_id))
+    return task_parties
+
+
+def _with_task_ids(row: dict[str, Any], task_parties: dict[str, set[str]]) -> dict[str, Any]:
+    participant_ids = {str(value) for value in row.get("participant_ids", [])}
+    return {
+        **row,
+        "task_ids": sorted(task_id for task_id, parties in task_parties.items() if parties & participant_ids),
+    }
 
 
 def _overlaps_task(task: PlanningTask, start_value: str, end_value: str) -> bool:

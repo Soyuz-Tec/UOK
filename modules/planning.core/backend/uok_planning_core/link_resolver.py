@@ -116,6 +116,12 @@ def _resolve_party(db: Session, actor: Actor, target_id: str, checked_at: str) -
     row = db.scalar(select(Party).where(Party.id == target_id, Party.organization_id == actor.organization_id))
     if row is None:
         return LinkResolution("missing", None, "The party target does not exist in this organization.", checked_at)
+    try:
+        from uok_contacts_core.facade import can_read_party
+    except ImportError:
+        return LinkResolution("unavailable", None, "The Party authorization provider is unavailable.", checked_at)
+    if not can_read_party(actor, row):
+        return LinkResolution("denied", None, "The linked target is not visible to this actor.", checked_at)
     if row.purged_at is not None or row.status != "active":
         return LinkResolution("unavailable", row.display_name, f"Party is {row.status}.", checked_at)
     return LinkResolution("ready", row.display_name, f"Party is {row.status}.", checked_at, f"/?view=contacts&party_id={row.id}")

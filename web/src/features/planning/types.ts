@@ -99,7 +99,8 @@ export type PlanningAvailability = {
   to: string;
   reason?: string;
   warnings?: string[];
-  busy: Array<{ event_id: string; start: string; end: string; title: string }>;
+  correlation?: { party_count: number; task_count: number };
+  busy: Array<{ event_id: string; start: string; end: string; title: string; participant_ids?: string[]; task_ids?: string[] }>;
   events: Array<Record<string, unknown>>;
 };
 

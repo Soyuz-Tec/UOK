@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A, all five Gate B slices, typed resources, and resource capacity calendars runtime-proven.
+**Status:** Active module plan; Gate A, all five Gate B slices, typed resources, resource capacity calendars, and resource-specific calendar correlation runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -31,7 +31,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead
 - Python scheduling propagation for dependency-driven successor movement
 - working calendar storage with working-day and holiday-aware task normalization and propagation
-- read-only `calendar.core` availability overlay in the project schedule read model for shared busy events and free-busy warnings
+- read-only `calendar.core` availability overlay correlated by actor-visible task participant and assigned-resource Party IDs, with exact task-specific busy warnings
 - hierarchy validation, WBS read model, and summary rollups
 - canonical logic-driven CPM read model fields for early/late dates, total/free float, target variance, and critical flags, with a separate hard-constraint validator
 - immutable v2 baseline capture with complete canonical schedule snapshots, SHA-256 verification, source revision/creator/correlation metadata, explicit legacy partial warnings, comparison reads, baseline variance fields, per-row timeline lanes, and variance badges
@@ -133,6 +133,15 @@ resource capacity is an additional hard availability input. Engine v2 and a
 separate validator derive the same daily capacity, workload UI consumes those
 validated points, and explicit leveling avoids zero-capacity dates. Outcome
 classification and infeasibility reasons remain ACC-RES-003.
+
+## Calendar Correlation Boundary
+
+ADR-0011 governs `calendar.core` context. Planning derives per-task canonical
+Party sets only from actor-visible ready participants and assigned resources.
+The Calendar provider filters occurrences by those Party IDs; Planning adds the
+exact affected task IDs and warns only overlapping linked tasks. Unrelated
+organization events and denied/private Party events remain absent. These events
+are contextual warnings and never silently reschedule work.
 
 ## Task Requirement And Readiness Boundary
 
