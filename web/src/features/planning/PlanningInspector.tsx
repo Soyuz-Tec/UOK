@@ -208,6 +208,7 @@ function CalendarBaselinePanel({ schedule, busy, onSetCalendar, onCreateBaseline
   onCreateBaseline: (payload: Record<string, unknown>) => Promise<void>;
 }) {
   const calendar = schedule.calendar || { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [], ignored_periods: [] };
+  const latestBaseline = schedule.baselines[0];
   const [holidays, setHolidays] = useState(calendar.holidays.join("\n"));
   const [ignoredPeriods, setIgnoredPeriods] = useState((calendar.ignored_periods || []).map((period) => `${period.start}..${period.end}`).join("\n"));
   return (
@@ -223,7 +224,9 @@ function CalendarBaselinePanel({ schedule, busy, onSetCalendar, onCreateBaseline
           Set baseline
         </CommandButton>
       </div>
-      <span className="planning-muted">{schedule.baselines[0] ? `Latest: ${schedule.baselines[0].name}` : "No baseline captured"}</span>
+      {latestBaseline ? <span className="planning-baseline-integrity" data-status={latestBaseline.completeness} data-integrity={latestBaseline.integrity.verified ? "verified" : "warning"} role="status">
+        {latestBaseline.completeness === "partial" ? `Legacy partial baseline: ${latestBaseline.name}. Complete verification and comparison are unavailable.` : latestBaseline.integrity.verified ? `Latest verified baseline: ${latestBaseline.name} (source revision ${latestBaseline.source_revision}).` : `Baseline integrity warning: ${latestBaseline.name} is not hash verified.`}
+      </span> : <span className="planning-muted">No baseline captured</span>}
       <PlanningAvailabilityPanel availability={schedule.availability} />
     </section>
   );

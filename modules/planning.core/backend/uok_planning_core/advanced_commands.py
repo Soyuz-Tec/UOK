@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
+from uuid import uuid4
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .baselines import COMPLETE_BASELINE_SCHEMA_VERSION, baseline_checksum, complete_baseline_snapshot
 from .models import PlanningAssignment, PlanningBaseline, PlanningCalendar, PlanningResource, PlanningScheduleEvent
-from .read_model import baseline_snapshot, schedule_read_model
+from .read_model import schedule_read_model
 from .resource_leveling import level_resource_allocations
 from .scheduler import apply_schedule, parse_planning_date, project_calendar, project_dependencies, project_or_error, project_tasks, task_or_error, validate_schedule
 from uok.module_events import emit_module_event
@@ -38,16 +41,42 @@ def cmd_set_calendar(db: Session, actor: Actor, payload: dict[str, Any], command
 
 def cmd_create_baseline(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     project = project_or_error(db, actor, clean_text(payload.get("project_id"), "project_id", 36))
+    baseline_id = str(uuid4())
+    created_at = datetime.now(timezone.utc)
+    snapshot = complete_baseline_snapshot(
+        db,
+        actor,
+        project,
+        baseline_id=baseline_id,
+        created_at=created_at,
+        correlation_id=command_id,
+    )
+    checksum = baseline_checksum(snapshot)
     row = PlanningBaseline(
+        id=baseline_id,
         organization_id=actor.organization_id,
         project_id=project.id,
         name=clean_text(payload.get("name") or "Baseline", "name", 120),
-        snapshot_json=dumps(baseline_snapshot(project_tasks(db, actor, project.id))),
+        snapshot_json=dumps(snapshot),
+        schema_version=COMPLETE_BASELINE_SCHEMA_VERSION,
+        completeness="complete",
+        checksum=checksum,
+        source_revision=int(project.revision),
+        created_by_user_id=actor.user_id,
+        correlation_id=command_id,
+        created_at=created_at,
     )
     db.add(row)
     db.flush()
-    _emit(db, actor, "PlanningBaselineCreated", "PlanningBaseline", row.id, {"project_id": project.id})
-    _schedule_event(db, actor, project.id, "baseline_created", {"baseline_id": row.id})
+    evidence = {
+        "project_id": project.id,
+        "schema_version": COMPLETE_BASELINE_SCHEMA_VERSION,
+        "source_revision": int(project.revision),
+        "checksum": checksum,
+        "correlation_id": command_id,
+    }
+    _emit(db, actor, "PlanningBaselineCreated", "PlanningBaseline", row.id, evidence)
+    _schedule_event(db, actor, project.id, "baseline_created", {"baseline_id": row.id, **evidence})
     return schedule_read_model(db, actor, project)
 
 

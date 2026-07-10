@@ -45,6 +45,7 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
         assert_planning_mutation_contract(schema_name, schema)
         assert_command_contract(schema)
         assert_schedule_read_contract(schema)
+        assert_baseline_read_contract(schema)
 
 
 def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object]) -> None:
@@ -157,3 +158,12 @@ def assert_domain_error_schema(schema: dict[str, object]) -> None:
 def assert_schedule_read_contract(schema: dict[str, object]) -> None:
     response = schema["paths"]["/api/planning/projects/{project_id}/schedule"]["get"]["responses"]["200"]
     assert response["headers"]["ETag"]["schema"]["type"] == "string"
+
+
+def assert_baseline_read_contract(schema: dict[str, object]) -> None:
+    paths = schema["paths"]
+    assert "/api/planning/projects/{project_id}/baselines/{baseline_id}" in paths
+    comparison = paths["/api/planning/projects/{project_id}/baselines/compare"]["get"]
+    parameters = {(item["name"], item["in"]): item for item in comparison["parameters"]}
+    assert parameters[("left_baseline_id", "query")]["required"] is True
+    assert parameters[("right_baseline_id", "query")]["required"] is True

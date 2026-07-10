@@ -239,6 +239,18 @@
   text-overflow: ellipsis;
 }
 
+.planning-baseline-integrity {
+  display: block;
+  color: var(--uok-status-success);
+  font-size: var(--uok-caption);
+}
+
+.planning-baseline-integrity[data-status="partial"],
+.planning-baseline-integrity[data-integrity="warning"] {
+  color: var(--uok-status-warning);
+  font-weight: 600;
+}
+
 .planning-validation span,
 .planning-muted {
   color: var(--uok-text-secondary);

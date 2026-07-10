@@ -87,7 +87,34 @@ export type PlanningBaseline = {
   id: string;
   project_id: string;
   name: string;
+  schema_version: number;
+  completeness: "partial" | "complete";
+  checksum?: string | null;
+  source_revision?: number | null;
+  created_by_user_id?: string | null;
+  correlation_id?: string | null;
   created_at: string;
+  integrity: {
+    status: "partial" | "verified" | "checksum_mismatch" | "corrupt" | string;
+    verified: boolean;
+    algorithm?: "sha256" | null;
+    calculated_checksum?: string;
+    missing_facts: string[];
+    message: string;
+  };
+};
+
+export type PlanningBaselineDetail = PlanningBaseline & {
+  snapshot: Record<string, unknown>;
+};
+
+export type PlanningBaselineComparison = {
+  project_id: string;
+  supported: boolean;
+  left: PlanningBaseline;
+  right: PlanningBaseline;
+  limitations: string[];
+  changes: Record<string, unknown> | null;
 };
 
 export type PlanningSchedule = {

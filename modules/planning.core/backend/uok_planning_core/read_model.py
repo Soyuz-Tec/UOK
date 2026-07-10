@@ -158,16 +158,9 @@ def serialize_assignment(row: PlanningAssignment) -> dict[str, Any]:
 
 
 def serialize_baseline(row: PlanningBaseline) -> dict[str, Any]:
-    return {"id": row.id, "project_id": row.project_id, "name": row.name, "created_at": _timestamp(row.created_at)}
+    from .baselines import baseline_metadata
 
-
-def baseline_snapshot(tasks: list[PlanningTask]) -> dict[str, Any]:
-    return {
-        "tasks": [
-            {"id": task.id, "title": task.title, "start": task.start_at.date().isoformat(), "end": task.end_at.date().isoformat()}
-            for task in tasks
-        ]
-    }
+    return baseline_metadata(row)
 
 
 def _calendar_row(db: Session, actor: Actor, project_id: str) -> dict[str, Any]:
@@ -191,11 +184,16 @@ def _baselines(db: Session, actor: Actor, project_id: str) -> list[PlanningBasel
     return list(db.scalars(select(PlanningBaseline).where(
         PlanningBaseline.organization_id == actor.organization_id,
         PlanningBaseline.project_id == project_id,
-    ).order_by(PlanningBaseline.created_at.desc())).all())
+    ).order_by(PlanningBaseline.created_at.desc(), PlanningBaseline.id.desc())).all())
 
 
 def _baseline_task_index(row: PlanningBaseline) -> dict[str, dict[str, str]]:
-    snapshot = loads(row.snapshot_json, {})
+    try:
+        snapshot = loads(row.snapshot_json, {})
+    except (TypeError, ValueError):
+        return {}
+    if not isinstance(snapshot, dict):
+        return {}
     return {str(item["id"]): item for item in snapshot.get("tasks", []) if "id" in item}
 
 

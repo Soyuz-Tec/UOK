@@ -34,7 +34,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - read-only `calendar.core` availability overlay in the project schedule read model for shared busy events and free-busy warnings
 - hierarchy validation, WBS read model, and summary rollups
 - canonical logic-driven CPM read model fields for early/late dates, total/free float, target variance, and critical flags, with a separate hard-constraint validator
-- baseline capture, baseline variance read-model fields, per-row timeline lanes, and variance badges
+- immutable v2 baseline capture with complete canonical schedule snapshots, SHA-256 verification, source revision/creator/correlation metadata, explicit legacy partial warnings, comparison reads, baseline variance fields, per-row timeline lanes, and variance badges
 - resource creation, assignment, allocation display, over-allocation warnings, and explicit resource leveling for later auto-scheduled assigned tasks
 - drag-to-reschedule path through server validation
 - command-bus writes and idempotency
@@ -81,6 +81,7 @@ python -m pytest modules/planning.core/tests/test_planning_core.py -q
 python -m pytest modules/planning.core/tests/test_planning_optimistic_concurrency.py -q
 python -m pytest modules/planning.core/tests/test_canonical_cpm.py modules/planning.core/tests/test_cpm_validation.py modules/planning.core/tests/test_planning_cpm_contract.py -q
 python -m pytest modules/planning.core/tests/test_planning_idempotency_contract.py -q
+python -m pytest modules/planning.core/tests/test_planning_complete_baselines.py -q
 npm --prefix web run build
 npm --prefix web run test:ui-proof
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
@@ -91,7 +92,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 - expand the atomic batch operation registry beyond task updates; unsupported destructive/dependency/calendar/assignment history kinds remain fail closed
 - richer resource capacity calendars
 - deeper write integration that can publish selected Planning tasks or milestones to `calendar.core` events after user approval
-- multi-baseline comparison and richer baseline history controls
+- richer baseline history and comparison controls beyond the current immutable detail/compare API and legacy warning
 - richer critical path dependency-chain explanation beyond the current Dashboard summary
 - richer bulk edit fields after owner, priority, and calendar become first-class task fields
 - planning adapters for the separately deployed global import/export capability as needed

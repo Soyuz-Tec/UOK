@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   batchPlanningTaskUpdates,
+  comparePlanningBaselines,
   createPlanningProject,
+  loadPlanningBaseline,
   loadPlanningSchedule,
   PlanningApiError,
   PlanningPreconditionError,
@@ -24,6 +26,19 @@ describe("Planning API concurrency and idempotency", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(schedule, 200, etag1)));
 
     await expect(loadPlanningSchedule("token", "project-1")).resolves.toEqual({ schedule, etag: etag1 });
+  });
+
+  it("uses typed immutable baseline detail and comparison reads", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse({ id: "baseline-1", completeness: "complete", integrity: { verified: true } }))
+      .mockResolvedValueOnce(jsonResponse({ supported: true, changes: { tasks: { changed: ["task-1"] } } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await loadPlanningBaseline("token", "project-1", "baseline-1");
+    await comparePlanningBaselines("token", "project-1", "baseline-1", "baseline-2");
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/planning/projects/project-1/baselines/baseline-1");
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/planning/projects/project-1/baselines/compare?left_baseline_id=baseline-1&right_baseline_id=baseline-2");
   });
 
   it("sends exact If-Match and one explicit intent key to a REST write", async () => {

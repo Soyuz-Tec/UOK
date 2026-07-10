@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from .read_model import list_projects
+from .baselines import baseline_detail, baseline_or_error, compare_baselines
 from .concurrency import read_locked_schedule_snapshot
+from .read_model import list_projects
 from .schemas import (
     PlanningAssignmentRequest,
     PlanningBatchRequest,
@@ -170,6 +171,35 @@ def create_baseline(project_id: str, req: PlanningBaselineRequest, response: Res
     payload = req.model_dump(exclude_none=True)
     payload["project_id"] = project_id
     return run_planning_command(db, actor, "CreatePlanningBaseline", payload, idempotency_key, response, if_match)
+
+
+@router.get("/projects/{project_id}/baselines/compare")
+def compare_project_baselines(
+    project_id: str,
+    left_baseline_id: str = Query(..., min_length=1, max_length=36),
+    right_baseline_id: str = Query(..., min_length=1, max_length=36),
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    require_planning_read(db, actor)
+    try:
+        return compare_baselines(db, actor, project_id, left_baseline_id, right_baseline_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+
+
+@router.get("/projects/{project_id}/baselines/{baseline_id}")
+def project_baseline(
+    project_id: str,
+    baseline_id: str,
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    require_planning_read(db, actor)
+    try:
+        return baseline_detail(baseline_or_error(db, actor, project_id, baseline_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
 
 @router.post("/projects/{project_id}/resources", responses=PLANNING_MUTATION_RESPONSES, response_model=None)

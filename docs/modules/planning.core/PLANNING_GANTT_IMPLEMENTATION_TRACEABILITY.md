@@ -32,7 +32,7 @@ requirement.
 | PLA-A-003 | Stable Planning idempotency | UOK command gateway supports replay | Every REST write requires a client key; module-command missing-key, replay, changed-payload conflict, and lost-response retry tests pass | `integration_tested` |
 | PLA-A-004 | Optimistic concurrency | Project revision/task version migration, strong actor-visible ETag, project lock, 428/412 recovery contract, and typed client recovery exist | PostgreSQL two-client race, candidate runtime, and accessible reload/reapply proof | `runtime_proven` |
 | PLA-A-005 | Atomic batch mutation | Ordered task updates use one project lock, command/idempotency record, final scheduler/validator pass, revision, ETag, and correlated event; bulk UI and multi-task update history use the endpoint | Expand the operation-kind registry beyond `update_task` while retaining all-or-nothing semantics | `runtime_proven` |
-| PLA-A-006 | Complete immutable baseline | Baseline stores a partial task snapshot | Canonical v2 snapshot, hash verification, immutability, and legacy warning tests | `source_present` |
+| PLA-A-006 | Complete immutable baseline | Canonical v2 snapshot includes the complete current schedule graph/context, creator/source revision/correlation metadata, SHA-256 verification, append-only guards, comparison reads, and explicit legacy partial limitations | PostgreSQL migration apply/readback and candidate runtime checksum proof | `runtime_proven` |
 | PLA-A-007 | Server capability enforcement | `planning.read/manage` exist | Capability matrix and direct adversarial API tests | `source_present` |
 | PLA-A-008 | Database invariant enforcement | Initial module migration exists | PostgreSQL 18 apply/readback and invalid-row tests | `source_present` |
 | PLA-A-009 | Structured Planning errors | Atomic batch failures return stable code, field, object ids, repair, revision, and correlation id through REST and generic command paths | Migrate remaining Planning validation/permission/idempotency errors to the same envelope | `source_present` |
@@ -60,6 +60,10 @@ requirement.
 - Persistent candidate negative-float/independent-validation proof: `modules/planning.core/tests/runtime/verify_planning_cpm.py`
 - Atomic 100-operation success/replay, injected rollback, one-revision/task-version, structured-error, and correlation proof: `modules/planning.core/tests/test_planning_atomic_batch.py`
 - Typed bulk and bounded multi-task history client proof: `web/src/features/planning/planningApi.test.ts`, `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`, and `web/src/features/planning/planningHistoryExecution.test.ts`
+- Complete v2 baseline capture, checksum, compare, legacy, immutability, and tamper proof: `modules/planning.core/tests/test_planning_complete_baselines.py`
+- Additive v2 baseline metadata/append-only migration: `modules/planning.core/migrations/003_planning_complete_baselines.sql`
+- Typed baseline detail/compare reads and legacy UI warning proof: `web/src/features/planning/planningApi.test.ts` and `web/e2e/uok-proof.spec.ts`
+- Candidate PostgreSQL proof: 12 existing snapshots classified as v1 `partial`; v2 columns/checks/index/trigger read back; trigger rejected mutation; v2 snapshot checksum/detail/correlation passed the live candidate verifier.
 - Generated REST contract: `web/src/generated/openapi.json` and `web/src/generated/openapi.d.ts`
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
@@ -127,6 +131,23 @@ schedule failure rolls the transaction back and returns a structured error.
 | Manual task conflict | Dates stay fixed and a violation is returned |
 | Target date | Negative float is reported rather than clamped away |
 | Dependency cycle | Mutation is rejected and no partial write remains |
+
+## Current complete baseline boundary
+
+New baselines are schema version `2`, immutable, and append-only. Their
+canonical JSON captures project identity/revision/target/timezone, all tasks and
+hierarchy, scheduling modes and constraints, dependencies, the Planning
+calendar and exceptions, resources, assignments, the current empty typed-link
+set, calculated metrics/engine version, creator, timestamp, and command
+correlation. The stored SHA-256 checksum is recomputed for schedule reads,
+detail reads, and comparisons.
+
+Existing rows are additively backfilled as schema version `1` with
+`completeness=partial`; their missing facts are returned explicitly and compare
+fails closed. PostgreSQL rejects baseline updates and deletes with a migration
+trigger, while SQLAlchemy rejects ORM mutations in every profile. The comparison
+read reports exact added, removed, and changed object IDs only when both inputs
+are complete and hash verified.
 
 ## Current CPM boundary
 

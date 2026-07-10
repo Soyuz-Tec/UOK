@@ -201,5 +201,31 @@ function Invoke-UokPlanningCandidateScenario {
         throw "Planning canonical CPM did not identify a critical path: $($schedule | ConvertTo-Json -Depth 20)"
     }
 
+    $baseline = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
+        command_type = "CreatePlanningBaseline"
+        payload = @{ project_id = $projectId; name = "Candidate control $Stamp" }
+        idempotency_key = "uok-planning-baseline-$Stamp"
+    }
+    $baselineMetadata = $baseline.result.baselines[0]
+    if (
+        $baselineMetadata.schema_version -ne 2 `
+        -or $baselineMetadata.completeness -ne "complete" `
+        -or $baselineMetadata.source_revision -ne $schedule.project.revision `
+        -or $baselineMetadata.integrity.verified -ne $true `
+        -or $baselineMetadata.correlation_id -ne $baseline.command_id
+    ) {
+        throw "Planning complete baseline metadata is invalid: $($baseline | ConvertTo-Json -Depth 30)"
+    }
+    $baselineDetail = Invoke-UokJson -Path "/api/planning/projects/$projectId/baselines/$($baselineMetadata.id)" -Headers $ViewerHeaders
+    if (
+        $baselineDetail.integrity.verified -ne $true `
+        -or $baselineDetail.snapshot.tasks.Count -lt 2 `
+        -or $baselineDetail.snapshot.dependencies.Count -lt 1 `
+        -or -not $baselineDetail.snapshot.calculation.engine_version `
+        -or $baselineDetail.snapshot.capture.correlation_id -ne $baseline.command_id
+    ) {
+        throw "Planning complete baseline readback failed: $($baselineDetail | ConvertTo-Json -Depth 30)"
+    }
+
     return @{ project_id = $projectId }
 }

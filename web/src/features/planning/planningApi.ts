@@ -1,4 +1,4 @@
-import type { PlanningProject, PlanningSchedule } from "./types";
+import type { PlanningBaselineComparison, PlanningBaselineDetail, PlanningProject, PlanningSchedule } from "./types";
 
 type CommandResult<T> = { result: T; status: string };
 
@@ -136,6 +136,15 @@ export function setPlanningCalendar(token: string, projectId: string, payload: R
 
 export function createPlanningBaseline(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {
   return planningMutationJson<unknown>(token, `/api/planning/projects/${projectId}/baselines`, { method: "POST", body: JSON.stringify(payload) }, "planning-baseline-create", mutation);
+}
+
+export function loadPlanningBaseline(token: string, projectId: string, baselineId: string) {
+  return planningJson<PlanningBaselineDetail>(token, `/api/planning/projects/${projectId}/baselines/${baselineId}`);
+}
+
+export function comparePlanningBaselines(token: string, projectId: string, leftBaselineId: string, rightBaselineId: string) {
+  const query = new URLSearchParams({ left_baseline_id: leftBaselineId, right_baseline_id: rightBaselineId });
+  return planningJson<PlanningBaselineComparison>(token, `/api/planning/projects/${projectId}/baselines/compare?${query}`);
 }
 
 export function createPlanningResource(token: string, projectId: string, payload: Record<string, unknown>, mutation: PlanningMutationOptions) {

@@ -16,7 +16,7 @@ from .models import (
     PlanningTaskDependency,
     utcnow,
 )
-from .read_model import baseline_snapshot, schedule_read_model, serialize_project, serialize_task
+from .read_model import schedule_read_model, serialize_project, serialize_task
 from .scheduler import (
     DEPENDENCY_TYPES,
     apply_schedule,

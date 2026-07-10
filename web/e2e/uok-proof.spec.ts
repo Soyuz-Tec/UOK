@@ -123,7 +123,17 @@ const sampleSchedule = {
   calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: ["2026-08-14"], ignored_periods: [{ start: "2026-08-17", end: "2026-08-18" }] },
   resources: [{ id: "resource-1", project_id: sampleProject.id, name: "Planner", role: "Scheduling" }],
   assignments: [{ id: "assignment-1", task_id: "task-2", resource_id: "resource-1", allocation_percent: 120 }],
-  baselines: [{ id: "baseline-1", project_id: sampleProject.id, name: "Initial baseline", created_at: "2026-08-01T00:00:00Z" }],
+  baselines: [{
+    id: "baseline-1",
+    project_id: sampleProject.id,
+    name: "Initial baseline",
+    schema_version: 1,
+    completeness: "partial",
+    checksum: null,
+    source_revision: null,
+    created_at: "2026-08-01T00:00:00Z",
+    integrity: { status: "partial", verified: false, algorithm: null, missing_facts: ["dependencies"], message: "Legacy partial baseline." },
+  }],
 };
 
 test("UOK proof gate covers planning Gantt usability and visual stability", async ({ page }) => {
@@ -449,6 +459,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await page.getByRole("tab", { name: "Calendar" }).click();
     await expect(page.getByLabel("Calendar and baseline")).toBeVisible();
     await expect(page.getByLabel("Ignored periods")).toHaveValue("2026-08-17..2026-08-18");
+    await expect(page.getByRole("status").filter({ hasText: "Legacy partial baseline: Initial baseline" })).toBeVisible();
     await page.getByRole("tab", { name: "Resources" }).click();
     await expect(page.getByLabel("Resource assignments")).toBeVisible();
     await page.getByRole("tab", { name: "Status" }).click();

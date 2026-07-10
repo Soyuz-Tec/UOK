@@ -38,7 +38,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Drag-to-reschedule | Implemented | Bar drag proposes date shift and calls server validation path. |
 | Summary tasks and WBS | Implemented | Summary rows, WBS sorting, hierarchy validation, collapse/expand controls. |
 | Milestones | Implemented | Milestone task type and diamond rendering. |
-| Baselines | Implemented | Baseline capture, variance fields, per-row timeline lanes, and non-color variance badges render on task rows. |
+| Baselines | Implemented | New captures are immutable, complete v2 canonical snapshots with SHA-256 verification, source revision/creator/correlation metadata, and exact compare reads. Legacy snapshots are labeled partial in API/UI. Variance fields, per-row timeline lanes, and non-color badges render on task rows. |
 | Critical path | Implemented | Critical flags, highlighting, zero-slack counts, and a Dashboard critical-path explanation panel exist. |
 | Calendars | Implemented | Project working days, holidays, and ignored periods drive scheduling, propagation, read models, and timeline shading. Resource calendars remain a separate resource-planning backlog item. |
 | Resources | Implemented | Resource creation, assignment, allocation display, daily workload lanes, and over-allocation warnings exist. |

@@ -17,4 +17,5 @@ fixtures, and API target/order contracts can be run with:
 ```powershell
 python -m pytest .\modules\planning.core\tests\test_canonical_cpm.py .\modules\planning.core\tests\test_cpm_validation.py .\modules\planning.core\tests\test_planning_cpm_contract.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_atomic_batch.py -q
+python -m pytest .\modules\planning.core\tests\test_planning_complete_baselines.py -q
 ```

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, event
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -114,7 +114,24 @@ class PlanningBaseline(Base):
     project_id: Mapped[str] = mapped_column(ForeignKey("planning_projects.id"), index=True)
     name: Mapped[str] = mapped_column(String(120))
     snapshot_json: Mapped[str] = mapped_column(Text, default="{}")
+    schema_version: Mapped[int] = mapped_column(Integer, default=2, server_default="2")
+    completeness: Mapped[str] = mapped_column(String(20), default="complete", server_default="complete")
+    checksum: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    source_revision: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
+    created_by_user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    correlation_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_now)
+    __table_args__ = (
+        CheckConstraint("schema_version >= 1", name="ck_planning_baselines_schema_version_positive"),
+        CheckConstraint("completeness IN ('partial', 'complete')", name="ck_planning_baselines_completeness"),
+        Index("ix_planning_core_baselines_org_project_revision", "organization_id", "project_id", "source_revision"),
+    )
+
+
+@event.listens_for(PlanningBaseline, "before_update")
+@event.listens_for(PlanningBaseline, "before_delete")
+def _reject_planning_baseline_mutation(*_args: object) -> None:
+    raise ValueError("Planning baselines are immutable and append-only")
 
 
 class PlanningScheduleEvent(Base):
