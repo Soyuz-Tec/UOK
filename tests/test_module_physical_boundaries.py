@@ -78,6 +78,8 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert manifests["planning.core"]["dependencies"] == ["calendar.core"]
     assert manifests["planning.core"]["api_router"] == "uok_planning_core.api:router"
     assert manifests["planning.core"]["command_handlers"] == "uok_planning_core.commands:command_handlers"
+    assert "SetPlanningResourceCalendar" in manifests["planning.core"]["commands"]
+    assert "PlanningResourceCalendarUpdated" in manifests["planning.core"]["events"]
     assert manifests["planning.core"]["candidate_verifier_script"] == "modules/planning.core/tests/verify/UokCandidatePlanning.ps1"
     assert "CreatePlanningProject" in manifests["planning.core"]["commands"]
     assert "PlanningTaskLinked" in manifests["planning.core"]["events"]
@@ -216,6 +218,7 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
         "planning_projects",
         "planning_tasks",
         "planning_task_dependencies",
+        "planning_resource_calendars",
         "report_artifacts",
     }.issubset(declared_module_table_names())
 
@@ -228,6 +231,7 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
     assert "/api/calendar/calendars" in app_paths
     assert "/api/contacts/review-queue" in app_paths
     assert "/api/planning/projects" in app_paths
+    assert "/api/planning/projects/{project_id}/resources/{resource_id}/calendar" in app_paths
     assert "/api/reports/formats" in app_paths
 
     main_source = (repo_root() / "src" / "uok" / "main.py").read_text(encoding="utf-8")

@@ -48,6 +48,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0007-planning-task-requirements-and-readiness.md` | Planning requirement workflow, gate authority, linked-evidence compatibility, provider fail-closed behavior, and derived readiness | Requirement types/states, approval authority, readiness, evidence links, or requirement lifecycle changes |
 | `docs/architecture/ADR-0008-communications-thread-provider-boundary.md` | K Connect thread identity, authorization, lifecycle, Planning adapter, and exact deep-link boundary | Thread ownership, permissions, resolver states, deep links, or communications lifecycle changes |
 | `docs/architecture/ADR-0009-planning-typed-resource-boundary.md` | Planning resource types, capacities, units, canonical references, effective dates, and participant separation | Resource type/unit, capacity, canonical-reference, effective-period, or ownership rules change |
+| `docs/architecture/ADR-0010-planning-resource-capacity-calendars.md` | Planning resource weekdays, holidays, effective capacity, exceptions, validation, workload, and leveling boundary | Resource calendar, capacity precedence, exception, or leveling-availability rules change |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -114,6 +115,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0007-planning-task-requirements-and-readiness.md`
 - `docs/architecture/ADR-0008-communications-thread-provider-boundary.md`
 - `docs/architecture/ADR-0009-planning-typed-resource-boundary.md`
+- `docs/architecture/ADR-0010-planning-resource-capacity-calendars.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`

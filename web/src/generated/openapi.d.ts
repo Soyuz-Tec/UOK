@@ -1053,6 +1053,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/projects/{project_id}/resources/{resource_id}/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Resource Calendar */
+        put: operations["set_resource_calendar_api_planning_projects__project_id__resources__resource_id__calendar_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/projects/{project_id}/schedule": {
         parameters: {
             query?: never;
@@ -1828,6 +1845,41 @@ export interface components {
              * @default UTC
              */
             timezone: string;
+        };
+        /** PlanningResourceCalendarRequest */
+        PlanningResourceCalendarRequest: {
+            /** Capacity Exceptions */
+            capacity_exceptions?: components["schemas"]["PlanningResourceCapacityExceptionRequest"][];
+            /**
+             * Default Capacity Percent
+             * @default 100
+             */
+            default_capacity_percent: number;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Holidays */
+            holidays?: string[];
+            /**
+             * Name
+             * @default Resource capacity
+             */
+            name: string;
+            /** Working Days */
+            working_days?: number[];
+        };
+        /** PlanningResourceCapacityExceptionRequest */
+        PlanningResourceCapacityExceptionRequest: {
+            /** Capacity Percent */
+            capacity_percent: number;
+            /** End */
+            end: string;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+            /** Start */
+            start: string;
         };
         /** PlanningResourceRequest */
         PlanningResourceRequest: {
@@ -5131,6 +5183,93 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["PlanningResourceRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    set_resource_calendar_api_planning_projects__project_id__resources__resource_id__calendar_put: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                resource_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningResourceCalendarRequest"];
             };
         };
         responses: {

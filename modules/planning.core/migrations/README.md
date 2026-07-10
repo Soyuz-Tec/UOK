@@ -34,6 +34,10 @@ types, type-compatible capacity units, positive decimal capacity, optional
 typed canonical references without cross-module foreign keys, effective dates,
 database checks, and organization-first type/reference indexes. Existing rows
 remain compatible as one human FTE.
+`010_planning_resource_calendars.sql` adds one capacity calendar per resource
+with relational organization/project/resource scope, bounded default capacity,
+validated weekday/holiday/exception payloads, uniqueness, and an
+organization-first resource lookup index.
 
 For the persistent local PostgreSQL profile, back up first, apply the migration
 before rebuilding an image that selects the new columns, and read the columns
@@ -56,6 +60,8 @@ Get-Content -Raw .\modules\planning.core\migrations\007_planning_task_participan
 Get-Content -Raw .\modules\planning.core\migrations\008_planning_task_requirements.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 Get-Content -Raw .\modules\planning.core\migrations\009_planning_typed_resources.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\010_planning_resource_calendars.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 ```
 

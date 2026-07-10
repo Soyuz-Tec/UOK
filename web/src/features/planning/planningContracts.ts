@@ -73,6 +73,14 @@ export type PlanningResourceCreateRequest = {
   effective_start?: string;
   effective_end?: string;
 };
+export type PlanningResourceCalendarUpdateRequest = {
+  expected_revision?: number;
+  name?: string;
+  working_days?: number[];
+  holidays?: string[];
+  default_capacity_percent?: number;
+  capacity_exceptions?: Array<{ start: string; end: string; capacity_percent: number; reason?: string }>;
+};
 export type PlanningAssignmentCreateRequest = {
   expected_revision?: number;
   task_id: string;

@@ -236,7 +236,7 @@ function Invoke-UokPlanningCandidateScenario {
     if ($schedule.calculation.engine_version -ne "uok-cpm-1" -or $schedule.calculation.independent_validation.ok -ne $true) {
         throw "Planning canonical CPM validation failed: $($schedule | ConvertTo-Json -Depth 20)"
     }
-    if ($schedule.calculation.resource_capacity.engine_version -ne "uok-resource-capacity-1" -or $schedule.calculation.resource_capacity.independent_validation.ok -ne $true) {
+    if ($schedule.calculation.resource_capacity.engine_version -ne "uok-resource-capacity-2" -or $schedule.calculation.resource_capacity.independent_validation.ok -ne $true) {
         throw "Planning resource-capacity validation failed: $($schedule | ConvertTo-Json -Depth 20)"
     }
     if (-not $schedule.calculation.calculated_finish -or $schedule.calculation.target_finish -ne $schedule.project.end) {
@@ -272,6 +272,7 @@ function Invoke-UokPlanningCandidateScenario {
         -or $baselineDetail.snapshot.participants.Count -lt 1 `
         -or $baselineDetail.snapshot.requirements.Count -lt 1 `
         -or ($baselineDetail.snapshot.resources | Where-Object { $_.id -eq $resourceId } | Select-Object -First 1).capacity_unit -ne "fte" `
+        -or ($baselineDetail.snapshot.resources | Where-Object { $_.id -eq $resourceId } | Select-Object -First 1).calendar.capacity_exceptions[0].capacity_percent -ne 50 `
         -or ($baselineDetail.snapshot.tasks | Where-Object { $_.id -eq $first.result.id } | Select-Object -First 1).actual_start -ne "2026-08-02" `
         -or $baselineDetail.snapshot.capture.correlation_id -ne $baseline.command_id
     ) {

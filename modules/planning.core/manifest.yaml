@@ -25,6 +25,7 @@ commands:
   - SetPlanningCalendar
   - CreatePlanningBaseline
   - CreatePlanningResource
+  - SetPlanningResourceCalendar
   - AssignPlanningResource
   - LevelPlanningResources
   - BatchPlanningOperations
@@ -48,6 +49,7 @@ events:
   - PlanningCalendarUpdated
   - PlanningBaselineCreated
   - PlanningResourceCreated
+  - PlanningResourceCalendarUpdated
   - PlanningResourceAssigned
   - PlanningResourcesLeveled
   - PlanningBatchApplied
@@ -93,6 +95,7 @@ owned_tables:
   - PlanningCalendar
   - PlanningLink
   - PlanningResource
+  - PlanningResourceCalendar
   - PlanningAssignment
   - PlanningBaseline
   - PlanningScheduleEvent

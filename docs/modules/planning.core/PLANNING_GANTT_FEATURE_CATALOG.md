@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A, all five Gate B slices, and Gate C typed resources runtime-proven.
+**Status:** Active evidence catalog; Gate A, all five Gate B slices, typed resources, and resource capacity calendars runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -43,6 +43,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Calendars | `integration_tested` | Project working days, holidays, and ignored periods drive scheduling, propagation, read models, and timeline shading. Resource calendars remain a separate resource-planning backlog item. |
 | Resources | `runtime_proven` | Resource creation, assignment, allocation display, independently validated daily capacity points, overload warnings, and candidate readback exist. |
 | Typed resource domain | `runtime_proven` | Controlled human/team/vehicle/equipment/material/budget/time-window/document/location/asset/custom types, compatible capacity units, optional actor-safe canonical references, effective dates, baseline capture, database constraints, generated contracts, typed inspector controls, PostgreSQL readback, and candidate proof pass. |
+| Resource capacity calendars | `runtime_proven` | Per-resource weekdays, holidays, 0–300% default capacity, bounded non-overlapping exceptions, effective-period enforcement, engine v2, independent validation, baseline capture, workload thresholds, calendar-aware leveling, PostgreSQL readback, and rebuilt candidate proof pass. |
 | Export/import | `integration_tested` | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning consumes that boundary and owns only schedule-specific payloads/read-model mapping. |
 | UI proof | `runtime_proven` | Playwright proof covers rendering, controls, inspector tabs, non-drag mutation paths, stale inverse recovery, responsiveness, and console cleanliness. |
 | Server capabilities | `runtime_proven` | Actor-specific read/edit/baseline/level/link/gate/admin capabilities are enforced by command permission, embedded in schedule reads, mirrored by fail-closed UI controls, and probed in the candidate runtime. Local review mode cannot grant authority. |
@@ -142,7 +143,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Topological ordering | Use deterministic dependency graph ordering for propagation, CPM, and cycle checks without UI row-order input. | `unit_tested` |
 | CPM read model | Logic-driven early/late dates, total/free float, target variance, engine version, independent validation, and critical flags. | `runtime_proven` |
 | Calendar-aware propagation | Respect working days and holidays. | `integration_tested` |
-| Resource over-allocation | Compute and independently validate per-resource/day load, capacity, contributing tasks, and overload warnings. | `runtime_proven` |
+| Resource over-allocation | Compute and independently validate per-resource/day load, effective calendar capacity, contributing tasks, and overload warnings. | `runtime_proven` |
 | Resource leveling | Explicit Level command moves later auto-scheduled assigned tasks forward to resolve daily resource over-allocation where capacity allows, then reruns server validation and audit events. | `integration_tested` |
 | Constraints | Must-start, must-finish, start/finish no-earlier-than, and start/finish no-later-than constraints are stored per task, enforced by Python scheduling, returned in read models, editable in the inspector, and exported. | `integration_tested` |
 | Manual/auto scheduling | Per-task auto/manual scheduling mode is stored with each task; auto tasks participate in dependency propagation, while manual tasks keep their dates and surface validation conflicts. | `integration_tested` |

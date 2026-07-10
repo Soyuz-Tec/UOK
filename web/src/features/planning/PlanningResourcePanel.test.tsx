@@ -15,6 +15,7 @@ describe("Planning typed resources", () => {
       busy=""
       onCreateResource={onCreateResource}
       onAssignResource={vi.fn()}
+      onSetResourceCalendar={vi.fn()}
     />);
 
     fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Yard vehicle" } });
@@ -38,4 +39,38 @@ describe("Planning typed resources", () => {
       canonical_target_id: "asset-42",
     }));
   });
+
+  it("submits resource-specific capacity days, holidays, and exceptions", async () => {
+    const onSetResourceCalendar = vi.fn().mockResolvedValue(undefined);
+    render(<PlanningResourcePanel
+      schedule={{ resources: [resource()] } as unknown as PlanningSchedule}
+      selectedTask={null}
+      busy=""
+      onCreateResource={vi.fn()}
+      onAssignResource={vi.fn()}
+      onSetResourceCalendar={onSetResourceCalendar}
+    />);
+    fireEvent.change(screen.getByLabelText("Assign"), { target: { value: "resource-1" } });
+    fireEvent.change(screen.getByLabelText("Working weekdays"), { target: { value: "1,2,3,4,5" } });
+    fireEvent.change(screen.getByLabelText("Holidays"), { target: { value: "2026-08-04" } });
+    fireEvent.change(screen.getByLabelText("Default capacity %"), { target: { value: "50" } });
+    fireEvent.change(screen.getByLabelText("Exception start"), { target: { value: "2026-08-06" } });
+    fireEvent.change(screen.getByLabelText("Exception end"), { target: { value: "2026-08-07" } });
+    fireEvent.change(screen.getByLabelText("Exception capacity %"), { target: { value: "100" } });
+    fireEvent.change(screen.getByLabelText("Exception reason"), { target: { value: "Extended coverage" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save capacity calendar" }));
+    await waitFor(() => expect(onSetResourceCalendar).toHaveBeenCalledWith("resource-1", {
+      name: "Planner capacity", working_days: [1, 2, 3, 4, 5], holidays: ["2026-08-04"], default_capacity_percent: 50,
+      capacity_exceptions: [{ start: "2026-08-06", end: "2026-08-07", capacity_percent: 100, reason: "Extended coverage" }],
+    }));
+  });
 });
+
+function resource() {
+  return {
+    id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling",
+    resource_type: "human" as const, capacity_value: 0.5, capacity_unit: "fte" as const,
+    canonical_target_kind: null, canonical_target_id: null, canonical_resolution: null,
+    effective_start: null, effective_end: null, calendar: null,
+  };
+}

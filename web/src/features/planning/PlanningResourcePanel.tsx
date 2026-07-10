@@ -1,8 +1,8 @@
-import { Save, UserPlus } from "lucide-react";
+import { CalendarDays, Save, UserPlus } from "lucide-react";
 import { useState } from "react";
 
 import { CommandButton } from "../../shared/primitives";
-import type { PlanningAssignmentCreateRequest, PlanningResourceCreateRequest } from "./planningContracts";
+import type { PlanningAssignmentCreateRequest, PlanningResourceCalendarUpdateRequest, PlanningResourceCreateRequest } from "./planningContracts";
 import type { PlanningCapacityUnit, PlanningResourceType, PlanningSchedule, PlanningTask } from "./types";
 
 const RESOURCE_TYPES: Array<{ value: PlanningResourceType; label: string }> = [
@@ -30,12 +30,13 @@ const CANONICAL_KINDS: Record<PlanningResourceType, Array<{ value: string; label
   custom: [{ value: "party", label: "Party" }, { value: "document", label: "Document" }, { value: "location", label: "Location" }, { value: "asset", label: "Asset" }, { value: "agreement", label: "Agreement" }, { value: "calendar_event", label: "Calendar event" }],
 };
 
-export function PlanningResourcePanel({ schedule, selectedTask, busy, onCreateResource, onAssignResource }: {
+export function PlanningResourcePanel({ schedule, selectedTask, busy, onCreateResource, onAssignResource, onSetResourceCalendar }: {
   schedule: PlanningSchedule;
   selectedTask: PlanningTask | null;
   busy: string;
   onCreateResource: (payload: PlanningResourceCreateRequest) => Promise<void>;
   onAssignResource: (payload: PlanningAssignmentCreateRequest) => Promise<void>;
+  onSetResourceCalendar: (resourceId: string, payload: PlanningResourceCalendarUpdateRequest) => Promise<void>;
 }) {
   const [resource, setResource] = useState({
     name: "", role: "", resource_type: "human" as PlanningResourceType,
@@ -43,6 +44,11 @@ export function PlanningResourcePanel({ schedule, selectedTask, busy, onCreateRe
     effective_start: "", effective_end: "", canonical_target_kind: "", canonical_target_id: "",
   });
   const [assignment, setAssignment] = useState({ resource_id: "", allocation_percent: "100" });
+  const [capacityCalendar, setCapacityCalendar] = useState({
+    working_days: "1,2,3,4,5", holidays: "", default_capacity_percent: "100",
+    exception_start: "", exception_end: "", exception_capacity: "100", exception_reason: "",
+  });
+  const selectedResource = schedule.resources.find((row) => row.id === assignment.resource_id);
   return (
     <section className="planning-editor" aria-label="Resource assignments">
       <h3>Resources</h3>
@@ -81,6 +87,27 @@ export function PlanningResourcePanel({ schedule, selectedTask, busy, onCreateRe
       <CommandButton icon={Save} disabled={!selectedTask} loading={busy === "resource"} onClick={() => selectedTask && onAssignResource({ task_id: selectedTask.id, resource_id: assignment.resource_id, allocation_percent: Number(assignment.allocation_percent) })}>
         Assign selected
       </CommandButton>
+      <h4>Capacity calendar</h4>
+      {selectedResource?.calendar ? <p className="planning-muted">Current: {selectedResource.calendar.default_capacity_percent}% on weekdays {selectedResource.calendar.working_days.join(", ")} · {selectedResource.calendar.holidays.length} holidays</p> : null}
+      <div className="planning-form-grid">
+        <label className="field"><span>Working weekdays</span><input value={capacityCalendar.working_days} onChange={(event) => setCapacityCalendar({ ...capacityCalendar, working_days: event.target.value })} /></label>
+        <label className="field"><span>Holidays</span><input placeholder="2026-08-04, 2026-08-15" value={capacityCalendar.holidays} onChange={(event) => setCapacityCalendar({ ...capacityCalendar, holidays: event.target.value })} /></label>
+        <label className="field"><span>Default capacity %</span><input type="number" min="0" max="300" value={capacityCalendar.default_capacity_percent} onChange={(event) => setCapacityCalendar({ ...capacityCalendar, default_capacity_percent: event.target.value })} /></label>
+        <label className="field"><span>Exception start</span><input type="date" value={capacityCalendar.exception_start} onChange={(event) => setCapacityCalendar({ ...capacityCalendar, exception_start: event.target.value })} /></label>
+        <label className="field"><span>Exception end</span><input type="date" value={capacityCalendar.exception_end} onChange={(event) => setCapacityCalendar({ ...capacityCalendar, exception_end: event.target.value })} /></label>
+        <label className="field"><span>Exception capacity %</span><input type="number" min="0" max="300" value={capacityCalendar.exception_capacity} onChange={(event) => setCapacityCalendar({ ...capacityCalendar, exception_capacity: event.target.value })} /></label>
+        <label className="field"><span>Exception reason</span><input value={capacityCalendar.exception_reason} onChange={(event) => setCapacityCalendar({ ...capacityCalendar, exception_reason: event.target.value })} /></label>
+      </div>
+      <CommandButton icon={CalendarDays} disabled={!assignment.resource_id || Boolean(capacityCalendar.exception_start) !== Boolean(capacityCalendar.exception_end)} loading={busy === "resource-calendar"} onClick={() => onSetResourceCalendar(assignment.resource_id, {
+        name: `${selectedResource?.name || "Resource"} capacity`,
+        working_days: capacityCalendar.working_days.split(",").map((item) => Number(item.trim())).filter((item) => item >= 1 && item <= 7),
+        holidays: capacityCalendar.holidays.split(",").map((item) => item.trim()).filter(Boolean),
+        default_capacity_percent: Number(capacityCalendar.default_capacity_percent),
+        capacity_exceptions: capacityCalendar.exception_start && capacityCalendar.exception_end ? [{
+          start: capacityCalendar.exception_start, end: capacityCalendar.exception_end,
+          capacity_percent: Number(capacityCalendar.exception_capacity), reason: capacityCalendar.exception_reason,
+        }] : [],
+      })}>Save capacity calendar</CommandButton>
     </section>
   );
 }

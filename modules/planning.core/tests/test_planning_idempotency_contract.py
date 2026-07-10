@@ -25,6 +25,7 @@ PLANNING_MUTATIONS = {
     ("put", "/api/planning/projects/{project_id}/calendar"),
     ("post", "/api/planning/projects/{project_id}/baselines"),
     ("post", "/api/planning/projects/{project_id}/resources"),
+    ("put", "/api/planning/projects/{project_id}/resources/{resource_id}/calendar"),
     ("post", "/api/planning/assignments"),
     ("post", "/api/planning/projects/{project_id}/mutations:batch"),
     ("post", "/api/planning/projects/{project_id}/links"),

@@ -13,7 +13,7 @@ const sampleProject = {
 const sampleSchedule = {
   project: sampleProject,
   capabilities: { read: true, edit: true, baseline_create: true, level: true, link: true, gate_approve: true, admin: true, review_only: false },
-  validation: { ok: true, violations: [], warnings: ["Planner is allocated 120% on 2026-08-06"] },
+  validation: { ok: true, violations: [], warnings: ["Planner is allocated 120% against 100% capacity on 2026-08-06"] },
   calculation: {
     engine_version: "uok-cpm-1",
     project_start: "2026-08-03",
@@ -129,7 +129,7 @@ const sampleSchedule = {
     id: "resource-1", project_id: sampleProject.id, name: "Planner", role: "Scheduling",
     resource_type: "human", capacity_value: 1, capacity_unit: "fte",
     canonical_target_kind: null, canonical_target_id: null, canonical_resolution: null,
-    effective_start: null, effective_end: null,
+    effective_start: null, effective_end: null, calendar: null,
   }],
   assignments: [{ id: "assignment-1", task_id: "task-2", resource_id: "resource-1", allocation_percent: 120 }],
   links: [{

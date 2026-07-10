@@ -20,6 +20,7 @@ import {
   removeTaskIntent,
   rescheduleTaskIntent,
   saveCalendarIntent,
+  saveResourceCalendarIntent,
   saveDependencyIntent,
   saveTaskIntent,
   saveTaskDatesIntent,
@@ -34,6 +35,7 @@ import type {
   PlanningDependencyUpdateRequest,
   PlanningLinkCreateRequest,
   PlanningResourceCreateRequest,
+  PlanningResourceCalendarUpdateRequest,
   PlanningTaskCreateRequest,
   PlanningTaskParticipantCreateRequest,
   PlanningTaskRequirementAdvanceRequest,
@@ -74,6 +76,7 @@ export function planningWorkspaceActions({
     addBaseline: (payload: PlanningBaselineCreateRequest) => mutate(addBaselineIntent(token, projectId, payload)),
     addResource: (payload: PlanningResourceCreateRequest) => mutate(addResourceIntent(token, projectId, payload)),
     assignResource: (payload: PlanningAssignmentCreateRequest) => mutate(assignResourceIntent(token, payload)),
+    saveResourceCalendar: (resourceId: string, payload: PlanningResourceCalendarUpdateRequest) => mutate(saveResourceCalendarIntent(token, projectId, resourceId, payload)),
     levelResources: () => mutate(levelResourcesIntent(token, projectId)),
     saveTaskBatch: (updates: PlanningBulkTaskUpdate[]) => mutate(batchTaskUpdatesIntent(token, projectId, updates)),
     runTaskMenuAction: async (action: PlanningTaskMenuAction, task: PlanningTask) => {

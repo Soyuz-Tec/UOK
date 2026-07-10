@@ -82,11 +82,11 @@ function PlanningWorkload({ schedule }: { schedule: PlanningSchedule }) {
               <h3>{workload.resourceName}</h3>
               <span>{workload.role} · {workload.taskCount} tasks</span>
             </div>
-            <strong className={workload.peakAllocation > 100 ? "overloaded" : ""}>{workload.peakAllocation}% peak</strong>
+            <strong className={workload.overloadedDays ? "overloaded" : ""}>{workload.peakAllocation}% peak</strong>
           </header>
           <div className="planning-workload-days" aria-label={`${workload.resourceName} daily allocation`}>
             {workload.days.slice(0, 14).map((day) => (
-              <span key={day.date} className={day.allocation > 100 ? "overloaded" : ""} title={`${day.date}: ${day.allocation}% ${day.taskTitles.join(", ")}`}>
+              <span key={day.date} className={day.overallocated ? "overloaded" : ""} title={`${day.date}: ${day.allocation}% allocation / ${day.capacity}% capacity · ${day.taskTitles.join(", ")}`}>
                 <b style={{ height: `${Math.min(day.allocation, 160) / 1.6}%` }} />
                 <small>{day.date.slice(5)}</small>
                 <em>{day.allocation}%</em>

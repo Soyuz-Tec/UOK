@@ -18,6 +18,7 @@ import type {
   PlanningDependencyUpdateRequest,
   PlanningLinkCreateRequest,
   PlanningResourceCreateRequest,
+  PlanningResourceCalendarUpdateRequest,
   PlanningTaskCreateRequest,
   PlanningTaskDateUpdateRequest,
   PlanningTaskParticipantCreateRequest,
@@ -69,6 +70,7 @@ export function PlanningInspector(props: {
   onCreateBaseline: (payload: PlanningBaselineCreateRequest) => Promise<void>;
   onCreateResource: (payload: PlanningResourceCreateRequest) => Promise<void>;
   onAssignResource: (payload: PlanningAssignmentCreateRequest) => Promise<void>;
+  onSetResourceCalendar: (resourceId: string, payload: PlanningResourceCalendarUpdateRequest) => Promise<void>;
 }) {
   const { projects, schedule, selectedTask, activeTab, newTaskType, status, busy, readOnly, linkReadOnly, onProjectChange, onTabChange } = props;
 
@@ -110,7 +112,7 @@ export function PlanningInspector(props: {
         {activeTab === "participants" && <PlanningParticipantsPanel token={props.token} schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly} onAdd={props.onAddTaskParticipant} onRemove={props.onRemoveTaskParticipant} />}
         {activeTab === "gates" && <PlanningRequirementsPanel schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly} canApprove={props.canApproveGates} onCreate={props.onCreateTaskRequirement} onAdvance={props.onAdvanceTaskRequirement} onSetLink={props.onSetTaskRequirementLink} onDecide={props.onDecideTaskRequirement} />}
         {activeTab === "calendar" && <CalendarBaselinePanel schedule={schedule} busy={busy} onSetCalendar={props.onSetCalendar} onCreateBaseline={props.onCreateBaseline} />}
-        {activeTab === "resources" && <PlanningResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} />}
+        {activeTab === "resources" && <PlanningResourcePanel schedule={schedule} selectedTask={selectedTask} busy={busy} onCreateResource={props.onCreateResource} onAssignResource={props.onAssignResource} onSetResourceCalendar={props.onSetResourceCalendar} />}
       </fieldset>
       {activeTab === "status" && <ValidationPanel schedule={schedule} status={status} />}
     </Pane>

@@ -21,6 +21,7 @@ import {
   updatePlanningTask,
   updatePlanningTaskDates,
 } from "./planningApi";
+import { setPlanningResourceCalendar } from "./planningResourceCalendarApi";
 import type { PlanningMutationIntent } from "./planningConcurrencyState";
 import { planningHistoryDiff, planningLevelHistory } from "./planningHistory";
 import { withCascade } from "./planningWorkspaceHelpers";
@@ -34,6 +35,7 @@ import type {
   PlanningDependencyUpdateRequest,
   PlanningLinkCreateRequest,
   PlanningResourceCreateRequest,
+  PlanningResourceCalendarUpdateRequest,
   PlanningTaskCreateRequest,
   PlanningTaskParticipantCreateRequest,
   PlanningTaskRequirementAdvanceRequest,
@@ -122,6 +124,10 @@ export function addResourceIntent(token: string, projectId: string, payload: Pla
 
 export function assignResourceIntent(token: string, payload: PlanningAssignmentCreateRequest) {
   return intent("resource", "Assign resource", { action: "resource_assigned" }, (etag) => assignPlanningResource(token, payload, { ifMatch: etag }));
+}
+
+export function saveResourceCalendarIntent(token: string, projectId: string, resourceId: string, payload: PlanningResourceCalendarUpdateRequest) {
+  return intent("resource-calendar", "Edit resource capacity calendar", { action: "resource_calendar_updated" }, (etag) => setPlanningResourceCalendar(token, projectId, resourceId, payload, { ifMatch: etag }));
 }
 
 export function levelResourcesIntent(token: string, projectId: string) {

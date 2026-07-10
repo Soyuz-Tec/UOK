@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from uuid import uuid4
 
-from sqlalchemy import CheckConstraint, Date, ForeignKey, Index, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Index, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .db import Base
@@ -12,6 +12,10 @@ from .db import Base
 
 def planning_resource_id() -> str:
     return str(uuid4())
+
+
+def planning_resource_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 class PlanningResource(Base):
@@ -78,4 +82,27 @@ class PlanningAssignment(Base):
         UniqueConstraint("organization_id", "task_id", "resource_id", name="uq_planning_assignments_org_task_resource"),
         CheckConstraint("allocation_percent >= 1 AND allocation_percent <= 300", name="ck_planning_assignments_allocation_range"),
         Index("ix_planning_core_assignments_org_resource_task", "organization_id", "resource_id", "task_id"),
+    )
+
+
+class PlanningResourceCalendar(Base):
+    __tablename__ = "planning_resource_calendars"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_resource_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    project_id: Mapped[str] = mapped_column(ForeignKey("planning_projects.id"), index=True)
+    resource_id: Mapped[str] = mapped_column(ForeignKey("planning_resources.id"), index=True)
+    name: Mapped[str] = mapped_column(String(120), default="Resource capacity")
+    working_days_json: Mapped[str] = mapped_column(Text, default="[1,2,3,4,5]")
+    holidays_json: Mapped[str] = mapped_column(Text, default="[]")
+    default_capacity_percent: Mapped[int] = mapped_column(Integer, default=100, server_default="100")
+    capacity_exceptions_json: Mapped[str] = mapped_column(Text, default="[]")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_resource_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=planning_resource_now)
+    __table_args__ = (
+        UniqueConstraint("organization_id", "resource_id", name="uq_planning_resource_calendars_org_resource"),
+        CheckConstraint(
+            "default_capacity_percent >= 0 AND default_capacity_percent <= 300",
+            name="ck_planning_resource_calendar_capacity_range",
+        ),
+        Index("ix_planning_resource_calendars_org_project_resource", "organization_id", "project_id", "resource_id"),
     )

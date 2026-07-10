@@ -13,6 +13,7 @@ from .models import PlanningAssignment, PlanningBaseline, PlanningCalendar, Plan
 from .planning_audit import add_planning_schedule_event, emit_planning_event
 from .read_model import schedule_read_model
 from .resource_contract import resource_definition
+from .resource_calendar import resource_calendar_specs
 from .resource_leveling import level_resource_allocations
 from .scheduler import apply_schedule, parse_planning_date, project_calendar, project_dependencies, project_or_error, project_tasks, task_or_error, validate_schedule
 from uok.security import Actor
@@ -139,7 +140,14 @@ def cmd_level_resources(db: Session, actor: Actor, payload: dict[str, Any], comm
     changed = apply_schedule(db, actor, project.id)
     for _ in range(5):
         tasks = project_tasks(db, actor, project.id)
-        leveled = level_resource_allocations(tasks, _project_assignments(db, actor, tasks), project_calendar(db, actor, project.id))
+        resources = _project_resources(db, actor, project.id)
+        leveled = level_resource_allocations(
+            tasks,
+            resources,
+            _project_assignments(db, actor, tasks),
+            project_calendar(db, actor, project.id),
+            resource_calendar_specs(db, actor, project.id),
+        )
         if not leveled:
             break
         changed.update(leveled)
@@ -186,6 +194,13 @@ def _project_assignments(db: Session, actor: Actor, tasks: list[Any]) -> list[Pl
     return list(db.scalars(select(PlanningAssignment).where(
         PlanningAssignment.organization_id == actor.organization_id,
         PlanningAssignment.task_id.in_(task_ids),
+    )).all())
+
+
+def _project_resources(db: Session, actor: Actor, project_id: str) -> list[PlanningResource]:
+    return list(db.scalars(select(PlanningResource).where(
+        PlanningResource.organization_id == actor.organization_id,
+        PlanningResource.project_id == project_id,
     )).all())
 
 

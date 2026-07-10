@@ -48,7 +48,7 @@ def main() -> None:
         "target_variance_days": 2,
         "independent_validation": {"ok": True, "violations": []},
         "resource_capacity": {
-            "engine_version": "uok-resource-capacity-1",
+            "engine_version": "uok-resource-capacity-2",
             "default_capacity_percent": 100,
             "load_points": [],
             "overallocated_count": 0,

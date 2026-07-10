@@ -1763,6 +1763,100 @@
         "title": "PlanningProjectRequest",
         "type": "object"
       },
+      "PlanningResourceCalendarRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "capacity_exceptions": {
+            "items": {
+              "$ref": "#/components/schemas/PlanningResourceCapacityExceptionRequest"
+            },
+            "maxItems": 100,
+            "title": "Capacity Exceptions",
+            "type": "array"
+          },
+          "default_capacity_percent": {
+            "default": 100,
+            "maximum": 300.0,
+            "minimum": 0.0,
+            "title": "Default Capacity Percent",
+            "type": "integer"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "holidays": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 3660,
+            "title": "Holidays",
+            "type": "array"
+          },
+          "name": {
+            "default": "Resource capacity",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "working_days": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 7,
+            "minItems": 1,
+            "title": "Working Days",
+            "type": "array"
+          }
+        },
+        "title": "PlanningResourceCalendarRequest",
+        "type": "object"
+      },
+      "PlanningResourceCapacityExceptionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "capacity_percent": {
+            "maximum": 300.0,
+            "minimum": 0.0,
+            "title": "Capacity Percent",
+            "type": "integer"
+          },
+          "end": {
+            "maxLength": 10,
+            "minLength": 10,
+            "title": "End",
+            "type": "string"
+          },
+          "reason": {
+            "default": "",
+            "maxLength": 180,
+            "title": "Reason",
+            "type": "string"
+          },
+          "start": {
+            "maxLength": 10,
+            "minLength": 10,
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "capacity_percent"
+        ],
+        "title": "PlanningResourceCapacityExceptionRequest",
+        "type": "object"
+      },
       "PlanningResourceRequest": {
         "additionalProperties": false,
         "properties": {
@@ -8129,6 +8223,171 @@
         "tags": [
           "planning"
         ]
+      }
+    },
+    "/api/planning/projects/{project_id}/resources/{resource_id}/calendar": {
+      "put": {
+        "operationId": "set_resource_calendar_api_planning_projects__project_id__resources__resource_id__calendar_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "resource_id",
+            "required": true,
+            "schema": {
+              "title": "Resource Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 16,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningResourceCalendarRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Mutation accepted and committed once.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted strong SHA-256 validator for the actor-visible Planning schedule.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CommandPreconditionResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "The Planning proposal or If-Match validator is invalid."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The actor lacks the required Planning capability."
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "Idempotency key conflicts with another Planning request."
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandDomainErrorResponse"
+                }
+              }
+            },
+            "description": "The Planning request does not match the generated contract."
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current strong Planning ETag is required."
+          }
+        },
+        "summary": "Set Resource Calendar"
       }
     },
     "/api/planning/projects/{project_id}/schedule": {

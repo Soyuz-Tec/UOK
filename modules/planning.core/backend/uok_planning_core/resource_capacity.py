@@ -5,9 +5,10 @@ from dataclasses import dataclass
 from datetime import date
 
 from .models import PlanningAssignment, PlanningResource, PlanningTask
+from .resource_calendar import ResourceCalendarSpec, resource_capacity_percent
 from .schedule_math import CalendarSpec
 
-RESOURCE_CAPACITY_ENGINE_VERSION = "uok-resource-capacity-1"
+RESOURCE_CAPACITY_ENGINE_VERSION = "uok-resource-capacity-2"
 DEFAULT_CAPACITY_PERCENT = 100
 
 
@@ -51,14 +52,16 @@ def calculate_resource_capacity(
     resources: list[PlanningResource],
     assignments: list[PlanningAssignment],
     calendar: CalendarSpec,
+    resource_calendars: dict[str, ResourceCalendarSpec] | None = None,
 ) -> ResourceCapacityResult:
     active_tasks = {task.id: task for task in tasks if task.task_type != "summary"}
-    resource_ids = {resource.id for resource in resources}
+    resources_by_id = {resource.id: resource for resource in resources}
+    calendar_by_resource = resource_calendars or {}
     usage: dict[tuple[str, date], int] = defaultdict(int)
     task_ids: dict[tuple[str, date], set[str]] = defaultdict(set)
     for assignment in assignments:
         task = active_tasks.get(assignment.task_id)
-        if not task or assignment.resource_id not in resource_ids:
+        if not task or assignment.resource_id not in resources_by_id:
             continue
         current = task.start_at.date()
         while current <= task.end_at.date():
@@ -72,9 +75,9 @@ def calculate_resource_capacity(
             resource_id=resource_id,
             day=day,
             allocation_percent=allocation,
-            capacity_percent=DEFAULT_CAPACITY_PERCENT,
+            capacity_percent=resource_capacity_percent(resources_by_id[resource_id], calendar_by_resource.get(resource_id), day),
             task_ids=tuple(sorted(task_ids[(resource_id, day)])),
-            overallocated=allocation > DEFAULT_CAPACITY_PERCENT,
+            overallocated=allocation > resource_capacity_percent(resources_by_id[resource_id], calendar_by_resource.get(resource_id), day),
         )
         for (resource_id, day), allocation in sorted(usage.items(), key=lambda item: (item[0][0], item[0][1]))
     )
@@ -84,7 +87,7 @@ def calculate_resource_capacity(
 def resource_capacity_warnings(result: ResourceCapacityResult, resources: list[PlanningResource]) -> list[str]:
     names = {resource.id: resource.name for resource in resources}
     return [
-        f"{names.get(point.resource_id, point.resource_id)} is allocated {point.allocation_percent}% on {point.day.isoformat()}"
+        f"{names.get(point.resource_id, point.resource_id)} is allocated {point.allocation_percent}% against {point.capacity_percent}% capacity on {point.day.isoformat()}"
         for point in result.load_points
         if point.overallocated
     ]

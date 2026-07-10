@@ -13,6 +13,7 @@ from .date_semantics import planning_timezone
 from .link_commands import cmd_create_planning_link, cmd_remove_planning_link
 from .participant_commands import cmd_add_planning_task_participant, cmd_remove_planning_task_participant
 from .requirement_commands import cmd_advance_planning_task_requirement, cmd_create_planning_task_requirement, cmd_decide_planning_task_requirement, cmd_set_planning_task_requirement_link
+from .resource_calendar_commands import cmd_set_resource_calendar
 from .models import (
     PlanningAssignment,
     PlanningProject,
@@ -176,6 +177,7 @@ def command_handlers() -> dict[str, CommandHandler]:
         "SetPlanningCalendar": cmd_set_calendar,
         "CreatePlanningBaseline": cmd_create_baseline,
         "CreatePlanningResource": cmd_create_resource,
+        "SetPlanningResourceCalendar": cmd_set_resource_calendar,
         "AssignPlanningResource": cmd_assign_resource,
         "LevelPlanningResources": cmd_level_resources,
         "BatchPlanningOperations": cmd_batch_operations,
@@ -203,6 +205,7 @@ def command_permissions() -> dict[str, str]:
         "RemovePlanningDependency",
         "SetPlanningCalendar",
         "CreatePlanningResource",
+        "SetPlanningResourceCalendar",
         "AssignPlanningResource",
         "BatchPlanningOperations",
         "AddPlanningTaskParticipant",

@@ -6,10 +6,11 @@ from sqlalchemy.orm import Session
 
 from .link_resolver import resolve_target
 from .models import PlanningResource
+from .resource_calendar import ResourceCalendarSpec
 from uok.security import Actor
 
 
-def serialize_resource(db: Session, actor: Actor, row: PlanningResource) -> dict[str, Any]:
+def serialize_resource(db: Session, actor: Actor, row: PlanningResource, calendar: ResourceCalendarSpec | None = None) -> dict[str, Any]:
     resolution = None
     target_id = row.canonical_target_id
     if row.canonical_target_kind and target_id:
@@ -35,6 +36,7 @@ def serialize_resource(db: Session, actor: Actor, row: PlanningResource) -> dict
         "canonical_resolution": resolution,
         "effective_start": row.effective_start.isoformat() if row.effective_start else None,
         "effective_end": row.effective_end.isoformat() if row.effective_end else None,
+        "calendar": calendar.as_dict() if calendar else None,
     }
 
 

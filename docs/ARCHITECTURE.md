@@ -71,6 +71,7 @@ Operator browser
 - ADR-0007: `docs/architecture/ADR-0007-planning-task-requirements-and-readiness.md`
 - ADR-0008: `docs/architecture/ADR-0008-communications-thread-provider-boundary.md`
 - ADR-0009: `docs/architecture/ADR-0009-planning-typed-resource-boundary.md`
+- ADR-0010: `docs/architecture/ADR-0010-planning-resource-capacity-calendars.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -91,6 +92,7 @@ Operator browser
 - Planning Gate B requirements use a controlled, permissioned state machine and derive fail-closed task/project readiness from required decisions and actor-visible typed-link provider state.
 - Planning Gate B communication jumps keep thread identity and authorization in `communications.core`; Planning stores only a typed reference and the shared shell opens the exact actor-authorized K Connect thread.
 - Planning Gate C typed resources are runtime-proven: they separate responsibility from capacity, enforce controlled type/unit/reference combinations, and preserve optional provider boundaries without cross-module foreign keys.
+- Planning Gate C resource calendars are runtime-proven: they derive effective daily capacity from resource periods, weekdays, holidays, and bounded exceptions; project calendar dates remain scheduling authority and resource-capacity engine v2 is independently validated.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

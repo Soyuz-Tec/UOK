@@ -22,6 +22,22 @@ describe("planning workload model", () => {
     ]);
     expect(workload.days[1].taskTitles).toEqual(["Scope", "Build"]);
   });
+
+  it("uses server-validated resource capacity instead of a fixed 100 percent threshold", () => {
+    const value = schedule();
+    value.calculation = {
+      engine_version: "uok-cpm-1", project_start: "2026-08-01", calculated_finish: "2026-08-04", target_finish: "2026-08-08", target_variance_days: 0,
+      independent_validation: { ok: true, violations: [] },
+      resource_capacity: {
+        engine_version: "uok-resource-capacity-2", default_capacity_percent: 100, overallocated_count: 1,
+        independent_validation: { ok: true, violations: [] },
+        load_points: [{ resource_id: "resource-1", date: "2026-08-01", allocation_percent: 80, capacity_percent: 50, task_ids: ["scope"], overallocated: true }],
+      },
+    };
+    const workload = planningResourceWorkloads(value)[0];
+    expect(workload.overloadedDays).toBe(1);
+    expect(workload.days[0]).toMatchObject({ allocation: 80, capacity: 50, overallocated: true });
+  });
 });
 
 function schedule(): PlanningSchedule {
@@ -29,7 +45,7 @@ function schedule(): PlanningSchedule {
     project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-01", end: "2026-08-08", revision: 1 },
     tasks: [task("scope", "Scope", "2026-08-01", "2026-08-03"), task("build", "Build", "2026-08-02", "2026-08-04")],
     dependencies: [],
-    resources: [{ id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling", resource_type: "human", capacity_value: 1, capacity_unit: "fte", canonical_target_kind: null, canonical_target_id: null, canonical_resolution: null, effective_start: null, effective_end: null }],
+    resources: [{ id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling", resource_type: "human", capacity_value: 1, capacity_unit: "fte", canonical_target_kind: null, canonical_target_id: null, canonical_resolution: null, effective_start: null, effective_end: null, calendar: null }],
     assignments: [
       { id: "assignment-1", task_id: "scope", resource_id: "resource-1", allocation_percent: 80 },
       { id: "assignment-2", task_id: "build", resource_id: "resource-1", allocation_percent: 50 },

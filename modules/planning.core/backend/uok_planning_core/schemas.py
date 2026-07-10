@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .resource_contract import resource_definition
+from .resource_calendar import resource_calendar_definition
 
 
 class PlanningProjectRequest(BaseModel):
@@ -102,6 +103,31 @@ class PlanningResourceRequest(BaseModel):
     @model_validator(mode="after")
     def validate_resource_contract(self) -> "PlanningResourceRequest":
         resource_definition(self.model_dump(exclude={"expected_revision"}))
+        return self
+
+
+class PlanningResourceCapacityExceptionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    start: str = Field(..., min_length=10, max_length=10)
+    end: str = Field(..., min_length=10, max_length=10)
+    capacity_percent: int = Field(..., ge=0, le=300)
+    reason: str = Field(default="", max_length=180)
+
+
+class PlanningResourceCalendarRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_revision: int | None = Field(default=None, ge=1)
+    name: str = Field(default="Resource capacity", min_length=1, max_length=120)
+    working_days: list[int] = Field(default_factory=lambda: [1, 2, 3, 4, 5], min_length=1, max_length=7)
+    holidays: list[str] = Field(default_factory=list, max_length=3660)
+    default_capacity_percent: int = Field(default=100, ge=0, le=300)
+    capacity_exceptions: list[PlanningResourceCapacityExceptionRequest] = Field(default_factory=list, max_length=100)
+
+    @model_validator(mode="after")
+    def validate_resource_calendar_contract(self) -> "PlanningResourceCalendarRequest":
+        resource_calendar_definition(self.model_dump(exclude={"expected_revision"}))
         return self
 
 

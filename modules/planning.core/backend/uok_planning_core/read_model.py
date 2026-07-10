@@ -16,6 +16,7 @@ from .requirement_read_model import project_requirement_context
 from .policy import capability_read_model
 from .resource_capacity import calculate_resource_capacity, resource_capacity_warnings
 from .resource_capacity_validation import validate_resource_capacity_result
+from .resource_calendar import resource_calendar_specs
 from .resource_read_model import serialize_resource
 from .models import (
     PlanningAssignment,
@@ -62,6 +63,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     baselines = _baselines(db, actor, project.id)
     latest_baseline = _baseline_task_index(baselines[0]) if baselines else {}
     resources = _resources(db, actor, project.id)
+    resource_calendars = resource_calendar_specs(db, actor, project.id)
     assignments = _assignments(db, actor, tasks, resources)
     links = planning_links_read_model(db, actor, project.id)
     participants = planning_participants_read_model(db, actor, project.id)
@@ -69,8 +71,8 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     for participant in participants:
         participants_by_task[str(participant["task_id"])].append(participant)
     requirements, readiness_by_task, project_readiness = project_requirement_context(db, actor, project.id, links)
-    capacity = calculate_resource_capacity(tasks, resources, assignments, calendar)
-    capacity_issues = validate_resource_capacity_result(tasks, resources, assignments, calendar, capacity)
+    capacity = calculate_resource_capacity(tasks, resources, assignments, calendar, resource_calendars)
+    capacity_issues = validate_resource_capacity_result(tasks, resources, assignments, calendar, capacity, resource_calendars)
     independent_issues = [*cpm_issues, *capacity_issues]
     availability = calendar_availability_read_model(db, actor, project)
     availability["warnings"] = availability_warnings(tasks, availability)
@@ -85,7 +87,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
         "dependencies": [serialize_dependency(dep) for dep in dependencies],
         "calendar": _calendar_row(db, actor, project.id),
         "availability": availability,
-        "resources": [serialize_resource(db, actor, row) for row in resources],
+        "resources": [serialize_resource(db, actor, row, resource_calendars.get(row.id)) for row in resources],
         "assignments": [serialize_assignment(row) for row in assignments],
         "links": links,
         "participants": participants,

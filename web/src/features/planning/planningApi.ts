@@ -264,7 +264,7 @@ function planningCreateJson<T>(token: string, path: string, options: RequestInit
   });
 }
 
-function planningMutationJson<T>(token: string, path: string, options: RequestInit, prefix: string, mutation: PlanningMutationOptions) {
+export function planningMutationJson<T>(token: string, path: string, options: RequestInit, prefix: string, mutation: PlanningMutationOptions) {
   const idempotencyKey = mutation.idempotencyKey || planningMutationKey(prefix);
   return planningMutationRequest<T>(token, path, {
     ...options,

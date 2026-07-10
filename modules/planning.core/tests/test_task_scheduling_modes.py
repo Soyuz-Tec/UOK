@@ -48,7 +48,7 @@ def test_resource_leveling_moves_later_auto_tasks(client: TestClient) -> None:
     assigned = command(client, ops, "AssignPlanningResource", {"task_id": second, "resource_id": resource_id, "allocation_percent": 100}, f"level-second-{suffix}")
     assert "allocated 200%" in str(assigned.json()["result"]["validation"]["warnings"])
     capacity = assigned.json()["result"]["calculation"]["resource_capacity"]
-    assert capacity["engine_version"] == "uok-resource-capacity-1"
+    assert capacity["engine_version"] == "uok-resource-capacity-2"
     assert capacity["independent_validation"] == {"ok": True, "violations": []}
     assert capacity["overallocated_count"] == 2
     assert all(point["allocation_percent"] == 200 and point["overallocated"] for point in capacity["load_points"] if point["date"] in {"2026-08-04", "2026-08-05"})

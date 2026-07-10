@@ -199,6 +199,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onCreateBaseline={actions.addBaseline}
           onCreateResource={actions.addResource}
           onAssignResource={actions.assignResource}
+          onSetResourceCalendar={actions.saveResourceCalendar}
         />
       </div>
     );

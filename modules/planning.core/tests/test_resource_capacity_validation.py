@@ -14,11 +14,11 @@ def test_resource_capacity_result_reports_overallocation_and_validates_independe
 
     result = calculate_resource_capacity(tasks, resources, assignments, default_calendar())
 
-    assert result.engine_version == "uok-resource-capacity-1"
+    assert result.engine_version == "uok-resource-capacity-2"
     assert len(result.load_points) == 3
     assert all(point.allocation_percent == 120 and point.overallocated for point in result.load_points)
     assert resource_capacity_warnings(result, resources) == [
-        f"Planner is allocated 120% on 2026-08-{day:02d}" for day in (3, 4, 5)
+        f"Planner is allocated 120% against 100% capacity on 2026-08-{day:02d}" for day in (3, 4, 5)
     ]
     assert validate_resource_capacity_result(tasks, resources, assignments, default_calendar(), result) == []
 

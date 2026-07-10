@@ -3,7 +3,9 @@ import type { PlanningSchedule } from "./types";
 
 export type PlanningWorkloadDay = {
   allocation: number;
+  capacity: number;
   date: string;
+  overallocated: boolean;
   taskTitles: string[];
 };
 
@@ -29,16 +31,24 @@ export function planningResourceWorkloads(schedule: PlanningSchedule): PlanningR
       if (!task) continue;
       taskIds.add(task.id);
       for (const date of eachTaskDate(task.start, task.end)) {
-        const day = byDate.get(date) || { allocation: 0, date, taskTitles: [] };
+        const day = byDate.get(date) || { allocation: 0, capacity: 100, date, overallocated: false, taskTitles: [] };
         day.allocation += assignment.allocation_percent;
+        day.overallocated = day.allocation > day.capacity;
         if (!day.taskTitles.includes(task.title)) day.taskTitles.push(task.title);
         byDate.set(date, day);
       }
     }
-    const days = Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+    const serverPoints = schedule.calculation?.resource_capacity?.load_points.filter((point) => point.resource_id === resource.id) || [];
+    const days = (serverPoints.length ? serverPoints.map((point) => ({
+      allocation: point.allocation_percent,
+      capacity: point.capacity_percent,
+      date: point.date,
+      overallocated: point.overallocated,
+      taskTitles: point.task_ids.map((id) => taskById.get(id)?.title || id),
+    })) : Array.from(byDate.values())).sort((a, b) => a.date.localeCompare(b.date));
     return {
       days,
-      overloadedDays: days.filter((day) => day.allocation > 100).length,
+      overloadedDays: days.filter((day) => day.overallocated).length,
       peakAllocation: Math.max(0, ...days.map((day) => day.allocation)),
       resourceId: resource.id,
       resourceName: resource.name,

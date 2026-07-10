@@ -201,6 +201,7 @@ def _command_project_id(db: Session, actor: Actor, command_type: str, payload: d
         "SetPlanningCalendar",
         "CreatePlanningBaseline",
         "CreatePlanningResource",
+        "SetPlanningResourceCalendar",
         "LevelPlanningResources",
         "BatchPlanningOperations",
         "CreatePlanningLink",

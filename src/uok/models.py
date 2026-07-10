@@ -184,7 +184,7 @@ from .planning_models import (  # noqa: E402
     PlanningTaskRequirement,
     PlanningTaskDependency,
 )
-from .planning_resource_models import PlanningAssignment, PlanningResource  # noqa: E402
+from .planning_resource_models import PlanningAssignment, PlanningResource, PlanningResourceCalendar  # noqa: E402
 
 from .calendar_models import (  # noqa: E402
     Calendar,
