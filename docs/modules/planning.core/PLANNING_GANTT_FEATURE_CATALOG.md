@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gate A local/runtime evidence verified and all five Gate B slices runtime-proven.
+**Status:** Active evidence catalog; Gate A, all five Gate B slices, and Gate C typed resources runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -42,6 +42,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Critical path | `runtime_proven` | Runtime CPM proof covers critical flags and negative float; the Gantt and Dashboard expose the resulting critical-path information. |
 | Calendars | `integration_tested` | Project working days, holidays, and ignored periods drive scheduling, propagation, read models, and timeline shading. Resource calendars remain a separate resource-planning backlog item. |
 | Resources | `runtime_proven` | Resource creation, assignment, allocation display, independently validated daily capacity points, overload warnings, and candidate readback exist. |
+| Typed resource domain | `runtime_proven` | Controlled human/team/vehicle/equipment/material/budget/time-window/document/location/asset/custom types, compatible capacity units, optional actor-safe canonical references, effective dates, baseline capture, database constraints, generated contracts, typed inspector controls, PostgreSQL readback, and candidate proof pass. |
 | Export/import | `integration_tested` | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning consumes that boundary and owns only schedule-specific payloads/read-model mapping. |
 | UI proof | `runtime_proven` | Playwright proof covers rendering, controls, inspector tabs, non-drag mutation paths, stale inverse recovery, responsiveness, and console cleanliness. |
 | Server capabilities | `runtime_proven` | Actor-specific read/edit/baseline/level/link/gate/admin capabilities are enforced by command permission, embedded in schedule reads, mirrored by fail-closed UI controls, and probed in the candidate runtime. Local review mode cannot grant authority. |

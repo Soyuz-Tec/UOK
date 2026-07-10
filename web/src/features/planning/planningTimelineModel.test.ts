@@ -19,7 +19,7 @@ const schedule: PlanningSchedule = {
     { id: "dep-2", project_id: "project-1", predecessor_task_id: "build", successor_task_id: "review", dependency_type: "finish_to_start", lag_days: 0 },
   ],
   calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: [] },
-  resources: [{ id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling" }],
+  resources: [{ id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling", resource_type: "human", capacity_value: 1, capacity_unit: "fte", canonical_target_kind: null, canonical_target_id: null, canonical_resolution: null, effective_start: null, effective_end: null }],
   assignments: [{ id: "assignment-1", task_id: "build", resource_id: "resource-1", allocation_percent: 100 }],
   links: [],
   baselines: [],

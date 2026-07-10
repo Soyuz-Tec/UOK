@@ -174,18 +174,17 @@ class ContactImportBatch(Base):
 
 
 from .planning_models import (  # noqa: E402
-    PlanningAssignment,
     PlanningBaseline,
     PlanningCalendar,
     PlanningLink,
     PlanningProject,
-    PlanningResource,
     PlanningScheduleEvent,
     PlanningTask,
     PlanningTaskParticipant,
     PlanningTaskRequirement,
     PlanningTaskDependency,
 )
+from .planning_resource_models import PlanningAssignment, PlanningResource  # noqa: E402
 
 from .calendar_models import (  # noqa: E402
     Calendar,

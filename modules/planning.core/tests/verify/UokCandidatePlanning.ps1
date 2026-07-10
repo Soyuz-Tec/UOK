@@ -4,6 +4,7 @@
 . (Join-Path $PSScriptRoot "UokCandidatePlanningDates.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningParticipants.ps1")
 . (Join-Path $PSScriptRoot "UokCandidatePlanningRequirements.ps1")
+. (Join-Path $PSScriptRoot "UokCandidatePlanningResources.ps1")
 
 function Invoke-UokPlanningCandidateScenario {
     param(
@@ -219,24 +220,8 @@ function Invoke-UokPlanningCandidateScenario {
         }
     }
 
-    $resource = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
-        command_type = "CreatePlanningResource"
-        payload = @{ project_id = $projectId; name = "Candidate Planner"; role = "Scheduling" }
-        idempotency_key = "uok-planning-resource-$Stamp"
-    }
-    $resourceId = $resource.result.resources[0].id
-    $assigned = Invoke-UokPlanningCommand -ProjectId $projectId -Headers $OpsHeaders -Body @{
-        command_type = "AssignPlanningResource"
-        payload = @{ task_id = $first.result.id; resource_id = $resourceId; allocation_percent = 120 }
-        idempotency_key = "uok-planning-assignment-$Stamp"
-    }
-    if (
-        $assigned.result.calculation.resource_capacity.independent_validation.ok -ne $true `
-        -or $assigned.result.calculation.resource_capacity.overallocated_count -lt 1 `
-        -or @($assigned.result.calculation.resource_capacity.load_points | Where-Object { $_.allocation_percent -eq 120 -and $_.overallocated }).Count -lt 1
-    ) {
-        throw "Planning resource-capacity evidence is invalid: $($assigned | ConvertTo-Json -Depth 30)"
-    }
+    $resourceEvidence = Assert-UokPlanningTypedResourceContract -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -Stamp $Stamp
+    $resourceId = $resourceEvidence.resource_id
 
     $schedule = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $ViewerHeaders
     if ($schedule.validation.ok -ne $true -or $schedule.tasks.Count -lt 2 -or $schedule.dependencies.Count -lt 1) {
@@ -286,6 +271,7 @@ function Invoke-UokPlanningCandidateScenario {
         -or $baselineDetail.snapshot.date_semantics.subday_scales -ne "visual_only" `
         -or $baselineDetail.snapshot.participants.Count -lt 1 `
         -or $baselineDetail.snapshot.requirements.Count -lt 1 `
+        -or ($baselineDetail.snapshot.resources | Where-Object { $_.id -eq $resourceId } | Select-Object -First 1).capacity_unit -ne "fte" `
         -or ($baselineDetail.snapshot.tasks | Where-Object { $_.id -eq $first.result.id } | Select-Object -First 1).actual_start -ne "2026-08-02" `
         -or $baselineDetail.snapshot.capture.correlation_id -ne $baseline.command_id
     ) {

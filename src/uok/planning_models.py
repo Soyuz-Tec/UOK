@@ -114,29 +114,6 @@ class PlanningCalendar(Base):
     __table_args__ = (UniqueConstraint("organization_id", "project_id", name="uq_planning_calendars_org_project"),)
 
 
-class PlanningResource(Base):
-    __tablename__ = "planning_resources"
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_id)
-    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
-    project_id: Mapped[str] = mapped_column(ForeignKey("planning_projects.id"), index=True)
-    name: Mapped[str] = mapped_column(String(160))
-    role: Mapped[str] = mapped_column(String(120), default="")
-
-
-class PlanningAssignment(Base):
-    __tablename__ = "planning_assignments"
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_id)
-    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
-    task_id: Mapped[str] = mapped_column(ForeignKey("planning_tasks.id"), index=True)
-    resource_id: Mapped[str] = mapped_column(ForeignKey("planning_resources.id"), index=True)
-    allocation_percent: Mapped[int] = mapped_column(Integer, default=100)
-    __table_args__ = (
-        UniqueConstraint("organization_id", "task_id", "resource_id", name="uq_planning_assignments_org_task_resource"),
-        CheckConstraint("allocation_percent >= 1 AND allocation_percent <= 300", name="ck_planning_assignments_allocation_range"),
-        Index("ix_planning_core_assignments_org_resource_task", "organization_id", "resource_id", "task_id"),
-    )
-
-
 class PlanningBaseline(Base):
     __tablename__ = "planning_baselines"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=planning_id)

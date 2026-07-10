@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gate A local/runtime closure and all five Gate B slices runtime-proven.
+**Status:** Active module plan; Gate A, all five Gate B slices, and Gate C typed resources runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -35,7 +35,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - hierarchy validation, WBS read model, and summary rollups
 - canonical logic-driven CPM read model fields for early/late dates, total/free float, target variance, and critical flags, with a separate hard-constraint validator
 - immutable v2 baseline capture with complete canonical schedule snapshots, SHA-256 verification, source revision/creator/correlation metadata, explicit legacy partial warnings, comparison reads, baseline variance fields, per-row timeline lanes, and variance badges
-- resource creation, assignment, allocation display, independently validated resource/day capacity points, over-allocation warnings, and explicit resource leveling for later auto-scheduled assigned tasks
+- typed resource creation with controlled type/capacity/unit, optional actor-safe canonical references, effective dates, assignment/allocation display, independently validated resource/day capacity points, over-allocation warnings, and explicit resource leveling for later auto-scheduled assigned tasks
 - drag-to-reschedule path through server validation
 - command-bus writes and idempotency
 - project-root optimistic concurrency with additive revisions/task versions, canonical strong schedule ETags, exact `If-Match`, and explicit `428`/`412` recovery
@@ -113,6 +113,17 @@ Existing membership survives provider disablement as an explicit unavailable
 state, while denied reads hide Party identity. Participant roles remain
 separate from resource capacity and allocation.
 
+## Typed Resource Boundary
+
+ADR-0009 governs Gate C resource facts. Planning owns resource type, declared
+capacity/unit, effective dates, assignment share, project revision, audit, and
+baseline evidence. Optional canonical targets resolve through the existing
+actor-specific provider boundary without a cross-module foreign key or copied
+payload. Participants continue to represent responsibility; resources
+represent constrained capacity. Existing rows and payloads remain compatible
+as one human FTE. Effective dates are persisted in this slice; daily resource
+calendar enforcement remains ACC-RES-002.
+
 ## Task Requirement And Readiness Boundary
 
 ADR-0007 governs Planning task requirements. Planning owns the requirement
@@ -149,6 +160,7 @@ python -m pytest modules/planning.core/tests/test_planning_idempotency_contract.
 python -m pytest modules/planning.core/tests/test_planning_structured_errors.py -q
 python -m pytest modules/planning.core/tests/test_planning_complete_baselines.py -q
 python -m pytest modules/planning.core/tests/test_resource_capacity_validation.py modules/planning.core/tests/test_planning_status_policy.py -q
+python -m pytest modules/planning.core/tests/test_planning_typed_resources.py -q
 python -m pytest modules/planning.core/tests/test_planning_links.py -q
 python -m pytest modules/planning.core/tests/test_planning_date_semantics.py -q
 python -m pytest modules/planning.core/tests/test_planning_participants.py -q

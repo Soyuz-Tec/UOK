@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from .resource_contract import resource_definition
 
 
 class PlanningProjectRequest(BaseModel):
@@ -83,9 +86,23 @@ class PlanningBaselineRequest(BaseModel):
 
 
 class PlanningResourceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     expected_revision: int | None = Field(default=None, ge=1)
     name: str = Field(..., min_length=2, max_length=160)
     role: str = Field(default="", max_length=120)
+    resource_type: str = Field(default="human", pattern="^(human|team|vehicle|equipment|material|budget|time_window|document|location|asset|custom)$")
+    capacity_value: Decimal = Field(default=Decimal("1"), gt=0, max_digits=14, decimal_places=3)
+    capacity_unit: str | None = Field(default=None, max_length=40)
+    canonical_target_kind: str | None = Field(default=None, max_length=40)
+    canonical_target_id: str | None = Field(default=None, min_length=1, max_length=180)
+    effective_start: str | None = Field(default=None, min_length=10, max_length=10)
+    effective_end: str | None = Field(default=None, min_length=10, max_length=10)
+
+    @model_validator(mode="after")
+    def validate_resource_contract(self) -> "PlanningResourceRequest":
+        resource_definition(self.model_dump(exclude={"expected_revision"}))
+        return self
 
 
 class PlanningAssignmentRequest(BaseModel):

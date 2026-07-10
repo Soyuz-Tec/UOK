@@ -29,7 +29,7 @@ function schedule(): PlanningSchedule {
     project: { id: "project-1", name: "Project", status: "planned", start: "2026-08-01", end: "2026-08-08", revision: 1 },
     tasks: [task("scope", "Scope", "2026-08-01", "2026-08-03"), task("build", "Build", "2026-08-02", "2026-08-04")],
     dependencies: [],
-    resources: [{ id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling" }],
+    resources: [{ id: "resource-1", project_id: "project-1", name: "Planner", role: "Scheduling", resource_type: "human", capacity_value: 1, capacity_unit: "fte", canonical_target_kind: null, canonical_target_id: null, canonical_resolution: null, effective_start: null, effective_end: null }],
     assignments: [
       { id: "assignment-1", task_id: "scope", resource_id: "resource-1", allocation_percent: 80 },
       { id: "assignment-2", task_id: "build", resource_id: "resource-1", allocation_percent: 50 },

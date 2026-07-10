@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gate A local/runtime evidence closure verified 2026-07-10; all five Gate B slices runtime-proven; hosted CI, review, and merge pending.
+**Status:** Gate A, all five Gate B slices, and Gate C typed resources runtime-proven; hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -141,6 +141,24 @@ Current Gate B communication-thread evidence:
 - Exact workspace/thread navigation proof: `web/src/app/workbenchNavigation.test.ts`, `web/src/features/communications/CommunicationsWorkspace.test.tsx`, `web/src/features/planning/PlanningOperationLinksPanel.test.tsx`, and `web/e2e/uok-proof.spec.ts`
 - Candidate lifecycle scenario: `modules/planning.core/tests/verify/UokCandidatePlanningLinks.ps1` and `modules/communications.core/tests/verify/UokCandidateCommunications.ps1`
 - Persistent PostgreSQL proof: 11 columns, one controlled lifecycle check, two foreign keys, and both organization-first indexes read back after backup and additive migration; the rebuilt candidate passed provider install/disable/enable, permission denial, and exact link resolution, while all six Chromium scenarios passed.
+
+## Gate C traceability
+
+| ID | Requirement | Current evidence | Required proof before Gate C closure | Status |
+|---|---|---|---|---|
+| PLA-C-001 | Typed resources and capacities | Additive resource fields/migration, controlled type-unit and type-reference compatibility, positive decimal capacity, effective dates, actor-specific canonical resolution, generic-command and REST validation, immutable baseline capture, generated client, and typed Resources inspector | PostgreSQL readback and rebuilt candidate round-trip pass | `runtime_proven` |
+| PLA-C-002 | Resource calendars and effective capacity | Project calendar only; resource effective dates are persisted but not yet applied to daily capacity | Part-time human, equipment shift, exception, and independent-validator proof | `planned` |
+| PLA-C-003 | Resource-specific calendar free/busy | Current organization-wide `calendar.core` overlap warnings | Two-party correlation, unrelated-event exclusion, and permission proof | `planned` |
+| PLA-C-004 | Explainable leveling outcomes | Existing simple leveling moves auto tasks and validates final schedule | Explicit leveled/partial/infeasible result, configured horizon, reason codes, remaining overloads, and independent post-level proof | `planned` |
+
+Current Gate C typed-resource evidence:
+
+- ADR: `docs/architecture/ADR-0009-planning-typed-resource-boundary.md`
+- Migration/model: `modules/planning.core/migrations/009_planning_typed_resources.sql` and `src/uok/planning_models.py`
+- Contract, resolver-safe read model, baseline, database, and invalid-combination proof: `modules/planning.core/tests/test_planning_typed_resources.py`
+- Typed inspector proof: `web/src/features/planning/PlanningResourcePanel.test.tsx`
+- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningResources.ps1`
+- Persistent PostgreSQL proof: 12 columns, seven controlled resource checks, two foreign keys, both new organization-first indexes, and zero incompatible backfills read back after backup and additive migration; the rebuilt candidate rejected an invalid vehicle/FTE pair, round-tripped a 0.5-FTE human effective period, preserved independently validated overload analysis, and captured the typed facts in an immutable baseline.
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence

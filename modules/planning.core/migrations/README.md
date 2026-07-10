@@ -29,6 +29,11 @@ task-role indexes. `party_id` intentionally has no foreign key because
 `008_planning_task_requirements.sql` adds Planning-owned task requirements with
 controlled type/state and decision-metadata checks, optional same-module typed
 link references, and organization/project/task state and due-date indexes.
+`009_planning_typed_resources.sql` expands Planning resources with controlled
+types, type-compatible capacity units, positive decimal capacity, optional
+typed canonical references without cross-module foreign keys, effective dates,
+database checks, and organization-first type/reference indexes. Existing rows
+remain compatible as one human FTE.
 
 For the persistent local PostgreSQL profile, back up first, apply the migration
 before rebuilding an image that selects the new columns, and read the columns
@@ -49,6 +54,8 @@ Get-Content -Raw .\modules\planning.core\migrations\006_planning_date_semantics.
 Get-Content -Raw .\modules\planning.core\migrations\007_planning_task_participants.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 Get-Content -Raw .\modules\planning.core\migrations\008_planning_task_requirements.sql |
+  podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
+Get-Content -Raw .\modules\planning.core\migrations\009_planning_typed_resources.sql |
   podman compose -p uok -f .\deploy\compose-local-18088.yaml exec -T db psql -v ON_ERROR_STOP=1 -U uok -d uok
 ```
 

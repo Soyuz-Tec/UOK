@@ -1,4 +1,4 @@
-import type { PlanningDependencyType, PlanningLink, PlanningLinkRelationship, PlanningLinkTargetKind, PlanningParticipantRole, PlanningRequirementType, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskParticipant, PlanningTaskRequirement, PlanningTaskStatus, PlanningTaskType } from "./types";
+import type { PlanningCapacityUnit, PlanningDependencyType, PlanningLink, PlanningLinkRelationship, PlanningLinkTargetKind, PlanningParticipantRole, PlanningRequirementType, PlanningResourceCanonicalKind, PlanningResourceType, PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskParticipant, PlanningTaskRequirement, PlanningTaskStatus, PlanningTaskType } from "./types";
 
 
 export type PlanningMutationMetadata = {
@@ -61,7 +61,18 @@ export type PlanningCalendarUpdateRequest = {
 };
 
 export type PlanningBaselineCreateRequest = { expected_revision?: number; name?: string };
-export type PlanningResourceCreateRequest = { expected_revision?: number; name: string; role?: string };
+export type PlanningResourceCreateRequest = {
+  expected_revision?: number;
+  name: string;
+  role?: string;
+  resource_type?: PlanningResourceType;
+  capacity_value?: number;
+  capacity_unit?: PlanningCapacityUnit;
+  canonical_target_kind?: PlanningResourceCanonicalKind;
+  canonical_target_id?: string;
+  effective_start?: string;
+  effective_end?: string;
+};
 export type PlanningAssignmentCreateRequest = {
   expected_revision?: number;
   task_id: string;

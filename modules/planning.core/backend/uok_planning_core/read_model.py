@@ -16,6 +16,7 @@ from .requirement_read_model import project_requirement_context
 from .policy import capability_read_model
 from .resource_capacity import calculate_resource_capacity, resource_capacity_warnings
 from .resource_capacity_validation import validate_resource_capacity_result
+from .resource_read_model import serialize_resource
 from .models import (
     PlanningAssignment,
     PlanningBaseline,
@@ -84,7 +85,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
         "dependencies": [serialize_dependency(dep) for dep in dependencies],
         "calendar": _calendar_row(db, actor, project.id),
         "availability": availability,
-        "resources": [serialize_resource(row) for row in resources],
+        "resources": [serialize_resource(db, actor, row) for row in resources],
         "assignments": [serialize_assignment(row) for row in assignments],
         "links": links,
         "participants": participants,
@@ -185,10 +186,6 @@ def serialize_dependency(dep: PlanningTaskDependency) -> dict[str, Any]:
         "dependency_type": dep.dependency_type,
         "lag_days": dep.lag_days,
     }
-
-
-def serialize_resource(row: PlanningResource) -> dict[str, Any]:
-    return {"id": row.id, "project_id": row.project_id, "name": row.name, "role": row.role}
 
 
 def serialize_assignment(row: PlanningAssignment) -> dict[str, Any]:

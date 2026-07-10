@@ -1831,10 +1831,30 @@ export interface components {
         };
         /** PlanningResourceRequest */
         PlanningResourceRequest: {
+            /** Canonical Target Id */
+            canonical_target_id?: string | null;
+            /** Canonical Target Kind */
+            canonical_target_kind?: string | null;
+            /** Capacity Unit */
+            capacity_unit?: string | null;
+            /**
+             * Capacity Value
+             * @default 1
+             */
+            capacity_value: number | string;
+            /** Effective End */
+            effective_end?: string | null;
+            /** Effective Start */
+            effective_start?: string | null;
             /** Expected Revision */
             expected_revision?: number | null;
             /** Name */
             name: string;
+            /**
+             * Resource Type
+             * @default human
+             */
+            resource_type: string;
             /**
              * Role
              * @default

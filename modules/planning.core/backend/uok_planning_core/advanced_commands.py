@@ -8,9 +8,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .baselines import COMPLETE_BASELINE_SCHEMA_VERSION, baseline_checksum, complete_baseline_snapshot
+from .link_resolver import resolve_target
 from .models import PlanningAssignment, PlanningBaseline, PlanningCalendar, PlanningResource
 from .planning_audit import add_planning_schedule_event, emit_planning_event
 from .read_model import schedule_read_model
+from .resource_contract import resource_definition
 from .resource_leveling import level_resource_allocations
 from .scheduler import apply_schedule, parse_planning_date, project_calendar, project_dependencies, project_or_error, project_tasks, task_or_error, validate_schedule
 from uok.security import Actor
@@ -82,16 +84,34 @@ def cmd_create_baseline(db: Session, actor: Actor, payload: dict[str, Any], comm
 
 def cmd_create_resource(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     project = project_or_error(db, actor, clean_text(payload.get("project_id"), "project_id", 36))
+    definition = resource_definition(payload)
+    if definition.canonical_target_kind and definition.canonical_target_id:
+        resolution = resolve_target(db, actor, definition.canonical_target_kind, definition.canonical_target_id)
+        if resolution.status in {"missing", "denied"}:
+            raise ValueError(f"canonical target cannot be used: {resolution.status_summary}")
     row = PlanningResource(
         organization_id=actor.organization_id,
         project_id=project.id,
         name=clean_text(payload.get("name"), "name", 160),
         role=str(payload.get("role") or "")[:120],
+        resource_type=definition.resource_type,
+        capacity_value=definition.capacity_value,
+        capacity_unit=definition.capacity_unit,
+        canonical_target_kind=definition.canonical_target_kind,
+        canonical_target_id=definition.canonical_target_id,
+        effective_start=definition.effective_start,
+        effective_end=definition.effective_end,
     )
     db.add(row)
     db.flush()
-    emit_planning_event(db, actor, command_id, "PlanningResourceCreated", "PlanningResource", row.id, {"project_id": project.id})
-    add_planning_schedule_event(db, actor, command_id, project.id, "resource_created", {"resource_id": row.id})
+    evidence = {
+        "project_id": project.id,
+        "resource_type": row.resource_type,
+        "capacity_value": str(row.capacity_value),
+        "capacity_unit": row.capacity_unit,
+    }
+    emit_planning_event(db, actor, command_id, "PlanningResourceCreated", "PlanningResource", row.id, evidence)
+    add_planning_schedule_event(db, actor, command_id, project.id, "resource_created", {"resource_id": row.id, **evidence})
     return schedule_read_model(db, actor, project)
 
 

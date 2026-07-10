@@ -18,6 +18,9 @@ export type PlanningTaskStatus = "planned" | "in_progress" | "blocked" | "comple
 export type PlanningLinkTargetKind = "operation" | "gate" | "evidence" | "party" | "shipment" | "document" | "location" | "asset" | "agreement" | "communication_thread" | "calendar_event";
 export type PlanningLinkRelationship = "implements" | "blocks_on" | "requires" | "proves" | "owned_by" | "moves" | "occurs_at" | "discussed_in" | "publishes_to";
 export type PlanningParticipantRole = "owner" | "assignee" | "approver" | "consulted" | "informed" | "external_contact";
+export type PlanningResourceType = "human" | "team" | "vehicle" | "equipment" | "material" | "budget" | "time_window" | "document" | "location" | "asset" | "custom";
+export type PlanningCapacityUnit = "fte" | "people" | "units" | "hours_per_day" | "kg" | "tonnes" | "liters" | "currency" | "percent";
+export type PlanningResourceCanonicalKind = "party" | "document" | "location" | "asset" | "agreement" | "calendar_event";
 export type PlanningRequirementType = "evidence" | "approval" | "compliance" | "finance" | "shipment" | "document" | "custom";
 export type PlanningRequirementState = "missing" | "submitted" | "under_review" | "satisfied" | "rejected" | "waived";
 export type PlanningReadiness = {
@@ -106,6 +109,14 @@ export type PlanningResource = {
   project_id: string;
   name: string;
   role: string;
+  resource_type: PlanningResourceType;
+  capacity_value: number;
+  capacity_unit: PlanningCapacityUnit;
+  canonical_target_kind: PlanningResourceCanonicalKind | null;
+  canonical_target_id: string | null;
+  canonical_resolution: Pick<PlanningLink["resolution"], "status" | "display_label" | "status_summary" | "open_path"> | null;
+  effective_start: string | null;
+  effective_end: string | null;
 };
 
 export type PlanningAssignment = {

@@ -1764,7 +1764,85 @@
         "type": "object"
       },
       "PlanningResourceRequest": {
+        "additionalProperties": false,
         "properties": {
+          "canonical_target_id": {
+            "anyOf": [
+              {
+                "maxLength": 180,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canonical Target Id"
+          },
+          "canonical_target_kind": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canonical Target Kind"
+          },
+          "capacity_unit": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity Unit"
+          },
+          "capacity_value": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,11}|(?=[\\d.]{1,15}0*$)\\d{0,11}\\.\\d{0,3}0*$)",
+                "type": "string"
+              }
+            ],
+            "default": "1",
+            "title": "Capacity Value"
+          },
+          "effective_end": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective End"
+          },
+          "effective_start": {
+            "anyOf": [
+              {
+                "maxLength": 10,
+                "minLength": 10,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Start"
+          },
           "expected_revision": {
             "anyOf": [
               {
@@ -1781,6 +1859,12 @@
             "maxLength": 160,
             "minLength": 2,
             "title": "Name",
+            "type": "string"
+          },
+          "resource_type": {
+            "default": "human",
+            "pattern": "^(human|team|vehicle|equipment|material|budget|time_window|document|location|asset|custom)$",
+            "title": "Resource Type",
             "type": "string"
           },
           "role": {

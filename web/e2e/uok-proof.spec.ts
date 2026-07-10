@@ -125,7 +125,12 @@ const sampleSchedule = {
     },
   ],
   calendar: { name: "Standard", working_days: [1, 2, 3, 4, 5], holidays: ["2026-08-14"], ignored_periods: [{ start: "2026-08-17", end: "2026-08-18" }] },
-  resources: [{ id: "resource-1", project_id: sampleProject.id, name: "Planner", role: "Scheduling" }],
+  resources: [{
+    id: "resource-1", project_id: sampleProject.id, name: "Planner", role: "Scheduling",
+    resource_type: "human", capacity_value: 1, capacity_unit: "fte",
+    canonical_target_kind: null, canonical_target_id: null, canonical_resolution: null,
+    effective_start: null, effective_end: null,
+  }],
   assignments: [{ id: "assignment-1", task_id: "task-2", resource_id: "resource-1", allocation_percent: 120 }],
   links: [{
     id: "link-thread-proof",
