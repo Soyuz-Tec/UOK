@@ -12,6 +12,7 @@ dependencies = [
   "argon2-cffi==25.1.0",
   "python-multipart==0.0.32",
   "python-dateutil==2.9.0.post0",
+  "phonenumbers==9.0.34",
 ]
 
 [project.optional-dependencies]

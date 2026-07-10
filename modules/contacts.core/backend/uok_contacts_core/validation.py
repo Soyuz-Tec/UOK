@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .phone_numbers import normalize_phone
+
 CONTACT_ATTR_FIELDS = (
     "given_name",
     "family_name",
@@ -140,6 +142,8 @@ def contact_attrs(payload: dict[str, Any]) -> dict[str, Any]:
     attrs: dict[str, Any] = {}
     for field in CONTACT_ATTR_FIELDS:
         value = bounded_text(payload.get(field), field)
+        if field == "phone":
+            value = normalize_phone(value)
         if value:
             attrs[field] = value
     return attrs
@@ -170,6 +174,8 @@ def choose_display_name(payload: dict[str, Any]) -> str:
         return person_name[:MAX_CONTACT_DISPLAY_NAME_LENGTH]
     for field in ("email", "phone", "website", "address", "note"):
         value = bounded_text(payload.get(field), field)
+        if field == "phone":
+            value = normalize_phone(value)
         if value:
             return value[:MAX_CONTACT_DISPLAY_NAME_LENGTH]
     raise ValueError("at least one meaningful contact field is required")
