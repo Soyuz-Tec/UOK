@@ -1,6 +1,6 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active implementation catalog.
+**Status:** Active implementation catalog; Gate A evidence reclassification in progress.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -9,6 +9,8 @@
 This artifact catalogs the Gantt chart features UOK has identified from common professional Gantt applications and open-source Gantt libraries. It is a build map for `planning.core`; it is not permission to copy third-party source code or add third-party Gantt renderers.
 
 UOK must implement these features as first-party React, TypeScript, SVG, HTML, CSS, and Python scheduling code. External tools may inform feature vocabulary and user expectations only.
+
+Gate A stabilization is governed by `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`. An `Implemented` label in this catalog records source or product-surface presence; verification maturity is authoritative only in `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md` and must not be inferred as `production_ready`.
 
 External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `docs/modules/planning.core/PLANNING_GANTT_EXTERNAL_FEATURE_INTAKE.md`.
 
