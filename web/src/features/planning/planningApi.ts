@@ -1,4 +1,4 @@
-import type { PlanningBaselineComparison, PlanningBaselineDetail, PlanningProject, PlanningSchedule } from "./types";
+import type { PlanningBaselineComparison, PlanningBaselineDetail, PlanningCapabilities, PlanningProject, PlanningSchedule } from "./types";
 
 type CommandResult<T> = { result: T; status: string };
 
@@ -85,6 +85,10 @@ export async function planningJson<T>(token: string, path: string, options: Requ
 
 export function listPlanningProjects(token: string) {
   return planningJson<PlanningProject[]>(token, "/api/planning/projects");
+}
+
+export function loadPlanningCapabilities(token: string) {
+  return planningJson<PlanningCapabilities>(token, "/api/planning/capabilities");
 }
 
 export async function loadPlanningSchedule(token: string, projectId: string): Promise<PlanningScheduleSnapshot> {

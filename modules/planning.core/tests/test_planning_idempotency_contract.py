@@ -46,6 +46,7 @@ def test_idempotency_contract_matches_runtime_and_generated_openapi() -> None:
         assert_command_contract(schema)
         assert_schedule_read_contract(schema)
         assert_baseline_read_contract(schema)
+        assert_capability_read_contract(schema)
 
 
 def assert_planning_mutation_contract(schema_name: str, schema: dict[str, object]) -> None:
@@ -167,3 +168,8 @@ def assert_baseline_read_contract(schema: dict[str, object]) -> None:
     parameters = {(item["name"], item["in"]): item for item in comparison["parameters"]}
     assert parameters[("left_baseline_id", "query")]["required"] is True
     assert parameters[("right_baseline_id", "query")]["required"] is True
+
+
+def assert_capability_read_contract(schema: dict[str, object]) -> None:
+    operation = schema["paths"]["/api/planning/capabilities"]["get"]
+    assert operation["responses"]["200"]["content"]["application/json"]["schema"]["additionalProperties"]["type"] == "boolean"

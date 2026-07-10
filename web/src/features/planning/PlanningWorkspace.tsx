@@ -12,6 +12,7 @@ import type { TimelineScale } from "./planningGanttModel";
 import { timelineTaskPayload } from "./planningTimelineCreateModel";
 import type { PlanningProject, PlanningSchedule, PlanningWorkspaceProps } from "./types";
 import { usePlanningWorkspaceMutations } from "./usePlanningWorkspaceMutations";
+import { usePlanningCapabilities } from "./usePlanningCapabilities";
 
 export function PlanningWorkspace({ token, appearance, module, moduleRows, busyAction, onActivate }: PlanningWorkspaceProps) {
   const [projects, setProjects] = useState<PlanningProject[]>([]);
@@ -26,6 +27,8 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
   const [reviewMode, setReviewMode] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const operational = module?.status === "installed" || module?.status === "upgraded";
+  const capabilities = usePlanningCapabilities(token, operational);
+  const serverReviewOnly = capabilities.review_only || (schedule ? schedule.capabilities?.edit !== true : false);
   const actions = usePlanningWorkspaceMutations({
     token,
     operational,
@@ -54,7 +57,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
             summary="Create a plan to begin."
           >
             <>
-              <CommandButton icon={FolderKanban} onClick={() => void actions.createDemoSchedule()} loading={actions.busy === "demo"} primary>
+              <CommandButton icon={FolderKanban} onClick={() => void actions.createDemoSchedule()} loading={actions.busy === "demo"} disabled={!capabilities.edit} primary>
                 New sample plan
               </CommandButton>
               <CommandButton icon={RefreshCw} onClick={() => void actions.refresh()} loading={actions.busy === "refresh"}>
@@ -68,6 +71,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
         </>
       ) : (
         <>
+          {serverReviewOnly ? <span className="planning-capability-notice" role="status">Server permissions allow review only; write controls are disabled.</span> : null}
           {actions.staleRecovery ? (
             <PlanningConcurrencyNotice
               recovery={actions.staleRecovery}
@@ -105,7 +109,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           scale={timelineScale}
           showCritical={showCritical}
           showBaselines={showBaselines}
-          reviewMode={reviewMode}
+          reviewMode={reviewMode || serverReviewOnly}
           selectedTaskId={selectedTaskId}
           selectedProjectId={selectedProjectId}
           busy={actions.busy}
@@ -168,7 +172,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           newTaskType={newTaskType}
           status={actions.status}
           busy={actions.busy}
-          readOnly={reviewMode}
+          readOnly={reviewMode || serverReviewOnly}
           onTabChange={setInspectorTab}
           onProjectChange={actions.changeProject}
           onSaveTask={actions.saveTask}

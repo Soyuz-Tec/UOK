@@ -44,6 +44,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Resources | Implemented | Resource creation, assignment, allocation display, daily workload lanes, and over-allocation warnings exist. |
 | Export/import | External global boundary | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning consumes that boundary and owns only schedule-specific payloads/read-model mapping. |
 | UI proof | Implemented | Playwright proof covers rendering, controls, inspector tabs, responsiveness, and console cleanliness. |
+| Server capabilities | Implemented | Actor-specific read/edit/baseline/level/link/gate/admin capabilities are enforced by command permission, embedded in schedule reads, and mirrored by fail-closed UI controls. Local review mode cannot grant authority. |
 
 ## Grid And Column Features
 

@@ -60,7 +60,12 @@ candidate_verifier_script: modules/planning.core/tests/verify/UokCandidatePlanni
 candidate_verifier_function: Invoke-UokPlanningCandidateScenario
 permissions:
   - planning.read
-  - planning.manage
+  - planning.edit
+  - planning.baseline.create
+  - planning.level
+  - planning.link
+  - planning.gate.approve
+  - planning.admin
 owned_tables:
   - PlanningProject
   - PlanningTask

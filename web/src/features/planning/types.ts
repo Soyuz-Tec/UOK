@@ -117,8 +117,20 @@ export type PlanningBaselineComparison = {
   changes: Record<string, unknown> | null;
 };
 
+export type PlanningCapabilities = {
+  read: boolean;
+  edit: boolean;
+  baseline_create: boolean;
+  level: boolean;
+  link: boolean;
+  gate_approve: boolean;
+  admin: boolean;
+  review_only: boolean;
+};
+
 export type PlanningSchedule = {
   project: PlanningProject;
+  capabilities?: PlanningCapabilities;
   tasks: PlanningTask[];
   dependencies: PlanningDependency[];
   calendar?: PlanningCalendar;

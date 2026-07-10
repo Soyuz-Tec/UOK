@@ -12,6 +12,7 @@ const sampleProject = {
 
 const sampleSchedule = {
   project: sampleProject,
+  capabilities: { read: true, edit: true, baseline_create: true, level: true, link: true, gate_approve: true, admin: true, review_only: false },
   validation: { ok: true, violations: [], warnings: ["Planner is allocated 120% on 2026-08-06"] },
   calculation: {
     engine_version: "uok-cpm-1",
@@ -523,6 +524,24 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
   await expect.poll(() => consoleErrors).toEqual([]);
 });
 
+test("server review-only capabilities disable Planning writes", async ({ page }) => {
+  const reviewOnly = { read: true, edit: false, baseline_create: false, level: false, link: false, gate_approve: false, admin: false, review_only: true };
+  await installMockApi(page, [], [], [], []);
+  await page.route("/api/planning/capabilities", (route) => route.fulfill({ json: reviewOnly }));
+  await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({
+    json: { ...sampleSchedule, capabilities: reviewOnly },
+    headers: { ETag: `"planning-r1-sha256-${"b".repeat(64)}"` },
+  }));
+
+  await openPlanning(page);
+  await expect(page.getByRole("status").filter({ hasText: "Server permissions allow review only" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Task", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Baseline", exact: true })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Level", exact: true })).toBeDisabled();
+  await page.getByLabel("Open planning controls").click();
+  await expect(page.getByRole("button", { name: "Server review-only", exact: true })).toBeDisabled();
+});
+
 async function openPlanning(page: Page) {
   await page.goto("/");
   await page.getByRole("button", { name: "Planning" }).click();
@@ -545,6 +564,7 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
   await page.route("/api/baseline-evidence", (route) => route.fulfill({ json: { ok: true, checks: { planning_ui_proof: true } } }));
   await page.route("/api/architecture/alignment", (route) => route.fulfill({ json: { ok: true, checks: { module_neutral_baseline: true } } }));
   await page.route("/api/modules/catalog", (route) => route.fulfill({ json: { modules: moduleCatalog() } }));
+  await page.route("/api/planning/capabilities", (route) => route.fulfill({ json: sampleSchedule.capabilities }));
   await page.route("/api/planning/projects", (route) => route.fulfill({ json: [sampleProject] }));
   await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({ json: sampleSchedule, headers: { ETag: planningEtag } }));
   await page.route(`/api/planning/projects/${sampleProject.id}/tasks`, async (route) => {

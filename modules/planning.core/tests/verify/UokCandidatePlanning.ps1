@@ -53,6 +53,21 @@ function Invoke-UokPlanningCandidateScenario {
         throw "Planning install failed: $($installed | ConvertTo-Json -Depth 20)"
     }
 
+    $opsCapabilities = Invoke-UokJson -Path "/api/planning/capabilities" -Headers $OpsHeaders
+    $viewerCapabilities = Invoke-UokJson -Path "/api/planning/capabilities" -Headers $ViewerHeaders
+    if (
+        $opsCapabilities.edit -ne $true `
+        -or $opsCapabilities.baseline_create -ne $true `
+        -or $opsCapabilities.level -ne $true `
+        -or $opsCapabilities.admin -ne $true `
+        -or $opsCapabilities.review_only -ne $false
+    ) {
+        throw "Operations Planning capability matrix is invalid: $($opsCapabilities | ConvertTo-Json -Depth 20)"
+    }
+    if ($viewerCapabilities.read -ne $true -or $viewerCapabilities.review_only -ne $true -or $viewerCapabilities.edit -ne $false) {
+        throw "Viewer Planning capability matrix is invalid: $($viewerCapabilities | ConvertTo-Json -Depth 20)"
+    }
+
     Assert-UokHttpFailure -StatusCode 403 -UnexpectedSuccessMessage "Viewer planning project creation unexpectedly succeeded" -Action {
         Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $ViewerHeaders -Body @{
             command_type = "CreatePlanningProject"

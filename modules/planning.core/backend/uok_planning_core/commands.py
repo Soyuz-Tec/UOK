@@ -172,7 +172,23 @@ def command_handlers() -> dict[str, CommandHandler]:
 
 
 def command_permissions() -> dict[str, str]:
-    return {command: "planning.manage" for command in command_handlers()}
+    edit_commands = {
+        "CreatePlanningProject",
+        "CreatePlanningTask",
+        "UpdatePlanningTask",
+        "DeletePlanningTask",
+        "LinkPlanningTasks",
+        "UpdatePlanningDependency",
+        "RemovePlanningDependency",
+        "SetPlanningCalendar",
+        "CreatePlanningResource",
+        "AssignPlanningResource",
+        "BatchPlanningOperations",
+    }
+    permissions = {command: "planning.edit" for command in edit_commands}
+    permissions["CreatePlanningBaseline"] = "planning.baseline.create"
+    permissions["LevelPlanningResources"] = "planning.level"
+    return permissions
 
 
 def _task_from_payload(actor: Actor, project_id: str, payload: dict[str, Any], calendar: Any | None = None) -> PlanningTask:

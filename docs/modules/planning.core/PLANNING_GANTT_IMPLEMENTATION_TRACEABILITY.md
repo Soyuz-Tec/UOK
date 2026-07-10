@@ -33,7 +33,7 @@ requirement.
 | PLA-A-004 | Optimistic concurrency | Project revision/task version migration, strong actor-visible ETag, project lock, 428/412 recovery contract, and typed client recovery exist | PostgreSQL two-client race, candidate runtime, and accessible reload/reapply proof | `runtime_proven` |
 | PLA-A-005 | Atomic batch mutation | Ordered task updates use one project lock, command/idempotency record, final scheduler/validator pass, revision, ETag, and correlated event; bulk UI and multi-task update history use the endpoint | Expand the operation-kind registry beyond `update_task` while retaining all-or-nothing semantics | `runtime_proven` |
 | PLA-A-006 | Complete immutable baseline | Canonical v2 snapshot includes the complete current schedule graph/context, creator/source revision/correlation metadata, SHA-256 verification, append-only guards, comparison reads, and explicit legacy partial limitations | PostgreSQL migration apply/readback and candidate runtime checksum proof | `runtime_proven` |
-| PLA-A-007 | Server capability enforcement | `planning.read/manage` exist | Capability matrix and direct adversarial API tests | `source_present` |
+| PLA-A-007 | Server capability enforcement | Server maps every command to `read`, `edit`, `baseline.create`, `level`, `link`, `gate.approve`, or `admin`; schedule/API return actor authority; UI fails closed and local review mode can only reduce it | Candidate runtime role matrix and direct-denial proof | `runtime_proven` |
 | PLA-A-008 | Database invariant enforcement | Initial module migration exists | PostgreSQL 18 apply/readback and invalid-row tests | `source_present` |
 | PLA-A-009 | Structured Planning errors | Atomic batch failures return stable code, field, object ids, repair, revision, and correlation id through REST and generic command paths | Migrate remaining Planning validation/permission/idempotency errors to the same envelope | `source_present` |
 | PLA-A-010 | Typed Planning client | Planning client contains broad unknown payloads | Generated or explicit typed requests, responses, errors, revisions, and capabilities | `source_present` |
@@ -53,7 +53,7 @@ requirement.
 - Live PostgreSQL two-client row-lock verifier: `modules/planning.core/tests/runtime/verify_planning_postgres_concurrency.py`
 - Typed frontend stale-write recovery and fail-closed multi-write proof: `web/src/features/planning/planningApi.test.ts` and `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`
 - Candidate PostgreSQL proof: two simultaneous writes returned exactly one `200` and one `412`; repeated concurrent reads never observed a mixed revision/schedule snapshot.
-- Candidate/UI gates: `scripts/verify_uok_candidate.ps1` and `web/e2e/uok-proof.spec.ts` pass with the bulk-mutation boundary visible and disabled until atomic batch support exists.
+- Candidate/UI gates: `scripts/verify_uok_candidate.ps1` and `web/e2e/uok-proof.spec.ts` pass with atomic bulk controls enabled only through the batch endpoint.
 - Canonical CPM and hand-worked oracle cases: `modules/planning.core/tests/test_canonical_cpm.py`
 - Independent result validation with injected dependency, calendar, constraint, and manual-date faults: `modules/planning.core/tests/test_cpm_validation.py`
 - API target-variance and UI-row-order independence proof: `modules/planning.core/tests/test_planning_cpm_contract.py`
@@ -64,6 +64,9 @@ requirement.
 - Additive v2 baseline metadata/append-only migration: `modules/planning.core/migrations/003_planning_complete_baselines.sql`
 - Typed baseline detail/compare reads and legacy UI warning proof: `web/src/features/planning/planningApi.test.ts` and `web/e2e/uok-proof.spec.ts`
 - Candidate PostgreSQL proof: 12 existing snapshots classified as v1 `partial`; v2 columns/checks/index/trigger read back; trigger rejected mutation; v2 snapshot checksum/detail/correlation passed the live candidate verifier.
+- Server capability mapping and adversarial direct-call denials: `modules/planning.core/tests/test_planning_capabilities.py`
+- Typed fail-closed capability client and review-only UI proof: `web/src/features/planning/usePlanningCapabilities.test.tsx` and `web/e2e/uok-proof.spec.ts`
+- Candidate runtime proof: operations receives edit/baseline/level/admin, viewer receives read-only, viewer direct project creation remains denied, and module verification passes after rebuild.
 - Generated REST contract: `web/src/generated/openapi.json` and `web/src/generated/openapi.d.ts`
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
@@ -131,6 +134,24 @@ schedule failure rolls the transaction back and returns a structured error.
 | Manual task conflict | Dates stay fixed and a violation is returned |
 | Target date | Negative float is reported rather than clamped away |
 | Dependency cycle | Mutation is rejected and no partial write remains |
+
+## Current server capability boundary
+
+`planning.manage` is replaced by explicit `planning.edit`,
+`planning.baseline.create`, `planning.level`, `planning.link`,
+`planning.gate.approve`, and `planning.admin` permissions alongside
+`planning.read`. Every existing command maps to exactly one declared permission;
+dependency editing remains schedule edit authority, while `planning.link` is
+reserved for Gate B cross-module links.
+
+The actor-specific capability matrix is returned by
+`GET /api/planning/capabilities` and embedded in each schedule read model. The
+operations role receives all current capabilities, the trader role receives
+read/edit, and finance/viewer roles remain review-only. The frontend defaults to
+review-only until the server matrix loads, disables specialized baseline and
+leveling actions independently, and cannot use its local review toggle to grant
+server authority. Direct REST and generic-command probes remain denied even
+when callers supply valid IDs, ETags, and idempotency keys.
 
 ## Current complete baseline boundary
 

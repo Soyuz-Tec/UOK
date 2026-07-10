@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from .calendar_bridge import availability_warnings, calendar_availability_read_model
 from .calendar_payload import calendar_holidays, calendar_ignored_periods
+from .policy import capability_read_model
 from .models import (
     PlanningAssignment,
     PlanningBaseline,
@@ -63,6 +64,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     wbs = _wbs_numbers(tasks)
     return {
         "project": serialize_project(project),
+        "capabilities": capability_read_model(actor),
         "tasks": [serialize_task(task, metrics.get(task.id, {}), latest_baseline.get(task.id), wbs.get(task.id, "")) for task in tasks],
         "dependencies": [serialize_dependency(dep) for dep in dependencies],
         "calendar": _calendar_row(db, actor, project.id),

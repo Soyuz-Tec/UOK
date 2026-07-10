@@ -220,7 +220,7 @@ function CalendarBaselinePanel({ schedule, busy, onSetCalendar, onCreateBaseline
         <CommandButton icon={CalendarDays} loading={busy === "calendar"} onClick={() => onSetCalendar({ name: calendar.name, working_days: calendar.working_days, holidays: holidays.split(/\s+/).filter(Boolean), ignored_periods: ignoredPeriods.split(/\s+/).filter(Boolean) })}>
           Save calendar
         </CommandButton>
-        <CommandButton icon={Flag} loading={busy === "baseline"} onClick={() => onCreateBaseline({ name: `Baseline ${schedule.baselines.length + 1}` })}>
+        <CommandButton icon={Flag} loading={busy === "baseline"} disabled={schedule.capabilities?.baseline_create !== true} onClick={() => onCreateBaseline({ name: `Baseline ${schedule.baselines.length + 1}` })}>
           Set baseline
         </CommandButton>
       </div>

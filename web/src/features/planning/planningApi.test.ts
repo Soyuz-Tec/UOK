@@ -4,6 +4,7 @@ import {
   batchPlanningTaskUpdates,
   comparePlanningBaselines,
   createPlanningProject,
+  loadPlanningCapabilities,
   loadPlanningBaseline,
   loadPlanningSchedule,
   PlanningApiError,
@@ -26,6 +27,15 @@ describe("Planning API concurrency and idempotency", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(schedule, 200, etag1)));
 
     await expect(loadPlanningSchedule("token", "project-1")).resolves.toEqual({ schedule, etag: etag1 });
+  });
+
+  it("loads the server-derived Planning capability matrix", async () => {
+    const capabilities = { read: true, edit: false, baseline_create: false, level: false, link: false, gate_approve: false, admin: false, review_only: true };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(capabilities));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(loadPlanningCapabilities("token")).resolves.toEqual(capabilities);
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/planning/capabilities");
   });
 
   it("uses typed immutable baseline detail and comparison reads", async () => {

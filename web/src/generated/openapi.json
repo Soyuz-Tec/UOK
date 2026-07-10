@@ -5729,6 +5729,59 @@
         ]
       }
     },
+    "/api/planning/capabilities": {
+      "get": {
+        "operationId": "planning_capabilities_api_planning_capabilities_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Planning Capabilities Api Planning Capabilities Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Planning Capabilities",
+        "tags": [
+          "planning"
+        ]
+      }
+    },
     "/api/planning/dependencies/{dependency_id}": {
       "delete": {
         "operationId": "remove_dependency_api_planning_dependencies__dependency_id__delete",

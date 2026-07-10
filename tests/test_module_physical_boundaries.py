@@ -77,7 +77,15 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert manifests["planning.core"]["candidate_verifier_script"] == "modules/planning.core/tests/verify/UokCandidatePlanning.ps1"
     assert "CreatePlanningProject" in manifests["planning.core"]["commands"]
     assert "PlanningTaskLinked" in manifests["planning.core"]["events"]
-    assert "planning.manage" in manifests["planning.core"]["permissions"]
+    assert set(manifests["planning.core"]["permissions"]) == {
+        "planning.read",
+        "planning.edit",
+        "planning.baseline.create",
+        "planning.level",
+        "planning.link",
+        "planning.gate.approve",
+        "planning.admin",
+    }
     assert manifests["reports.core"]["required"] is False
     assert manifests["reports.core"]["kind"] == "capability_module"
     assert "GenerateReport" in manifests["reports.core"]["commands"]
@@ -169,14 +177,20 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "DeleteReportArtifact" in handlers
     assert permissions["CreateContact"] == "contacts.manage"
     assert permissions["CreateCalendarEvent"] == "calendar.event.create"
-    assert permissions["CreatePlanningProject"] == "planning.manage"
+    assert permissions["CreatePlanningProject"] == "planning.edit"
+    assert permissions["CreatePlanningBaseline"] == "planning.baseline.create"
+    assert permissions["LevelPlanningResources"] == "planning.level"
     assert permissions["RestoreContact"] == "contacts.restore"
     assert permissions["GenerateReport"] == "reports.render"
     assert permissions["DeleteReportArtifact"] == "reports.delete"
     assert permissions["VerifyBaseline"] == "migration.verify"
     assert "contacts.manage" in grants["ops_manager"]
     assert "calendar.manage" in grants["ops_manager"]
-    assert "planning.manage" in grants["ops_manager"]
+    assert "planning.edit" in grants["ops_manager"]
+    assert "planning.baseline.create" in grants["ops_manager"]
+    assert "planning.level" in grants["ops_manager"]
+    assert "planning.admin" in grants["ops_manager"]
+    assert grants["trader"] >= {"planning.read", "planning.edit"}
     assert "reports.manage" in grants["ops_manager"]
     assert "contacts.read" in grants["viewer"]
     assert "calendar.read" in grants["viewer"]

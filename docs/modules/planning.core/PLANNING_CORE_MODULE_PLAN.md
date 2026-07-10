@@ -40,6 +40,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - command-bus writes and idempotency
 - project-root optimistic concurrency with additive revisions/task versions, canonical strong schedule ETags, exact `If-Match`, and explicit `428`/`412` recovery
 - project-scoped atomic task-update batches with ordered operations, one final schedule validation, one revision/ETag, correlated events, and all-or-nothing rollback
+- server-derived Planning capability matrix with separate edit, baseline, leveling, cross-module link, gate approval, and administration permissions; UI review mode may only reduce server authority
 - planning audit events
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier
 - Playwright UI proof for Gantt rendering, editor panels, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness

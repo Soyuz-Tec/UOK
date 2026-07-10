@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from .baselines import baseline_detail, baseline_or_error, compare_baselines
 from .concurrency import read_locked_schedule_snapshot
+from .policy import capability_read_model
 from .read_model import list_projects
 from .schemas import (
     PlanningAssignmentRequest,
@@ -92,6 +93,14 @@ PlanningIfMatch = Annotated[
         description="Exactly one quoted strong ETag returned by the latest actor-visible schedule read.",
     ),
 ]
+
+
+@router.get("/capabilities")
+def planning_capabilities(response: Response, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, bool]:
+    require_planning_read(db, actor)
+    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["Vary"] = "Authorization"
+    return capability_read_model(actor)
 
 
 @router.get("/projects")
