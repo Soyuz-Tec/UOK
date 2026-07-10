@@ -1,0 +1,49 @@
+@media (pointer: coarse) {
+  .nav-item,
+  .session-user-trigger,
+  .session-menu-button,
+  .session-appearance-options button,
+  .session-locale-options button,
+  .command-button,
+  .planning-toolbar-toggle,
+  .planning-selection-toggle,
+  .planning-segmented-control button,
+  .planning-owned-sort-button,
+  .planning-owned-header-menu-trigger,
+  .planning-owned-summary-toggle,
+  .planning-owned-row-menu-trigger {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .planning-owned-grid-row {
+    min-height: 44px;
+  }
+
+  .planning-owned-row-menu-trigger {
+    width: 44px;
+    height: 44px;
+    opacity: 1;
+  }
+
+  .planning-owned-row-height-handle {
+    height: 16px;
+  }
+
+  .planning-owned-link-handle {
+    r: 10px;
+  }
+
+  .planning-owned-resize-handle,
+  .planning-owned-progress-handle,
+  .planning-owned-link-handle {
+    opacity: 1;
+  }
+}
+
+:root[dir="rtl"] input[type="date"],
+:root[dir="rtl"] input[type="datetime-local"],
+:root[dir="rtl"] .planning-owned-chart {
+  direction: ltr;
+}

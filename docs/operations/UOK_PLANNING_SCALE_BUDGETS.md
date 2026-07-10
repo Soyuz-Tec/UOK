@@ -49,10 +49,15 @@ Recorded 2026-07-10 after rebuilding the local Podman candidate:
 - atomic batch p95: 190.75 ms;
 - persisted benchmark projects after rollback: `0`.
 
-The full seven-test Chromium verification run recorded 1,919.80 ms to usable interaction,
-24 mounted grid rows, 24 mounted timeline tasks, and a 101 ms maximum post-idle
+The controlled single-worker eight-test Chromium verification run recorded 1,179.30 ms to usable interaction,
+34 mounted grid rows, 34 mounted timeline tasks, and no post-idle long task
 long task for the 500-row fixture. The pre-windowing baseline was 4,073.60 ms,
 which justified the ADR-0016 virtualization decision.
+
+The UI proof uses one browser worker so the performance assertion is not
+contaminated by competing synthetic Chromium workloads on the same CPU. This
+worker profile is part of the recorded evidence and must change only with a new
+reviewed baseline.
 
 ## Interpretation and change control
 

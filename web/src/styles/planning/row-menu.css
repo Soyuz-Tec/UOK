@@ -6,7 +6,7 @@
 .planning-owned-row-menu-trigger {
   position: absolute;
   top: 50%;
-  right: var(--uok-space-2);
+  inset-inline-end: var(--uok-space-2);
   display: inline-grid;
   place-items: center;
   width: 28px;

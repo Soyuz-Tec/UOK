@@ -40,7 +40,7 @@
   position: fixed;
   z-index: 12;
   top: 76px;
-  right: var(--uok-space-4);
+  inset-inline-end: var(--uok-space-4);
   display: grid;
   grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1fr) minmax(220px, 1fr) minmax(220px, 1fr);
   gap: var(--uok-space-3);
@@ -220,8 +220,7 @@
 
   .planning-controls-panel {
     top: var(--uok-space-4);
-    left: var(--uok-space-2);
-    right: var(--uok-space-2);
+    inset-inline: var(--uok-space-2);
     grid-template-columns: 1fr;
     width: auto;
     max-height: calc(100vh - (var(--uok-space-4) * 2));

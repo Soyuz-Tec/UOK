@@ -100,6 +100,7 @@ Operator browser
 - Planning Gate D risk analysis is runtime-proven: bounded first-party Monte Carlo runs reference verified snapshot checksums and persist normalized distributions, correlations, seed, engine/version, limits, percentiles, confidence assumptions, independent validation, and append-only audit evidence.
 - Planning Gate D governed optimization is runtime-proven: a bounded dependency-free advisory engine returns explicit completed/timeout/infeasible evidence and independently validated ranked recommendations that require reasoned approval before apply, fail closed when stale, and support audited rollback.
 - Planning Gate E scale budgets are runtime-proven in rollback-only SQLite and PostgreSQL profiles; the measured 500-row browser breach activates a dependency-free shared grid/timeline virtual window only above 200 visible tasks, with synchronized scrolling and accessibility row metadata.
+- UOK Gate E localization/reach is runtime-proven through one shared English/Arabic provider and workbench preference owner, logical RTL layout, LTR-isolated Planning chronology, coarse-pointer targets, virtual-boundary focus restoration, narrow/200%-text reflow, persistence, and console-clean Chromium proof.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

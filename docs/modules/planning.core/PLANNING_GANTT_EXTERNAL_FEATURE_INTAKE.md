@@ -46,11 +46,11 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Smart rendering / large data performance | Runtime-proven | ADR-0016 records the measured 500-row breach and enables shared grid/timeline row windowing only above 200 visible tasks. |
 | Data loading/saving and REST sync | Implemented | UOK uses FastAPI read models and command writes, not direct client-owned persistence. |
 | Export to document/image/project formats | External global boundary | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, and import/export orchestration are deployed separately as global UOK artifact capabilities; planning should consume that boundary without redeploying it. |
-| Locales/accessibility/touch | Partial | Continue ARIA, focus, and responsive proof; localization remains backlog. |
+| Locales/accessibility/touch | Runtime-proven | Shared UOK English/Arabic provider, RTL, virtual keyboard focus, 44px touch target, 320px/200%-text reflow, persistence, and console-clean Chromium proof pass. |
 | Event system | Partial | UOK equivalent is command bus plus planning audit events. |
 | Row resize | Implemented | UOK row-height model supports per-project row overrides, drag/keyboard resize handles, and double-click/Enter row fit without third-party code. |
 | Drag rows / branch ordering | Backlog | Add WBS reorder only after hierarchy command validation is explicit. |
-| Right-side grid columns / no-grid mode / bottom scale / RTL | Partial | Timeline-only no-grid mode is implemented; right-side grid, bottom scale, and RTL remain later layout variants. |
+| Right-side grid columns / no-grid mode / bottom scale / RTL | Partial | Timeline-only and RTL logical layout are implemented; right-side grid and bottom scale remain later variants. |
 | Backward planning and fixed project dates | Partial | Task constraints now exist for must-start, must-finish, and start/finish no-earlier/no-later rules; backward scheduling direction and fixed project limits remain later. |
 | Empty-state screen | Implemented | First-party grid and timeline empty state appears when filters or a project leave no visible tasks. |
 | Deadline/event markers | Partial | Project start/end markers plus derived visible-task due, variance, and milestone markers are implemented; arbitrary user event markers remain later. |
@@ -73,7 +73,7 @@ This artifact does not permit copying third-party source code, vendoring third-p
 | Zooming with scroll | Implemented | Ctrl/Command wheel uses the existing UOK scale model while ordinary scrolling remains native. |
 | Hotkeys | Implemented | Common task actions can be triggered from focused Gantt rows. |
 | Virtualization for large data sets | Backlog | Add only with measurable performance need and tests. |
-| Localization | Backlog | Requires UOK-wide localization approach, not planning-only strings. |
+| Localization | Runtime-proven | UOK-wide provider/policy owns locale, direction, fallback, and Intl formatting; representative Planning Arabic/RTL proof passes. |
 | Light/dark themes | Implemented | UOK appearance tokens and UI proof cover light/dark behavior. |
 | Work-time calendars and resource calendars | Partial | Project work-time calendar scheduling, holidays, ignored periods, and propagation exist; resource calendars remain backlog. |
 | Critical path, slack, baselines | Implemented | CPM read model, critical-path explanation, slack counts, per-row baseline lanes, and variance badges exist. |
@@ -109,7 +109,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Navigation | Drag timeline, wheel zoom, scroll-to-date, scroll-to-task, fullscreen/focus, multiple independent instances | scroll left/top, selected task id, date target, zoom state, focus mode, instance storage key | Timeline pan cursor, Today button, Selected button, Focus button, per-project saved view |
 | Data sync/events | JSON loading, REST sync, event hooks, lifecycle callbacks, batch updates | command type, command id, actor, audit event, rollback state, read-model version, validation warnings | Bulk completion, status/progress, and date-shift commands, status panel, audit/event log later, command result messages |
 | Performance | Smart rendering, virtualization, lazy loading, dynamic loading, large data mode | visible row window, visible time window, overscan, row height, total counts, loading boundary | Virtualized rows, loading placeholder, stable scrollbars, large-schedule proof |
-| Accessibility/localization | WAI-ARIA, keyboard navigation, hotkeys, touch support, 32/localized labels, RTL | aria labels, focus target, keyboard command map, locale id, text direction, date/number format | Focus rings, keyboard row movement, translated labels later, touch-sized handles |
+| Accessibility/localization | WAI-ARIA, keyboard navigation, hotkeys, touch support, 32/localized labels, RTL | aria labels, focus target, keyboard command map, locale id, text direction, date/number format | Shared locale/direction/formatting, translated reference labels, virtual focus, touch target, reflow, and RTL proof |
 | Export/import | PDF, PNG, HTML/office documents, Excel, iCal, MS Project, CSV, import validation | export format, visible fields, date range, import row mapping, validation summary | Export menu, import wizard later, downloaded artifact status |
 | Advanced scheduling | Auto-schedule, critical path, slack, calendars, constraints, resource planning, workload, backward planning, undo/redo | dependency graph, calendar, resource capacity, slack, constraint type/date, scheduling direction, undo command stack | Critical overlays, workload lane, constraint indicators, undo/redo toolbar buttons |
 
@@ -131,7 +131,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Timeline | Markers | today, project bounds, milestones, deadlines, vertical event markers | Today, project boundary markers, and derived visible-task due/variance/milestone markers exist; arbitrary user event markers remain later | Partial |
 | Timeline | Drag timeline and scroll zoom | pointer panning, wheel modifier, scale bounds, scroll preservation | Empty-space panning, Ctrl/Command wheel scale stepping, and Shift-drag task creation are implemented | Implemented |
 | Timeline | Zoom-to-fit and scroll-to-date | project range, selected date, today, viewport width, scale bounds | Today, selected task, arbitrary date target, and project-fit commands exist; custom zoom bounds remain later | Partial |
-| Timeline | Layout modes | grid left/right/hidden, scale top/bottom, RTL, fixed size/autosize | Timeline-only hidden-grid mode is implemented and saved with planning views | Partial |
+| Timeline | Layout modes | grid left/right/hidden, scale top/bottom, RTL, fixed size/autosize | Timeline-only and RTL logical workspace with LTR-isolated chronology are implemented; right grid and bottom scale remain | Partial |
 | Tasks | Task types | task, summary/project, milestone, unscheduled, split segment, rollup | Task/summary/milestone exist; unscheduled/split/rollup later | Partial |
 | Tasks | Taskbar editing | move, resize start/end, progress drag, dependency handles | Implemented through first-party SVG with server validation | Implemented |
 | Tasks | Task status presentation | status code, color token, non-color label, critical flag, selected/focus state | Implemented for bars and grid rows | Implemented |
@@ -150,7 +150,7 @@ These are the implementation-neutral ideas UOK should model in its own schemas, 
 | Resources | Resource panel/load chart | resource row, load cell, chart mode, allocation template, overload state | First-party Workload view renders resource lanes, daily allocation cells, peak load, and overload status from existing assignments | Implemented |
 | Baselines | Baseline overlays | baseline start/end, variance, baseline lane, deadline marker | Capture, per-row timeline lanes, and variance badges are implemented | Implemented |
 | Performance | Smart rendering/virtualization | visible row window, visible column/window, stable row heights, overscan | Shared variable-height row window, synchronized scroll, 480px overscan, ARIA counts/indexes, and 500-row Chromium proof | Runtime-proven |
-| Accessibility | Keyboard/touch/ARIA | row navigation, focus rings, button labels, touch target size, non-color cues | Keyboard and ARIA proof exists; touch/localization later | Partial |
+| Accessibility | Keyboard/touch/ARIA | row navigation, focus rings, button labels, touch target size, non-color cues | Keyboard virtual-boundary focus, non-drag paths, ARIA counts/indexes, unnamed-button audit, 44px touch action, RTL, and reflow proof | Runtime-proven |
 | Data integration | REST sync and events | read model, command write, audit event, optimistic state rules | UOK command bus and audit events, no client-owned persistence | Implemented |
 | Data integration | Provider/batch sync modes | backend source, batch transaction, conflict state, local rollback | Selected-task bulk completion, status/progress updates, and date shifts use existing server-validated task writes; richer conflict UX and atomic batch endpoint later | Partial |
 | Export/import | Output formats | visible CSV, PDF/image, HTML/office documents, Excel, project exchange, import validation | Deployed separately as a global artifact/import-export capability; planning consumes it without redeploying. | External global boundary |

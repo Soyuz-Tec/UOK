@@ -1,7 +1,8 @@
 import { ArrowUpDown } from "lucide-react";
-import type { DragEvent } from "react";
+import type { CSSProperties, DragEvent } from "react";
 
 import { ColumnResizeHandle, type ColumnWidthMap } from "../../shared/tables";
+import { useUokLocalization } from "../../shared/localization";
 import { autoFitColumnWidth, type PlanningGridColumn } from "./planningGanttModel";
 import { PlanningGanttHeaderMenu } from "./PlanningGanttHeaderMenu";
 import type { PlanningGridSort } from "./planningGridSortModel";
@@ -41,9 +42,12 @@ export function PlanningGanttGridHeader({
   totalWidth: number;
   widths: ColumnWidthMap;
 }) {
+  const { t } = useUokLocalization();
   return (
     <div className="planning-owned-grid-header" role="row" style={{ gridTemplateColumns, minWidth: totalWidth }}>
-      {columns.map((column) => (
+      {columns.map((column) => {
+        const label = t(`planning.column.${column.id}`, column.label);
+        return (
         <span
           key={column.id}
           role="columnheader"
@@ -56,8 +60,8 @@ export function PlanningGanttGridHeader({
           onDragStart={(event) => startColumnDrag(column.id, event)}
           onDrop={(event) => dropColumnBefore(column.id, event)}
         >
-          <span className="planning-owned-grid-header-label">{column.label}</span>
-          <button type="button" className="planning-owned-sort-button" aria-label={`Sort by ${column.label}`} onClick={() => onSort(column.id)}>
+          <span className="planning-owned-grid-header-label">{label}</span>
+          <button type="button" className="planning-owned-sort-button" aria-label={`Sort by ${label}`} onClick={() => onSort(column.id)}>
             <ArrowUpDown size={13} aria-hidden="true" />
           </button>
           <PlanningGanttHeaderMenu column={column} canHide={!column.pinned} onColumnHide={(columnId) => onColumnVisible(columnId, false)} onColumnQuickAction={onHeaderDoubleClick} onResetColumns={onColumnsReset} onResetWidth={onResetColumnWidth} onSort={onSort} />
@@ -72,7 +76,8 @@ export function PlanningGanttGridHeader({
             />
           )}
         </span>
-      ))}
+        );
+      })}
     </div>
   );
 
@@ -89,6 +94,6 @@ export function PlanningGanttGridHeader({
 
   function pinnedStyle(columnId: string) {
     const left = pinnedOffsets.get(columnId);
-    return left === undefined ? undefined : { left };
+    return left === undefined ? undefined : { "--planning-pinned-offset": `${left}px` } as CSSProperties;
   }
 }

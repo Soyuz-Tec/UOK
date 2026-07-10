@@ -1,6 +1,6 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gates A-D and the Gate E measured scale/virtualization slice are runtime-proven.
+**Status:** Active module plan; Gates A-D and the Gate E measured scale/virtualization plus shared reach/accessibility slices are runtime-proven.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -186,6 +186,16 @@ The initial 500-row Chromium path breached budget, so the first-party renderer
 windows aligned grid/timeline rows only above 200 visible tasks with shared row
 geometry, synchronized scroll positions, bounded overscan, and ARIA row count/
 index metadata. Small schedules keep the original complete render path.
+
+## Shared Reach And Accessibility Boundary
+
+ADR-0017 and the UOK localization/bidirectional policy govern this boundary.
+Planning consumes the shared locale provider and workbench preference owner;
+it does not own locale state or a translation framework. Representative Arabic
+labels, logical grid/pinned layout, and an LTR-isolated chronological timeline
+pass RTL proof. Coarse-pointer controls, non-drag equivalents, virtual-boundary
+keyboard focus, total/index ARIA metadata, unnamed-button audit, 320px reflow,
+200% root text, persistence, screenshot, and console checks pass in Chromium.
 
 ## Calendar Correlation Boundary
 

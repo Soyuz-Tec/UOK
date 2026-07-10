@@ -108,6 +108,7 @@ All durable UI work must use:
 - Layout tokens for spacing, control target size, content max width, and safe-area-aware shell padding
 - No executable durable UI outside the React + TypeScript source tree
 - `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md` for component state, interaction, accessibility, and verification decisions
+- `docs/design/UOK_LOCALIZATION_AND_BIDIRECTIONAL_POLICY.md` for shared locale ownership, translation fallback, RTL/logical layout, formatting, touch targets, and localized verification
 
 The next UI iteration must introduce or preserve:
 

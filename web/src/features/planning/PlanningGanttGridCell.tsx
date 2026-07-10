@@ -65,7 +65,7 @@ export function PlanningGanttGridCell({
 
   function pinnedStyle(columnId: string): CSSProperties | undefined {
     const left = pinnedOffsets.get(columnId);
-    return left === undefined ? undefined : { left };
+    return left === undefined ? undefined : { "--planning-pinned-offset": `${left}px` } as CSSProperties;
   }
 }
 

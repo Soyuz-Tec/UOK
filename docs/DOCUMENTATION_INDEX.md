@@ -56,6 +56,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0014-planning-reproducible-risk-analysis.md` | Seeded bounded Monte Carlo inputs, correlations, limits, percentiles, confidence, integrity, and reproduction contract | Risk engine, distribution, correlation, seed, simulation limit, percentile, or confidence rules change |
 | `docs/architecture/ADR-0015-planning-governed-optimization-and-recommendations.md` | Bounded optimizer, dependency review, objectives, limits, explanations, approval/apply/audit/rollback lifecycle | Optimization engine, dependency, objective, limit, recommendation, approval, apply, audit, or rollback rules change |
 | `docs/architecture/ADR-0016-planning-scale-budgets-and-virtualization.md` | Measured Planning budgets, rollback-only profiles, virtualization trigger/threshold, overscan, alignment, and accessibility metadata | Planning scale budget, fixture, threshold, virtual window, overscan, or scroll-alignment rules change |
+| `docs/architecture/ADR-0017-uok-localization-bidirectional-and-touch-boundary.md` | Shared locale/direction ownership, fallback/formatting, RTL chronology isolation, touch targets, virtual focus, and reflow rules | Locale registry, translation owner, document direction, RTL layout, touch target, or virtual focus rules change |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -65,6 +66,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` | Secure reports artifact generation, storage, audit, verification, download, and deletion boundary | Report artifact security, supported report formats, report API, or reports.core adapter direction changes |
 | `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` | Approved programming stack and maintainability rules | Runtime language, framework, dependency, source-size, or verification policy changes |
 | `docs/design/UOK_UI_DESIGN_POLICY.md` | Mandatory UI design policy | UI system, layout, accessibility, appearance, or interaction rules change |
+| `docs/design/UOK_LOCALIZATION_AND_BIDIRECTIONAL_POLICY.md` | Mandatory shared localization, bidirectional layout, formatting, touch, and representative verification policy | Locale, translation, direction, logical layout, formatter, touch, reflow, or localized evidence changes |
 | `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md` | Workspace UI implementation method, specialist agent groups, reusable primitive promotion, and UI verification gates | UI implementation workflow, shared primitive rules, workspace anatomy, or specialist review responsibilities change |
 | `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md` | Apple-informed technical UI reference | UI implementation guidance needs updated source detail |
 | `docs/design/UOK_CONTACTS_WORKSPACE_MINIMAL_PHASES.md` | Contacts workspace phased UI target | Contacts workspace phase status or UI target changes |
@@ -130,10 +132,12 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0014-planning-reproducible-risk-analysis.md`
 - `docs/architecture/ADR-0015-planning-governed-optimization-and-recommendations.md`
 - `docs/architecture/ADR-0016-planning-scale-budgets-and-virtualization.md`
+- `docs/architecture/ADR-0017-uok-localization-bidirectional-and-touch-boundary.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
 - `docs/architecture/UOK_GLOBAL_SHARED_FEATURES.md`
+- `docs/design/UOK_LOCALIZATION_AND_BIDIRECTIONAL_POLICY.md`
 - `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 
 These documents must not overstate future plans as current behavior.

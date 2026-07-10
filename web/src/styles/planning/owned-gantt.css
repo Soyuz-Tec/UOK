@@ -7,7 +7,7 @@
   display: grid;
   grid-template-rows: 54px minmax(0, 1fr);
   min-width: 0;
-  border-right: var(--uok-line);
+  border-inline-end: var(--uok-line);
   overflow: hidden;
 }
 
@@ -31,7 +31,7 @@
 .planning-owned-grid-header-label {
   display: block;
   overflow: hidden;
-  padding-right: 28px;
+  padding-inline-end: 28px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -67,7 +67,8 @@
   border: 0;
   border-bottom: var(--uok-line);
   overflow: hidden;
-  padding: 0 calc(var(--uok-space-2) + 34px) 0 var(--uok-space-2);
+  padding-block: 0;
+  padding-inline: var(--uok-space-2) calc(var(--uok-space-2) + 34px);
   color: var(--uok-text-secondary);
   background: transparent;
   font: 600 var(--uok-callout) var(--uok-font-family);
@@ -88,20 +89,20 @@
 }
 
 .planning-owned-grid-row.complete {
-  border-left: 3px solid var(--uok-status-success);
+  border-inline-start: 3px solid var(--uok-status-success);
 }
 
 .planning-owned-grid-row.in-progress {
-  border-left: 3px solid var(--uok-accent);
+  border-inline-start: 3px solid var(--uok-accent);
 }
 
 .planning-owned-grid-row.overdue,
 .planning-owned-grid-row.blocked {
-  border-left: 3px solid var(--uok-status-danger);
+  border-inline-start: 3px solid var(--uok-status-danger);
 }
 
 .planning-owned-grid-row.critical {
-  border-left: 3px solid var(--uok-status-warning);
+  border-inline-start: 3px solid var(--uok-status-warning);
 }
 
 .planning-owned-grid-row.selected {
@@ -109,6 +110,7 @@
 }
 
 .planning-owned-chart {
+  direction: ltr;
   min-width: 0;
   overflow: auto;
   background: var(--uok-bg-elevated);
@@ -289,7 +291,7 @@
 
   .planning-owned-grid {
     max-height: 220px;
-    border-right: 0;
+    border-inline-end: 0;
     border-bottom: var(--uok-line);
   }
 }

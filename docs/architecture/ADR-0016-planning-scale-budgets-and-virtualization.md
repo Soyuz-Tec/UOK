@@ -28,6 +28,10 @@ The backend benchmark builds transaction-local fixtures and always rolls them
 back. It records database, Python, platform, machine, processor, CPU count, all
 samples, mean, maximum, and p95.
 
+The official Chromium budget profile uses one worker. Functional scenarios may
+run concurrently elsewhere, but synthetic browser contention is not included
+inside the renderer budget.
+
 The unwindowed Chromium baseline took 4,073.60 milliseconds, so the browser
 budget was breached. Enable first-party row and timeline windowing only above
 200 visible tasks. Use a shared row layout, 480-pixel overscan, synchronized

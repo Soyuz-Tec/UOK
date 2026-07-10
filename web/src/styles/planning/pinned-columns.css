@@ -1,9 +1,15 @@
 .planning-owned-grid-header > .planning-owned-pinned-column,
 .planning-owned-grid-row > .planning-owned-pinned-column {
   position: sticky;
+  inset-inline-start: var(--planning-pinned-offset, 0);
   z-index: 3;
   background: var(--uok-bg-elevated);
   box-shadow: 1px 0 0 var(--uok-row-separator-color);
+}
+
+:root[dir="rtl"] .planning-owned-grid-header > .planning-owned-pinned-column,
+:root[dir="rtl"] .planning-owned-grid-row > .planning-owned-pinned-column {
+  box-shadow: -1px 0 0 var(--uok-row-separator-color);
 }
 
 .planning-owned-grid-header > .planning-owned-pinned-column {

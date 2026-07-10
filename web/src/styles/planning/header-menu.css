@@ -1,15 +1,15 @@
 .planning-owned-grid-header-label {
-  padding-right: 58px;
+  padding-inline-end: 58px;
 }
 
 .planning-owned-grid-header .planning-owned-sort-button {
-  right: 34px;
+  inset-inline-end: 34px;
 }
 
 .planning-owned-header-menu-trigger {
   position: absolute;
   top: 50%;
-  right: 9px;
+  inset-inline-end: 9px;
   display: inline-grid;
   place-items: center;
   width: 22px;

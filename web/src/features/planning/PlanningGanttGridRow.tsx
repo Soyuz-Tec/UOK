@@ -70,7 +70,7 @@ export function PlanningGanttGridRow({
       aria-rowindex={rowIndex}
       aria-expanded={task.task_type === "summary" ? summaryExpanded : undefined}
       tabIndex={0}
-      style={{ gridTemplateColumns, height: rowHeight, minHeight: rowHeight, minWidth, ...(virtualTop === undefined ? {} : { position: "absolute", top: virtualTop, left: 0 }) } as CSSProperties}
+      style={{ gridTemplateColumns, height: rowHeight, minHeight: rowHeight, minWidth, ...(virtualTop === undefined ? {} : { position: "absolute", top: virtualTop, insetInlineStart: 0 }) } as CSSProperties}
       onClick={() => onSelect(task.id)}
       onContextMenu={(event) => onOpenTaskMenu(task.id, event.clientX, event.clientY, event)}
       onDoubleClick={() => {

@@ -65,6 +65,8 @@ export function useWorkbench() {
     setActive,
     appearance: preferences.appearance,
     setAppearance: preferences.setAppearance,
+    locale: preferences.locale,
+    setLocale: preferences.setLocale,
     contactGroupBy: preferences.contactGroupBy,
     setContactGroupBy: contactsState.setContactGroupBy,
     contactsView: preferences.contactsView,

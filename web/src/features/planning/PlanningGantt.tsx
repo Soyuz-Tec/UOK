@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 
 import { useColumnOrder, useResizableColumns } from "../../shared/tables";
+import { useUokLocalization } from "../../shared/localization";
 import type { PlanningTask } from "./types";
 import {
   assignedResourceNames,
@@ -66,6 +67,8 @@ export function PlanningGantt({
   const gridScrollRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
+  const pendingFocusRef = useRef<string | null>(null);
+  const { t } = useUokLocalization();
   const [setShellElement, shellBlockSize] = useElementBlockSize<HTMLDivElement>();
   const [setChartSizeElement, , chartInlineSize] = useElementBlockSize<HTMLDivElement>();
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -112,6 +115,14 @@ export function PlanningGantt({
     setChartSizeElement(element);
   }, [setChartSizeElement]);
 
+  useEffect(() => {
+    const taskId = pendingFocusRef.current;
+    const row = taskId ? rowRefs.current.get(taskId) : null;
+    if (!row) return;
+    row.focus();
+    pendingFocusRef.current = null;
+  }, [renderedTasks]);
+
   usePlanningGanttNavigation({
     cellWidth: chart.cellWidth,
     chartStart: chart.start,
@@ -132,7 +143,7 @@ export function PlanningGantt({
     <div
       className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance} ${readOnly ? "planning-readonly-mode" : ""} ${linkDrag ? "planning-linking" : ""}`}
       ref={setShellElement}
-      aria-label="Planning Gantt chart"
+      aria-label={t("planning.gantt")}
       aria-readonly={readOnly}
       style={{ "--planning-gantt-content-height": `${shellHeight}px`, "--planning-grid-width": `${gridWidth}px` } as CSSProperties}
     >
@@ -142,7 +153,7 @@ export function PlanningGantt({
       <div
         className={`planning-owned-chart ${timelineInteraction.panning ? "panning" : ""}`}
         ref={setChartElement}
-        aria-label="Planning timeline"
+        aria-label={t("planning.timeline")}
         title="Drag empty timeline space to pan. Hold Shift and drag empty space to create a task. Hold Ctrl or Command and use the wheel to zoom."
         onPointerDown={timelineInteraction.onPointerDown}
         onPointerMove={timelineInteraction.onPointerMove}
@@ -164,7 +175,7 @@ export function PlanningGantt({
           width={width}
           height={canvasHeight}
           role="img"
-          aria-label={`${schedule.project.name} timeline`}
+          aria-label={`${schedule.project.name} ${t("planning.timeline")}`}
           onPointerMove={(event) => updateLinkPointer(event)}
           onPointerUp={() => setLinkDrag(null)}
         >
@@ -246,6 +257,7 @@ export function PlanningGantt({
   }
 
   function selectAndFocus(taskId: string) {
+    pendingFocusRef.current = taskId;
     onTaskSelect(taskId);
     rowRefs.current.get(taskId)?.focus();
   }

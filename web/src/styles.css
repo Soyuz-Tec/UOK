@@ -42,4 +42,5 @@
 @import "./styles/planning/toolbar.css";
 @import "./styles/planning/tooltips.css";
 @import "./styles/planning/tree-column.css";
+@import "./styles/accessibility.css";
 @import "./styles/responsive.css";

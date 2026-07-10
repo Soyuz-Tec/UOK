@@ -1,5 +1,6 @@
 export type Section = "overview" | "apps" | "contacts" | "calendar" | "communications" | "planning" | "evidence" | "architecture";
 export type Appearance = "system" | "light" | "dark";
+export type UokLocale = "en-US" | "ar";
 export type AuthMode = "signin" | "register";
 export type ModuleAction = "install" | "uninstall" | "disable" | "enable" | "upgrade";
 export type ContactsView = "split" | "table" | "cards" | "quality";

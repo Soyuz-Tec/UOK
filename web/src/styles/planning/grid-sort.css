@@ -1,7 +1,7 @@
 .planning-owned-sort-button {
   position: absolute;
   top: 50%;
-  right: 10px;
+  inset-inline-end: 10px;
   display: inline-grid;
   place-items: center;
   width: 22px;

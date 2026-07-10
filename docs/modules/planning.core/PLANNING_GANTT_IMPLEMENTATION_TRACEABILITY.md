@@ -1,6 +1,6 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gates A-D and the Gate E measured scale/virtualization slice runtime-proven; remaining Gate E reach/portfolio/production-like closure, hosted CI, review, and merge pending.
+**Status:** Gates A-D and Gate E measured scale/virtualization plus shared reach/accessibility runtime-proven; remaining portfolio/production-like closure, hosted CI, review, and merge pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -235,8 +235,8 @@ Current Gate D optimization/lifecycle evidence:
 |---|---|---|---|---|
 | PLA-E-001 | Measured performance budgets | Executable rollback-only profile captures database/runtime/hardware, all samples, p95/mean/max, approved thresholds, and zero retained fixture rows for schedule read, deterministic validation, and atomic batch scenarios | Rebuilt PostgreSQL profile and full-gate repeat | `runtime_proven` |
 | PLA-E-002 | Measurement-triggered virtualization | Unwindowed 500-row Chromium breach recorded; dependency-free window activates only above 200 rows with shared variable-height geometry, 480px overscan, synchronized grid/timeline scroll, total row metadata, and full small-schedule fallback | Full Chromium trace with interaction/long-task/mounted-count evidence and accessibility regression proof | `runtime_proven` |
-| PLA-E-003 | Keyboard, touch, accessibility, and responsive closure | Existing non-drag, keyboard, focus, responsive, and ARIA paths are runtime-proven | Dedicated touch/target/reflow/zoom/virtual-boundary verification | `planned` |
-| PLA-E-004 | UOK-wide localization and RTL | UI policy requires scalable text and RTL-safe layout | Shared UOK locale/direction primitives plus representative Planning render | `planned` |
+| PLA-E-003 | Keyboard, touch, accessibility, and responsive closure | Non-drag paths plus virtual-boundary focus handoff, ARIA total/index metadata, coarse-pointer 44px row action, touch selection, zero unnamed buttons, 320px reflow, 200% root text, screenshot, and console proof | Full regression/candidate repeat | `runtime_proven` |
+| PLA-E-004 | UOK-wide localization and RTL | Shared English/Arabic provider, workbench preference, English fallback, Arabic numerals, document metadata, translated shell/Planning labels, logical CSS/pinned offsets, and LTR chronology isolate | Representative RTL render, persistence, shared-provider unit test, and policy/ADR | `runtime_proven` |
 | PLA-E-005 | Portfolio and multi-project views | Project picker exposes one project at a time | Actor-scoped portfolio read model, typed UI, scale and empty/error proof | `planned` |
 | PLA-E-006 | Production-like closure | Rebuilt PostgreSQL scale profile passes | Performance, accessibility, recovery, observability, compatibility, and full candidate evidence | `planned` |
 
@@ -249,7 +249,17 @@ Current Gate E scale evidence:
 - Aligned renderer integration: `PlanningGantt.tsx`, `PlanningGanttGrid.tsx`, and `PlanningGanttGridRow.tsx`
 - Browser budget/trace: `web/e2e/planning-scale.spec.ts`
 - PostgreSQL profile: read p95 96.51 ms, validation p95 16.52 ms, batch p95 190.75 ms; zero persisted benchmark projects.
-- Full parallel Chromium verification profile: 1,919.80 ms interaction, 24 mounted grid/timeline rows, and 101 ms maximum post-idle long task; unwindowed baseline 4,073.60 ms.
+- Controlled single-worker Chromium verification profile: 1,179.30 ms interaction, 34 mounted grid/timeline rows, and no post-idle long task; unwindowed baseline 4,073.60 ms.
+
+Current Gate E reach evidence:
+
+- Architecture and policy: `docs/architecture/ADR-0017-uok-localization-bidirectional-and-touch-boundary.md` and `docs/design/UOK_LOCALIZATION_AND_BIDIRECTIONAL_POLICY.md`
+- Shared provider/registry: `web/src/shared/localization/UokLocalization.tsx`
+- Preference/document/account integration: `useWorkbenchPreferences.ts`, `App.tsx`, and `AccountMenu.tsx`
+- Logical/touch implementation: Planning Gantt grid/header/cell/row styles and `web/src/styles/accessibility.css`
+- Shared unit/persistence proof: `UokLocalization.test.tsx` and `App.test.tsx`
+- Keyboard boundary proof: `web/e2e/planning-scale.spec.ts`
+- Arabic RTL, touch, target, unnamed-button, 320px, 200%-text, persistence, screenshot, and console proof: `web/e2e/planning-reach.spec.ts`
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and
 GitHub check rollup so this durable map does not become stale when an evidence

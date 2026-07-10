@@ -82,6 +82,14 @@ describe("UOK app", () => {
 
     const menu = screen.getByRole("menu", { name: "Account menu" });
     expect(within(menu).getByRole("menuitemradio", { name: "System" })).toBeInTheDocument();
+    expect(within(menu).getByRole("menuitemradio", { name: "English" })).toBeInTheDocument();
+    fireEvent.click(within(menu).getByRole("menuitemradio", { name: "العربية" }));
+    await waitFor(() => expect(document.documentElement).toHaveAttribute("dir", "rtl"));
+    expect(document.documentElement).toHaveAttribute("lang", "ar");
+    expect(localStorage.getItem("uok_locale")).toBe("ar");
+    expect(screen.getByRole("button", { name: "التخطيط" })).toBeInTheDocument();
+    fireEvent.click(within(menu).getByRole("menuitemradio", { name: "English" }));
+    await waitFor(() => expect(document.documentElement).toHaveAttribute("dir", "ltr"));
     expect(within(menu).getByRole("menuitem", { name: "Refresh" })).toBeInTheDocument();
     expect(within(menu).getByRole("menuitem", { name: "Logout" })).toBeInTheDocument();
     expect(within(menu).queryByText("Admin User")).not.toBeInTheDocument();

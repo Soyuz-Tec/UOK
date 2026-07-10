@@ -1,6 +1,7 @@
 import type { KeyboardEvent, RefObject, UIEvent } from "react";
 
 import type { ColumnWidthMap } from "../../shared/tables";
+import { useUokLocalization } from "../../shared/localization";
 import type { PlanningDependencyChain } from "./planningDependencyChain";
 import { taskDependencyChainClass } from "./planningDependencyChain";
 import type { PlanningGridColumn } from "./planningGanttModel";
@@ -58,9 +59,10 @@ export function PlanningGanttGrid({ actions, bodyRef, state }: {
   bodyRef: RefObject<HTMLDivElement | null>;
   state: PlanningGanttGridState;
 }) {
+  const { t } = useUokLocalization();
   const taskIndexes = new Map(state.allTasks.map((task, index) => [task.id, index]));
   return (
-    <div className="planning-owned-grid" role="table" aria-label="Planning task grid" aria-rowcount={state.allTasks.length + 1}>
+    <div className="planning-owned-grid" role="table" aria-label={t("planning.grid")} aria-rowcount={state.allTasks.length + 1}>
       <PlanningGanttGridHeader
         assignedByTask={state.assignedByTask} columns={state.columns} gridTemplateColumns={state.gridTemplateColumns}
         totalWidth={state.totalWidth} widths={state.widths} pinnedOffsets={state.pinnedOffsets} tasks={state.allTasks}
