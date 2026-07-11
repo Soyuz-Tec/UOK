@@ -14,7 +14,7 @@ UOK modules can own domain behavior without copying common workspace and infrast
 |---|---|---|
 | Module event emission | `src/uok/module_events.py` | Contacts, Planning, Reports |
 | CSV row limits and spreadsheet-safe cells | `src/uok/data_exchange.py` | Contacts import, Reports formats |
-| Report artifact generation and download | `reports.core` plus `web/src/shared/exporting/serverReports.ts` | Planning exports |
+| Report artifact generation and download | `reports.core` plus `modules/reports.core/web/src/serverReports.ts` | Availability-gated Planning exports |
 | Search, filters, sort, grouping, and saved views | `web/src/shared/forms` | Contacts and Planning |
 | Table column visibility, resize, order, pinned columns, and row heights | `web/src/shared/tables` | Contacts and Planning |
 | Toggle, command, icon, and segmented controls | `web/src/shared/primitives` | Contacts and Planning |

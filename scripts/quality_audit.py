@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import dependency_policy
+import documentation_reference_policy
 import frontend_quality_policy
 import source_size_policy
 
@@ -25,6 +26,8 @@ def check_required_artifacts() -> CheckResult:
     required = [
         "README.md",
         "AGENTS.md",
+        "modules/README.md",
+        "web/README.md",
         "docs/ARCHITECTURE.md",
         "docs/DOCUMENTATION_INDEX.md",
         "docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md",
@@ -36,6 +39,7 @@ def check_required_artifacts() -> CheckResult:
         "docs/design/UOK_UI_DESIGN_POLICY.md",
         "docs/operations/UOK_STANDARD_OPERATIONS.md",
         "docs/operations/UOK_ASUH_TEST_EVENTS.md",
+        "docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
         "scripts/engineering_evidence.py",
         "scripts/check_generated_contracts.py",
@@ -44,6 +48,7 @@ def check_required_artifacts() -> CheckResult:
         "scripts/frontend_source_policy.py",
         "scripts/candidate_verifier_catalog.py",
         "scripts/dependency_policy.py",
+        "scripts/documentation_reference_policy.py",
         "scripts/quality_scorecard.py",
         "scripts/run_python_tests.py",
         "scripts/source_size_policy.py",
@@ -100,10 +105,21 @@ def check_module_shape() -> CheckResult:
     problems: list[str] = []
     for manifest in sorted((REPO_ROOT / "modules").glob("*/manifest.yaml")):
         module_root = manifest.parent
+        if not (module_root / "README.md").is_file():
+            problems.append(f"{module_root.relative_to(REPO_ROOT).as_posix()} missing README.md")
         for folder in ("backend", "web", "migrations", "tests"):
             if not (module_root / folder).is_dir():
                 problems.append(f"{module_root.relative_to(REPO_ROOT).as_posix()} missing {folder}/")
     return CheckResult("module_shape", not problems, "; ".join(problems) or "valid")
+
+
+def check_documentation_references() -> CheckResult:
+    problems = documentation_reference_policy.documentation_reference_problems(REPO_ROOT)
+    return CheckResult(
+        "documentation_references",
+        not problems,
+        "; ".join(problems) or "resolved",
+    )
 
 
 def check_source_size() -> CheckResult:
@@ -239,6 +255,7 @@ def run_checks() -> list[CheckResult]:
         check_frontend_stack(),
         check_runtime_stack(),
         check_module_shape(),
+        check_documentation_references(),
         check_source_size(),
         check_operations_hygiene(),
         check_internal_engineering_system(),

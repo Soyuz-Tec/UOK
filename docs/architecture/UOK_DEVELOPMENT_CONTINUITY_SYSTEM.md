@@ -115,7 +115,7 @@ These accepted lessons must guide future implementation:
 | New module | Update `docs/architecture/UOK_MODULE_ROADMAP.md`, add `docs/modules/<module-name>/`, and ensure module-local `README.md` files exist |
 | Agent runbook, governed tool binding, AI approval gate, or agent evidence change | Update `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` and `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | New module extension surface | Update `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`, `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`, tests, and an ADR if material |
-| New or changed module frontend surface | Update the owning manifest `web_surface`/`web_entry`/`web_section`, module-local `web/README.md`, generated frontend catalog, module frontend tests, and ADR/policy docs when the boundary changes |
+| New or changed module frontend surface | Update the owning manifest `web_surface`/`web_entry`/`web_section`, `modules/<module_name>/web/README.md`, generated frontend catalog, module frontend tests, and ADR/policy docs when the boundary changes |
 | New command, event, permission, API, migration, or owned table | Update module manifest, tests, module plan, and verification evidence |
 | New global UI primitive | Update or confirm `docs/design/UOK_UI_DESIGN_POLICY.md` and use `web/src/shared` |
 | Workspace UI implementation method, specialist role, or shared primitive promotion rule | Update `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`; update `docs/design/UOK_UI_DESIGN_POLICY.md` only when the design policy itself changes |

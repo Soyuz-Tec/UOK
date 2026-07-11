@@ -28,9 +28,10 @@ boundary and its integration with Planning typed links.
 Module-owned source and the canonical `CommunicationThread` SQLAlchemy mapping
 live under `modules/communications.core`. The legacy
 `src/uok/communication_models.py` path is an exact-class compatibility facade.
-The mapping is registered from the module manifest. The K Connect feature surface
-lives under `web/src/features/communications` and is composed through the
-shared module surface registry.
+The mapping is registered from the module manifest. The K Connect production
+surface and CSS live under `modules/communications.core/web/src`, its frontend
+tests live under `modules/communications.core/tests/web`, and the generated
+catalog composes its validated manifest entry through the shared surface registry.
 
 ## Deferred Work
 
@@ -43,7 +44,7 @@ shared module surface registry.
 
 ```powershell
 python -m pytest modules/communications.core/tests modules/planning.core/tests/test_planning_communication_links.py -q
-npm --prefix web test -- --run src/features/communications/CommunicationsWorkspace.test.tsx src/app/workbenchNavigation.test.ts src/features/planning/PlanningOperationLinksPanel.test.tsx
+npm --prefix web test -- --run ../modules/communications.core/tests/web/CommunicationsWorkspace.test.tsx src/app/workbenchNavigation.test.ts ../modules/planning.core/tests/web/PlanningOperationLinksPanel.test.tsx
 npm --prefix web run test:ui-proof
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```

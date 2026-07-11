@@ -134,7 +134,7 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 
 ## Closed Exception
 
-The legacy static fallback used HTML, CSS, and JavaScript in `src/uok/static/index.html`.
+The removed legacy static fallback used a standalone HTML, CSS, and JavaScript entry below the static package.
 
 That exception is closed in `UOK-3.0.0-rc8`. The executable fallback business logic has been removed; the root route must serve only the compiled React app or return an explicit missing-build error. New durable UI work belongs under `web/src` for shell/shared concerns or `modules/<module>/web/src` for module concerns and must pass TypeScript, frontend tests, deterministic generated-contract drift checking, and the candidate verification gates.
 
@@ -256,7 +256,7 @@ Changing this stack requires:
 
 1. An architecture decision record that explains the problem, alternatives, migration cost, operational impact, and rollback path.
 2. Updates to this policy.
-3. Updates to `src/uok/language_stack.py`.
+3. Updates to `scripts/dependency_policy.py`, `scripts/frontend_quality_policy.py`, and `scripts/quality_audit.py` as applicable.
 4. Updates to architecture alignment evidence.
 5. Tests or scripts that fail when the old and new rules are violated.
 6. A successful local candidate rebuild and verification run.

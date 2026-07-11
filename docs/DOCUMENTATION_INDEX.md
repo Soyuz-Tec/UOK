@@ -30,6 +30,8 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 |---|---|---|
 | `AGENTS.md` | Repo-local Codex working agreements and required preflight checks | Agent workflow, mandatory local checks, or repository-specific coding rules change |
 | `README.md` | Quick project entry, local run path, verification summary | Version, startup, login, or headline discipline changes |
+| `modules/README.md` | Module package shape and current module catalog | Module inventory, physical package shape, or module discoverability changes |
+| `web/README.md` | Product-neutral shell ownership and module frontend composition entry point | Shell/module frontend boundary, generated catalog, or frontend verification path changes |
 | `docs/ARCHITECTURE.md` | Top-level architecture, active candidate, system containers, boundaries, key decision links | Runtime units, boundaries, candidate identity, module model, or required gates change |
 | `docs/DOCUMENTATION_INDEX.md` | Documentation routing and artifact ownership | New durable Markdown artifact is added or an artifact changes purpose |
 | `docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md` | Development continuity process, feedback loop, documentation update rules | Workflow, quality gates, or continuity responsibilities change |
@@ -41,6 +43,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md` | GitHub-facing source-of-truth, ownership, dependency, Scorecard, branch-protection, and evidence controls | GitHub workflows, synchronization policy, CODEOWNERS, dependency monitoring, branch-protection expectations, or engineering evidence change |
 | `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md` | Repeatable Planning backend/browser budgets, profiles, evidence, and rollback-only fixture rules | Planning scale threshold, benchmark profile, virtualization trigger, or performance evidence changes |
 | `docs/operations/UOK_PLANNING_RELEASE_READINESS.md` | Gate E production-like local health, candidate, scale, recovery, live-browser, and evidence profile | Planning release-readiness composition or evidence boundary changes |
+| `docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md` | Calendar Core deployment scope, controls, deferred adapters, and local verification boundary | Calendar deployment scope, security controls, adapter status, or verification changes |
 | `docs/architecture/ADR-*` | Material architecture decisions | Boundary, runtime, data model, auth, deployment, framework, or major policy decisions change |
 | `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md` | Planning Gantt and UI proof dependency decision | Planning UI library, scheduling authority, or UI proof automation changes |
 | `docs/architecture/ADR-0003-planning-gate-a-stabilization.md` | Planning Gate A scheduling-correctness, write-safety, and evidence-maturity decision | Gate A scope, sequencing, evidence states, or closure requirements change |
@@ -85,9 +88,9 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` | Communications Core thread-provider roadmap and scope | K Connect thread identity, access, lifecycle, UI, or Planning integration changes |
 | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` | Contacts module roadmap and scope | Contacts behavior, workflows, module ownership, or acceptance changes |
 | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` | Planning Core module roadmap and scope | Gantt, scheduling, dependency, project, baseline, calendar, or planning verification behavior changes |
-| `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md` | Planning Gantt feature inventory and implementation status | Gantt grid, timeline, scheduling, dependency, resource, baseline, color, or workspace feature status changes |
-| `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md` | Gate A requirement-to-evidence map and closure status | A Gate A requirement, evidence link, verification result, or maturity state changes |
-| `docs/modules/planning.core/PLANNING_GANTT_EXTERNAL_FEATURE_INTAKE.md` | DHTMLX/SVAR-inspired Gantt feature intake and UOK implementation mapping | External Gantt feature research is added, promoted, or reprioritized for planning.core |
+| `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md` | Planning Gantt feature inventory and evidence maturity | Gantt grid, timeline, scheduling, dependency, resource, baseline, color, workspace feature, or maturity evidence changes |
+| `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md` | Gates A-E and architecture requirement-to-evidence map, closure status, and production-hardening boundary | A requirement, evidence link, verification result, maturity state, architecture closure, or residual hardening item changes |
+| `docs/modules/planning.core/PLANNING_GANTT_EXTERNAL_FEATURE_INTAKE.md` | DHTMLX/SVAR-inspired Gantt research and UOK intake disposition | External Gantt research or adopted/partial/deferred/global-boundary disposition changes; evidence maturity remains in the catalog and traceability map |
 | `modules/<module-name>/**/README.md` | Module-local implementation ownership | Module package layout, test ownership, migration ownership, or web ownership changes |
 | `docs/architecture/UOK_OPEN_SOURCE_ERP_QUALITY_RATING_CHART.md` | Peer quality comparison snapshot | Peer comparison or scoring basis changes |
 | `docs/architecture/UOK_PEER_CODE_FOLDER_STRUCTURE_COMPARISON.md` | Peer folder-structure comparison | Folder-structure comparison or peer scope changes |
@@ -111,6 +114,7 @@ Active policies are mandatory until replaced through an ADR or explicit policy u
 - `docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md`
 - `docs/operations/UOK_STANDARD_OPERATIONS.md`
 - `docs/operations/UOK_ASUH_TEST_EVENTS.md`
+- `docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md`
 - `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
 - `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md`
 
@@ -213,6 +217,7 @@ Operations records may reference local evidence under `var/`, but local evidence
 Documentation changes must pass the same naming and consistency checks as code changes when they touch active policy:
 
 ```powershell
+python scripts/quality_audit.py
 python scripts/run_python_tests.py
 python -m pytest tests/test_naming_policy.py -q
 ```

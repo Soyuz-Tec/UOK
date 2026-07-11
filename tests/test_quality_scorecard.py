@@ -33,4 +33,8 @@ def test_quality_scorecard_is_repeatable_and_complete() -> None:
     ]
     assert source_size_evidence
     assert all(evidence in {"source_size: pass", "source_size: review"} for evidence in source_size_evidence)
+    documentation = next(
+        category for category in scorecard["categories"] if category["name"] == "documentation"
+    )
+    assert "documentation_references: pass" in documentation["evidence"]
     assert "EngineeringEvidence" in scorecard["repeatability"]["local_command"]

@@ -21,12 +21,12 @@ The module must stay independently developable, installable, upgradable, disable
 | Manifest and lifecycle contract | `modules/contacts.core/manifest.yaml` |
 | Backend implementation | `modules/contacts.core/backend/uok_contacts_core` |
 | Module migrations | `modules/contacts.core/migrations` |
-| Module tests and verifier | `modules/contacts.core/tests` |
-| Current executable UI | `web/src/features/contacts` |
-| UI ownership marker | `modules/contacts.core/web` |
+| Module tests and verifier | `modules/contacts.core/tests` and `modules/contacts.core/verify` |
+| Executable UI and local CSS | `modules/contacts.core/web/src` |
+| Frontend tests | `modules/contacts.core/tests/web` |
 | Frontend composition | `web/src/features/modules/moduleSurfaceRegistry.tsx` |
 
-The current frontend is still compiled as part of the shared UOK React shell. A future packaging step may move more executable Contacts UI source under `modules/contacts.core/web`, but that must preserve React + TypeScript, generated API contracts, shared primitives, and the module surface registry.
+The Contacts frontend is module-owned and compiled into the shared UOK React build through its validated manifest entry and generated catalog. Shared React dependencies, generated API contracts, product-neutral primitives, and shell composition remain under the root `web` package.
 
 ## Manifest Contract
 
@@ -310,7 +310,7 @@ Near-term development should prioritize:
 5. Add contact activity filtering and clearer source provenance.
 6. Add optional vCard import/export under explicit permission rules.
 7. Expand team/ownership enforcement beyond the current metadata foundation.
-8. Move more executable Contacts UI source toward module-root packaging when the frontend composition model supports it.
+8. Narrow the transitional Workbench host contract without moving Contacts behavior back into the shell.
 9. Keep module migrations under `modules/contacts.core/migrations` and avoid expanding the shared baseline for Contacts-only changes.
 
 ## Non-Goals For Alpha.3

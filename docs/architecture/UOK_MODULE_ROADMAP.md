@@ -45,7 +45,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier scenario
 - module-owned behavior tests under `modules/contacts.core/tests`
 - module-owned operational index and contact group migrations under `modules/contacts.core/migrations`
-- frontend module surface registry for Contacts composition
+- module-owned Contacts React/CSS source and tests composed from its validated manifest through the generated frontend catalog
 
 It also introduces the `agents.core` scaffold as the next capability boundary for AI-powered business operations:
 
@@ -80,5 +80,6 @@ New modules must not add product-specific behavior to the UOK core. They must ex
 
 ## Next Boundary Work
 
-- Move more module-specific React source under module roots while keeping shared shell and controls in `web/src`.
+- Narrow the transitional Workbench surface host into smaller stable shell contracts without moving module behavior back into the shell.
+- Keep future module React/CSS source and frontend tests in canonical module roots from the first increment.
 - Keep future schema changes in module-owned migrations instead of expanding the shared initial baseline.

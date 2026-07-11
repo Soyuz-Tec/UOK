@@ -16,6 +16,7 @@ Each module must use this physical shape:
 
 ```text
 modules/<module_name>/
+  README.md
   manifest.yaml
   backend/
   web/
@@ -27,6 +28,8 @@ modules/<module_name>/
 ```
 
 UOK may provide compatibility facades, shared services, shell composition, and shared database primitives. Business behavior belongs in the module package.
+
+The module `README.md` is the human entry point for scope and ownership. It is enforced by the repository quality audit rather than the runtime manifest validator.
 
 ## Required Manifest Fields
 
@@ -151,4 +154,4 @@ Also run and review:
 
 ## Acceptance Rule
 
-A module is not ready for serious expansion unless its manifest, backend package, UI ownership, migrations, tests, permissions, command/event ownership, data retention behavior, and lifecycle behavior are declared and validated. A module with a workbench UI must additionally declare `web_surface`, its canonical `web_entry`, and a unique `web_section`; production source, local CSS, and frontend tests must remain in the owning module paths.
+A module is not ready for serious expansion unless its README, manifest, backend package, UI ownership, migrations, tests, permissions, command/event ownership, data retention behavior, and lifecycle behavior are declared and validated. A module with a workbench UI must additionally declare `web_surface`, its canonical `web_entry`, and a unique `web_section`; production source, local CSS, and frontend tests must remain in the owning module paths.

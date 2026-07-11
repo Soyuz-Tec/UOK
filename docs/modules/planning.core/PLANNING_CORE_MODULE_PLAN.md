@@ -41,7 +41,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - command-bus writes and idempotency
 - project-root optimistic concurrency with additive revisions/task versions, canonical strong schedule ETags, exact `If-Match`, and explicit `428`/`412` recovery
 - project-scoped atomic batches for task updates, dependency create/update/remove, resource assign/unassign, project calendars, typed links, and gate transitions, with ordered operations, one final schedule validation, one revision/ETag, capability-safe correlated events, and all-or-nothing rollback
-- server-derived Planning capability matrix with separate edit, baseline, leveling, cross-module link, gate approval, and administration permissions; UI review mode may only reduce server authority
+- server-derived Planning capability matrix with separate edit, baseline, leveling, cross-module link, gate approval, analysis execution, analysis approval, and administration permissions; UI review mode may only reduce server authority
 - database-enforced Planning date/type/progress/lag/allocation/scheduling-mode and uniqueness invariants with organization-first hierarchy/dependency/assignment indexes
 - one command correlation ID across successful responses, derived schedule changes, module events, and Planning schedule events
 - one structured error envelope across Planning validation, permission, idempotency, precondition, and batch failures, with the exact failed, denied, or original command-log correlation
@@ -69,9 +69,9 @@ Module files:
 - `modules/planning.core/backend/uok_planning_core`
 - `modules/planning.core/migrations`
 - `modules/planning.core/tests`
-- `web/src/features/planning`
+- `modules/planning.core/web/src`
 
-Shared shell and reusable controls remain under `web/src/shared` and `web/src/features/modules`.
+Frontend tests live under `modules/planning.core/tests/web`. Shared shell, catalog composition, and reusable controls remain under `web/src/features/modules` and `web/src/shared`.
 
 ## Scheduling Authority
 
@@ -285,5 +285,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 - richer bulk edit fields after owner, priority, and calendar become first-class task fields
 - planning adapters for the separately deployed global import/export capability as needed
 - spreadsheet-style multi-cell keyboard editing beyond the current keyboard/form alternatives
-- module-root frontend source packaging
 - activate Operation Graph, shipment, asset, location, and agreement resolvers only when their owning providers expose organization-scoped authorization contracts

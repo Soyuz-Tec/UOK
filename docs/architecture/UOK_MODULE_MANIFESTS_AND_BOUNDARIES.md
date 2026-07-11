@@ -65,15 +65,23 @@ modules/<business_module>/
 
 The source-boundary scan must remain a strict candidate gate before any product module is promoted for local production-candidate testing.
 
-## Current bridge status
+## Current Bridge Status
 
 The former ORM bridge is closed: 29 capability mappings are physically owned by
 Calendar, Communications, Contacts, Planning, and Reports backends, while nine
 product-neutral mappings remain in `uok.kernel_models`. `uok.models` is an
 exact-class compatibility facade over the validated registry.
 
-This candidate still has one intentional bridge:
+The former frontend-location bridge is also closed. Apps Manager, Calendar,
+Communications, Contacts, and Planning own production React source and CSS under
+their canonical module web roots; their frontend tests live under
+`modules/<module_name>/tests/web`. Reports owns its typed report client and tests without
+declaring a workbench surface. Closed manifest metadata generates literal
+compile-time imports for the shell registry, and the browser never interprets
+YAML or dynamic module paths.
 
-- module-specific React source is composed through `web/src/features/modules/moduleSurfaceRegistry.tsx` and feature folders under `web/src/features`;
-
-Future module expansion should move module-owned UI behind module roots without weakening the shared shell and runtime boundaries. Module-owned ORM definitions, migrations, and behavior tests are active baseline requirements.
+One intentional compatibility bridge remains: the typed Workbench surface host
+passes existing shell state and commands into module renderers. It preserves
+current orchestration during relocation but is not a destination for new
+module-specific behavior. Module-owned ORM definitions, migrations, production
+UI, behavior tests, and verifier assets are active baseline requirements.

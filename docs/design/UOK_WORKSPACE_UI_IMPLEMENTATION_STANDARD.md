@@ -43,7 +43,7 @@ Use multiple live agents only when the task has parallelizable work with clear b
 2. Map reusable behavior before coding.
    - If a behavior can be used by more than one module, design it as module-neutral.
    - Shared UI belongs under `web/src/shared`.
-   - Feature-specific UI belongs under `web/src/features/<feature>` or the module-owned surface until it proves reusable.
+   - Module-specific production UI belongs under `modules/<module_name>/web/src`; only product-neutral shell, composition, generated contracts, and shared primitives belong under `web/src`.
 
 3. Keep the workspace calm.
    - Prefer one command surface, one selected-record surface, and one status/evidence surface.

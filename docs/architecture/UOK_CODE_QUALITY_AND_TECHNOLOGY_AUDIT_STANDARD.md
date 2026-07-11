@@ -23,8 +23,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 1. Keep one clear owner for every change.
    - Runtime composition and shared infrastructure belong in `src/uok`.
    - Business or capability behavior belongs in `modules/<module_name>`.
-   - Shared UI primitives belong in `web/src/shared`.
-   - Feature UI belongs in `web/src/features/<feature>`.
+   - Product-neutral shell, composition, generated contracts, and shared UI primitives belong in `web/src`.
+   - Module-specific production UI and CSS belong in `modules/<module_name>/web/src`; module frontend tests belong in `modules/<module_name>/tests/web`.
 
 2. Keep files reviewable.
    - Split before a file carries unrelated responsibilities.
@@ -80,7 +80,7 @@ The audit gate checks non-generated source files in:
 
 - `src`
 - `modules`
-- `web/src`
+- `web/src` and module frontend roots under `modules`
 - `tests`
 - `scripts`
 - `migrations`
@@ -96,7 +96,7 @@ The technology audit must confirm:
 - Python version policy remains `>=3.14`;
 - runtime and development Python dependencies are pinned, separated, and exactly aligned with the corresponding `pyproject.toml` dependency groups;
 - TypeScript `strict` remains enabled and `allowJs` remains disabled;
-- durable frontend JavaScript is not added under `web/src`;
+- durable frontend JavaScript is not added under `web/src` or `modules/*/web/src`;
 - `web/package-lock.json` is present;
 - Dockerfile, local compose, and CI stay aligned with Python 3.14, Node 26, and PostgreSQL 18;
 - container stages install runtime Python requirements only;
@@ -104,6 +104,7 @@ The technology audit must confirm:
 - every module manifest has `backend`, `web`, `migrations`, and `tests` folders;
 - local evidence under `var/` remains ignored;
 - this standard is linked from the documentation index and operations runbook.
+- active documentation repository references, internal links, and index coverage resolve with exact path casing and contain no retired frontend locations.
 - engineering evidence includes a repeatable quality scorecard.
 
 ## Quality Scorecard

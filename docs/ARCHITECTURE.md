@@ -82,6 +82,13 @@ Operator browser
 - ADR-0009: `docs/architecture/ADR-0009-planning-typed-resource-boundary.md`
 - ADR-0010: `docs/architecture/ADR-0010-planning-resource-capacity-calendars.md`
 - ADR-0011: `docs/architecture/ADR-0011-planning-resource-calendar-correlation.md`
+- ADR-0012: `docs/architecture/ADR-0012-planning-explainable-resource-leveling.md`
+- ADR-0013: `docs/architecture/ADR-0013-planning-immutable-what-if-snapshots.md`
+- ADR-0014: `docs/architecture/ADR-0014-planning-reproducible-risk-analysis.md`
+- ADR-0015: `docs/architecture/ADR-0015-planning-governed-optimization-and-recommendations.md`
+- ADR-0016: `docs/architecture/ADR-0016-planning-scale-budgets-and-virtualization.md`
+- ADR-0017: `docs/architecture/ADR-0017-uok-localization-bidirectional-and-touch-boundary.md`
+- ADR-0018: `docs/architecture/ADR-0018-planning-portfolio-and-release-readiness.md`
 - ADR-0019: `docs/architecture/ADR-0019-planning-revision-ledger-and-transactional-outbox.md`
 - ADR-0020: `docs/architecture/ADR-0020-planning-project-lifecycle-and-finish-authority.md`
 - ADR-0021: `docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md`

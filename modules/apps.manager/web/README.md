@@ -3,7 +3,7 @@
 Apps Manager owns its production React source and CSS under
 `modules/apps.manager/web/src` and its frontend tests under
 `modules/apps.manager/tests/web`. The canonical surface entry is
-`web/src/moduleSurface.tsx` relative to this module root.
+`modules/apps.manager/web/src/moduleSurface.tsx`.
 
 The closed manifest declares `web_surface`,
 `modules/apps.manager/web/src/moduleSurface.tsx` as `web_entry`, and `apps` as

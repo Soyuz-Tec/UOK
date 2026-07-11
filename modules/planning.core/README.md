@@ -1,5 +1,9 @@
 # planning.core
 
+**Status:** Active optional capability module with locally runtime-proven Gates A-E.
+
+**Current candidate:** `UOK-3.1.0-alpha.3`
+
 `planning.core` is the optional UOK project planning capability module. It owns project schedules, task dependencies, task participant roles, planned/forecast/actual/deadline semantics, schedule validation, immutable revision/outbox evidence, Gantt read models, and module-local candidate verification.
 
 It also owns the controlled Planning project lifecycle and separate finish

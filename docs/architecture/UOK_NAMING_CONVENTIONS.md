@@ -21,7 +21,7 @@ Use the lowercase form `uok` only where files, Python packages, databases, volum
 |---|---|---|
 | Internal ID | Database identity | UUID |
 | Module name | Stable technical module identifier | `commodity.reference_product` |
-| Source package | Physical package path | `modules/reference.product/backend/reference_product` |
+| Source package | Physical package path | `modules/<module_name>/backend/<package_name>` |
 | Product code | Stable business/product code | `PRODUCT-CODE` |
 | Canonical name | Formal product name | `Reference product` |
 | Display label | Human-facing UI label | `Reference Product` |

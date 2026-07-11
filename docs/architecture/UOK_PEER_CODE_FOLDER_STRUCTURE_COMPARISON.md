@@ -1,7 +1,7 @@
 # UOK Peer Code Folder Structure Comparison
 
-**Assessment date:** 2026-07-06
-**UOK build assessed:** `UOK-3.1.0-alpha.2` local candidate
+**Assessment date:** 2026-07-10
+**UOK build assessed:** `UOK-3.1.0-alpha.3` local candidate
 **Scope:** UOK compared with mature open-source ERP/application-kernel repositories at the code-folder structure level.
 
 This document compares folder structure only. It should be read together with `UOK_OPEN_SOURCE_ERP_QUALITY_RATING_CHART.md`.
@@ -20,18 +20,19 @@ UOK/
     modules/
   migrations/
   modules/
+    agents.core/
     apps.manager/
       manifest.yaml
       backend/
-      web/
+      web/src/
       migrations/
-      tests/
+      tests/web/
+      verify/
+    calendar.core/
+    communications.core/
     contacts.core/
-      manifest.yaml
-      backend/
-      web/
-      migrations/
-      tests/
+    planning.core/
+    reports.core/
   scripts/
     verify/
   src/
@@ -54,20 +55,20 @@ Important current qualities:
 
 - Kernel code is centralized under `src/uok`.
 - API routes are split under `src/uok/api`.
-- Frontend source is clearly under `web/src`.
-- Frontend concerns are already split into `app`, `features`, `shared`, `styles`, and generated API contracts.
+- Product-neutral frontend shell, shared controls, and generated contracts are clearly under `web/src`.
+- Module production React/CSS source is under each declared `modules/<module_name>/web/src`, and module frontend tests are under `modules/<module_name>/tests/web`.
 - Shared verification helpers live under `scripts/verify`; module runtime and release verifiers live under `modules/<module>/verify`.
 - Tests are split by behavior area.
 - Docs contain active architecture, design, module, rating, and policy guardrails.
 - File-backed module manifests now live under top-level `modules/<module_name>`.
-- `contacts.core` backend implementation now lives under `modules/contacts.core/backend/uok_contacts_core`.
+- All runtime-proven capability ORM mappings and backend implementations are physically owned by their module packages.
 - The module extension contract now validates ownership paths, API prefixes, permissions, owned tables, extension points, data-retention policy, backend import targets, owned model exports, and module-declared candidate verifier scripts.
-- `contacts.core` commands, command permissions, role grants, dashboard counts, baseline evidence checks, model exports, API router, and candidate verifier scenario are manifest-declared runtime surfaces.
+- Runtime extension points, owned paths, frontend entries, sections, and verifier scenarios are manifest-declared and validated before composition.
 - The frontend shell now has a compile-time module surface registry under `web/src/features/modules`.
 
 Important current limitation:
 
-- UOK now has a physical module source root and manifest-declared backend runtime surfaces. Module-specific React source and pytest suites are still partly bridged from top-level folders; the next maturity step is moving more UI, migrations, and behavior tests behind each module root while keeping shared shell/kernel code in shared locations.
+- The module frontend location boundary is physical, but the typed Workbench host still passes broad existing shell state and commands into module renderers. The next maturity step is narrowing that compatibility interface while keeping module behavior out of the shell.
 
 ## Peer Folder Patterns
 
@@ -124,7 +125,7 @@ Current UOK:
 UOK/
   src/uok/    kernel and compatibility facades
   modules/    file-backed installable module packages
-  web/src/    React UI source
+  web/src/    product-neutral React shell, shared controls, and generated catalogs
   docs/       policies and module plans
   tests/      behavior tests
   scripts/    verification and packaging scripts
@@ -133,8 +134,8 @@ UOK/
 The difference is important:
 
 - Odoo has a mature physical add-on boundary.
-- UOK now has a physical module boundary, manifest loader, manifest-declared backend runtime surfaces, and a frontend module surface registry.
-- UOK should deepen that boundary by moving more module-owned UI, migrations, and behavior tests behind each module before adding many more modules.
+- UOK now has a physical module boundary for backend, ORM, migrations, production UI/CSS, tests, and verifiers, plus closed manifests and a generated compile-time frontend registry.
+- UOK should deepen that boundary by narrowing the transitional Workbench host and keeping future modules canonical from their first increment.
 
 ## Recommended UOK Target Structure
 
@@ -240,13 +241,13 @@ The core idea:
 
 ## Conclusion
 
-UOK's current folder structure is cleaner and easier to review than most mature ERP repositories because it is still small. The main structural improvement from this pass is that UOK now has a physical module source root with file-backed manifests and manifest-declared module runtime surfaces.
+UOK's current folder structure is cleaner and easier to review than most mature ERP repositories because it is still small. The main structural improvement from this pass is complete physical ownership for module backend/ORM, migrations, production React/CSS, tests, and verifiers, with file-backed manifests driving validated runtime and compile-time composition.
 
-Before UOK adds CRM Basic, Products, Cargo Transactions, Accounting, Inventory, or Documents, the kernel should keep enforcing `modules/<module_name>` packaging and move more module-specific UI, migrations, and behavior tests under those module roots. That keeps UOK moving from a small modular monolith toward a mature ERP/application kernel without turning the core into a large mixed-responsibility monolith.
+Before UOK adds CRM Basic, Products, Cargo Transactions, Accounting, Inventory, or Documents, the kernel should keep enforcing `modules/<module_name>` packaging, narrow the remaining shell-host compatibility bridge, and require new modules to begin with canonical ownership. That keeps UOK moving from a small modular monolith toward a mature ERP/application kernel without turning the core into a large mixed-responsibility monolith.
 
 ## Sources
 
-- UOK local source tree: `C:\Users\vasan\OneDrive\Documents\UOK`
+- UOK local source tree at the repository root.
 - UOK quality chart: `docs/architecture/UOK_OPEN_SOURCE_ERP_QUALITY_RATING_CHART.md`
 - Odoo: https://github.com/odoo/odoo
 - Frappe Framework: https://github.com/frappe/frappe
