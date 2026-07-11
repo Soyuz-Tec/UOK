@@ -35,6 +35,7 @@ ROOT_REFERENCES = frozenset(
 )
 TEMPLATE_MARKERS = frozenset("*?[]{}<>$")
 HISTORICAL_DOCUMENT_NAMES = frozenset({"RC9_REFERENCE_TARGET.md"})
+GENERATED_OUTPUT_REFERENCES = frozenset({"src/uok/static/app"})
 RETIRED_FRONTEND_REFERENCES = (
     "src/app/contactDraft.ts",
     "src/app/useContactCommands.ts",
@@ -199,7 +200,7 @@ def documentation_reference_problems(repo_root: Path) -> list[str]:
                 continue
             for match in INLINE_CODE.finditer(line):
                 reference = _repository_reference(match.group(1))
-                if reference is None or _exists_with_exact_case(
+                if reference is None or reference in GENERATED_OUTPUT_REFERENCES or _exists_with_exact_case(
                     repo_root,
                     reference,
                     tracked_paths,

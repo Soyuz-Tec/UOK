@@ -29,6 +29,19 @@ def test_missing_inline_repository_reference_is_reported(tmp_path: Path) -> None
     ]
 
 
+def test_generated_output_directory_does_not_require_checkout_artifacts(tmp_path: Path) -> None:
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "POLICY.md").write_text(
+        "Build into `src/uok/static/app`, but do not claim `src/uok/static/app/main.js`.\n",
+        encoding="utf-8",
+    )
+
+    assert documentation_reference_policy.documentation_reference_problems(tmp_path) == [
+        "docs/POLICY.md:1: missing repository reference src/uok/static/app/main.js"
+    ]
+
+
 def test_templates_and_fenced_target_shapes_are_not_current_references(
     tmp_path: Path,
 ) -> None:
