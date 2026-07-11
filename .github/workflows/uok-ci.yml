@@ -87,6 +87,9 @@ jobs:
           PYTHONPATH: src
         run: python scripts/run_python_tests.py
 
+      - name: Verify database connection-capacity policy
+        run: python scripts/verify_database_capacity.py --environment-file deploy/database-capacity.env
+
       - name: Verify PostgreSQL 18 initial baseline
         env:
           PYTHONPATH: src

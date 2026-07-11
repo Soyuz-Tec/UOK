@@ -15,6 +15,7 @@ Operator browser
   -> FastAPI UOK runtime
      -> runtime kernel under src/uok
      -> module packages under modules/<module_name>
+     -> validated bounded SQLAlchemy QueuePool per API process
      -> PostgreSQL 18 local candidate database
      -> compiled React assets under src/uok/static/app
 ```
@@ -24,6 +25,7 @@ Operator browser
 | Container | Location | Responsibility |
 |---|---|---|
 | Backend kernel | `src/uok` | FastAPI composition, auth/session security, command bus, module registry, lifecycle APIs, static asset serving, baseline evidence, migration gates, compatibility facades. |
+| Database connectivity | `src/uok/db.py`, `src/uok/db_pool.py` | Validated process-local SQLAlchemy pooling, stale-connection pre-ping, safe telemetry, bounded timeout behavior, and session lifecycle. |
 | Module packages | `modules/<module_name>` | Module manifest, backend package, module-owned ORM mappings, module-local React source and CSS, module tests, migrations, candidate verifier scenarios, and behavior. |
 | Frontend shell | `web/src` | React + TypeScript + Vite workbench shell, navigation, shared controls and tokens, typed module surface contract, and generated API/module catalogs. |
 | Database baseline | `migrations/001_initial_baseline.sql` | Initial shared candidate schema plus schema-version evidence. Future schema changes must be migration-gated and module-owned where applicable. |
@@ -63,6 +65,7 @@ Operator browser
 - `web_surface`, `web_entry`, and `web_section` are compile-time composition metadata, not Python import targets or browser runtime loading instructions. Their checked-in generated catalog must match the validated closed manifests.
 - Contacts pytest suites live under `modules/contacts.core/tests`; its candidate verifier and evidence composition live under `modules/contacts.core/verify`.
 - Planning behavior tests live under `modules/planning.core/tests`; its candidate and production-like runtime verifiers live under `modules/planning.core/verify`.
+- API database access currently uses one explicitly bounded SQLAlchemy QueuePool per API process. The executable capacity gate reads `deploy/database-capacity.env`, enforces mandatory reserves offline before Compose, and checks cluster-wide live usage immediately after health before an increased worker or replica deployment is accepted; an external PgBouncer topology remains deferred until measured demand or approved scale requires it.
 
 ## Key Decisions
 
@@ -94,10 +97,12 @@ Operator browser
 - ADR-0021: `docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md`
 - ADR-0022: `docs/architecture/ADR-0022-module-owned-orm-registration.md`
 - ADR-0023: `docs/architecture/ADR-0023-module-local-frontend-composition.md`
+- ADR-0024: `docs/architecture/ADR-0024-database-connection-pooling.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
 - Standard operations: `docs/operations/UOK_STANDARD_OPERATIONS.md`
+- Database connection-pooling operations: `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`
 - ASUH test events: `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - GitHub engineering guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
 - AI operations kernel architecture: `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md`

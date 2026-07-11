@@ -17,6 +17,8 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+    env_file:
+      - ./database-capacity.env
     environment:
       DATABASE_URL: postgresql+psycopg://uok:uok_local_password@db:5432/uok
       UOK_SECRET: local-uok-change-me

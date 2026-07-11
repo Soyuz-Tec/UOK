@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .. import APP_VERSION, TARGET_VERSION
-from ..db import get_db
+from ..db import database_pool_snapshot, get_db
 from ..evidence import baseline_evidence
 from ..migration_registry import verify_migration_discipline
 from ..models import CommandLog, EventRecord, ModuleRecord
@@ -58,6 +58,12 @@ def evidence(actor: Actor = Depends(current_actor), db: Session = Depends(get_db
 def source_boundary(actor: Actor = Depends(current_actor)) -> dict[str, Any]:
     require_permission(actor, "architecture.read")
     return source_boundary_report()
+
+
+@router.get("/api/architecture/database-pool")
+def database_pool(actor: Actor = Depends(current_actor)) -> dict[str, Any]:
+    require_permission(actor, "architecture.read")
+    return database_pool_snapshot()
 
 
 @router.get("/api/architecture/alignment")

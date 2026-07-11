@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.exc import TimeoutError as SQLAlchemyTimeoutError
 
 from . import APP_VERSION
 from .module_contract_validation import validate_module_runtime_contracts
@@ -36,7 +37,7 @@ from .api.schemas import (
     RegisterRequest,
 )
 from .config import env_flag
-from .db import Base, SessionLocal, engine
+from .db import Base, SessionLocal, database_pool_telemetry, engine
 from .module_routers import mount_module_routers
 from .seed import seed
 
@@ -57,8 +58,11 @@ def bootstrap() -> str:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    bootstrap()
-    yield
+    try:
+        bootstrap()
+        yield
+    finally:
+        engine.dispose()
 
 
 app = FastAPI(title=APP_TITLE, version=APP_VERSION, lifespan=lifespan)
@@ -69,6 +73,16 @@ if STATIC_DIR.exists():
 @app.exception_handler(PermissionError)
 def permission_error_handler(_: Request, exc: PermissionError) -> JSONResponse:
     return JSONResponse(status_code=403, content={"detail": f"Permission denied: {exc}"})
+
+
+@app.exception_handler(SQLAlchemyTimeoutError)
+def database_pool_timeout_handler(_: Request, __: SQLAlchemyTimeoutError) -> JSONResponse:
+    database_pool_telemetry.record_timeout()
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Database connection pool is temporarily unavailable"},
+        headers={"Retry-After": "1"},
+    )
 
 
 app.add_exception_handler(RequestValidationError, uok_request_validation_error_handler)

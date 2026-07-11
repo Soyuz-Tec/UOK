@@ -41,6 +41,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/operations/UOK_STANDARD_OPERATIONS.md` | Standard local operations, audits, GitHub preflight, backup, restore, rebuild, repeatable commands | Operations command, evidence, backup, restore, or GitHub workflow changes |
 | `docs/operations/UOK_ASUH_TEST_EVENTS.md` | Local ASUH incident-drill schedule and event trigger rules | ASUH event types, local schedules, or incident drill expectations change |
 | `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md` | GitHub-facing source-of-truth, ownership, dependency, Scorecard, branch-protection, and evidence controls | GitHub workflows, synchronization policy, CODEOWNERS, dependency monitoring, branch-protection expectations, or engineering evidence change |
+| `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md` | Application pool configuration, connection-capacity budgets, telemetry, recovery verification, and the PgBouncer activation boundary | Pool settings, worker/replica budget, database limits, recovery checks, or external-pooler decision changes |
 | `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md` | Repeatable Planning backend/browser budgets, profiles, evidence, and rollback-only fixture rules | Planning scale threshold, benchmark profile, virtualization trigger, or performance evidence changes |
 | `docs/operations/UOK_PLANNING_RELEASE_READINESS.md` | Gate E production-like local health, candidate, scale, recovery, live-browser, and evidence profile | Planning release-readiness composition or evidence boundary changes |
 | `docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md` | Calendar Core deployment scope, controls, deferred adapters, and local verification boundary | Calendar deployment scope, security controls, adapter status, or verification changes |
@@ -67,6 +68,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md` | Closed manifest schema/maturity, runtime-release validation split, module verifier ownership, and Apps Manager adapter boundary | Manifest schema, maturity, extension hooks, verifier discovery, or Apps Manager API ownership changes |
 | `docs/architecture/ADR-0022-module-owned-orm-registration.md` | Single-Base kernel/module ORM ownership, deterministic registration, exact compatibility identity, and static-validation boundary | ORM ownership, model providers, registration order, metadata composition, or compatibility aliases change |
 | `docs/architecture/ADR-0023-module-local-frontend-composition.md` | Module-local React/CSS/test ownership, closed-manifest frontend metadata, deterministic compile-time catalog generation, and transitional shell host boundary | Module frontend paths, surface metadata, catalog generation, shell composition, test discovery, or frontend container packaging changes |
+| `docs/architecture/ADR-0024-database-connection-pooling.md` | Bounded process-local pooling, capacity enforcement, telemetry, and evidence-gated deferral of PgBouncer | Database pooling ownership, capacity formula, connection topology, or PgBouncer activation conditions change |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -116,6 +118,7 @@ Active policies are mandatory until replaced through an ADR or explicit policy u
 - `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - `docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md`
 - `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
+- `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`
 - `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md`
 
 Implementation must either comply with these artifacts or update them through the policy-change process.
@@ -150,6 +153,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md`
 - `docs/architecture/ADR-0022-module-owned-orm-registration.md`
 - `docs/architecture/ADR-0023-module-local-frontend-composition.md`
+- `docs/architecture/ADR-0024-database-connection-pooling.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`

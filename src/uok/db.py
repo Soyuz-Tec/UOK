@@ -3,8 +3,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+
+from .db_pool import create_database_engine
 
 
 def _database_url() -> str:
@@ -14,8 +15,7 @@ def _database_url() -> str:
 
 
 DATABASE_URL = _database_url()
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, future=True, connect_args=connect_args)
+engine, database_pool_telemetry = create_database_engine(DATABASE_URL, os.environ)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 
@@ -26,3 +26,7 @@ class Base(DeclarativeBase):
 def get_db():
     with SessionLocal() as db:
         yield db
+
+
+def database_pool_snapshot() -> dict[str, object]:
+    return database_pool_telemetry.snapshot()

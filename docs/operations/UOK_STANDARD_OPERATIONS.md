@@ -4,7 +4,7 @@
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
-**Applies to:** local verification, audits, UI proof automation, folder organization checks, GitHub preparation, PostgreSQL backup and restore, Podman rebuilds, and repeatable incident drills.
+**Applies to:** local verification, audits, UI proof automation, folder organization checks, GitHub preparation, PostgreSQL connection capacity, backup and restore, Podman rebuilds, and repeatable incident drills.
 
 ## Purpose
 
@@ -29,6 +29,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `Verify` | Full audit plus frontend tests, static build, UI proof, and candidate verifier | `.\scripts\uok_ops.ps1 -Action Verify` |
 | `Rebuild` | Rebuild and start local Podman stack on `127.0.0.1:18088` | `.\scripts\uok_ops.ps1 -Action Rebuild` |
 | `Health` | Check local candidate `/health` | `.\scripts\uok_ops.ps1 -Action Health` |
+| `DatabaseCapacity` | Load the committed capacity policy, enforce its offline budget, and verify cluster-wide live PostgreSQL capacity, role safety, and grouped sessions | `.\scripts\uok_ops.ps1 -Action DatabaseCapacity` |
 | `PlanningReleaseReadiness` | Run Gate E candidate, PostgreSQL scale, recovery, live Chromium, observability, compatibility, and engineering-evidence checks | `.\scripts\uok_ops.ps1 -Action PlanningReleaseReadiness` |
 | `BackupDb` | Create local PostgreSQL 18 custom-format dump | `.\scripts\uok_ops.ps1 -Action BackupDb` |
 | `RestoreDb` | Restore a local dump into the local stack, guarded by explicit confirmation | `.\scripts\uok_ops.ps1 -Action RestoreDb -BackupPath <dump> -ConfirmRestore` |
@@ -128,6 +129,7 @@ Use when the running app, container image, database, or UI bundle changed:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Rebuild
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action DatabaseCapacity
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```
 
@@ -139,6 +141,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 The owned evidence composition and its non-production boundary are defined in
 `docs/operations/UOK_PLANNING_RELEASE_READINESS.md`.
+
+The database pool settings, capacity formula, recovery checks, and future external-pooler boundary
+are defined in `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`.
 
 ## Folder Organization Standard
 
@@ -224,6 +229,29 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 ```
 
 `GithubSecuritySetup` is intentionally idempotent for Dependabot alerts, Dependabot security updates, and merge hygiene. If GitHub blocks private-repo branch protection or repository rulesets on the current plan, the command reports the blocker and leaves issue tracking as the fallback.
+
+## PostgreSQL Connection Capacity
+
+Before building or deploying, run the credential-free offline gate from the
+canonical committed policy:
+
+```powershell
+python scripts/verify_database_capacity.py --environment-file deploy/database-capacity.env
+```
+
+After the stack is running, verify the same policy against cluster-wide live
+PostgreSQL state:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action DatabaseCapacity
+```
+
+`Rebuild` loads `deploy/database-capacity.env` and runs the offline gate before
+Compose starts. After health succeeds, it uses a one-shot, bounded-timeout,
+read-only live connection inside the API container. Live mode replaces offline
+database-limit assumptions and fails if UOK sessions exceed declared app
+demand, non-UOK client sessions exceed the direct-tool reserve, or actual
+remaining connections fall below operational headroom.
 
 ## PostgreSQL Backup
 

@@ -4390,6 +4390,57 @@
         ]
       }
     },
+    "/api/architecture/database-pool": {
+      "get": {
+        "operationId": "database_pool_api_architecture_database_pool_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Database Pool Api Architecture Database Pool Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Database Pool",
+        "tags": [
+          "system"
+        ]
+      }
+    },
     "/api/architecture/source-boundary": {
       "get": {
         "operationId": "source_boundary_api_architecture_source_boundary_get",

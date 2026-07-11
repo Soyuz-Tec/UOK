@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "PlanningReleaseReadiness", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
+    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "DatabaseCapacity", "PlanningReleaseReadiness", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
     [string]$Action = "Audit",
     [string]$BaseUrl = "http://127.0.0.1:18088",
     [string]$ProjectName = "uok",
@@ -161,10 +161,40 @@ function Invoke-UokVerify {
 }
 
 function Invoke-UokRebuild {
+    Invoke-UokDatabaseCapacityOffline
     Invoke-UokStep "Rebuild local Podman stack" {
         Invoke-Native "podman" @("compose", "-p", $ProjectName, "-f", $ComposeFile, "up", "-d", "--build")
     }
     Invoke-UokHealth
+    Invoke-UokDatabaseCapacityLive
+}
+
+function Invoke-UokDatabaseCapacityOffline {
+    Invoke-UokStep "Offline database connection-capacity policy" {
+        Invoke-Native "python" @(
+            "scripts/verify_database_capacity.py",
+            "--environment-file",
+            "deploy/database-capacity.env"
+        )
+    }
+}
+
+function Invoke-UokDatabaseCapacityLive {
+    Invoke-UokStep "Live database connection-capacity policy" {
+        $apiContainer = "$ProjectName-api-1"
+        Invoke-Native "podman" @(
+            "exec",
+            $apiContainer,
+            "python",
+            "scripts/verify_database_capacity.py",
+            "--live"
+        )
+    }
+}
+
+function Invoke-UokDatabaseCapacity {
+    Invoke-UokDatabaseCapacityOffline
+    Invoke-UokDatabaseCapacityLive
 }
 
 function Invoke-UokAsuhTest {
@@ -236,6 +266,7 @@ switch ($Action) {
     "Verify" { Invoke-UokVerify }
     "Rebuild" { Invoke-UokRebuild }
     "Health" { Invoke-UokHealth }
+    "DatabaseCapacity" { Invoke-UokDatabaseCapacity }
     "PlanningReleaseReadiness" { Invoke-UokPlanningReleaseReadiness }
     "BackupDb" { Invoke-UokBackupDb }
     "RestoreDb" { Invoke-UokRestoreDb }

@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+import database_capacity_audit
 import dependency_policy
 import documentation_reference_policy
 import frontend_quality_policy
@@ -11,6 +12,8 @@ import source_size_policy
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
 @dataclass
 class CheckResult:
     name: str
@@ -36,11 +39,14 @@ def check_required_artifacts() -> CheckResult:
         "docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md",
         "docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md",
         "docs/architecture/ADR-0023-module-local-frontend-composition.md",
+        "docs/architecture/ADR-0024-database-connection-pooling.md",
         "docs/design/UOK_UI_DESIGN_POLICY.md",
         "docs/operations/UOK_STANDARD_OPERATIONS.md",
         "docs/operations/UOK_ASUH_TEST_EVENTS.md",
         "docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
+        "docs/operations/UOK_DATABASE_CONNECTION_POOLING.md",
+        "deploy/database-capacity.env",
         "scripts/engineering_evidence.py",
         "scripts/check_generated_contracts.py",
         "scripts/generate_frontend_module_catalog.py",
@@ -53,8 +59,12 @@ def check_required_artifacts() -> CheckResult:
         "scripts/run_python_tests.py",
         "scripts/source_size_policy.py",
         "scripts/validate_container_module_assets.py",
+        "scripts/verify_database_capacity.py",
+        "scripts/database_capacity_live.py",
+        "scripts/database_capacity_audit.py",
         "scripts/uok_github_ops.ps1",
         "src/uok/module_release_contract.py",
+        "src/uok/db_pool.py",
         "requirements-dev.txt",
         ".github/CODEOWNERS",
         ".github/copilot-instructions.md",
@@ -96,8 +106,10 @@ def check_runtime_stack() -> CheckResult:
         "Docker validates manifest-declared module assets": dockerfile.count(
             "python scripts/validate_container_module_assets.py --require-tests-excluded"
         ) == 2,
+        "Docker explicit single API worker": '"--workers", "1"' in dockerfile,
     }
     problems.extend(name for name, ok in expected.items() if not ok)
+    problems.extend(database_capacity_audit.database_capacity_policy_problems(REPO_ROOT))
     return CheckResult("runtime_stack", not problems, "; ".join(problems) or "aligned")
 
 
@@ -143,6 +155,8 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("standard operations runbook must document EngineeringEvidence")
     if "UiProof" not in runbook:
         problems.append("standard operations runbook must document UiProof")
+    if "DatabaseCapacity" not in runbook:
+        problems.append("standard operations runbook must document DatabaseCapacity")
     for action in ("GithubReadiness", "GithubSecuritySetup", "GithubPrChecks"):
         if action not in runbook:
             problems.append(f"standard operations runbook must document {action}")
@@ -155,6 +169,8 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("CI must use the repository Python test runner")
     if '"scripts/run_python_tests.py"' not in operations_script:
         problems.append("local Audit must use the repository Python test runner")
+    if '"--environment-file"' not in operations_script or '"deploy/database-capacity.env"' not in operations_script:
+        problems.append("standard operations must use the canonical database capacity environment")
     release_validator = "validate_module_release_contracts"
     if release_validator not in ci:
         problems.append("CI must enforce the module release contract")
@@ -169,6 +185,10 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("documentation index must route GitHub guardrails")
     if "ADR-0021-module-manifest-runtime-and-release-truth.md" not in index:
         problems.append("documentation index must route the manifest runtime/release ADR")
+    if "ADR-0024-database-connection-pooling.md" not in index:
+        problems.append("documentation index must route the database pooling ADR")
+    if "UOK_DATABASE_CONNECTION_POOLING.md" not in index:
+        problems.append("documentation index must route the database pooling runbook")
     return CheckResult("operations_hygiene", not problems, "; ".join(problems) or "documented")
 
 
@@ -212,6 +232,8 @@ def check_internal_engineering_system() -> CheckResult:
         problems.append("documentation index must route internal engineering system")
     if "UOK_INTERNAL_ENGINEERING_SYSTEM.md" not in architecture:
         problems.append("architecture must link internal engineering system")
+    if "ADR-0024-database-connection-pooling.md" not in architecture:
+        problems.append("architecture must link database connection-pooling decision")
     if "UOK Internal Engineering System" not in pr_template:
         problems.append("PR template must ask for internal engineering system impact")
     return CheckResult("internal_engineering_system", not problems, "; ".join(problems) or "mapped")
