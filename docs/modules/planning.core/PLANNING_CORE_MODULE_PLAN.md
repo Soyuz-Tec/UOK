@@ -23,10 +23,10 @@ Planning Gate A is governed by `docs/architecture/ADR-0003-planning-gate-a-stabi
 Detailed feature inventory and implementation status are tracked in `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md`.
 
 - project list
-- actor-scoped bounded portfolio metrics, explainable health, multi-project timeline, filters, and project drill-in
+- actor-scoped bounded portfolio metrics, explainable health, multi-project timeline, shared search/refinement controls, bounded pagination, and project drill-in
 - project schedule read model
 - editable task grid and inspector path for create, update, delete, hierarchy, status, progress, and task type
-- traditional Gantt workspace with compact project command bar, Gantt view tab rail, project metadata chips, selection control, grid/timeline, keyboard row navigation, task command toolbar, task row context menu, expand/collapse, cascade sorting, field presets, filters, undo/redo, global export/import boundary use, hour/day/week/month/quarter/year scale controls, today/fit/focus controls, critical and baseline toggles, read-model Board/List/Calendar/Workload/People/Dashboard views, and tabbed inspector panels
+- traditional Gantt workspace composed with the shared `WorkspaceCommandBar`: task search and live refinements lead, project context follows, view/Fields/secondary commands stay grouped, and one trailing `New task` command remains primary. Advanced saved views, columns, review/focus, scale, navigation, exports, density, critical, and baseline controls use the same accessible expandable-panel behavior as other workspaces. The grid/timeline, keyboard row navigation, row context menu, Gantt virtualization, read-model Board/List/Calendar/Workload/People/Dashboard views, and tabbed inspector panels remain Planning-owned.
 - Gantt bars
 - milestone and summary task model
 - dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead
@@ -216,6 +216,9 @@ view that drills into the existing project schedule. The standard
 `PlanningReleaseReadiness` operation composes PostgreSQL performance,
 candidate, recovery, live-browser compatibility/accessibility, observability,
 and engineering-evidence checks without claiming production deployment.
+The portfolio frontend consumes the shared command surface and reusable
+pagination against the existing bounded `limit`/`offset` contract; it does not
+invent a project-creation action or move portfolio aggregation into the shell.
 
 ## Calendar Correlation Boundary
 

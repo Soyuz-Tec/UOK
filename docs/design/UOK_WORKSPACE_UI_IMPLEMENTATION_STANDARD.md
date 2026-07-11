@@ -68,6 +68,9 @@ Every durable module workspace should use this structure unless the module plan 
 2. Command and search surface
    - Search, filters, grouping, sort, saved views, view mode, pagination, and primary create action should be organized as one coherent command surface.
    - Do not show the same active filter in multiple competing places.
+   - Use the shared workspace command bar for module-neutral layout. It exposes optional query, context, pagination, view, fields, secondary-action, and primary-action slots while keeping module state and business commands inside the owning module.
+   - Keep the command bar to at most three labelled groups in stable order: query, context, and actions. Do not use the ARIA `toolbar` role unless the complete toolbar keyboard interaction pattern is implemented.
+   - Expandable filter/control panels apply changes live without dismissing. Clear resets refinements while the panel remains available for inspection; Done, Escape, outside activation, and an explicitly applied saved view dismiss and return focus to the trigger. Narrow layouts keep the panel inside the viewport as a one-column surface.
 
 3. Results surface
    - Supports list/detail, table, and cards only when each view has a clear user need.
@@ -97,6 +100,7 @@ Required shared primitives include:
 - app shell and navigation
 - account menu
 - command button and icon button
+- workspace command bar with responsive query, context, and action grouping
 - segmented control
 - search and filter workspace
 - saved views

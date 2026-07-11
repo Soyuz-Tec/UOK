@@ -11,7 +11,8 @@ export function useSavedSearchViews(storageKey: string) {
   }, [savedViews, storageKey]);
 
   const upsertSavedView = (view: SavedSearchView) => {
-    setSavedViews((current) => [view, ...current.filter((item) => item.name !== view.name)].slice(0, 8));
+    const normalizedName = view.name.trim().toLocaleLowerCase();
+    setSavedViews((current) => [view, ...current.filter((item) => item.name.trim().toLocaleLowerCase() !== normalizedName)].slice(0, 8));
   };
 
   const deleteSavedView = (viewId: string) => {

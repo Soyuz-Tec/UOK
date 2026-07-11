@@ -1,8 +1,11 @@
-import { FolderOpen, RefreshCw, Search } from "lucide-react";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { FolderOpen, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { SearchWorkspace } from "@uok/shared/forms";
+import { WorkspaceCommandBar } from "@uok/shared/layout";
 import { useUokLocalization } from "@uok/shared/localization";
 import { CommandButton } from "@uok/shared/primitives";
+import { PaginationControls } from "@uok/shared/tables";
 import { loadPlanningPortfolio } from "./planningPortfolioApi";
 import type { PlanningPortfolioHealth, PlanningPortfolioProject, PlanningPortfolioResponse } from "./portfolioTypes";
 import type { PlanningProjectStatus } from "./types";
@@ -11,30 +14,33 @@ export function PlanningPortfolioView({ token, onOpenProject }: { token: string;
   const { formatNumber, t } = useUokLocalization();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<PlanningProjectStatus | "">("");
-  const [applied, setApplied] = useState<{ query: string; status: PlanningProjectStatus | "" }>({ query: "", status: "" });
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
   const [refreshKey, setRefreshKey] = useState(0);
   const [data, setData] = useState<PlanningPortfolioResponse | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const requestVersion = useRef(0);
 
   const load = useCallback(async () => {
+    const version = ++requestVersion.current;
     setBusy(true);
     setError("");
+    setData(null);
     try {
-      setData(await loadPlanningPortfolio(token, { ...applied, limit: 50 }));
+      const result = await loadPlanningPortfolio(token, { query: query.trim(), status, limit: pageSize, offset: page * pageSize });
+      if (version === requestVersion.current) setData(result);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : t("planning.portfolio.error", "Portfolio could not be loaded."));
+      if (version === requestVersion.current) setError(reason instanceof Error ? reason.message : t("planning.portfolio.error", "Portfolio could not be loaded."));
     } finally {
-      setBusy(false);
+      if (version === requestVersion.current) setBusy(false);
     }
-  }, [applied, t, token]);
+  }, [page, pageSize, query, status, t, token]);
 
-  useEffect(() => { void load(); }, [load, refreshKey]);
-
-  function applyFilters(event: FormEvent) {
-    event.preventDefault();
-    setApplied({ query: query.trim(), status });
-  }
+  useEffect(() => {
+    void load();
+    return () => { requestVersion.current += 1; };
+  }, [load, refreshKey]);
 
   return (
     <div className="planning-portfolio" aria-label={t("planning.portfolio", "Planning portfolio")}>
@@ -44,36 +50,77 @@ export function PlanningPortfolioView({ token, onOpenProject }: { token: string;
           <h2>{t("planning.portfolio", "Portfolio")}</h2>
           <p>{t("planning.portfolio.summary", "Monitor delivery, risk, gates, and schedule windows across projects.")}</p>
         </div>
-        <CommandButton icon={RefreshCw} onClick={() => setRefreshKey((value) => value + 1)} loading={busy}>
-          {t("account.refresh", "Refresh")}
-        </CommandButton>
       </header>
 
-      <form className="planning-portfolio-filters" onSubmit={applyFilters}>
-        <label>
-          <span>{t("planning.portfolio.search", "Search projects")}</span>
-          <input value={query} onChange={(event) => setQuery(event.target.value)} type="search" />
-        </label>
-        <label>
-          <span>{t("planning.portfolio.status", "Project status")}</span>
-          <select value={status} onChange={(event) => setStatus(event.target.value as PlanningProjectStatus | "")}>
-            <option value="">{t("planning.portfolio.allStatuses", "All statuses")}</option>
-            <option value="draft">{t("planning.portfolio.draft", "Draft")}</option>
-            <option value="active">{t("planning.portfolio.active", "Active")}</option>
-            <option value="on_hold">{t("planning.portfolio.onHold", "On hold")}</option>
-            <option value="completed">{t("planning.portfolio.completed", "Completed")}</option>
-            <option value="archived">{t("planning.portfolio.archived", "Archived")}</option>
-          </select>
-        </label>
-        <CommandButton icon={Search} type="submit" primary>{t("planning.portfolio.apply", "Apply filters")}</CommandButton>
-      </form>
+      <WorkspaceCommandBar
+        className="planning-portfolio-command-bar"
+        label={t("planning.portfolio.commands", "Portfolio commands")}
+        query={<SearchWorkspace
+          label={t("planning.portfolio.search", "Search projects")}
+          value={query}
+          placeholder={t("planning.portfolio.search", "Search projects")}
+          defaultSummaryLabel={t("planning.portfolio.allStatuses", "All statuses")}
+          filters={[{
+            id: "status",
+            label: t("planning.portfolio.status", "Project status"),
+            value: status,
+            defaultValue: "",
+            options: portfolioStatusOptions(t),
+            onChange: (value) => {
+              setData(null);
+              setStatus(value as PlanningProjectStatus | "");
+              setPage(0);
+            },
+          }]}
+          groupBy="none"
+          groupOptions={[]}
+          savedViewsStorageKey="planning.portfolio.searchViews"
+          onChange={(value) => {
+            setData(null);
+            setQuery(value);
+            setPage(0);
+          }}
+          onGroupByChange={() => undefined}
+          onClear={() => {
+            setData(null);
+            setQuery("");
+            setStatus("");
+            setPage(0);
+          }}
+        />}
+        pagination={data ? <PaginationControls
+          label={t("planning.portfolio.paging", "Portfolio paging")}
+          page={data.limit ? Math.floor(data.offset / data.limit) : 0}
+          pageSize={data.limit}
+          pageSizeOptions={[25, 50]}
+          hasNext={data.offset + data.projects.length < data.total}
+          totalCount={data.total}
+          visibleCount={data.projects.length}
+          pageSizeLabel={t("planning.portfolio.pageSize", "Portfolio page size")}
+          emptyStatusLabel={t("planning.portfolio.noProjects", "No projects")}
+          rangeStatusLabel={(first, last, total) => `${t("planning.portfolio.showingProjects", "Showing projects")} ${formatNumber(first)} ${t("pagination.through", "through")} ${formatNumber(last)} ${t("pagination.of", "of")} ${formatNumber(total)}`}
+          onPageChange={(value) => {
+            setData(null);
+            setPage(value);
+          }}
+          onPageSizeChange={(value) => {
+            setData(null);
+            setPageSize(value);
+            setPage(0);
+          }}
+        /> : null}
+        secondaryActions={<CommandButton icon={RefreshCw} onClick={() => {
+          setData(null);
+          setRefreshKey((value) => value + 1);
+        }} loading={busy}>{t("account.refresh", "Refresh")}</CommandButton>}
+      />
 
       {error ? <p className="planning-portfolio-error" role="alert">{error}</p> : null}
       {!data && busy ? <p role="status">{t("planning.portfolio.loading", "Loading portfolio")}</p> : null}
       {data ? (
         <>
-          <section className="planning-portfolio-metrics" aria-label={t("planning.portfolio.metrics", "Portfolio metrics")}>
-            <Metric label={t("planning.portfolio.projects", "Projects")} value={formatNumber(data.summary.total_project_count)} />
+          <section className="planning-portfolio-metrics" aria-label={t("planning.portfolio.pageMetrics", "Current portfolio page metrics")}>
+            <Metric label={t("planning.portfolio.projects", "Projects")} value={formatNumber(data.summary.visible_project_count)} />
             <Metric label={t("planning.portfolio.tasks", "Tasks")} value={formatNumber(data.summary.task_count)} />
             <Metric label={t("planning.portfolio.atRisk", "At risk")} value={formatNumber(data.summary.at_risk_project_count)} />
             <Metric label={t("planning.portfolio.overdue", "Overdue tasks")} value={formatNumber(data.summary.overdue_task_count)} />
@@ -89,6 +136,17 @@ export function PlanningPortfolioView({ token, onOpenProject }: { token: string;
       ) : null}
     </div>
   );
+}
+
+function portfolioStatusOptions(t: (key: string, fallback?: string) => string) {
+  return [
+    { value: "", label: t("planning.portfolio.allStatuses", "All statuses") },
+    { value: "draft", label: t("planning.portfolio.draft", "Draft") },
+    { value: "active", label: t("planning.portfolio.active", "Active") },
+    { value: "on_hold", label: t("planning.portfolio.onHold", "On hold") },
+    { value: "completed", label: t("planning.portfolio.completed", "Completed") },
+    { value: "archived", label: t("planning.portfolio.archived", "Archived") },
+  ];
 }
 
 function Metric({ label, value }: { label: string; value: string }) {

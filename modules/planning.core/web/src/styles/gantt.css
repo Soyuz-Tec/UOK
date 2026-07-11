@@ -1,41 +1,63 @@
 .planning-timeline-workbench {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: var(--uok-space-2);
   min-width: 0;
   min-height: 100%;
 }
-
-.planning-gantt-toolbar,
+.planning-workspace-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--uok-space-3);
+  min-width: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3) var(--uok-space-4);
+  background: var(--uok-bg-elevated);
+}
 .planning-toolbar-group {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--uok-space-2);
 }
-
-.planning-gantt-toolbar {
-  display: grid;
-  grid-template-areas:
-    "title meta project plan"
-    "views commands commands controls";
-  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 280px) auto;
-  column-gap: var(--uok-space-2);
-  row-gap: var(--uok-space-1);
-  justify-content: stretch;
-  border: var(--uok-line);
-  border-radius: var(--uok-radius-2);
-  padding: var(--uok-space-2);
-  background: var(--uok-bg-elevated);
+.planning-command-bar .search-workspace {
+  inline-size: 100%;
 }
-
+.planning-command-bar {
+  grid-template-areas:
+    "query context"
+    "actions actions";
+  grid-template-columns: minmax(320px, 1fr) minmax(220px, 320px);
+}
+.planning-command-bar .workspace-command-bar-query {
+  grid-area: query;
+}
+.planning-command-bar .workspace-command-bar-context {
+  grid-area: context;
+  min-inline-size: min(280px, 28vw);
+}
+.planning-command-bar .workspace-command-bar-actions {
+  grid-area: actions;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  inline-size: 100%;
+  max-inline-size: 100%;
+}
+.planning-command-bar .planning-view-tabs {
+  flex: 1 1 100%;
+  max-inline-size: 100%;
+}
+.planning-schedule-controls {
+  grid-column: 1 / -1;
+  order: 2;
+}
 .planning-toolbar-title {
   display: grid;
-  grid-area: title;
   gap: 2px;
   min-width: 0;
 }
-
 .planning-toolbar-title h2 {
   margin: 0;
   overflow: hidden;
@@ -45,7 +67,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .planning-toolbar-title span:not(.eyebrow) {
   overflow: hidden;
   color: var(--uok-text-tertiary);
@@ -53,15 +74,12 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .planning-project-meta {
   display: flex;
-  grid-area: meta;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--uok-space-1);
 }
-
 .planning-status-chip,
 .planning-owner-chip {
   display: inline-flex;
@@ -76,7 +94,6 @@
   font-weight: 700;
   text-transform: capitalize;
 }
-
 .planning-icon-button {
   display: inline-grid;
   place-items: center;
@@ -92,7 +109,6 @@
 
 .planning-project-picker {
   display: grid;
-  grid-area: project;
   gap: 2px;
   min-width: 0;
   color: var(--uok-text-secondary);
@@ -111,9 +127,8 @@
   font: inherit;
 }
 
-.planning-gantt-toolbar .command-button,
-.planning-toolbar-toggle,
-.planning-segmented-control button {
+.planning-command-bar .command-button,
+.planning-toolbar-toggle {
   min-height: 34px;
   padding-inline: var(--uok-space-2);
   font-size: var(--uok-callout);
@@ -121,7 +136,6 @@
 
 .planning-view-tabs {
   display: flex;
-  grid-area: views;
   align-self: center;
   gap: var(--uok-space-3);
   min-width: 0;
@@ -148,15 +162,6 @@
 
 .planning-view-tabs button[aria-disabled="true"] {
   cursor: default;
-}
-
-.planning-gantt-toolbar [aria-label="Schedule commands"] {
-  grid-area: commands;
-}
-
-.planning-gantt-toolbar [aria-label="Timeline utilities"] {
-  grid-area: controls;
-  min-width: 0;
 }
 
 .planning-selection-toggle, .planning-toolbar-select, .planning-zoom-control {
@@ -208,30 +213,13 @@
   accent-color: var(--uok-accent);
 }
 
-.planning-segmented-control {
-  display: inline-flex;
-  overflow: hidden;
-  border: var(--uok-line);
-  border-radius: var(--uok-radius-2);
-  background: var(--uok-bg-grouped-secondary);
-}
-
-.planning-segmented-control button, .planning-toolbar-toggle {
+.planning-toolbar-toggle {
   min-height: 36px;
   border: 0;
   color: var(--uok-text-secondary);
   background: transparent;
   font: inherit;
   cursor: pointer;
-}
-
-.planning-segmented-control button {
-  padding: 0 var(--uok-space-3);
-  text-transform: capitalize;
-}
-
-.planning-segmented-control button + button {
-  border-left: var(--uok-line);
 }
 
 .planning-toolbar-toggle {
@@ -243,7 +231,7 @@
   padding: 0 var(--uok-space-3);
 }
 
-.planning-segmented-control button.selected, .planning-toolbar-toggle.selected {
+.planning-toolbar-toggle.selected {
   color: var(--uok-text-primary);
   background: color-mix(in srgb, var(--uok-accent) 14%, var(--uok-bg-elevated));
 }
@@ -261,14 +249,18 @@
   scrollbar-gutter: stable both-edges;
 }
 
-@media (max-width: 1260px) {
-  .planning-gantt-toolbar {
-    grid-template-areas: "title meta" "project plan" "views views" "commands commands" "controls controls";
-    grid-template-columns: minmax(0, 1fr) auto;
+@media (max-width: 1180px) {
+  .planning-command-bar {
+    grid-template-areas:
+      "query"
+      "context"
+      "actions";
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .planning-gantt-toolbar [aria-label="Timeline utilities"] {
-    justify-content: flex-start;
+  .planning-command-bar .workspace-command-bar-context {
+    min-inline-size: 0;
+    inline-size: 100%;
   }
 }
 
@@ -277,19 +269,30 @@
     height: max(var(--planning-gantt-content-height, 480px), calc(100vh - 240px));
   }
 
-  .planning-gantt-toolbar {
-    grid-template-columns: 1fr;
-    grid-template-areas: "title" "meta" "project" "views" "plan" "commands" "controls";
-    align-items: stretch;
-  }
-
   .planning-project-picker, .planning-toolbar-group, .planning-toolbar-group .command-button,
   .planning-selection-toggle, .planning-toolbar-select, .planning-toolbar-select select,
-  .planning-zoom-control, .planning-toolbar-toggle, .planning-segmented-control {
+  .planning-zoom-control, .planning-toolbar-toggle {
     width: 100%;
   }
 
-  .planning-segmented-control button {
-    flex: 1 1 0;
+  .planning-workspace-heading {
+    grid-template-columns: 1fr;
+  }
+
+  .planning-command-bar .workspace-command-bar-actions,
+  .planning-command-bar .planning-view-tabs {
+    max-inline-size: 100%;
+    inline-size: 100%;
+  }
+
+  .planning-command-bar .workspace-command-bar-actions {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .planning-command-bar .planning-plan-actions {
+    flex-wrap: wrap;
+    min-inline-size: 0;
+    overflow-x: visible;
   }
 }

@@ -10,24 +10,25 @@ afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 describe("Planning portfolio", () => {
   it("shows explainable health, applies bounded filters, and opens a project", async () => {
     const onOpenProject = vi.fn();
-    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(response(portfolio));
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async () => response(portfolio));
     render(<PlanningPortfolioView token="token" onOpenProject={onOpenProject} />);
 
     expect(await screen.findByRole("table", { name: "Multi-project delivery portfolio" })).toBeTruthy();
     expect(screen.getByText("Blocked")).toBeTruthy();
     expect(screen.getByText(/6 queries/)).toBeTruthy();
     expect(screen.getByRole("img", { name: /Project start 2026-08-01.*Schedule horizon 2026-09-03.*Latest task finish 2026-09-03/ })).toBeTruthy();
-    fireEvent.change(screen.getByLabelText("Search projects"), { target: { value: "Alpha" } });
-    fireEvent.change(screen.getByLabelText("Project status"), { target: { value: "completed" } });
-    fireEvent.click(screen.getByRole("button", { name: "Apply filters" }));
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-    expect(String(fetchMock.mock.calls[1][0])).toContain("query=Alpha&status=completed&limit=50&offset=0");
+    fireEvent.click(screen.getByRole("button", { name: "Search options: All statuses" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Search projects" }), { target: { value: "Alpha" } });
+    fireEvent.change(screen.getByLabelText("Project status filter"), { target: { value: "completed" } });
+    await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThanOrEqual(2));
+    expect(String(fetchMock.mock.calls.at(-1)?.[0])).toContain("query=Alpha&status=completed&limit=25&offset=0");
+    await screen.findByRole("button", { name: "Open project Alpha delivery" });
     fireEvent.click(screen.getByRole("button", { name: "Open project Alpha delivery" }));
     expect(onOpenProject).toHaveBeenCalledWith("project-1");
   });
 
   it("localizes lifecycle statuses and finish authority in Arabic", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(response(portfolio));
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => response(portfolio));
     render(<UokLocalizationProvider locale="ar"><PlanningPortfolioView token="token" onOpenProject={vi.fn()} /></UokLocalizationProvider>);
 
     expect(await screen.findByRole("table", { name: "محفظة تسليم متعددة المشاريع" })).toBeTruthy();
@@ -50,7 +51,7 @@ describe("Planning portfolio", () => {
       }],
       summary: { ...portfolio.summary, range_end: "2026-08-31" },
     } as unknown as PlanningPortfolioResponse;
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(response(legacyPortfolio));
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () => response(legacyPortfolio));
 
     render(<PlanningPortfolioView token="token" onOpenProject={vi.fn()} />);
 
@@ -60,10 +61,41 @@ describe("Planning portfolio", () => {
     expect(timeline.getAttribute("aria-label")).not.toMatch(/Schedule horizon|Target finish|Calculated finish|Latest task finish/);
     expect(timeline.querySelector("span")?.getAttribute("style")).not.toMatch(/NaN|Infinity/);
   });
+
+  it("ignores an older search response after a newer query completes", async () => {
+    const stale = deferred<Response>();
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes("query=older")) return stale.promise;
+      if (url.includes("query=newer")) return response(portfolioNamed("Newer project", "newer"));
+      return response(portfolio);
+    });
+    render(<PlanningPortfolioView token="token" onOpenProject={vi.fn()} />);
+    await screen.findByRole("button", { name: "Open project Alpha delivery" });
+
+    const search = screen.getByRole("textbox", { name: "Search projects" });
+    fireEvent.change(search, { target: { value: "older" } });
+    fireEvent.change(search, { target: { value: "newer" } });
+    expect(await screen.findByRole("button", { name: "Open project Newer project" })).toBeTruthy();
+
+    stale.resolve(response(portfolioNamed("Stale project", "older")));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Open project Stale project" })).toBeNull());
+    expect(screen.getByRole("button", { name: "Open project Newer project" })).toBeTruthy();
+  });
 });
 
 function response(body: PlanningPortfolioResponse) {
   return new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
+}
+
+function portfolioNamed(name: string, query: string): PlanningPortfolioResponse {
+  return { ...portfolio, query, projects: [{ ...portfolio.projects[0], name }] };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((next) => { resolve = next; });
+  return { promise, resolve };
 }
 
 const portfolio: PlanningPortfolioResponse = {

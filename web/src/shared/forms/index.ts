@@ -9,4 +9,5 @@ export type {
   SearchWorkspaceSortDirection,
   SavedSearchView
 } from "./SearchWorkspace.types";
+export { ExpandableControlPanel } from "./ExpandableControlPanel";
 export { SearchField } from "./SearchField";

@@ -1,4 +1,26 @@
+.apps-manager-workspace {
+  display: grid;
+  gap: var(--uok-space-3);
+  min-width: 0;
+}
+
 .module-list {
   display: grid;
   gap: var(--uok-space-3);
+}
+
+.apps-module-group {
+  display: grid;
+  gap: var(--uok-space-3);
+  min-width: 0;
+}
+
+.apps-module-group-heading {
+  margin: 0;
+  border-bottom: var(--uok-line);
+  padding: var(--uok-space-2) var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-grouped-tertiary);
+  font-size: var(--uok-callout);
+  text-transform: capitalize;
 }

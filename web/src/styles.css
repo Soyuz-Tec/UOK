@@ -5,6 +5,7 @@
 @import "./styles/shared/primitives.css";
 @import "./styles/shared/forms.css";
 @import "./styles/shared/search-workspace.css";
+@import "./styles/shared/command-bar.css";
 @import "./styles/shared/layout.css";
 @import "./styles/shared/row-rhythm.css";
 @import "./styles/shared/overlays.css";

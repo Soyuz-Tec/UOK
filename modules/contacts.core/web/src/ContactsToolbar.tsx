@@ -3,7 +3,8 @@ import { UserPlus } from "lucide-react";
 import { contactsViewOptions } from "@uok/shared/options";
 import type { ContactGroupBy, ContactGroupRecord, ContactQualityFilter, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "@uok/shared/types";
 import { SearchWorkspace } from "@uok/shared/forms";
-import { IconButton, SegmentedControl } from "@uok/shared/primitives";
+import { WorkspaceCommandBar } from "@uok/shared/layout";
+import { CommandButton, SegmentedControl } from "@uok/shared/primitives";
 import { FieldVisibilityMenu, type FieldVisibilityMenuConfig } from "@uok/shared/tables";
 import { ContactPagingControls } from "./ContactPagingControls";
 import { contactsSavedViewsKey, groupOptions, presetSavedViews, qualityOptions, reviewOptions, sortOptions, sourceOptions, statusOptions, typeOptions } from "./contactsToolbarOptions";
@@ -84,8 +85,10 @@ export function ContactsToolbar({
   ];
 
   return (
-    <div className="contacts-toolbar" aria-label="Contacts controls">
-      <div className="toolbar-group search-group">
+    <WorkspaceCommandBar
+      label="Contacts controls"
+      className="contacts-toolbar"
+      query={(
         <SearchWorkspace
           label="Search contacts"
           value={query}
@@ -119,8 +122,8 @@ export function ContactsToolbar({
           onGroupByChange={(value) => onContactGroupByChange(groupingEnabled ? value as ContactGroupBy : "none")}
           onClear={onClearFilters}
         />
-      </div>
-      <div className="toolbar-group page-group">
+      )}
+      pagination={(
         <ContactPagingControls
           page={contactPage}
           pageSize={contactPageSize}
@@ -130,24 +133,18 @@ export function ContactsToolbar({
           onPageChange={onContactPageChange}
           onPageSizeChange={onContactPageSizeChange}
         />
-      </div>
-      <div className="toolbar-group view-group">
-        <SegmentedControl value={contactsView} onChange={onViewChange} options={contactsViewOptions} label="Contacts view" iconOnly />
-      </div>
-      {fieldVisibility ? (
-        <div className="toolbar-group fields-group">
-          <FieldVisibilityMenu
-            groupLabel={fieldVisibility.groupLabel}
-            options={fieldVisibility.options}
-            visibility={fieldVisibility.visibility}
-            onReset={fieldVisibility.onReset}
-            onToggle={fieldVisibility.onToggle}
-          />
-        </div>
-      ) : null}
-      <div className="toolbar-group primary-group">
-        <IconButton icon={UserPlus} label="New contact" title="New contact" onClick={onCreate} primary />
-      </div>
-    </div>
+      )}
+      view={<SegmentedControl value={contactsView} onChange={onViewChange} options={contactsViewOptions} label="Contacts view" iconOnly />}
+      fields={fieldVisibility ? (
+        <FieldVisibilityMenu
+          groupLabel={fieldVisibility.groupLabel}
+          options={fieldVisibility.options}
+          visibility={fieldVisibility.visibility}
+          onReset={fieldVisibility.onReset}
+          onToggle={fieldVisibility.onToggle}
+        />
+      ) : undefined}
+      primaryAction={<CommandButton icon={UserPlus} onClick={onCreate} primary>New contact</CommandButton>}
+    />
   );
 }

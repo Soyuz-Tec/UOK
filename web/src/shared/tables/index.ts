@@ -1,11 +1,13 @@
 export { ColumnResizeHandle } from "./ColumnResizeHandle";
 export { ResizableDataTable } from "./ResizableDataTable";
 export { FieldVisibilityMenu } from "./FieldVisibilityMenu";
+export { PaginationControls } from "./PaginationControls";
 export { pinnedColumnOffsets, pinnedColumns } from "./pinnedColumns";
 export { clampRowHeight, fitRowHeight, rowLayoutMap, rowLayouts, useStoredRowHeights } from "./rowHeights";
 export { useColumnOrder } from "./useColumnOrder";
 export { useResizableColumns } from "./useResizableColumns";
 export type { FieldVisibilityMenuConfig } from "./FieldVisibilityMenu";
+export type { PaginationControlsProps } from "./PaginationControls";
 export { useColumnVisibility } from "./useColumnVisibility";
 export { useColumnVisibilityOptions } from "./useColumnVisibilityOptions";
 export type { ColumnVisibilityMap, ColumnVisibilityOption } from "./columnVisibility";

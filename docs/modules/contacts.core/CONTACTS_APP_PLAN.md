@@ -70,6 +70,8 @@ The alpha.3 baseline currently includes:
 - shared user-configurable List + Detail display-field visibility for compact identity lanes;
 - a shared contact field registry so List + Detail and Table views reuse the same field labels and value extraction;
 - one toolbar-level `Fields` menu that controls visible contact fields for the active view instead of separate `Columns` and `Display fields` menus in different locations;
+- the shared workspace command bar for one coherent search, paging, view, fields, and primary-create surface;
+- shared module-neutral pagination controls adapted with Contacts-specific accessible labels and record-range status;
 - local candidate verifier coverage.
 
 ## Domain Model
@@ -192,6 +194,8 @@ Current UI responsibilities:
 - persist the user's last selected view;
 - keep search always available;
 - unify filters, saved searches, sort, and sectioning into one search surface;
+- compose search, paging, view selection, field visibility, and New Contact through the shared workspace command bar rather than a Contacts-only toolbar layout;
+- preserve Contacts-specific paging labels and range announcements while delegating paging interaction and responsive layout to the shared pagination primitive;
 - use `Group` only for persistent contact groups;
 - use `Section by` for result sectioning;
 - keep the group rail secondary and compact;

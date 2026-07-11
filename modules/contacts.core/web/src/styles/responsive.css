@@ -1,19 +1,9 @@
 @media (max-width: 980px) {
-  .contacts-toolbar,
   .contact-quality-workspace,
   .duplicate-comparison-grid,
   .contacts-view-split .workflow-split-view,
   .form-field-grid {
     grid-template-columns: 1fr;
-  }
-
-  .contacts-toolbar {
-    grid-template-areas:
-      "search"
-      "page"
-      "view"
-      "fields"
-      "primary";
   }
 
   .contacts-view-split .workflow-primary-region {
@@ -31,20 +21,12 @@
     grid-column: auto;
   }
 
-  .contacts-toolbar .segmented-control,
-  .contact-page-controls,
-  .contact-page-stepper {
-    width: 100%;
-  }
-
   .relationship-composer {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 680px) {
-  .contact-page-control,
-  .contact-page-control select,
   .contacts-actions,
   .contact-inspector-actions,
   .note-composer,
@@ -56,11 +38,6 @@
     justify-content: center;
   }
 
-  .contact-page-controls,
-  .contact-page-stepper,
-  .view-group,
-  .fields-group,
-  .primary-group,
   .contact-inspector-actions {
     justify-content: flex-start;
   }

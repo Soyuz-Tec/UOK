@@ -1,6 +1,7 @@
 import { CalendarClock, ChevronLeft, ChevronRight, Download, List, Plus, RefreshCw, Rows3, Table2 } from "lucide-react";
 
 import { SearchWorkspace } from "@uok/shared/forms";
+import { WorkspaceCommandBar } from "@uok/shared/layout";
 import { CommandButton, IconButton, SegmentedControl } from "@uok/shared/primitives";
 import type { CalendarRecord, CalendarView } from "./calendarTypes";
 import { viewTitle } from "./calendarDates";
@@ -56,8 +57,10 @@ export function CalendarToolbar({
     : [{ value: "", label: "No calendars" }];
 
   return (
-    <div className="calendar-toolbar" aria-label="Calendar controls">
-      <div className="toolbar-group calendar-search-group">
+    <WorkspaceCommandBar
+      label="Calendar controls"
+      className="calendar-toolbar"
+      query={(
         <SearchWorkspace
           label="Search events"
           value={query}
@@ -75,22 +78,24 @@ export function CalendarToolbar({
           onGroupByChange={() => undefined}
           onClear={onClearFilters}
         />
-      </div>
-      <div className="toolbar-group calendar-range-group">
-        <CommandButton icon={CalendarClock} onClick={onToday}>Today</CommandButton>
-        <IconButton icon={ChevronLeft} label="Previous range" onClick={() => onMove(-1)} />
-        <strong>{viewTitle(view, cursorDate)}</strong>
-        <IconButton icon={ChevronRight} label="Next range" onClick={() => onMove(1)} />
-      </div>
-      <div className="toolbar-group calendar-view-group">
-        <SegmentedControl value={view} onChange={onViewChange} options={viewOptions} label="Calendar view" iconOnly />
-      </div>
-      <div className="toolbar-group calendar-actions-group">
-        <CommandButton icon={Download} onClick={onExport}>Export ICS</CommandButton>
-        <IconButton icon={RefreshCw} label="Refresh calendar" title="Refresh" onClick={onRefresh} />
-        <CommandButton icon={Plus} onClick={onCreate} primary>New event</CommandButton>
-      </div>
-    </div>
+      )}
+      context={(
+        <div className="calendar-range-group">
+          <CommandButton icon={CalendarClock} onClick={onToday}>Today</CommandButton>
+          <IconButton icon={ChevronLeft} label="Previous range" onClick={() => onMove(-1)} />
+          <strong>{viewTitle(view, cursorDate)}</strong>
+          <IconButton icon={ChevronRight} label="Next range" onClick={() => onMove(1)} />
+        </div>
+      )}
+      view={<SegmentedControl value={view} onChange={onViewChange} options={viewOptions} label="Calendar view" iconOnly />}
+      secondaryActions={(
+        <>
+          <CommandButton icon={Download} onClick={onExport}>Export ICS</CommandButton>
+          <IconButton icon={RefreshCw} label="Refresh calendar" title="Refresh" onClick={onRefresh} />
+        </>
+      )}
+      primaryAction={<CommandButton icon={Plus} onClick={onCreate} primary>New event</CommandButton>}
+    />
   );
 }
 

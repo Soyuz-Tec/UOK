@@ -9,7 +9,7 @@
   gap: var(--uok-space-3);
 }
 
-.communications-create,
+.communications-create-form,
 .communications-thread-list,
 .communications-thread-detail,
 .communications-thread-detail dl {
@@ -26,6 +26,7 @@
   color: var(--uok-text-primary);
   background: var(--uok-bg-elevated);
   text-align: left;
+  cursor: pointer;
 }
 
 .communications-thread-list button.selected {
@@ -50,6 +51,20 @@
 .communications-thread-detail dd {
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+.communications-create-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--uok-space-2);
+}
+
+@media (max-width: 680px) {
+  .communications-create-actions,
+  .communications-create-actions .command-button {
+    width: 100%;
+  }
 }
 
 @media (max-width: 760px) {

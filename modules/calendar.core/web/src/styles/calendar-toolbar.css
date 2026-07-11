@@ -7,32 +7,11 @@
   min-height: calc(100vh - (var(--uok-space-4) * 2));
 }
 
-.calendar-toolbar {
-  display: grid;
-  grid-template-columns: minmax(360px, 1fr) auto auto auto;
-  grid-template-areas: "search range view actions";
-  align-items: center;
-  gap: var(--uok-space-2);
-  border: var(--uok-line);
-  border-radius: var(--uok-radius-3);
-  padding: var(--uok-space-3);
-  background: var(--uok-bg-elevated);
-}
-
-.calendar-toolbar .toolbar-group {
-  min-width: 0;
-}
-
-.calendar-search-group {
-  grid-area: search;
-}
-
-.calendar-search-group .search-workspace-chips {
+.calendar-toolbar .search-workspace-chips {
   display: none;
 }
 
 .calendar-range-group {
-  grid-area: range;
   display: grid;
   grid-template-columns: auto var(--uok-control-height) minmax(150px, auto) var(--uok-control-height);
   align-items: center;
@@ -47,50 +26,64 @@
   white-space: nowrap;
 }
 
-.calendar-view-group {
-  grid-area: view;
-  padding-inline-start: var(--uok-space-2);
-  border-left: var(--uok-line);
+:root[dir="rtl"] .calendar-range-group .icon-button svg {
+  transform: scaleX(-1);
 }
 
-.calendar-actions-group {
-  grid-area: actions;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--uok-space-2);
-}
-
-@media (max-width: 1220px) {
-  .calendar-toolbar {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "search search"
-      "range view"
-      "actions actions";
+@media (max-width: 900px) {
+  .calendar-toolbar.workspace-command-bar {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .calendar-actions-group {
+  .calendar-toolbar .workspace-command-bar-query,
+  .calendar-toolbar .workspace-command-bar-context,
+  .calendar-toolbar .workspace-command-bar-actions {
+    grid-column: 1 / -1;
+    width: 100%;
     justify-content: flex-start;
+  }
+
+  .calendar-toolbar .workspace-command-bar-actions {
     flex-wrap: wrap;
   }
 }
 
 @media (max-width: 760px) {
-  .calendar-toolbar {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "search"
-      "range"
-      "view"
-      "actions";
-  }
-
   .calendar-range-group {
+    width: 100%;
     grid-template-columns: minmax(0, 1fr) var(--uok-control-height) minmax(118px, auto) var(--uok-control-height);
   }
 
   .calendar-range-group .command-button {
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-range-group {
+    grid-template-areas:
+      "today today today"
+      "previous title next";
+    grid-template-columns: var(--uok-control-height) minmax(0, 1fr) var(--uok-control-height);
+  }
+
+  .calendar-range-group > .command-button {
+    grid-area: today;
+    width: 100%;
+  }
+
+  .calendar-range-group > .command-button + .icon-button {
+    grid-area: previous;
+  }
+
+  .calendar-range-group > strong {
+    grid-area: title;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .calendar-range-group > strong + .icon-button {
+    grid-area: next;
   }
 }

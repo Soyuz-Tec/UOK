@@ -11,7 +11,7 @@
 ## Implemented UI Scope
 
 - Traditional Calendar workspace with Month, Week, Day, and Agenda views.
-- Calendar command bar with calendar selector, Today, previous/next navigation, view switching, New event, Refresh, and ICS export.
+- Shared workspace command bar with event search and saved-search options, calendar selector, Today, previous/next navigation, view switching, New event, Refresh, and ICS export.
 - Mini month picker and calendar list side panel.
 - Visual event blocks on month and time-grid views.
 - Event editor for create and update flows.

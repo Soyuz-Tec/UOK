@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -67,10 +67,23 @@ describe("CalendarWorkspace", () => {
     render(<CalendarWorkspace token="token" moduleRows={[installedCalendar]} busyAction="" onInstall={() => undefined} />);
 
     expect(await screen.findByRole("group", { name: "Calendar view" })).toBeInTheDocument();
+    const commandBar = screen.getByLabelText("Calendar controls");
+    expect(within(commandBar).getByRole("group", { name: "Calendar controls query" })).toBeInTheDocument();
+    expect(within(commandBar).getByRole("group", { name: "Calendar controls context" })).toBeInTheDocument();
+    expect(within(commandBar).getByRole("group", { name: "Calendar controls actions" })).toBeInTheDocument();
+    expect(within(commandBar).getByRole("textbox", { name: "Search events" })).toBeInTheDocument();
+    expect(within(commandBar).getAllByRole("button", { name: "New event" })).toHaveLength(1);
+    expect(within(commandBar).getByRole("button", { name: "Refresh calendar" })).toBeInTheDocument();
+    expect(within(commandBar).getByRole("button", { name: "Export ICS" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getAllByText("Operations").length).toBeGreaterThan(0));
     expect(await screen.findByText("Dispatch review")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "New event" })).toBeInTheDocument();
     expect(screen.getByText("1 busy blocks")).toBeInTheDocument();
+
+    fireEvent.click(within(commandBar).getByRole("button", { name: "New event" }));
+    const newEventEditor = screen.getByLabelText("Event editor");
+    expect(within(newEventEditor).getByRole("heading", { name: "New event" })).toBeInTheDocument();
+    expect(within(newEventEditor).getByLabelText("Title")).toHaveValue("");
+    fireEvent.click(within(newEventEditor).getByRole("button", { name: "Close event editor" }));
 
     fireEvent.click(screen.getAllByText("Dispatch review")[0]);
 

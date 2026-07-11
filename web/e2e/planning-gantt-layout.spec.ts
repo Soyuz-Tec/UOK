@@ -10,7 +10,7 @@ test("Gantt task overlays and semantic markers remain collision-free", async ({ 
   await installScaleApi(page, 2, ganttLayoutSchedule);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  await page.getByRole("button", { name: "Planning" }).click();
+  await page.getByRole("button", { name: "Planning", exact: true }).click();
   await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
 
   const narrowTask = page.getByRole("button", {
@@ -21,7 +21,7 @@ test("Gantt task overlays and semantic markers remain collision-free", async ({ 
 
   const barLocator = narrowTask.locator(".planning-owned-task-bar");
   await barLocator.click();
-  await page.getByRole("button", { name: "Planning" }).hover();
+  await page.getByRole("button", { name: "Planning", exact: true }).hover();
   await expect(tooltip).toHaveCSS("visibility", "hidden");
   await expect(narrowTask.locator(".planning-owned-resize-handle.end")).toHaveCSS("opacity", "0");
 
@@ -48,7 +48,7 @@ test("Gantt task overlays and semantic markers remain collision-free", async ({ 
   expect(tooltipSurface.x).toBeGreaterThanOrEqual(chart.x);
   expect(right(tooltipSurface)).toBeLessThanOrEqual(right(chart));
 
-  await page.getByRole("button", { name: "Planning" }).hover();
+  await page.getByRole("button", { name: "Planning", exact: true }).hover();
   const wideTask = page.getByRole("button", {
     name: "Twenty-day integrated Gantt task, Critical path task, 15% complete",
   });

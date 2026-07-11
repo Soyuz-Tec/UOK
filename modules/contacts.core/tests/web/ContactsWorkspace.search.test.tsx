@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -7,60 +7,63 @@ import { contact, duplicateContact, importedContact, renderContactsWorkspace, re
 afterEach(resetContactsWorkspaceTest);
 
 describe("ContactsWorkspace search and paging", () => {
-  it("unifies search filters grouping and saved searches", () => {
-    const { container } = renderContactsWorkspace("table", [contact, importedContact, duplicateContact]);
-    const menu = container.querySelector(".search-workspace-menu") as HTMLDetailsElement;
+  it("unifies search filters grouping and saved searches", async () => {
+    renderContactsWorkspace("table", [contact, importedContact, duplicateContact]);
 
     expect(screen.queryByRole("button", { name: "Apply Working view" })).not.toBeInTheDocument();
-    expect(container.querySelector(".search-workspace-menu summary span")).toHaveTextContent("Active records");
+    expect(searchOptionsTrigger()).toHaveTextContent("Active records");
+    openSearchOptions();
     expect(screen.getByRole("button", { name: "Save search" })).toBeDisabled();
-    expect(menu).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Search options" })).toBeInTheDocument();
     fireEvent.change(screen.getByRole("textbox", { name: "Search contacts" }), { target: { value: "Example" } });
     expect(screen.getByRole("region", { name: "Search options" })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Status filter"), { target: { value: "all" } });
-    menu.open = true;
     fireEvent.click(screen.getByRole("button", { name: "Source" }));
 
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Search: Example");
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Status: All statuses");
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Section: Source");
     expect(screen.getByText("Source: Contacts")).toBeInTheDocument();
-    expect(container.querySelector(".search-workspace-menu summary span")).toHaveTextContent("3 refinements");
-    expect(menu.open).toBe(false);
+    expect(searchOptionsTrigger()).toHaveTextContent("3 refinements");
+    expect(searchOptionsTrigger()).toHaveAttribute("aria-expanded", "true");
 
     fireEvent.change(screen.getByLabelText("Saved search name"), { target: { value: "Source review" } });
     fireEvent.click(screen.getByRole("button", { name: "Save search" }));
     expect(screen.getByRole("button", { name: "Apply Source review" })).toBeInTheDocument();
 
-    menu.open = true;
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
-    expect(menu.open).toBe(false);
+    await expectSearchOptionsClosedWithFocus();
 
-    menu.open = true;
+    openSearchOptions();
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(menu.open).toBe(false);
+    await expectSearchOptionsClosedWithFocus();
 
-    menu.open = true;
+    openSearchOptions();
     fireEvent.mouseDown(document.body);
-    expect(menu.open).toBe(false);
+    await expectSearchOptionsClosedWithFocus();
 
-    menu.open = true;
+    openSearchOptions();
     fireEvent.click(screen.getByRole("button", { name: "Clear all" }));
     expect(screen.getByRole("textbox", { name: "Search contacts" })).toHaveValue("");
     expect(screen.queryByText("Source: Contacts")).not.toBeInTheDocument();
-    expect(container.querySelector(".search-workspace-menu summary span")).toHaveTextContent("Active records");
-    expect(menu.open).toBe(false);
+    expect(searchOptionsTrigger()).toHaveTextContent("Active records");
+    expect(searchOptionsTrigger()).toHaveAttribute("aria-expanded", "true");
 
-    menu.open = true;
     fireEvent.click(screen.getByRole("button", { name: "Apply Source review" }));
     expect(screen.getByRole("textbox", { name: "Search contacts" })).toHaveValue("Example");
     expect(screen.getByText("Source: Contacts")).toBeInTheDocument();
-    expect(container.querySelector(".search-workspace-menu summary span")).toHaveTextContent("3 refinements");
-    expect(menu.open).toBe(false);
-  });
+    expect(searchOptionsTrigger()).toHaveTextContent("3 refinements");
+    expect(searchOptionsTrigger()).toHaveAttribute("aria-expanded", "false");
+  }, 10_000);
 
   it("shows page and sort controls without leaving the contacts workspace", () => {
-    const { container } = renderContactsWorkspace("table", [contact, importedContact, duplicateContact]);
+    renderContactsWorkspace("table", [contact, importedContact, duplicateContact]);
+    const commandBar = screen.getByLabelText("Contacts controls");
+    expect(within(commandBar).getByRole("group", { name: "Contacts controls query" })).toBeInTheDocument();
+    expect(within(commandBar).getByRole("group", { name: "Contacts controls context" })).toBeInTheDocument();
+    expect(within(commandBar).getByRole("group", { name: "Contacts controls actions" })).toBeInTheDocument();
+    expect(within(commandBar).getAllByRole("button", { name: "New contact" })).toHaveLength(1);
+    openSearchOptions();
 
     const searchOptions = screen.getByRole("region", { name: "Search options" });
     expect(within(searchOptions).getByRole("region", { name: "Sort" })).toBeInTheDocument();
@@ -76,7 +79,7 @@ describe("ContactsWorkspace search and paging", () => {
 
     fireEvent.change(within(searchOptions).getByLabelText("Contact sort field"), { target: { value: "display_name" } });
     expect(within(searchOptions).getByLabelText("Contact sort field")).toHaveValue("display_name");
-    expect(container.querySelector(".search-workspace-menu summary span")).toHaveTextContent("Sort: Name descending");
+    expect(searchOptionsTrigger()).toHaveTextContent("Sort: Name descending");
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Sort: Name descending");
 
     fireEvent.click(within(searchOptions).getByRole("button", { name: "Sort descending" }));
@@ -86,11 +89,12 @@ describe("ContactsWorkspace search and paging", () => {
     fireEvent.click(screen.getByRole("button", { name: "Clear all" }));
     expect(within(searchOptions).getByLabelText("Contact sort field")).toHaveValue("updated_at");
     expect(within(searchOptions).getByRole("button", { name: "Sort descending" })).toBeInTheDocument();
-    expect(container.querySelector(".search-workspace-menu summary span")).toHaveTextContent("Active records");
+    expect(searchOptionsTrigger()).toHaveTextContent("Active records");
   });
 
   it("filters by a persistent contact group from the unified search surface", () => {
     renderContactsWorkspace("table", [contact, importedContact, duplicateContact]);
+    openSearchOptions();
 
     fireEvent.change(screen.getByLabelText("Group filter"), { target: { value: "group-1" } });
 
@@ -98,9 +102,8 @@ describe("ContactsWorkspace search and paging", () => {
   });
 
   it("applies pinned Contacts saved views for common cleanup workflows", () => {
-    const { container } = renderContactsWorkspace("table", [contact, importedContact, duplicateContact]);
-    const menu = container.querySelector(".search-workspace-menu") as HTMLDetailsElement;
-    menu.open = true;
+    renderContactsWorkspace("table", [contact, importedContact, duplicateContact]);
+    openSearchOptions();
 
     for (const viewName of ["All records", "Needs review", "Organizations", "People", "No company", "Imported from Gmail", "Duplicate risk", "Recently updated"]) {
       expect(screen.getByRole("button", { name: `Apply ${viewName}` })).toBeInTheDocument();
@@ -110,15 +113,34 @@ describe("ContactsWorkspace search and paging", () => {
     fireEvent.click(screen.getByRole("button", { name: "Apply No company" }));
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Type: Person");
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Quality: No company");
-    expect(menu.open).toBe(false);
+    expect(searchOptionsTrigger()).toHaveAttribute("aria-expanded", "false");
 
-    menu.open = true;
+    openSearchOptions();
     fireEvent.click(screen.getByRole("button", { name: "Apply Imported from Gmail" }));
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Source: Gmail");
     expect(screen.queryByText("Quality: No company")).not.toBeInTheDocument();
 
-    menu.open = true;
+    openSearchOptions();
     fireEvent.click(screen.getByRole("button", { name: "Apply Duplicate risk" }));
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Quality: Duplicate risk");
   });
 });
+
+function searchOptionsTrigger() {
+  return screen.getByRole("button", { name: /^Search options:/ });
+}
+
+function openSearchOptions() {
+  const trigger = searchOptionsTrigger();
+  if (trigger.getAttribute("aria-expanded") !== "true") fireEvent.click(trigger);
+  expect(trigger).toHaveAttribute("aria-expanded", "true");
+  return trigger;
+}
+
+async function expectSearchOptionsClosedWithFocus() {
+  await waitFor(() => {
+    const trigger = searchOptionsTrigger();
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+  });
+}

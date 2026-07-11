@@ -19,7 +19,10 @@ boundary and its integration with Planning typed links.
 - correlated `CommunicationThreadCreated` event evidence;
 - module install, enable, disable, and verify lifecycle;
 - K Connect workspace with thread creation, list, exact deep-link selection,
-  and thread context display;
+  thread context display, and the shared workspace command surface;
+- client-side search across the currently authorized thread read model, status
+  and context filters, updated/title sorting, locally persisted saved searches,
+  refresh, and a blank governed thread-creation editor;
 - Planning `communication_thread` resolution without a cross-module foreign
   key or copied provider payload.
 
@@ -38,7 +41,8 @@ catalog composes its validated manifest entry through the shared surface registr
 - message exchange and attachment records;
 - membership and mention policy;
 - close, reopen, archive, and retention commands;
-- notifications, unread counts, search, and delivery integrations;
+- notifications, unread counts, server-side or message-content search, bounded
+  thread pagination, and delivery integrations;
 
 ## Validation
 

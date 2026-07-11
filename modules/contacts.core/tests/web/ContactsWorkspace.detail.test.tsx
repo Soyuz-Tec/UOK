@@ -141,7 +141,7 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
 
     expect(screen.getAllByRole("button", { name: "Fields" })).toHaveLength(1);
     fireEvent.click(screen.getByRole("button", { name: "Fields" }));
-    const menu = screen.getByRole("group", { name: "Visible contact fields" });
+    const menu = screen.getByRole("dialog", { name: "Visible contact fields" });
     fireEvent.click(within(menu).getByLabelText("Organization"));
     fireEvent.click(within(menu).getByLabelText("Email"));
 

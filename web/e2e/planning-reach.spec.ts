@@ -15,7 +15,12 @@ test("shared Arabic RTL, touch targets, and narrow reflow remain operable", asyn
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(page.locator("html")).toHaveAttribute("data-locale", "ar");
-  await page.getByRole("menu").press("Escape");
+  const accountMenu = page.getByRole("menu");
+  if (!await accountMenu.count()) await page.getByRole("button", { name: /فتح قائمة الحساب/ }).click();
+  const accountMenuBounds = await accountMenu.boundingBox();
+  expect(accountMenuBounds?.x || 0).toBeGreaterThanOrEqual(0);
+  expect((accountMenuBounds?.x || 0) + (accountMenuBounds?.width || 0)).toBeLessThanOrEqual(390);
+  await accountMenu.press("Escape");
 
   await page.getByRole("button", { name: "التخطيط" }).click();
   await expect(page.getByLabel("مخطط جانت للتخطيط")).toBeVisible();

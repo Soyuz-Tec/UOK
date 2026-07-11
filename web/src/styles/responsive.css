@@ -21,11 +21,17 @@
   }
 
   .workflow-header,
-  .search-workspace-panel,
   .search-group,
   .workflow-split-view,
   .inline-edit-form {
     grid-template-columns: 1fr;
+  }
+
+  .search-workspace-panel-content,
+  .search-workspace-panel.without-grouping .search-workspace-panel-content,
+  .search-workspace-panel.with-sorting .search-workspace-panel-content,
+  .search-workspace-panel.with-sorting.without-grouping .search-workspace-panel-content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .search-workspace-menu,
@@ -116,23 +122,59 @@
     grid-template-columns: 1fr;
   }
 
-  .search-workspace-menu summary {
+  .search-workspace-menu .expandable-control-trigger {
     border-top: var(--uok-line);
-    border-left: 0;
+    border-inline-start: 0;
   }
 
-  .search-workspace-panel {
-    position: static;
-    width: 100%;
-    margin-top: var(--uok-space-2);
-    box-shadow: none;
+  .search-workspace-panel,
+  .search-workspace-panel.without-grouping,
+  .search-workspace-panel.with-sorting,
+  .search-workspace-panel.with-sorting.without-grouping {
+    position: fixed;
+    inset: var(--uok-space-3);
+    z-index: 40;
+    width: auto;
+    max-height: calc(100vh - (var(--uok-space-3) * 2));
+    overflow: auto;
+    margin: 0;
+    box-shadow: var(--uok-shadow-2);
+  }
+
+  .expandable-control-panel[data-open="true"] > .expandable-control-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    display: block;
+    inline-size: 100vw;
+    block-size: 100vh;
+    border: 0;
+    padding: 0;
+    background: color-mix(in srgb, var(--uok-text-primary) 28%, transparent);
+  }
+
+  .expandable-control-panel[data-open="true"] > .expandable-control-surface {
+    z-index: 40;
+  }
+
+  .search-workspace-panel-content,
+  .search-workspace-panel.without-grouping .search-workspace-panel-content,
+  .search-workspace-panel.with-sorting .search-workspace-panel-content,
+  .search-workspace-panel.with-sorting.without-grouping .search-workspace-panel-content {
+    grid-template-columns: 1fr;
   }
 
   .search-workspace-section + .search-workspace-section {
-    border-left: 0;
+    border-inline-start: 0;
     border-top: var(--uok-line);
     padding-top: var(--uok-space-3);
-    padding-left: 0;
+    padding-inline-start: 0;
+  }
+
+  .search-workspace-actions {
+    position: sticky;
+    inset-block-end: 0;
+    padding-block-end: var(--uok-space-2);
   }
 }
 

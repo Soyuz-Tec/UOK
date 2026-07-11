@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
+import { SlidersHorizontal } from "lucide-react";
 
+import { useUokLocalization } from "../localization";
+import { ExpandableControlPanel } from "./ExpandableControlPanel";
 import { SearchField } from "./SearchField";
 import { SearchOptionsPanel } from "./SearchOptionsPanel";
 import { SearchRefinementChips } from "./SearchRefinementChips";
@@ -39,12 +41,15 @@ export function SearchWorkspace({
   onGroupByChange: (value: string) => void;
   onClear: () => void;
 }) {
-  const menuRef = useRef<HTMLDetailsElement>(null);
+  const { t } = useUokLocalization();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [viewName, setViewName] = useState("");
   const groupingEnabled = groupOptions.length > 0;
   const sortingEnabled = Boolean(sort);
   const { savedViews, upsertSavedView, deleteSavedView } = useSavedSearchViews(savedViewsStorageKey);
-  const availableSavedViews = [...presetViews, ...savedViews];
+  const presetNames = new Set(presetViews.map((view) => view.name.trim().toLocaleLowerCase()));
+  const availableSavedViews = [...presetViews, ...savedViews.filter((view) => !presetNames.has(view.name.trim().toLocaleLowerCase()))];
+  const canSaveView = Boolean(viewName.trim()) && !presetNames.has(viewName.trim().toLocaleLowerCase());
   const { activeChips, effectiveGroupBy, filterValues, summary, summaryLabel } = useSearchRefinements({
     value,
     filters,
@@ -58,31 +63,6 @@ export function SearchWorkspace({
     onGroupByChange
   });
 
-  useEffect(() => {
-    const closeFromOutside = (event: MouseEvent) => {
-      const menu = menuRef.current;
-      if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) {
-        menu.open = false;
-      }
-    };
-    const closeFromEscape = (event: KeyboardEvent) => {
-      const menu = menuRef.current;
-      if (event.key === "Escape" && menu?.open) {
-        menu.open = false;
-      }
-    };
-    document.addEventListener("mousedown", closeFromOutside);
-    document.addEventListener("keydown", closeFromEscape);
-    return () => {
-      document.removeEventListener("mousedown", closeFromOutside);
-      document.removeEventListener("keydown", closeFromEscape);
-    };
-  }, []);
-
-  const closeMenu = () => {
-    if (menuRef.current) menuRef.current.open = false;
-  };
-
   const clearAll = () => {
     onClear();
     onGroupByChange(groupDefaultValue);
@@ -90,12 +70,11 @@ export function SearchWorkspace({
       sort.onChange(sort.defaultValue);
       sort.onDirectionChange(sort.defaultDirection);
     }
-    closeMenu();
   };
 
   const saveCurrentView = () => {
     const trimmedName = viewName.trim();
-    if (!trimmedName) return;
+    if (!trimmedName || presetNames.has(trimmedName.toLocaleLowerCase())) return;
     upsertSavedView({
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       name: trimmedName,
@@ -119,7 +98,6 @@ export function SearchWorkspace({
       sort.onChange(validOptionValue(sort.options, view.sortBy, sort.defaultValue));
       sort.onDirectionChange(validSortDirection(view.sortDir, sort.defaultDirection));
     }
-    closeMenu();
   };
 
   const panelClass = [
@@ -131,16 +109,20 @@ export function SearchWorkspace({
   return (
     <div className="search-workspace" aria-label={label}>
       <SearchField label={label} value={value} onChange={onChange} placeholder={placeholder} />
-      <details ref={menuRef} className="search-workspace-menu">
-        <summary aria-label={summaryLabel}>
-          <SlidersHorizontal size={16} aria-hidden="true" />
-          <span>{summary}</span>
-          <ChevronDown size={16} aria-hidden="true" />
-        </summary>
-        <SearchOptionsPanel
+      <ExpandableControlPanel
+        className="search-workspace-menu"
+        label={t("command.searchOptions", "Search options")}
+        open={menuOpen}
+        panelClassName={panelClass}
+        triggerIcon={SlidersHorizontal}
+        triggerLabel={summaryLabel}
+        triggerSummary={summary}
+        onOpenChange={setMenuOpen}
+      >
+        {({ close }) => <SearchOptionsPanel
           activeChipCount={activeChips.length}
-          canSaveView={Boolean(viewName.trim())}
-          className={panelClass}
+          canSaveView={canSaveView}
+          className="search-workspace-panel-content"
           effectiveGroupBy={effectiveGroupBy}
           filters={filters}
           groupOptions={groupOptions}
@@ -148,18 +130,18 @@ export function SearchWorkspace({
           savedViews={availableSavedViews}
           sort={sort}
           viewName={viewName}
-          onApplyView={applyView}
-          onClearAll={clearAll}
-          onClose={closeMenu}
-          onDeleteView={deleteSavedView}
-          onGroupByChange={(nextGroup) => {
-            onGroupByChange(nextGroup);
-            closeMenu();
+          onApplyView={(view) => {
+            applyView(view);
+            close();
           }}
+          onClearAll={clearAll}
+          onClose={close}
+          onDeleteView={deleteSavedView}
+          onGroupByChange={onGroupByChange}
           onSaveCurrentView={saveCurrentView}
           onViewNameChange={setViewName}
-        />
-      </details>
+        />}
+      </ExpandableControlPanel>
       <SearchRefinementChips chips={activeChips} />
     </div>
   );
