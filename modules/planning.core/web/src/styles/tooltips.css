@@ -1,10 +1,11 @@
 .planning-owned-tooltip {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 120ms ease;
+  visibility: hidden;
+  transition: opacity 120ms ease, visibility 0s linear 120ms;
 }
 
-.planning-owned-tooltip rect {
+.planning-owned-tooltip > .planning-owned-tooltip-surface {
   fill: color-mix(in srgb, var(--uok-bg-elevated) 96%, var(--uok-text-primary));
   stroke: color-mix(in srgb, var(--uok-text-primary) 22%, transparent);
   stroke-width: 1;
@@ -23,7 +24,8 @@
 }
 
 .planning-owned-task:hover .planning-owned-tooltip,
-.planning-owned-task:focus-visible .planning-owned-tooltip,
-.planning-owned-task.selected .planning-owned-tooltip {
+.planning-owned-task:focus-visible .planning-owned-tooltip {
   opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
 }

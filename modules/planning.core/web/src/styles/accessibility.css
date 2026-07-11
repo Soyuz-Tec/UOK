@@ -34,6 +34,10 @@
   .planning-owned-link-handle {
     opacity: 1;
   }
+
+  .planning-owned-task-label {
+    opacity: 0;
+  }
 }
 
 :root[dir="rtl"] .planning-owned-chart {

@@ -24,20 +24,17 @@
   stroke-width: 2.5;
 }
 
-.planning-owned-task.chain-predecessor rect:first-of-type,
-.planning-owned-task.chain-predecessor polygon {
+.planning-owned-task.chain-predecessor > .planning-owned-task-bar {
   stroke: var(--uok-status-info);
   stroke-width: 2;
 }
 
-.planning-owned-task.chain-successor rect:first-of-type,
-.planning-owned-task.chain-successor polygon {
+.planning-owned-task.chain-successor > .planning-owned-task-bar {
   stroke: var(--uok-status-success);
   stroke-width: 2;
 }
 
-.planning-owned-task.chain-related rect:first-of-type,
-.planning-owned-task.chain-related polygon {
+.planning-owned-task.chain-related > .planning-owned-task-bar {
   stroke: var(--uok-status-warning);
   stroke-width: 2;
 }

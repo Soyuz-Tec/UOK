@@ -25,7 +25,45 @@ const schedule = {
   baselines: [], validation: { ok: true, violations: [], warnings: [] },
 };
 
-export async function installScaleApi(page: Page, taskCount = 500) {
+export const ganttLayoutSchedule = {
+  ...schedule,
+  tasks: [
+    {
+      ...tasks[0],
+      title: "One-day critical task with a long title",
+      status: "in_progress",
+      progress: 45,
+      deadline: "2027-01-04",
+      baseline_start: "2027-01-04",
+      baseline_end: "2027-01-04",
+      start_variance_days: 0,
+      end_variance_days: 0,
+    },
+    {
+      ...tasks[1],
+      title: "Twenty-day integrated Gantt task",
+      status: "in_progress",
+      start: "2027-01-05",
+      end: "2027-01-24",
+      duration_days: 20,
+      progress: 15,
+      baseline_start: "2027-01-05",
+      baseline_end: "2027-01-24",
+      start_variance_days: 0,
+      end_variance_days: 0,
+    },
+  ],
+  dependencies: [{
+    id: "layout-dependency-1",
+    project_id: project.id,
+    predecessor_task_id: tasks[0].id,
+    successor_task_id: tasks[1].id,
+    dependency_type: "finish_to_start",
+    lag_days: 0,
+  }],
+};
+
+export async function installScaleApi(page: Page, taskCount = 500, scheduleOverride: typeof ganttLayoutSchedule | null = null) {
   await page.addInitScript(() => {
     window.sessionStorage.setItem("uok_token", "scale-proof-token");
     window.localStorage.setItem("uok_user", JSON.stringify({ username: "admin", display_name: "UOK Admin", email: "admin@example.test", role: "platform_admin" }));
@@ -47,8 +85,9 @@ export async function installScaleApi(page: Page, taskCount = 500) {
     "communications.core": { ...base, name: "communications.core", status: "installed", recorded_status: "installed", kind: "capability_module" },
     "planning.core": { ...base, name: "planning.core", status: "installed", recorded_status: "installed", kind: "capability_module" },
   };
-  const proofSchedule = taskCount === 500 ? schedule : { ...schedule, tasks: tasks.slice(0, taskCount), dependencies: schedule.dependencies.filter((dependency) => Number(dependency.successor_task_id.split("-").at(-1)) <= taskCount) };
-  await page.route("/api/dashboard", (route) => route.fulfill({ json: { counts: { planning_projects: 1, planning_tasks: taskCount } } }));
+  const proofSchedule = scheduleOverride || (taskCount === 500 ? schedule : { ...schedule, tasks: tasks.slice(0, taskCount), dependencies: schedule.dependencies.filter((dependency) => Number(dependency.successor_task_id.split("-").at(-1)) <= taskCount) });
+  const visibleTaskCount = proofSchedule.tasks.length;
+  await page.route("/api/dashboard", (route) => route.fulfill({ json: { counts: { planning_projects: 1, planning_tasks: visibleTaskCount } } }));
   await page.route("/api/baseline-evidence", (route) => route.fulfill({ json: { ok: true, checks: { planning_ui_proof: true } } }));
   await page.route("/api/architecture/alignment", (route) => route.fulfill({ json: { ok: true, checks: { module_neutral_baseline: true } } }));
   await page.route("/api/modules/catalog", (route) => route.fulfill({ json: { modules } }));

@@ -20,6 +20,7 @@
 @import "./saved-views.css";
 @import "./timeline-interaction.css";
 @import "./timeline-markers.css";
+@import "./task-overlays.css";
 @import "./toolbar.css";
 @import "./tooltips.css";
 @import "./tree-column.css";

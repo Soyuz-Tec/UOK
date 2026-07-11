@@ -1,4 +1,4 @@
-import type { KeyboardEvent, PointerEvent } from "react";
+import { useId, type KeyboardEvent, type PointerEvent } from "react";
 
 import { useUokLocalization } from "@uok/shared/localization";
 import type { PlanningProject, PlanningSchedule, PlanningTask } from "./types";
@@ -7,6 +7,14 @@ import type { TimelineCreateDraft } from "./planningTimelineCreateModel";
 import type { PlanningTimelineMarker } from "./planningTimelineMarkers";
 import type { PlanningRowLayout } from "./planningRowHeights";
 import { PlanningBaselineLane } from "./PlanningBaselineLane";
+import { planningBaselineLane } from "./planningBaselineLaneModel";
+import {
+  statusCodeWidth,
+  TaskLabelViewport,
+  taskOverlayGeometry,
+  TaskStatusCode,
+  TaskTooltip,
+} from "./PlanningGanttTaskOverlays";
 import { projectBoundaryMarkers } from "./planningBoundaryMarkers";
 import {
   dateValue,
@@ -36,15 +44,15 @@ export function TimelineHeaders({ units, cellWidth, headerHeight, width }: { uni
   );
 }
 
-export function TimelineBackground({ units, cellWidth, headerHeight, height, rowLayouts }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; height: number; rowLayouts: PlanningRowLayout[] }) {
+export function TimelineBackground({ units, cellWidth, headerHeight, height, rowLayouts, width }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; height: number; rowLayouts: PlanningRowLayout[]; width: number }) {
   return (
     <g className="planning-owned-background">
       {units.map((unit, index) => (
         <rect key={unit.key} className={unit.holiday ? "holiday" : unit.weekend ? "weekend" : ""} x={index * cellWidth} y={headerHeight} width={cellWidth} height={height - headerHeight} />
       ))}
       {units.map((unit, index) => <line key={`v-${unit.key}`} x1={index * cellWidth} y1="0" x2={index * cellWidth} y2={height} />)}
-      <line x1="0" y1={headerHeight} x2={units.length * cellWidth} y2={headerHeight} />
-      {rowLayouts.map((layout) => <line key={`h-${layout.taskId}`} x1="0" y1={headerHeight + layout.top + layout.height} x2={units.length * cellWidth} y2={headerHeight + layout.top + layout.height} />)}
+      <line x1="0" y1={headerHeight} x2={width} y2={headerHeight} />
+      {rowLayouts.map((layout) => <line key={`h-${layout.taskId}`} x1="0" y1={headerHeight + layout.top + layout.height} x2={width} y2={headerHeight + layout.top + layout.height} />)}
     </g>
   );
 }
@@ -78,6 +86,9 @@ export function TaskShape({
   cellWidth,
   rowSize,
   headerHeight,
+  timelineWidth,
+  viewportLeft,
+  viewportWidth,
   selected,
   chainClass,
   showCritical,
@@ -95,6 +106,9 @@ export function TaskShape({
   cellWidth: number;
   rowSize: number;
   headerHeight: number;
+  timelineWidth: number;
+  viewportLeft: number;
+  viewportWidth: number;
   selected: boolean;
   chainClass: string;
   showCritical: boolean;
@@ -105,14 +119,32 @@ export function TaskShape({
   onLinkStart: (taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) => void;
   onLinkFinish: (taskId: string, x: number, y: number, event: PointerEvent<SVGCircleElement> | KeyboardEvent<SVGCircleElement>) => void;
 }) {
+  const overlayId = useId().replace(/:/g, "");
   const x = xForDate(dateValue(task.start), chartStart, scale, cellWidth);
   const y = headerHeight + rowTop + Math.max(7, rowSize * 0.22);
   const barHeight = Math.max(18, rowSize * 0.46);
+  const baselineY = Math.min(y + barHeight + 6, headerHeight + rowTop + rowSize - 8);
   const width = task.task_type === "milestone" ? barHeight : Math.max(cellWidth * durationUnits(task, scale), cellWidth * 0.65);
+  const progressWidth = task.task_type === "milestone" ? 0 : width * Math.max(0, Math.min(100, task.progress)) / 100;
   const critical = showCritical && task.critical;
   const className = `planning-owned-task ${task.task_type} ${taskColorClass(task)} ${critical ? "critical" : ""} ${selected ? "selected" : ""} ${chainClass}`;
   const indicator = taskStatusIndicator(task, showCritical);
-  const accessibilityLabel = `${task.title}, ${indicator.label}, ${task.progress}% complete`;
+  const indicatorWidth = statusCodeWidth(indicator.code);
+  const overlay = taskOverlayGeometry({
+    barWidth: width,
+    barX: x,
+    hasHandles: !readOnly,
+    headerHeight,
+    indicatorWidth,
+    progressHandleX: task.task_type === "milestone" || readOnly ? undefined : x + progressWidth,
+    rowSize,
+    rowTop,
+    timelineWidth,
+    viewportLeft,
+    viewportWidth,
+  });
+  const baselineLabel = showBaselines ? planningBaselineLane(task, chartStart, scale, cellWidth)?.label : null;
+  const accessibilityLabel = `${task.title}, ${indicator.label}, ${task.progress}% complete${baselineLabel ? `, ${baselineLabel}` : ""}`;
   if (task.task_type === "milestone") {
     const centerX = x + barHeight / 2;
     const centerY = y + barHeight / 2;
@@ -127,17 +159,14 @@ export function TaskShape({
         onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)}
       >
         <title>{accessibilityLabel}</title>
-        <polygon points={`${centerX},${y} ${x + barHeight},${centerY} ${centerX},${y + barHeight} ${x},${centerY}`} />
-        <TaskStatusCode x={x + barHeight + 6} y={y + 1} indicator={indicator} />
-        <text x={x + barHeight + statusCodeWidth(indicator.code) + 14} y={centerY + 4}>{task.title}</text>
-        {readOnly ? null : <DependencyHandles task={task} sourceX={x + barHeight + 12} targetX={x - 12} y={centerY} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
-        <TaskTooltip task={task} x={x} y={Math.max(4, y - 50)} indicator={indicator} />
+        <polygon className="planning-owned-task-bar" points={`${centerX},${y} ${x + barHeight},${centerY} ${centerX},${y + barHeight} ${x},${centerY}`} />
+        <TaskStatusCode x={overlay.indicatorX} y={y + 1} indicator={indicator} />
+        <TaskLabelViewport clipId={`${overlayId}-label`} x={readOnly ? overlay.indicatorRight + 8 : overlay.sourceHandleX + 10} y={y} width={Math.min(240, Math.max(0, timelineWidth - (readOnly ? overlay.indicatorRight + 12 : overlay.sourceHandleX + 14)))} height={barHeight} title={task.title} />
+        {readOnly ? null : <DependencyHandles task={task} sourceX={overlay.sourceHandleX} targetX={Math.max(5, x - 12)} y={centerY} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
+        <TaskTooltip clipIdPrefix={`${overlayId}-tooltip`} task={task} x={overlay.tooltipX} y={overlay.tooltipY} indicator={indicator} />
       </g>
     );
   }
-  const progressWidth = width * Math.max(0, Math.min(100, task.progress)) / 100;
-  const indicatorWidth = statusCodeWidth(indicator.code);
-  const indicatorX = width > indicatorWidth + 72 ? x + width - indicatorWidth - 5 : x + width + 6;
   return (
     <g
       className={className}
@@ -148,16 +177,16 @@ export function TaskShape({
       onKeyDown={(event) => selectOnKey(event, task.id, onSelect)}
     >
       <title>{accessibilityLabel}</title>
-      <rect x={x} y={y} width={width} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)} />
+      <rect className="planning-owned-task-bar" x={x} y={y} width={width} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)} />
       <rect className="progress" x={x} y={y} width={progressWidth} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} />
       {readOnly ? null : <rect className="planning-owned-resize-handle start" x={x - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-start", event.clientX)} />}
       {readOnly ? null : <rect className="planning-owned-resize-handle end" x={x + width - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-end", event.clientX)} />}
       {readOnly ? null : <circle className="planning-owned-progress-handle" cx={x + progressWidth} cy={y + barHeight / 2} r="5" onPointerDown={(event) => onDragStart(task.id, "progress", event.clientX, width)} />}
-      <text x={x + 8} y={y + barHeight / 2 + 4}>{task.title}</text>
-      <TaskStatusCode x={indicatorX} y={y + Math.max(2, (barHeight - 18) / 2)} indicator={indicator} />
-      {showBaselines ? <PlanningBaselineLane task={task} chartStart={chartStart} scale={scale} cellWidth={cellWidth} y={y + barHeight + 6} /> : null}
-      {readOnly ? null : <DependencyHandles task={task} sourceX={x + width + 12} targetX={x - 12} y={y + barHeight / 2} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
-      <TaskTooltip task={task} x={x} y={Math.max(4, y - 50)} indicator={indicator} />
+      <TaskLabelViewport clipId={`${overlayId}-label`} x={overlay.labelX} y={y} width={overlay.labelWidth} height={barHeight} title={task.title} />
+      <TaskStatusCode x={overlay.indicatorX} y={y + Math.max(2, (barHeight - 18) / 2)} indicator={indicator} />
+      {showBaselines ? <PlanningBaselineLane task={task} chartStart={chartStart} scale={scale} cellWidth={cellWidth} y={baselineY} showCode={rowSize >= 50} timelineWidth={timelineWidth} /> : null}
+      {readOnly ? null : <DependencyHandles task={task} sourceX={overlay.sourceHandleX} targetX={Math.max(5, x - 12)} y={y + barHeight / 2} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
+      <TaskTooltip clipIdPrefix={`${overlayId}-tooltip`} task={task} x={overlay.tooltipX} y={overlay.tooltipY} indicator={indicator} />
     </g>
   );
 }
@@ -174,30 +203,6 @@ function DependencyHandles({ task, sourceX, targetX, y, onLinkStart, onLinkFinis
     <g className="planning-owned-link-handles">
       <circle className="planning-owned-link-handle target" cx={targetX} cy={y} r="5" tabIndex={0} role="button" aria-label={`Finish dependency at ${task.title}`} onPointerUp={(event) => onLinkFinish(task.id, targetX, y, event)} onKeyDown={(event) => linkOnKey(event, () => onLinkFinish(task.id, targetX, y, event))} />
       <circle className="planning-owned-link-handle source" cx={sourceX} cy={y} r="5" tabIndex={0} role="button" aria-label={`Start dependency from ${task.title}`} onPointerDown={(event) => onLinkStart(task.id, sourceX, y, event)} onKeyDown={(event) => linkOnKey(event, () => onLinkStart(task.id, sourceX, y, event))} />
-    </g>
-  );
-}
-
-function TaskStatusCode({ x, y, indicator }: { x: number; y: number; indicator: { code: string; label: string } }) {
-  const width = statusCodeWidth(indicator.code);
-  return (
-    <g className="planning-owned-status-code" aria-label={indicator.label}>
-      <rect x={x} y={y} width={width} height="18" rx="4" />
-      <text x={x + width / 2} y={y + 13} textAnchor="middle">{indicator.code}</text>
-    </g>
-  );
-}
-
-function statusCodeWidth(code: string) {
-  return Math.max(34, code.length * 7 + 12);
-}
-
-function TaskTooltip({ task, x, y, indicator }: { task: PlanningTask; x: number; y: number; indicator: { code: string; label: string } }) {
-  return (
-    <g className="planning-owned-tooltip" aria-hidden="true">
-      <rect x={x} y={y} width="224" height="42" rx="6" />
-      <text x={x + 10} y={y + 16}>{task.wbs ? `${task.wbs} ` : ""}{task.title}</text>
-      <text className="muted" x={x + 10} y={y + 32}>{indicator.label} · {task.start} to {task.end} · {task.progress}%</text>
     </g>
   );
 }
@@ -242,23 +247,40 @@ export function ProjectBoundaryMarkers({ project, chartStart, scale, cellWidth, 
   );
 }
 
-export function TaskTimelineMarkers({ markers, chartStart, scale, cellWidth, height }: { markers: PlanningTimelineMarker[]; chartStart: Date; scale: TimelineScale; cellWidth: number; height: number }) {
+export function TaskTimelineMarkers({ markers, chartStart, scale, cellWidth, height, timelineWidth }: { markers: PlanningTimelineMarker[]; chartStart: Date; scale: TimelineScale; cellWidth: number; height: number; timelineWidth: number }) {
   if (markers.length === 0) return null;
+  const groups = markerDisplayGroups(markers, chartStart, scale, cellWidth);
   return (
     <g className="planning-owned-task-markers" aria-label="Task deadline markers">
-      {markers.map((marker) => {
-        const x = xForDate(dateValue(marker.date), chartStart, scale, cellWidth) + cellWidth;
+      {groups.map((group) => {
+        const surfaceX = Math.min(Math.max(4, group.anchorX - 17), timelineWidth - 38);
+        const accessibilityLabel = group.items.map(({ marker }) => marker.label).join("; ");
         return (
-          <g key={marker.id} className={`planning-owned-task-marker ${marker.kind}`} aria-label={marker.label}>
-            <title>{marker.label} on {marker.date}</title>
-            <line x1={x} y1="0" x2={x} y2={height} />
-            <rect x={x + 5} y="4" width="34" height="18" rx="4" />
-            <text x={x + 22} y="17" textAnchor="middle">{marker.code}</text>
+          <g key={group.items.map(({ marker }) => marker.id).join("-")} className="planning-owned-task-marker" role="img" aria-label={accessibilityLabel}>
+            <title>{group.items.map(({ marker }) => `${marker.label} on ${marker.date}`).join("; ")}</title>
+            {group.items.map(({ marker, x }) => <line key={marker.id} className={marker.kind} x1={x} y1="0" x2={x} y2={height} />)}
+            <rect className="planning-owned-task-marker-surface" x={surfaceX} y="20" width="34" height="12" rx="3" />
+            <text x={surfaceX + 17} y="29" textAnchor="middle">{group.items.length === 1 ? group.items[0].marker.code : `+${group.items.length}`}</text>
           </g>
         );
       })}
     </g>
   );
+}
+
+function markerDisplayGroups(markers: PlanningTimelineMarker[], chartStart: Date, scale: TimelineScale, cellWidth: number) {
+  const positioned = markers.map((marker) => ({ marker, x: xForDate(dateValue(marker.date), chartStart, scale, cellWidth) + cellWidth }));
+  return positioned.reduce<Array<{ anchorX: number; items: typeof positioned }>>((groups, item) => {
+    const current = groups[groups.length - 1];
+    const previous = current?.items[current.items.length - 1];
+    if (!current || !previous || item.x - previous.x >= 38) {
+      groups.push({ anchorX: item.x + 5, items: [item] });
+      return groups;
+    }
+    current.items.push(item);
+    current.anchorX = (current.items[0].x + item.x) / 2 + 5;
+    return groups;
+  }, []);
 }
 
 export function TimelineCreateDraftShape({ draft, headerHeight, height }: { draft: TimelineCreateDraft; headerHeight: number; height: number }) {

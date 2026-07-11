@@ -13,7 +13,6 @@
 
 .planning-owned-task:hover .planning-owned-link-handle,
 .planning-owned-task:focus-visible .planning-owned-link-handle,
-.planning-owned-task.selected .planning-owned-link-handle,
 .planning-linking .planning-owned-link-handle {
   opacity: 1;
 }

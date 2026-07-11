@@ -26,7 +26,7 @@
   stroke-width: 1;
 }
 
-.planning-owned-baseline-lane text {
+.planning-owned-task .planning-owned-baseline-lane text {
   fill: var(--uok-text-primary);
   font-size: 9px;
   font-weight: 900;

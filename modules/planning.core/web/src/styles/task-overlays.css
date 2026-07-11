@@ -1,0 +1,40 @@
+.planning-owned-task-label-viewport,
+.planning-owned-tooltip-line {
+  pointer-events: none;
+}
+
+.planning-owned-task-label-viewport {
+  fill: color-mix(in srgb, var(--uok-bg-elevated) 92%, transparent);
+  stroke: color-mix(in srgb, var(--uok-text-primary) 18%, transparent);
+  stroke-width: 0.5;
+}
+
+.planning-owned-task .planning-owned-task-label {
+  fill: var(--uok-text-primary);
+  transition: opacity 120ms ease;
+  unicode-bidi: plaintext;
+}
+
+.planning-owned-task:hover .planning-owned-task-label,
+.planning-owned-task:focus-visible .planning-owned-task-label {
+  opacity: 0;
+}
+
+.planning-owned-baseline-lane {
+  transition: opacity 120ms ease;
+}
+
+.planning-owned-task:hover .planning-owned-baseline-lane,
+.planning-owned-task:focus-visible .planning-owned-baseline-lane {
+  opacity: 0;
+}
+
+.planning-owned-task.selected > .planning-owned-task-bar {
+  stroke: var(--uok-text-primary);
+  stroke-width: 2.5;
+}
+
+.planning-owned-task:focus-visible > .planning-owned-task-bar {
+  stroke: var(--uok-text-primary);
+  stroke-width: 3;
+}
