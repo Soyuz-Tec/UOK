@@ -21,53 +21,17 @@
   }
 
   .workflow-header,
-  .contacts-toolbar,
   .search-workspace-panel,
   .search-group,
-  .contact-quality-workspace,
-  .duplicate-comparison-grid,
   .workflow-split-view,
-  .contacts-view-split .workflow-split-view,
-  .inline-edit-form,
-  .form-field-grid {
+  .inline-edit-form {
     grid-template-columns: 1fr;
   }
 
-  .contacts-toolbar {
-    grid-template-areas:
-      "search"
-      "page"
-      "view"
-      "fields"
-      "primary";
-  }
-
-  .contacts-view-split .workflow-primary-region {
-    border-right: 0;
-    border-bottom: var(--uok-line);
-  }
-
-  .contacts-view-split .contact-list {
-    max-height: none;
-    overflow: visible;
-  }
-
-  .field-prominent,
-  .field-wide {
-    grid-column: auto;
-  }
-
-  .contacts-toolbar .segmented-control,
-  .contact-page-controls,
-  .contact-page-stepper,
   .search-workspace-menu,
   .toolbar-group,
   .search-field {
     width: 100%;
-  }
-
-  .relationship-composer {
-    grid-template-columns: 1fr;
   }
 
   .account-menu-root {
@@ -102,8 +66,6 @@
   .field input,
   .field select,
   .field textarea,
-  .contact-page-control,
-  .contact-page-control select,
   .search-workspace-select,
   .search-workspace-select select,
   .search-workspace-save-field,
@@ -112,40 +74,18 @@
   .command-button,
   .account-chip,
   .module-actions,
-  .contacts-actions,
-  .contact-inspector-actions,
-  .note-composer,
-  .relationship-composer,
   .inline-edit-actions {
     width: 100%;
   }
 
   .command-button,
-  .module-actions,
-  .contacts-actions {
+  .module-actions {
     justify-content: center;
   }
 
   .workflow-header-actions,
-  .contact-page-controls,
-  .contact-page-stepper,
-  .view-group,
-  .fields-group,
-  .primary-group,
-  .contact-inspector-actions,
   .inline-edit-actions {
     justify-content: flex-start;
-  }
-
-  .contact-manage-disclosure,
-  .contact-manage-disclosure summary {
-    width: 100%;
-  }
-
-  .contact-manage-actions {
-    position: static;
-    margin-top: var(--uok-space-2);
-    box-shadow: none;
   }
 
   .session-popover {
@@ -165,32 +105,6 @@
   .logout-dialog-actions {
     align-items: stretch;
     flex-direction: column-reverse;
-  }
-
-  .contact-card {
-    grid-template-columns: 72px minmax(0, 1fr);
-  }
-
-  .contacts-view-split .contact-list-row {
-    grid-template-columns: 1fr;
-  }
-
-  .contacts-view-split .contact-list-header {
-    display: none;
-  }
-
-  .contact-card-avatar {
-    width: 72px;
-    height: 72px;
-    font-size: 36px;
-  }
-
-  .note-composer {
-    grid-template-columns: 1fr;
-  }
-
-  .quality-note-composer {
-    grid-template-columns: 1fr;
   }
 
   .form-section,

@@ -19,8 +19,10 @@ modules/<module_name>/
   manifest.yaml
   backend/
   web/
+    src/  # executable module frontend source when web_surface is declared
   migrations/
   tests/
+    web/  # module-owned TypeScript/Vitest tests
   verify/  # required when candidate_verifier is declared
 ```
 
@@ -48,7 +50,7 @@ Every module manifest must declare:
 | `events` | Event names emitted by this module. |
 | `dependencies` | Other modules required before this module can operate. |
 | `backend_path` | Module backend source directory. |
-| `web_path` | Module UI ownership directory. |
+| `web_path` | Module UI ownership directory. It must stay under the owning module; a declared `web_surface` requires exactly `modules/<module_name>/web`. |
 | `migrations_path` | Module migration ownership directory. |
 | `tests_path` | Canonical module test ownership directory. It must be exactly `modules/<module_name>/tests` so source tests can be excluded from OCI images without a second path catalog. |
 | `api_prefixes` | Canonical lowercase `/api/...` route prefixes exclusively owned by this module; prefixes cannot overlap another module's route tree. |
@@ -69,6 +71,8 @@ Every module manifest must declare:
 | `dashboard_provider` | Import target for module-owned dashboard count fragments merged into `/api/dashboard`. |
 | `evidence_provider` | Import target for module-owned baseline evidence checks and counts merged into `/api/baseline-evidence`. |
 | `model_exports` | Import target for a provider returning the module's exact `dict[str, mapped class]`. Registration validates direct manifest ownership, source origin, the single kernel `Base`, complete metadata, and hidden/extra mappings before schema or migration inspection. |
+| `web_entry` | Canonical compile-time React entry for a declared `web_surface`. It must be exactly `modules/<module_name>/web/src/moduleSurface.tsx`, resolve inside the owning web root, and contain no linked or junction path segment. |
+| `web_section` | Unique lowercase workbench section owned by a declared `web_surface`. Shell-reserved sections such as `overview`, `evidence`, and `architecture` cannot be claimed. |
 | `candidate_verifier_script` | Safe relative PowerShell path under `modules/<module_name>/verify` for this module's candidate scenario. Runtime and release verification assets must not depend on `tests/` paths. |
 | `candidate_verifier_function` | PowerShell function name invoked from `candidate_verifier_script`. |
 
@@ -84,23 +88,27 @@ UOK currently allows exactly these extension hooks:
 - `dashboard_provider`
 - `evidence_provider`
 - `model_exports`
+- `web_surface`
 - `candidate_verifier`
 
-Declarations such as commands, events, permissions, migrations, web ownership, and tests are required manifest metadata or assets; they are not executable extension hooks. Hook declarations are bidirectional: each listed extension requires its matching optional field or fields, and each extension-bearing field requires its registered extension. Unknown keys and extension names fail closed.
+Declarations such as commands, events, permissions, migrations, and tests are required manifest metadata or assets. `web_surface` is a release/build composition extension, not a Python import hook: it pairs `web_entry` and `web_section` so the checked-in frontend catalog can be generated from validated manifests. Hook declarations are bidirectional: each listed extension requires its matching optional field or fields, and each extension-bearing field requires its registered extension. Unknown keys and extension names fail closed.
 
 New extension points require an architecture update and a failing validation test before use.
 
 ## Runtime and Release Validation
 
 - Runtime validation statically checks schema and maturity truth, lifecycle semantics, dependencies, unique direct ownership, explicit kernel-table scopes, safe runtime paths, backend packages, import targets, canonical non-overlapping API prefixes, permissions, and model declarations. It completes before extension imports. The model registry then imports only validated `model_exports` providers in deterministic dependency order and completes the single metadata graph before migration inspection, schema creation, or other extension composition.
-- Release validation includes every runtime check, then requires module ownership folders, maturity-appropriate module tests, and safe module-owned candidate verifier files/functions.
+- Frontend/build validation includes every runtime check, then requires module frontend ownership roots plus the exact POSIX canonical entry, safe resolved path, unique non-reserved section, and paired manifest fields before catalog generation. Release validation includes the runtime and frontend checks plus all module ownership folders, maturity-appropriate module tests, and safe module-owned candidate verifier files/functions. Python runtime validation does not require TypeScript source assets to exist.
 - Runtime validation deliberately does not require `tests_path` to exist, but it still enforces the canonical `modules/<module_name>/tests` declaration. Runtime container stages exclude `modules/*/tests`; a manifest-driven container asset validator requires every runtime-proven module's exact verifier script and rejects any noncanonical test path.
 - Candidate discovery consumes the canonical release validator and recursively parses each entry script's complete static dot-source closure before returning the catalog. Helpers must use a canonical literal `$PSScriptRoot` path, resolve inside the owning module `verify/` directory or the approved shared `scripts/verify` root, and remain free of links, junctions, cycles, and syntax errors. Dynamic or unresolved dot-sources fail closed, and the declared verifier must have exactly one ordinary top-level function definition across the closure before PowerShell loads any module script.
+- Frontend catalog generation consumes the same closed manifests, applies deterministic dependency ordering, and writes literal TypeScript imports to `web/src/generated/moduleSurfaceCatalog.ts`. The browser never reads YAML or interprets `web_entry`; Vite compiles the generated catalog and canonical entries at build time.
 
 ## Kernel Boundary Rules
 
 - `src/uok` owns the kernel, shared contracts, security, command bus, module registry, API composition, static asset serving, and compatibility facades.
 - `modules/<module>` owns module-specific backend implementation, ORM definitions, UI surface, migrations, tests, runtime/release verification assets, commands, events, permissions, and maintenance behavior.
+- Module production frontend source and CSS live under `modules/<module>/web/src`; module frontend tests live under `modules/<module>/tests/web`. Shared shell, reusable module-neutral controls, design tokens, generated contracts, and catalog composition remain under `web/src`.
+- The current typed surface host adapts the shell's existing Workbench state into module renderers as an intentionally transitional compatibility bridge. Modules must not use it to move new module behavior into the shell.
 - Product, cargo, CRM, accounting, inventory, document, and industry-specific logic must not be embedded in the kernel.
 - A module may use shared UOK database tables only when its manifest declares the table or shared-table scope it owns.
 - A module must not require manual edits to unrelated modules for normal install, upgrade, disable, uninstall, or maintenance workflows.
@@ -113,7 +121,10 @@ New extension points require an architecture update and a failing validation tes
 - `agents.core` is an inert `planned` capability scaffold: it is not installable, updatable, maintainable, permission-bearing, or runtime-proven.
 - `calendar.core`, `communications.core`, `contacts.core`, `planning.core`, and `reports.core` are optional `runtime_proven` capability modules with manifest-declared backend hooks and module-owned verifiers.
 - Their 29 capability ORM mappings live in the owning backend packages and register beside nine product-neutral kernel mappings on one SQLAlchemy metadata graph. Compatibility imports return the exact owning classes.
-- Module backend implementations, tests, migrations, and candidate verifier assets live below their owning module roots. Module-specific React source is still composed through the top-level frontend shell for this candidate and is the next physical-ownership slice.
+- Apps Manager, Calendar, Communications, Contacts, and Planning declare `web_surface`; their React source, module-local CSS, entrypoints, and frontend tests live below the owning module roots and are composed through the generated compile-time catalog.
+- Reports owns its typed report client under `modules/reports.core/web/src` but has no workbench surface. Planning may consume that typed client without transferring Reports transport ownership into the shell.
+- `agents.core` remains an inert planned scaffold and declares no executable web surface.
+- The Docker frontend stage copies the module tree before Vite compilation. Vitest discovers `modules/*/tests/web`, and container validation rejects frontend tests below production `web_path` while the final image excludes canonical module test directories.
 
 ## Required Scans Before GitHub Push
 
@@ -140,4 +151,4 @@ Also run and review:
 
 ## Acceptance Rule
 
-A module is not ready for serious expansion unless its manifest, backend package, UI ownership, migrations, tests, permissions, command/event ownership, data retention behavior, and lifecycle behavior are declared and validated.
+A module is not ready for serious expansion unless its manifest, backend package, UI ownership, migrations, tests, permissions, command/event ownership, data retention behavior, and lifecycle behavior are declared and validated. A module with a workbench UI must additionally declare `web_surface`, its canonical `web_entry`, and a unique `web_section`; production source, local CSS, and frontend tests must remain in the owning module paths.

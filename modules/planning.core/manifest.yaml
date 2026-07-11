@@ -81,6 +81,8 @@ dependencies:
   - calendar.core
 backend_path: modules/planning.core/backend
 web_path: modules/planning.core/web
+web_entry: modules/planning.core/web/src/moduleSurface.tsx
+web_section: planning
 migrations_path: modules/planning.core/migrations
 tests_path: modules/planning.core/tests
 api_prefixes:
@@ -134,5 +136,6 @@ extension_points:
   - dashboard_provider
   - evidence_provider
   - model_exports
+  - web_surface
   - candidate_verifier
 data_retention_policy: "User delete archives or disables planning access; schedule records, baselines, and audit events are retained for admin-controlled recovery unless a future purge workflow is explicitly executed."

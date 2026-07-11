@@ -98,6 +98,7 @@ def test_repository_manifests_use_exact_maturity_and_extension_taxonomies() -> N
     assert set(EXTENSION_REGISTRY) == {
         "api_router", "command_handlers", "command_permissions", "command_replay_guard",
         "role_grants", "dashboard_provider", "evidence_provider", "model_exports", "candidate_verifier",
+        "web_surface",
     }
     assert manifests["agents.core"]["maturity"] == "planned"
     assert manifests["agents.core"]["extension_points"] == []

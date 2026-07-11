@@ -38,9 +38,9 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 | API/data validation | Pydantic `2.13.4` and Python type hints | request/response schemas, command payload validation | Typed API contracts, JSON-compatible payload discipline |
 | Persistence access | SQLAlchemy `2.0.51` | `src/uok/kernel_models.py`, `src/uok/module_model_registry.py`, `modules/*/backend/*/models.py`, persistence modules | Single-Base ORM mapping, validated module composition, transactional unit of work, SQL abstraction where appropriate |
 | System of record | PostgreSQL `18` | Podman compose and production-shaped runtime | Transactions, tenant scoping, RLS verification, restore drills, event/outbox durability |
-| Durable frontend | TypeScript `5.9.3` + React `19.2.7` | `web/src/` | Operator console, module testing, workflow UI, product-neutral shell |
+| Durable frontend | TypeScript `5.9.3` + React `19.2.7` | `web/src/`, `modules/*/web/src` | Product-neutral shell/shared controls plus module-owned operator workspaces and typed clients |
 | Frontend build | Vite `8.1.3` on Node `26` | `web/` | Local development build and compiled static assets |
-| Styling | CSS with UOK design tokens | `web/src/design-tokens.css`, `web/src/styles.css` | Product-neutral, policy-driven UI styling |
+| Styling | CSS with UOK design tokens | `web/src/design-tokens.css`, `web/src/styles.css`, `modules/*/web/src/styles` | Product-neutral tokens and shell layers plus module-local UI styling |
 | Local packaging | Podman-compatible OCI image | `Dockerfile`, `deploy/` | Repeatable local candidate deployment |
 
 ## Mandatory Principles
@@ -48,7 +48,8 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 1. One production stack
    - New durable kernel work belongs in Python under `src/uok/`.
    - New durable module backend work belongs in Python under `modules/<module>/backend`.
-   - New durable frontend work belongs in TypeScript under `web/src/`.
+   - New product-neutral shell, composition, generated contract, and reusable UI work belongs in TypeScript under `web/src/`.
+   - New module-specific frontend work belongs in TypeScript under `modules/<module>/web/src`, with module frontend tests under `modules/<module>/tests/web`.
    - New frameworks or production languages require an architecture decision record, policy update, verifier update, and migration plan.
 
 2. Typed boundaries
@@ -77,13 +78,18 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 6. React + TypeScript owns durable UI
    - Durable UI features must be React components written in TypeScript.
    - Plain JavaScript screens are not allowed for executable durable UI.
-   - Module/product UI must be driven by backend manifests, frontend module surface registries, workflow contracts, permissions, and product metadata.
+   - Module/product UI must be driven by closed manifests, the generated compile-time frontend module catalog, the typed module surface registry, workflow contracts, permissions, and product metadata.
+   - A workbench module declares `web_surface`, canonical `web_entry`, and unique `web_section`; its production source and local CSS live below the declared module `web_path`.
+   - The browser must never load manifest YAML or interpret dynamic module paths. The generator emits literal TypeScript imports that Vite compiles into the static application bundle.
+   - The existing broad Workbench surface host is an intentionally transitional shell compatibility bridge. New module behavior must not expand that coupling.
    - The core UI shell must not hardcode product-specific names; selected product labels come from product manifests.
 
 7. Vite owns frontend builds
    - Vite remains the frontend build tool for local and container builds.
    - The compiled frontend must be present under `src/uok/static/app` for local candidate packaging.
    - The frontend API boundary must use generated TypeScript contracts from the FastAPI OpenAPI schema.
+   - The frontend module boundary must use the checked-in generated catalog from validated manifests; generated-contract checks cover both API declarations and module surface imports.
+   - Vite and TypeScript must include `modules/*/web/src`; Vitest must include `modules/*/tests/web`. Container web builds must copy module production source before compilation, and runtime images must exclude canonical module test directories.
    - Node.js used for Vite builds must satisfy the Vite compatibility requirement. The current container uses Node `26`.
 
 8. CSS token discipline
@@ -130,7 +136,7 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 
 The legacy static fallback used HTML, CSS, and JavaScript in `src/uok/static/index.html`.
 
-That exception is closed in `UOK-3.0.0-rc8`. The executable fallback business logic has been removed; the root route must serve only the compiled React app or return an explicit missing-build error. New durable UI work belongs under `web/src` and must pass TypeScript, frontend tests, deterministic generated-contract drift checking, and the candidate verification gates.
+That exception is closed in `UOK-3.0.0-rc8`. The executable fallback business logic has been removed; the root route must serve only the compiled React app or return an explicit missing-build error. New durable UI work belongs under `web/src` for shell/shared concerns or `modules/<module>/web/src` for module concerns and must pass TypeScript, frontend tests, deterministic generated-contract drift checking, and the candidate verification gates.
 
 ## Prohibited Without ADR
 
@@ -188,9 +194,12 @@ This restriction applies to UOK production code. It does not prohibit one-off lo
 
 - Use `.tsx` for React components and `.ts` for non-JSX TypeScript modules.
 - Keep `allowJs: false` and `strict: true` in the durable frontend.
+- Keep shell, shared controls, design tokens, generated contracts, and composition under `web/src`; keep module workspaces, module-specific app hooks, typed module clients, and local CSS under the owning `modules/<module>/web/src`.
+- Keep module frontend tests under `modules/<module>/tests/web` so test code cannot enter the production web root or final runtime image.
 - Represent API responses with interfaces or types at the use boundary.
 - UI state should be explicit, not inferred from untyped `any` except for temporary compatibility surfaces that must be narrowed later.
-- Product/workflow labels must come from backend module/product metadata or the frontend module surface registry where the current Vite bundle requires compile-time composition.
+- Product/workflow labels must come from backend module/product metadata or the frontend module surface registry generated from closed manifests where the current Vite bundle requires compile-time composition.
+- `web_surface`, `web_entry`, and `web_section` are build/release metadata. They are not Python import targets or browser runtime loading instructions.
 - Use reusable components for shell, toolbar, navigation, command buttons, status pills, panels, tables/lists, forms, and workflow steppers.
 - Split hooks and components before they become mixed-responsibility files. API/client orchestration, stored session state, module actions, Contacts workflows, and form drafting should remain independently reviewable.
 
@@ -210,14 +219,17 @@ These limits are architectural guardrails, not arbitrary formatting rules. A lar
 ### Vite Build
 
 - `npm run build:static` is the required local static build path for packaging FastAPI-served assets.
-- Container builds must compile the frontend and copy the output into `src/uok/static/app`.
-- Generated assets are build artifacts. Edit source in `web/src/`, not generated files.
+- Container builds must copy `web/` and module production source, compile the frontend, and copy the output into `src/uok/static/app`.
+- `npm run generate:modules` regenerates literal imports from validated manifests. `npm run check:contracts` must fail when either generated API contracts or the frontend module catalog drift.
+- Generated assets are build artifacts. Edit shell/shared source in `web/src/` and module source in `modules/<module>/web/src`, not generated files.
 
 ## Candidate Acceptance Gates
 
 A candidate is not acceptable if it:
 
-- Adds durable frontend behavior outside `web/src`.
+- Adds durable frontend behavior outside `web/src` or a declared `modules/<module>/web/src` owner.
+- Places module frontend tests outside `modules/<module>/tests/web` or leaves test files below a module production `web_path`.
+- Makes the browser load manifest YAML, interpret `web_entry`, or dynamically discover executable module paths.
 - Adds plain JavaScript source for new durable UI.
 - Removes TypeScript strict mode.
 - Adds a second frontend or backend framework without ADR approval.

@@ -38,6 +38,8 @@ events:
 dependencies: []
 backend_path: modules/calendar.core/backend
 web_path: modules/calendar.core/web
+web_entry: modules/calendar.core/web/src/moduleSurface.tsx
+web_section: calendar
 migrations_path: modules/calendar.core/migrations
 tests_path: modules/calendar.core/tests
 api_prefixes:
@@ -72,5 +74,6 @@ extension_points:
   - command_permissions
   - role_grants
   - model_exports
+  - web_surface
   - candidate_verifier
 data_retention_policy: "Calendar records are organization-scoped. Deletion soft-deletes calendars and cancellation retains event history for audit; purge is intentionally deferred to a future governance workflow."

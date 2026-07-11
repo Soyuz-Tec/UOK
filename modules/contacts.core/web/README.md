@@ -1,5 +1,18 @@
 # Contacts Core Web
 
-The Contacts UI is currently implemented in `web/src/features/contacts` and composed through `web/src/features/modules/moduleSurfaceRegistry.tsx`.
+Contacts owns its production React components, module-specific app hooks, and
+local CSS under `modules/contacts.core/web/src`. Contacts frontend tests and
+fixtures live under `modules/contacts.core/tests/web`.
 
-This directory is the module ownership marker for Contacts web assets. The next packaging step is moving module-specific UI source behind this module root while keeping shared shell components, shared controls, generated API contracts, and global design tokens in `web/src`.
+The closed manifest declares `web_surface`, the canonical
+`modules/contacts.core/web/src/moduleSurface.tsx` `web_entry`, and the unique
+`contacts` `web_section`. The deterministic generated catalog supplies the
+literal compile-time import to the typed registry; the browser never reads YAML
+or resolves a dynamic module path.
+
+The surface currently receives existing Contacts state and commands through the
+shared Workbench host. That broad host is an intentionally transitional shell
+compatibility bridge for this relocation, not the permanent module API and not
+a destination for new Contacts behavior. Shared controls, design tokens,
+generated contracts, and product-neutral shell state remain under `web/src`;
+Contacts selectors and workflow styling stay module-local.

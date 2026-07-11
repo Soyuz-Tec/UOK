@@ -1,4 +1,7 @@
-export type Section = "overview" | "apps" | "contacts" | "calendar" | "communications" | "planning" | "evidence" | "architecture";
+import type { GeneratedModuleSection } from "../generated/moduleSurfaceCatalog";
+
+export type CoreSection = "overview" | "evidence" | "architecture";
+export type Section = CoreSection | GeneratedModuleSection;
 export type Appearance = "system" | "light" | "dark";
 export type UokLocale = "en-US" | "ar";
 export type AuthMode = "signin" | "register";

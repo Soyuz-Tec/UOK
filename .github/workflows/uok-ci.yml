@@ -126,6 +126,9 @@ jobs:
         working-directory: web
         run: npm ci
 
+      - name: Validate manifest-declared module assets
+        run: python scripts/validate_container_module_assets.py
+
       - name: Check generated API contract drift
         working-directory: web
         run: npm run check:contracts

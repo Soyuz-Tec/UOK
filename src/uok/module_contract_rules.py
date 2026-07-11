@@ -9,6 +9,7 @@ from .module_api_prefixes import validate_api_prefix_ownership, validate_api_pre
 from .module_imports import IMPORT_TARGET_SPEC_PATTERN
 from .module_manifest_schema import IMPORT_TARGET_FIELDS
 from .module_model_claims import validate_owned_table_claims
+from .module_web_contract import validate_web_section_ownership, validate_web_surface
 ALLOWED_MODULE_KINDS = {"control_module", "capability_module", "business_module"}
 PATH_FIELDS = ("backend_path", "web_path", "migrations_path", "tests_path")
 RUNTIME_PATH_FIELDS = {"backend_path", "migrations_path"}
@@ -45,6 +46,13 @@ def validate_manifest_semantics(
         violation(rows, module_name, "lifecycle", f"unknown lifecycle states: {', '.join(unknown_states)}")
     _validate_planned_module(module_name, manifest, rows)
     _validate_paths(module_name, manifest, module_root, scope, rows)
+    validate_web_surface(
+        module_name,
+        manifest,
+        module_root,
+        rows,
+        require_entry_asset=scope in {"frontend", "release"},
+    )
     validate_api_prefixes(module_name, manifest["api_prefixes"], rows)
     _validate_import_targets(module_name, manifest, module_root, rows)
     _validate_candidate_verifier(module_name, manifest, module_root, scope, rows)
@@ -91,7 +99,11 @@ def _validate_paths(
     rows: list[dict[str, str]],
 ) -> None:
     workspace = module_root.parent
-    required_paths = set(PATH_FIELDS) if scope == "release" else RUNTIME_PATH_FIELDS
+    required_paths = (
+        set(PATH_FIELDS)
+        if scope == "release"
+        else RUNTIME_PATH_FIELDS | ({"web_path"} if scope == "frontend" else set())
+    )
     for field in PATH_FIELDS:
         raw_value = manifest[field].strip()
         path = Path(raw_value)
@@ -205,6 +217,7 @@ def validate_catalog_relationships(
 ) -> tuple[dict[str, str], dict[str, str]]:
     command_owners = _unique_owners(manifests, "commands", rows)
     event_owners = _unique_owners(manifests, "events", rows)
+    validate_web_section_ownership(manifests, rows)
     validate_api_prefix_ownership(manifests, rows)
     _validate_dependencies(manifests, rows)
     _validate_backend_packages(manifests, module_root, rows)

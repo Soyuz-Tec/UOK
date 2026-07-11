@@ -18,6 +18,7 @@ RUN python scripts/validate_container_module_assets.py --require-tests-excluded
 COPY web/package.json web/package-lock.json web/tsconfig.json ./web/
 COPY web/src ./web/src
 RUN python scripts/export_openapi_schema.py
+RUN python scripts/generate_frontend_module_catalog.py --check
 
 FROM node:26-alpine AS web-build
 
@@ -25,6 +26,7 @@ WORKDIR /app/web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
 COPY web ./
+COPY modules /app/modules
 COPY --from=openapi-generate /app/web/src/generated ./src/generated
 RUN npm run generate:client && npm run build:client -- --outDir /app/web-dist
 

@@ -23,6 +23,8 @@ events:
 dependencies: []
 backend_path: modules/apps.manager/backend
 web_path: modules/apps.manager/web
+web_entry: modules/apps.manager/web/src/moduleSurface.tsx
+web_section: apps
 migrations_path: modules/apps.manager/migrations
 tests_path: modules/apps.manager/tests
 api_prefixes:
@@ -38,5 +40,6 @@ owned_tables:
   - EventRecord:Module
 extension_points:
   - api_router
+  - web_surface
   - candidate_verifier
 data_retention_policy: "Required bootstrap control module; lifecycle records are retained as UOK governance evidence."

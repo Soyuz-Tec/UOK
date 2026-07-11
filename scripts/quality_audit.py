@@ -1,18 +1,15 @@
 from __future__ import annotations
 
 import json
-import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 import dependency_policy
+import frontend_quality_policy
 import source_size_policy
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-
-
 @dataclass
 class CheckResult:
     name: str
@@ -22,10 +19,6 @@ class CheckResult:
 
 def read_text(path: str) -> str:
     return (REPO_ROOT / path).read_text(encoding="utf-8", errors="ignore")
-
-
-def read_json(path: str) -> dict[str, Any]:
-    return json.loads(read_text(path))
 
 
 def check_required_artifacts() -> CheckResult:
@@ -39,12 +32,16 @@ def check_required_artifacts() -> CheckResult:
         "docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md",
         "docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md",
         "docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md",
+        "docs/architecture/ADR-0023-module-local-frontend-composition.md",
         "docs/design/UOK_UI_DESIGN_POLICY.md",
         "docs/operations/UOK_STANDARD_OPERATIONS.md",
         "docs/operations/UOK_ASUH_TEST_EVENTS.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
         "scripts/engineering_evidence.py",
         "scripts/check_generated_contracts.py",
+        "scripts/generate_frontend_module_catalog.py",
+        "scripts/frontend_quality_policy.py",
+        "scripts/frontend_source_policy.py",
         "scripts/candidate_verifier_catalog.py",
         "scripts/dependency_policy.py",
         "scripts/quality_scorecard.py",
@@ -71,36 +68,7 @@ def check_python_stack() -> CheckResult:
 
 
 def check_frontend_stack() -> CheckResult:
-    package = read_json("web/package.json")
-    tsconfig = read_json("web/tsconfig.json")
-    compiler_options = tsconfig.get("compilerOptions", {})
-    problems: list[str] = []
-    if package.get("type") != "module":
-        problems.append("web/package.json must use type=module")
-    if package.get("engines", {}).get("node") != ">=26 <27":
-        problems.append("Node engine must be >=26 <27")
-    if package.get("scripts", {}).get("test") is None:
-        problems.append("frontend test script missing")
-    if package.get("scripts", {}).get("build:static") is None:
-        problems.append("frontend static build script missing")
-    if package.get("scripts", {}).get("test:ui-proof") is None:
-        problems.append("frontend UI proof script missing")
-    if package.get("scripts", {}).get("check:contracts") != "python ../scripts/check_generated_contracts.py":
-        problems.append("frontend generated-contract drift script missing")
-    if compiler_options.get("strict") is not True:
-        problems.append("TypeScript strict mode must stay enabled")
-    if compiler_options.get("allowJs") is not False:
-        problems.append("TypeScript allowJs must stay false")
-    if not (REPO_ROOT / "web/package-lock.json").exists():
-        problems.append("web/package-lock.json missing")
-    if not (REPO_ROOT / "web/playwright.config.ts").exists():
-        problems.append("Playwright UI proof config missing")
-    durable_js = [
-        path.as_posix()
-        for path in (REPO_ROOT / "web/src").rglob("*.js")
-        if "generated" not in path.parts
-    ]
-    problems.extend(f"durable JavaScript source is not allowed: {path}" for path in durable_js)
+    problems = frontend_quality_policy.frontend_stack_problems(REPO_ROOT)
     return CheckResult("frontend_stack", not problems, "; ".join(problems) or "typed")
 
 

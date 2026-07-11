@@ -57,6 +57,8 @@ def test_container_excludes_tests_and_requires_module_verifiers() -> None:
     ) == 2
     assert "for module in" not in dockerfile
     assert 'test -d "modules/$module/verify"' not in dockerfile
+    assert "COPY modules /app/modules" in dockerfile
+    assert "python scripts/generate_frontend_module_catalog.py --check" in dockerfile
 
 
 def test_container_asset_validator_discovers_repository_verifiers_from_manifests() -> None:
@@ -130,3 +132,48 @@ def test_container_rejects_noncanonical_manifest_test_path(tmp_path: Path) -> No
             module_root,
             require_tests_excluded=True,
         )
+
+
+def test_container_rejects_tests_and_durable_javascript_under_web_path(
+    tmp_path: Path,
+) -> None:
+    module_root = tmp_path / "modules"
+    write_module(
+        module_root,
+        "apps.manager",
+        required=True,
+        web_surface="apps",
+    )
+    web_source = module_root / "apps.manager" / "web" / "src"
+    (web_source / "legacy.js").write_text("export {};\n", encoding="utf-8")
+    (web_source / "legacy.mjs").write_text("export {};\n", encoding="utf-8")
+    (web_source / "Widget.test.tsx").write_text("export {};\n", encoding="utf-8")
+
+    with pytest.raises(ValueError) as error:
+        validate_container_module_assets(module_root, require_tests_excluded=False)
+
+    message = str(error.value)
+    assert "durable JavaScript is not allowed: src/legacy.js" in message
+    assert "durable JavaScript is not allowed: src/legacy.mjs" in message
+    assert "frontend tests must live under tests_path: src/Widget.test.tsx" in message
+
+
+def test_container_rejects_noncanonical_nested_test_directories(tmp_path: Path) -> None:
+    module_root = tmp_path / "modules"
+    write_module(
+        module_root,
+        "apps.manager",
+        required=True,
+        web_surface="apps",
+        release_assets=False,
+    )
+    leaked = module_root / "apps.manager" / "backend" / "tests"
+    leaked.mkdir()
+    (leaked / "test_leak.py").write_text("assert True\n", encoding="utf-8")
+
+    with pytest.raises(ValueError) as error:
+        validate_container_module_assets(module_root, require_tests_excluded=True)
+
+    message = str(error.value)
+    assert "modules/apps.manager/backend/tests" in message
+    assert "modules/apps.manager/backend/tests/test_leak.py" in message

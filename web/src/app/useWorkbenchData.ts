@@ -9,7 +9,7 @@ import type {
   ModuleStatus,
   QualityReport
 } from "../shared/types";
-import { CONTACTS_MODULE_ID } from "../features/contacts/contactModule";
+import { CONTACTS_MODULE_ID } from "@uok-modules/contacts.core/web/src/contactModule";
 
 export type CommandResponse = { result: ContactRecord; status: string; idempotent?: boolean };
 

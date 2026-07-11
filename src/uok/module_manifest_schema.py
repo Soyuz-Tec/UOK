@@ -80,6 +80,10 @@ EXTENSION_REGISTRY = {
     "dashboard_provider": ExtensionSpec(("dashboard_provider",)),
     "evidence_provider": ExtensionSpec(("evidence_provider",)),
     "model_exports": ExtensionSpec(("model_exports",)),
+    "web_surface": ExtensionSpec(
+        ("web_entry", "web_section"),
+        category="release",
+    ),
     "candidate_verifier": ExtensionSpec(
         ("candidate_verifier_script", "candidate_verifier_function"),
         category="release",

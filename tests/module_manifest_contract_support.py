@@ -55,6 +55,7 @@ def write_module(
     package: str | None = None,
     exported_attribute: str = "router",
     verifier: bool = False,
+    web_surface: str | None = None,
     release_assets: bool = True,
 ) -> None:
     root = module_root / name
@@ -84,6 +85,16 @@ def write_module(
             (module_root.parent / script).write_text(
                 "function Invoke-UokCandidateTest {}\n", encoding="utf-8"
             )
+    if web_surface is not None:
+        extensions.append("web_surface")
+        entry = f"modules/{name}/web/src/moduleSurface.tsx"
+        fields += f"web_entry: {entry}\n"
+        fields += f"web_section: {web_surface}\n"
+        source_root = root / "web" / "src"
+        source_root.mkdir(parents=True, exist_ok=True)
+        (source_root / "moduleSurface.tsx").write_text(
+            "export default {};\n", encoding="utf-8"
+        )
     (root / "manifest.yaml").write_text(
         manifest_text(
             name,

@@ -59,6 +59,8 @@ events:
 dependencies: []
 backend_path: modules/contacts.core/backend
 web_path: modules/contacts.core/web
+web_entry: modules/contacts.core/web/src/moduleSurface.tsx
+web_section: contacts
 migrations_path: modules/contacts.core/migrations
 tests_path: modules/contacts.core/tests
 api_prefixes:
@@ -95,5 +97,6 @@ extension_points:
   - dashboard_provider
   - evidence_provider
   - model_exports
+  - web_surface
   - candidate_verifier
 data_retention_policy: "User delete archives contacts; admin can restore or purge. Module uninstall disables access while retaining records for admin-controlled recovery unless a future purge workflow is explicitly executed."

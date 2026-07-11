@@ -22,6 +22,8 @@ events:
 dependencies: []
 backend_path: modules/communications.core/backend
 web_path: modules/communications.core/web
+web_entry: modules/communications.core/web/src/moduleSurface.tsx
+web_section: communications
 migrations_path: modules/communications.core/migrations
 tests_path: modules/communications.core/tests
 api_prefixes:
@@ -46,5 +48,6 @@ extension_points:
   - command_permissions
   - role_grants
   - model_exports
+  - web_surface
   - candidate_verifier
 data_retention_policy: "Communication threads are organization-scoped and retained for audit; archival hides active use without implicit deletion or cross-module cascade."

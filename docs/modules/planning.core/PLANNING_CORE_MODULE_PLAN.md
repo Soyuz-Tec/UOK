@@ -16,7 +16,7 @@ Planning Gate A is governed by `docs/architecture/ADR-0003-planning-gate-a-stabi
 - Frontend: React, TypeScript, Vite, CSS design tokens.
 - Gantt UI: first-party React, TypeScript, SVG, HTML, and CSS renderer behind a UOK adapter; external Gantt tools may inform feature vocabulary but must not be copied or added as renderer dependencies for this candidate.
 - Scheduling logic: Python module service first, with React receiving validated schedule read models.
-- Shared availability: `planning.core` depends on `calendar.core` for organization calendar events and free-busy context in Planning read models. Planning still owns Gantt working days, holidays, ignored periods, dependencies, resource leveling, task normalization, and schedule validation.
+- Shared availability and exports: `planning.core` depends on `calendar.core` for organization calendar events and free-busy context in Planning read models. It consumes `reports.core` as an availability-gated optional frontend integration for secure report artifact actions, so a Reports outage does not block Planning reads or scheduling. Planning still owns Gantt working days, holidays, ignored periods, dependencies, resource leveling, task normalization, and schedule validation.
 
 ## Current MVP Scope
 

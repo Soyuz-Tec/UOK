@@ -24,8 +24,8 @@ Operator browser
 | Container | Location | Responsibility |
 |---|---|---|
 | Backend kernel | `src/uok` | FastAPI composition, auth/session security, command bus, module registry, lifecycle APIs, static asset serving, baseline evidence, migration gates, compatibility facades. |
-| Module packages | `modules/<module_name>` | Module manifest, backend package, module-owned ORM mappings, UI ownership marker, migrations, tests, candidate verifier scenarios, and behavior. |
-| Frontend shell | `web/src` | React + TypeScript + Vite workbench, navigation shell, shared controls, module surface registry, generated API contracts. |
+| Module packages | `modules/<module_name>` | Module manifest, backend package, module-owned ORM mappings, module-local React source and CSS, module tests, migrations, candidate verifier scenarios, and behavior. |
+| Frontend shell | `web/src` | React + TypeScript + Vite workbench shell, navigation, shared controls and tokens, typed module surface contract, and generated API/module catalogs. |
 | Database baseline | `migrations/001_initial_baseline.sql` | Initial shared candidate schema plus schema-version evidence. Future schema changes must be migration-gated and module-owned where applicable. |
 | Candidate verification | `scripts/verify_uok_candidate.ps1`, `modules/*/verify`, `web/e2e` | Release smoke, module-declared candidate scenarios, and Playwright UI proof automation. |
 
@@ -39,14 +39,19 @@ Operator browser
 - Planning Gates A-E are locally runtime-proven; scheduling, write-safety, evidence governance, integrations, analysis, measured scale, shared reach/accessibility, bounded portfolio reads, and production-like closure evidence are recorded in the Planning Gantt traceability map. The stacked draft PRs still require hosted CI, review, and merge, and no local alpha result implies production readiness.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
-- `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.
+- `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context and uses `reports.core` as an availability-gated optional frontend integration for secure report artifact actions, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.
 - Module metadata is read from `modules/<module_name>/manifest.yaml`.
 - Backend runtime extension points are declared in manifests; only validated manifest `backend_path` roots enter import resolution, and imported provider origins must remain inside the owning backend.
 - Manifests use closed schema `uok.module.v1`, declare evidence-bounded maturity, reserve canonical non-overlapping API prefixes, and pass runtime validation before extension imports or router composition; release validation separately proves tests and verifier assets.
 - The Apps Manager HTTP adapter is owned by `modules/apps.manager` and mounted through the same manifest router mechanism as capability modules; shared lifecycle services provide locked, audited, idempotent reconciliation when persisted control-plane state drifts from current manifest truth.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, command replay guards, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
 - Static runtime validation completes before extension imports. The deterministic module model registry then composes 29 module-owned mappings with nine kernel mappings on the single `uok.db.Base` before migration inspection, schema creation, or router composition.
-- The frontend uses a compile-time module surface registry in `web/src/features/modules`; this is intentionally not runtime code loading from YAML yet.
+- Apps Manager, Calendar, Communications, Contacts, and Planning own executable React source and local CSS under `modules/<module_name>/web/src`; their frontend tests live under `modules/<module_name>/tests/web`.
+- Workbench surfaces declare the release/build extension `web_surface` plus canonical `web_entry` and unique `web_section` metadata in the closed manifest. A deterministic generator validates those manifests and emits literal TypeScript imports in `web/src/generated/moduleSurfaceCatalog.ts` for the typed registry under `web/src/features/modules`.
+- Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and all declared entries into the normal static application bundle.
+- The shell currently passes its existing Workbench state through a typed module-surface host context. That shared shell compatibility bridge is intentionally transitional and must not become a new place for module behavior.
+- Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
+- Docker copies module production source into the frontend build stage, TypeScript/Vitest discover the module-owned source and test roots, and final-image validation keeps module tests out of the runtime image.
 
 ## Boundaries
 
@@ -54,7 +59,8 @@ Operator browser
 - `modules/<module_name>` owns module behavior and must declare every extension point it uses.
 - Product, cargo, CRM, accounting, inventory, document, and integration behavior must not be hardcoded into the kernel.
 - Product-neutral organization, identity, governance, module-lifecycle, workflow, command-log, and event mappings live in `src/uok/kernel_models.py`. Capability mappings are physically defined in their owning backend packages; `src/uok/models.py` is an exact-identity compatibility facade over the validated registry.
-- Module-specific UI still lives in `web/src/features/<feature>` for this candidate, with ownership and composition expressed through the frontend module surface registry and module manifest `web_path`.
+- Module-specific production UI lives in `modules/<module_name>/web/src`, module-specific frontend tests live in `modules/<module_name>/tests/web`, and module CSS is imported from the owning module surface. Product-neutral shell, shared controls, global tokens, generated contracts, and composition remain in `web/src`.
+- `web_surface`, `web_entry`, and `web_section` are compile-time composition metadata, not Python import targets or browser runtime loading instructions. Their checked-in generated catalog must match the validated closed manifests.
 - Contacts pytest suites live under `modules/contacts.core/tests`; its candidate verifier and evidence composition live under `modules/contacts.core/verify`.
 - Planning behavior tests live under `modules/planning.core/tests`; its candidate and production-like runtime verifiers live under `modules/planning.core/verify`.
 
@@ -80,6 +86,7 @@ Operator browser
 - ADR-0020: `docs/architecture/ADR-0020-planning-project-lifecycle-and-finish-authority.md`
 - ADR-0021: `docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md`
 - ADR-0022: `docs/architecture/ADR-0022-module-owned-orm-registration.md`
+- ADR-0023: `docs/architecture/ADR-0023-module-local-frontend-composition.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -97,6 +104,7 @@ Operator browser
 - Planning Gate B typed links resolve through module-owned adapters; K Connect threads now resolve through `communications.core`, while absent Operation Graph providers remain explicit `unavailable` states rather than simulated source objects.
 - Planning schedule writes append one immutable revision-ledger row and one internal transactional outbox envelope in the same project transaction. This is durable commit evidence only; no dispatcher or external-delivery claim exists.
 - Planning projects use a reasoned controlled lifecycle with recoverable read-only archive semantics and hidden internal purge. Exact target commitment and persisted CPM-v2 calculated finish are separate from the compatible `end` horizon; legacy calculated backfill mismatches fail visible and block immutable capture until a scheduler write repairs them.
+- Python module service first, with React UI receiving validated schedule read models.
 - Planning Gate B execution dates use scheduler-owned planned dates plus separate forecast, reason-audited actual, and deadline facts. Project-local calendar dates are stored as UTC instants through an immutable creation-time IANA timezone; subday Gantt scales remain visual-only.
 - Planning Gate B task participants reference canonical, authorized `contacts.core` Parties through actor-specific resolution without a cross-module foreign key. Responsibility roles remain distinct from Gate C capacity resources.
 - Planning Gate B requirements use a controlled, permissioned state machine and derive fail-closed task/project readiness from required decisions and actor-visible typed-link provider state.

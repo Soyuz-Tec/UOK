@@ -1,0 +1,38 @@
+import type { ColumnVisibilityMap } from "@uok/shared/tables";
+import type { Appearance } from "@uok/shared/types";
+import type { TimelineScale } from "./planningGanttModel";
+import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
+import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
+import type { PlanningSchedule, PlanningTask } from "./types";
+import type { PlanningDependencyCreateRequest, PlanningTaskUpdateRequest } from "./planningContracts";
+
+export type PlanningGanttProps = {
+  schedule: PlanningSchedule;
+  appearance: Appearance;
+  scale: TimelineScale;
+  showCritical: boolean;
+  showBaselines: boolean;
+  selectedTaskId: string;
+  fieldPreset: FieldPreset;
+  columnVisibility: ColumnVisibilityMap;
+  collapsedSummaryIds: Set<string>;
+  viewDensity: ViewDensity;
+  todaySignal: number;
+  selectedTaskSignal: number;
+  fitProjectSignal: number;
+  dateTarget: string;
+  dateTargetSignal: number;
+  readOnly: boolean;
+  onTaskSelect: (taskId: string) => void;
+  onTaskReschedule: (taskId: string, start: string, end: string) => void;
+  onTaskProgress: (taskId: string, progress: number) => void;
+  onTaskInlineEdit: (taskId: string, payload: PlanningTaskUpdateRequest) => void;
+  onDependencyCreate: (payload: PlanningDependencyCreateRequest) => void;
+  onTimelineTaskCreate: (start: string, end: string) => void;
+  onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningTask) => void;
+  onScaleChange: (scale: TimelineScale) => void;
+  onColumnVisible: (columnId: string, visible: boolean) => void;
+  onColumnsReset: () => void;
+  onSummaryToggle: (taskId: string) => void;
+  onViewDensityChange: (density: ViewDensity) => void;
+};

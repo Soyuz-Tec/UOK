@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { useAuthState } from "./useAuthState";
 import { useAuthWorkflows } from "./useAuthWorkflows";
-import { useContactCommands } from "./useContactCommands";
-import { useContactWorkspaceState } from "./useContactWorkspaceState";
+import { useContactCommands } from "@uok-modules/contacts.core/web/src/app/useContactCommands";
+import { useContactWorkspaceState } from "@uok-modules/contacts.core/web/src/app/useContactWorkspaceState";
 import { useWorkbenchActions } from "./useWorkbenchActions";
 import { useWorkbenchData } from "./useWorkbenchData";
 import { useWorkbenchPreferences } from "./useWorkbenchPreferences";

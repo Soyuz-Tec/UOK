@@ -1,7 +1,6 @@
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { useWorkbench, type Workbench } from "./app/useWorkbench";
-import { AppsManagerPanel } from "./features/apps/AppsManagerPanel";
 import { AuthScreen } from "./features/auth/AuthScreen";
 import { AccountMenu } from "./features/layout/AccountMenu";
 import { moduleSections, renderModuleSurface } from "./features/modules/moduleSurfaceRegistry";
@@ -18,9 +17,9 @@ export function App() {
 function AppView({ workbench }: { workbench: Workbench }) {
   const { t } = useUokLocalization();
   const sections = [
-    ...coreSections.slice(0, 2),
+    coreSections[0],
     ...moduleSections,
-    ...coreSections.slice(2)
+    ...coreSections.slice(1)
   ];
 
   if (!workbench.token) {
@@ -115,10 +114,6 @@ function AppView({ workbench }: { workbench: Workbench }) {
               <MetricGrid counts={workbench.dashboard?.counts || {}} />
             </Pane>
           </section>
-        )}
-
-        {workbench.active === "apps" && (
-          <AppsManagerPanel modules={workbench.moduleRows} busyAction={workbench.busyAction} onAction={workbench.moduleAction} />
         )}
 
         {renderModuleSurface(workbench.active, workbench)}

@@ -35,13 +35,17 @@ python -m pytest .\modules\planning.core\tests\test_planning_links.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_date_semantics.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_participants.py -q
 python -m pytest .\modules\planning.core\tests\test_planning_requirements.py -q
-npm --prefix web test -- --run src/features/planning/planningHistoryExecution.test.ts src/features/planning/usePlanningWorkspaceMutations.test.tsx src/shared/forms/InlineTextEdit.test.tsx
-npm --prefix web test -- --run src/features/planning/PlanningOperationLinksPanel.test.tsx src/features/planning/planningApi.test.ts
-npm --prefix web test -- --run src/features/planning/PlanningTaskDateFields.test.tsx src/features/planning/planningApi.test.ts
-npm --prefix web test -- --run src/features/planning/PlanningParticipantsPanel.test.tsx src/features/planning/planningTimelineModel.test.ts src/features/planning/planningApi.test.ts
-npm --prefix web test -- --run src/features/planning/PlanningRequirementsPanel.test.tsx src/features/planning/planningRequirementsApi.test.ts src/features/planning/planningTimelineModel.test.ts
+npm --prefix web test -- --run ../modules/planning.core/tests/web/planningHistoryExecution.test.ts ../modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx src/shared/forms/InlineTextEdit.test.tsx
+npm --prefix web test -- --run ../modules/planning.core/tests/web/PlanningOperationLinksPanel.test.tsx ../modules/planning.core/tests/web/planningApi.test.ts
+npm --prefix web test -- --run ../modules/planning.core/tests/web/PlanningTaskDateFields.test.tsx ../modules/planning.core/tests/web/planningApi.test.ts
+npm --prefix web test -- --run ../modules/planning.core/tests/web/PlanningParticipantsPanel.test.tsx ../modules/planning.core/tests/web/planningTimelineModel.test.ts ../modules/planning.core/tests/web/planningApi.test.ts
+npm --prefix web test -- --run ../modules/planning.core/tests/web/PlanningRequirementsPanel.test.tsx ../modules/planning.core/tests/web/planningRequirementsApi.test.ts ../modules/planning.core/tests/web/planningTimelineModel.test.ts
 npm --prefix web run test:ui-proof
 ```
+
+Vitest discovers all Planning frontend tests from
+`modules/planning.core/tests/web`; production React source and local CSS remain
+separate under `modules/planning.core/web/src`.
 
 The candidate verifier is split into one orchestration script plus module-owned
 HTTP and contract helpers so each file stays within the source-size policy:

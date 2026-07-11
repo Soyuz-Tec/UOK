@@ -9,6 +9,11 @@ import sys
 import tempfile
 from pathlib import Path
 
+from generate_frontend_module_catalog import (
+    OUTPUT_PATH as MODULE_CATALOG_PATH,
+    render_frontend_module_catalog,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 WEB_ROOT = ROOT / "web"
@@ -78,6 +83,11 @@ def find_generated_contract_drift() -> list[str]:
     openapi_problem = contract_drift(runtime_openapi, OPENAPI_PATH)
     if openapi_problem:
         problems.append(openapi_problem)
+    module_catalog_problem = contract_drift(
+        render_frontend_module_catalog(), MODULE_CATALOG_PATH
+    )
+    if module_catalog_problem:
+        problems.append(module_catalog_problem)
 
     with tempfile.TemporaryDirectory(prefix="uok-generated-contracts-") as temporary:
         temp_root = Path(temporary)
@@ -94,16 +104,16 @@ def find_generated_contract_drift() -> list[str]:
 def main() -> int:
     try:
         problems = find_generated_contract_drift()
-    except RuntimeError as error:
+    except (RuntimeError, ValueError) as error:
         print(f"Generated contract check failed: {error}", file=sys.stderr)
         return 1
     if problems:
         print("Generated contracts are stale:", file=sys.stderr)
         for problem in problems:
             print(f"- {problem}", file=sys.stderr)
-        print("Run: npm --prefix web run generate:api", file=sys.stderr)
+        print("Run: npm --prefix web run generate:api && npm --prefix web run generate:modules", file=sys.stderr)
         return 1
-    print("Generated OpenAPI JSON and TypeScript declarations match the runtime schema.")
+    print("Generated OpenAPI, TypeScript declarations, and frontend module catalog match runtime contracts.")
     return 0
 
 

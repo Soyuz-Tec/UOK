@@ -48,12 +48,13 @@ Every non-trivial UOK task follows this loop:
    - Read `docs/ARCHITECTURE.md`, this document, and affected policy or module docs.
 
 2. Locate ownership
-   - Decide whether the change belongs in `src/uok`, `modules/<module-name>`, `web/src/shared`, a feature surface, migrations, tests, or docs.
+   - Decide whether the change belongs in `src/uok`, `modules/<module-name>`, the product-neutral `web/src` shell/shared layer, module production UI under `modules/<module-name>/web/src`, module frontend tests under `modules/<module-name>/tests/web`, migrations, verification, or docs.
    - Product-specific or business-specific behavior must stay in installable modules.
 
 3. Implement within current stack
    - Backend: Python, FastAPI, Pydantic, SQLAlchemy, PostgreSQL.
    - Frontend: TypeScript, React, Vite, CSS design tokens.
+   - Module frontend composition: closed-manifest `web_surface`, `web_entry`, and `web_section` metadata generate literal compile-time imports; the browser never loads YAML or dynamic manifest paths.
    - Do not add a new durable language, framework, ORM, build tool, or UI system without an ADR and policy update.
 
 4. Keep the source reviewable
@@ -93,6 +94,12 @@ These accepted lessons must guide future implementation:
 | UI policy is mandatory now | Apply the Apple-informed UOK UI policy to current work, not only future redesigns | `docs/design/UOK_UI_DESIGN_POLICY.md` |
 | Workspace UI implementation is standardized | Use the UOK workspace UI implementation standard for specialist review roles, workspace anatomy, shared primitive promotion, and UI verification gates | `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md` |
 | Global reusable UI belongs in shared areas | Reusable pop-ups, inline editing, searchable filters, tables, and column resizing belong in module-neutral shared components | `web/src/shared` and `docs/design/UOK_UI_DESIGN_POLICY.md` |
+| Module frontend ownership is physical | Keep module production React source and local CSS under `modules/<module>/web/src`, module frontend tests under `modules/<module>/tests/web`, and compose declared surfaces through the checked-in generated catalog | `docs/architecture/ADR-0023-module-local-frontend-composition.md` |
+| Frontend manifests are compile-time truth | Generate literal imports from closed `web_surface`, `web_entry`, and `web_section` metadata; never load manifest YAML or dynamic module paths in the browser | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` |
+| Shell state compatibility is transitional | The broad Workbench surface host may preserve current orchestration during relocation, but new module behavior must not expand module-specific shell coupling | `docs/architecture/ADR-0023-module-local-frontend-composition.md` |
+| Reports owns report transport | Keep the typed report client in `modules/reports.core/web/src`; module consumers may use that client without relocating it into shared shell utilities | `modules/reports.core/web/README.md` |
+| Planned Agents remains inert | Do not add an executable Agents surface, permission, or active extension until its manifest maturity and evidence change | `modules/agents.core/web/README.md` |
+| Planning authority remains server-side | Python module service first, with React UI receiving validated schedule read models. | `docs/architecture/ADR-0023-module-local-frontend-composition.md` |
 | Contacts BI is derived | Business intelligence profiles summarize existing contact signals and must not become a hidden source of truth | `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` |
 | Naming is a boundary | Use only `UOK` and `Unified Operating Kernel`, with lowercase `uok` only where technical surfaces require it | `docs/architecture/UOK_NAMING_CONVENTIONS.md` |
 | Local runtime evidence matters | HTTP checks and candidate verifier output are stronger than visual assumptions | `scripts/verify_uok_candidate.ps1` |
@@ -108,6 +115,7 @@ These accepted lessons must guide future implementation:
 | New module | Update `docs/architecture/UOK_MODULE_ROADMAP.md`, add `docs/modules/<module-name>/`, and ensure module-local `README.md` files exist |
 | Agent runbook, governed tool binding, AI approval gate, or agent evidence change | Update `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` and `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | New module extension surface | Update `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`, `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`, tests, and an ADR if material |
+| New or changed module frontend surface | Update the owning manifest `web_surface`/`web_entry`/`web_section`, module-local `web/README.md`, generated frontend catalog, module frontend tests, and ADR/policy docs when the boundary changes |
 | New command, event, permission, API, migration, or owned table | Update module manifest, tests, module plan, and verification evidence |
 | New global UI primitive | Update or confirm `docs/design/UOK_UI_DESIGN_POLICY.md` and use `web/src/shared` |
 | Workspace UI implementation method, specialist role, or shared primitive promotion rule | Update `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`; update `docs/design/UOK_UI_DESIGN_POLICY.md` only when the design policy itself changes |
@@ -132,7 +140,9 @@ Use these controls continuously, not only before release:
 - Keep read models separate from write commands.
 - Keep derived profile logic separate from editable source-of-truth records.
 - Keep UI components, hooks, shared controls, and CSS split by responsibility.
+- Keep module-specific UI and CSS in the owning module; keep only product-neutral shell, global tokens, generated contracts, and reusable controls under `web/src`.
 - Keep tests grouped by behavior area.
+- Keep module frontend tests under the canonical `modules/<module>/tests/web` path so Vitest can discover them and container validation can exclude them from production.
 - Keep generated files out of manual edits.
 
 The working target remains:

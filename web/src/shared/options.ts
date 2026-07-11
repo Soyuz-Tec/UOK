@@ -10,7 +10,6 @@ import {
   Monitor,
   Moon,
   ShieldCheck,
-  Store,
   Sun,
   Table2,
   WandSparkles
@@ -20,9 +19,8 @@ import type { Appearance, ContactDetailPane, ContactsView, Section } from "./typ
 
 export type Option<T extends string> = { id: T; label: string; icon: ElementType };
 
-export const coreSections: Array<Option<Exclude<Section, "contacts" | "planning">>> = [
+export const coreSections: Array<Option<Extract<Section, "overview" | "evidence" | "architecture">>> = [
   { id: "overview", label: "Overview", icon: Database },
-  { id: "apps", label: "Apps Manager", icon: Store },
   { id: "evidence", label: "Evidence", icon: Archive },
   { id: "architecture", label: "Architecture", icon: ShieldCheck }
 ];

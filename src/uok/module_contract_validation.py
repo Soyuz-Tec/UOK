@@ -41,6 +41,12 @@ def validate_module_release_contracts(root: Path | None = None) -> dict[str, Any
     return _validate_module_contracts("release", root)
 
 
+def validate_module_frontend_contracts(root: Path | None = None) -> dict[str, Any]:
+    """Validate runtime contracts plus manifest-owned frontend build assets."""
+
+    return _validate_module_contracts("frontend", root)
+
+
 def validate_module_extension_contracts(root: Path | None = None) -> dict[str, Any]:
     """Compatibility name for the runtime-safe module contract report."""
 
@@ -48,8 +54,8 @@ def validate_module_extension_contracts(root: Path | None = None) -> dict[str, A
 
 
 def _validate_module_contracts(scope: str, root: Path | None) -> dict[str, Any]:
-    if scope not in {"runtime", "release"}:
-        raise ValueError("module contract scope must be runtime or release")
+    if scope not in {"runtime", "frontend", "release"}:
+        raise ValueError("module contract scope must be runtime, frontend, or release")
     module_root = (root or modules_root()).resolve()
     manifests = load_module_manifests(module_root)
     violations: list[dict[str, str]] = []
@@ -131,6 +137,9 @@ def _report(
             "dashboard_providers_valid": fields_are_valid("dashboard_provider"),
             "evidence_providers_valid": fields_are_valid("evidence_provider"),
             "model_exports_valid": fields_are_valid("model_exports"),
+            "web_surfaces_valid": fields_are_valid("web_path", "web_entry", "web_section"),
+            "frontend_assets_valid": scope == "runtime"
+            or fields_are_valid("web_path", "web_entry", "web_section"),
             "candidate_verifiers_valid": fields_are_valid(
                 "candidate_verifier_script", "candidate_verifier_function"
             ),
