@@ -1,4 +1,5 @@
- . (Join-Path $PSScriptRoot "UokCandidateContacts.Support.ps1")
+. (Join-Path $PSScriptRoot "UokCandidateContacts.Support.ps1")
+. (Join-Path $PSScriptRoot "UokCandidateContacts.Evidence.ps1")
 
 function Invoke-UokContactsCandidateScenario {
     param(
@@ -165,5 +166,12 @@ function Invoke-UokContactsCandidateScenario {
         throw "Contact CSV import failed: $($imported | ConvertTo-Json -Depth 20)"
     }
 
-    return @{ contact_id = $contactId }
+    $scenario = @{ contact_id = $contactId }
+    Assert-UokCandidateEvidence `
+        -Headers $Headers `
+        -OpsHeaders $OpsHeaders `
+        -ViewerHeaders $ViewerHeaders `
+        -Scenario $scenario `
+        -Stamp $Stamp
+    return $scenario
 }

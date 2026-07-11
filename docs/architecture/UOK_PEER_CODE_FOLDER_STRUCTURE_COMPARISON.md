@@ -56,7 +56,7 @@ Important current qualities:
 - API routes are split under `src/uok/api`.
 - Frontend source is clearly under `web/src`.
 - Frontend concerns are already split into `app`, `features`, `shared`, `styles`, and generated API contracts.
-- Verification scripts are split under `scripts/verify`.
+- Shared verification helpers live under `scripts/verify`; module runtime and release verifiers live under `modules/<module>/verify`.
 - Tests are split by behavior area.
 - Docs contain active architecture, design, module, rating, and policy guardrails.
 - File-backed module manifests now live under top-level `modules/<module_name>`.

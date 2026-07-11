@@ -11,7 +11,15 @@ from .module_dependencies import (
     module_dependents,
     module_record,
 )
-from .module_lifecycle import disable_module, enable_module, install_module, uninstall_module, upgrade_module
+from .module_lifecycle import (
+    disable_module,
+    enable_module,
+    install_module,
+    reconcile_module_record,
+    reconcile_planned_module_record,
+    uninstall_module,
+    upgrade_module,
+)
 from .module_status import module_maintenance_report, module_status
 
 __all__ = [
@@ -29,6 +37,8 @@ __all__ = [
     "module_maintenance_report",
     "module_record",
     "module_status",
+    "reconcile_module_record",
+    "reconcile_planned_module_record",
     "uninstall_module",
     "upgrade_module",
 ]

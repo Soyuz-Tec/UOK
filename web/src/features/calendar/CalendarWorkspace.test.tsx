@@ -8,6 +8,9 @@ import type { ModuleStatus } from "../../shared/types";
 const installedCalendar: ModuleStatus = {
   name: "calendar.core",
   status: "installed",
+  recorded_status: "installed",
+  reconciliation_required: false,
+  maturity: "runtime_proven",
   version: "1.0.0",
   kind: "capability_module",
   installable: true,
@@ -15,6 +18,8 @@ const installedCalendar: ModuleStatus = {
   updatable: true,
   maintainable: true,
   required: false,
+  lifecycle: ["available", "installed", "disabled", "upgraded", "uninstalled"],
+  lifecycle_state_declared: true,
   dependencies: [],
   dependents: [],
 };

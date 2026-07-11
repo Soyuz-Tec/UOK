@@ -1,6 +1,6 @@
 # ADR-0001: Manifest-declared module runtime boundaries
 
-**Status:** Accepted
+**Status:** Superseded in part by `ADR-0021-module-manifest-runtime-and-release-truth.md`
 
 **Baseline:** `UOK-3.1.0-alpha.2-module-extension-baseline`
 

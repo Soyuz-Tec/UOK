@@ -76,7 +76,7 @@ The first implementation should support:
 
 ## Acceptance Criteria
 
-- `agents.core` is installable, disableable, updatable, and maintainable through Apps Manager.
+- `agents.core` remains an inert `planned` scaffold and exposes no install, disable, update, maintenance, permission, API, or verifier action until an implemented increment advances its manifest maturity with evidence.
 - No agent action bypasses UOK command permissions.
 - Codex tool use is scoped, audited, and tied to a runbook.
 - High-impact actions require a human decision.

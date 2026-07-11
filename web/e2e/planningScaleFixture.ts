@@ -35,11 +35,17 @@ export async function installScaleApi(page: Page, taskCount = 500) {
       target.uokLongTasks?.push(...list.getEntries().map((entry) => entry.duration));
     }).observe({ type: "longtask", buffered: true });
   });
-  const base = { version: "3.1.0-alpha.3", installable: true, uninstallable: true, updatable: true, maintainable: true, required: false, dependencies: [], dependents: [] };
+  const base = {
+    version: "3.1.0-alpha.3", maturity: "runtime_proven", installable: true,
+    uninstallable: true, updatable: true, maintainable: true, required: false,
+    recorded_status: null, reconciliation_required: false,
+    lifecycle: ["available", "installed", "disabled", "upgraded", "uninstalled"],
+    lifecycle_state_declared: true, dependencies: [], dependents: [],
+  };
   const modules = {
-    "apps.manager": { ...base, name: "apps.manager", status: "installed", kind: "control_module", required: true, uninstallable: false },
-    "communications.core": { ...base, name: "communications.core", status: "installed", kind: "capability_module" },
-    "planning.core": { ...base, name: "planning.core", status: "installed", kind: "capability_module" },
+    "apps.manager": { ...base, name: "apps.manager", status: "installed", recorded_status: "installed", kind: "control_module", required: true, uninstallable: false, lifecycle: ["installed", "upgraded"] },
+    "communications.core": { ...base, name: "communications.core", status: "installed", recorded_status: "installed", kind: "capability_module" },
+    "planning.core": { ...base, name: "planning.core", status: "installed", recorded_status: "installed", kind: "capability_module" },
   };
   const proofSchedule = taskCount === 500 ? schedule : { ...schedule, tasks: tasks.slice(0, taskCount), dependencies: schedule.dependencies.filter((dependency) => Number(dependency.successor_task_id.split("-").at(-1)) <= taskCount) };
   await page.route("/api/dashboard", (route) => route.fulfill({ json: { counts: { planning_projects: 1, planning_tasks: taskCount } } }));

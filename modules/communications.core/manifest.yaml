@@ -1,7 +1,9 @@
+manifest_schema: uok.module.v1
 name: communications.core
 kind: capability_module
 version: APP_VERSION
 description: "Organization-scoped K Connect communication thread provider for authorized cross-module jumps."
+maturity: runtime_proven
 installable: true
 uninstallable: true
 updatable: true
@@ -29,7 +31,7 @@ command_handlers: uok_communications_core.commands:command_handlers
 command_permissions: uok_communications_core.commands:command_permissions
 role_grants: uok_communications_core.policy:role_grants
 model_exports: uok_communications_core.models:owned_models
-candidate_verifier_script: modules/communications.core/tests/verify/UokCandidateCommunications.ps1
+candidate_verifier_script: modules/communications.core/verify/UokCandidateCommunications.ps1
 candidate_verifier_function: Invoke-UokCommunicationsCandidateScenario
 permissions:
   - communications.read
@@ -39,15 +41,10 @@ owned_tables:
   - CommandLog:communications.core
   - EventRecord:Communication
 extension_points:
-  - manifest
-  - backend_package
   - api_router
   - command_handlers
+  - command_permissions
+  - role_grants
   - model_exports
-  - permissions
-  - events
-  - migrations
-  - web_surface
-  - tests
   - candidate_verifier
 data_retention_policy: "Communication threads are organization-scoped and retained for audit; archival hides active use without implicit deletion or cross-module cascade."

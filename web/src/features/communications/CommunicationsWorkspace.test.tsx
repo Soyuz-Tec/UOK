@@ -38,7 +38,10 @@ describe("K Connect workspace", () => {
 
 const moduleRow = {
   name: "communications.core", status: "installed", version: "3.1.0-alpha.3", kind: "capability_module",
+  recorded_status: "installed", reconciliation_required: false,
   installable: true, uninstallable: true, updatable: true, maintainable: true, required: false, dependencies: [], dependents: [],
+  maturity: "runtime_proven" as const,
+  lifecycle: ["available", "installed", "disabled", "upgraded", "uninstalled"], lifecycle_state_declared: true,
 };
 
 function thread(id: string, title: string): CommunicationThread {

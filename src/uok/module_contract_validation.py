@@ -1,200 +1,162 @@
 from __future__ import annotations
 
-import re
 from pathlib import Path
 from typing import Any
 
-from .module_imports import IMPORT_TARGET_SPEC_PATTERN, module_import_backend_package_exists
+from .module_contract_rules import (
+    PATH_FIELDS,
+    validate_catalog_relationships,
+    validate_manifest_semantics,
+    violation,
+)
+from .module_lifecycle_policy import lifecycle_policy_checks
 from .module_manifest_loader import load_module_manifests
-from .module_paths import modules_root, repo_root
-from .module_tables import undeclared_owned_table_models
+from .module_paths import modules_root
 
-ALLOWED_MODULE_KINDS = {"control_module", "capability_module", "business_module"}
-PATH_FIELDS = ("backend_path", "web_path", "migrations_path", "tests_path")
-LIST_FIELDS = ("lifecycle", "commands", "events", "dependencies", "api_prefixes", "permissions", "owned_tables", "extension_points")
-MODULE_NAME_PATTERN = re.compile(r"^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)+$")
-API_ROUTER_SPEC_PATTERN = IMPORT_TARGET_SPEC_PATTERN
-POWERSHELL_FUNCTION_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z][A-Za-z0-9]*)*$")
-PYTHON_EXTENSION_FIELDS = {
-    "command_handlers": "command_handlers",
-    "command_permissions": "permissions",
-    "command_replay_guard": "command_replay_guard",
-    "role_grants": "permissions",
-    "dashboard_provider": "dashboard_provider",
-    "evidence_provider": "evidence_provider",
-    "model_exports": "model_exports",
+
+_LIFECYCLE_POLICY_FIELDS = {
+    "lifecycle_flags_boolean": "lifecycle",
+    "maturity_values_valid": "maturity",
+    "lifecycle_states_valid": "lifecycle",
+    "required_modules_bootstrap_ready": "lifecycle",
+    "required_modules_protected": "lifecycle",
+    "installable_modules_lifecycle_ready": "lifecycle",
+    "uninstallable_modules_lifecycle_ready": "lifecycle",
+    "updatable_modules_lifecycle_ready": "lifecycle",
+    "planned_modules_inert": "maturity",
+    "optional_modules_default_ready": "lifecycle",
+    "dependencies_declared": "dependencies",
 }
 
 
-def validate_module_extension_contracts() -> dict[str, Any]:
-    root = modules_root()
-    manifests = load_module_manifests(root)
+def validate_module_runtime_contracts(root: Path | None = None) -> dict[str, Any]:
+    """Validate contracts required to compose and operate the application runtime."""
+
+    return _validate_module_contracts("runtime", root)
+
+
+def validate_module_release_contracts(root: Path | None = None) -> dict[str, Any]:
+    """Validate runtime contracts plus source-owned tests and release verifiers."""
+
+    return _validate_module_contracts("release", root)
+
+
+def validate_module_extension_contracts(root: Path | None = None) -> dict[str, Any]:
+    """Compatibility name for the runtime-safe module contract report."""
+
+    return validate_module_runtime_contracts(root)
+
+
+def _validate_module_contracts(scope: str, root: Path | None) -> dict[str, Any]:
+    if scope not in {"runtime", "release"}:
+        raise ValueError("module contract scope must be runtime or release")
+    module_root = (root or modules_root()).resolve()
+    manifests = load_module_manifests(module_root)
     violations: list[dict[str, str]] = []
-    command_owners: dict[str, str] = {}
-    event_owners: dict[str, str] = {}
-
     for module_name, manifest in manifests.items():
-        _validate_manifest_identity(module_name, manifest, violations)
-        _validate_manifest_paths(module_name, manifest, violations)
-        _validate_manifest_lists(module_name, manifest, violations)
-        _validate_api_prefixes(module_name, manifest, violations)
-        _validate_api_router(module_name, manifest, violations)
-        _validate_python_extensions(module_name, manifest, violations)
-        _validate_candidate_verifier(module_name, manifest, violations)
-        _collect_unique_owners(module_name, manifest, "commands", command_owners, violations)
-        _collect_unique_owners(module_name, manifest, "events", event_owners, violations)
+        validate_manifest_semantics(module_name, manifest, module_root, scope, violations)
+        _validate_lifecycle_policy(module_name, manifest, manifests, violations)
 
-    _validate_owned_table_models(violations)
-    required_modules = sorted(name for name, manifest in manifests.items() if manifest.get("required") is True)
+    command_owners, event_owners = validate_catalog_relationships(
+        manifests, module_root, violations
+    )
+    required_modules = sorted(
+        name for name, manifest in manifests.items() if manifest["required"]
+    )
     if required_modules != ["apps.manager"]:
-        violations.append({
-            "module": "catalog",
-            "field": "required",
-            "reason": "only apps.manager may be required in the baseline catalog",
-        })
+        violation(
+            violations,
+            "catalog",
+            "required",
+            "only apps.manager may be required in the baseline catalog",
+        )
+    _validate_verifier_function_ownership(manifests, violations)
+    return _report(
+        scope,
+        len(manifests),
+        required_modules,
+        command_owners,
+        event_owners,
+        violations,
+    )
+
+
+def _validate_verifier_function_ownership(
+    manifests: dict[str, dict[str, Any]], violations: list[dict[str, str]]
+) -> None:
+    owners: dict[str, str] = {}
+    for module_name, manifest in manifests.items():
+        function_name = manifest.get("candidate_verifier_function")
+        if function_name is None:
+            continue
+        normalized = str(function_name).casefold()
+        if normalized in owners:
+            violation(
+                violations,
+                module_name,
+                "candidate_verifier_function",
+                f"candidate verifier function is already owned by {owners[normalized]}",
+            )
+        owners[normalized] = module_name
+
+
+def _report(
+    scope: str,
+    module_count: int,
+    required_modules: list[str],
+    command_owners: dict[str, str],
+    event_owners: dict[str, str],
+    violations: list[dict[str, str]],
+) -> dict[str, Any]:
+    def fields_are_valid(*fields: str) -> bool:
+        return not any(row["field"] in fields for row in violations)
 
     return {
         "ok": not violations,
+        "scope": scope,
         "checks": {
-            "module_count": len(manifests),
+            "module_count": module_count,
             "required_modules": required_modules,
             "command_owner_count": len(command_owners),
             "event_owner_count": len(event_owners),
-            "all_paths_module_scoped": not any(v["field"] in PATH_FIELDS for v in violations),
-            "commands_unique": not any(v["field"] == "commands" for v in violations),
-            "events_unique": not any(v["field"] == "events" for v in violations),
-            "api_routers_valid": not any(v["field"] == "api_router" for v in violations),
-            "command_handlers_valid": not any(v["field"] in {"command_handlers", "command_permissions"} for v in violations),
-            "command_replay_guards_valid": not any(v["field"] == "command_replay_guard" for v in violations),
-            "role_grants_valid": not any(v["field"] == "role_grants" for v in violations),
-            "dashboard_providers_valid": not any(v["field"] == "dashboard_provider" for v in violations),
-            "evidence_providers_valid": not any(v["field"] == "evidence_provider" for v in violations),
-            "model_exports_valid": not any(v["field"] == "model_exports" for v in violations),
-            "candidate_verifiers_valid": not any(v["field"].startswith("candidate_") for v in violations),
-            "owned_tables_resolve_to_models": not any(v["field"] == "owned_tables" for v in violations),
+            "manifest_schema_valid": True,
+            "extensions_closed": True,
+            "all_paths_module_scoped": fields_are_valid(*PATH_FIELDS),
+            "commands_unique": fields_are_valid("commands"),
+            "events_unique": fields_are_valid("events"),
+            "api_routers_valid": fields_are_valid("api_router", "api_prefixes"),
+            "command_handlers_valid": fields_are_valid("command_handlers", "command_permissions"),
+            "command_replay_guards_valid": fields_are_valid("command_replay_guard"),
+            "role_grants_valid": fields_are_valid("role_grants"),
+            "dashboard_providers_valid": fields_are_valid("dashboard_provider"),
+            "evidence_providers_valid": fields_are_valid("evidence_provider"),
+            "model_exports_valid": fields_are_valid("model_exports"),
+            "candidate_verifiers_valid": fields_are_valid(
+                "candidate_verifier_script", "candidate_verifier_function"
+            ),
+            "owned_tables_resolve_to_models": fields_are_valid("owned_tables"),
+            "manifest_maturity_valid": fields_are_valid("maturity", "lifecycle"),
+            "dependencies_valid": fields_are_valid("dependencies"),
+            "backend_packages_unique": fields_are_valid("backend_path"),
+            "release_assets_valid": scope != "release"
+            or fields_are_valid("tests_path", "candidate_verifier_script", "maturity"),
         },
         "violations": violations,
     }
 
 
-def _validate_manifest_identity(module_name: str, manifest: dict[str, Any], violations: list[dict[str, str]]) -> None:
-    if not MODULE_NAME_PATTERN.fullmatch(module_name):
-        violations.append({"module": module_name, "field": "name", "reason": "module name must be lowercase dotted form"})
-    if manifest.get("name") != module_name:
-        violations.append({"module": module_name, "field": "name", "reason": "manifest name must match folder name"})
-    if manifest.get("kind") not in ALLOWED_MODULE_KINDS:
-        violations.append({"module": module_name, "field": "kind", "reason": "module kind is not allowed"})
-    if not str(manifest.get("data_retention_policy", "")).strip():
-        violations.append({"module": module_name, "field": "data_retention_policy", "reason": "data retention policy is required"})
-
-
-def _validate_manifest_paths(module_name: str, manifest: dict[str, Any], violations: list[dict[str, str]]) -> None:
-    workspace = repo_root()
-    for field in PATH_FIELDS:
-        raw_value = str(manifest.get(field, "")).strip()
-        path = Path(raw_value)
-        if not raw_value or path.is_absolute() or ".." in path.parts:
-            violations.append({"module": module_name, "field": field, "reason": "path must be a safe relative module path"})
-            continue
-        if len(path.parts) < 3 or path.parts[0] != "modules" or path.parts[1] != module_name:
-            violations.append({"module": module_name, "field": field, "reason": "path must stay under modules/<module_name>"})
-            continue
-        if not (workspace / path).is_dir():
-            violations.append({"module": module_name, "field": field, "reason": "declared path does not exist"})
-
-
-def _validate_manifest_lists(module_name: str, manifest: dict[str, Any], violations: list[dict[str, str]]) -> None:
-    for field in LIST_FIELDS:
-        if not isinstance(manifest.get(field), list):
-            violations.append({"module": module_name, "field": field, "reason": "field must be a list"})
-
-
-def _validate_api_prefixes(module_name: str, manifest: dict[str, Any], violations: list[dict[str, str]]) -> None:
-    for prefix in manifest.get("api_prefixes", []):
-        if not isinstance(prefix, str) or not prefix.startswith("/api/"):
-            violations.append({"module": module_name, "field": "api_prefixes", "reason": "API prefixes must start with /api/"})
-
-
-def _validate_api_router(module_name: str, manifest: dict[str, Any], violations: list[dict[str, str]]) -> None:
-    spec = manifest.get("api_router")
-    if spec is None:
-        return
-    if not isinstance(spec, str) or not API_ROUTER_SPEC_PATTERN.fullmatch(spec):
-        violations.append({"module": module_name, "field": "api_router", "reason": "api_router must use <package.module>:<attribute>"})
-        return
-    if "api_router" not in manifest.get("extension_points", []):
-        violations.append({"module": module_name, "field": "api_router", "reason": "api_router requires the api_router extension point"})
-    if not manifest.get("api_prefixes"):
-        violations.append({"module": module_name, "field": "api_router", "reason": "api_router requires declared api_prefixes"})
-    backend_package = spec.partition(":")[0].split(".")[0]
-    backend_path = Path(str(manifest.get("backend_path", "")))
-    if not (repo_root() / backend_path / backend_package / "__init__.py").is_file():
-        violations.append({"module": module_name, "field": "api_router", "reason": "api_router must resolve from the module backend package"})
-
-
-def _validate_python_extensions(module_name: str, manifest: dict[str, Any], violations: list[dict[str, str]]) -> None:
-    for field, extension_point in PYTHON_EXTENSION_FIELDS.items():
-        spec = manifest.get(field)
-        if spec is None:
-            continue
-        if not isinstance(spec, str) or not IMPORT_TARGET_SPEC_PATTERN.fullmatch(spec):
-            violations.append({"module": module_name, "field": field, "reason": f"{field} must use <package.module>:<attribute>"})
-            continue
-        if extension_point not in manifest.get("extension_points", []):
-            violations.append({"module": module_name, "field": field, "reason": f"{field} requires the {extension_point} extension point"})
-        if not module_import_backend_package_exists(manifest, spec):
-            violations.append({"module": module_name, "field": field, "reason": f"{field} must resolve from the module backend package"})
-        if field == "command_handlers" and not manifest.get("commands"):
-            violations.append({"module": module_name, "field": field, "reason": "command_handlers requires declared commands"})
-        if field == "command_permissions" and not manifest.get("permissions"):
-            violations.append({"module": module_name, "field": field, "reason": "command_permissions requires declared permissions"})
-
-
-def _validate_candidate_verifier(module_name: str, manifest: dict[str, Any], violations: list[dict[str, str]]) -> None:
-    script = manifest.get("candidate_verifier_script")
-    function_name = manifest.get("candidate_verifier_function")
-    evidence_function = manifest.get("candidate_evidence_function")
-    if script is None and function_name is None and evidence_function is None:
-        return
-    if "candidate_verifier" not in manifest.get("extension_points", []):
-        violations.append({"module": module_name, "field": "candidate_verifier", "reason": "candidate verifier fields require the candidate_verifier extension point"})
-    if not isinstance(script, str) or not script.strip():
-        violations.append({"module": module_name, "field": "candidate_verifier_script", "reason": "candidate_verifier_script is required"})
-    else:
-        path = Path(script)
-        if path.is_absolute() or ".." in path.parts:
-            violations.append({"module": module_name, "field": "candidate_verifier_script", "reason": "candidate verifier script must be a safe relative path"})
-        elif len(path.parts) < 3 or path.parts[0] != "modules" or path.parts[1] != module_name:
-            violations.append({"module": module_name, "field": "candidate_verifier_script", "reason": "candidate verifier script must stay under modules/<module_name>"})
-        elif not (repo_root() / path).is_file():
-            violations.append({"module": module_name, "field": "candidate_verifier_script", "reason": "candidate verifier script does not exist"})
-    if not isinstance(function_name, str) or not POWERSHELL_FUNCTION_PATTERN.fullmatch(function_name):
-        violations.append({"module": module_name, "field": "candidate_verifier_function", "reason": "candidate_verifier_function must be a PowerShell function name"})
-    if evidence_function is not None and (not isinstance(evidence_function, str) or not POWERSHELL_FUNCTION_PATTERN.fullmatch(evidence_function)):
-        violations.append({"module": module_name, "field": "candidate_evidence_function", "reason": "candidate_evidence_function must be a PowerShell function name"})
-
-
-def _validate_owned_table_models(violations: list[dict[str, str]]) -> None:
-    for module_name, missing_models in undeclared_owned_table_models().items():
-        violations.append({
-            "module": module_name,
-            "field": "owned_tables",
-            "reason": f"owned table model declarations do not resolve: {', '.join(sorted(missing_models))}",
-        })
-
-
-def _collect_unique_owners(
+def _validate_lifecycle_policy(
     module_name: str,
     manifest: dict[str, Any],
-    field: str,
-    owners: dict[str, str],
+    manifests: dict[str, dict[str, Any]],
     violations: list[dict[str, str]],
 ) -> None:
-    for item in manifest.get(field, []):
-        if item in owners:
-            violations.append({
-                "module": module_name,
-                "field": field,
-                "reason": f"{item} is already owned by {owners[item]}",
-            })
-        owners[item] = module_name
+    checks = lifecycle_policy_checks(module_name, manifest, manifests)
+    for check_name, field in _LIFECYCLE_POLICY_FIELDS.items():
+        if checks[check_name] is not True:
+            violation(
+                violations,
+                module_name,
+                field,
+                f"lifecycle policy check failed: {check_name}",
+            )

@@ -39,13 +39,18 @@ describe("UOK app", () => {
                 "contacts.core": {
                   name: "contacts.core",
                   status: "installed",
+                  recorded_status: "installed",
+                  reconciliation_required: false,
+                  maturity: "runtime_proven",
                   version: "1.0.0",
-                  kind: "core",
-                  installable: false,
-                  uninstallable: false,
-                  updatable: false,
+                  kind: "capability_module",
+                  installable: true,
+                  uninstallable: true,
+                  updatable: true,
                   maintainable: true,
                   required: false,
+                  lifecycle: ["available", "installed", "disabled", "upgraded", "uninstalled"],
+                  lifecycle_state_declared: true,
                   dependencies: [],
                   dependents: []
                 }

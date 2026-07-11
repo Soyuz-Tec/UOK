@@ -7,17 +7,17 @@ function Invoke-UokPlanningReleaseReadiness {
         Invoke-Native "podman" @("exec", "uok-api-1", "python", "/app/scripts/planning_scale_benchmark.py", "--samples", "6")
     }
     Invoke-UokStep "Planning persistent CPM recovery" {
-        Invoke-Native "python" @("modules/planning.core/tests/runtime/verify_planning_cpm.py", "--base-url", $BaseUrl)
+        Invoke-Native "python" @("modules/planning.core/verify/runtime/verify_planning_cpm.py", "--base-url", $BaseUrl)
     }
     Invoke-UokStep "Planning PostgreSQL concurrency recovery" {
-        Invoke-Native "python" @("modules/planning.core/tests/runtime/verify_planning_postgres_concurrency.py", "--base-url", $BaseUrl)
+        Invoke-Native "python" @("modules/planning.core/verify/runtime/verify_planning_postgres_concurrency.py", "--base-url", $BaseUrl)
     }
     Invoke-UokStep "Planning replay/purge lock ordering" {
         Invoke-Native "podman" @(
             "exec",
             "uok-api-1",
             "python",
-            "/app/modules/planning.core/tests/runtime/verify_planning_replay_purge_concurrency.py",
+            "/app/modules/planning.core/verify/runtime/verify_planning_replay_purge_concurrency.py",
             "--base-url",
             "http://127.0.0.1:8080"
         )

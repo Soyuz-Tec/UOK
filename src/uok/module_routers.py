@@ -4,6 +4,7 @@ from typing import Any
 
 from fastapi import APIRouter, FastAPI
 
+from .module_api_prefixes import is_canonical_api_route_path
 from .module_imports import IMPORT_TARGET_SPEC_PATTERN, resolve_module_import
 from .module_manifest_loader import load_module_manifests
 from .module_paths import ensure_module_backend_paths
@@ -39,6 +40,8 @@ def _resolve_module_router(module_name: str, manifest: dict[str, Any], spec: str
     prefixes = [str(prefix) for prefix in manifest.get("api_prefixes", [])]
     for route in module_router.routes:
         path = getattr(route, "path", "")
+        if not isinstance(path, str) or not is_canonical_api_route_path(path):
+            raise ValueError(f"module {module_name} route {path} is not canonical")
         if not any(path == prefix or path.startswith(prefix + "/") for prefix in prefixes):
             raise ValueError(f"module {module_name} route {path} is outside declared api_prefixes")
     return module_router

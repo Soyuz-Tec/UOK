@@ -21,6 +21,7 @@ modules/<module_name>/
   web/
   migrations/
   tests/
+  verify/  # required when candidate_verifier is declared
 ```
 
 UOK may provide compatibility facades, shared services, shell composition, and shared database primitives. Business behavior belongs in the module package.
@@ -31,10 +32,12 @@ Every module manifest must declare:
 
 | Field | Purpose |
 |---|---|
+| `manifest_schema` | Closed manifest schema identifier. The current and only accepted value is `uok.module.v1`. |
 | `name` | Stable module identity matching the folder name. |
 | `kind` | One of `control_module`, `capability_module`, or `business_module`. |
 | `version` | Module release version. Use `APP_VERSION` when aligned with the UOK candidate version. |
 | `description` | Human-readable purpose. |
+| `maturity` | Evidence-bounded state: `planned`, `source_present`, `unit_tested`, `integration_tested`, or `runtime_proven`. It never means production-ready. |
 | `installable` | Whether Apps Manager can install it. |
 | `uninstallable` | Whether Apps Manager can uninstall it. |
 | `updatable` | Whether Apps Manager can upgrade it independently. |
@@ -47,8 +50,8 @@ Every module manifest must declare:
 | `backend_path` | Module backend source directory. |
 | `web_path` | Module UI ownership directory. |
 | `migrations_path` | Module migration ownership directory. |
-| `tests_path` | Module test ownership directory. |
-| `api_prefixes` | API route prefixes exposed or reserved by this module. |
+| `tests_path` | Canonical module test ownership directory. It must be exactly `modules/<module_name>/tests` so source tests can be excluded from OCI images without a second path catalog. |
+| `api_prefixes` | Canonical lowercase `/api/...` route prefixes exclusively owned by this module; prefixes cannot overlap another module's route tree. |
 | `permissions` | Permission atoms required by module APIs or commands. |
 | `owned_tables` | Durable tables, table slices, or shared-table scopes owned by the module. |
 | `extension_points` | Kernel extension points used by the module. |
@@ -66,47 +69,50 @@ Every module manifest must declare:
 | `dashboard_provider` | Import target for module-owned dashboard count fragments merged into `/api/dashboard`. |
 | `evidence_provider` | Import target for module-owned baseline evidence checks and counts merged into `/api/baseline-evidence`. |
 | `model_exports` | Import target for module-owned model/table exports used by migration and boundary validation while shared baseline tables remain in the kernel model registry. |
-| `candidate_verifier_script` | Safe relative path under `modules/<module_name>` for this module's PowerShell candidate verifier scenario. |
+| `candidate_verifier_script` | Safe relative PowerShell path under `modules/<module_name>/verify` for this module's candidate scenario. Runtime and release verification assets must not depend on `tests/` paths. |
 | `candidate_verifier_function` | PowerShell function name invoked from `candidate_verifier_script`. |
-| `candidate_evidence_function` | Optional PowerShell evidence function invoked after the module verifier scenario returns its evidence payload. |
 
 ## Extension Points
 
-UOK currently allows these module extension surfaces:
+UOK currently allows exactly these extension hooks:
 
-- `manifest`: module catalog metadata and lifecycle declaration.
-- `backend_package`: module-owned Python package under `modules/<module>/backend`.
-- `command_handlers`: command handlers declared by manifest and dispatched by UOK.
-- `command_replay_guard`: module-owned current-visibility authorization for exact idempotent replay only. It must return a non-disclosing not-found envelope without recovered object IDs or command correlation when retention state hides the result; it does not run for a mismatched-key `409`.
-- `api_router`: FastAPI router composition through a declared route prefix, mounted by UOK from the manifest `api_router` import target instead of hardcoded kernel imports.
-- `dashboard_provider`: module-owned dashboard count fragments.
-- `evidence_provider`: module-owned baseline evidence checks and counts.
-- `model_exports`: module-owned model/table declarations used to validate shared baseline schema ownership.
-- `permissions`: explicit permission atoms checked at API or command boundary.
-- `events`: append-only events declared by manifest.
-- `migrations`: module-owned migration path and release gate.
-- `web_surface`: module-owned UI source or current compile-time shell registry bridge.
-- `tests`: module-specific behavior tests.
-- `candidate_verifier`: release verification scenarios.
+- `api_router`
+- `command_handlers`
+- `command_permissions`
+- `command_replay_guard`
+- `role_grants`
+- `dashboard_provider`
+- `evidence_provider`
+- `model_exports`
+- `candidate_verifier`
+
+Declarations such as commands, events, permissions, migrations, web ownership, and tests are required manifest metadata or assets; they are not executable extension hooks. Hook declarations are bidirectional: each listed extension requires its matching optional field or fields, and each extension-bearing field requires its registered extension. Unknown keys and extension names fail closed.
 
 New extension points require an architecture update and a failing validation test before use.
+
+## Runtime and Release Validation
+
+- Runtime validation checks schema and maturity truth, lifecycle semantics, dependencies, unique ownership, safe runtime paths, backend packages, import targets, canonical non-overlapping API prefixes, permissions, and model declarations. Application composition completes this validation before importing or mounting extension providers, and only validated manifest `backend_path` roots enter Python import resolution.
+- Release validation includes every runtime check, then requires module ownership folders, maturity-appropriate module tests, and safe module-owned candidate verifier files/functions.
+- Runtime validation deliberately does not require `tests_path` to exist, but it still enforces the canonical `modules/<module_name>/tests` declaration. Runtime container stages exclude `modules/*/tests`; a manifest-driven container asset validator requires every runtime-proven module's exact verifier script and rejects any noncanonical test path.
+- Candidate discovery consumes the canonical release validator and recursively parses each entry script's complete static dot-source closure before returning the catalog. Helpers must use a canonical literal `$PSScriptRoot` path, resolve inside the owning module `verify/` directory or the approved shared `scripts/verify` root, and remain free of links, junctions, cycles, and syntax errors. Dynamic or unresolved dot-sources fail closed, and the declared verifier must have exactly one ordinary top-level function definition across the closure before PowerShell loads any module script.
 
 ## Kernel Boundary Rules
 
 - `src/uok` owns the kernel, shared contracts, security, command bus, module registry, API composition, static asset serving, and compatibility facades.
-- `modules/<module>` owns module-specific backend implementation, UI surface, migrations, tests, commands, events, permissions, and maintenance behavior.
+- `modules/<module>` owns module-specific backend implementation, UI surface, migrations, tests, runtime/release verification assets, commands, events, permissions, and maintenance behavior.
 - Product, cargo, CRM, accounting, inventory, document, and industry-specific logic must not be embedded in the kernel.
 - A module may use shared UOK database tables only when its manifest declares the table or shared-table scope it owns.
 - A module must not require manual edits to unrelated modules for normal install, upgrade, disable, uninstall, or maintenance workflows.
+- The Apps Manager HTTP adapter is module-owned under `modules/apps.manager/backend`; kernel lifecycle and persistence services remain shared and product-neutral.
+- Apps Manager exposes a `module.manage`-protected reconciliation action for persisted status or manifest-snapshot drift. Reconciliation locks the organization and module record, preserves module data, updates only control-plane truth, and emits audited evidence once.
 
 ## Current Baseline Status
 
-- `apps.manager` is the required control module.
-- `contacts.core` is the first optional capability module.
-- `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
-- `contacts.core` backend implementation now lives under `modules/contacts.core/backend/uok_contacts_core`.
-- `contacts.core` commands, command permissions, role grants, dashboard counts, evidence checks, model exports, API router, and candidate verifier scenario are manifest-declared module surfaces.
-- Contacts behavior tests, migrations, and the module candidate verifier scenario now live under `modules/contacts.core`. Module-specific React source is still composed through the top-level frontend shell for this candidate; that bridge is allowed only because ownership paths are declared in the manifest and covered by tests.
+- `apps.manager` is the required `runtime_proven` control module and its API router is mounted only from its manifest.
+- `agents.core` is an inert `planned` capability scaffold: it is not installable, updatable, maintainable, permission-bearing, or runtime-proven.
+- `calendar.core`, `communications.core`, `contacts.core`, `planning.core`, and `reports.core` are optional `runtime_proven` capability modules with manifest-declared backend hooks and module-owned verifiers.
+- Module backend implementations, tests, migrations, and candidate verifier assets live below their owning module roots. Module-specific React source is still composed through the top-level frontend shell for this candidate and is the next physical-ownership slice.
 
 ## Required Scans Before GitHub Push
 
@@ -114,6 +120,7 @@ Before pushing a candidate to GitHub, run these gates one by one:
 
 ```powershell
 python -m compileall -q src modules tests
+python scripts/validate_container_module_assets.py
 python scripts/run_python_tests.py
 npm --prefix web run check:contracts
 npm --prefix web test

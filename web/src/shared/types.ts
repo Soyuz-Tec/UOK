@@ -2,7 +2,7 @@ export type Section = "overview" | "apps" | "contacts" | "calendar" | "communica
 export type Appearance = "system" | "light" | "dark";
 export type UokLocale = "en-US" | "ar";
 export type AuthMode = "signin" | "register";
-export type ModuleAction = "install" | "uninstall" | "disable" | "enable" | "upgrade";
+export type ModuleAction = "install" | "uninstall" | "disable" | "enable" | "upgrade" | "reconcile";
 export type ContactsView = "split" | "table" | "cards" | "quality";
 export type ContactGroupBy = "none" | "type" | "review_state" | "source" | "organization";
 export type ContactDetailPane = "overview" | "intelligence" | "activity" | "relationships";
@@ -71,6 +71,9 @@ export type Dashboard = { counts: Record<string, number> };
 export type ModuleStatus = {
   name: string;
   status: string;
+  recorded_status: string | null;
+  reconciliation_required: boolean;
+  maturity: "planned" | "source_present" | "unit_tested" | "integration_tested" | "runtime_proven";
   version: string;
   kind: string;
   installable: boolean;
@@ -78,6 +81,8 @@ export type ModuleStatus = {
   updatable: boolean;
   maintainable: boolean;
   required: boolean;
+  lifecycle: string[];
+  lifecycle_state_declared: boolean;
   dependencies: string[];
   dependents: string[];
 };

@@ -18,14 +18,15 @@ Architecture documents only track UOK-level governance, release targets, and mod
 
 ## Active Modules
 
-| Module | Type | Status | Current target | Plan |
-|---|---|---|---|---|
-| `apps.manager` | control module | required baseline module | `UOK-3.1.0-alpha.3` | UOK bootstrap control module |
-| `agents.core` | capability module | planned scaffold for governed agent operations | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
-| `communications.core` | capability module | initial K Connect thread provider and Planning deep-link adapter runtime-proven | `UOK-3.1.0-alpha.3` | `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` |
-| `contacts.core` | capability module | Contacts MVP hardening in progress | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
-| `planning.core` | capability module | Gates A-E locally runtime-proven, including bounded portfolio/multi-project and production-like release-readiness evidence | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
-| `reports.core` | capability module | secure global report artifact foundation in PR #5 | `UOK-3.1.0-alpha.3` | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` |
+| Module | Type | Manifest maturity | Status | Current target | Plan |
+|---|---|---|---|---|---|
+| `apps.manager` | control module | `runtime_proven` | required manifest-mounted control module | `UOK-3.1.0-alpha.3` | UOK bootstrap control module |
+| `agents.core` | capability module | `planned` | inert scaffold for governed agent operations | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
+| `calendar.core` | capability module | `runtime_proven` | global calendar API and workspace capability | `UOK-3.1.0-alpha.3` | `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md` |
+| `communications.core` | capability module | `runtime_proven` | K Connect thread provider and Planning deep-link adapter | `UOK-3.1.0-alpha.3` | `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` |
+| `contacts.core` | capability module | `runtime_proven` | Contacts capability with module-owned candidate evidence | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
+| `planning.core` | capability module | `runtime_proven` | Gates A-E locally proven, including portfolio and production-like readiness evidence | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
+| `reports.core` | capability module | `runtime_proven` | secure global report artifact foundation | `UOK-3.1.0-alpha.3` | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` |
 
 ## Current Target
 

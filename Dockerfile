@@ -14,6 +14,7 @@ COPY migrations ./migrations
 COPY modules ./modules
 COPY scripts ./scripts
 COPY src ./src
+RUN python scripts/validate_container_module_assets.py --require-tests-excluded
 COPY web/package.json web/package-lock.json web/tsconfig.json ./web/
 COPY web/src ./web/src
 RUN python scripts/export_openapi_schema.py
@@ -48,6 +49,8 @@ COPY web/package.json web/package-lock.json web/tsconfig.json ./web/
 COPY web/src ./web/src
 COPY src ./src
 COPY --from=web-build /app/web-dist ./src/uok/static/app
+
+RUN python scripts/validate_container_module_assets.py --require-tests-excluded
 
 RUN useradd -r -u 10001 uok && mkdir -p /data && chown -R uok:uok /data /app
 USER uok

@@ -1,3 +1,6 @@
 # Apps Manager Tests
 
-Module lifecycle pytest suites currently live in top-level `tests/` until per-module test discovery is enabled. Module-declared candidate verifier scenarios are supported through manifest fields, but `apps.manager` does not currently need its own scenario script.
+Apps Manager API ownership, authentication, lifecycle policy, maturity status,
+planned-module rejection, locked/idempotent reconciliation, audit evidence,
+and maintenance-report behavior are covered by the module-owned pytest suite
+in this directory. The repository test runner discovers this suite directly.

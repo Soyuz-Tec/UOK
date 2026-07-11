@@ -186,7 +186,7 @@ npm --prefix web audit
 Run these architecture checks when boundaries, modules, docs, or naming are touched:
 
 ```powershell
-$env:PYTHONPATH='src'; python -c "from uok.module_contract_validation import validate_module_extension_contracts; import json; print(json.dumps(validate_module_extension_contracts(), indent=2))"
+$env:PYTHONPATH='src'; python -c "from uok.module_release_contract import validate_module_release_contracts; import json; r=validate_module_release_contracts(); assert r['ok'], r; print(json.dumps(r, indent=2))"
 python -m pytest tests/test_naming_policy.py -q
 ```
 

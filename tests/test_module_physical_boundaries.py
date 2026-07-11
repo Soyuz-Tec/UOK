@@ -32,6 +32,7 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert sorted(manifests) == BASELINE_MODULES
     for module_name in manifests:
         module_dir = root / module_name
+        assert manifests[module_name]["manifest_schema"] == "uok.module.v1"
         assert (module_dir / "manifest.yaml").is_file()
         assert (module_dir / "backend").is_dir()
         assert (module_dir / "web").is_dir()
@@ -39,12 +40,18 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
         assert (module_dir / "tests").is_dir()
 
     assert manifests["apps.manager"]["required"] is True
+    assert manifests["apps.manager"]["maturity"] == "runtime_proven"
+    assert manifests["apps.manager"]["api_router"] == "uok_apps_manager.api:router"
+    assert manifests["apps.manager"]["candidate_verifier_script"] == "modules/apps.manager/verify/UokCandidateAppsManager.ps1"
     assert manifests["agents.core"]["required"] is False
+    assert manifests["agents.core"]["maturity"] == "planned"
+    assert manifests["agents.core"]["installable"] is False
+    assert manifests["agents.core"]["lifecycle"] == ["planned"]
     assert manifests["agents.core"]["backend_path"] == "modules/agents.core/backend"
     assert manifests["agents.core"]["commands"] == []
     assert manifests["agents.core"]["events"] == []
-    assert "agents.manage" in manifests["agents.core"]["permissions"]
-    assert "web_surface" in manifests["agents.core"]["extension_points"]
+    assert manifests["agents.core"]["permissions"] == []
+    assert manifests["agents.core"]["extension_points"] == []
     assert manifests["calendar.core"]["required"] is False
     assert manifests["calendar.core"]["backend_path"] == "modules/calendar.core/backend"
     assert manifests["calendar.core"]["api_router"] == "uok_calendar_core.api:router"
@@ -52,6 +59,7 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert manifests["calendar.core"]["command_permissions"] == "uok_calendar_core.commands:command_permissions"
     assert manifests["calendar.core"]["role_grants"] == "uok_calendar_core.policy:role_grants"
     assert manifests["calendar.core"]["model_exports"] == "uok_calendar_core.models:owned_models"
+    assert manifests["calendar.core"]["candidate_verifier_script"] == "modules/calendar.core/verify/UokCandidateCalendar.ps1"
     assert "/api/calendar" in manifests["calendar.core"]["api_prefixes"]
     assert "CreateCalendarEvent" in manifests["calendar.core"]["commands"]
     assert "calendar.read" in manifests["calendar.core"]["permissions"]
@@ -70,7 +78,7 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert manifests["contacts.core"]["dashboard_provider"] == "uok_contacts_core.reports:dashboard_counts"
     assert manifests["contacts.core"]["evidence_provider"] == "uok_contacts_core.reports:evidence"
     assert manifests["contacts.core"]["model_exports"] == "uok_contacts_core.models:owned_models"
-    assert manifests["contacts.core"]["candidate_verifier_script"] == "modules/contacts.core/tests/verify/UokCandidateContacts.ps1"
+    assert manifests["contacts.core"]["candidate_verifier_script"] == "modules/contacts.core/verify/UokCandidateContacts.ps1"
     assert "contacts.manage" in manifests["contacts.core"]["permissions"]
     assert (root / "contacts.core" / "migrations" / "001_contacts_core_operational_indexes.sql").is_file()
     assert manifests["planning.core"]["required"] is False
@@ -80,7 +88,7 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert manifests["planning.core"]["command_handlers"] == "uok_planning_core.commands:command_handlers"
     assert "SetPlanningResourceCalendar" in manifests["planning.core"]["commands"]
     assert "PlanningResourceCalendarUpdated" in manifests["planning.core"]["events"]
-    assert manifests["planning.core"]["candidate_verifier_script"] == "modules/planning.core/tests/verify/UokCandidatePlanning.ps1"
+    assert manifests["planning.core"]["candidate_verifier_script"] == "modules/planning.core/verify/UokCandidatePlanning.ps1"
     assert "CreatePlanningProject" in manifests["planning.core"]["commands"]
     assert "PlanningTaskLinked" in manifests["planning.core"]["events"]
     assert set(manifests["planning.core"]["permissions"]) == {
@@ -105,7 +113,7 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert manifests["reports.core"]["command_permissions"] == "uok_reports_core.commands:command_permissions"
     assert manifests["reports.core"]["role_grants"] == "uok_reports_core.policy:role_grants"
     assert manifests["reports.core"]["model_exports"] == "uok_reports_core.models:owned_models"
-    assert manifests["reports.core"]["candidate_verifier_script"] == "modules/reports.core/tests/verify/UokCandidateReports.ps1"
+    assert manifests["reports.core"]["candidate_verifier_script"] == "modules/reports.core/verify/UokCandidateReports.ps1"
     assert "reports.render" in manifests["reports.core"]["permissions"]
 
 
@@ -147,6 +155,7 @@ def test_kernel_imports_module_backends_only_in_declared_facades() -> None:
             if child.is_dir() and (child / "__init__.py").is_file():
                 package_names.add(child.name)
     assert "uok_contacts_core" in package_names
+    assert "uok_apps_manager" in package_names
     assert "uok_calendar_core" in package_names
     assert "uok_communications_core" in package_names
     assert "uok_planning_core" in package_names
@@ -166,7 +175,14 @@ def test_module_routers_mount_from_manifest_declarations() -> None:
     manifests = load_module_manifests()
     routers = load_module_routers()
 
-    assert [module_name for module_name, _ in routers] == ["calendar.core", "communications.core", "contacts.core", "planning.core", "reports.core"]
+    assert [module_name for module_name, _ in routers] == [
+        "apps.manager",
+        "calendar.core",
+        "communications.core",
+        "contacts.core",
+        "planning.core",
+        "reports.core",
+    ]
     for module_name, router in routers:
         prefixes = manifests[module_name]["api_prefixes"]
         assert router.routes

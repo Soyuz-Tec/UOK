@@ -1,7 +1,9 @@
+manifest_schema: uok.module.v1
 name: contacts.core
 kind: capability_module
 version: APP_VERSION
 description: "Optional reusable party, person, organization, note, relationship, review, and CSV import capability."
+maturity: runtime_proven
 installable: true
 uninstallable: true
 updatable: true
@@ -68,9 +70,8 @@ role_grants: uok_contacts_core.policy:role_grants
 dashboard_provider: uok_contacts_core.reports:dashboard_counts
 evidence_provider: uok_contacts_core.reports:evidence
 model_exports: uok_contacts_core.models:owned_models
-candidate_verifier_script: modules/contacts.core/tests/verify/UokCandidateContacts.ps1
+candidate_verifier_script: modules/contacts.core/verify/UokCandidateContacts.ps1
 candidate_verifier_function: Invoke-UokContactsCandidateScenario
-candidate_evidence_function: Assert-UokCandidateEvidence
 permissions:
   - contacts.read
   - contacts.manage
@@ -87,17 +88,12 @@ owned_tables:
   - CommandLog:contacts.core
   - EventRecord:Contact
 extension_points:
-  - manifest
-  - backend_package
-  - command_handlers
   - api_router
+  - command_handlers
+  - command_permissions
+  - role_grants
   - dashboard_provider
   - evidence_provider
   - model_exports
-  - permissions
-  - events
-  - migrations
-  - web_surface
-  - tests
   - candidate_verifier
 data_retention_policy: "User delete archives contacts; admin can restore or purge. Module uninstall disables access while retaining records for admin-controlled recovery unless a future purge workflow is explicitly executed."

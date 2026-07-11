@@ -38,17 +38,21 @@ def check_required_artifacts() -> CheckResult:
         "docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md",
         "docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md",
         "docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md",
+        "docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md",
         "docs/design/UOK_UI_DESIGN_POLICY.md",
         "docs/operations/UOK_STANDARD_OPERATIONS.md",
         "docs/operations/UOK_ASUH_TEST_EVENTS.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
         "scripts/engineering_evidence.py",
         "scripts/check_generated_contracts.py",
+        "scripts/candidate_verifier_catalog.py",
         "scripts/dependency_policy.py",
         "scripts/quality_scorecard.py",
         "scripts/run_python_tests.py",
         "scripts/source_size_policy.py",
+        "scripts/validate_container_module_assets.py",
         "scripts/uok_github_ops.ps1",
+        "src/uok/module_release_contract.py",
         "requirements-dev.txt",
         ".github/CODEOWNERS",
         ".github/copilot-instructions.md",
@@ -102,6 +106,7 @@ def check_frontend_stack() -> CheckResult:
 
 def check_runtime_stack() -> CheckResult:
     dockerfile = read_text("Dockerfile")
+    dockerignore = read_text(".dockerignore")
     compose = read_text("deploy/compose-local-18088.yaml")
     ci = read_text(".github/workflows/uok-ci.yml")
     problems: list[str] = []
@@ -114,6 +119,10 @@ def check_runtime_stack() -> CheckResult:
         "CI Node 26": 'node-version: "26"' in ci,
         "CI quality audit": "scripts/quality_audit.py" in ci,
         "Docker runtime-only Python requirements": "requirements-dev.txt" not in dockerfile,
+        "Docker excludes module tests": "modules/*/tests" in dockerignore,
+        "Docker validates manifest-declared module assets": dockerfile.count(
+            "python scripts/validate_container_module_assets.py --require-tests-excluded"
+        ) == 2,
     }
     problems.extend(name for name, ok in expected.items() if not ok)
     return CheckResult("runtime_stack", not problems, "; ".join(problems) or "aligned")
@@ -162,6 +171,11 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("CI must use the repository Python test runner")
     if '"scripts/run_python_tests.py"' not in operations_script:
         problems.append("local Audit must use the repository Python test runner")
+    release_validator = "validate_module_release_contracts"
+    if release_validator not in ci:
+        problems.append("CI must enforce the module release contract")
+    if release_validator not in operations_script:
+        problems.append("local Audit must enforce the module release contract")
     index = read_text("docs/DOCUMENTATION_INDEX.md")
     if "AGENTS.md" not in index:
         problems.append("documentation index must route AGENTS.md")
@@ -169,6 +183,8 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("documentation index must route quality standard")
     if "UOK_GITHUB_ENGINEERING_GUARDRAILS.md" not in index:
         problems.append("documentation index must route GitHub guardrails")
+    if "ADR-0021-module-manifest-runtime-and-release-truth.md" not in index:
+        problems.append("documentation index must route the manifest runtime/release ADR")
     return CheckResult("operations_hygiene", not problems, "; ".join(problems) or "documented")
 
 

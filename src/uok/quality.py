@@ -55,7 +55,12 @@ def baseline_report(db: Session, organization_id: str) -> dict[str, Any]:
         "module_lifecycle_ok": lifecycle["ok"],
         "source_boundary_ok": source["ok"],
         "module_neutral_baseline": evidence["checks"].get("apps_manager_operational") is True
-        and lifecycle["checks"].get("only_apps_manager_required") is True
+        and sorted(
+            name
+            for name, manifest in modules["modules"].items()
+            if manifest.get("required") is True
+        )
+        == ["apps.manager"]
         and migration["checks"].get("baseline_has_no_business_module_tables") is True,
     }
     return {

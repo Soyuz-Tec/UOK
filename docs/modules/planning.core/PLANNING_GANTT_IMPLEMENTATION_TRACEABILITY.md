@@ -56,8 +56,8 @@ requirement.
 - Frontend key propagation and lost-response retry proof: `web/src/features/planning/planningApi.test.ts`
 - Backend revision, task-version, strict ETag, stale-write, replay-order, and route-coverage proof: `modules/planning.core/tests/test_planning_optimistic_concurrency.py`
 - Additive module migration: `modules/planning.core/migrations/002_planning_optimistic_concurrency.sql`
-- Live PostgreSQL two-client row-lock verifier: `modules/planning.core/tests/runtime/verify_planning_postgres_concurrency.py`
-- Live PostgreSQL exact-replay/purge two-order project-lock verifier: `modules/planning.core/tests/runtime/verify_planning_replay_purge_concurrency.py`
+- Live PostgreSQL two-client row-lock verifier: `modules/planning.core/verify/runtime/verify_planning_postgres_concurrency.py`
+- Live PostgreSQL exact-replay/purge two-order project-lock verifier: `modules/planning.core/verify/runtime/verify_planning_replay_purge_concurrency.py`
 - Typed frontend stale-write recovery and fail-closed multi-write proof: `web/src/features/planning/planningApi.test.ts` and `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`
 - Candidate PostgreSQL proof: two simultaneous writes returned exactly one `200` and one `412`; repeated concurrent reads never observed a mixed revision/schedule snapshot.
 - Candidate/UI gates: `scripts/verify_uok_candidate.ps1` and `web/e2e/uok-proof.spec.ts` pass with atomic bulk controls enabled only through the batch endpoint.
@@ -65,7 +65,7 @@ requirement.
 - Independent result validation with injected dependency, calendar, constraint, and manual-date faults: `modules/planning.core/tests/test_cpm_validation.py`
 - Independent resource-capacity calculation/validation with valid overload and injected load/flag/coverage faults: `modules/planning.core/tests/test_resource_capacity_validation.py`
 - API target-variance and UI-row-order independence proof: `modules/planning.core/tests/test_planning_cpm_contract.py`
-- Persistent candidate negative-float/independent-validation proof: `modules/planning.core/tests/runtime/verify_planning_cpm.py`
+- Persistent candidate negative-float/independent-validation proof: `modules/planning.core/verify/runtime/verify_planning_cpm.py`
 - Atomic 100-operation success/replay, injected rollback, one-revision/task-version, structured-error, and correlation proof: `modules/planning.core/tests/test_planning_atomic_batch.py`
 - Typed bulk and bounded multi-task history client proof: `web/src/features/planning/planningApi.test.ts`, `web/src/features/planning/usePlanningWorkspaceMutations.test.tsx`, and `web/src/features/planning/planningHistoryExecution.test.ts`
 - Complete v2 baseline capture, checksum, compare, legacy, immutability, and tamper proof: `modules/planning.core/tests/test_planning_complete_baselines.py`
@@ -80,7 +80,7 @@ requirement.
 - Immutable revision/outbox transaction, checksum, sanitized API, replay, rollback, and source-link poisoning proof: `modules/planning.core/tests/test_planning_revision_outbox.py`
 - PostgreSQL/ORM storage guards and generated public-contract privacy proof: `modules/planning.core/tests/test_planning_revision_storage_guards.py` and `modules/planning.core/tests/test_planning_revision_openapi_contract.py`
 - Additive PostgreSQL ledger/outbox schema and guards: `modules/planning.core/migrations/014_planning_revision_outbox.sql`
-- Rollback-only live PostgreSQL mutation, tenant, source-project, and envelope guard probes: `modules/planning.core/tests/runtime/verify_planning_revision_outbox.sql`
+- Rollback-only live PostgreSQL mutation, tenant, source-project, and envelope guard probes: `modules/planning.core/verify/runtime/verify_planning_revision_outbox.sql`
 - Architecture boundary: `docs/architecture/ADR-0019-planning-revision-ledger-and-transactional-outbox.md`
 - Structured validation/permission/precondition error and persisted command-log parity proof: `modules/planning.core/tests/test_planning_structured_errors.py`
 - Structured idempotency conflict proof: `modules/planning.core/tests/test_planning_command_idempotency.py` and `modules/planning.core/tests/test_planning_rest_idempotency.py`
@@ -109,7 +109,7 @@ Current Gate B link evidence:
 - Resolver/API/audit/baseline integration: `modules/planning.core/backend/uok_planning_core/link_resolver.py`, `link_commands.py`, `link_read_model.py`, and `baselines.py`
 - Cross-organization, denied, disabled-provider, correlation, and baseline proof: `modules/planning.core/tests/test_planning_links.py`
 - Typed client and capability-gated inspector proof: `web/src/features/planning/planningApi.test.ts` and `PlanningOperationLinksPanel.test.tsx`
-- Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningLinks.ps1`
+- Candidate runtime scenario: `modules/planning.core/verify/UokCandidatePlanningLinks.ps1`
 - Persistent PostgreSQL proof: `planning_links`, null-safe identity uniqueness, four checks, three foreign keys, and all three access indexes read back after backup and additive migration; full candidate and five Chromium scenarios passed after rebuild.
 
 Current Gate B date-semantics evidence:
@@ -118,7 +118,7 @@ Current Gate B date-semantics evidence:
 - Migration: `modules/planning.core/migrations/006_planning_date_semantics.sql`
 - Backend contract and DST/audit proof: `modules/planning.core/tests/test_planning_date_semantics.py`
 - Typed browser editor proof: `web/src/features/planning/PlanningTaskDateFields.test.tsx` and `web/src/features/planning/planningApi.test.ts`
-- Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningDates.ps1`
+- Candidate runtime scenario: `modules/planning.core/verify/UokCandidatePlanningDates.ps1`
 - Persistent PostgreSQL proof: project timezone, five execution-date columns, four checks, and deadline index read back after backup; rebuilt candidate preserved project-local New York dates, rejected an actual correction without a reason, and passed the module verifier.
 
 Current Gate B participant evidence:
@@ -127,7 +127,7 @@ Current Gate B participant evidence:
 - Migration: `modules/planning.core/migrations/007_planning_task_participants.sql`
 - Backend resolution/version/baseline/audit proof: `modules/planning.core/tests/test_planning_participants.py`
 - Typed inspector/filter proof: `web/src/features/planning/PlanningParticipantsPanel.test.tsx`, `planningTimelineModel.test.ts`, and `planningApi.test.ts`
-- Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningParticipants.ps1`
+- Candidate runtime scenario: `modules/planning.core/verify/UokCandidatePlanningParticipants.ps1`
 - Persistent PostgreSQL proof: 11 columns, controlled role/source checks, three same-module foreign keys, unique Party/role membership, and two access indexes read back after backup; rebuilt candidate proved ready/disabled/permission lifecycle and baseline capture.
 
 Current Gate B requirement/readiness evidence:
@@ -137,7 +137,7 @@ Current Gate B requirement/readiness evidence:
 - Lifecycle, authorization, evidence-link, outage, version, baseline, and audit proof: `modules/planning.core/tests/test_planning_requirements.py`
 - Runtime/generated OpenAPI parity: `modules/planning.core/tests/test_planning_idempotency_contract.py`
 - Typed Gates inspector/API/filter proof: `web/src/features/planning/PlanningRequirementsPanel.test.tsx`, `planningRequirementsApi.test.ts`, and `planningTimelineModel.test.ts`
-- Candidate runtime scenario: `modules/planning.core/tests/verify/UokCandidatePlanningRequirements.ps1`
+- Candidate runtime scenario: `modules/planning.core/verify/UokCandidatePlanningRequirements.ps1`
 - Persistent PostgreSQL proof: 17 columns, three controlled type/state/decision checks, four foreign keys, and both organization-first state/due indexes read back after backup and additive migration; rebuilt candidate proved approval lifecycle, permission denial, readiness recovery, and baseline inclusion, while five Chromium scenarios proved the Gates inspector and blocker status.
 
 Current Gate B communication-thread evidence:
@@ -147,7 +147,7 @@ Current Gate B communication-thread evidence:
 - Command, policy, API, lifecycle, and audit proof: `modules/communications.core/tests/test_communications_core.py`
 - Planning ready/denied/missing/disabled-provider resolver proof: `modules/planning.core/tests/test_planning_communication_links.py`
 - Exact workspace/thread navigation proof: `web/src/app/workbenchNavigation.test.ts`, `web/src/features/communications/CommunicationsWorkspace.test.tsx`, `web/src/features/planning/PlanningOperationLinksPanel.test.tsx`, and `web/e2e/uok-proof.spec.ts`
-- Candidate lifecycle scenario: `modules/planning.core/tests/verify/UokCandidatePlanningLinks.ps1` and `modules/communications.core/tests/verify/UokCandidateCommunications.ps1`
+- Candidate lifecycle scenario: `modules/planning.core/verify/UokCandidatePlanningLinks.ps1` and `modules/communications.core/verify/UokCandidateCommunications.ps1`
 - Persistent PostgreSQL proof: 11 columns, one controlled lifecycle check, two foreign keys, and both organization-first indexes read back after backup and additive migration; the rebuilt candidate passed provider install/disable/enable, permission denial, and exact link resolution, while all six Chromium scenarios passed.
 
 ## Gate C traceability
@@ -165,7 +165,7 @@ Current Gate C typed-resource evidence:
 - Migration/model: `modules/planning.core/migrations/009_planning_typed_resources.sql` and `src/uok/planning_models.py`
 - Contract, resolver-safe read model, baseline, database, and invalid-combination proof: `modules/planning.core/tests/test_planning_typed_resources.py`
 - Typed inspector proof: `web/src/features/planning/PlanningResourcePanel.test.tsx`
-- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningResources.ps1`
+- Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningResources.ps1`
 - Persistent PostgreSQL proof: 12 columns, seven controlled resource checks, two foreign keys, both new organization-first indexes, and zero incompatible backfills read back after backup and additive migration; the rebuilt candidate rejected an invalid vehicle/FTE pair, round-tripped a 0.5-FTE human effective period, preserved independently validated overload analysis, and captured the typed facts in an immutable baseline.
 
 Current Gate C resource-calendar evidence:
@@ -175,7 +175,7 @@ Current Gate C resource-calendar evidence:
 - Capacity derivation, mutation, overlap/bounds, baseline, independent validation, and leveling proof: `modules/planning.core/tests/test_planning_resource_calendars.py`
 - Engine fault-injection regression: `modules/planning.core/tests/test_resource_capacity_validation.py`
 - Typed inspector/workload/API proof: `web/src/features/planning/PlanningResourcePanel.test.tsx`, `planningWorkloadModel.test.ts`, and `planningResourceCalendarApi.test.ts`
-- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningResources.ps1`
+- Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningResources.ps1`
 - Persistent PostgreSQL proof: 11 columns, one capacity-range check, one organization/resource uniqueness constraint, three foreign keys, and all three indexes read back after backup and additive migration; the rebuilt candidate round-tripped a reduced-capacity exception, reported a validated 120% allocation against 50% capacity, and captured the resource calendar in the immutable baseline.
 
 Current Gate C calendar-correlation evidence:
@@ -184,7 +184,7 @@ Current Gate C calendar-correlation evidence:
 - Provider filter and Planning correlation: `modules/calendar.core/backend/uok_calendar_core/read_model.py` and `modules/planning.core/backend/uok_planning_core/calendar_bridge.py`
 - Two-resource correlation, unrelated-event exclusion, private Party denial, and empty-correlation proof: `modules/planning.core/tests/test_planning_calendar_core_integration.py`
 - Actor-visible context/ETag regression: `modules/planning.core/tests/test_planning_concurrency_guards.py`
-- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningAvailability.ps1`
+- Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningAvailability.ps1`
 - Rebuilt candidate evidence passed the exact task/Party correlation, unrelated-event exclusion, warning, and full module lifecycle gates.
 
 Current Gate C explainable-leveling evidence:
@@ -194,7 +194,7 @@ Current Gate C explainable-leveling evidence:
 - Independent post-level validator and injected hidden-overload fault: `modules/planning.core/backend/uok_planning_core/resource_leveling_validation.py` and `modules/planning.core/tests/test_planning_explainable_leveling.py`
 - Feasible, partial, infeasible, manual, capacity, horizon, and resource-calendar proofs: `modules/planning.core/tests/test_task_scheduling_modes.py`, `test_planning_explainable_leveling.py`, and `test_planning_resource_calendars.py`
 - Configured typed UI and accessible result-status proof: `web/src/features/planning/PlanningLevelingControl.test.tsx`
-- Candidate baseline-integrity and infeasibility scenario: `modules/planning.core/tests/verify/UokCandidatePlanningLeveling.ps1`
+- Candidate baseline-integrity and infeasibility scenario: `modules/planning.core/verify/UokCandidatePlanningLeveling.ps1`
 - Rebuilt candidate evidence passed explicit infeasibility, configured horizon, remaining overload, capacity/horizon reasons, independent validation, and approved-baseline checksum integrity.
 
 ## Gate D traceability
@@ -213,7 +213,7 @@ Current Gate D what-if evidence:
 - Canonical capture, detached preview, integrity, and actor-scoped reads: `modules/planning.core/backend/uok_planning_core/what_if.py` and `analysis_api.py`
 - Immutability, idempotency, permissions, non-mutation, and preview proof: `modules/planning.core/tests/test_planning_what_if_snapshots.py`
 - Typed Analysis inspector proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`
-- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningWhatIf.ps1`
+- Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningWhatIf.ps1`
 - Persistent PostgreSQL proof: 11 columns, three checks, three foreign keys, five indexes, one immutable trigger, and direct update rejection read back after backup and additive migration; rebuilt candidate preserved approved task fields/version while verifying the preview checksum.
 
 Current Gate D risk evidence:
@@ -223,7 +223,7 @@ Current Gate D risk evidence:
 - Immutable persistence, checksum, actor-scoped reads, and audit: `modules/planning.core/backend/uok_planning_core/risk_analysis.py`, `analysis_api.py`, and `analysis_commands.py`
 - Exact reproduction, contract rejection, non-mutation, and ORM immutability: `modules/planning.core/tests/test_planning_risk_analysis.py`
 - Typed fixed-seed Analysis inspector proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`
-- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningRisk.ps1`
+- Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningRisk.ps1`
 - Persistent PostgreSQL proof: 16 columns, four checks, four foreign keys, six indexes, one immutable trigger, and direct update rejection read back after backup `uok_pg18_20260710-092303.dump` and additive migration; two same-input candidate runs produced the same checksum.
 
 Current Gate D optimization/lifecycle evidence:
@@ -234,7 +234,7 @@ Current Gate D optimization/lifecycle evidence:
 - Representative, permission, early-apply, approval, apply, audit, rollback, stale, and direct-transition proofs: `modules/planning.core/tests/test_planning_governed_optimization.py`
 - Benchmark: `modules/planning.core/tests/test_planning_optimizer_benchmark.py` measured about 0.25 seconds for 50 candidates across a 50-task chain on the local candidate.
 - Typed approval workflow proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`
-- Candidate scenario: `modules/planning.core/tests/verify/UokCandidatePlanningOptimization.ps1`
+- Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningOptimization.ps1`
 - Persistent PostgreSQL proof: 23 columns, six checks, six foreign keys, seven indexes, one transition trigger, and direct rolled-back-to-approved rejection read back after backup `uok_pg18_20260710-094209.dump` and additive migration; rebuilt candidate completed propose/approve/apply/rollback.
 
 ## Gate E traceability
@@ -274,7 +274,7 @@ Current Gate E portfolio and release evidence:
 - Decision and operations: `docs/architecture/ADR-0018-planning-portfolio-and-release-readiness.md` and `docs/operations/UOK_PLANNING_RELEASE_READINESS.md`
 - Bounded actor-scoped aggregate/API: `portfolio.py`, `portfolio_api.py`, and `test_planning_portfolio.py`
 - Typed UI and focused proof: `PlanningPortfolioView.tsx`, `PlanningPortfolioView.test.tsx`, and `web/e2e/uok-proof.spec.ts`
-- Runtime candidate contract: `modules/planning.core/tests/verify/UokCandidatePlanningPortfolio.ps1`
+- Runtime candidate contract: `modules/planning.core/verify/UokCandidatePlanningPortfolio.ps1`
 - Production-like composition/live proof: `scripts/uok_ops.ps1` action `PlanningReleaseReadiness` and `web/e2e/planning-live.spec.ts`
 
 Exact commit SHAs and workflow-run identifiers belong in the mutable PR body and

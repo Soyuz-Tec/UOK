@@ -50,11 +50,31 @@ working tree:
 python -m pip install -r requirements-dev.txt
 python -m pip_audit -r requirements-dev.txt
 npm --prefix web run check:contracts
+$env:PYTHONPATH = "src"
+python -c "from uok.module_release_contract import validate_module_release_contracts; r=validate_module_release_contracts(); assert r['ok'], r; print(r)"
 ```
 
 The contract check renders FastAPI OpenAPI and `openapi.d.ts` into a temporary directory, compares
 both with `web/src/generated`, and exits nonzero on drift. Regenerate intentionally with
 `npm --prefix web run generate:api`, review the diff, then rerun the check.
+
+The module release contract adds module-owned test and verifier evidence to the runtime manifest
+contract. Application startup uses the runtime scope so OCI images may omit `modules/*/tests`;
+local Audit, CI, and candidate catalog discovery use the release scope before publication.
+OCI stages run `python scripts/validate_container_module_assets.py --require-tests-excluded` after
+copying source. That gate discovers runtime-proven verifiers from validated manifests, checks their
+exact module-owned paths, enforces the canonical `modules/<module_name>/tests` declaration, and
+fails if module test directories entered the image.
+
+Candidate discovery recursively preflights every statically dot-sourced PowerShell helper before
+loading a module script. Helper imports must be literal `$PSScriptRoot` paths inside the owning
+module `verify/` directory or the shared `scripts/verify` directory; dynamic paths, links,
+junctions, cycles, duplicate declared functions, and syntax errors fail the run before execution.
+
+When Apps Manager reports `reconciliation_required`, an authorized platform administrator uses the
+Apps Manager **Reconcile** action (`POST /api/modules/{module_name}/reconcile`). The operation locks
+the organization and module record, preserves module data, refreshes control-plane manifest truth,
+and emits one `ModuleLifecycleReconciled` audit event. Repeating the action is a no-op.
 
 ## Required Verification Levels
 

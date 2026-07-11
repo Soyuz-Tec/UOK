@@ -2,9 +2,15 @@ function Assert-UokCandidateEvidence {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Headers,
         [Parameter(Mandatory = $true)][hashtable]$OpsHeaders,
-        [Parameter(Mandatory = $true)][string]$ContactId,
+        [Parameter(Mandatory = $true)][hashtable]$ViewerHeaders,
+        [Parameter(Mandatory = $true)][object]$Scenario,
         [Parameter(Mandatory = $true)][long]$Stamp
     )
+
+    $ContactId = [string]$Scenario.contact_id
+    if (-not $ContactId) {
+        throw "Contacts candidate evidence requires scenario.contact_id"
+    }
 
     $detail = Invoke-UokJson -Path "/api/contacts/$ContactId" -Headers $Headers
     if (-not $detail.notes -or -not $detail.relationships) {
@@ -57,7 +63,22 @@ function Assert-UokCandidateEvidence {
     $forbiddenSpecificCargoName = "Bo" + "nny"
     $forbiddenRetiredUokName = -join ([char[]](67,108,101,97,110,45,82,111,111,109,32,75,101,114,110,101,108))
 
-    if (-not $lifecycle.ok -or -not $lifecycle.checks.apps_manager_declared -or -not $lifecycle.checks.contacts_declared_as_available_module -or -not $lifecycle.checks.only_apps_manager_required) {
+    $requiredLifecycleChecks = @(
+        "catalog_declared",
+        "lifecycle_flags_boolean",
+        "maturity_values_valid",
+        "lifecycle_states_valid",
+        "required_modules_bootstrap_ready",
+        "required_modules_protected",
+        "installable_modules_lifecycle_ready",
+        "uninstallable_modules_lifecycle_ready",
+        "updatable_modules_lifecycle_ready",
+        "planned_modules_inert",
+        "optional_modules_default_ready",
+        "dependencies_declared"
+    )
+    $failedLifecycleChecks = @($requiredLifecycleChecks | Where-Object { $lifecycle.checks.$_ -ne $true })
+    if (-not $lifecycle.ok -or $failedLifecycleChecks.Count -gt 0) {
         throw "Module lifecycle failed: $($lifecycle | ConvertTo-Json -Depth 30)"
     }
     if (

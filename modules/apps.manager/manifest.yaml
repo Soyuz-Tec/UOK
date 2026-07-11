@@ -1,7 +1,9 @@
+manifest_schema: uok.module.v1
 name: apps.manager
 kind: control_module
 version: APP_VERSION
 description: "Required lightweight control panel for listing, installing, upgrading, disabling, and uninstalling optional modules."
+maturity: runtime_proven
 installable: true
 uninstallable: false
 updatable: true
@@ -17,6 +19,7 @@ events:
   - ModuleDisabled
   - ModuleEnabled
   - ModuleUninstalled
+  - ModuleLifecycleReconciled
 dependencies: []
 backend_path: modules/apps.manager/backend
 web_path: modules/apps.manager/web
@@ -24,6 +27,9 @@ migrations_path: modules/apps.manager/migrations
 tests_path: modules/apps.manager/tests
 api_prefixes:
   - /api/modules
+api_router: uok_apps_manager.api:router
+candidate_verifier_script: modules/apps.manager/verify/UokCandidateAppsManager.ps1
+candidate_verifier_function: Invoke-UokAppsManagerCandidateScenario
 permissions:
   - module.read
   - module.manage
@@ -31,9 +37,6 @@ owned_tables:
   - ModuleRecord
   - EventRecord:Module
 extension_points:
-  - manifest
   - api_router
-  - permissions
-  - events
   - candidate_verifier
 data_retention_policy: "Required bootstrap control module; lifecycle records are retained as UOK governance evidence."

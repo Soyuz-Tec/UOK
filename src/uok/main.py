@@ -9,11 +9,18 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import APP_VERSION
+from .module_contract_validation import validate_module_runtime_contracts
+
+
+runtime_contract = validate_module_runtime_contracts()
+if not runtime_contract["ok"]:
+    raise RuntimeError(f"Module runtime contract is invalid: {runtime_contract['violations']}")
+
+
 from .api.auth import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth
 from .api.errors import uok_request_validation_error_handler
 from .api.auth import router as auth_router
 from .api.commands import router as commands_router
-from .api.modules import router as modules_router
 from .api.system import router as system_router
 from .api.schemas import (
     CommandRequest,
@@ -71,7 +78,6 @@ def index() -> FileResponse:
 
 app.include_router(auth_router)
 app.include_router(commands_router)
-app.include_router(modules_router)
 app.include_router(system_router)
 mount_module_routers(app)
 

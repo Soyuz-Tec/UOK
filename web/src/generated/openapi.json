@@ -7787,6 +7787,66 @@
         ]
       }
     },
+    "/api/modules/{module_name}/reconcile": {
+      "post": {
+        "operationId": "reconcile_module_endpoint_api_modules__module_name__reconcile_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "module_name",
+            "required": true,
+            "schema": {
+              "title": "Module Name",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Reconcile Module Endpoint Api Modules  Module Name  Reconcile Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reconcile Module Endpoint",
+        "tags": [
+          "modules"
+        ]
+      }
+    },
     "/api/modules/{module_name}/status": {
       "get": {
         "operationId": "get_module_status_api_modules__module_name__status_get",

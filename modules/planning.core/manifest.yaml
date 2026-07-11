@@ -1,7 +1,9 @@
+manifest_schema: uok.module.v1
 name: planning.core
 kind: capability_module
 version: APP_VERSION
 description: "Optional project planning, task participant, scheduling, execution-date, dependency, baseline, typed operation-link, calendar, and Gantt capability."
+maturity: runtime_proven
 installable: true
 uninstallable: true
 updatable: true
@@ -91,7 +93,7 @@ role_grants: uok_planning_core.policy:role_grants
 dashboard_provider: uok_planning_core.reports:dashboard_counts
 evidence_provider: uok_planning_core.reports:evidence
 model_exports: uok_planning_core.models:owned_models
-candidate_verifier_script: modules/planning.core/tests/verify/UokCandidatePlanning.ps1
+candidate_verifier_script: modules/planning.core/verify/UokCandidatePlanning.ps1
 candidate_verifier_function: Invoke-UokPlanningCandidateScenario
 permissions:
   - planning.read
@@ -124,18 +126,13 @@ owned_tables:
   - CommandLog:planning.core
   - EventRecord:Planning
 extension_points:
-  - manifest
-  - backend_package
-  - command_handlers
-  - command_replay_guard
   - api_router
+  - command_handlers
+  - command_permissions
+  - command_replay_guard
+  - role_grants
   - dashboard_provider
   - evidence_provider
   - model_exports
-  - permissions
-  - events
-  - migrations
-  - web_surface
-  - tests
   - candidate_verifier
 data_retention_policy: "User delete archives or disables planning access; schedule records, baselines, and audit events are retained for admin-controlled recovery unless a future purge workflow is explicitly executed."

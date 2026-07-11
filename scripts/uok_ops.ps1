@@ -110,8 +110,11 @@ function Invoke-UokAudit {
         Pop-Location
     }
     $env:PYTHONPATH = Join-Path $RepoRoot "src"
-    Invoke-UokStep "Module extension contract" {
-        Invoke-Native "python" @("-c", "from uok.module_contract_validation import validate_module_extension_contracts; r=validate_module_extension_contracts(); assert r['ok'], r; print(r)")
+    Invoke-UokStep "Container module asset catalog" {
+        Invoke-Native "python" @("scripts/validate_container_module_assets.py")
+    }
+    Invoke-UokStep "Module release contract" {
+        Invoke-Native "python" @("-c", "from uok.module_release_contract import validate_module_release_contracts; r=validate_module_release_contracts(); assert r['ok'], r; print(r)")
     }
     Invoke-UokStep "Source-boundary report" {
         Invoke-Native "python" @("-c", "from uok.quality import source_boundary_report; r=source_boundary_report(); assert r['ok'], r; print(r)")

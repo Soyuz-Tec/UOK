@@ -34,18 +34,18 @@ def assert_module_lifecycle_and_evidence(client, admin: dict[str, str]) -> None:
     assert lifecycle.status_code == 200, lifecycle.text
     lifecycle_checks = lifecycle.json()["checks"]
     for key in (
-        "apps_manager_declared",
-        "agents_declared_as_available_module",
-        "contacts_declared_as_available_module",
-        "planning_declared_as_available_module",
-        "only_apps_manager_required",
-        "no_business_modules_declared",
-        "agents_installable",
-        "agents_uninstallable",
-        "contacts_installable",
-        "contacts_uninstallable",
-        "planning_installable",
-        "planning_uninstallable",
+        "catalog_declared",
+        "dependencies_declared",
+        "installable_modules_lifecycle_ready",
+        "lifecycle_flags_boolean",
+        "lifecycle_states_valid",
+        "maturity_values_valid",
+        "optional_modules_default_ready",
+        "planned_modules_inert",
+        "required_modules_bootstrap_ready",
+        "required_modules_protected",
+        "uninstallable_modules_lifecycle_ready",
+        "updatable_modules_lifecycle_ready",
     ):
         assert lifecycle_checks[key] is True
 
@@ -56,6 +56,6 @@ def assert_module_lifecycle_and_evidence(client, admin: dict[str, str]) -> None:
 
     verify = client.post("/api/architecture/verify-baseline", headers=admin)
     assert verify.status_code == 200, verify.text
-    assert verify.json()["result"]["ok"] is True
+    assert verify.json()["result"]["ok"] is True, verify.text
     assert verify.json()["result"]["checks"]["module_neutral_baseline"] is True
     assert verify.json()["result"]["checks"]["module_lifecycle_ok"] is True

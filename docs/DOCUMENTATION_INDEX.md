@@ -61,6 +61,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0018-planning-portfolio-and-release-readiness.md` | Actor-scoped bounded portfolio aggregate, explainable health, typed multi-project UI, diagnostics, and local release-readiness boundary | Portfolio scope/query model/health or production-like Planning gate composition changes |
 | `docs/architecture/ADR-0019-planning-revision-ledger-and-transactional-outbox.md` | Immutable Planning revision history, exact source-command linkage, transactional outbox evidence, and no-dispatcher boundary | Revision ledger, outbox payload/schema, source linkage, history disclosure, or delivery boundary changes |
 | `docs/architecture/ADR-0020-planning-project-lifecycle-and-finish-authority.md` | Controlled project lifecycle, archive/purge boundary, exact target commitment, persisted CPM finish, and quiesced migration contract | Project status, transition, finish authority, CPM compatibility, or lifecycle migration behavior changes |
+| `docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md` | Closed manifest schema/maturity, runtime-release validation split, module verifier ownership, and Apps Manager adapter boundary | Manifest schema, maturity, extension hooks, verifier discovery, or Apps Manager API ownership changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -140,6 +141,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0018-planning-portfolio-and-release-readiness.md`
 - `docs/architecture/ADR-0019-planning-revision-ledger-and-transactional-outbox.md`
 - `docs/architecture/ADR-0020-planning-project-lifecycle-and-finish-authority.md`
+- `docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`

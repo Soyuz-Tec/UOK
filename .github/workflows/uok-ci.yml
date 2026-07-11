@@ -48,14 +48,14 @@ jobs:
       - name: Generate engineering evidence
         run: python scripts/engineering_evidence.py --stdout
 
-      - name: Validate module extension contract
+      - name: Validate module release contract
         env:
           PYTHONPATH: src
         run: |
           python - <<'PY'
-          from uok.module_contract_validation import validate_module_extension_contracts
+          from uok.module_release_contract import validate_module_release_contracts
 
-          report = validate_module_extension_contracts()
+          report = validate_module_release_contracts()
           assert report["ok"], report
           PY
 
@@ -103,14 +103,14 @@ jobs:
           from uok.main import bootstrap
           from uok.db import SessionLocal
           from uok.migration_registry import verify_migration_discipline
-          from uok.module_contract_validation import validate_module_extension_contracts
+          from uok.module_contract_validation import validate_module_runtime_contracts
           from uok.quality import source_boundary_report
 
           org_id = bootstrap()
           with SessionLocal() as db:
               migration = verify_migration_discipline(db)
               assert migration["ok"], migration
-          module_contract = validate_module_extension_contracts()
+          module_contract = validate_module_runtime_contracts()
           assert module_contract["ok"], module_contract
           source = source_boundary_report()
           assert source["ok"], source
@@ -143,3 +143,6 @@ jobs:
         env:
           PYTHONPATH: ../src
         run: npm run build:static
+
+      - name: Build OCI image without publishing
+        run: docker build --tag "uok-ci:${GITHUB_SHA}" .

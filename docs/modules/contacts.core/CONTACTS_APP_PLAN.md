@@ -39,7 +39,7 @@ The module currently declares these runtime surfaces:
 - dashboard provider: `uok_contacts_core.reports:dashboard_counts`
 - evidence provider: `uok_contacts_core.reports:evidence`
 - model exports: `uok_contacts_core.models:owned_models`
-- candidate verifier: `modules/contacts.core/tests/verify/UokCandidateContacts.ps1`
+- candidate verifier: `modules/contacts.core/verify/UokCandidateContacts.ps1`
 
 The command bus must discover Contacts commands through the manifest provider. Contacts permission atoms must not be hardcoded in `src/uok/security.py`.
 

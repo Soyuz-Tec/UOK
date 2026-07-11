@@ -14,7 +14,7 @@ Each packaged application module can now carry a local manifest file:
 modules/<module>/manifest.yaml
 ```
 
-The `.yaml` file stores a strict dependency-light YAML subset. The runtime loader reads these files through `uok.module_manifest_loader`, and `uok.module_paths` exposes module backend packages to the local runtime.
+The `.yaml` file stores the closed `uok.module.v1` dependency-light YAML subset. Every manifest declares an evidence-bounded maturity value. The runtime loader reads these files through `uok.module_manifest_loader`, and `uok.module_paths` exposes module backend packages to the local runtime.
 
 `contacts.core` currently declares these runtime surfaces from its manifest:
 
@@ -27,14 +27,15 @@ The `.yaml` file stores a strict dependency-light YAML subset. The runtime loade
 - `model_exports`
 - `candidate_verifier_script`
 
-`agents.core` currently declares a scaffold boundary only. It has ownership folders, permissions, lifecycle metadata, and a data-retention policy, but no runtime API, command handlers, migrations, or candidate verifier until the first behavior increment is implemented.
+`agents.core` currently declares a scaffold boundary only. Its maturity is `planned`; its lifecycle is only `planned`; and its install, update, uninstall, maintenance, permission, API, command, event, model, and extension claims are intentionally empty until the first behavior increment is implemented.
 
 ## Loader checks
 
 UOK verifies:
 
-- manifest file exists;
-- required identity fields are present;
+- manifest file exists and uses `manifest_schema: uok.module.v1`;
+- required identity and maturity fields are present with exact scalar/list/boolean types;
+- duplicate/unknown keys, duplicate list values, unknown maturity values, and unknown extension hooks fail closed;
 - backend, web, migration, and test ownership paths are declared and module-scoped;
 - API prefixes, permissions, owned tables, extension points, and data-retention policy are declared;
 - optional `api_router` import targets resolve from the module backend package, require the `api_router` extension point, and stay inside declared API prefixes;
@@ -43,9 +44,11 @@ UOK verifies:
 - role grants only use permissions declared by the module;
 - dashboard and evidence providers return validated mapping fragments;
 - model ownership declarations resolve against the baseline SQLAlchemy model registry;
-- module-declared PowerShell candidate verifier scripts stay under `modules/<module_name>`;
+- module-declared PowerShell candidate verifier scripts stay under `modules/<module_name>/verify` and are release assets independent of `tests/`;
 - module names are discoverable from file-backed manifests;
 - every baseline module has `backend/`, `web/`, `migrations/`, and `tests/` ownership folders.
+
+Runtime validation runs before manifest router mounting and does not require development test folders. Release validation adds every source ownership folder, maturity-appropriate module tests, and candidate verifier assets. Local/CI release gates call `validate_module_release_contracts`; runtime and container startup call `validate_module_runtime_contracts`.
 
 ## Source-boundary scan
 
@@ -66,6 +69,6 @@ The source-boundary scan must remain a strict candidate gate before any product 
 This candidate still has two intentional bridges:
 
 - module-specific React source is composed through `web/src/features/modules/moduleSurfaceRegistry.tsx` and feature folders under `web/src/features`;
-- Contacts pytest behavior tests and the module candidate verifier scenario now live under `modules/contacts.core/tests`.
+- Contacts pytest behavior tests live under `modules/contacts.core/tests`; its candidate verifier and evidence composition live under `modules/contacts.core/verify`.
 
 Future module expansion should move more module-owned UI behind module roots without weakening the shared shell and runtime boundaries. Module-owned migrations and behavior tests are now active baseline requirements.

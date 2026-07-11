@@ -5,11 +5,11 @@ After applying module migrations and rebuilding the persistent local stack, run
 the PostgreSQL two-client row-lock proof separately:
 
 ```powershell
-python .\modules\planning.core\tests\runtime\verify_planning_postgres_concurrency.py --base-url http://127.0.0.1:18088
+python .\modules\planning.core\verify\runtime\verify_planning_postgres_concurrency.py --base-url http://127.0.0.1:18088
 $env:DATABASE_URL = "<reachable PostgreSQL SQLAlchemy URL>"
-python .\modules\planning.core\tests\runtime\verify_planning_replay_purge_concurrency.py --base-url http://127.0.0.1:18088
-python .\modules\planning.core\tests\runtime\verify_planning_cpm.py --base-url http://127.0.0.1:18088
-Get-Content -Raw .\modules\planning.core\tests\runtime\verify_planning_revision_outbox.sql | podman exec -i uok-db-1 psql -U uok -d uok
+python .\modules\planning.core\verify\runtime\verify_planning_replay_purge_concurrency.py --base-url http://127.0.0.1:18088
+python .\modules\planning.core\verify\runtime\verify_planning_cpm.py --base-url http://127.0.0.1:18088
+Get-Content -Raw .\modules\planning.core\verify\runtime\verify_planning_revision_outbox.sql | podman exec -i uok-db-1 psql -U uok -d uok
 ```
 
 The replay/purge verifier deliberately requires an explicit PostgreSQL URL. It

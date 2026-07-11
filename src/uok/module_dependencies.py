@@ -31,11 +31,20 @@ def command_owner_module(command_type: str) -> str | None:
     return None
 
 
-def module_record(db: Session, organization_id: str, module_name: str) -> ModuleRecord | None:
-    return db.scalar(select(ModuleRecord).where(
+def module_record(
+    db: Session,
+    organization_id: str,
+    module_name: str,
+    *,
+    lock: bool = False,
+) -> ModuleRecord | None:
+    statement = select(ModuleRecord).where(
         ModuleRecord.organization_id == organization_id,
         ModuleRecord.name == module_name,
-    ))
+    )
+    if lock:
+        statement = statement.with_for_update()
+    return db.scalar(statement)
 
 
 def module_dependents(module_name: str) -> list[str]:
@@ -55,7 +64,13 @@ def installed_dependents(db: Session, organization_id: str, module_name: str) ->
         ModuleRecord.name.in_(dependents),
         ModuleRecord.status.in_(OPERATIONAL_STATUSES.union({"disabled"})),
     )).all()
-    return sorted(row.name for row in rows)
+    manifests = module_catalog()
+    return sorted(
+        row.name
+        for row in rows
+        if _record_is_operational(manifests.get(row.name), row)
+        or (row.status == "disabled" and row.status in manifests.get(row.name, {}).get("lifecycle", []))
+    )
 
 
 def ensure_dependencies_operational(db: Session, organization_id: str, module_name: str) -> None:
@@ -65,7 +80,7 @@ def ensure_dependencies_operational(db: Session, organization_id: str, module_na
     missing: list[str] = []
     for dependency in manifest.get("dependencies", []):
         row = module_record(db, organization_id, dependency)
-        if not row or row.status not in OPERATIONAL_STATUSES:
+        if not _record_is_operational(module_catalog().get(dependency), row):
             missing.append(dependency)
     if missing:
         raise ValueError(f"module dependencies are not operational: {', '.join(missing)}")
@@ -79,7 +94,18 @@ def ensure_command_module_operational(db: Session, organization_id: str, command
 
 
 def ensure_module_operational(db: Session, organization_id: str, module_name: str) -> None:
+    manifest = module_catalog().get(module_name)
     row = module_record(db, organization_id, module_name)
-    if not row or row.status not in OPERATIONAL_STATUSES:
+    if not _record_is_operational(manifest, row):
         raise ValueError(f"module {module_name} is not installed or enabled")
     ensure_dependencies_operational(db, organization_id, module_name)
+
+
+def _record_is_operational(manifest: dict[str, Any] | None, row: ModuleRecord | None) -> bool:
+    return bool(
+        manifest
+        and manifest.get("maturity") != "planned"
+        and row
+        and row.status in OPERATIONAL_STATUSES
+        and row.status in manifest.get("lifecycle", [])
+    )
