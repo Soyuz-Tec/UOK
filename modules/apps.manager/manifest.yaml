@@ -34,7 +34,7 @@ permissions:
   - module.read
   - module.manage
 owned_tables:
-  - ModuleRecord
+  - ModuleRecord:apps.manager
   - EventRecord:Module
 extension_points:
   - api_router

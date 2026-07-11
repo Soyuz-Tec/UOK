@@ -121,12 +121,18 @@ def test_contacts_core_backend_loads_from_physical_module_root() -> None:
     ensure_module_backend_paths()
 
     import uok_contacts_core
+    import uok_contacts_core.facade as contacts_facade
     from uok import contacts
 
     backend_file = Path(uok_contacts_core.__file__).resolve()
     assert "modules" in backend_file.parts
     assert "contacts.core" in backend_file.parts
     assert contacts.clean_text(" UOK ") == "UOK"
+    assert uok_contacts_core.clean_text(" UOK ") == "UOK"
+    assert uok_contacts_core.__all__ == contacts_facade.__all__
+    star_namespace: dict[str, object] = {}
+    exec("from uok_contacts_core import *", star_namespace)
+    assert set(contacts_facade.__all__).issubset(star_namespace)
 
 
 def test_module_extension_contract_is_enforced() -> None:
@@ -144,7 +150,10 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["checks"]["evidence_providers_valid"] is True
     assert extension_contract["checks"]["model_exports_valid"] is True
     assert extension_contract["checks"]["candidate_verifiers_valid"] is True
+    assert extension_contract["checks"]["owned_table_claims_valid"] is True
     assert extension_contract["checks"]["owned_tables_resolve_to_models"] is True
+    assert contracts["model_registry"]["ok"] is True
+    assert contracts["model_registry"]["model_count"] == 38
     assert extension_contract["violations"] == []
 
 

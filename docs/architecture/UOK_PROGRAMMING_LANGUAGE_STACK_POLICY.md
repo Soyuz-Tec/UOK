@@ -36,7 +36,7 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 | UOK backend | Python `>=3.14`, current container runtime Python `3.14` | `src/uok/`, `modules/<module>/backend` | API, command bus, module registry, workflow contracts, governance, reports, verification, local runtime, module-owned backend providers |
 | API framework | FastAPI `0.139.0` | `src/uok/main.py` | REST, WebSocket, OpenAPI surface, dependency boundaries |
 | API/data validation | Pydantic `2.13.4` and Python type hints | request/response schemas, command payload validation | Typed API contracts, JSON-compatible payload discipline |
-| Persistence access | SQLAlchemy `2.0.51` | `src/uok/models.py`, persistence modules | ORM mapping, transactional unit of work, SQL abstraction where appropriate |
+| Persistence access | SQLAlchemy `2.0.51` | `src/uok/kernel_models.py`, `src/uok/module_model_registry.py`, `modules/*/backend/*/models.py`, persistence modules | Single-Base ORM mapping, validated module composition, transactional unit of work, SQL abstraction where appropriate |
 | System of record | PostgreSQL `18` | Podman compose and production-shaped runtime | Transactions, tenant scoping, RLS verification, restore drills, event/outbox durability |
 | Durable frontend | TypeScript `5.9.3` + React `19.2.7` | `web/src/` | Operator console, module testing, workflow UI, product-neutral shell |
 | Frontend build | Vite `8.1.3` on Node `26` | `web/` | Local development build and compiled static assets |
@@ -69,6 +69,7 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 
 5. SQLAlchemy owns application persistence mapping
    - Use SQLAlchemy for ORM-backed persistence and transaction management.
+   - Keep one declarative `Base`; product-neutral mappings live in the kernel and capability mappings live in the owning module backend with manifest-validated registration.
    - Raw SQL is allowed for migrations, projections, RLS policy work, and database-specific verification when it is clearer than ORM abstraction.
    - Product modules must not bypass declared persistence boundaries to write UOK-owned internal tables directly.
    - Modules that use shared baseline tables must declare owned tables or shared-table scopes in their manifests.

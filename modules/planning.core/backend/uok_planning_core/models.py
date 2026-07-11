@@ -1,24 +1,28 @@
 from __future__ import annotations
 
-from uok.models import (
-    PlanningAssignment,
+from uok.models_base import utcnow
+
+from .planning_analysis_models import (
+    PlanningAnalysisRecommendation,
+    PlanningAnalysisRun,
+    PlanningWhatIfSnapshot,
+)
+from .planning_audit_models import PlanningOutboxEvent, PlanningScheduleRevision
+from .planning_models import (
     PlanningBaseline,
     PlanningCalendar,
     PlanningLink,
     PlanningProject,
-    PlanningResource,
-    PlanningResourceCalendar,
     PlanningScheduleEvent,
-    PlanningScheduleRevision,
-    PlanningOutboxEvent,
     PlanningTask,
+    PlanningTaskDependency,
     PlanningTaskParticipant,
     PlanningTaskRequirement,
-    PlanningTaskDependency,
-    PlanningWhatIfSnapshot,
-    PlanningAnalysisRun,
-    PlanningAnalysisRecommendation,
-    utcnow,
+)
+from .planning_resource_models import (
+    PlanningAssignment,
+    PlanningResource,
+    PlanningResourceCalendar,
 )
 
 __all__ = [
@@ -44,23 +48,23 @@ __all__ = [
 ]
 
 
-def owned_models() -> dict[str, str]:
+def owned_models() -> dict[str, type]:
     return {
-        "PlanningAssignment": PlanningAssignment.__tablename__,
-        "PlanningBaseline": PlanningBaseline.__tablename__,
-        "PlanningCalendar": PlanningCalendar.__tablename__,
-        "PlanningLink": PlanningLink.__tablename__,
-        "PlanningProject": PlanningProject.__tablename__,
-        "PlanningResource": PlanningResource.__tablename__,
-        "PlanningResourceCalendar": PlanningResourceCalendar.__tablename__,
-        "PlanningScheduleEvent": PlanningScheduleEvent.__tablename__,
-        "PlanningScheduleRevision": PlanningScheduleRevision.__tablename__,
-        "PlanningOutboxEvent": PlanningOutboxEvent.__tablename__,
-        "PlanningTask": PlanningTask.__tablename__,
-        "PlanningTaskParticipant": PlanningTaskParticipant.__tablename__,
-        "PlanningTaskRequirement": PlanningTaskRequirement.__tablename__,
-        "PlanningTaskDependency": PlanningTaskDependency.__tablename__,
-        "PlanningWhatIfSnapshot": PlanningWhatIfSnapshot.__tablename__,
-        "PlanningAnalysisRun": PlanningAnalysisRun.__tablename__,
-        "PlanningAnalysisRecommendation": PlanningAnalysisRecommendation.__tablename__,
+        "PlanningAssignment": PlanningAssignment,
+        "PlanningBaseline": PlanningBaseline,
+        "PlanningCalendar": PlanningCalendar,
+        "PlanningLink": PlanningLink,
+        "PlanningProject": PlanningProject,
+        "PlanningResource": PlanningResource,
+        "PlanningResourceCalendar": PlanningResourceCalendar,
+        "PlanningScheduleEvent": PlanningScheduleEvent,
+        "PlanningScheduleRevision": PlanningScheduleRevision,
+        "PlanningOutboxEvent": PlanningOutboxEvent,
+        "PlanningTask": PlanningTask,
+        "PlanningTaskParticipant": PlanningTaskParticipant,
+        "PlanningTaskRequirement": PlanningTaskRequirement,
+        "PlanningTaskDependency": PlanningTaskDependency,
+        "PlanningWhatIfSnapshot": PlanningWhatIfSnapshot,
+        "PlanningAnalysisRun": PlanningAnalysisRun,
+        "PlanningAnalysisRecommendation": PlanningAnalysisRecommendation,
     }

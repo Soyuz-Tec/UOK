@@ -1,0 +1,52 @@
+{
+  "kernel": {
+    "CommandLog": "command_logs",
+    "EventRecord": "events",
+    "GovernanceRule": "governance_rules",
+    "Membership": "memberships",
+    "ModuleRecord": "modules",
+    "Organization": "organizations",
+    "SchemaVersion": "schema_versions",
+    "User": "users",
+    "WorkflowInstance": "workflow_instances"
+  },
+  "calendar.core": {
+    "Calendar": "calendars",
+    "CalendarEvent": "calendar_events",
+    "CalendarEventParticipant": "calendar_event_participants",
+    "CalendarReminder": "calendar_reminders"
+  },
+  "communications.core": {
+    "CommunicationThread": "communication_threads"
+  },
+  "contacts.core": {
+    "ContactGroup": "contact_groups",
+    "ContactGroupMember": "contact_group_members",
+    "ContactImportBatch": "contact_import_batches",
+    "Party": "parties",
+    "PartyNote": "party_notes",
+    "PartyRelationship": "party_relationships"
+  },
+  "planning.core": {
+    "PlanningAnalysisRecommendation": "planning_analysis_recommendations",
+    "PlanningAnalysisRun": "planning_analysis_runs",
+    "PlanningAssignment": "planning_assignments",
+    "PlanningBaseline": "planning_baselines",
+    "PlanningCalendar": "planning_calendars",
+    "PlanningLink": "planning_links",
+    "PlanningOutboxEvent": "planning_outbox_events",
+    "PlanningProject": "planning_projects",
+    "PlanningResource": "planning_resources",
+    "PlanningResourceCalendar": "planning_resource_calendars",
+    "PlanningScheduleEvent": "planning_schedule_events",
+    "PlanningScheduleRevision": "planning_schedule_revisions",
+    "PlanningTask": "planning_tasks",
+    "PlanningTaskDependency": "planning_task_dependencies",
+    "PlanningTaskParticipant": "planning_task_participants",
+    "PlanningTaskRequirement": "planning_task_requirements",
+    "PlanningWhatIfSnapshot": "planning_what_if_snapshots"
+  },
+  "reports.core": {
+    "ReportArtifact": "report_artifacts"
+  }
+}

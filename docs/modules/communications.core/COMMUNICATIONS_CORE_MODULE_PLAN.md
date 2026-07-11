@@ -25,9 +25,10 @@ boundary and its integration with Planning typed links.
 
 ## Ownership
 
-Module-owned source lives under `modules/communications.core`. The alpha
-SQLAlchemy compatibility mapping lives at `src/uok/communication_models.py`
-and is exported through the module manifest. The K Connect feature surface
+Module-owned source and the canonical `CommunicationThread` SQLAlchemy mapping
+live under `modules/communications.core`. The legacy
+`src/uok/communication_models.py` path is an exact-class compatibility facade.
+The mapping is registered from the module manifest. The K Connect feature surface
 lives under `web/src/features/communications` and is composed through the
 shared module surface registry.
 
@@ -37,7 +38,6 @@ shared module surface registry.
 - membership and mention policy;
 - close, reopen, archive, and retention commands;
 - notifications, unread counts, search, and delivery integrations;
-- moving the compatibility ORM mapping under the module root.
 
 ## Validation
 

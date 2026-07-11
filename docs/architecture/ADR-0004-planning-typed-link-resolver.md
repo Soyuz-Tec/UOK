@@ -56,10 +56,11 @@ reserved and return `unavailable` until their provider modules implement the
 contract. `communication_thread` became live under ADR-0008. No target kind may
 be presented as a resolved source object before its provider contract exists.
 
-The ORM mapping remains in the accepted alpha compatibility bridge under
-`src/uok/planning_models.py`; behavior, migration, APIs, resolver logic, tests,
-and verification remain owned by `planning.core`. ACC-ARCH-001 continues to
-track eventual physical model relocation.
+ADR-0022 closed the accepted alpha ORM bridge. The canonical `PlanningLink`
+mapping now lives under `modules/planning.core/backend/uok_planning_core`; the
+legacy `src/uok/planning_models.py` path re-exports that exact class. Behavior,
+migration, APIs, resolver logic, tests, and verification remain owned by
+`planning.core`.
 
 ## Consequences
 

@@ -105,7 +105,7 @@ requirement.
 Current Gate B link evidence:
 
 - ADR: `docs/architecture/ADR-0004-planning-typed-link-resolver.md`
-- Migration/model/manifest: `modules/planning.core/migrations/005_planning_operation_links.sql`, `src/uok/planning_models.py`, and `modules/planning.core/manifest.yaml`
+- Migration/model/manifest: `modules/planning.core/migrations/005_planning_operation_links.sql`, `modules/planning.core/backend/uok_planning_core/planning_models.py`, and `modules/planning.core/manifest.yaml`
 - Resolver/API/audit/baseline integration: `modules/planning.core/backend/uok_planning_core/link_resolver.py`, `link_commands.py`, `link_read_model.py`, and `baselines.py`
 - Cross-organization, denied, disabled-provider, correlation, and baseline proof: `modules/planning.core/tests/test_planning_links.py`
 - Typed client and capability-gated inspector proof: `web/src/features/planning/planningApi.test.ts` and `PlanningOperationLinksPanel.test.tsx`
@@ -143,7 +143,7 @@ Current Gate B requirement/readiness evidence:
 Current Gate B communication-thread evidence:
 
 - ADR and provider plan: `docs/architecture/ADR-0008-communications-thread-provider-boundary.md` and `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md`
-- Provider migration/model/manifest: `modules/communications.core/migrations/001_communications_core.sql`, `src/uok/communication_models.py`, and `modules/communications.core/manifest.yaml`
+- Provider migration/model/manifest: `modules/communications.core/migrations/001_communications_core.sql`, `modules/communications.core/backend/uok_communications_core/models.py`, and `modules/communications.core/manifest.yaml`
 - Command, policy, API, lifecycle, and audit proof: `modules/communications.core/tests/test_communications_core.py`
 - Planning ready/denied/missing/disabled-provider resolver proof: `modules/planning.core/tests/test_planning_communication_links.py`
 - Exact workspace/thread navigation proof: `web/src/app/workbenchNavigation.test.ts`, `web/src/features/communications/CommunicationsWorkspace.test.tsx`, `web/src/features/planning/PlanningOperationLinksPanel.test.tsx`, and `web/e2e/uok-proof.spec.ts`
@@ -162,7 +162,7 @@ Current Gate B communication-thread evidence:
 Current Gate C typed-resource evidence:
 
 - ADR: `docs/architecture/ADR-0009-planning-typed-resource-boundary.md`
-- Migration/model: `modules/planning.core/migrations/009_planning_typed_resources.sql` and `src/uok/planning_models.py`
+- Migration/model: `modules/planning.core/migrations/009_planning_typed_resources.sql` and `modules/planning.core/backend/uok_planning_core/planning_resource_models.py`
 - Contract, resolver-safe read model, baseline, database, and invalid-combination proof: `modules/planning.core/tests/test_planning_typed_resources.py`
 - Typed inspector proof: `web/src/features/planning/PlanningResourcePanel.test.tsx`
 - Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningResources.ps1`
@@ -171,7 +171,7 @@ Current Gate C typed-resource evidence:
 Current Gate C resource-calendar evidence:
 
 - ADR: `docs/architecture/ADR-0010-planning-resource-capacity-calendars.md`
-- Migration/model: `modules/planning.core/migrations/010_planning_resource_calendars.sql` and `src/uok/planning_resource_models.py`
+- Migration/model: `modules/planning.core/migrations/010_planning_resource_calendars.sql` and `modules/planning.core/backend/uok_planning_core/planning_resource_models.py`
 - Capacity derivation, mutation, overlap/bounds, baseline, independent validation, and leveling proof: `modules/planning.core/tests/test_planning_resource_calendars.py`
 - Engine fault-injection regression: `modules/planning.core/tests/test_resource_capacity_validation.py`
 - Typed inspector/workload/API proof: `web/src/features/planning/PlanningResourcePanel.test.tsx`, `planningWorkloadModel.test.ts`, and `planningResourceCalendarApi.test.ts`
@@ -209,7 +209,7 @@ Current Gate C explainable-leveling evidence:
 Current Gate D what-if evidence:
 
 - ADR: `docs/architecture/ADR-0013-planning-immutable-what-if-snapshots.md`
-- Model/migration: `src/uok/planning_analysis_models.py` and `modules/planning.core/migrations/011_planning_what_if_snapshots.sql`
+- Model/migration: `modules/planning.core/backend/uok_planning_core/planning_analysis_models.py` and `modules/planning.core/migrations/011_planning_what_if_snapshots.sql`
 - Canonical capture, detached preview, integrity, and actor-scoped reads: `modules/planning.core/backend/uok_planning_core/what_if.py` and `analysis_api.py`
 - Immutability, idempotency, permissions, non-mutation, and preview proof: `modules/planning.core/tests/test_planning_what_if_snapshots.py`
 - Typed Analysis inspector proof: `web/src/features/planning/PlanningAnalysisPanel.test.tsx`

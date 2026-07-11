@@ -9,7 +9,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import TARGET_VERSION
-from .models import SchemaVersion
+from .kernel_models import SchemaVersion
+from .module_model_registry import ensure_module_models_registered
 from .module_manifest_loader import load_module_manifests
 from .module_paths import repo_root
 from .module_tables import declared_module_table_names, model_table_names
@@ -42,6 +43,7 @@ def module_migration_files() -> list[dict[str, Any]]:
 
 
 def verify_migration_discipline(db: Session | None = None) -> dict[str, Any]:
+    ensure_module_models_registered()
     root = migration_root()
     path = root / MIGRATION_FILE
     text = path.read_text(encoding="utf-8") if path.exists() else ""

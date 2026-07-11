@@ -8,9 +8,7 @@ from typing import Any
 from .module_api_prefixes import validate_api_prefix_ownership, validate_api_prefixes
 from .module_imports import IMPORT_TARGET_SPEC_PATTERN
 from .module_manifest_schema import IMPORT_TARGET_FIELDS
-from .module_tables import model_table_names
-
-
+from .module_model_claims import validate_owned_table_claims
 ALLOWED_MODULE_KINDS = {"control_module", "capability_module", "business_module"}
 PATH_FIELDS = ("backend_path", "web_path", "migrations_path", "tests_path")
 RUNTIME_PATH_FIELDS = {"backend_path", "migrations_path"}
@@ -210,7 +208,7 @@ def validate_catalog_relationships(
     validate_api_prefix_ownership(manifests, rows)
     _validate_dependencies(manifests, rows)
     _validate_backend_packages(manifests, module_root, rows)
-    _validate_owned_models(manifests, rows)
+    validate_owned_table_claims(manifests, rows)
     return command_owners, event_owners
 
 
@@ -273,17 +271,3 @@ def _validate_backend_packages(
             if previous is not None:
                 violation(rows, module_name, "backend_path", f"backend package {package.name} is already owned by {previous}")
             owners[package_key] = module_name
-
-
-def _validate_owned_models(
-    manifests: dict[str, dict[str, Any]], rows: list[dict[str, str]]
-) -> None:
-    models = model_table_names()
-    for module_name, manifest in manifests.items():
-        missing = sorted(
-            owner.split(":", 1)[0]
-            for owner in manifest["owned_tables"]
-            if owner.split(":", 1)[0] not in models
-        )
-        if missing:
-            violation(rows, module_name, "owned_tables", f"owned table model declarations do not resolve: {', '.join(missing)}")

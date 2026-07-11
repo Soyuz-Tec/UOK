@@ -68,7 +68,7 @@ Every module manifest must declare:
 | `role_grants` | Import target for module-owned role permission grants. Grants extend kernel roles without hardcoding module permissions in `src/uok/security.py`. |
 | `dashboard_provider` | Import target for module-owned dashboard count fragments merged into `/api/dashboard`. |
 | `evidence_provider` | Import target for module-owned baseline evidence checks and counts merged into `/api/baseline-evidence`. |
-| `model_exports` | Import target for module-owned model/table exports used by migration and boundary validation while shared baseline tables remain in the kernel model registry. |
+| `model_exports` | Import target for a provider returning the module's exact `dict[str, mapped class]`. Registration validates direct manifest ownership, source origin, the single kernel `Base`, complete metadata, and hidden/extra mappings before schema or migration inspection. |
 | `candidate_verifier_script` | Safe relative PowerShell path under `modules/<module_name>/verify` for this module's candidate scenario. Runtime and release verification assets must not depend on `tests/` paths. |
 | `candidate_verifier_function` | PowerShell function name invoked from `candidate_verifier_script`. |
 
@@ -92,7 +92,7 @@ New extension points require an architecture update and a failing validation tes
 
 ## Runtime and Release Validation
 
-- Runtime validation checks schema and maturity truth, lifecycle semantics, dependencies, unique ownership, safe runtime paths, backend packages, import targets, canonical non-overlapping API prefixes, permissions, and model declarations. Application composition completes this validation before importing or mounting extension providers, and only validated manifest `backend_path` roots enter Python import resolution.
+- Runtime validation statically checks schema and maturity truth, lifecycle semantics, dependencies, unique direct ownership, explicit kernel-table scopes, safe runtime paths, backend packages, import targets, canonical non-overlapping API prefixes, permissions, and model declarations. It completes before extension imports. The model registry then imports only validated `model_exports` providers in deterministic dependency order and completes the single metadata graph before migration inspection, schema creation, or other extension composition.
 - Release validation includes every runtime check, then requires module ownership folders, maturity-appropriate module tests, and safe module-owned candidate verifier files/functions.
 - Runtime validation deliberately does not require `tests_path` to exist, but it still enforces the canonical `modules/<module_name>/tests` declaration. Runtime container stages exclude `modules/*/tests`; a manifest-driven container asset validator requires every runtime-proven module's exact verifier script and rejects any noncanonical test path.
 - Candidate discovery consumes the canonical release validator and recursively parses each entry script's complete static dot-source closure before returning the catalog. Helpers must use a canonical literal `$PSScriptRoot` path, resolve inside the owning module `verify/` directory or the approved shared `scripts/verify` root, and remain free of links, junctions, cycles, and syntax errors. Dynamic or unresolved dot-sources fail closed, and the declared verifier must have exactly one ordinary top-level function definition across the closure before PowerShell loads any module script.
@@ -100,7 +100,7 @@ New extension points require an architecture update and a failing validation tes
 ## Kernel Boundary Rules
 
 - `src/uok` owns the kernel, shared contracts, security, command bus, module registry, API composition, static asset serving, and compatibility facades.
-- `modules/<module>` owns module-specific backend implementation, UI surface, migrations, tests, runtime/release verification assets, commands, events, permissions, and maintenance behavior.
+- `modules/<module>` owns module-specific backend implementation, ORM definitions, UI surface, migrations, tests, runtime/release verification assets, commands, events, permissions, and maintenance behavior.
 - Product, cargo, CRM, accounting, inventory, document, and industry-specific logic must not be embedded in the kernel.
 - A module may use shared UOK database tables only when its manifest declares the table or shared-table scope it owns.
 - A module must not require manual edits to unrelated modules for normal install, upgrade, disable, uninstall, or maintenance workflows.
@@ -112,6 +112,7 @@ New extension points require an architecture update and a failing validation tes
 - `apps.manager` is the required `runtime_proven` control module and its API router is mounted only from its manifest.
 - `agents.core` is an inert `planned` capability scaffold: it is not installable, updatable, maintainable, permission-bearing, or runtime-proven.
 - `calendar.core`, `communications.core`, `contacts.core`, `planning.core`, and `reports.core` are optional `runtime_proven` capability modules with manifest-declared backend hooks and module-owned verifiers.
+- Their 29 capability ORM mappings live in the owning backend packages and register beside nine product-neutral kernel mappings on one SQLAlchemy metadata graph. Compatibility imports return the exact owning classes.
 - Module backend implementations, tests, migrations, and candidate verifier assets live below their owning module roots. Module-specific React source is still composed through the top-level frontend shell for this candidate and is the next physical-ownership slice.
 
 ## Required Scans Before GitHub Push

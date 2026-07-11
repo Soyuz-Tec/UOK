@@ -134,7 +134,7 @@ def _report(
             "candidate_verifiers_valid": fields_are_valid(
                 "candidate_verifier_script", "candidate_verifier_function"
             ),
-            "owned_tables_resolve_to_models": fields_are_valid("owned_tables"),
+            "owned_table_claims_valid": fields_are_valid("owned_tables"),
             "manifest_maturity_valid": fields_are_valid("maturity", "lifecycle"),
             "dependencies_valid": fields_are_valid("dependencies"),
             "backend_packages_unique": fields_are_valid("backend_path"),

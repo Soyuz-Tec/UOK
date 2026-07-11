@@ -38,10 +38,11 @@ identity and access.
   membership management, close/reopen commands, retention automation, and
   notification delivery remain later `communications.core` work.
 
-The accepted alpha compatibility bridge keeps the SQLAlchemy mapping in
-`src/uok/communication_models.py`; module behavior, manifest, migration, API,
-commands, policy, tests, and candidate verification remain owned by
-`communications.core`.
+ADR-0022 closed the accepted alpha ORM bridge. The canonical SQLAlchemy mapping
+now lives in `modules/communications.core/backend/uok_communications_core`, and
+`src/uok/communication_models.py` re-exports that exact class. Module behavior,
+manifest, migration, API, commands, policy, tests, and candidate verification
+remain owned by `communications.core`.
 
 ## Consequences
 

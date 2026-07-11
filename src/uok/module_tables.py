@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from .db import Base
 from .module_manifest_loader import load_module_manifests
-from .models import Base
+from .module_model_registry import ensure_module_models_registered
 
 
 def model_table_names() -> dict[str, str]:
+    ensure_module_models_registered()
     return {
         mapper.class_.__name__: mapper.local_table.name
         for mapper in Base.registry.mappers

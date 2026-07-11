@@ -1,6 +1,6 @@
 # ADR-0001: Manifest-declared module runtime boundaries
 
-**Status:** Superseded in part by `ADR-0021-module-manifest-runtime-and-release-truth.md`
+**Status:** Superseded in part by `ADR-0021-module-manifest-runtime-and-release-truth.md` and `ADR-0022-module-owned-orm-registration.md`
 
 **Baseline:** `UOK-3.1.0-alpha.2-module-extension-baseline`
 
@@ -25,7 +25,7 @@ The kernel keeps shared contracts, command dispatch, security checks, API compos
 - Adding a new command-owning module should not require changes to `src/uok/commands.py`.
 - Adding module permissions should not require hardcoding permission atoms in `src/uok/security.py`.
 - Dashboard and evidence endpoints keep stable response shapes while module-specific values come from providers.
-- Shared baseline SQLAlchemy models remain in `src/uok/models.py` for this candidate, but modules import owned domain models through module-local facades and declare table ownership for migration validation.
+- The original shared-model bridge was closed by ADR-0022: capability mappings now live in their owning backends, while `src/uok/models.py` preserves exact compatibility aliases over one validated registry.
 - The candidate verifier stays top-level as a release gate, but module scenarios are discovered from manifests.
 
 ## Alternatives

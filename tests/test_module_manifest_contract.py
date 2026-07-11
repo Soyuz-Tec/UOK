@@ -109,6 +109,7 @@ def test_repository_runtime_and_release_contracts_are_valid() -> None:
     release = validate_module_release_contracts()
     assert runtime["ok"] is True, runtime["violations"]
     assert release["ok"] is True, release["violations"]
+    assert runtime["checks"]["owned_table_claims_valid"] is True
 
 
 def test_runtime_contract_ignores_release_asset_existence(tmp_path: Path) -> None:

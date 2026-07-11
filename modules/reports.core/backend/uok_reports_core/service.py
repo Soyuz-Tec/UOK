@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from uok.models import ReportArtifact, new_id, utcnow
+from uok.models_base import new_id, utcnow
 from uok.module_ops import ensure_module_operational
 from uok.security import Actor, require_permission
 from uok.util import dumps, loads
@@ -15,6 +15,7 @@ from uok.util import dumps, loads
 from . import MODULE_NAME
 from .audit import emit_report_event
 from .formats import render_report
+from .models import ReportArtifact
 from .schemas import GenerateReportRequest, MAX_PAYLOAD_BYTES, ReportArtifactResponse
 from .storage import delete_report_file, safe_filename_base, save_report_bytes, storage_path
 

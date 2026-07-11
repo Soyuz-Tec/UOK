@@ -43,7 +43,8 @@ UOK verifies:
 - command handler and command permission providers cover every declared command and only use declared permissions;
 - role grants only use permissions declared by the module;
 - dashboard and evidence providers return validated mapping fragments;
-- model ownership declarations resolve against the baseline SQLAlchemy model registry;
+- direct model ownership declarations are unique and require a `model_exports` provider, while kernel table use requires an explicit shared-table scope;
+- after static validation, model providers register in deterministic dependency order and must return the exact manifest-owned mapped classes from the owning backend on the single kernel `Base`;
 - module-declared PowerShell candidate verifier scripts stay under `modules/<module_name>/verify` and are release assets independent of `tests/`;
 - module names are discoverable from file-backed manifests;
 - every baseline module has `backend/`, `web/`, `migrations/`, and `tests/` ownership folders.
@@ -66,9 +67,13 @@ The source-boundary scan must remain a strict candidate gate before any product 
 
 ## Current bridge status
 
-This candidate still has two intentional bridges:
+The former ORM bridge is closed: 29 capability mappings are physically owned by
+Calendar, Communications, Contacts, Planning, and Reports backends, while nine
+product-neutral mappings remain in `uok.kernel_models`. `uok.models` is an
+exact-class compatibility facade over the validated registry.
+
+This candidate still has one intentional bridge:
 
 - module-specific React source is composed through `web/src/features/modules/moduleSurfaceRegistry.tsx` and feature folders under `web/src/features`;
-- Contacts pytest behavior tests live under `modules/contacts.core/tests`; its candidate verifier and evidence composition live under `modules/contacts.core/verify`.
 
-Future module expansion should move more module-owned UI behind module roots without weakening the shared shell and runtime boundaries. Module-owned migrations and behavior tests are now active baseline requirements.
+Future module expansion should move module-owned UI behind module roots without weakening the shared shell and runtime boundaries. Module-owned ORM definitions, migrations, and behavior tests are active baseline requirements.

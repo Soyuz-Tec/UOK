@@ -24,7 +24,7 @@ Operator browser
 | Container | Location | Responsibility |
 |---|---|---|
 | Backend kernel | `src/uok` | FastAPI composition, auth/session security, command bus, module registry, lifecycle APIs, static asset serving, baseline evidence, migration gates, compatibility facades. |
-| Module packages | `modules/<module_name>` | Module manifest, backend package, UI ownership marker, module-owned migrations, tests, candidate verifier scenarios, module-owned behavior. |
+| Module packages | `modules/<module_name>` | Module manifest, backend package, module-owned ORM mappings, UI ownership marker, migrations, tests, candidate verifier scenarios, and behavior. |
 | Frontend shell | `web/src` | React + TypeScript + Vite workbench, navigation shell, shared controls, module surface registry, generated API contracts. |
 | Database baseline | `migrations/001_initial_baseline.sql` | Initial shared candidate schema plus schema-version evidence. Future schema changes must be migration-gated and module-owned where applicable. |
 | Candidate verification | `scripts/verify_uok_candidate.ps1`, `modules/*/verify`, `web/e2e` | Release smoke, module-declared candidate scenarios, and Playwright UI proof automation. |
@@ -45,6 +45,7 @@ Operator browser
 - Manifests use closed schema `uok.module.v1`, declare evidence-bounded maturity, reserve canonical non-overlapping API prefixes, and pass runtime validation before extension imports or router composition; release validation separately proves tests and verifier assets.
 - The Apps Manager HTTP adapter is owned by `modules/apps.manager` and mounted through the same manifest router mechanism as capability modules; shared lifecycle services provide locked, audited, idempotent reconciliation when persisted control-plane state drifts from current manifest truth.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, command replay guards, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
+- Static runtime validation completes before extension imports. The deterministic module model registry then composes 29 module-owned mappings with nine kernel mappings on the single `uok.db.Base` before migration inspection, schema creation, or router composition.
 - The frontend uses a compile-time module surface registry in `web/src/features/modules`; this is intentionally not runtime code loading from YAML yet.
 
 ## Boundaries
@@ -52,7 +53,7 @@ Operator browser
 - `src/uok` may provide shared services, shared database primitives, static serving, module composition, and compatibility facades.
 - `modules/<module_name>` owns module behavior and must declare every extension point it uses.
 - Product, cargo, CRM, accounting, inventory, document, and integration behavior must not be hardcoded into the kernel.
-- Shared baseline SQLAlchemy models currently remain in `src/uok/models.py`; module packages import their owned domain models through module-local facades and declare owned tables for validation.
+- Product-neutral organization, identity, governance, module-lifecycle, workflow, command-log, and event mappings live in `src/uok/kernel_models.py`. Capability mappings are physically defined in their owning backend packages; `src/uok/models.py` is an exact-identity compatibility facade over the validated registry.
 - Module-specific UI still lives in `web/src/features/<feature>` for this candidate, with ownership and composition expressed through the frontend module surface registry and module manifest `web_path`.
 - Contacts pytest suites live under `modules/contacts.core/tests`; its candidate verifier and evidence composition live under `modules/contacts.core/verify`.
 - Planning behavior tests live under `modules/planning.core/tests`; its candidate and production-like runtime verifiers live under `modules/planning.core/verify`.
@@ -78,6 +79,7 @@ Operator browser
 - ADR-0019: `docs/architecture/ADR-0019-planning-revision-ledger-and-transactional-outbox.md`
 - ADR-0020: `docs/architecture/ADR-0020-planning-project-lifecycle-and-finish-authority.md`
 - ADR-0021: `docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md`
+- ADR-0022: `docs/architecture/ADR-0022-module-owned-orm-registration.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`

@@ -45,9 +45,11 @@ Assignment `allocation_percent` remains the share of a resource's declared
 capacity. This slice persists and exposes effective dates but does not yet make
 them a daily capacity calendar; ACC-RES-002 owns that next behavior.
 
-The accepted alpha compatibility bridge keeps the ORM mapping in
-`src/uok/planning_resource_models.py`; behavior, validation, migration, tests, candidate
-proof, and UI remain owned by `planning.core`.
+ADR-0022 closed the accepted alpha ORM bridge. The canonical resource mappings
+now live in `modules/planning.core/backend/uok_planning_core`; the legacy
+`src/uok/planning_resource_models.py` path re-exports those exact classes.
+Behavior, validation, migration, tests, candidate proof, and UI remain owned by
+`planning.core`.
 
 ## Consequences
 

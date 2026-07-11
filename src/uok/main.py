@@ -16,6 +16,10 @@ runtime_contract = validate_module_runtime_contracts()
 if not runtime_contract["ok"]:
     raise RuntimeError(f"Module runtime contract is invalid: {runtime_contract['violations']}")
 
+from .module_model_registry import ensure_module_models_registered
+
+ensure_module_models_registered()
+
 
 from .api.auth import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth
 from .api.errors import uok_request_validation_error_handler
@@ -42,6 +46,7 @@ REACT_APP_INDEX = STATIC_DIR / "app" / "index.html"
 
 
 def bootstrap() -> str:
+    ensure_module_models_registered()
     if env_flag("UOK_AUTO_CREATE_SCHEMA"):
         Base.metadata.create_all(bind=engine)
     if not env_flag("UOK_SEED_LOCAL_DATA"):

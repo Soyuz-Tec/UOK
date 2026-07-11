@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import heapq
 import re
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Any
 
 from .candidate_verifier_preflight import (
     CandidateVerifierPreflightError,
@@ -15,6 +13,7 @@ from .candidate_verifier_preflight import (
     preflight_powershell_closure,
 )
 from .module_manifest_loader import load_module_manifests
+from .module_order import ModuleOrderError, dependency_order
 from .module_release_contract import validate_module_release_contracts
 from .module_paths import modules_root
 
@@ -54,7 +53,10 @@ def candidate_verifier_catalog(module_root: Path | None = None) -> list[dict[str
         )
         raise CandidateVerifierCatalogError(f"module release contract is invalid: {reasons}")
     manifests = load_module_manifests(root)
-    ordered_names = _dependency_order(manifests)
+    try:
+        ordered_names = dependency_order(manifests)
+    except ModuleOrderError as error:
+        raise CandidateVerifierCatalogError(str(error)) from error
     workspace = root.parent
     entries: list[CandidateVerifier] = []
     function_owners: dict[str, str] = {}
@@ -168,38 +170,3 @@ def _powershell_functions(script_path: Path, module_name: str) -> tuple[str, ...
         return powershell_functions(script_path, module_name)
     except CandidateVerifierPreflightError as error:
         raise CandidateVerifierCatalogError(str(error)) from error
-
-
-def _dependency_order(manifests: dict[str, dict[str, Any]]) -> list[str]:
-    dependents: dict[str, list[str]] = {name: [] for name in manifests}
-    indegree = {name: 0 for name in manifests}
-    for module_name, manifest in manifests.items():
-        required = manifest.get("required")
-        if not isinstance(required, bool):
-            raise CandidateVerifierCatalogError(f"{module_name} required must be a boolean")
-        for dependency in manifest.get("dependencies", []):
-            if dependency not in manifests:
-                raise CandidateVerifierCatalogError(f"{module_name} declares unknown dependency {dependency}")
-            if dependency == module_name:
-                raise CandidateVerifierCatalogError(f"{module_name} cannot depend on itself")
-            dependents[dependency].append(module_name)
-            indegree[module_name] += 1
-
-    ready = [(_priority(name, manifests), name) for name, count in indegree.items() if count == 0]
-    heapq.heapify(ready)
-    ordered: list[str] = []
-    while ready:
-        _, module_name = heapq.heappop(ready)
-        ordered.append(module_name)
-        for dependent in sorted(dependents[module_name]):
-            indegree[dependent] -= 1
-            if indegree[dependent] == 0:
-                heapq.heappush(ready, (_priority(dependent, manifests), dependent))
-    if len(ordered) != len(manifests):
-        cycle = ", ".join(sorted(name for name, count in indegree.items() if count > 0))
-        raise CandidateVerifierCatalogError(f"module dependency cycle prevents verifier ordering: {cycle}")
-    return ordered
-
-
-def _priority(module_name: str, manifests: dict[str, dict[str, Any]]) -> tuple[int, str]:
-    return (0 if manifests[module_name]["required"] else 1, module_name.casefold())
