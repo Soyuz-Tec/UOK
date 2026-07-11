@@ -42,7 +42,7 @@ Use the lowercase form `uok` only where files, Python packages, databases, volum
 Run:
 
 ```powershell
-python -m pytest -q
+python scripts/run_python_tests.py
 powershell -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
 ```
 

@@ -52,8 +52,9 @@ Run:
 
 ```powershell
 python -m compileall -q src modules
-python -m pytest -q
-python -m pip_audit -r requirements.txt
+python scripts/run_python_tests.py
+python -m pip_audit -r requirements-dev.txt
+npm --prefix web run check:contracts
 cd web
 npm run test
 npm run build:static

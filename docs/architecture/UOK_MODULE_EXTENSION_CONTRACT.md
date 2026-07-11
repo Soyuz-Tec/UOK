@@ -114,7 +114,8 @@ Before pushing a candidate to GitHub, run these gates one by one:
 
 ```powershell
 python -m compileall -q src modules tests
-python -m pytest -q
+python scripts/run_python_tests.py
+npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1

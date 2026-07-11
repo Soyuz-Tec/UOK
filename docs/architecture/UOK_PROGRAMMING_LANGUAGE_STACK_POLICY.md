@@ -91,7 +91,9 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
    - Styling must remain aligned with `docs/design/UOK_UI_DESIGN_POLICY.md` and `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md`.
 
 9. Dependency discipline
-   - Python dependencies must be declared and pinned in `pyproject.toml` and `requirements.txt`.
+   - Python runtime dependencies must be declared and pinned identically in `pyproject.toml` project dependencies and `requirements.txt`.
+   - Python development tools must be declared and pinned identically in the `pyproject.toml` `dev` extra and `requirements-dev.txt`; the development file includes the runtime layer through `-r requirements.txt`.
+   - Container build and runtime stages install only `requirements.txt`. Test, HTTP-client, and dependency-audit tools must not expand the production image.
    - Frontend dependencies must be declared in `web/package.json` and locked in `web/package-lock.json`.
    - Do not add `latest` dependency ranges to release-candidate code.
    - Do not add duplicate libraries for the same job without an ADR.
@@ -127,7 +129,7 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 
 The legacy static fallback used HTML, CSS, and JavaScript in `src/uok/static/index.html`.
 
-That exception is closed in `UOK-3.0.0-rc8`. The executable fallback business logic has been removed; the root route must serve only the compiled React app or return an explicit missing-build error. New durable UI work belongs under `web/src` and must pass TypeScript, frontend tests, OpenAPI generation, and the candidate verification gates.
+That exception is closed in `UOK-3.0.0-rc8`. The executable fallback business logic has been removed; the root route must serve only the compiled React app or return an explicit missing-build error. New durable UI work belongs under `web/src` and must pass TypeScript, frontend tests, deterministic generated-contract drift checking, and the candidate verification gates.
 
 ## Prohibited Without ADR
 
@@ -229,7 +231,7 @@ Before packaging a candidate, developers must run or preserve equivalent evidenc
 
 ```powershell
 python -m compileall -q src modules tests conftest.py
-$env:PYTHONPATH='src'; python -m pytest -q
+$env:PYTHONPATH='src'; python scripts/run_python_tests.py
 npm --prefix web test
 npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1

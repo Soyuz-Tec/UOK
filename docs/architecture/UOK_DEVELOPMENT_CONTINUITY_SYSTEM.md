@@ -150,7 +150,8 @@ Run the full pack before candidate promotion:
 
 ```powershell
 python -m compileall -q src modules tests conftest.py
-python -m pytest -q
+python scripts/run_python_tests.py
+npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
@@ -177,9 +178,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 Run these supporting checks when relevant:
 
 ```powershell
-python -m pip_audit -r requirements.txt
-cd web
-npm audit --omit=dev
+python -m pip_audit -r requirements-dev.txt
+npm --prefix web run check:contracts
+npm --prefix web audit
 ```
 
 Run these architecture checks when boundaries, modules, docs, or naming are touched:

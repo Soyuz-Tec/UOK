@@ -25,7 +25,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `TechnologyAudit` | Focused code-quality, line-of-code, stack, dependency, module-shape, and operations hygiene audit | `.\scripts\uok_ops.ps1 -Action TechnologyAudit` |
 | `EngineeringEvidence` | Generate local engineering-system evidence and quality scorecard under `var/evidence/engineering` | `.\scripts\uok_ops.ps1 -Action EngineeringEvidence` |
 | `UiProof` | Run the Playwright UI proof gate against the Vite workspace, including Planning Gantt layout, keyboard, appearance, responsive, screenshot, and console checks | `.\scripts\uok_ops.ps1 -Action UiProof` |
-| `Audit` | Code, dependency, source-size, naming, module contract, and folder organization checks | `.\scripts\uok_ops.ps1 -Action Audit` |
+| `Audit` | Deterministic isolated Python tests plus code, dependency, source-size, naming, module contract, and folder organization checks | `.\scripts\uok_ops.ps1 -Action Audit` |
 | `Verify` | Full audit plus frontend tests, static build, UI proof, and candidate verifier | `.\scripts\uok_ops.ps1 -Action Verify` |
 | `Rebuild` | Rebuild and start local Podman stack on `127.0.0.1:18088` | `.\scripts\uok_ops.ps1 -Action Rebuild` |
 | `Health` | Check local candidate `/health` | `.\scripts\uok_ops.ps1 -Action Health` |
@@ -39,6 +39,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `GithubPrChecks` | Show or watch PR checks for the current branch or a supplied PR number | `.\scripts\uok_ops.ps1 -Action GithubPrChecks -PullRequestNumber <number> -WatchChecks` |
 
 The script is a convenience wrapper. Shared PowerShell operation helpers live in `scripts/uok_common_ops.ps1`; operation scripts should dot-source that helper instead of copying `Invoke-UokStep` or native-command handling. The underlying commands remain visible and may be run directly when debugging.
+
+Local `Audit` and GitHub CI both invoke `python scripts/run_python_tests.py`. The runner discovers the root suite and every module test path, rejects missing paths and duplicate resolved files, then runs each file sequentially in a fresh subprocess with ambient pytest options and plugin auto-loading disabled so shared SQLite state or machine-global pytest configuration cannot make aggregate discovery order-dependent. Independent modules may reuse ordinary test filenames. Use `--check` to validate discovery only or `--list` to inspect the exact ordered suite.
+
+Developer verification installs `requirements-dev.txt`; OCI build and runtime stages continue to
+install runtime-only `requirements.txt`. Verify both generated API artifacts without modifying the
+working tree:
+
+```powershell
+python -m pip install -r requirements-dev.txt
+python -m pip_audit -r requirements-dev.txt
+npm --prefix web run check:contracts
+```
+
+The contract check renders FastAPI OpenAPI and `openapi.d.ts` into a temporary directory, compares
+both with `web/src/generated`, and exits nonzero on drift. Regenerate intentionally with
+`npm --prefix web run generate:api`, review the diff, then rerun the check.
 
 ## Required Verification Levels
 
@@ -66,6 +82,25 @@ Use this focused gate when the frontend shell or module workspace changes:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action UiProof
 ```
+
+### Source Candidate Package
+
+Build a source package from one explicit Git commit after the candidate checks pass:
+
+```powershell
+python .\scripts\package_uok_candidate.py --version 3.1.0-alpha.3 --source-ref HEAD
+```
+
+The packager resolves the supplied revision to a commit before reading any source. It reads
+regular tracked blobs directly from that commit, never from dirty or untracked working-tree
+content. Packaging fails closed when the commit contains a non-regular Git entry, a
+case-colliding or extraction-unsafe path, a local/generated path, or a sensitive filename.
+
+Every archive contains `UOK_PACKAGE_MANIFEST.json` with the package version, resolved source
+commit, and deterministic SHA-256 plus size and Git mode for every packaged source file. Verify
+that manifest commit against the intended reviewed commit before distributing the archive. Use
+`--commit <revision>` as an alias for `--source-ref <revision>` when automation already uses
+commit terminology.
 
 ### Live Runtime Check
 

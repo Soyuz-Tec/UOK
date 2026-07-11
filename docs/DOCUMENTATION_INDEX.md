@@ -207,7 +207,7 @@ Operations records may reference local evidence under `var/`, but local evidence
 Documentation changes must pass the same naming and consistency checks as code changes when they touch active policy:
 
 ```powershell
-python -m pytest -q
+python scripts/run_python_tests.py
 python -m pytest tests/test_naming_policy.py -q
 ```
 

@@ -94,11 +94,13 @@ The technology audit must confirm:
 - required architecture, policy, operations, and GitHub artifacts exist;
 - the UOK Internal Engineering System is documented, linked, and populated with the well-known standard names it adopts;
 - Python version policy remains `>=3.14`;
-- Python dependencies are pinned;
+- runtime and development Python dependencies are pinned, separated, and exactly aligned with the corresponding `pyproject.toml` dependency groups;
 - TypeScript `strict` remains enabled and `allowJs` remains disabled;
 - durable frontend JavaScript is not added under `web/src`;
 - `web/package-lock.json` is present;
 - Dockerfile, local compose, and CI stay aligned with Python 3.14, Node 26, and PostgreSQL 18;
+- container stages install runtime Python requirements only;
+- the repository wires a non-mutating OpenAPI JSON and generated TypeScript declaration drift check; the broader `Audit` gate executes it and requires exact runtime-schema parity;
 - every module manifest has `backend`, `web`, `migrations`, and `tests` folders;
 - local evidence under `var/` remains ignored;
 - this standard is linked from the documentation index and operations runbook.

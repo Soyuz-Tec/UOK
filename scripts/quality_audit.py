@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import json
 import sys
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import dependency_policy
 import source_size_policy
 
 
@@ -43,9 +43,13 @@ def check_required_artifacts() -> CheckResult:
         "docs/operations/UOK_ASUH_TEST_EVENTS.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
         "scripts/engineering_evidence.py",
+        "scripts/check_generated_contracts.py",
+        "scripts/dependency_policy.py",
         "scripts/quality_scorecard.py",
+        "scripts/run_python_tests.py",
         "scripts/source_size_policy.py",
         "scripts/uok_github_ops.ps1",
+        "requirements-dev.txt",
         ".github/CODEOWNERS",
         ".github/copilot-instructions.md",
         ".github/dependabot.yml",
@@ -58,32 +62,7 @@ def check_required_artifacts() -> CheckResult:
 
 
 def check_python_stack() -> CheckResult:
-    pyproject = tomllib.loads(read_text("pyproject.toml"))
-    requirements = [
-        line.strip()
-        for line in read_text("requirements.txt").splitlines()
-        if line.strip() and not line.strip().startswith("#")
-    ]
-    problems: list[str] = []
-    if pyproject["project"].get("requires-python") != ">=3.14":
-        problems.append("pyproject requires-python must be >=3.14")
-    for dependency in pyproject["project"].get("dependencies", []):
-        if "==" not in dependency:
-            problems.append(f"unpinned pyproject dependency: {dependency}")
-    for dependency in pyproject["project"].get("optional-dependencies", {}).get("dev", []):
-        if "==" not in dependency:
-            problems.append(f"unpinned pyproject dev dependency: {dependency}")
-    for dependency in requirements:
-        if "==" not in dependency:
-            problems.append(f"unpinned requirements dependency: {dependency}")
-    required_pins = {
-        "fastapi==0.139.0",
-        "sqlalchemy==2.0.51",
-        "pydantic==2.13.4",
-        "psycopg[binary]==3.3.4",
-    }
-    missing = sorted(required_pins - set(requirements))
-    problems.extend(f"missing required pin: {pin}" for pin in missing)
+    problems = dependency_policy.validate_dependency_policy(REPO_ROOT)
     return CheckResult("python_stack", not problems, "; ".join(problems) or "pinned")
 
 
@@ -102,6 +81,8 @@ def check_frontend_stack() -> CheckResult:
         problems.append("frontend static build script missing")
     if package.get("scripts", {}).get("test:ui-proof") is None:
         problems.append("frontend UI proof script missing")
+    if package.get("scripts", {}).get("check:contracts") != "python ../scripts/check_generated_contracts.py":
+        problems.append("frontend generated-contract drift script missing")
     if compiler_options.get("strict") is not True:
         problems.append("TypeScript strict mode must stay enabled")
     if compiler_options.get("allowJs") is not False:
@@ -132,6 +113,7 @@ def check_runtime_stack() -> CheckResult:
         "CI Python 3.14": 'python-version: "3.14"' in ci,
         "CI Node 26": 'node-version: "26"' in ci,
         "CI quality audit": "scripts/quality_audit.py" in ci,
+        "Docker runtime-only Python requirements": "requirements-dev.txt" not in dockerfile,
     }
     problems.extend(name for name, ok in expected.items() if not ok)
     return CheckResult("runtime_stack", not problems, "; ".join(problems) or "aligned")
@@ -157,6 +139,8 @@ def check_operations_hygiene() -> CheckResult:
     gitignore = read_text(".gitignore") if (REPO_ROOT / ".gitignore").exists() else ""
     runbook = read_text("docs/operations/UOK_STANDARD_OPERATIONS.md")
     continuity = read_text("docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md")
+    operations_script = read_text("scripts/uok_ops.ps1")
+    ci = read_text(".github/workflows/uok-ci.yml")
     problems: list[str] = []
     if "var/" not in gitignore:
         problems.append("var/ must stay ignored for local evidence")
@@ -173,6 +157,11 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("standard operations runbook must define GitHub source-of-truth policy")
     if "GitHub Synchronization Policy" not in continuity:
         problems.append("development continuity guide must define GitHub synchronization policy")
+    test_runner_command = "python scripts/run_python_tests.py"
+    if test_runner_command not in ci:
+        problems.append("CI must use the repository Python test runner")
+    if '"scripts/run_python_tests.py"' not in operations_script:
+        problems.append("local Audit must use the repository Python test runner")
     index = read_text("docs/DOCUMENTATION_INDEX.md")
     if "AGENTS.md" not in index:
         problems.append("documentation index must route AGENTS.md")

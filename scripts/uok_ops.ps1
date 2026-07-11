@@ -100,11 +100,12 @@ function Invoke-UokAudit {
     Invoke-UokStep "Git whitespace audit" { Invoke-Native "git" @("diff", "--check") }
     Invoke-UokTechnologyAudit
     Invoke-UokStep "Compile Python" { Invoke-Native "python" @("-m", "compileall", "-q", "src", "modules", "tests", "conftest.py") }
-    Invoke-UokStep "Python tests" { Invoke-Native "python" @("-m", "pytest", "-q") }
-    Invoke-UokStep "Python dependency audit" { Invoke-Native "python" @("-m", "pip_audit", "-r", "requirements.txt") }
+    Invoke-UokStep "Python tests" { Invoke-Native "python" @("scripts/run_python_tests.py") }
+    Invoke-UokStep "Python dependency audit" { Invoke-Native "python" @("-m", "pip_audit", "-r", "requirements-dev.txt") }
     Push-Location web
     try {
-        Invoke-UokStep "Frontend dependency audit" { Invoke-Native "npm" @("audit", "--omit=dev") }
+        Invoke-UokStep "Generated API contract drift" { Invoke-Native "npm" @("run", "check:contracts") }
+        Invoke-UokStep "Frontend dependency audit" { Invoke-Native "npm" @("audit") }
     } finally {
         Pop-Location
     }

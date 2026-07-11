@@ -49,7 +49,8 @@ Shared feature changes must pass:
 
 ```powershell
 python -m compileall -q src modules tests conftest.py
-python -m pytest -q
+python scripts/run_python_tests.py
+npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit

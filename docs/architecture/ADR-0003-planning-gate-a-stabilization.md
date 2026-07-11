@@ -157,7 +157,7 @@ Existing numbered migrations remain immutable.
 ```powershell
 python -m compileall -q src modules tests conftest.py
 python -m pytest modules/planning.core/tests -q
-python -m pytest -q
+python scripts/run_python_tests.py
 npm --prefix web test
 npm --prefix web run test:ui-proof
 npm --prefix web run build:static

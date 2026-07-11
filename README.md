@@ -62,9 +62,19 @@ These credentials are only enabled by the local compose profile. The container i
 
 ## Verify
 
+Install the pinned developer tool layer before running repository checks. The container image
+installs only `requirements.txt`; tests, HTTP verification clients, and dependency-audit tooling
+stay in `requirements-dev.txt` and the aligned `pyproject.toml` `dev` extra.
+
+```powershell
+python -m pip install -r requirements-dev.txt
+npm --prefix web ci
+```
+
 ```powershell
 python -m compileall -q src modules tests conftest.py
-python -m pytest -q
+python scripts/run_python_tests.py
+npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
@@ -85,7 +95,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 Dependency checks expected before GitHub publication:
 
 ```powershell
-python -m pip_audit -r requirements.txt
+python -m pip_audit -r requirements-dev.txt
 cd web
 npm audit
 ```
