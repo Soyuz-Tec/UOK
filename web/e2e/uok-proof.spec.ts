@@ -848,6 +848,20 @@ test("Planning exposes real project creation when no projects exist", async ({ p
 
   await openPlanning(page);
   await expect(page.getByRole("heading", { name: "Project schedule", exact: true })).toBeVisible();
+  const scopeLayout = await page.getByRole("navigation", { name: "Planning scope", exact: true }).evaluate((navigation) => {
+    const bounds = navigation.getBoundingClientRect();
+    const buttons = Array.from(navigation.querySelectorAll("button")).map((button) => {
+      const box = button.getBoundingClientRect();
+      return { x: box.x, y: box.y, right: box.right, height: box.height };
+    });
+    return { height: bounds.height, buttons };
+  });
+  expect(scopeLayout.buttons).toHaveLength(2);
+  expect(scopeLayout.height).toBeLessThanOrEqual(Math.max(...scopeLayout.buttons.map((button) => button.height)) + 12);
+  expect(scopeLayout.buttons[0].height).toBeLessThanOrEqual(44);
+  expect(scopeLayout.buttons[1].height).toBeLessThanOrEqual(44);
+  expect(Math.abs(scopeLayout.buttons[0].y - scopeLayout.buttons[1].y)).toBeLessThanOrEqual(1);
+  expect(scopeLayout.buttons[0].right).toBeLessThanOrEqual(scopeLayout.buttons[1].x);
   const trigger = page.getByRole("button", { name: "New project", exact: true });
   await expect(trigger).toBeEnabled();
   await trigger.click();

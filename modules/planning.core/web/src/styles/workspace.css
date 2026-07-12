@@ -1,5 +1,6 @@
 .planning-workspace {
   display: grid;
+  align-content: start;
   gap: var(--uok-space-4);
   min-width: 0;
   min-height: calc(100vh - (var(--uok-space-4) * 2));

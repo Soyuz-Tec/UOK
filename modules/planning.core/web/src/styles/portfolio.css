@@ -1,5 +1,6 @@
 .planning-scope-switch {
   display: inline-flex;
+  align-items: center;
   justify-self: start;
   gap: var(--uok-space-1);
   border: var(--uok-line);

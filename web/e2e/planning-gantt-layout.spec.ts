@@ -13,6 +13,18 @@ test("Gantt task overlays and semantic markers remain collision-free", async ({ 
   await page.getByRole("button", { name: "Planning", exact: true }).click();
   await expect(page.getByLabel("Planning Gantt chart")).toBeVisible();
 
+  const scopeSwitch = page.getByRole("navigation", { name: "Planning scope", exact: true });
+  const projectScope = scopeSwitch.getByRole("button", { name: "Project schedule", exact: true });
+  const portfolioScope = scopeSwitch.getByRole("button", { name: "Portfolio", exact: true });
+  const scopeSwitchBox = await requiredBox(scopeSwitch);
+  const projectScopeBox = await requiredBox(projectScope);
+  const portfolioScopeBox = await requiredBox(portfolioScope);
+  expect(scopeSwitchBox.height).toBeLessThanOrEqual(52);
+  expect(projectScopeBox.height).toBeLessThanOrEqual(44);
+  expect(portfolioScopeBox.height).toBeLessThanOrEqual(44);
+  expect(Math.abs(projectScopeBox.y - portfolioScopeBox.y)).toBeLessThanOrEqual(1);
+  expect(right(projectScopeBox)).toBeLessThanOrEqual(portfolioScopeBox.x);
+
   const narrowTask = page.getByRole("button", {
     name: "One-day critical task with a long title, Critical path task, 45% complete",
   });
