@@ -980,6 +980,7 @@ test("Planning creates and selects a new project through the portfolio command",
   const dialog = page.getByRole("dialog", { name: "New project", exact: true });
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAttribute("aria-modal", "true");
+  await expect(dialog.getByRole("button", { name: "Move New project", exact: true })).toBeVisible();
   const dialogBounds = await dialog.evaluate((panel) => {
     const rect = panel.getBoundingClientRect();
     return { left: rect.left, right: rect.right, clientWidth: panel.clientWidth, scrollWidth: panel.scrollWidth };

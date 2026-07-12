@@ -142,7 +142,7 @@ The next UI iteration must introduce or preserve:
 - Shared compact section headings for sidebars, panels, filter areas, and module workspace sections. These headings must use the shared heading primitive and tokenized shaded heading style for eyebrow text, title font, icon/action alignment, separator, radius, and light/dark surface treatment.
 - Shared row rhythm for side-by-side work surfaces. Comparable list rails, table rows, card-list rows, and grouped sidebar rows must use the shared row-height and separator tokens (`--uok-row-height`, `--uok-header-row-height`, and `--uok-row-separator-color`) or the reusable row-rhythm classes instead of one-off pixel heights. Separators must not change measured row height, so adjacent lists and tables remain visually aligned in light and dark modes.
 - Master-detail result lists must avoid repeating full detail facts. Use the list for selection identity, the detail panel for full record facts, tables for column comparison, and cards for rich preview.
-- Shared module-neutral workflow primitives for repeated module behavior, including workflow headers, search fields, inline field messages, confirmed destructive commands, inline text editing, reusable in-workspace pop-ups for record detail/edit workflows, and reusable data tables with accessible resizable columns. Current homes: `web/src/shared/*`.
+- Shared module-neutral workflow primitives for repeated module behavior, including workflow headers, search fields, inline field messages, confirmed destructive commands, inline text editing, reusable in-workspace pop-ups for record detail/edit workflows, and reusable data tables with accessible resizable columns. Modal workspace pop-ups inherit bounded pointer, touch, and keyboard movement from the shared overlay primitive; modules must not recreate drag behavior locally. Current homes: `web/src/shared/*`.
 - Module-local surface entries, composed through the generated catalog, that keep module navigation and rendering out of the generic shell component
 - Shared component states: default, hover, focus-visible, pressed, selected/on, expanded/open, disabled, loading, invalid, destructive, and primary
 - Light and dark mode foundations
@@ -158,6 +158,7 @@ A UI change is not acceptable if it:
 - Hides workflow state, verification state, or errors behind decoration.
 - Depends on color alone to communicate status.
 - Breaks keyboard navigation or visible focus.
+- Makes drag or another gesture the only way to move, recover, or reset a modal workspace pop-up.
 - Causes text overlap at narrow widths or common browser zoom levels.
 - Adds durable UI behavior outside the React + TypeScript source tree.
 - Uses Apple-owned assets, SF Symbols exports, or Apple branding without an explicit legal/design decision.
@@ -167,6 +168,7 @@ A UI change is not acceptable if it:
 - Adds one-off spacing or layout rules outside the token system.
 - Allows text, controls, rows, panels, or workflow steps to overlap at supported widths.
 - Places unrelated workflow regions inconsistently across modules.
+- Lets a modal workspace pop-up move beyond the safe viewport or implements its movement outside the shared overlay primitive.
 - Hardcodes module-specific rendering directly in the shell when it belongs in the module surface registry.
 - Adds a module surface without closed-manifest `web_surface`, `web_entry`, and `web_section` ownership or bypasses generated-catalog drift checking.
 - Loads manifest YAML or manifest-provided executable paths in the browser.

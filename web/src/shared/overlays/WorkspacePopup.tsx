@@ -1,8 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import type { ReactNode } from "react";
-import { X } from "lucide-react";
+import { GripHorizontal, X } from "lucide-react";
 
 import { useUokLocalization } from "../localization";
+import { useWorkspacePopupDrag } from "./useWorkspacePopupDrag";
 
 const focusableSelector = [
   "a[href]",
@@ -80,6 +81,8 @@ export function WorkspacePopup({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   const dismissibleRef = useRef(dismissible);
+  const dragHintId = useId();
+  const { popupStyle, dragging, dragHandleProps } = useWorkspacePopupDrag(popupRef, open);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -95,7 +98,11 @@ export function WorkspacePopup({
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const restoreBackground = backdropRef.current ? isolateBackground(backdropRef.current) : () => undefined;
     const popup = popupRef.current;
-    const initialFocus = dismissibleRef.current ? closeButtonRef.current : popup ? focusableElements(popup)[0] : null;
+    const initialFocus = dismissibleRef.current
+      ? closeButtonRef.current
+      : popup
+        ? focusableElements(popup).find((element) => !element.classList.contains("workspace-popup-drag-handle"))
+        : null;
     (initialFocus || popup)?.focus();
 
     const handleKeyboard = (event: KeyboardEvent) => {
@@ -146,23 +153,40 @@ export function WorkspacePopup({
       }}
     >
       <section
-        className={`workspace-popup workspace-popup-${size} ${className}`.trim()}
+        className={`workspace-popup workspace-popup-${size} ${dragging ? "workspace-popup-dragging" : ""} ${className}`.trim()}
         role="dialog"
         aria-modal="true"
         aria-label={label}
         ref={popupRef}
         tabIndex={-1}
+        style={popupStyle}
       >
-        <button
-          type="button"
-          className="workspace-popup-close"
-          aria-label={`${t("command.close", "Close")} ${label}`}
-          onClick={onClose}
-          ref={closeButtonRef}
-          disabled={!dismissible}
-        >
-          <X size={18} aria-hidden="true" />
-        </button>
+        <div className="workspace-popup-titlebar">
+          <button
+            type="button"
+            className="workspace-popup-close"
+            aria-label={`${t("command.close", "Close")} ${label}`}
+            onClick={onClose}
+            ref={closeButtonRef}
+            disabled={!dismissible}
+          >
+            <X size={18} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="workspace-popup-drag-handle"
+            aria-label={`${t("command.moveDialog", "Move")} ${label}`}
+            aria-describedby={dragHintId}
+            title={t("command.moveDialogHint", "Drag to move. Use Arrow keys to move, Shift plus Arrow for a larger step, and Home or double-click to return to the opening position.")}
+            {...dragHandleProps}
+          >
+            <GripHorizontal size={18} aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+          <span id={dragHintId} className="visually-hidden">
+            {t("command.moveDialogHint", "Drag to move. Use Arrow keys to move, Shift plus Arrow for a larger step, and Home or double-click to return to the opening position.")}
+          </span>
+        </div>
         <div className="workspace-popup-content">
           {children}
         </div>

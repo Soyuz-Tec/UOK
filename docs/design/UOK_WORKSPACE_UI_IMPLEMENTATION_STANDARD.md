@@ -98,6 +98,23 @@ coarse pointers. Shared overlay labels and controls, plus module-owned title,
 description, fields, actions, validation, and status text, must use the shared
 UOK localization provider rather than hard-coded visible strings.
 
+Every `WorkspacePopup` and `WorkspaceEditorPopup` is draggable through the
+shared overlay implementation rather than module-local handlers. A dedicated
+localized move handle must support pointer and touch movement with pointer
+capture and provide an equivalent keyboard path: Arrow keys move by a small
+step, Shift+Arrow moves by a larger step, and Home returns the popup to its
+opening position. Moving the popup must not start from fields, links, editor
+actions, or the close control, and completing a drag must not activate backdrop
+dismissal.
+
+Popup movement is transient for the current opening. Each new opening starts
+at its standard opening position, and movement plus viewport changes must clamp the complete popup to
+the safe viewport so its move handle, close control, and content cannot become
+unreachable at desktop, tablet, narrow, zoomed, or coarse-pointer layouts. The
+draggable behavior must preserve the modal focus trap, background isolation,
+focus restoration, scrolling, `dismissible={false}` behavior, and localized
+accessible instructions.
+
 5. Status and evidence surface
    - Human-readable state comes before raw JSON.
    - Technical evidence can be available through disclosure or developer-oriented panels, not as the main user experience.

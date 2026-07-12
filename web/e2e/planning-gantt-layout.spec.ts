@@ -92,6 +92,59 @@ test("Gantt task overlays and semantic markers remain collision-free", async ({ 
   expect(consoleErrors).toEqual([]);
 });
 
+test("Planning inspector inherits clamped pointer and keyboard popup movement", async ({ page }) => {
+  await installScaleApi(page, 2, ganttLayoutSchedule);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Planning", exact: true }).click();
+  await page.getByRole("button", {
+    name: "One-day critical task with a long title, Critical path task, 45% complete",
+  }).locator(".planning-owned-task-bar").click();
+
+  const inspector = page.getByRole("dialog", { name: "Planning inspector", exact: true });
+  const moveHandle = inspector.getByRole("button", { name: "Move Planning inspector", exact: true });
+  await expect(moveHandle).toBeVisible();
+  const initial = await requiredBox(inspector);
+  const handleBox = await requiredBox(moveHandle);
+
+  await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(handleBox.x + handleBox.width / 2 + 120, handleBox.y + handleBox.height / 2, { steps: 5 });
+  await page.mouse.up();
+  const pointerMoved = await requiredBox(inspector);
+  expect(pointerMoved.x).toBeGreaterThan(initial.x + 80);
+
+  await moveHandle.focus();
+  await moveHandle.press("ArrowLeft");
+  const preciseMove = await requiredBox(inspector);
+  expect(preciseMove.x).toBeCloseTo(pointerMoved.x - 16, 0);
+  await moveHandle.press("Shift+ArrowLeft");
+  const acceleratedMove = await requiredBox(inspector);
+  expect(acceleratedMove.x).toBeCloseTo(preciseMove.x - 48, 0);
+  await expect(moveHandle).toBeFocused();
+
+  await moveHandle.press("Home");
+  const keyboardReset = await requiredBox(inspector);
+  expect(keyboardReset.x).toBeCloseTo(initial.x, 0);
+  expect(keyboardReset.y).toBeCloseTo(initial.y, 0);
+
+  const resetHandleBox = await requiredBox(moveHandle);
+  await page.mouse.move(resetHandleBox.x + resetHandleBox.width / 2, resetHandleBox.y + resetHandleBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(4_000, resetHandleBox.y + resetHandleBox.height / 2, { steps: 5 });
+  await page.mouse.up();
+  const clamped = await requiredBox(inspector);
+  expect(clamped.x).toBeGreaterThanOrEqual(-1);
+  expect(clamped.y).toBeGreaterThanOrEqual(-1);
+  expect(right(clamped)).toBeLessThanOrEqual(1441);
+  expect(bottom(clamped)).toBeLessThanOrEqual(901);
+
+  await moveHandle.dblclick();
+  const pointerReset = await requiredBox(inspector);
+  expect(pointerReset.x).toBeCloseTo(initial.x, 0);
+  expect(pointerReset.y).toBeCloseTo(initial.y, 0);
+});
+
 async function requiredBox(locator: Locator): Promise<Box> {
   const box = await locator.boundingBox();
   expect(box).not.toBeNull();

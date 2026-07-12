@@ -44,7 +44,6 @@
   border: 0;
   border-bottom: var(--uok-line);
   border-radius: 0;
-  padding-right: calc(var(--uok-space-5) + 56px);
 }
 
 .contacts-view-split .contact-detail-header {

@@ -20,7 +20,7 @@ UOK modules can own domain behavior without copying common workspace and infrast
 | Table column visibility, resize, order, pinned columns, and row heights | `web/src/shared/tables` | Contacts and Planning |
 | Bounded pagination controls and accessible range announcements | `web/src/shared/tables` | Contacts and Planning portfolio |
 | Toggle, command, icon, and segmented controls | `web/src/shared/primitives` | Contacts and Planning |
-| Modal workspace overlays and editor composition | `web/src/shared/overlays` | Communications, Contacts, and Planning |
+| Bounded draggable modal workspace overlays and editor composition | `web/src/shared/overlays` | Communications, Contacts, and Planning |
 | Empty states, status pills, detail items, and fact lists | `web/src/shared/data-display` | Apps, Contacts, Planning |
 
 ## Promotion Rule
@@ -33,6 +33,14 @@ The shared workspace command bar owns responsive layout and no more than three
 labelled groups: query, context, and actions. Its optional slots let modules
 omit workflows they do not support. Query state, pagination semantics,
 permissions, and mutations remain owned by the consuming module.
+
+The shared overlay boundary owns transient popup position, the dedicated
+localized move handle, pointer capture, keyboard movement and position reset,
+safe-viewport clamping, and reset-on-open behavior for `WorkspacePopup` and
+`WorkspaceEditorPopup`. Consuming modules own dialog content, validation, and
+business commands; they must not add separate drag implementations. Movement
+must preserve the shared focus trap, background isolation, dismissal lock,
+scrolling, focus restoration, and responsive accessibility contract.
 
 ## Module Responsibilities
 

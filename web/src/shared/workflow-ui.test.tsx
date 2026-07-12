@@ -128,6 +128,111 @@ describe("WorkspacePopup", () => {
     expect(launcher).toHaveFocus();
   });
 
+  it("moves from the shared handle with pointer input and remains clamped to the viewport", () => {
+    const viewportWidth = vi.spyOn(window, "innerWidth", "get").mockReturnValue(1_000);
+    vi.spyOn(window, "innerHeight", "get").mockReturnValue(700);
+    const popup = (open: boolean) => (
+      <WorkspacePopup open={open} label="Movable editor" onClose={vi.fn()}>
+        <p>Movable content</p>
+      </WorkspacePopup>
+    );
+    const { rerender } = render(popup(true));
+
+    const dialog = screen.getByRole("dialog", { name: "Movable editor" });
+    vi.spyOn(dialog, "getBoundingClientRect").mockImplementation(() => {
+      const x = Number.parseFloat(dialog.style.getPropertyValue("--workspace-popup-x")) || 0;
+      const y = Number.parseFloat(dialog.style.getPropertyValue("--workspace-popup-y")) || 0;
+      return {
+        x: 200 + x,
+        y: 100 + y,
+        width: 600,
+        height: 400,
+        top: 100 + y,
+        right: 800 + x,
+        bottom: 500 + y,
+        left: 200 + x,
+        toJSON: () => undefined,
+      };
+    });
+    const moveHandle = screen.getByRole("button", { name: "Move Movable editor" });
+
+    fireEvent.pointerDown(moveHandle, { button: 0, clientX: 320, clientY: 160, isPrimary: true, pointerId: 1 });
+    expect(moveHandle).toHaveFocus();
+    fireEvent.pointerMove(moveHandle, { clientX: 400, clientY: 220, isPrimary: true, pointerId: 1 });
+    expect(dialog.style.getPropertyValue("--workspace-popup-x")).toBe("80px");
+    expect(dialog.style.getPropertyValue("--workspace-popup-y")).toBe("60px");
+
+    fireEvent.pointerMove(moveHandle, { clientX: 3_000, clientY: 3_000, isPrimary: true, pointerId: 1 });
+    expect(Number.parseFloat(dialog.style.getPropertyValue("--workspace-popup-x"))).toBeLessThanOrEqual(200);
+    expect(Number.parseFloat(dialog.style.getPropertyValue("--workspace-popup-y"))).toBeLessThanOrEqual(200);
+    fireEvent.pointerUp(moveHandle, { clientX: 3_000, clientY: 3_000, pointerId: 1 });
+
+    viewportWidth.mockReturnValue(700);
+    fireEvent(window, new Event("resize"));
+    expect(dialog.style.getPropertyValue("--workspace-popup-x")).toBe("-112px");
+    viewportWidth.mockReturnValue(1_000);
+    fireEvent(window, new Event("resize"));
+
+    fireEvent.doubleClick(moveHandle);
+    expect(dialog.style.getPropertyValue("--workspace-popup-x")).toBe("0px");
+    expect(dialog.style.getPropertyValue("--workspace-popup-y")).toBe("0px");
+
+    fireEvent.pointerDown(moveHandle, { button: 0, clientX: 320, clientY: 160, isPrimary: true, pointerId: 2 });
+    expect(dialog).toHaveClass("workspace-popup-dragging");
+    fireEvent.lostPointerCapture(moveHandle, { pointerId: 2 });
+    expect(dialog).not.toHaveClass("workspace-popup-dragging");
+    fireEvent.pointerMove(moveHandle, { clientX: 600, clientY: 500, isPrimary: true, pointerId: 2 });
+    expect(dialog.style.getPropertyValue("--workspace-popup-x")).toBe("0px");
+
+    fireEvent.keyDown(moveHandle, { key: "ArrowRight" });
+    expect(dialog.style.getPropertyValue("--workspace-popup-x")).toBe("16px");
+    rerender(popup(false));
+    rerender(popup(true));
+    expect(screen.getByRole("dialog", { name: "Movable editor" }).style.getPropertyValue("--workspace-popup-x")).toBe("0px");
+  });
+
+  it("offers precise and accelerated keyboard movement with a reset command", () => {
+    render(
+      <WorkspacePopup open label="Keyboard editor" onClose={vi.fn()}>
+        <p>Keyboard movable content</p>
+      </WorkspacePopup>
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Keyboard editor" });
+    const moveHandle = screen.getByRole("button", { name: "Move Keyboard editor" });
+    vi.spyOn(dialog, "getBoundingClientRect").mockImplementation(() => {
+      const x = Number.parseFloat(dialog.style.getPropertyValue("--workspace-popup-x")) || 0;
+      const y = Number.parseFloat(dialog.style.getPropertyValue("--workspace-popup-y")) || 0;
+      return {
+        x: 200 + x,
+        y: 100 + y,
+        width: 600,
+        height: 400,
+        top: 100 + y,
+        right: 800 + x,
+        bottom: 500 + y,
+        left: 200 + x,
+        toJSON: () => undefined,
+      };
+    });
+    moveHandle.focus();
+
+    fireEvent.keyDown(moveHandle, { key: "ArrowRight" });
+    fireEvent.keyDown(moveHandle, { key: "ArrowDown" });
+    expect(dialog.style.getPropertyValue("--workspace-popup-x")).toBe("16px");
+    expect(dialog.style.getPropertyValue("--workspace-popup-y")).toBe("16px");
+
+    fireEvent.keyDown(moveHandle, { key: "ArrowLeft", shiftKey: true });
+    fireEvent.keyDown(moveHandle, { key: "ArrowUp", shiftKey: true });
+    expect(dialog.style.getPropertyValue("--workspace-popup-x")).toBe("-32px");
+    expect(dialog.style.getPropertyValue("--workspace-popup-y")).toBe("-32px");
+    expect(moveHandle).toHaveFocus();
+
+    fireEvent.keyDown(moveHandle, { key: "Home" });
+    expect(dialog.style.getPropertyValue("--workspace-popup-x")).toBe("0px");
+    expect(dialog.style.getPropertyValue("--workspace-popup-y")).toBe("0px");
+  });
+
   it("stays out of the DOM when closed", () => {
     render(
       <WorkspacePopup open={false} label="Hidden editor" onClose={vi.fn()}>
@@ -176,5 +281,6 @@ describe("WorkspaceEditorPopup", () => {
     expect(dialog).toHaveTextContent("Record editor");
     expect(dialog).toHaveTextContent("Edit without leaving the workspace.");
     expect(dialog).toHaveTextContent("Editor body");
+    expect(screen.getByRole("button", { name: "Move Record workspace" })).toBeInTheDocument();
   });
 });

@@ -39,10 +39,6 @@
   border-radius: 0;
 }
 
-.planning-inspector-popup .pane-header {
-  padding-right: calc(var(--uok-space-5) + 56px);
-}
-
 .planning-inspector-tabs button {
   min-height: 36px;
   border: 0;
