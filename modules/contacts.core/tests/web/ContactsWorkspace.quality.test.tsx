@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -7,7 +7,7 @@ import { businessContactWithoutCompany, contact, duplicateContact, importedConta
 afterEach(resetContactsWorkspaceTest);
 
 describe("ContactsWorkspace quality workflow", () => {
-  it("shows a guided quality workspace with duplicate comparison", () => {
+  it("shows a guided quality workspace with duplicate comparison", async () => {
     const onMergeDuplicate = vi.fn().mockResolvedValue(undefined);
     renderContactsWorkspace("quality", [contact, importedContact, duplicateContact], { onMergeDuplicate });
 
@@ -25,6 +25,7 @@ describe("ContactsWorkspace quality workflow", () => {
     fireEvent.click(within(screen.getByLabelText("Field choices for Example Contact")).getByRole("button", { name: "Use match Phone" }));
     fireEvent.click(screen.getByRole("button", { name: "Merge into selected" }));
     expect(onMergeDuplicate).toHaveBeenCalledWith("contact-3", "contact-1", { phone: "duplicate" });
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Compare duplicate contacts" })).not.toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: /imported.person@example.test/i }));
     expect(screen.getByLabelText("Purpose note")).toBeInTheDocument();

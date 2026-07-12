@@ -11,7 +11,7 @@ function Probe() {
 
 function PlanningProbe() {
   const { t } = useUokLocalization();
-  return <div data-testid="planning-probe">{t("planning.gantt.targetFinish")}|{t("planning.portfolio.scheduleHorizon")}|{t("planning.review.archived")}</div>;
+  return <div data-testid="planning-probe">{t("planning.gantt.targetFinish")}|{t("planning.portfolio.scheduleHorizon")}|{t("planning.review.archived")}|{t("planning.projectCreate.action")}|{t("planning.projectCreate.reloadFailed.retry")}|{t("command.workspaceEditor")}</div>;
 }
 
 function DateProbe() {
@@ -27,6 +27,7 @@ describe("UOK localization", () => {
   it("localizes Planning finish markers and the archived review-only notice", () => {
     render(<UokLocalizationProvider locale="ar"><PlanningProbe /></UokLocalizationProvider>);
     expect(screen.getByTestId("planning-probe")).toHaveTextContent("الانتهاء المستهدف|أفق الجدول|المشروع المؤرشف للقراءة فقط");
+    expect(screen.getByTestId("planning-probe")).toHaveTextContent("مشروع جديد|إعادة محاولة التحميل|محرر مساحة العمل");
   });
 
   it("formats date-only schedule facts without a UTC day shift", () => {

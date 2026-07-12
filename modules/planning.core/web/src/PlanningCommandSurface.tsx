@@ -1,8 +1,9 @@
-import { FolderKanban, Plus, Redo2, RefreshCw, Star, Undo2 } from "lucide-react";
+import { FolderKanban, FolderPlus, Plus, Redo2, RefreshCw, Star, Undo2 } from "lucide-react";
 import { useMemo, type Dispatch, type SetStateAction } from "react";
 
 import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkspaceCommandBar } from "@uok/shared/layout";
+import { useUokLocalization } from "@uok/shared/localization";
 import { CommandButton } from "@uok/shared/primitives";
 import type { ColumnVisibilityMap } from "@uok/shared/tables";
 import type { PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
@@ -21,6 +22,7 @@ type PlanningCommandSurfaceModel = {
   busy: string;
   history: PlanningHistoryState;
   bulkUpdatesAvailable: boolean;
+  canCreateProject: boolean;
   activeView: PlanningView;
   cascadeScheduling: boolean;
   cascadeSort: boolean;
@@ -62,6 +64,7 @@ type PlanningCommandSurfaceActions = {
   onOpenDependencies: () => void;
   onOpenResources: () => void;
   onProjectChange: (projectId: string) => void;
+  onNewProject: () => void;
   onRedo: () => void;
   onRefresh: () => void;
   onReviewModeChange: (reviewMode: boolean) => void;
@@ -92,6 +95,7 @@ export function PlanningCommandSurface({ model, actions }: {
   model: PlanningCommandSurfaceModel;
   actions: PlanningCommandSurfaceActions;
 }) {
+  const { t } = useUokLocalization();
   const statusOptions = useMemo(() => [
     { value: "", label: "Any status" },
     ...Array.from(new Set(model.schedule.tasks.map((task) => task.status || "planned"))).sort().map((status) => ({ value: status, label: status })),
@@ -139,6 +143,7 @@ export function PlanningCommandSurface({ model, actions }: {
         supplementalSections={({ close }) => <section className="search-workspace-section planning-search-plan-actions" aria-label="Plan actions">
           <h3><FolderKanban size={16} aria-hidden="true" /> Plan actions</h3>
           <div className="planning-search-plan-action-list">
+            <CommandButton icon={FolderPlus} onClick={() => { close(); actions.onNewProject(); }} disabled={!model.canCreateProject || Boolean(model.busy)}>{t("planning.projectCreate.action", "New project")}</CommandButton>
             <CommandButton icon={FolderKanban} onClick={() => { actions.onCreateDemoSchedule(); close(); }} loading={model.busy === "demo"} disabled={model.reviewMode}>New sample plan</CommandButton>
             <CommandButton icon={RefreshCw} onClick={() => { actions.onRefresh(); close(); }} loading={model.busy === "refresh"}>Refresh</CommandButton>
             <button type="button" className="command-button planning-history-control" aria-label="Undo" title={model.history.undoLabel ? `Undo ${model.history.undoLabel}` : "Undo"} onClick={() => { actions.onUndo(); close(); }} disabled={model.reviewMode || !model.history.canUndo || model.busy === "undo"}>

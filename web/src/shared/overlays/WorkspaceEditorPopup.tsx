@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { useUokLocalization } from "../localization";
 import { WorkspacePopup } from "./WorkspacePopup";
 
 export function WorkspaceEditorPopup({
@@ -11,7 +12,8 @@ export function WorkspaceEditorPopup({
   children,
   size = "wide",
   chrome = "standard",
-  className = ""
+  className = "",
+  dismissible = true
 }: {
   open: boolean;
   label: string;
@@ -22,12 +24,22 @@ export function WorkspaceEditorPopup({
   size?: "compact" | "default" | "wide";
   chrome?: "standard" | "minimal";
   className?: string;
+  dismissible?: boolean;
 }) {
+  const { t } = useUokLocalization();
+
   return (
-    <WorkspacePopup open={open} label={label} onClose={onClose} size={size} className={`workspace-editor-popup workspace-editor-popup-${chrome} ${className}`.trim()}>
+    <WorkspacePopup
+      open={open}
+      label={label}
+      onClose={onClose}
+      size={size}
+      className={`workspace-editor-popup workspace-editor-popup-${chrome} ${className}`.trim()}
+      dismissible={dismissible}
+    >
       {chrome === "standard" ? (
         <header className="workspace-editor-popup-header">
-          <p className="eyebrow">Workspace editor</p>
+          <p className="eyebrow">{t("command.workspaceEditor", "Workspace editor")}</p>
           <h2>{title}</h2>
           {description ? <p>{description}</p> : null}
         </header>

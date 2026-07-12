@@ -20,6 +20,7 @@ UOK modules can own domain behavior without copying common workspace and infrast
 | Table column visibility, resize, order, pinned columns, and row heights | `web/src/shared/tables` | Contacts and Planning |
 | Bounded pagination controls and accessible range announcements | `web/src/shared/tables` | Contacts and Planning portfolio |
 | Toggle, command, icon, and segmented controls | `web/src/shared/primitives` | Contacts and Planning |
+| Modal workspace overlays and editor composition | `web/src/shared/overlays` | Communications, Contacts, and Planning |
 | Empty states, status pills, detail items, and fact lists | `web/src/shared/data-display` | Apps, Contacts, Planning |
 
 ## Promotion Rule

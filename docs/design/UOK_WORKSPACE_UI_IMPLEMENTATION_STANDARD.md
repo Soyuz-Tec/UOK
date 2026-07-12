@@ -81,6 +81,23 @@ Every durable module workspace should use this structure unless the module plan 
    - Selected records use an inspector, sheet, or workspace popup without forcing unnecessary navigation.
    - Create actions must open a blank creation form and must not reuse previously selected record data.
 
+### Shared modal overlay contract
+
+`WorkspacePopup` and `WorkspaceEditorPopup` under `web/src/shared/overlays` are the
+module-neutral modal boundary. They must contain keyboard focus while open,
+isolate background branches with `inert` and `aria-hidden`, and restore every
+pre-existing property and attribute value exactly when the modal closes. Focus
+returns to the opener when it still exists; when a successful workflow replaces
+that trigger, the owning module must focus a stable replacement control or
+workspace region.
+
+Committed asynchronous work must set `dismissible={false}` so Escape, backdrop
+activation, and the close control cannot dismiss the modal until the operation
+settles. The close control must provide at least a 44-by-44 CSS-pixel target for
+coarse pointers. Shared overlay labels and controls, plus module-owned title,
+description, fields, actions, validation, and status text, must use the shared
+UOK localization provider rather than hard-coded visible strings.
+
 5. Status and evidence surface
    - Human-readable state comes before raw JSON.
    - Technical evidence can be available through disclosure or developer-oriented panels, not as the main user experience.

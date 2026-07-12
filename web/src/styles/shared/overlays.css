@@ -50,9 +50,21 @@
   background: var(--uok-bg-grouped-secondary);
 }
 
+.workspace-popup-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .workspace-popup-close:focus-visible {
   outline: 3px solid var(--uok-focus-ring);
   outline-offset: 2px;
+}
+
+@media (pointer: coarse) {
+  .workspace-popup-close {
+    width: 44px;
+    height: 44px;
+  }
 }
 
 .workspace-popup-content {

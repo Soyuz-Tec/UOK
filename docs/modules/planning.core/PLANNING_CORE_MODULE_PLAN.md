@@ -26,7 +26,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - actor-scoped bounded portfolio metrics, explainable health, multi-project timeline, shared search/refinement controls, bounded pagination, and project drill-in
 - project schedule read model
 - editable task grid and inspector path for create, update, delete, hierarchy, status, progress, and task type
-- traditional Gantt workspace composed with the shared `WorkspaceCommandBar`: task search and live refinements lead, project context follows, view and Planning controls stay grouped, one trailing `New task` command remains primary, and low-frequency sample-plan, refresh, undo, and redo actions live in the labelled `Plan actions` section inside `All tasks`. Advanced saved views, columns, review/focus, scale, navigation, exports, density, critical, and baseline controls use the same accessible expandable-panel behavior as other workspaces. The grid/timeline, keyboard row navigation, row context menu, Gantt virtualization, read-model Board/List/Calendar/Workload/People/Dashboard views, and tabbed inspector panels remain Planning-owned.
+- traditional Gantt workspace composed with the shared `WorkspaceCommandBar`: task search and live refinements lead, project context follows, view and Planning controls stay grouped, and one trailing `New task` command remains primary. The Planning-owned blank `New project` editor is primary in Portfolio and the no-project state, and remains available as a low-frequency `Plan actions` command inside `All tasks`; it submits the existing permissioned `POST /api/planning/projects` contract and selects the returned validated schedule. Sample-plan, refresh, undo, and redo remain distinct low-frequency actions in that same labelled section. Advanced saved views, columns, review/focus, scale, navigation, exports, density, critical, and baseline controls use the same accessible expandable-panel behavior as other workspaces. The grid/timeline, keyboard row navigation, row context menu, Gantt virtualization, read-model Board/List/Calendar/Workload/People/Dashboard views, and tabbed inspector panels remain Planning-owned.
 - Gantt bars
 - milestone and summary task model
 - dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead
@@ -217,8 +217,9 @@ view that drills into the existing project schedule. The standard
 candidate, recovery, live-browser compatibility/accessibility, observability,
 and engineering-evidence checks without claiming production deployment.
 The portfolio frontend consumes the shared command surface and reusable
-pagination against the existing bounded `limit`/`offset` contract; it does not
-invent a project-creation action or move portfolio aggregation into the shell.
+pagination against the existing bounded `limit`/`offset` contract. Its primary
+`New project` command invokes the same Planning-owned, API-backed creation flow;
+it does not invent shell-owned project behavior or move aggregation into the shell.
 
 ## Calendar Correlation Boundary
 

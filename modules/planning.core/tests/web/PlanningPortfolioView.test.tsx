@@ -10,10 +10,13 @@ afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 describe("Planning portfolio", () => {
   it("shows explainable health, applies bounded filters, and opens a project", async () => {
     const onOpenProject = vi.fn();
+    const onNewProject = vi.fn();
     const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async () => response(portfolio));
-    render(<PlanningPortfolioView token="token" onOpenProject={onOpenProject} />);
+    render(<PlanningPortfolioView token="token" canCreateProject creatingProject={false} onNewProject={onNewProject} onOpenProject={onOpenProject} />);
 
     expect(await screen.findByRole("table", { name: "Multi-project delivery portfolio" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "New project" }));
+    expect(onNewProject).toHaveBeenCalledTimes(1);
     expect(screen.getByText("Blocked")).toBeTruthy();
     expect(screen.getByText(/6 queries/)).toBeTruthy();
     expect(screen.getByRole("img", { name: /Project start 2026-08-01.*Schedule horizon 2026-09-03.*Latest task finish 2026-09-03/ })).toBeTruthy();
@@ -29,9 +32,10 @@ describe("Planning portfolio", () => {
 
   it("localizes lifecycle statuses and finish authority in Arabic", async () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async () => response(portfolio));
-    render(<UokLocalizationProvider locale="ar"><PlanningPortfolioView token="token" onOpenProject={vi.fn()} /></UokLocalizationProvider>);
+    render(<UokLocalizationProvider locale="ar"><PlanningPortfolioView token="token" canCreateProject creatingProject={false} onNewProject={vi.fn()} onOpenProject={vi.fn()} /></UokLocalizationProvider>);
 
     expect(await screen.findByRole("table", { name: "محفظة تسليم متعددة المشاريع" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "مشروع جديد" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "مسودة" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "معلّق" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "مكتمل" })).toBeTruthy();
@@ -53,7 +57,7 @@ describe("Planning portfolio", () => {
     } as unknown as PlanningPortfolioResponse;
     vi.spyOn(globalThis, "fetch").mockImplementation(async () => response(legacyPortfolio));
 
-    render(<PlanningPortfolioView token="token" onOpenProject={vi.fn()} />);
+    render(<PlanningPortfolioView token="token" canCreateProject creatingProject={false} onNewProject={vi.fn()} onOpenProject={vi.fn()} />);
 
     expect(await screen.findByRole("table", { name: "Multi-project delivery portfolio" })).toBeTruthy();
     const timeline = screen.getByRole("img", { name: "Alpha delivery: Project start 2026-08-01; Compatibility horizon 2026-08-31" });
@@ -70,7 +74,7 @@ describe("Planning portfolio", () => {
       if (url.includes("query=newer")) return response(portfolioNamed("Newer project", "newer"));
       return response(portfolio);
     });
-    render(<PlanningPortfolioView token="token" onOpenProject={vi.fn()} />);
+    render(<PlanningPortfolioView token="token" canCreateProject creatingProject={false} onNewProject={vi.fn()} onOpenProject={vi.fn()} />);
     await screen.findByRole("button", { name: "Open project Alpha delivery" });
 
     const search = screen.getByRole("textbox", { name: "Search projects" });

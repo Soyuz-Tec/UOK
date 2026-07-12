@@ -123,7 +123,7 @@ describe("K Connect workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "New thread" }));
     fireEvent.change(screen.getByLabelText("Thread title"), { target: { value: "Serialized room" } });
     fireEvent.click(screen.getByRole("button", { name: "Create thread" }));
-    expect(screen.getByRole("button", { name: "Refresh" })).toBeDisabled();
+    expect(screen.getByText("Refresh").closest("button")).toBeDisabled();
     fireEvent.submit(screen.getByRole("dialog", { name: "Create communication thread" }).querySelector("form")!);
     expect(fetchMock).toHaveBeenCalledTimes(3);
 

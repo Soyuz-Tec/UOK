@@ -1,4 +1,4 @@
-import { FolderOpen, RefreshCw } from "lucide-react";
+import { FolderOpen, FolderPlus, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { SearchWorkspace } from "@uok/shared/forms";
@@ -10,7 +10,13 @@ import { loadPlanningPortfolio } from "./planningPortfolioApi";
 import type { PlanningPortfolioHealth, PlanningPortfolioProject, PlanningPortfolioResponse } from "./portfolioTypes";
 import type { PlanningProjectStatus } from "./types";
 
-export function PlanningPortfolioView({ token, onOpenProject }: { token: string; onOpenProject: (projectId: string) => void }) {
+export function PlanningPortfolioView({ token, canCreateProject, creatingProject, onNewProject, onOpenProject }: {
+  token: string;
+  canCreateProject: boolean;
+  creatingProject: boolean;
+  onNewProject: () => void;
+  onOpenProject: (projectId: string) => void;
+}) {
   const { formatNumber, t } = useUokLocalization();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<PlanningProjectStatus | "">("");
@@ -113,6 +119,7 @@ export function PlanningPortfolioView({ token, onOpenProject }: { token: string;
           setData(null);
           setRefreshKey((value) => value + 1);
         }} loading={busy}>{t("account.refresh", "Refresh")}</CommandButton>}
+        primaryAction={<CommandButton icon={FolderPlus} onClick={onNewProject} loading={creatingProject} disabled={!canCreateProject} primary>{t("planning.projectCreate.action", "New project")}</CommandButton>}
       />
 
       {error ? <p className="planning-portfolio-error" role="alert">{error}</p> : null}

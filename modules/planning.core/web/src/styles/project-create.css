@@ -1,0 +1,105 @@
+.planning-project-create-form {
+  display: grid;
+  gap: var(--uok-space-4);
+  padding: var(--uok-space-5);
+}
+
+.planning-project-create-hint,
+.planning-project-create-form .field small {
+  margin: 0;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.planning-project-create-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--uok-space-3);
+}
+
+.planning-project-create-name,
+.planning-project-create-timezone {
+  grid-column: 1 / -1;
+}
+
+.planning-project-create-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--uok-space-2);
+  border-block-start: var(--uok-line);
+  padding-block-start: var(--uok-space-3);
+}
+
+.planning-project-create-error {
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--uok-status-danger) 48%, var(--uok-border));
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2) var(--uok-space-3);
+  color: var(--uok-status-danger);
+  background: color-mix(in srgb, var(--uok-status-danger) 10%, var(--uok-bg-elevated));
+}
+
+.planning-project-reload-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--uok-space-3);
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--uok-status-success) 48%, var(--uok-border));
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: color-mix(in srgb, var(--uok-status-success) 10%, var(--uok-bg-elevated));
+}
+
+.planning-project-reload-notice > svg {
+  color: var(--uok-status-success);
+}
+
+.planning-project-reload-copy {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-width: 0;
+}
+
+.planning-project-reload-copy span {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.planning-project-reload-copy strong span {
+  color: inherit;
+  font-size: inherit;
+}
+
+@media (max-width: 860px) {
+  .planning-project-reload-notice {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .planning-project-reload-notice .command-button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 680px) {
+  .planning-project-create-form {
+    padding: var(--uok-space-4);
+  }
+
+  .planning-project-create-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .planning-project-create-name,
+  .planning-project-create-timezone {
+    grid-column: auto;
+  }
+
+  .planning-project-create-actions,
+  .planning-project-create-actions .command-button,
+  .planning-project-reload-notice .command-button {
+    width: 100%;
+  }
+}

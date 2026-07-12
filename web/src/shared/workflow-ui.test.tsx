@@ -67,6 +67,67 @@ describe("WorkspacePopup", () => {
     expect(close).toHaveBeenCalledTimes(1);
   });
 
+  it("prevents every dismissal path while the dialog is not dismissible", () => {
+    const close = vi.fn();
+    render(
+      <WorkspacePopup open label="Busy editor" onClose={close} dismissible={false}>
+        <button type="button">Continue editing</button>
+      </WorkspacePopup>
+    );
+
+    expect(screen.getByRole("button", { name: "Close Busy editor" })).toBeDisabled();
+    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent.mouseDown(screen.getByRole("dialog", { name: "Busy editor" }).parentElement!);
+
+    expect(close).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Continue editing" })).toHaveFocus();
+  });
+
+  it("contains keyboard focus, isolates the background, and restores both exactly", () => {
+    const close = vi.fn();
+    const closed = (
+      <div>
+        <button type="button" data-testid="popup-launcher" aria-hidden="false">Open editor</button>
+        <WorkspacePopup open={false} label="Focus editor" onClose={close}>
+          <button type="button">First action</button>
+          <button type="button">Last action</button>
+        </WorkspacePopup>
+      </div>
+    );
+    const opened = (
+      <div>
+        <button type="button" data-testid="popup-launcher" aria-hidden="false">Open editor</button>
+        <WorkspacePopup open label="Focus editor" onClose={close}>
+          <button type="button">First action</button>
+          <button type="button">Last action</button>
+        </WorkspacePopup>
+      </div>
+    );
+    const { rerender } = render(closed);
+    const launcher = screen.getByTestId("popup-launcher");
+    launcher.focus();
+
+    rerender(opened);
+
+    const closeButton = screen.getByRole("button", { name: "Close Focus editor" });
+    const lastAction = screen.getByRole("button", { name: "Last action" });
+    expect(closeButton).toHaveFocus();
+    expect(launcher).toHaveAttribute("aria-hidden", "true");
+    expect(launcher).toHaveAttribute("inert");
+
+    lastAction.focus();
+    fireEvent.keyDown(lastAction, { key: "Tab" });
+    expect(closeButton).toHaveFocus();
+
+    fireEvent.keyDown(closeButton, { key: "Tab", shiftKey: true });
+    expect(lastAction).toHaveFocus();
+
+    rerender(closed);
+    expect(launcher).toHaveAttribute("aria-hidden", "false");
+    expect(launcher).not.toHaveAttribute("inert");
+    expect(launcher).toHaveFocus();
+  });
+
   it("stays out of the DOM when closed", () => {
     render(
       <WorkspacePopup open={false} label="Hidden editor" onClose={vi.fn()}>

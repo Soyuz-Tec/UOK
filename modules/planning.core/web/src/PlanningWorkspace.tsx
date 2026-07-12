@@ -1,5 +1,5 @@
-import { FolderKanban, PanelRightClose, PanelRightOpen, RefreshCw } from "lucide-react";
-import { useMemo, useState } from "react";
+import { FolderKanban, FolderPlus, PanelRightClose, PanelRightOpen, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyState } from "@uok/shared/data-display";
 import { Pane, WorkflowHeader, WorkflowSplitView } from "@uok/shared/layout";
@@ -10,6 +10,8 @@ import { PlanningErrorNotice } from "./PlanningErrorNotice";
 import { PlanningInspector, type PlanningInspectorTab } from "./PlanningInspector";
 import { PlanningModuleState } from "./PlanningModuleState";
 import { PlanningPortfolioView } from "./PlanningPortfolioView";
+import { PlanningProjectCreateDialog } from "./PlanningProjectCreateDialog";
+import { PlanningProjectReloadNotice, planningProjectReloadFailure } from "./PlanningProjectReloadNotice";
 import { PlanningTimeline } from "./PlanningTimeline";
 import type { TimelineScale } from "./planningGanttModel";
 import { timelineTaskPayload } from "./planningTimelineCreateModel";
@@ -31,6 +33,9 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
   const [reviewMode, setReviewMode] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [workspaceMode, setWorkspaceMode] = useState<"project" | "portfolio">("project");
+  const [projectCreateOpen, setProjectCreateOpen] = useState(false);
+  const planningWorkspaceRef = useRef<HTMLElement>(null);
+  const focusAfterCreateRef = useRef(false);
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const reportsOperational = moduleRows.some(
     (row) => row.name === "reports.core" && (row.status === "installed" || row.status === "upgraded"),
@@ -48,44 +53,68 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
     setSelectedProjectId,
     setSelectedTaskId,
   });
+  const createdReloadFailure = planningProjectReloadFailure(actions.status);
+  const canCreateProject = capabilities.edit && !reviewMode && !actions.busy && !createdReloadFailure;
   const selectedTask = useMemo(
     () => schedule?.tasks.find((task) => task.id === selectedTaskId) || null,
     [schedule, selectedTaskId],
   );
 
+  useEffect(() => {
+    if (projectCreateOpen || !focusAfterCreateRef.current) return;
+    const frame = window.requestAnimationFrame(() => {
+      focusAfterCreateRef.current = false;
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && active !== document.body && active !== document.documentElement && active.isConnected) return;
+      const picker = planningWorkspaceRef.current?.querySelector<HTMLSelectElement>(".planning-project-picker select");
+      (picker || planningWorkspaceRef.current)?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [projectCreateOpen, schedule?.project.id, workspaceMode]);
+
   if (!token) return <EmptyState text="Sign in to open Planning." />;
   if (!operational) return <PlanningModuleState module={module} moduleRows={moduleRows} busyAction={busyAction} onActivate={onActivate} />;
 
   return (
-    <section className="planning-workspace" aria-label="Planning">
+    <section className="planning-workspace" aria-label="Planning" ref={planningWorkspaceRef} tabIndex={-1}>
       <PlanningErrorNotice status={actions.status} />
       <nav className="planning-scope-switch" aria-label={t("planning.scope", "Planning scope")}>
         <button type="button" aria-current={workspaceMode === "project" ? "page" : undefined} onClick={() => setWorkspaceMode("project")}>{t("planning.projectSchedule", "Project schedule")}</button>
         <button type="button" aria-current={workspaceMode === "portfolio" ? "page" : undefined} onClick={() => setWorkspaceMode("portfolio")}>{t("planning.portfolio", "Portfolio")}</button>
       </nav>
+      <PlanningProjectReloadNotice status={actions.status} busy={actions.busy} onRetry={() => void actions.refresh()} />
       {workspaceMode === "portfolio" ? (
-        <PlanningPortfolioView token={token} onOpenProject={(projectId) => {
-          setWorkspaceMode("project");
-          void actions.changeProject(projectId);
-        }} />
+        <PlanningPortfolioView
+          token={token}
+          canCreateProject={Boolean(canCreateProject)}
+          creatingProject={actions.busy === "project-create"}
+          onNewProject={() => setProjectCreateOpen(true)}
+          onOpenProject={(projectId) => {
+            setWorkspaceMode("project");
+            void actions.changeProject(projectId);
+          }}
+        />
       ) : !schedule ? (
         <>
           <WorkflowHeader
-            eyebrow="Planning"
-            title="Project schedule"
-            summary="Create a plan to begin."
+            eyebrow={t("planning.portfolio.eyebrow", "Planning")}
+            title={t("planning.projectSchedule", "Project schedule")}
+            summary={t("planning.noProject.summary", "Create a project or use a sample plan to begin.")}
           >
-            <>
-              <CommandButton icon={FolderKanban} onClick={() => void actions.createDemoSchedule()} loading={actions.busy === "demo"} disabled={!capabilities.edit} primary>
-                New sample plan
+            {!createdReloadFailure ? <>
+              <CommandButton icon={FolderPlus} onClick={() => setProjectCreateOpen(true)} loading={actions.busy === "project-create"} disabled={!canCreateProject} primary>
+                {t("planning.projectCreate.action", "New project")}
               </CommandButton>
-              <CommandButton icon={RefreshCw} onClick={() => void actions.refresh()} loading={actions.busy === "refresh"}>
-                Refresh
+              <CommandButton icon={FolderKanban} onClick={() => void actions.createDemoSchedule()} loading={actions.busy === "demo"} disabled={!capabilities.edit || reviewMode || Boolean(actions.busy)}>
+                {t("planning.noProject.sampleAction", "New sample plan")}
               </CommandButton>
-            </>
+              <CommandButton icon={RefreshCw} onClick={() => void actions.refresh()} loading={actions.busy === "refresh"} disabled={Boolean(actions.busy)}>
+                {t("account.refresh", "Refresh")}
+              </CommandButton>
+            </> : null}
           </WorkflowHeader>
-          <Pane title="No plans" description="Planning workspace" wide>
-            <EmptyState text="Create a sample plan to load the validated Gantt read model." />
+          <Pane title={t("planning.noProject.title", "No projects")} description={t("planning.projectSchedule", "Planning workspace")} wide>
+            <EmptyState text={t("planning.noProject.empty", "Create a project to open its validated schedule, or use a sample plan for evaluation.")} />
           </Pane>
         </>
       ) : (
@@ -112,6 +141,18 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           />
         </>
       )}
+      <PlanningProjectCreateDialog
+        open={projectCreateOpen}
+        busy={Boolean(actions.busy)}
+        onClose={() => {
+          focusAfterCreateRef.current = true;
+          setProjectCreateOpen(false);
+        }}
+        onCreate={async (payload) => {
+          await actions.createProject(payload);
+          setWorkspaceMode("project");
+        }}
+      />
     </section>
   );
 
@@ -155,6 +196,8 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onTimelineTaskCreate={(start, end) => void actions.addTask(timelineTaskPayload(activeSchedule.tasks, start, end))}
           onTaskMenuAction={(action, task) => void actions.runTaskMenuAction(action, task)}
           onProjectChange={(projectId) => void actions.changeProject(projectId)}
+          canCreateProject={Boolean(canCreateProject)}
+          onNewProject={() => setProjectCreateOpen(true)}
           onCreateDemoSchedule={() => void actions.createDemoSchedule()}
           onRefresh={() => void actions.refresh()}
           onNewTask={(taskType) => {
