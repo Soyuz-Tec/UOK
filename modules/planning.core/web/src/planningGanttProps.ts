@@ -24,6 +24,7 @@ export type PlanningGanttProps = {
   dateTargetSignal: number;
   readOnly: boolean;
   onTaskSelect: (taskId: string) => void;
+  onTaskOpen: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
   onTaskInlineEdit: (taskId: string, payload: PlanningTaskUpdateRequest) => void;

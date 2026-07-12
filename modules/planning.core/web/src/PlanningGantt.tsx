@@ -53,6 +53,7 @@ export function PlanningGantt({
   dateTargetSignal,
   readOnly,
   onTaskSelect,
+  onTaskOpen,
   onTaskReschedule,
   onTaskProgress,
   onTaskInlineEdit,
@@ -151,7 +152,7 @@ export function PlanningGantt({
     >
       <PlanningGanttGrid bodyRef={gridScrollRef}
         state={{ allTasks: visibleTasks, assignedByTask, columns, dependencyChain, gridTemplateColumns, pinnedOffsets, readOnly, renderedTasks, rowLayoutByTask, rowSize, selectedTaskId, showCritical, sort, summaryExpanded: (task) => !collapsedSummaryIds.has(task.id), totalHeight: rowLayoutState.totalHeight, totalWidth, virtualized: virtualWindow.virtualized, widths }}
-        actions={{ onColumnMoveBefore: moveColumnBefore, onColumnVisible, onColumnsReset, onColumnWidthChange: setColumnWidth, onHeaderDoubleClick: handleHeaderDoubleClick, onKeyDown: handleRowKey, onOpenTaskMenu: openTaskMenu, onResetColumnWidth: resetColumnWidth, onRowHeightChange: setRowHeight, onRowHeightReset: resetRowHeight, onRowRef: setRowRef, onScroll: virtualWindow.onGridScroll, onSelect: onTaskSelect, onSort: (columnId) => setSort((current) => nextPlanningGridSort(current, columnId)), onSummaryToggle, onTaskInlineEdit }} />
+        actions={{ onColumnMoveBefore: moveColumnBefore, onColumnVisible, onColumnsReset, onColumnWidthChange: setColumnWidth, onHeaderDoubleClick: handleHeaderDoubleClick, onKeyDown: handleRowKey, onOpenTaskMenu: openTaskMenu, onResetColumnWidth: resetColumnWidth, onRowHeightChange: setRowHeight, onRowHeightReset: resetRowHeight, onRowRef: setRowRef, onScroll: virtualWindow.onGridScroll, onSelect: onTaskOpen, onSort: (columnId) => setSort((current) => nextPlanningGridSort(current, columnId)), onSummaryToggle, onTaskInlineEdit }} />
       <div
         className={`planning-owned-chart ${timelineInteraction.panning ? "panning" : ""}`}
         ref={setChartElement}
@@ -192,7 +193,7 @@ export function PlanningGantt({
           {linkDrag ? <path className="planning-owned-link-draft" d={`M ${linkDrag.sourceX} ${linkDrag.sourceY} L ${linkDrag.pointerX} ${linkDrag.pointerY}`} /> : null}
           {timelineInteraction.createDraft ? <TimelineCreateDraftShape draft={timelineInteraction.createDraft} headerHeight={headerHeight} height={canvasHeight} /> : null}
           {renderedTasks.map((task) => (
-            <TaskShape key={task.id} task={task} rowTop={rowLayoutByTask.get(task.id)?.top || 0} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowLayoutByTask.get(task.id)?.height || rowSize} headerHeight={headerHeight} timelineWidth={width} viewportLeft={chartScrollLeft} viewportWidth={chartInlineSize || width} selected={task.id === selectedTaskId} chainClass={taskDependencyChainClass(dependencyChain, task.id)} showCritical={showCritical} showBaselines={showBaselines} readOnly={readOnly} onSelect={onTaskSelect} onDragStart={(taskId, mode, clientX, barWidth) => setDrag({ taskId, mode, startX: clientX, barWidth })} onLinkStart={startDependencyLink} onLinkFinish={finishDependencyLink} />
+            <TaskShape key={task.id} task={task} rowTop={rowLayoutByTask.get(task.id)?.top || 0} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowLayoutByTask.get(task.id)?.height || rowSize} headerHeight={headerHeight} timelineWidth={width} viewportLeft={chartScrollLeft} viewportWidth={chartInlineSize || width} selected={task.id === selectedTaskId} chainClass={taskDependencyChainClass(dependencyChain, task.id)} showCritical={showCritical} showBaselines={showBaselines} readOnly={readOnly} onSelect={onTaskOpen} onDragStart={(taskId, mode, clientX, barWidth) => setDrag({ taskId, mode, startX: clientX, barWidth })} onLinkStart={startDependencyLink} onLinkFinish={finishDependencyLink} />
           ))}
           <TodayMarker chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={canvasHeight} />
         </svg>
@@ -264,7 +265,11 @@ export function PlanningGantt({
   function selectAndFocus(taskId: string) {
     pendingFocusRef.current = taskId;
     onTaskSelect(taskId);
-    rowRefs.current.get(taskId)?.focus();
+    const row = rowRefs.current.get(taskId);
+    if (row) {
+      row.focus();
+      pendingFocusRef.current = null;
+    }
   }
 
   function setRowRef(taskId: string, element: HTMLDivElement | null) {

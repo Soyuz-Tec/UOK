@@ -1,9 +1,10 @@
-import { FolderKanban, FolderPlus, PanelRightClose, PanelRightOpen, RefreshCw } from "lucide-react";
+import { FolderKanban, FolderPlus, PanelRightOpen, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyState } from "@uok/shared/data-display";
-import { Pane, WorkflowHeader, WorkflowSplitView } from "@uok/shared/layout";
+import { Pane, WorkflowHeader } from "@uok/shared/layout";
 import { useUokLocalization } from "@uok/shared/localization";
+import { WorkspaceEditorPopup } from "@uok/shared/overlays";
 import { CommandButton } from "@uok/shared/primitives";
 import { PlanningConcurrencyNotice } from "./PlanningConcurrencyNotice";
 import { PlanningErrorNotice } from "./PlanningErrorNotice";
@@ -80,7 +81,10 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
       <PlanningErrorNotice status={actions.status} />
       <nav className="planning-scope-switch" aria-label={t("planning.scope", "Planning scope")}>
         <button type="button" aria-current={workspaceMode === "project" ? "page" : undefined} onClick={() => setWorkspaceMode("project")}>{t("planning.projectSchedule", "Project schedule")}</button>
-        <button type="button" aria-current={workspaceMode === "portfolio" ? "page" : undefined} onClick={() => setWorkspaceMode("portfolio")}>{t("planning.portfolio", "Portfolio")}</button>
+        <button type="button" aria-current={workspaceMode === "portfolio" ? "page" : undefined} onClick={() => {
+          setInspectorOpen(false);
+          setWorkspaceMode("portfolio");
+        }}>{t("planning.portfolio", "Portfolio")}</button>
       </nav>
       <PlanningProjectReloadNotice status={actions.status} busy={actions.busy} onRetry={() => void actions.refresh()} />
       {workspaceMode === "portfolio" ? (
@@ -131,14 +135,10 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
               onReload={() => void actions.reloadStaleSchedule()}
             />
           ) : null}
-          <WorkflowSplitView
-            primaryLabel="Planning timeline"
-            secondaryLabel="Planning inspector"
-            primary={renderPlanningPrimaryPane(schedule)}
-            secondary={renderPlanningInspectorPane(schedule)}
-            secondaryOpen={inspectorOpen}
-            secondaryPresentation="slide"
-          />
+          <section className="workflow-primary-region" aria-label={t("planning.timelineRegion", "Planning timeline")}>
+            {renderPlanningPrimaryPane(schedule)}
+          </section>
+          {renderPlanningInspectorPopup(schedule)}
         </>
       )}
       <PlanningProjectCreateDialog
@@ -159,11 +159,9 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
   function renderPlanningPrimaryPane(activeSchedule: PlanningSchedule) {
     return (
       <div className="planning-primary-stack">
-        {!inspectorOpen ? (
-          <div className="planning-inspector-toggle-row planning-inspector-toggle-floating">
-            <CommandButton icon={PanelRightOpen} onClick={() => setInspectorOpen(true)}>Show inspector</CommandButton>
-          </div>
-        ) : null}
+        <div className="planning-inspector-toggle-row planning-inspector-toggle-floating">
+          <CommandButton icon={PanelRightOpen} onClick={() => setInspectorOpen(true)}>{t("planning.inspector.show", "Show inspector")}</CommandButton>
+        </div>
         <PlanningTimeline
           projects={projects}
           schedule={activeSchedule}
@@ -183,7 +181,8 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onToggleCritical={() => setShowCritical((value) => !value)}
           onToggleBaselines={() => setShowBaselines((value) => !value)}
           onReviewModeChange={setReviewMode}
-          onTaskSelect={(taskId) => {
+          onTaskSelect={setSelectedTaskId}
+          onTaskOpen={(taskId) => {
             setSelectedTaskId(taskId);
             setInspectorTab("task");
             setInspectorOpen(true);
@@ -224,12 +223,19 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
     );
   }
 
-  function renderPlanningInspectorPane(activeSchedule: PlanningSchedule) {
+  function renderPlanningInspectorPopup(activeSchedule: PlanningSchedule) {
     return (
-      <div className="planning-inspector-stack">
-        <div className="planning-inspector-toggle-row">
-          <CommandButton icon={PanelRightClose} onClick={() => setInspectorOpen(false)}>Hide inspector</CommandButton>
-        </div>
+      <WorkspaceEditorPopup
+        open={inspectorOpen}
+        label={t("planning.inspector.dialogLabel", "Planning inspector")}
+        title={t("planning.inspector.title", "Inspector")}
+        description={activeSchedule.project.name}
+        onClose={() => setInspectorOpen(false)}
+        size="wide"
+        chrome="minimal"
+        className="planning-inspector-popup"
+        dismissible={!Boolean(actions.busy)}
+      >
         <PlanningInspector
           token={token}
           projects={projects}
@@ -273,7 +279,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onApplyRecommendation={actions.applyRecommendation}
           onRollbackRecommendation={actions.rollbackRecommendation}
         />
-      </div>
+      </WorkspaceEditorPopup>
     );
   }
 }

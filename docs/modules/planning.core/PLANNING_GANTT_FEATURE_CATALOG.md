@@ -196,7 +196,7 @@ The live Gantt workspace audit on `http://127.0.0.1:18088/` found these usabilit
 | Controls were grouped by implementation rather than workflow | Saved views, fields, filters, scale, navigation, exports, density, and status toggles shared one long row. | Use grouped command architecture: saved/fields, filters, modes, scale, navigation, exports, and display toggles. |
 | Sparse schedules left excessive blank chart height | A two-task plan rendered inside a roughly `720px` Gantt shell. | Use a content-aware Gantt height variable with a practical minimum and maximum while preserving large-schedule scroll behavior. |
 | Grid felt tight and had hidden horizontal overflow | Task grid measured smaller than its rendered column content. | Include action/resize affordance width in the grid sizing calculation and keep pinned columns readable. |
-| Inspector occupied permanent width even when not needed | The inspector was useful but always consumed the secondary work region on wide screens. | Add Planning-level inspector collapse/show controls using the shared split-view primitive without changing Contacts behavior. |
+| Inspector occupied permanent width even when not needed | The inspector was useful but consumed the secondary work region on wide screens and reduced the timeline comparison area. | Render Planning-owned Inspector content in the shared modal editor popup, preserving direct task/create/dependency/resource openers while keeping selection-only navigation and linking in the timeline. |
 | Selected one-day tasks mixed labels, status, baseline, resize/progress, and dependency controls in the same pixels | A `52px` one-day bar placed the external `CRIT` badge over the dependency source handle, left the task label unbounded, and kept every control visible solely because the row was selected. | Reserve deterministic label, badge, baseline, and handle regions; clip visible labels while preserving full accessible text; keep transient controls on hover/focus or coarse pointers. |
 | The first-row selected tooltip and task markers obscured the date header | The fixed tooltip was forced visible by selection and painted into the `54px` header; stale marker token names resolved to unreadable black pills. | Keep tooltips transient and within the owning row/chart bounds, scope task-state styling to the direct task bar, and use the current semantic marker tokens in light, dark, and system appearances. |
 
@@ -206,7 +206,7 @@ Acceptance for this polish slice:
 - grouped toolbar controls remain reachable at tablet and narrow widths;
 - chart height is proportional for small schedules and scrolls for larger ones;
 - grid/timeline alignment remains stable;
-- inspector can be hidden and restored;
+- Inspector opens and closes as an accessible modal, isolates the background, contains focus, restores the opener or stable Planning control, and leaves the closed timeline at full workspace width;
 - narrow task labels, status badges, baseline codes, and dependency handles do not intersect;
 - task tooltips do not cover the timeline header or adjacent rows and selected tasks remain uncluttered until interaction;
 - deadline, variance, and milestone marker pills use defined semantic colors with readable non-color codes;

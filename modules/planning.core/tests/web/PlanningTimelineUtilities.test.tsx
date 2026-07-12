@@ -86,26 +86,38 @@ describe("PlanningTimelineUtilities", () => {
 
     const scheduleCommands = screen.getByLabelText("Schedule commands");
     fireEvent.click(within(scheduleCommands).getByRole("checkbox", { name: "0 selected" }));
-    fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Milestone" }));
-    fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Link" }));
     fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Expand" }));
     fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Collapse" }));
     fireEvent.click(within(scheduleCommands).getByRole("button", { name: "WBS order" }));
     fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Cascade scheduling" }));
     fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Baseline" }));
-    fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Resources" }));
     fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Level" }));
 
     expect(onSelectedVisibleChange).toHaveBeenCalledWith(true);
-    expect(onNewMilestone).toHaveBeenCalledTimes(1);
-    expect(onOpenDependencies).toHaveBeenCalledTimes(1);
     expect(onSetCollapsedSummaries.mock.calls).toEqual([[true], [false]]);
     expect(onCascadeSortChange).toHaveBeenCalledTimes(1);
     expect(onCascadeSchedulingChange).toHaveBeenCalledTimes(1);
     expect(onCreateBaseline).toHaveBeenCalledTimes(1);
-    expect(onOpenResources).toHaveBeenCalledTimes(1);
     expect(onLevelResources).toHaveBeenCalledWith(260);
 
+    fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Milestone" }));
+    await waitFor(() => expect(onNewMilestone).toHaveBeenCalledTimes(1));
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+
+    fireEvent.click(trigger);
+    fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Link" }));
+    await waitFor(() => expect(onOpenDependencies).toHaveBeenCalledTimes(1));
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+
+    fireEvent.click(trigger);
+    fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Resources" }));
+    await waitFor(() => expect(onOpenResources).toHaveBeenCalledTimes(1));
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+
+    fireEvent.click(trigger);
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
     expect(trigger).toHaveFocus();

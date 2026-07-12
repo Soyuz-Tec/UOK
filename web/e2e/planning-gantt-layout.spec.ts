@@ -21,6 +21,10 @@ test("Gantt task overlays and semantic markers remain collision-free", async ({ 
 
   const barLocator = narrowTask.locator(".planning-owned-task-bar");
   await barLocator.click();
+  const inspectorDialog = page.getByRole("dialog", { name: "Planning inspector", exact: true });
+  await expect(inspectorDialog).toBeVisible();
+  await inspectorDialog.getByRole("button", { name: "Close Planning inspector", exact: true }).click();
+  await expect(inspectorDialog).toBeHidden();
   await page.getByRole("button", { name: "Planning", exact: true }).hover();
   await expect(tooltip).toHaveCSS("visibility", "hidden");
   await expect(narrowTask.locator(".planning-owned-resize-handle.end")).toHaveCSS("opacity", "0");

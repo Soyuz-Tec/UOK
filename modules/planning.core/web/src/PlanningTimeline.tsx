@@ -32,6 +32,7 @@ export function PlanningTimeline({
   onToggleBaselines,
   onReviewModeChange,
   onTaskSelect,
+  onTaskOpen,
   onTaskReschedule,
   onTaskProgress,
   onTaskInlineEdit,
@@ -70,6 +71,7 @@ export function PlanningTimeline({
   onToggleBaselines: () => void;
   onReviewModeChange: (reviewMode: boolean) => void;
   onTaskSelect: (taskId: string) => void;
+  onTaskOpen: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string, cascade: boolean) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
   onTaskInlineEdit: (taskId: string, payload: PlanningTaskUpdateRequest, cascade: boolean) => void;
@@ -183,6 +185,7 @@ export function PlanningTimeline({
           dateTargetSignal={dateTargetSignal}
           readOnly={reviewMode}
           onTaskSelect={onTaskSelect}
+          onTaskOpen={onTaskOpen}
           onTaskReschedule={(taskId, start, end) => onTaskReschedule(taskId, start, end, cascadeScheduling)}
           onTaskProgress={onTaskProgress}
           onTaskInlineEdit={(taskId, payload) => onTaskInlineEdit(taskId, payload, shouldCascadeEdit(payload))}
@@ -196,7 +199,7 @@ export function PlanningTimeline({
           onViewDensityChange={setViewDensity}
         />
       ) : (
-        <PlanningReadModelView view={activeView} schedule={visibleSchedule} onTaskSelect={onTaskSelect} />
+        <PlanningReadModelView view={activeView} schedule={visibleSchedule} onTaskSelect={onTaskOpen} />
       )}
     </div>
   );

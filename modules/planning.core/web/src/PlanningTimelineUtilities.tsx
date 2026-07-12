@@ -128,8 +128,12 @@ export function PlanningTimelineUtilities({
         triggerLabel="Open planning controls"
         triggerSummary="Planning controls"
       >
-        {({ close }) => (
-        <>
+        {({ close }) => {
+          const openInspector = (action: () => void) => {
+            close();
+            queueMicrotask(action);
+          };
+          return <>
           <div className="planning-utility-group planning-saved-field-controls" aria-label="Saved views and fields">
             <PlanningSavedViews current={currentView} onApply={onApplySavedView} />
             <label className="planning-toolbar-select">
@@ -149,14 +153,14 @@ export function PlanningTimelineUtilities({
               <span>{selectedCount} selected</span>
             </label>
             {selectedVisible ? <PlanningBulkEditControls busy={busy === "bulk-task"} disabled={reviewMode || !bulkUpdatesAvailable} selectedTasks={selectedTasks} onBulkTaskEdit={onBulkTaskEdit} /> : null}
-            <CommandButton icon={Milestone} onClick={onNewMilestone} disabled={reviewMode}>Milestone</CommandButton>
-            <CommandButton icon={Link2} onClick={onOpenDependencies} disabled={reviewMode}>Link</CommandButton>
+            <CommandButton icon={Milestone} onClick={() => openInspector(onNewMilestone)} disabled={reviewMode}>Milestone</CommandButton>
+            <CommandButton icon={Link2} onClick={() => openInspector(onOpenDependencies)} disabled={reviewMode}>Link</CommandButton>
             <ToggleButton icon={Maximize2} className="planning-toolbar-toggle" onClick={() => onSetCollapsedSummaries(true)}>Expand</ToggleButton>
             <ToggleButton icon={Minimize2} className="planning-toolbar-toggle" onClick={() => onSetCollapsedSummaries(false)}>Collapse</ToggleButton>
             <ToggleButton icon={Rows3} className="planning-toolbar-toggle" aria-label="WBS order" pressed={cascadeSort} onClick={onCascadeSortChange}>WBS</ToggleButton>
             <ToggleButton icon={GitBranch} className="planning-toolbar-toggle" aria-label="Cascade scheduling" pressed={cascadeScheduling} onClick={onCascadeSchedulingChange} disabled={reviewMode}>Cascade</ToggleButton>
             <CommandButton icon={Baseline} onClick={onCreateBaseline} disabled={reviewMode || schedule.capabilities?.baseline_create !== true}>Baseline</CommandButton>
-            <CommandButton icon={Users} onClick={onOpenResources} disabled={reviewMode}>Resources</CommandButton>
+            <CommandButton icon={Users} onClick={() => openInspector(onOpenResources)} disabled={reviewMode}>Resources</CommandButton>
             <PlanningLevelingControl busy={busy === "level"} disabled={reviewMode || schedule.capabilities?.level !== true} onLevel={onLevelResources} />
           </div>
           <div className="planning-utility-group planning-mode-controls" aria-label="Planning mode controls">
@@ -224,8 +228,8 @@ export function PlanningTimelineUtilities({
               Done
             </button>
           </div>
-        </>
-        )}
+        </>;
+        }}
       </ExpandableControlPanel>
     </div>
   );
