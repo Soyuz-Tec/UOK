@@ -102,10 +102,18 @@
   font: inherit;
 }
 
-.planning-plan-actions {
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-  min-width: max-content;
+.planning-search-plan-actions {
+  min-width: 0;
+}
+
+.planning-search-plan-action-list {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.planning-search-plan-action-list .command-button {
+  width: 100%;
+  justify-content: flex-start;
 }
 
 .planning-utility-group {

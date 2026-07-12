@@ -110,6 +110,14 @@
   grid-template-columns: repeat(3, minmax(160px, 1fr));
 }
 
+.search-workspace-panel.with-supplemental-sections {
+  width: min(900px, calc(100vw - var(--uok-space-6)));
+}
+
+.search-workspace-panel.with-supplemental-sections .search-workspace-panel-content {
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+}
+
 .search-workspace-section {
   display: grid;
   align-content: start;

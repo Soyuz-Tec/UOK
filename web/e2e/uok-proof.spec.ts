@@ -237,12 +237,37 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByLabel("Project metadata")).toBeVisible();
     await expect(page.getByLabel("Timeline utilities")).toBeVisible();
     await expect(page.getByRole("textbox", { name: "Search planning tasks" })).toBeVisible();
-    await page.getByRole("button", { name: /^Search options:/ }).click();
+    const searchOptionsTrigger = page.getByRole("button", { name: /^Search options:/ });
+    await searchOptionsTrigger.click();
     await expect(searchOptions.getByRole("region", { name: "Filters" })).toBeVisible();
     await expect(searchOptions.getByLabel("Participant filter")).toBeVisible();
+    const planActions = searchOptions.getByRole("region", { name: "Plan actions", exact: true });
+    await expect(planActions.getByRole("button", { name: "New sample plan", exact: true })).toBeVisible();
+    await expect(planActions.getByRole("button", { name: "Refresh", exact: true })).toBeVisible();
+    await expect(planActions.getByRole("button", { name: "Undo", exact: true })).toBeVisible();
+    await expect(planActions.getByRole("button", { name: "Redo", exact: true })).toBeVisible();
+    if (viewport.width <= 390) {
+      await expect(searchOptions).toHaveAttribute("aria-modal", "true");
+      const searchOptionsBounds = await searchOptions.evaluate((panel) => {
+        const rect = panel.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, clientWidth: panel.clientWidth, scrollWidth: panel.scrollWidth };
+      });
+      expect(searchOptionsBounds.left).toBeGreaterThanOrEqual(-1);
+      expect(searchOptionsBounds.right).toBeLessThanOrEqual(viewport.width + 1);
+      expect(searchOptionsBounds.scrollWidth).toBeLessThanOrEqual(searchOptionsBounds.clientWidth + 1);
+      if (viewport.width === 390) {
+        await planActions.getByRole("button", { name: "Refresh", exact: true }).click();
+        await expect(searchOptionsTrigger).toHaveAttribute("aria-expanded", "false");
+        await expect(searchOptionsTrigger).toBeFocused();
+        await searchOptionsTrigger.click();
+        await expect(planActions.getByRole("button", { name: "Refresh", exact: true })).toBeVisible();
+      }
+    }
     await searchOptions.getByRole("button", { name: "Done", exact: true }).click();
-    await expect(planningCommands.getByRole("button", { name: "Undo", exact: true })).toBeVisible();
-    await expect(planningCommands.getByRole("button", { name: "Redo", exact: true })).toBeVisible();
+    await expect(planningCommands.getByRole("button", { name: "New sample plan", exact: true })).toHaveCount(0);
+    await expect(planningCommands.getByRole("button", { name: "Refresh", exact: true })).toHaveCount(0);
+    await expect(planningCommands.getByRole("button", { name: "Undo", exact: true })).toHaveCount(0);
+    await expect(planningCommands.getByRole("button", { name: "Redo", exact: true })).toHaveCount(0);
     await page.getByLabel("Open planning controls").click();
     await expect(planningControls).toBeVisible();
     await expect(planningControls.getByLabel("Saved planning views")).toBeVisible();
@@ -437,12 +462,21 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     const reviewShowInspector = page.getByRole("button", { name: "Show inspector", exact: true });
     if (await reviewShowInspector.isVisible()) await reviewShowInspector.click();
     await expect(page.getByRole("button", { name: "Save task" })).toBeDisabled();
-    await expect(planningCommands.getByRole("button", { name: "Undo", exact: true })).toBeDisabled();
-    await expect(planningCommands.getByRole("button", { name: "Redo", exact: true })).toBeDisabled();
-    if (viewport.width <= 680) {
+    if (viewport.width <= 900) {
       const compactHideInspector = page.getByRole("button", { name: "Hide inspector", exact: true });
-      if (await compactHideInspector.isVisible()) await compactHideInspector.click();
+      if (await compactHideInspector.count()) {
+        await expect(compactHideInspector).toBeVisible();
+        await compactHideInspector.click();
+        await expect(page.locator('aside[aria-label="Planning inspector"]')).toHaveAttribute("aria-hidden", "true");
+      }
     }
+    await page.getByRole("button", { name: /^Search options:/ }).click();
+    const reviewPlanActions = searchOptions.getByRole("region", { name: "Plan actions", exact: true });
+    await expect(reviewPlanActions.getByRole("button", { name: "New sample plan", exact: true })).toBeDisabled();
+    await expect(reviewPlanActions.getByRole("button", { name: "Refresh", exact: true })).toBeEnabled();
+    await expect(reviewPlanActions.getByRole("button", { name: "Undo", exact: true })).toBeDisabled();
+    await expect(reviewPlanActions.getByRole("button", { name: "Redo", exact: true })).toBeDisabled();
+    await searchOptions.getByRole("button", { name: "Done", exact: true }).click();
     await page.getByLabel("Open planning controls").click();
     await expect(planningControls.getByRole("button", { name: "Level", exact: true })).toBeDisabled();
     await planningControls.getByRole("button", { name: "Done", exact: true }).click();
@@ -716,7 +750,13 @@ test("archived Planning schedules stay readable and disable every mutation surfa
   await expect(page.getByRole("heading", { name: sampleProject.name })).toBeVisible();
   await expect(page.getByRole("status").filter({ hasText: "Archived project is read-only" })).toBeVisible();
   await expect(page.getByRole("button", { name: "New task", exact: true })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Refresh", exact: true })).toBeEnabled();
+  const searchOptionsTrigger = page.getByRole("button", { name: /^Search options:/ });
+  await searchOptionsTrigger.click();
+  const searchOptions = page.getByRole("dialog", { name: "Search options", exact: true });
+  const planActions = searchOptions.getByRole("region", { name: "Plan actions", exact: true });
+  await expect(planActions.getByRole("button", { name: "New sample plan", exact: true })).toBeDisabled();
+  await expect(planActions.getByRole("button", { name: "Refresh", exact: true })).toBeEnabled();
+  await searchOptions.getByRole("button", { name: "Done", exact: true }).click();
   await page.getByLabel("Open planning controls").click();
   const planningControls = page.getByRole("dialog", { name: "Planning controls", exact: true });
   await expect(planningControls.getByRole("button", { name: "Baseline", exact: true })).toBeDisabled();
@@ -906,9 +946,13 @@ test("revision-aware undo references its source and rejects a stale inverse", as
   await page.locator(".planning-owned-inline-cell .inline-edit-form").getByRole("button", { name: "Save" }).click();
   await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Own audited edit" })).toBeVisible();
 
-  const planningCommands = page.getByRole("region", { name: "Planning commands", exact: true });
-  await expect(planningCommands.getByRole("button", { name: "Undo", exact: true })).toBeEnabled();
-  await planningCommands.getByRole("button", { name: "Undo", exact: true }).click();
+  const searchOptionsTrigger = page.getByRole("button", { name: /^Search options:/ });
+  await searchOptionsTrigger.click();
+  const searchOptions = page.getByRole("dialog", { name: "Search options", exact: true });
+  const planActions = searchOptions.getByRole("region", { name: "Plan actions", exact: true });
+  await expect(planActions.getByRole("button", { name: "Undo", exact: true })).toBeEnabled();
+  await planActions.getByRole("button", { name: "Undo", exact: true }).click();
+  await expect(searchOptionsTrigger).toHaveAttribute("aria-expanded", "false");
   await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Define schedule scope" })).toBeVisible();
   expect(inversePayloads[0]).toMatchObject({ source_command_id: sourceCommandId, reason: "Undo Edit task" });
 
@@ -916,8 +960,9 @@ test("revision-aware undo references its source and rejects a stale inverse", as
   scheduleState.project.revision = revision;
   scheduleState.tasks[1].title = "Remote authoritative edit";
   etag = proofEtag(revision);
-  await expect(planningCommands.getByRole("button", { name: "Redo", exact: true })).toBeEnabled();
-  await planningCommands.getByRole("button", { name: "Redo", exact: true }).click();
+  await searchOptionsTrigger.click();
+  await expect(planActions.getByRole("button", { name: "Redo", exact: true })).toBeEnabled();
+  await planActions.getByRole("button", { name: "Redo", exact: true }).click();
 
   const alert = page.getByRole("alert", { name: "Planning change needs review" });
   await expect(alert).toBeVisible();

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it } from "vitest";
 import { useState } from "react";
@@ -60,6 +60,20 @@ describe("SearchWorkspace", () => {
     expect(screen.getByRole("button", { name: "Save search" })).toBeDisabled();
   });
 
+  it("keeps module-owned supplemental actions inside the options panel", async () => {
+    render(<SearchHarness withSupplementalSection />);
+    const trigger = screen.getByRole("button", { name: "Search options: All records" });
+
+    fireEvent.click(trigger);
+    const dialog = screen.getByRole("dialog", { name: "Search options" });
+    const recordActions = within(dialog).getByRole("region", { name: "Record actions" });
+    expect(within(recordActions).getByRole("button", { name: "Refresh records" })).toBeInTheDocument();
+
+    fireEvent.click(within(recordActions).getByRole("button", { name: "Refresh records" }));
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
+    expect(trigger).toHaveFocus();
+  });
+
   it("localizes shared search-panel chrome in Arabic", () => {
     render(<UokLocalizationProvider locale="ar"><SearchHarness /></UokLocalizationProvider>);
     fireEvent.click(screen.getByRole("button", { name: "خيارات البحث: All records" }));
@@ -75,7 +89,7 @@ describe("SearchWorkspace", () => {
   });
 });
 
-function SearchHarness({ withPreset = false }: { withPreset?: boolean }) {
+function SearchHarness({ withPreset = false, withSupplementalSection = false }: { withPreset?: boolean; withSupplementalSection?: boolean }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [groupBy, setGroupBy] = useState("none");
@@ -97,6 +111,12 @@ function SearchHarness({ withPreset = false }: { withPreset?: boolean }) {
       groupOptions={[{ value: "none", label: "No grouping" }, { value: "category", label: "Category" }]}
       savedViewsStorageKey="search-workspace-test"
       presetViews={withPreset ? [{ id: "all-records", name: "All records", query: "", filters: {}, groupBy: "none", locked: true }] : []}
+      supplementalSections={withSupplementalSection ? ({ close }) => (
+        <section className="search-workspace-section" aria-label="Record actions">
+          <h3>Record actions</h3>
+          <button type="button" onClick={close}>Refresh records</button>
+        </section>
+      ) : undefined}
       onChange={setQuery}
       onGroupByChange={setGroupBy}
       onClear={() => {

@@ -30,7 +30,8 @@
   .search-workspace-panel-content,
   .search-workspace-panel.without-grouping .search-workspace-panel-content,
   .search-workspace-panel.with-sorting .search-workspace-panel-content,
-  .search-workspace-panel.with-sorting.without-grouping .search-workspace-panel-content {
+  .search-workspace-panel.with-sorting.without-grouping .search-workspace-panel-content,
+  .search-workspace-panel.with-supplemental-sections .search-workspace-panel-content {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -38,6 +39,14 @@
   .toolbar-group,
   .search-field {
     width: 100%;
+  }
+
+  .search-workspace-panel.with-supplemental-sections .search-workspace-saved-searches {
+    grid-column: 1 / -1;
+    border-inline-start: 0;
+    border-top: var(--uok-line);
+    padding-top: var(--uok-space-3);
+    padding-inline-start: 0;
   }
 
   .account-menu-root {
@@ -130,7 +139,8 @@
   .search-workspace-panel,
   .search-workspace-panel.without-grouping,
   .search-workspace-panel.with-sorting,
-  .search-workspace-panel.with-sorting.without-grouping {
+  .search-workspace-panel.with-sorting.without-grouping,
+  .search-workspace-panel.with-supplemental-sections {
     position: fixed;
     inset: var(--uok-space-3);
     z-index: 40;
@@ -160,7 +170,8 @@
   .search-workspace-panel-content,
   .search-workspace-panel.without-grouping .search-workspace-panel-content,
   .search-workspace-panel.with-sorting .search-workspace-panel-content,
-  .search-workspace-panel.with-sorting.without-grouping .search-workspace-panel-content {
+  .search-workspace-panel.with-sorting.without-grouping .search-workspace-panel-content,
+  .search-workspace-panel.with-supplemental-sections .search-workspace-panel-content {
     grid-template-columns: 1fr;
   }
 

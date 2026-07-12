@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowDownUp, ArrowUp, Bookmark, Check, Filter, Rows3, Save, X } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { CommandButton, IconButton } from "../primitives";
 import { useUokLocalization } from "../localization";
@@ -15,6 +16,7 @@ export function SearchOptionsPanel({
   groupingEnabled,
   savedViews,
   sort,
+  supplementalSections,
   viewName,
   onApplyView,
   onClearAll,
@@ -33,6 +35,7 @@ export function SearchOptionsPanel({
   groupingEnabled: boolean;
   savedViews: SavedSearchView[];
   sort?: SearchWorkspaceSort;
+  supplementalSections?: ReactNode;
   viewName: string;
   onApplyView: (view: SavedSearchView) => void;
   onClearAll: () => void;
@@ -104,7 +107,8 @@ export function SearchOptionsPanel({
           </div>
         </section>
       ) : null}
-      <section className="search-workspace-section" aria-label={t("command.savedSearches", "Saved searches")}>
+      {supplementalSections}
+      <section className="search-workspace-section search-workspace-saved-searches" aria-label={t("command.savedSearches", "Saved searches")}>
         <h3><Bookmark size={16} aria-hidden="true" /> {t("command.savedSearches", "Saved searches")}</h3>
         <label className="search-workspace-save-field">
           <span>{t("command.searchName", "Search name")}</span>

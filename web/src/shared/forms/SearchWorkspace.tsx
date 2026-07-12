@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { SlidersHorizontal } from "lucide-react";
 
 import { useUokLocalization } from "../localization";
@@ -9,6 +9,8 @@ import { SearchRefinementChips } from "./SearchRefinementChips";
 import type { SavedSearchView, SearchWorkspaceFilter, SearchWorkspaceOption, SearchWorkspaceSort, SearchWorkspaceSortDirection } from "./SearchWorkspace.types";
 import { useSavedSearchViews } from "./useSavedSearchViews";
 import { useSearchRefinements } from "./useSearchRefinements";
+
+type SupplementalSections = ReactNode | ((controls: { close: () => void }) => ReactNode);
 
 export function SearchWorkspace({
   label,
@@ -22,6 +24,7 @@ export function SearchWorkspace({
   defaultSummaryLabel = "All records",
   savedViewsStorageKey,
   presetViews = [],
+  supplementalSections,
   onChange,
   onGroupByChange,
   onClear
@@ -37,6 +40,7 @@ export function SearchWorkspace({
   defaultSummaryLabel?: string;
   savedViewsStorageKey: string;
   presetViews?: SavedSearchView[];
+  supplementalSections?: SupplementalSections;
   onChange: (value: string) => void;
   onGroupByChange: (value: string) => void;
   onClear: () => void;
@@ -103,7 +107,8 @@ export function SearchWorkspace({
   const panelClass = [
     "search-workspace-panel",
     groupingEnabled ? "" : "without-grouping",
-    sortingEnabled ? "with-sorting" : ""
+    sortingEnabled ? "with-sorting" : "",
+    supplementalSections ? "with-supplemental-sections" : ""
   ].filter(Boolean).join(" ");
 
   return (
@@ -129,6 +134,7 @@ export function SearchWorkspace({
           groupingEnabled={groupingEnabled}
           savedViews={availableSavedViews}
           sort={sort}
+          supplementalSections={typeof supplementalSections === "function" ? supplementalSections({ close }) : supplementalSections}
           viewName={viewName}
           onApplyView={(view) => {
             applyView(view);

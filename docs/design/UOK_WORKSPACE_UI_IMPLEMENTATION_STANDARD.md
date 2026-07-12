@@ -70,6 +70,7 @@ Every durable module workspace should use this structure unless the module plan 
    - Do not show the same active filter in multiple competing places.
    - Use the shared workspace command bar for module-neutral layout. It exposes optional query, context, pagination, view, fields, secondary-action, and primary-action slots while keeping module state and business commands inside the owning module.
    - Keep the command bar to at most three labelled groups in stable order: query, context, and actions. Do not use the ARIA `toolbar` role unless the complete toolbar keyboard interaction pattern is implemented.
+   - Keep frequent view and field controls plus one trailing create command directly available. When a module has additional low-frequency actions, place them in a labelled supplemental section of the expandable search/options panel; clearing search refinements must not invoke those actions or reset their state.
    - Expandable filter/control panels apply changes live without dismissing. Clear resets refinements while the panel remains available for inspection; Done, Escape, outside activation, and an explicitly applied saved view dismiss and return focus to the trigger. Narrow layouts keep the panel inside the viewport as a one-column surface.
 
 3. Results surface

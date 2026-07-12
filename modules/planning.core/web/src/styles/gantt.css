@@ -290,9 +290,4 @@
     flex-wrap: wrap;
   }
 
-  .planning-command-bar .planning-plan-actions {
-    flex-wrap: wrap;
-    min-inline-size: 0;
-    overflow-x: visible;
-  }
 }

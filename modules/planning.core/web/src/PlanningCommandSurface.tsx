@@ -136,6 +136,19 @@ export function PlanningCommandSurface({ model, actions }: {
         groupBy="none"
         groupOptions={[]}
         savedViewsStorageKey="planning.gantt.searchViews"
+        supplementalSections={({ close }) => <section className="search-workspace-section planning-search-plan-actions" aria-label="Plan actions">
+          <h3><FolderKanban size={16} aria-hidden="true" /> Plan actions</h3>
+          <div className="planning-search-plan-action-list">
+            <CommandButton icon={FolderKanban} onClick={() => { actions.onCreateDemoSchedule(); close(); }} loading={model.busy === "demo"} disabled={model.reviewMode}>New sample plan</CommandButton>
+            <CommandButton icon={RefreshCw} onClick={() => { actions.onRefresh(); close(); }} loading={model.busy === "refresh"}>Refresh</CommandButton>
+            <button type="button" className="command-button planning-history-control" aria-label="Undo" title={model.history.undoLabel ? `Undo ${model.history.undoLabel}` : "Undo"} onClick={() => { actions.onUndo(); close(); }} disabled={model.reviewMode || !model.history.canUndo || model.busy === "undo"}>
+              <Undo2 size={16} aria-hidden="true" /><span>Undo</span>
+            </button>
+            <button type="button" className="command-button planning-history-control" aria-label="Redo" title={model.history.redoLabel ? `Redo ${model.history.redoLabel}` : "Redo"} onClick={() => { actions.onRedo(); close(); }} disabled={model.reviewMode || !model.history.canRedo || model.busy === "redo"}>
+              <Redo2 size={16} aria-hidden="true" /><span>Redo</span>
+            </button>
+          </div>
+        </section>}
         onChange={(query) => actions.onFiltersChange((current) => ({ ...current, query }))}
         onGroupByChange={() => undefined}
         onClear={() => actions.onFiltersChange({ mode: "all", query: "", partyId: "", resourceId: "", status: "" })}
@@ -167,14 +180,6 @@ export function PlanningCommandSurface({ model, actions }: {
         selectedTaskId={model.selectedTaskId} selectedTasks={model.selectedTasks} selectedVisible={model.selectedVisible}
         showBaselines={model.showBaselines} showCritical={model.showCritical} token={model.token} viewDensity={model.viewDensity}
       />}
-      secondaryActions={<>
-        <div className="planning-toolbar-group planning-plan-actions" aria-label="Plan actions">
-          <CommandButton icon={FolderKanban} onClick={actions.onCreateDemoSchedule} loading={model.busy === "demo"} disabled={model.reviewMode}>New sample plan</CommandButton>
-          <CommandButton icon={RefreshCw} onClick={actions.onRefresh} loading={model.busy === "refresh"}>Refresh</CommandButton>
-          <button type="button" className="planning-icon-button planning-history-control" aria-label="Undo" title={model.history.undoLabel ? `Undo ${model.history.undoLabel}` : "Undo"} onClick={actions.onUndo} disabled={model.reviewMode || !model.history.canUndo || model.busy === "undo"}><Undo2 size={16} aria-hidden="true" /></button>
-          <button type="button" className="planning-icon-button planning-history-control" aria-label="Redo" title={model.history.redoLabel ? `Redo ${model.history.redoLabel}` : "Redo"} onClick={actions.onRedo} disabled={model.reviewMode || !model.history.canRedo || model.busy === "redo"}><Redo2 size={16} aria-hidden="true" /></button>
-        </div>
-      </>}
       primaryAction={<CommandButton icon={Plus} onClick={() => actions.onNewTask("task")} disabled={model.reviewMode} primary>New task</CommandButton>}
     />
   </>;
