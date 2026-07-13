@@ -4,11 +4,11 @@ import { EmptyState } from "@uok/shared/data-display";
 import type { ModuleStatus } from "@uok/shared/types";
 import { CalendarAgendaView } from "./CalendarAgendaView";
 import { CalendarEventEditor } from "./CalendarEventEditor";
-import { CalendarMiniMonth } from "./CalendarMiniMonth";
 import { CalendarMonthView } from "./CalendarMonthView";
 import { CalendarTimeGrid } from "./CalendarTimeGrid";
 import { CalendarToolbar } from "./CalendarToolbar";
 import { CalendarModuleState, calendarErrorMessage } from "./CalendarWorkspaceSupport";
+import { CalendarWorkspaceStatus } from "./CalendarWorkspaceStatus";
 import { calendarAuthHeaders, downloadCalendarIcs, loadCalendarEventDetail } from "./calendarClient";
 import { resolveCalendarDraftTiming } from "./calendarDraftTiming";
 import { CALENDAR_MODULE_ID } from "./calendarModule";
@@ -45,7 +45,8 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
   const [editorBusyAction, setEditorBusyAction] = useState<"" | "save" | "cancel" | "restore">("");
   const [editorError, setEditorError] = useState("");
   const [busyCount, setBusyCount] = useState(0);
-  const [message, setMessage] = useState("Ready");
+  const [statusMessage, setStatusMessage] = useState("Ready");
+  const [workspaceError, setWorkspaceError] = useState("");
   const refreshSequence = useRef(0);
   const eventDetailRequests = useRef(new LatestRequestGuard());
   const calendarColors = useMemo(() => calendarColorMap(calendars), [calendars]);
@@ -56,6 +57,15 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw data;
     return data as T;
+  }
+
+  function setWorkspaceStatus(text: string) {
+    setStatusMessage(text);
+    setWorkspaceError("");
+  }
+
+  function setWorkspaceFailure(error: unknown) {
+    setWorkspaceError(calendarErrorMessage(error));
   }
 
   async function refreshCalendar(calendarId?: string) {
@@ -88,10 +98,10 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
       setActiveCalendarId(nextCalendarId);
       setEvents(nextEvents);
       setBusyCount(nextBusyCount);
-      setMessage(`Loaded ${rows.length} calendars and ${durationDays(range.from, range.to)} visible days.`);
+      setWorkspaceStatus(`Loaded ${rows.length} calendars and ${durationDays(range.from, range.to)} visible days.`);
     } catch (error) {
       if (requestId !== refreshSequence.current) return;
-      setMessage(calendarErrorMessage(error));
+      setWorkspaceFailure(error);
     }
   }
 
@@ -102,15 +112,15 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
         body: JSON.stringify({ name: calendars.length ? `Calendar ${calendars.length + 1}` : "Default Calendar", timezone, visibility_scope: "organization" })
       });
       await refreshCalendar(row.id);
-      setMessage(`Created ${row.name}.`);
+      setWorkspaceStatus(`Created ${row.name}.`);
     } catch (error) {
-      setMessage(calendarErrorMessage(error));
+      setWorkspaceFailure(error);
     }
   }
 
   function showEditorError(text: string) {
     setEditorError(text);
-    setMessage(text);
+    setStatusMessage(text);
   }
 
   async function saveEvent() {
@@ -138,7 +148,7 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
       setSelectedEvent(undefined);
       setSelectedEventEtag(null);
       await refreshCalendar();
-      setMessage(draft.id ? "Event updated." : "Event created.");
+      setWorkspaceStatus(draft.id ? "Event updated." : "Event created.");
     } catch (error) {
       showEditorError(calendarErrorMessage(error));
     } finally {
@@ -159,7 +169,7 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
       setEditorOpen(false);
       setSelectedEventEtag(null);
       await refreshCalendar();
-      setMessage("Event canceled.");
+      setWorkspaceStatus("Event canceled.");
     } catch (error) {
       showEditorError(calendarErrorMessage(error));
     } finally {
@@ -179,7 +189,7 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
       setEditorOpen(false);
       setSelectedEventEtag(null);
       await refreshCalendar();
-      setMessage("Event restored.");
+      setWorkspaceStatus("Event restored.");
     } catch (error) {
       showEditorError(calendarErrorMessage(error));
     } finally {
@@ -198,7 +208,7 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
       setEditorOpen(true);
     } catch (error) {
       if (!request.isCurrent()) return;
-      setMessage(calendarErrorMessage(error));
+      setWorkspaceFailure(error);
     } finally {
       request.release();
     }
@@ -221,7 +231,7 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
     try {
       await downloadCalendarIcs(token, params);
     } catch (error) {
-      setMessage(calendarErrorMessage(error));
+      setWorkspaceFailure(error);
     }
   }
 
@@ -238,10 +248,15 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
       <CalendarToolbar
         view={view}
         cursorDate={cursorDate}
+        calendars={calendars}
+        activeCalendarId={activeCalendarId || ""}
         query={query}
         statusFilter={statusFilter}
         availabilityFilter={availabilityFilter}
         onViewChange={setView}
+        onDateChange={setCursorDate}
+        onCalendarChange={(id) => void refreshCalendar(id)}
+        onCreateCalendar={createDefaultCalendar}
         onQueryChange={setQuery}
         onStatusFilterChange={setStatusFilter}
         onAvailabilityFilterChange={setAvailabilityFilter}
@@ -256,27 +271,13 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
         onRefresh={() => void refreshCalendar()}
         onExport={() => void exportIcs()}
       />
-      <div className="calendar-layout">
-        <CalendarMiniMonth
-          cursorDate={cursorDate}
-          calendars={calendars}
-          activeCalendarId={activeCalendarId || ""}
-          onDateChange={setCursorDate}
-          onCalendarChange={(id) => void refreshCalendar(id)}
-          onCreateCalendar={createDefaultCalendar}
-        />
-        <main className="calendar-main" aria-label="Calendar events">
-          <div className="calendar-summary">
-            <span>{eventRows.length} events</span>
-            <span>{busyCount} busy blocks</span>
-            <span role="status" aria-live="polite" aria-atomic="true">{message}</span>
-          </div>
-          {view === "month" && <CalendarMonthView cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
-          {view === "week" && <CalendarTimeGrid view="week" cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
-          {view === "day" && <CalendarTimeGrid view="day" cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
-          {view === "agenda" && <CalendarAgendaView events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectEvent={(event) => void selectEvent(event)} />}
-        </main>
-      </div>
+      <main className="calendar-main" aria-label="Calendar events">
+        <CalendarWorkspaceStatus eventCount={eventRows.length} busyCount={busyCount} message={statusMessage} error={workspaceError} />
+        {view === "month" && <CalendarMonthView cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
+        {view === "week" && <CalendarTimeGrid view="week" cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
+        {view === "day" && <CalendarTimeGrid view="day" cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
+        {view === "agenda" && <CalendarAgendaView events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectEvent={(event) => void selectEvent(event)} />}
+      </main>
       <CalendarEventEditor
         open={editorOpen}
         draft={draft}

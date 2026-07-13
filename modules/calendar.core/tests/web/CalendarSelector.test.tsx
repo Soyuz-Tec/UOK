@@ -63,4 +63,17 @@ describe("CalendarSelector", () => {
 
     expect(screen.getByRole("button", { name: "عرض التقويم: كل التقاويم" })).toHaveAttribute("aria-expanded", "false");
   });
+
+  it("preserves the full selected calendar name for accessible and hover disclosure", () => {
+    const name = "Candidate Calendar 1783741787404 with a deliberately long operational title";
+    render(<CalendarSelector
+      calendars={[{ id: "calendar-1", name, color: "#2563eb", status: "active", timezone: "UTC" }]}
+      scopeId="calendar-1"
+      onScopeChange={vi.fn()}
+      onCreateCalendar={vi.fn()}
+    />);
+
+    const trigger = screen.getByRole("button", { name: `Calendar display: ${name}` });
+    expect(trigger.querySelector(".calendar-selector-current")).toHaveAttribute("title", name);
+  });
 });

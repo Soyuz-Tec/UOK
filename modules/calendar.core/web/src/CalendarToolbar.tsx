@@ -4,8 +4,9 @@ import { WorkspaceActionButton, WorkspaceActionsMenu } from "@uok/shared/actions
 import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkspaceCommandBar } from "@uok/shared/layout";
 import { CommandButton, IconButton, SegmentedControl } from "@uok/shared/primitives";
-import type { CalendarView } from "./calendarTypes";
-import { viewTitle } from "./calendarDates";
+import { CalendarDateNavigator } from "./CalendarDateNavigator";
+import { CalendarSelector } from "./CalendarSelector";
+import type { CalendarRecord, CalendarView } from "./calendarTypes";
 
 const viewOptions = [
   { id: "month" as const, label: "Month", icon: Table2 },
@@ -17,10 +18,15 @@ const viewOptions = [
 export function CalendarToolbar({
   view,
   cursorDate,
+  calendars,
+  activeCalendarId,
   query,
   statusFilter,
   availabilityFilter,
   onViewChange,
+  onDateChange,
+  onCalendarChange,
+  onCreateCalendar,
   onQueryChange,
   onStatusFilterChange,
   onAvailabilityFilterChange,
@@ -33,10 +39,15 @@ export function CalendarToolbar({
 }: {
   view: CalendarView;
   cursorDate: Date;
+  calendars: CalendarRecord[];
+  activeCalendarId: string;
   query: string;
   statusFilter: string;
   availabilityFilter: string;
   onViewChange: (view: CalendarView) => void;
+  onDateChange: (date: Date) => void;
+  onCalendarChange: (calendarId: string) => void;
+  onCreateCalendar: () => void;
   onQueryChange: (query: string) => void;
   onStatusFilterChange: (status: string) => void;
   onAvailabilityFilterChange: (availability: string) => void;
@@ -70,11 +81,19 @@ export function CalendarToolbar({
         />
       )}
       context={(
-        <div className="calendar-range-group">
-          <CommandButton icon={CalendarClock} onClick={onToday}>Today</CommandButton>
-          <IconButton icon={ChevronLeft} label="Previous range" onClick={() => onMove(-1)} />
-          <strong>{viewTitle(view, cursorDate)}</strong>
-          <IconButton icon={ChevronRight} label="Next range" onClick={() => onMove(1)} />
+        <div className="calendar-context-controls">
+          <CalendarSelector
+            calendars={calendars}
+            scopeId={activeCalendarId}
+            onScopeChange={onCalendarChange}
+            onCreateCalendar={onCreateCalendar}
+          />
+          <div className="calendar-range-group">
+            <CommandButton icon={CalendarClock} onClick={onToday}>Today</CommandButton>
+            <IconButton icon={ChevronLeft} label="Previous range" onClick={() => onMove(-1)} />
+            <CalendarDateNavigator view={view} cursorDate={cursorDate} onDateChange={onDateChange} />
+            <IconButton icon={ChevronRight} label="Next range" onClick={() => onMove(1)} />
+          </div>
         </div>
       )}
       view={<SegmentedControl value={view} onChange={onViewChange} options={viewOptions} label="Calendar view" iconOnly />}

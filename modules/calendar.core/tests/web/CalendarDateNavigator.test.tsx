@@ -1,0 +1,110 @@
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { UokLocalizationProvider } from "@uok/shared/localization";
+import { CalendarDateNavigator } from "../../web/src/CalendarDateNavigator";
+import { dayKey } from "../../web/src/calendarDates";
+
+const cursorDate = new Date(2027, 0, 1, 12);
+
+describe("CalendarDateNavigator", () => {
+  afterEach(cleanup);
+
+  it("keeps the 42-day picker hidden until the range title opens it", async () => {
+    render(<CalendarDateNavigator view="month" cursorDate={cursorDate} onDateChange={vi.fn()} />);
+
+    const trigger = screen.getByRole("button", { name: "Choose date: January 2027" });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("grid")).not.toBeInTheDocument();
+
+    fireEvent.click(trigger);
+    const grid = screen.getByRole("grid", { name: "January 2027" });
+    expect(within(grid).getAllByRole("gridcell")).toHaveLength(42);
+    const selected = within(grid).getByRole("gridcell", { name: "Friday, January 1, 2027" });
+    await waitFor(() => expect(selected).toHaveFocus());
+    expect(selected).toHaveAttribute("aria-selected", "true");
+    expect(within(grid).getAllByRole("gridcell").filter((cell) => cell.tabIndex === 0)).toEqual([selected]);
+  });
+
+  it("closes on Escape and restores focus to the range trigger", async () => {
+    render(<CalendarDateNavigator view="month" cursorDate={cursorDate} onDateChange={vi.fn()} />);
+
+    const trigger = screen.getByRole("button", { name: "Choose date: January 2027" });
+    fireEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole("gridcell", { name: "Friday, January 1, 2027" })).toHaveFocus());
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
+    expect(trigger).toHaveFocus();
+    expect(screen.queryByRole("grid")).not.toBeInTheDocument();
+  });
+
+  it("selects an adjacent-month date and restores trigger focus", async () => {
+    const onDateChange = vi.fn();
+    render(<CalendarDateNavigator view="month" cursorDate={cursorDate} onDateChange={onDateChange} />);
+
+    const trigger = screen.getByRole("button", { name: "Choose date: January 2027" });
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole("gridcell", { name: "Sunday, December 27, 2026" }));
+
+    await waitFor(() => expect(onDateChange).toHaveBeenCalledTimes(1));
+    expect(dayKey(onDateChange.mock.calls[0][0])).toBe("2026-12-27");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+  });
+
+  it("browses months without changing the workspace until a date is chosen", async () => {
+    const onDateChange = vi.fn();
+    render(<CalendarDateNavigator view="month" cursorDate={cursorDate} onDateChange={onDateChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Choose date: January 2027" }));
+    await waitFor(() => expect(screen.getByRole("gridcell", { name: "Friday, January 1, 2027" })).toHaveFocus());
+    const nextMonth = screen.getByRole("button", { name: "Next month" });
+    nextMonth.focus();
+    fireEvent.click(nextMonth);
+    expect(screen.getByRole("heading", { name: "February 2027" })).toBeInTheDocument();
+    await waitFor(() => expect(nextMonth).toHaveFocus());
+    nextMonth.focus();
+    fireEvent.click(nextMonth);
+    expect(screen.getByRole("heading", { name: "March 2027" })).toBeInTheDocument();
+    await waitFor(() => expect(nextMonth).toHaveFocus());
+    expect(onDateChange).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("gridcell", { name: "Monday, March 1, 2027" }));
+    await waitFor(() => expect(onDateChange).toHaveBeenCalledTimes(1));
+    expect(dayKey(onDateChange.mock.calls[0][0])).toBe("2027-03-01");
+  });
+
+  it("uses roving arrow-key focus and native selection", async () => {
+    const onDateChange = vi.fn();
+    render(<CalendarDateNavigator view="month" cursorDate={cursorDate} onDateChange={onDateChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Choose date: January 2027" }));
+    const first = screen.getByRole("gridcell", { name: "Friday, January 1, 2027" });
+    await waitFor(() => expect(first).toHaveFocus());
+    fireEvent.keyDown(first, { key: "ArrowRight" });
+    const second = screen.getByRole("gridcell", { name: "Saturday, January 2, 2027" });
+    await waitFor(() => expect(second).toHaveFocus());
+    fireEvent.keyDown(second, { key: "ArrowDown" });
+    const ninth = screen.getByRole("gridcell", { name: "Saturday, January 9, 2027" });
+    await waitFor(() => expect(ninth).toHaveFocus());
+    fireEvent.click(ninth);
+    await waitFor(() => expect(onDateChange).toHaveBeenCalledTimes(1));
+    expect(dayKey(onDateChange.mock.calls[0][0])).toBe("2027-01-09");
+  });
+
+  it("localizes the date navigator and month commands in Arabic", () => {
+    render(
+      <UokLocalizationProvider locale="ar">
+        <CalendarDateNavigator view="month" cursorDate={cursorDate} onDateChange={vi.fn()} />
+      </UokLocalizationProvider>,
+    );
+
+    const trigger = screen.getByRole("button", { name: /اختر تاريخا/ });
+    fireEvent.click(trigger);
+    expect(screen.getByRole("button", { name: "الشهر السابق" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "الشهر التالي" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /يناير/ })).toBeInTheDocument();
+  });
+});

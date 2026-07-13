@@ -127,8 +127,11 @@ describe("CalendarWorkspace integrity", () => {
     await screen.findByRole("button", { name: /Export event/ });
     fireEvent.click(screen.getByRole("button", { name: "More actions" }));
     fireEvent.click(within(screen.getByRole("dialog", { name: "More actions" })).getByRole("button", { name: "Export ICS" }));
-    const status = await screen.findByRole("status");
-    expect(status).toHaveTextContent("Export denied");
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Export denied");
+    expect(alert).not.toHaveClass("visually-hidden");
+    const status = screen.getByRole("status");
+    expect(status).toHaveClass("visually-hidden");
     expect(status).toHaveAttribute("aria-live", "polite");
     expect(status).toHaveAttribute("aria-atomic", "true");
     expect(fetchMock.mock.calls.some(([input]) => String(input).startsWith("/api/calendar/ics/export?"))).toBe(true);

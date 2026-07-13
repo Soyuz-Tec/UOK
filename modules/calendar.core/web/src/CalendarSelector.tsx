@@ -49,7 +49,7 @@ export function CalendarSelector({
         triggerIcon={CalendarDays}
         triggerLabel={`${t("calendar.selector.display", "Calendar display")}: ${selectedLabel}`}
         triggerSummary={(
-          <span className="calendar-selector-current">
+          <span className="calendar-selector-current" title={selectedLabel}>
             {selected ? <span className="calendar-color-dot" style={calendarSwatchStyle(selected.color)} aria-hidden="true" /> : null}
             <span>{selectedLabel}</span>
           </span>

@@ -21,10 +21,13 @@ under ADR-0026.
 ## Implemented UI Scope
 
 - Traditional Calendar workspace with Month, Week, Day, and Agenda views.
-- Shared workspace command bar with event search and saved-search options, calendar selector, Today, previous/next navigation, view switching, New event, Refresh, and ICS export.
-- Mini month picker and a collapsed, focus-restoring Calendars menu containing
-  a bounded, searchable scope selector for all Calendars or one Calendar, with
-  validated per-Calendar color presentation.
+- Shared workspace command bar with event search and saved-search options, a
+  compact Calendar-scope menu, Today, previous/next navigation, an on-demand
+  date navigator, view switching, New event, Refresh, and ICS export.
+- The persistent mini-month rail is removed so the event surface receives the
+  full workspace width. The range title opens a focus-restoring 42-day date
+  navigator, while the separate bounded and searchable Calendars menu keeps
+  the selected scope visible without exposing the full collection.
 - Visual event blocks on month and agenda views plus a complete 24-hour
   Week/Day grid with midnight clipping and overlap lanes.
 - Shared draggable event editor for create and update flows, including focus
@@ -34,7 +37,9 @@ under ADR-0026.
 - Recurring occurrences open as an explicitly labeled whole-series editor;
   cancellation and restoration require whole-series confirmation while
   recurrence exceptions remain deferred.
-- Free/busy count surfaced in the workspace summary.
+- Event, free/busy, and successful-load counts are announced through the
+  polite workspace status region without occupying permanent visual chrome;
+  workspace-level failures remain visible alerts.
 
 ## Backend Scope
 
@@ -89,8 +94,9 @@ under ADR-0026.
    all-day boundaries, explicit participant/reminder replacement, and ICS
    injection hardening.
 2. Workspace foundation: shared draggable event editor, scroll-bounded
-   searchable all-or-one Calendar scope, multi-calendar colors, complete
-   24-hour geometry, overlap lanes, inline errors, and keyboard-roving slots.
+   searchable all-or-one Calendar scope, on-demand keyboard date navigation,
+   full-width content, multi-calendar colors, complete 24-hour geometry,
+   overlap lanes, inline errors, and keyboard-roving slots.
 
 ## Next Increments
 

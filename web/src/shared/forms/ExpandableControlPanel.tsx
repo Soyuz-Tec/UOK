@@ -9,6 +9,7 @@ export function ExpandableControlPanel({
   triggerLabel,
   triggerSummary,
   triggerIcon: TriggerIcon,
+  initialFocusSelector,
   className,
   panelClassName,
   open,
@@ -20,6 +21,7 @@ export function ExpandableControlPanel({
   triggerLabel: string;
   triggerSummary: ReactNode;
   triggerIcon?: LucideIcon;
+  initialFocusSelector?: string;
   className?: string;
   panelClassName?: string;
   open?: boolean;
@@ -33,6 +35,7 @@ export function ExpandableControlPanel({
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const wasOpenRef = useRef(false);
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const [compactPresentation, setCompactPresentation] = useState(false);
   const isOpen = open ?? internalOpen;
@@ -74,12 +77,21 @@ export function ExpandableControlPanel({
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return undefined;
+    const wasOpen = wasOpenRef.current;
+    wasOpenRef.current = isOpen;
+    if (!isOpen || wasOpen) return;
     queueMicrotask(() => {
       const panel = panelRef.current;
-      const firstControl = panel?.querySelector<HTMLElement>("input:not(:disabled), select:not(:disabled), button:not(:disabled), [tabindex]:not([tabindex='-1'])");
+      const preferredControl = initialFocusSelector
+        ? panel?.querySelector<HTMLElement>(initialFocusSelector)
+        : null;
+      const firstControl = preferredControl || panel?.querySelector<HTMLElement>("input:not(:disabled), select:not(:disabled), button:not(:disabled), [tabindex]:not([tabindex='-1'])");
       (firstControl || panel)?.focus();
     });
+  }, [initialFocusSelector, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
     const closeFromOutside = (event: MouseEvent) => {
       if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false, true);
     };
@@ -110,7 +122,7 @@ export function ExpandableControlPanel({
       document.removeEventListener("mousedown", closeFromOutside);
       document.removeEventListener("keydown", closeFromEscape);
     };
-  }, [compactPresentation, isOpen, onOpenChange, open]);
+  }, [compactPresentation, initialFocusSelector, isOpen, onOpenChange, open]);
 
   const close = () => setOpen(false, true);
 

@@ -79,7 +79,8 @@ describe("CalendarWorkspace", () => {
     expect(await screen.findByRole("group", { name: "Calendar view" })).toBeInTheDocument();
     const commandBar = screen.getByLabelText("Calendar controls");
     expect(within(commandBar).getByRole("group", { name: "Calendar controls query" })).toBeInTheDocument();
-    expect(within(commandBar).getByRole("group", { name: "Calendar controls context" })).toBeInTheDocument();
+    const commandContext = within(commandBar).getByRole("group", { name: "Calendar controls context" });
+    expect(commandContext).toBeInTheDocument();
     expect(within(commandBar).getByRole("group", { name: "Calendar controls actions" })).toBeInTheDocument();
     expect(within(commandBar).getByRole("textbox", { name: "Search events" })).toBeInTheDocument();
     expect(within(commandBar).getAllByRole("button", { name: "New event" })).toHaveLength(1);
@@ -89,9 +90,14 @@ describe("CalendarWorkspace", () => {
     expect(within(actionsMenu).getByRole("button", { name: "Refresh" })).toBeInTheDocument();
     expect(within(actionsMenu).getByRole("button", { name: "Export ICS" })).toBeInTheDocument();
     fireEvent.click(moreActions);
-    await waitFor(() => expect(screen.getAllByText("Operations").length).toBeGreaterThan(0));
+    await waitFor(() => expect(within(commandContext).getByRole("button", { name: "Calendar display: Operations" })).toBeInTheDocument());
+    expect(within(commandContext).getAllByRole("button", { name: /Choose date:/ })).toHaveLength(1);
+    expect(screen.queryByLabelText("Calendar side panel")).not.toBeInTheDocument();
+    expect(document.querySelector(".calendar-layout")).not.toBeInTheDocument();
+    expect(document.querySelector(".calendar-summary")).not.toBeInTheDocument();
     expect(await screen.findByText("Dispatch review")).toBeInTheDocument();
-    expect(screen.getByText("1 busy blocks")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveClass("visually-hidden");
+    expect(screen.getByRole("status")).toHaveTextContent("1 busy block");
 
     const newEventButton = within(commandBar).getByRole("button", { name: "New event" });
     newEventButton.focus();
@@ -117,7 +123,8 @@ describe("CalendarWorkspace", () => {
     const fetchMock = vi.mocked(fetch);
     render(<CalendarWorkspace token="token" moduleRows={[installedCalendar]} busyAction="" onInstall={() => undefined} />);
 
-    const scopeTrigger = await screen.findByRole("button", { name: "Calendar display: Operations" });
+    const commandContext = within(screen.getByLabelText("Calendar controls")).getByRole("group", { name: "Calendar controls context" });
+    const scopeTrigger = await within(commandContext).findByRole("button", { name: "Calendar display: Operations" });
     fireEvent.click(scopeTrigger);
     const allCalendars = screen.getByRole("radio", { name: /All calendars/ });
     expect(screen.getByRole("radio", { name: /Operations/ })).toBeChecked();
@@ -134,7 +141,8 @@ describe("CalendarWorkspace", () => {
   it("defaults a new event to the selected calendar timezone and visible wall hour", async () => {
     render(<CalendarWorkspace token="token" moduleRows={[installedCalendar]} busyAction="" onInstall={() => undefined} />);
 
-    const scopeTrigger = await screen.findByRole("button", { name: "Calendar display: Operations" });
+    const commandContext = within(screen.getByLabelText("Calendar controls")).getByRole("group", { name: "Calendar controls context" });
+    const scopeTrigger = await within(commandContext).findByRole("button", { name: "Calendar display: Operations" });
     fireEvent.click(scopeTrigger);
     const engineering = screen.getByRole("radio", { name: /Engineering/ });
     fireEvent.click(engineering);

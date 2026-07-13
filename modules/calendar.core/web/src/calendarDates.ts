@@ -42,16 +42,16 @@ export function rangeForView(view: CalendarView, cursor: Date) {
   return { from: cells[0], to: addDays(cells[cells.length - 1], 1) };
 }
 
-export function viewTitle(view: CalendarView, cursor: Date) {
+export function viewTitle(view: CalendarView, cursor: Date, locale?: string) {
   if (view === "day") {
-    return cursor.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    return cursor.toLocaleDateString(locale, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
   }
   if (view === "week") {
     const start = startOfWeek(cursor);
     const end = addDays(start, 6);
-    return `${start.toLocaleDateString(undefined, { month: "short", day: "numeric" })} - ${end.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+    return `${start.toLocaleDateString(locale, { month: "short", day: "numeric" })} - ${end.toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" })}`;
   }
-  return cursor.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  return cursor.toLocaleDateString(locale, { month: "long", year: "numeric" });
 }
 
 export function dayKey(date: Date) {
