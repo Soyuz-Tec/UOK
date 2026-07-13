@@ -69,6 +69,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0022-module-owned-orm-registration.md` | Single-Base kernel/module ORM ownership, deterministic registration, exact compatibility identity, and static-validation boundary | ORM ownership, model providers, registration order, metadata composition, or compatibility aliases change |
 | `docs/architecture/ADR-0023-module-local-frontend-composition.md` | Module-local React/CSS/test ownership, closed-manifest frontend metadata, deterministic compile-time catalog generation, and transitional shell host boundary | Module frontend paths, surface metadata, catalog generation, shell composition, test discovery, or frontend container packaging changes |
 | `docs/architecture/ADR-0024-database-connection-pooling.md` | Bounded process-local pooling, capacity enforcement, telemetry, and evidence-gated deferral of PgBouncer | Database pooling ownership, capacity formula, connection topology, or PgBouncer activation conditions change |
+| `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md` | Minimal shared workspace command surface, common action vocabulary, and shared/module ownership split | Command grouping, shared labels, primary-action rules, low-frequency action placement, or exception policy changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -154,6 +155,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0022-module-owned-orm-registration.md`
 - `docs/architecture/ADR-0023-module-local-frontend-composition.md`
 - `docs/architecture/ADR-0024-database-connection-pooling.md`
+- `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`

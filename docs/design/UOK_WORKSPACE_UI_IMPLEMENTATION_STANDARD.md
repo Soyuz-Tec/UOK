@@ -73,6 +73,30 @@ Every durable module workspace should use this structure unless the module plan 
    - Keep frequent view and field controls plus one trailing create command directly available. When a module has additional low-frequency actions, place them in a labelled supplemental section of the expandable search/options panel; clearing search refinements must not invoke those actions or reset their state.
    - Expandable filter/control panels apply changes live without dismissing. Clear resets refinements while the panel remains available for inspection; Done, Escape, outside activation, and an explicitly applied saved view dismiss and return focus to the trigger. Narrow layouts keep the panel inside the viewport as a one-column surface.
 
+### Common action vocabulary
+
+ADR-0025 defines the shared labels. Modules provide the domain noun and command
+handler while reusing these visible terms and shared localization keys.
+
+| Intent | Label and placement |
+|---|---|
+| Search and default set | `Search <plural noun>` and `All <plural noun>` in query |
+| Open existing content | `Open` or `Open <singular noun>` on the owning row, card, result, or contextual action area |
+| Close a transient surface | `Close` in shared popup, editor, or transient-surface chrome or actions; do not add it as a duplicate workspace command |
+| Top-level creation | One trailing primary `New <singular noun>` action |
+| Nested association | `Add <noun>` inside the owning record workflow |
+| Refine and present | `Filters`, `Sort`, `Group by`, `Saved views`, `Fields`, and `View` |
+| Reload and history | `Refresh`, `Undo`, and `Redo`; low frequency may use a labelled supplemental section |
+| Output | `Export` or `Export <format>`, and `Print`; use labelled supplemental actions unless output is central to the workflow |
+| Reset and dismiss options | `Clear all` keeps the panel available; `Done` dismisses and restores focus |
+| Edit workflow | `Edit`, `Save`, `Discard`, and `Cancel` according to whether dirty work exists |
+| Destructive versus relational | `Delete` destroys the record and is contextual/destructive; `Remove` detaches a relationship |
+
+Keep unavailable commands visible but disabled when discoverability matters, use
+an inline loading state for committed work, and do not use a vocabulary change
+to hide a permission or validation failure. Record a justified exception in the
+owning module plan.
+
 3. Results surface
    - Supports list/detail, table, and cards only when each view has a clear user need.
    - Table behavior such as pagination, sorting, column sizing, and selection must use reusable primitives.
@@ -211,6 +235,8 @@ A UI implementation is complete only when:
 
 - the workflow is understandable without developer explanation;
 - duplicated controls have been removed or justified;
+- the command surface uses stable query, context, and actions grouping, no more than one primary action, and the ADR-0025 common vocabulary;
+- cross-module UI proof covers command reachability, focus, narrow and enlarged-text reflow, localization, and appearance when the shared command boundary changes;
 - shared behavior is in shared primitives;
 - feature-specific behavior remains inside the owning feature or module;
 - source files remain reviewable under the line-of-code integrity policy;

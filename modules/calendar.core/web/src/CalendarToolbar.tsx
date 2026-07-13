@@ -1,5 +1,6 @@
-import { CalendarClock, ChevronLeft, ChevronRight, Download, List, Plus, RefreshCw, Rows3, Table2 } from "lucide-react";
+import { CalendarClock, ChevronLeft, ChevronRight, List, Rows3, Table2 } from "lucide-react";
 
+import { WorkspaceActionButton, WorkspaceActionsMenu } from "@uok/shared/actions";
 import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkspaceCommandBar } from "@uok/shared/layout";
 import { CommandButton, IconButton, SegmentedControl } from "@uok/shared/primitives";
@@ -88,13 +89,11 @@ export function CalendarToolbar({
         </div>
       )}
       view={<SegmentedControl value={view} onChange={onViewChange} options={viewOptions} label="Calendar view" iconOnly />}
-      secondaryActions={(
-        <>
-          <CommandButton icon={Download} onClick={onExport}>Export ICS</CommandButton>
-          <IconButton icon={RefreshCw} label="Refresh calendar" title="Refresh" onClick={onRefresh} />
-        </>
-      )}
-      primaryAction={<CommandButton icon={Plus} onClick={onCreate} primary>New event</CommandButton>}
+      secondaryActions={<WorkspaceActionsMenu items={[
+        { id: "export", action: "export", labelKey: "command.exportIcs", fallbackLabel: "Export ICS", onSelect: onExport },
+        { id: "refresh", action: "refresh", onSelect: onRefresh },
+      ]} />}
+      primaryAction={<WorkspaceActionButton action="create" labelKey="command.newEvent" fallbackLabel="New event" onClick={onCreate} primary />}
     />
   );
 }

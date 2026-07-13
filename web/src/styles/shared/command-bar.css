@@ -2,18 +2,18 @@
   display: grid;
   grid-template-columns: minmax(280px, 1fr) auto auto;
   align-items: center;
-  gap: var(--uok-space-2);
+  gap: var(--uok-space-1);
   min-inline-size: 0;
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
-  padding: var(--uok-space-3);
+  padding: var(--uok-space-1);
   background: var(--uok-bg-elevated);
 }
 
 .workspace-command-bar-group {
   display: flex;
   align-items: center;
-  gap: var(--uok-space-2);
+  gap: var(--uok-space-1);
   min-inline-size: 0;
 }
 

@@ -78,6 +78,9 @@ For execution discipline, developers and coding agents must use `docs/design/UOK
 
 8. Familiar controls
    - Use familiar controls for familiar jobs: tabs for views, segmented controls for modes, toggles for binary state, inputs for data entry, buttons for commands, and tables/lists for records.
+   - Durable workspaces must follow the minimal shared command surface and common action vocabulary accepted in `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`.
+   - Use one trailing primary action per active surface, keep frequent commands directly reachable, place low-frequency actions in labelled supplemental panels, and do not duplicate one command across competing visible regions.
+   - Use the standard `Search`, `Open`, `Close`, `New`, `Delete`, `Export`, `Print`, `Refresh`, refinement, completion, edit, and detachment labels from ADR-0025; domain-specific nouns may vary, but modules must not invent synonyms for shared actions.
    - Icons must clarify actions, not replace required business meaning.
    - Interface icons must express one clear concept, use a consistent stroke/size system, inherit semantic color through `currentColor`, and remain paired with visible text for business-critical actions.
    - UOK must not copy Apple-owned symbols or branding. Use project-owned icons or a licensed open-source React icon library while applying Apple-informed icon discipline.
@@ -139,6 +142,7 @@ The next UI iteration must introduce or preserve:
 
 - `web/src/design-tokens.css` or equivalent token module
 - Shared shell components: app shell, sidebar, toolbar, panel, table/list, status pill, workflow stepper, command button, icon-bearing navigation/control patterns
+- Shared `WorkspaceCommandBar` composition with optional query, context, and actions groups plus shared localized action vocabulary; modules retain domain state, permissions, options, and handlers
 - Shared compact section headings for sidebars, panels, filter areas, and module workspace sections. These headings must use the shared heading primitive and tokenized shaded heading style for eyebrow text, title font, icon/action alignment, separator, radius, and light/dark surface treatment.
 - Shared row rhythm for side-by-side work surfaces. Comparable list rails, table rows, card-list rows, and grouped sidebar rows must use the shared row-height and separator tokens (`--uok-row-height`, `--uok-header-row-height`, and `--uok-row-separator-color`) or the reusable row-rhythm classes instead of one-off pixel heights. Separators must not change measured row height, so adjacent lists and tables remain visually aligned in light and dark modes.
 - Master-detail result lists must avoid repeating full detail facts. Use the list for selection identity, the detail panel for full record facts, tables for column comparison, and cards for rich preview.
@@ -163,6 +167,7 @@ A UI change is not acceptable if it:
 - Adds durable UI behavior outside the React + TypeScript source tree.
 - Uses Apple-owned assets, SF Symbols exports, or Apple branding without an explicit legal/design decision.
 - Adds unlabeled critical command icons.
+- Adds a competing module-local command surface, more than one primary action to an active surface, a duplicate visible command, or a nonstandard synonym for an ADR-0025 common action without a documented exception.
 - Adds an icon that does not adapt to light/dark mode through semantic color.
 - Breaks system/default appearance behavior or removes light/dark verification.
 - Adds one-off spacing or layout rules outside the token system.

@@ -16,7 +16,7 @@ UOK modules can own domain behavior without copying common workspace and infrast
 | CSV row limits and spreadsheet-safe cells | `src/uok/data_exchange.py` | Contacts import, Reports formats |
 | Report artifact generation and download | `reports.core` plus `modules/reports.core/web/src/serverReports.ts` | Availability-gated Planning exports |
 | Search, filters, sort, grouping, and saved views | `web/src/shared/forms` | Apps, Calendar, Communications, Contacts, and Planning |
-| Workspace command-bar layout and accessible query/context/action grouping | `web/src/shared/layout` | Apps, Calendar, Communications, Contacts, and Planning through optional composition slots |
+| Workspace command-bar layout, accessible query/context/action grouping, and common localized action vocabulary | `web/src/shared/layout`, `web/src/shared/actions`, `web/src/shared/localization`, and `web/src/shared/primitives` | Apps, Calendar, Communications, Contacts, and Planning through optional composition slots |
 | Table column visibility, resize, order, pinned columns, and row heights | `web/src/shared/tables` | Contacts and Planning |
 | Bounded pagination controls and accessible range announcements | `web/src/shared/tables` | Contacts and Planning portfolio |
 | Toggle, command, icon, and segmented controls | `web/src/shared/primitives` | Contacts and Planning |
@@ -33,6 +33,13 @@ The shared workspace command bar owns responsive layout and no more than three
 labelled groups: query, context, and actions. Its optional slots let modules
 omit workflows they do not support. Query state, pagination semantics,
 permissions, and mutations remain owned by the consuming module.
+
+ADR-0025 assigns common action labels, localization keys, one-primary-action
+discipline, and duplicate-command prevention to the shared boundary. Consuming
+modules supply domain nouns, contextual values, permissions, options, loading
+state, handlers, and validation. A module may not create a competing command
+bar or feature-local synonym for a standard action without a documented
+exception.
 
 The shared overlay boundary owns transient popup position, the dedicated
 localized move handle, pointer capture, keyboard movement and position reset,

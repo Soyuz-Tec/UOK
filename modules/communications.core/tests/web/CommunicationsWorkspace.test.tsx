@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -112,18 +112,21 @@ describe("K Connect workspace", () => {
     render(<CommunicationsWorkspace token="token" moduleRows={[moduleRow]} busyAction="" onInstall={vi.fn()} />);
     await screen.findByText("General room", { selector: "h2" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
-    expect(screen.getByRole("button", { name: "New thread" })).toBeDisabled();
+    refreshFromMoreActions();
+    await waitFor(() => expect(screen.getByRole("button", { name: "New thread" })).toBeDisabled());
     fireEvent.click(screen.getByRole("button", { name: "New thread" }));
     expect(screen.queryByRole("dialog", { name: "Create communication thread" })).not.toBeInTheDocument();
 
     refreshRequest.resolve(jsonResponse([existing]));
-    await waitFor(() => expect(screen.getByRole("button", { name: "Refresh" })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole("button", { name: "New thread" })).toBeEnabled());
+    const idleActionsMenu = openMoreActions();
+    expect(within(idleActionsMenu).getByRole("button", { name: "Refresh" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "More actions" }));
 
     fireEvent.click(screen.getByRole("button", { name: "New thread" }));
     fireEvent.change(screen.getByLabelText("Thread title"), { target: { value: "Serialized room" } });
     fireEvent.click(screen.getByRole("button", { name: "Create thread" }));
-    expect(screen.getByText("Refresh").closest("button")).toBeDisabled();
+    expect(document.querySelector<HTMLButtonElement>('.workspace-actions-menu [data-command="refresh"]')).toBeDisabled();
     fireEvent.submit(screen.getByRole("dialog", { name: "Create communication thread" }).querySelector("form")!);
     expect(fetchMock).toHaveBeenCalledTimes(3);
 
@@ -151,7 +154,7 @@ describe("K Connect workspace", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
     expect(container.querySelector(".communications-thread-list")?.textContent).toContain("Temporary fallback");
 
-    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    refreshFromMoreActions();
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("1 authorized thread(s) loaded."));
     expect(container.querySelector(".communications-thread-list")?.textContent).not.toContain("Temporary fallback");
     expect(screen.getByText("General room", { selector: "h2" })).toBeInTheDocument();
@@ -182,4 +185,13 @@ function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((next) => { resolve = next; });
   return { promise, resolve };
+}
+
+function openMoreActions() {
+  fireEvent.click(screen.getByRole("button", { name: "More actions" }));
+  return screen.getByRole("dialog", { name: "More actions" });
+}
+
+function refreshFromMoreActions() {
+  fireEvent.click(within(openMoreActions()).getByRole("button", { name: "Refresh" }));
 }

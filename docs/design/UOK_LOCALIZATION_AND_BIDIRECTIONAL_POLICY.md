@@ -36,6 +36,20 @@ Planning surface. It does not label every module's current copy professionally
 translated. New coverage belongs in the shared dictionary and must include both
 directional and fallback tests.
 
+## Common command vocabulary
+
+The action vocabulary accepted in
+`docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`
+uses shared localization keys. The shared action primitive currently owns Open,
+Close, Create, Delete, Edit, Save, Cancel, Search, Export, Print, Refresh, More,
+and Working plus the contextual labels migrated by consuming modules. Modules
+provide business nouns through a shared key and fallback label instead of
+passing untranslated command copy. The remaining ADR terms are vocabulary
+requirements for their owning shared controls and become dictionary keys when
+those controls are migrated; this policy does not imply every term is an action
+kind. English, Arabic, direction, interpolation, and fallback tests must cover
+any new common command label.
+
 ## Bidirectional layout rules
 
 - Use logical properties such as `padding-inline`, `border-inline-start`, and

@@ -1,10 +1,9 @@
-import { UserPlus } from "lucide-react";
-
+import { WorkspaceActionButton } from "@uok/shared/actions";
 import { contactsViewOptions } from "@uok/shared/options";
 import type { ContactGroupBy, ContactGroupRecord, ContactQualityFilter, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "@uok/shared/types";
 import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkspaceCommandBar } from "@uok/shared/layout";
-import { CommandButton, SegmentedControl } from "@uok/shared/primitives";
+import { SegmentedControl } from "@uok/shared/primitives";
 import { FieldVisibilityMenu, type FieldVisibilityMenuConfig } from "@uok/shared/tables";
 import { ContactPagingControls } from "./ContactPagingControls";
 import { contactsSavedViewsKey, groupOptions, presetSavedViews, qualityOptions, reviewOptions, sortOptions, sourceOptions, statusOptions, typeOptions } from "./contactsToolbarOptions";
@@ -144,7 +143,7 @@ export function ContactsToolbar({
           onToggle={fieldVisibility.onToggle}
         />
       ) : undefined}
-      primaryAction={<CommandButton icon={UserPlus} onClick={onCreate} primary>New contact</CommandButton>}
+      primaryAction={<WorkspaceActionButton action="create" labelKey="command.newContact" fallbackLabel="New contact" onClick={onCreate} primary />}
     />
   );
 }

@@ -52,6 +52,7 @@ Operator browser
 - Workbench surfaces declare the release/build extension `web_surface` plus canonical `web_entry` and unique `web_section` metadata in the closed manifest. A deterministic generator validates those manifests and emits literal TypeScript imports in `web/src/generated/moduleSurfaceCatalog.ts` for the typed registry under `web/src/features/modules`.
 - Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and all declared entries into the normal static application bundle.
 - The shell currently passes its existing Workbench state through a typed module-surface host context. That shared shell compatibility bridge is intentionally transitional and must not become a new place for module behavior.
+- Durable module workspaces compose one minimal shared command surface with optional query, context, and actions groups plus the common localized action vocabulary accepted in ADR-0025. Shared code owns layout and accessibility; modules retain domain nouns, state, permissions, options, and handlers.
 - Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
 - Docker copies module production source into the frontend build stage, TypeScript/Vitest discover the module-owned source and test roots, and final-image validation keeps module tests out of the runtime image.
 
@@ -98,6 +99,7 @@ Operator browser
 - ADR-0022: `docs/architecture/ADR-0022-module-owned-orm-registration.md`
 - ADR-0023: `docs/architecture/ADR-0023-module-local-frontend-composition.md`
 - ADR-0024: `docs/architecture/ADR-0024-database-connection-pooling.md`
+- ADR-0025: `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`

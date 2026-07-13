@@ -1,7 +1,6 @@
-import { Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { CommandButton } from "@uok/shared/primitives";
+import { WorkspaceActionButton } from "@uok/shared/actions";
 import type { PlanningTaskCreateRequest, PlanningTaskDateUpdateRequest, PlanningTaskUpdateRequest } from "./planningContracts";
 import { PlanningTaskConstraintFields } from "./PlanningTaskConstraintFields";
 import { PlanningTaskDateFields } from "./PlanningTaskDateFields";
@@ -55,8 +54,8 @@ export function PlanningTaskEditor({ schedule, selectedTask, newTaskType, busy, 
         <PlanningTaskConstraintFields mode={form.scheduling_mode} type={form.constraint_type} date={form.constraint_date} onModeChange={(value) => setForm({ ...form, scheduling_mode: value as PlanningSchedulingMode })} onTypeChange={(value) => setForm({ ...form, constraint_type: value })} onDateChange={(value) => setForm({ ...form, constraint_date: value })} />
       </div>
       <div className="planning-action-row">
-        <CommandButton icon={Save} loading={busy === "task"} onClick={() => selectedTask ? onSaveTask(selectedTask.id, payload) : onCreateTask(payload)}>{selectedTask ? "Save task" : "Add task"}</CommandButton>
-        {selectedTask && <CommandButton icon={Trash2} loading={busy === "task"} onClick={() => onDeleteTask(selectedTask.id)}>Delete</CommandButton>}
+        <WorkspaceActionButton action={selectedTask ? "save" : "create"} labelKey={selectedTask ? "command.saveTask" : "command.addTask"} fallbackLabel={selectedTask ? "Save task" : "Add task"} loading={busy === "task"} onClick={() => selectedTask ? onSaveTask(selectedTask.id, payload) : onCreateTask(payload)} />
+        {selectedTask && <WorkspaceActionButton action="delete" loading={busy === "task"} onClick={() => onDeleteTask(selectedTask.id)} />}
       </div>
       {selectedTask ? <PlanningTaskDateFields task={selectedTask} timezone={schedule.project.timezone || "UTC"} busy={busy === "task-dates"} onSave={(dates) => onSaveTaskDates(selectedTask.id, dates)} /> : <span className="planning-muted">Create the task before recording forecast, actual, or deadline dates.</span>}
     </section>

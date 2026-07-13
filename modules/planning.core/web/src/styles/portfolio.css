@@ -36,7 +36,6 @@
   background: var(--uok-bg-elevated);
 }
 
-.planning-portfolio-header,
 .planning-portfolio-filters,
 .planning-portfolio-open {
   display: flex;
@@ -44,16 +43,6 @@
   gap: var(--uok-space-2);
 }
 
-.planning-portfolio-header {
-  justify-content: space-between;
-}
-
-.planning-portfolio-header h2,
-.planning-portfolio-header p {
-  margin: 0;
-}
-
-.planning-portfolio-header p,
 .planning-portfolio-table th span,
 .planning-portfolio-diagnostics {
   color: var(--uok-text-secondary);
@@ -186,9 +175,7 @@
 @media (max-width: 680px) {
   .planning-scope-switch,
   .planning-scope-switch button,
-  .planning-portfolio-header .command-button,
   .planning-portfolio-filters .command-button { width: 100%; }
-  .planning-portfolio-header { align-items: stretch; flex-direction: column; }
   .planning-portfolio-metrics { grid-template-columns: 1fr; }
 }
 

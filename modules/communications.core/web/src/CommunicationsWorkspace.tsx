@@ -1,7 +1,8 @@
-import { MessageCircleMore, Plus, RefreshCw, X } from "lucide-react";
+import { MessageCircleMore } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyState } from "@uok/shared/data-display";
+import { WorkspaceActionButton, WorkspaceActionsMenu } from "@uok/shared/actions";
 import { SearchWorkspace } from "@uok/shared/forms";
 import { Pane, WorkspaceCommandBar } from "@uok/shared/layout";
 import { WorkspaceEditorPopup } from "@uok/shared/overlays";
@@ -106,12 +107,14 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
             }}
           />
         )}
-        secondaryActions={<CommandButton icon={RefreshCw} loading={refreshing} disabled={creatingThread} onClick={() => void refresh()}>Refresh</CommandButton>}
+        secondaryActions={<WorkspaceActionsMenu items={[
+          { id: "refresh", action: "refresh", loading: refreshing, disabled: creatingThread, onSelect: () => void refresh() },
+        ]} />}
         primaryAction={(
-          <CommandButton icon={Plus} primary disabled={refreshing || creatingThread} onClick={() => {
+          <WorkspaceActionButton action="create" labelKey="command.newThread" fallbackLabel="New thread" primary disabled={refreshing || creatingThread} onClick={() => {
             setTitle("");
             setCreateOpen(true);
-          }}>New thread</CommandButton>
+          }} />
         )}
       />
       <span className="communications-status" role="status">{status}</span>
@@ -151,8 +154,8 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
         }}>
           <label className="field"><span>Thread title</span><input autoFocus value={title} maxLength={180} onChange={(event) => setTitle(event.target.value)} /></label>
           <div className="communications-create-actions">
-            <CommandButton icon={X} disabled={creatingThread} onClick={() => setCreateOpen(false)}>Cancel</CommandButton>
-            <CommandButton icon={Plus} type="submit" primary loading={creatingThread} disabled={refreshing || title.trim().length < 2}>Create thread</CommandButton>
+            <WorkspaceActionButton action="cancel" disabled={creatingThread} onClick={() => setCreateOpen(false)} />
+            <WorkspaceActionButton action="create" labelKey="command.createThread" fallbackLabel="Create thread" type="submit" primary loading={creatingThread} disabled={refreshing || title.trim().length < 2} />
           </div>
         </form>
       </WorkspaceEditorPopup>

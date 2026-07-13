@@ -73,8 +73,12 @@ describe("CalendarWorkspace", () => {
     expect(within(commandBar).getByRole("group", { name: "Calendar controls actions" })).toBeInTheDocument();
     expect(within(commandBar).getByRole("textbox", { name: "Search events" })).toBeInTheDocument();
     expect(within(commandBar).getAllByRole("button", { name: "New event" })).toHaveLength(1);
-    expect(within(commandBar).getByRole("button", { name: "Refresh calendar" })).toBeInTheDocument();
-    expect(within(commandBar).getByRole("button", { name: "Export ICS" })).toBeInTheDocument();
+    const moreActions = within(commandBar).getByRole("button", { name: "More actions" });
+    fireEvent.click(moreActions);
+    const actionsMenu = screen.getByRole("dialog", { name: "More actions" });
+    expect(within(actionsMenu).getByRole("button", { name: "Refresh" })).toBeInTheDocument();
+    expect(within(actionsMenu).getByRole("button", { name: "Export ICS" })).toBeInTheDocument();
+    fireEvent.click(moreActions);
     await waitFor(() => expect(screen.getAllByText("Operations").length).toBeGreaterThan(0));
     expect(await screen.findByText("Dispatch review")).toBeInTheDocument();
     expect(screen.getByText("1 busy blocks")).toBeInTheDocument();

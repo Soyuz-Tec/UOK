@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { Save, X } from "lucide-react";
 
+import { WorkspaceActionButton } from "@uok/shared/actions";
 import type { ContactDraft } from "@uok/shared/types";
 import { validEmail } from "@uok/shared/format";
 import { FieldMessage } from "@uok/shared/forms";
-import { CommandButton } from "@uok/shared/primitives";
 import { ContactFormDisclosure } from "./ContactFormDisclosure";
 import { addableSections, contactDraftHasMeaningfulValue, contactDraftSectionState, isValidWebsite } from "./contactFormModel";
 import type { AddableSection } from "./contactFormModel";
@@ -177,8 +176,8 @@ export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }
         </ContactFormDisclosure>
       )}
       <div className="form-actions">
-        <CommandButton icon={Save} onClick={onSave} loading={busy} disabled={!canSave} primary>Save</CommandButton>
-        <CommandButton icon={X} onClick={onCancel}>Close</CommandButton>
+        <WorkspaceActionButton action="save" onClick={onSave} loading={busy} disabled={!canSave} primary />
+        <WorkspaceActionButton action="close" onClick={onCancel} />
       </div>
     </form>
   );

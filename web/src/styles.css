@@ -3,6 +3,7 @@
 @import "./styles/auth.css";
 @import "./styles/account-menu.css";
 @import "./styles/shared/primitives.css";
+@import "./styles/shared/actions.css";
 @import "./styles/shared/forms.css";
 @import "./styles/shared/search-workspace.css";
 @import "./styles/shared/command-bar.css";

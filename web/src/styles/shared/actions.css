@@ -1,0 +1,60 @@
+.workspace-actions-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.workspace-actions-menu .expandable-control-trigger {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--uok-space-1);
+  min-height: var(--uok-control-height);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: 0 var(--uok-space-2);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
+}
+
+.workspace-actions-menu .expandable-control-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-actions-menu-panel {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% + var(--uok-space-2));
+  inset-inline-end: 0;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - var(--uok-space-6)));
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-1);
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-2);
+}
+
+.workspace-actions-menu-list {
+  display: grid;
+  gap: var(--uok-space-1);
+}
+
+.workspace-actions-menu-list .workspace-action-button {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+@media (max-width: 680px) {
+  .workspace-actions-menu-panel {
+    position: fixed;
+    inset: var(--uok-space-3);
+    z-index: 40;
+    width: auto;
+    max-width: none;
+    max-height: calc(100vh - (var(--uok-space-3) * 2));
+    overflow: auto;
+  }
+}

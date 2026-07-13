@@ -1,7 +1,7 @@
-import { Download, FileText } from "lucide-react";
 import { useState } from "react";
 
 import { generateAndDownloadReport } from "@uok-modules/reports.core/web/src/serverReports";
+import { WorkspaceActionButton } from "@uok/shared/actions";
 import {
   exportPlanningTimelineSvg,
   planningImportTemplateReportRequest,
@@ -24,26 +24,11 @@ export function PlanningReportExportControls({
   const unavailable = !reportsOperational;
   return (
     <div className="planning-utility-group planning-export-controls" aria-label="Schedule exports">
-      <button type="button" className="planning-toolbar-toggle" disabled={unavailable} onClick={() => void runReport("csv", planningScheduleReportRequest(schedule, ["csv"]))}>
-        <Download size={16} aria-hidden="true" />
-        <span>Export CSV</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" disabled={unavailable} onClick={() => void runReport("csv", planningImportTemplateReportRequest(schedule, ["csv"]))}>
-        <Download size={16} aria-hidden="true" />
-        <span>Template</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" disabled={unavailable} onClick={() => void runReport("json", planningProjectReportRequest(schedule, ["json"]))}>
-        <Download size={16} aria-hidden="true" />
-        <span>Project JSON</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" onClick={() => exportPlanningTimelineSvg(schedule)}>
-        <Download size={16} aria-hidden="true" />
-        <span>Timeline SVG</span>
-      </button>
-      <button type="button" className="planning-toolbar-toggle" disabled={unavailable} onClick={() => void runReport("md", planningScheduleReportRequest(schedule, ["md"], `${schedule.project.name} schedule document`))}>
-        <FileText size={16} aria-hidden="true" />
-        <span>Document</span>
-      </button>
+      <WorkspaceActionButton action="export" labelKey="command.exportCsv" fallbackLabel="Export CSV" disabled={unavailable} onClick={() => void runReport("csv", planningScheduleReportRequest(schedule, ["csv"]))} />
+      <WorkspaceActionButton action="export" labelKey="command.importTemplate" fallbackLabel="Template" disabled={unavailable} onClick={() => void runReport("csv", planningImportTemplateReportRequest(schedule, ["csv"]))} />
+      <WorkspaceActionButton action="export" labelKey="command.projectJson" fallbackLabel="Project JSON" disabled={unavailable} onClick={() => void runReport("json", planningProjectReportRequest(schedule, ["json"]))} />
+      <WorkspaceActionButton action="export" labelKey="command.timelineSvg" fallbackLabel="Timeline SVG" onClick={() => exportPlanningTimelineSvg(schedule)} />
+      <WorkspaceActionButton action="export" labelKey="command.document" fallbackLabel="Document" disabled={unavailable} onClick={() => void runReport("md", planningScheduleReportRequest(schedule, ["md"], `${schedule.project.name} schedule document`))} />
       {unavailable ? (
         <span className="planning-muted" role="status">Reports unavailable; report artifacts are disabled while Planning remains operational.</span>
       ) : reportStatus ? (

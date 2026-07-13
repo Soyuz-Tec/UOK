@@ -1,10 +1,9 @@
-import { FolderOpen, FolderPlus, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { WorkspaceActionButton, WorkspaceActionsMenu } from "@uok/shared/actions";
 import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkspaceCommandBar } from "@uok/shared/layout";
 import { useUokLocalization } from "@uok/shared/localization";
-import { CommandButton } from "@uok/shared/primitives";
 import { PaginationControls } from "@uok/shared/tables";
 import { loadPlanningPortfolio } from "./planningPortfolioApi";
 import type { PlanningPortfolioHealth, PlanningPortfolioProject, PlanningPortfolioResponse } from "./portfolioTypes";
@@ -50,14 +49,6 @@ export function PlanningPortfolioView({ token, canCreateProject, creatingProject
 
   return (
     <div className="planning-portfolio" aria-label={t("planning.portfolio", "Planning portfolio")}>
-      <header className="planning-portfolio-header">
-        <div>
-          <span className="workflow-eyebrow">{t("planning.portfolio.eyebrow", "Planning")}</span>
-          <h2>{t("planning.portfolio", "Portfolio")}</h2>
-          <p>{t("planning.portfolio.summary", "Monitor delivery, risk, gates, and schedule windows across projects.")}</p>
-        </div>
-      </header>
-
       <WorkspaceCommandBar
         className="planning-portfolio-command-bar"
         label={t("planning.portfolio.commands", "Portfolio commands")}
@@ -115,11 +106,18 @@ export function PlanningPortfolioView({ token, canCreateProject, creatingProject
             setPage(0);
           }}
         /> : null}
-        secondaryActions={<CommandButton icon={RefreshCw} onClick={() => {
-          setData(null);
-          setRefreshKey((value) => value + 1);
-        }} loading={busy}>{t("account.refresh", "Refresh")}</CommandButton>}
-        primaryAction={<CommandButton icon={FolderPlus} onClick={onNewProject} loading={creatingProject} disabled={!canCreateProject} primary>{t("planning.projectCreate.action", "New project")}</CommandButton>}
+        secondaryActions={<WorkspaceActionsMenu items={[
+          {
+            id: "refresh",
+            action: "refresh",
+            loading: busy,
+            onSelect: () => {
+              setData(null);
+              setRefreshKey((value) => value + 1);
+            },
+          },
+        ]} />}
+        primaryAction={<WorkspaceActionButton action="create" labelKey="planning.projectCreate.action" fallbackLabel="New project" onClick={onNewProject} loading={creatingProject} disabled={!canCreateProject} primary />}
       />
 
       {error ? <p className="planning-portfolio-error" role="alert">{error}</p> : null}
@@ -214,7 +212,7 @@ function PortfolioTable({ projects, rangeStart, rangeEnd, onOpenProject }: {
                 <span style={{ insetInlineStart: `${position.start}%`, inlineSize: `${position.width}%` }} />
               </div>
             </td>
-            <td><button className="planning-portfolio-open" type="button" onClick={() => onOpenProject(project.id)} aria-label={`${t("planning.portfolio.open", "Open project")} ${project.name}`}><FolderOpen size={16} aria-hidden="true" />{t("planning.portfolio.open", "Open")}</button></td>
+            <td><WorkspaceActionButton action="open" className="planning-portfolio-open" onClick={() => onOpenProject(project.id)} aria-label={`${t("planning.portfolio.open", "Open project")} ${project.name}`} /></td>
           </tr>;
         })}</tbody>
       </table>
