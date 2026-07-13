@@ -63,17 +63,67 @@ describe("CalendarDateNavigator", () => {
     const nextMonth = screen.getByRole("button", { name: "Next month" });
     nextMonth.focus();
     fireEvent.click(nextMonth);
-    expect(screen.getByRole("heading", { name: "February 2027" })).toBeInTheDocument();
+    expect(screen.getByRole("grid", { name: "February 2027" })).toBeInTheDocument();
     await waitFor(() => expect(nextMonth).toHaveFocus());
     nextMonth.focus();
     fireEvent.click(nextMonth);
-    expect(screen.getByRole("heading", { name: "March 2027" })).toBeInTheDocument();
+    expect(screen.getByRole("grid", { name: "March 2027" })).toBeInTheDocument();
     await waitFor(() => expect(nextMonth).toHaveFocus());
     expect(onDateChange).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole("gridcell", { name: "Monday, March 1, 2027" }));
     await waitFor(() => expect(onDateChange).toHaveBeenCalledTimes(1));
     expect(dayKey(onDateChange.mock.calls[0][0])).toBe("2027-03-01");
+  });
+
+  it("browses directly to a year without changing the workspace until a date is chosen", async () => {
+    const onDateChange = vi.fn();
+    render(<CalendarDateNavigator view="month" cursorDate={cursorDate} onDateChange={onDateChange} />);
+
+    const trigger = screen.getByRole("button", { name: "Choose date: January 2027" });
+    fireEvent.click(trigger);
+    const year = screen.getByRole("combobox", { name: "Year" });
+    expect(year).toHaveValue("2027");
+    const yearOptions = within(year).getAllByRole("option");
+    expect(yearOptions).toHaveLength(201);
+    expect(yearOptions[0]).toHaveTextContent("1927");
+    expect(yearOptions.at(-1)).toHaveTextContent("2127");
+
+    year.focus();
+    fireEvent.change(year, { target: { value: "2032" } });
+    expect(screen.getByRole("grid", { name: "January 2032" })).toBeInTheDocument();
+    expect(year).toHaveFocus();
+    expect(onDateChange).not.toHaveBeenCalled();
+    expect(screen.getAllByRole("gridcell").filter((cell) => cell.tabIndex === 0)).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole("gridcell", { name: /January 1, 2032/ }));
+    await waitFor(() => expect(onDateChange).toHaveBeenCalledTimes(1));
+    expect(dayKey(onDateChange.mock.calls[0][0])).toBe("2032-01-01");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+  });
+
+  it("preserves the month and clamps leap day when changing years", async () => {
+    const leapDay = new Date(2028, 1, 29, 12);
+    const onDateChange = vi.fn();
+    render(<CalendarDateNavigator view="month" cursorDate={leapDay} onDateChange={onDateChange} />);
+
+    const trigger = screen.getByRole("button", { name: "Choose date: February 2028" });
+    fireEvent.click(trigger);
+    const year = screen.getByRole("combobox", { name: "Year" });
+    year.focus();
+    fireEvent.change(year, { target: { value: "2027" } });
+
+    expect(screen.getByRole("grid", { name: "February 2027" })).toBeInTheDocument();
+    expect(year).toHaveFocus();
+    const clampedDay = screen.getByRole("gridcell", { name: /February 28, 2027/ });
+    expect(clampedDay).toHaveAttribute("tabindex", "0");
+    fireEvent.click(clampedDay);
+
+    await waitFor(() => expect(onDateChange).toHaveBeenCalledTimes(1));
+    expect(dayKey(onDateChange.mock.calls[0][0])).toBe("2027-02-28");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
   });
 
   it("uses roving arrow-key focus and native selection", async () => {
@@ -106,5 +156,8 @@ describe("CalendarDateNavigator", () => {
     expect(screen.getByRole("button", { name: "الشهر السابق" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "الشهر التالي" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /يناير/ })).toBeInTheDocument();
+    const year = screen.getByRole("combobox", { name: "السنة" });
+    expect(year).toHaveValue("2027");
+    expect(within(year).getByRole("option", { name: "٢٠٢٧" })).toBeInTheDocument();
   });
 });

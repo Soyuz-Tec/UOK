@@ -6,6 +6,7 @@ import { useUokLocalization } from "@uok/shared/localization";
 import { IconButton } from "@uok/shared/primitives";
 import { addDays, dayKey, monthCells, startOfDay, startOfMonth, viewTitle } from "./calendarDates";
 import type { CalendarView } from "./calendarTypes";
+import { CalendarYearSelect } from "./CalendarYearSelect";
 
 export function CalendarDateNavigator({
   view,
@@ -24,6 +25,8 @@ export function CalendarDateNavigator({
   const formatLocale = locale === "ar" ? "ar-u-nu-arab" : locale;
   const rangeTitle = viewTitle(view, cursorDate, formatLocale);
   const monthTitle = displayMonth.toLocaleDateString(formatLocale, { month: "long", year: "numeric" });
+  const monthName = displayMonth.toLocaleDateString(formatLocale, { month: "long" });
+  const displayYear = displayMonth.getFullYear();
   const selectedKey = dayKey(cursorDate);
   const focusedKey = dayKey(focusedDate);
   const todayKey = dayKey(new Date());
@@ -49,10 +52,20 @@ export function CalendarDateNavigator({
   };
 
   const changeDisplayedMonth = (offset: -1 | 1) => {
-    const nextMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + offset, 1);
+    const nextMonth = new Date(displayMonth);
+    nextMonth.setDate(1);
+    nextMonth.setMonth(displayMonth.getMonth() + offset);
     const nextFocused = dateInMonth(nextMonth, focusedDate.getDate());
     setDisplayMonth(nextMonth);
     setFocusedDate(nextFocused);
+  };
+
+  const changeDisplayedYear = (year: number) => {
+    const nextMonth = new Date(displayMonth);
+    nextMonth.setDate(1);
+    nextMonth.setFullYear(year);
+    setDisplayMonth(nextMonth);
+    setFocusedDate(dateInMonth(nextMonth, focusedDate.getDate()));
   };
 
   const onDateKeyDown = (event: KeyboardEvent<HTMLButtonElement>, date: Date) => {
@@ -104,7 +117,15 @@ export function CalendarDateNavigator({
               label={t("calendar.navigator.previousMonth", "Previous month")}
               onClick={() => changeDisplayedMonth(-1)}
             />
-            <h3>{monthTitle}</h3>
+            <div className="calendar-date-navigator-period">
+              <h3>{monthName}</h3>
+              <CalendarYearSelect
+                year={displayYear}
+                locale={formatLocale}
+                label={t("calendar.navigator.year", "Year")}
+                onChange={changeDisplayedYear}
+              />
+            </div>
             <IconButton
               icon={ChevronRight}
               label={t("calendar.navigator.nextMonth", "Next month")}
@@ -154,10 +175,19 @@ export function CalendarDateNavigator({
 }
 
 function dateInMonth(month: Date, requestedDay: number) {
-  const lastDay = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
-  return new Date(month.getFullYear(), month.getMonth(), Math.min(requestedDay, lastDay));
+  const monthEnd = new Date(month);
+  monthEnd.setDate(1);
+  monthEnd.setFullYear(month.getFullYear(), month.getMonth() + 1, 0);
+  const result = new Date(month);
+  result.setDate(1);
+  result.setFullYear(month.getFullYear(), month.getMonth(), Math.min(requestedDay, monthEnd.getDate()));
+  result.setHours(0, 0, 0, 0);
+  return result;
 }
 
 function shiftDateMonth(date: Date, offset: -1 | 1) {
-  return dateInMonth(new Date(date.getFullYear(), date.getMonth() + offset, 1), date.getDate());
+  const targetMonth = new Date(date);
+  targetMonth.setDate(1);
+  targetMonth.setMonth(date.getMonth() + offset);
+  return dateInMonth(targetMonth, date.getDate());
 }
