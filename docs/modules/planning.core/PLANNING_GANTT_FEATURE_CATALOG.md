@@ -30,7 +30,7 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Area | Status | Current UOK behavior |
 |---|---:|---|
 | First-party renderer | `runtime_proven` | Owned React/SVG/HTML/CSS Gantt renderer behind `PlanningGantt`; Chromium candidate proof exercises the rendered workspace. |
-| Project picker and metadata | `runtime_proven` | Project selector, status chip, owner chip placeholder, and favorite control are exercised in Chromium candidate proof. |
+| Project picker and command context | `runtime_proven` | The shared command bar keeps the project selector, status chip, visible/total task counts, and dependency count together without a separate Planning workspace heading. The `Project schedule`/`Portfolio` scope switch remains unchanged. |
 | Project lifecycle and finish authority | `runtime_proven` | The rebuilt PostgreSQL candidate proves reasoned archive/restore, readable archive with fail-closed writes, stable exact replay, non-disclosing purge lock ordering, exact Saturday target commitment, persisted CPM-v2 finish, negative float, and generated REST contracts. |
 | View tabs | `runtime_proven` | Gantt, Board, List, Calendar, Workload, People, and Dashboard are exercised in Chromium candidate proof. |
 | Task creation commands | `runtime_proven` | Task and milestone creation route through inspector/API flow; keyboard-only creation is covered by Chromium candidate proof. |
@@ -194,6 +194,7 @@ The live Gantt workspace audit on `http://127.0.0.1:18088/` found these usabilit
 |---|---|---|
 | Timeline utility toolbar hides too many controls behind horizontal scrolling | The utility region was about `640px` wide while its controls measured about `3781px`; roughly 25 of 60 toolbar controls were initially outside the viewport. | Split utilities into named workflow groups and allow them to wrap as a full-width command surface instead of one horizontally scrolling strip. |
 | Controls were grouped by implementation rather than workflow | Saved views, fields, filters, scale, navigation, exports, density, and status toggles shared one long row. | Use grouped command architecture: saved/fields, filters, modes, scale, navigation, exports, and display toggles. |
+| Planning header duplicated project context and exposed a standalone Inspector trigger | The separate heading repeated schedule identity above the shared command bar and used additional vertical space for a floating `Show inspector` action. | Remove the redundant heading, keep the project selector/status/task and dependency facts in the command bar, and place `Show inspector` inside Planning controls. Keep `All tasks` for task refinements and `Plan actions`, and leave the `Project schedule`/`Portfolio` scope switch unchanged. |
 | Sparse schedules left excessive blank chart height | A two-task plan rendered inside a roughly `720px` Gantt shell. | Use a content-aware Gantt height variable with a practical minimum and maximum while preserving large-schedule scroll behavior. |
 | Grid felt tight and had hidden horizontal overflow | Task grid measured smaller than its rendered column content. | Include action/resize affordance width in the grid sizing calculation and keep pinned columns readable. |
 | Inspector occupied permanent width even when not needed | The inspector was useful but consumed the secondary work region on wide screens and reduced the timeline comparison area. | Render Planning-owned Inspector content in the shared bounded draggable modal editor popup, preserving direct task/create/dependency/resource openers while keeping selection-only navigation and linking in the timeline. |
@@ -204,6 +205,8 @@ Acceptance for this polish slice:
 
 - no horizontally hidden primary Gantt toolbar controls at wide desktop widths;
 - grouped toolbar controls remain reachable at tablet and narrow widths;
+- project selection, status, visible/total task counts, and dependency count remain reachable in the shared command bar without a separate Planning workspace heading;
+- `Show inspector` is reachable from Planning controls, `All tasks` remains the task-refinement and `Plan actions` surface, and the `Project schedule`/`Portfolio` scope switch remains available and unchanged;
 - chart height is proportional for small schedules and scrolls for larger ones;
 - grid/timeline alignment remains stable;
 - Inspector opens and closes as an accessible modal, isolates the background, contains focus, restores the opener or stable Planning control, and leaves the closed timeline at full workspace width;

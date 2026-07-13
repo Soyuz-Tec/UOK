@@ -1,4 +1,4 @@
-import { FolderKanban, FolderPlus, PanelRightOpen, RefreshCw } from "lucide-react";
+import { FolderKanban, FolderPlus, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyState } from "@uok/shared/data-display";
@@ -159,9 +159,6 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
   function renderPlanningPrimaryPane(activeSchedule: PlanningSchedule) {
     return (
       <div className="planning-primary-stack">
-        <div className="planning-inspector-toggle-row planning-inspector-toggle-floating">
-          <CommandButton icon={PanelRightOpen} onClick={() => setInspectorOpen(true)}>{t("planning.inspector.show", "Show inspector")}</CommandButton>
-        </div>
         <PlanningTimeline
           projects={projects}
           schedule={activeSchedule}
@@ -209,6 +206,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
             setInspectorTab("dependencies");
             setInspectorOpen(true);
           }}
+          onShowInspector={() => setInspectorOpen(true)}
           onCreateBaseline={() => void actions.addBaseline({ name: `Baseline ${activeSchedule.baselines.length + 1}` })}
           onOpenResources={() => {
             setInspectorTab("resources");

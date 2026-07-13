@@ -47,6 +47,7 @@ export function PlanningTimeline({
   onRefresh,
   onNewTask,
   onOpenDependencies,
+  onShowInspector,
   onCreateBaseline,
   onOpenResources,
   onLevelResources,
@@ -86,6 +87,7 @@ export function PlanningTimeline({
   onRefresh: () => void;
   onNewTask: (taskType: "task" | "milestone") => void;
   onOpenDependencies: () => void;
+  onShowInspector: () => void;
   onCreateBaseline: () => void;
   onOpenResources: () => void;
   onLevelResources: (horizonDays: number) => void;
@@ -152,7 +154,7 @@ export function PlanningTimeline({
           onCascadeSchedulingChange: setCascadeScheduling, onCascadeSortChange: setCascadeSort, onCreateBaseline,
           onCreateDemoSchedule, onDateTarget: goToDate, onFieldPresetChange: setFieldPreset, onFiltersChange: setFilters,
           onFitProject: () => setFitProjectSignal((value) => value + 1), onLevelResources, onNewTask,
-          onOpenDependencies, onOpenResources, onProjectChange, onNewProject, onRedo, onRefresh, onReviewModeChange,
+          onOpenDependencies, onShowInspector, onOpenResources, onProjectChange, onNewProject, onRedo, onRefresh, onReviewModeChange,
           onScaleChange, onSelectedTask: () => setSelectedTaskSignal((value) => value + 1), onSelectedVisibleChange: setSelectedVisible,
           onSetCollapsedSummaries: setCollapsedSummaries, onToday: goToToday, onToggleBaselines, onToggleColumn: setColumnVisible,
           onToggleCritical, onToggleFocusMode: () => setFocusMode((value) => !value),

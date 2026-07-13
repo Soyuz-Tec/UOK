@@ -1,7 +1,8 @@
-import { Baseline, CalendarClock, ChevronDown, Columns3, Flag, GitBranch, Link2, Lock, Maximize2, Milestone, Minimize2, Rows3, SlidersHorizontal, Target, Unlock, Users } from "lucide-react";
+import { Baseline, CalendarClock, ChevronDown, Columns3, Flag, GitBranch, Link2, Lock, Maximize2, Milestone, Minimize2, PanelRightOpen, Rows3, SlidersHorizontal, Target, Unlock, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { ExpandableControlPanel } from "@uok/shared/forms";
+import { useUokLocalization } from "@uok/shared/localization";
 import { CommandButton, SegmentedControl, ToggleButton } from "@uok/shared/primitives";
 import { FieldVisibilityMenu, type ColumnVisibilityMap } from "@uok/shared/tables";
 import { PlanningBulkEditControls, type PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
@@ -39,6 +40,7 @@ export function PlanningTimelineUtilities({
   onLevelResources,
   onNewMilestone,
   onOpenDependencies,
+  onShowInspector,
   onOpenResources,
   onScaleChange,
   onToggleBaselines,
@@ -89,6 +91,7 @@ export function PlanningTimelineUtilities({
   onLevelResources: (horizonDays: number) => void;
   onNewMilestone: () => void;
   onOpenDependencies: () => void;
+  onShowInspector: () => void;
   onOpenResources: () => void;
   onScaleChange: (scale: TimelineScale) => void;
   onToggleBaselines: () => void;
@@ -115,6 +118,7 @@ export function PlanningTimelineUtilities({
   token: string;
   viewDensity: ViewDensity;
 }) {
+  const { t } = useUokLocalization();
   const [targetDate, setTargetDate] = useState(projectStart);
   useEffect(() => setTargetDate(projectStart), [projectStart]);
 
@@ -148,6 +152,7 @@ export function PlanningTimelineUtilities({
             <FieldVisibilityMenu label="Columns" options={columnOptions} resetLabel="Reset columns" visibility={columnVisibility} onReset={onResetColumns} onToggle={onToggleColumn} />
           </div>
           <div className="planning-utility-group planning-schedule-controls" aria-label="Schedule commands">
+            <CommandButton icon={PanelRightOpen} onClick={() => openInspector(onShowInspector)}>{t("planning.inspector.show", "Show inspector")}</CommandButton>
             <label className="planning-selection-toggle">
               <input type="checkbox" checked={selectedVisible} onChange={(event) => onSelectedVisibleChange(event.target.checked)} />
               <span>{selectedCount} selected</span>

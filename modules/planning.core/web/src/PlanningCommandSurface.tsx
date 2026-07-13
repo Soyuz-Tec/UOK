@@ -1,4 +1,4 @@
-import { FolderKanban, FolderPlus, Plus, Redo2, RefreshCw, Star, Undo2 } from "lucide-react";
+import { FolderKanban, FolderPlus, Plus, Redo2, RefreshCw, Undo2 } from "lucide-react";
 import { useMemo, type Dispatch, type SetStateAction } from "react";
 
 import { SearchWorkspace } from "@uok/shared/forms";
@@ -62,6 +62,7 @@ type PlanningCommandSurfaceActions = {
   onLevelResources: (horizonDays: number) => void;
   onNewTask: (taskType: "task" | "milestone") => void;
   onOpenDependencies: () => void;
+  onShowInspector: () => void;
   onOpenResources: () => void;
   onProjectChange: (projectId: string) => void;
   onNewProject: () => void;
@@ -111,18 +112,6 @@ export function PlanningCommandSurface({ model, actions }: {
   ], [model.schedule.resources]);
 
   return <>
-    <header className="planning-workspace-heading">
-      <div className="planning-toolbar-title">
-        <span className="eyebrow">Planning workspace</span>
-        <h2>{model.schedule.project.name}</h2>
-        <span>{model.visibleSchedule.tasks.length} visible of {model.schedule.tasks.length} tasks, {model.schedule.dependencies.length} dependencies</span>
-      </div>
-      <div className="planning-project-meta" aria-label="Project metadata">
-        <span className="planning-status-chip">{model.schedule.project.status || "No status"}</span>
-        <span className="planning-owner-chip">Project owner</span>
-        <button type="button" className="planning-icon-button" aria-label="Favorite project"><Star size={15} aria-hidden="true" /></button>
-      </div>
-    </header>
     <WorkspaceCommandBar
       className="planning-command-bar"
       label="Planning commands"
@@ -158,12 +147,18 @@ export function PlanningCommandSurface({ model, actions }: {
         onGroupByChange={() => undefined}
         onClear={() => actions.onFiltersChange({ mode: "all", query: "", partyId: "", resourceId: "", status: "" })}
       />}
-      context={<label className="planning-project-picker">
-        <span>Project</span>
-        <select value={model.selectedProjectId} onChange={(event) => actions.onProjectChange(event.target.value)}>
-          {model.projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
-        </select>
-      </label>}
+      context={<section className="planning-project-context" aria-label="Project summary">
+        <label className="planning-project-picker">
+          <span>Project</span>
+          <select value={model.selectedProjectId} onChange={(event) => actions.onProjectChange(event.target.value)}>
+            {model.projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+          </select>
+        </label>
+        <div className="planning-project-summary">
+          <span className="planning-status-chip">{model.schedule.project.status || "No status"}</span>
+          <span className="planning-command-summary">{model.visibleSchedule.tasks.length} visible of {model.schedule.tasks.length} tasks, {model.schedule.dependencies.length} dependencies</span>
+        </div>
+      </section>}
       view={<nav className="planning-view-tabs" aria-label="Planning views">
         {planningViews.map((view) => <button key={view} type="button" className={model.activeView === view ? "selected" : ""} aria-current={model.activeView === view ? "page" : undefined} onClick={() => actions.onActiveViewChange(view)}>{view}</button>)}
       </nav>}
@@ -176,7 +171,7 @@ export function PlanningCommandSurface({ model, actions }: {
         onCascadeSchedulingChange={() => actions.onCascadeSchedulingChange((value) => !value)} onCascadeSortChange={() => actions.onCascadeSortChange((value) => !value)}
         onCreateBaseline={actions.onCreateBaseline} onDateTarget={actions.onDateTarget} onFieldPresetChange={actions.onFieldPresetChange}
         onFitProject={actions.onFitProject} onLevelResources={actions.onLevelResources} onNewMilestone={() => actions.onNewTask("milestone")}
-        onOpenDependencies={actions.onOpenDependencies} onOpenResources={actions.onOpenResources} onScaleChange={actions.onScaleChange}
+        onOpenDependencies={actions.onOpenDependencies} onShowInspector={actions.onShowInspector} onOpenResources={actions.onOpenResources} onScaleChange={actions.onScaleChange}
         onToggleBaselines={actions.onToggleBaselines} onToggleCritical={actions.onToggleCritical} onToggleColumn={actions.onToggleColumn}
         onToggleFocusMode={actions.onToggleFocusMode} onToggleLayoutMode={actions.onToggleLayoutMode} onToggleReviewMode={actions.onToggleReviewMode}
         onResetColumns={actions.onResetColumns} onSelectedTask={actions.onSelectedTask} onSelectedVisibleChange={actions.onSelectedVisibleChange}

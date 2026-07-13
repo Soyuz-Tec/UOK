@@ -225,7 +225,6 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await page.setViewportSize(viewport);
     await openPlanning(page);
 
-    await expect(page.getByRole("heading", { name: "UOK Gantt Proof" })).toBeVisible();
     const planningCommands = page.getByRole("region", { name: "Planning commands", exact: true });
     const planningControls = page.getByRole("dialog", { name: "Planning controls", exact: true });
     const searchOptions = page.getByRole("dialog", { name: "Search options", exact: true });
@@ -234,7 +233,10 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(planningCommands.getByRole("group", { name: "Planning commands context", exact: true })).toBeVisible();
     await expect(planningCommands.getByRole("group", { name: "Planning commands actions", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Gantt chart", exact: true })).toHaveAttribute("aria-current", "page");
-    await expect(page.getByLabel("Project metadata")).toBeVisible();
+    await expect(page.locator(".planning-workspace-heading")).toHaveCount(0);
+    const projectSummary = await expectPlanningProjectContext(page, sampleProject.id, sampleProject.name, "active");
+    await expect(projectSummary).toContainText("4 visible of 4 tasks, 1 dependencies");
+    await expect(page.locator(".planning-inspector-toggle-floating")).toHaveCount(0);
     await expect(page.getByLabel("Timeline utilities")).toBeVisible();
     await expect(page.getByRole("textbox", { name: "Search planning tasks" })).toBeVisible();
     const searchOptionsTrigger = page.getByRole("button", { name: /^Search options:/ });
@@ -270,6 +272,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(planningCommands.getByRole("button", { name: "Refresh", exact: true })).toHaveCount(0);
     await expect(planningCommands.getByRole("button", { name: "Undo", exact: true })).toHaveCount(0);
     await expect(planningCommands.getByRole("button", { name: "Redo", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Show inspector", exact: true })).toHaveCount(0);
     if (viewport.width === 1440) {
       await searchOptionsTrigger.click();
       await planActions.getByRole("button", { name: "New project", exact: true }).click();
@@ -315,6 +318,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(planningControls.getByRole("button", { name: "WBS order", exact: true })).toBeVisible();
     await expect(planningControls.getByRole("button", { name: "Cascade scheduling", exact: true })).toBeVisible();
     await expect(planningControls.getByRole("button", { name: "Level", exact: true })).toBeVisible();
+    await expect(planningControls.getByRole("button", { name: "Show inspector", exact: true })).toBeVisible();
     await expect(planningControls.getByRole("button", { name: "Export CSV", exact: true })).toBeVisible();
     await expect(planningControls.getByRole("button", { name: "Template", exact: true })).toBeVisible();
     await expect(planningControls.getByRole("button", { name: "Project JSON", exact: true })).toBeVisible();
@@ -371,9 +375,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await page.getByRole("menuitem", { name: /Duplicate task/ }).click();
       await expect.poll(() => taskPayloads.length).toBe(taskRequests + 1);
       expect(taskPayloads.at(-1)).toMatchObject({ title: "Define schedule scope copy", task_type: "task", parent_task_id: "task-summary", status: "planned", progress: 40 });
-      const taskInspectorTrigger = page.getByRole("button", { name: "Show inspector", exact: true });
-      await taskInspectorTrigger.click();
-      const taskEditorDialog = page.getByRole("dialog", { name: "Planning inspector", exact: true });
+      const { inspectorDialog: taskEditorDialog, planningControlsTrigger: taskInspectorTrigger } = await openPlanningInspector(page);
       await expect(taskEditorDialog.getByLabel("Task scheduling mode")).toHaveValue("manual");
       await expect(taskEditorDialog.getByLabel("Task constraint", { exact: true })).toHaveValue("must_start_on");
       await expect(taskEditorDialog.getByLabel("Task constraint date")).toHaveValue("2026-08-01");
@@ -410,10 +412,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.getByLabel("No visible planning timeline tasks")).toBeVisible();
     await page.getByRole("textbox", { name: "Search planning tasks" }).fill("");
     if (viewport.width > 980) {
-      const inspectorTrigger = page.getByRole("button", { name: "Show inspector", exact: true });
-      await inspectorTrigger.focus();
-      await inspectorTrigger.click();
-      const inspectorDialog = page.getByRole("dialog", { name: "Planning inspector", exact: true });
+      const { inspectorDialog, planningControlsTrigger: inspectorTrigger } = await openPlanningInspector(page);
       await expect(inspectorDialog).toBeVisible();
       await expect(inspectorDialog).toHaveAttribute("aria-modal", "true");
       await expect(page.getByRole("button", { name: "Close Planning inspector", exact: true })).toBeFocused();
@@ -487,9 +486,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await expect(page.locator(".planning-gantt-shell")).toHaveAttribute("aria-readonly", "true");
     await expect(page.getByRole("button", { name: "New task", exact: true })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Task actions for Define schedule scope" })).toBeDisabled();
-    const reviewShowInspector = page.getByRole("button", { name: "Show inspector", exact: true });
-    await reviewShowInspector.click();
-    const reviewInspectorDialog = page.getByRole("dialog", { name: "Planning inspector", exact: true });
+    const { inspectorDialog: reviewInspectorDialog, planningControlsTrigger: reviewShowInspector } = await openPlanningInspector(page);
     await expect(reviewInspectorDialog.getByRole("button", { name: "Save task" })).toBeDisabled();
     await reviewInspectorDialog.getByRole("button", { name: "Close Planning inspector", exact: true }).click();
     await expect(reviewInspectorDialog).toBeHidden();
@@ -774,7 +771,7 @@ test("archived Planning schedules stay readable and disable every mutation surfa
   }));
 
   await openPlanning(page);
-  await expect(page.getByRole("heading", { name: sampleProject.name })).toBeVisible();
+  await expectPlanningProjectContext(page, archivedProject.id, archivedProject.name, "archived");
   await expect(page.getByRole("status").filter({ hasText: "Archived project is read-only" })).toBeVisible();
   await expect(page.getByRole("button", { name: "New task", exact: true })).toBeDisabled();
   const searchOptionsTrigger = page.getByRole("button", { name: /^Search options:/ });
@@ -804,7 +801,7 @@ test("Planning portfolio exposes bounded multi-project health and drill-in", asy
   await expect(portfolio.getByText("Blocked")).toBeVisible();
   await expect(page.locator(".planning-portfolio-timeline")).toHaveCount(1);
   await page.getByRole("button", { name: `Open project ${sampleProject.name}` }).click();
-  await expect(page.getByRole("heading", { name: sampleProject.name })).toBeVisible();
+  await expectPlanningProjectContext(page, sampleProject.id, sampleProject.name, "active");
   await expect(page.getByRole("button", { name: "Project schedule", exact: true })).toHaveAttribute("aria-current", "page");
 });
 
@@ -873,9 +870,9 @@ test("Planning exposes real project creation when no projects exist", async ({ p
   await dialog.getByRole("textbox", { name: "Time zone" }).fill("America/New_York");
   await dialog.getByRole("button", { name: "Create project", exact: true }).click();
 
-  const projectPicker = page.getByRole("region", { name: "Planning commands", exact: true }).getByLabel("Project");
+  const projectPicker = page.getByRole("region", { name: "Planning commands", exact: true }).getByRole("combobox", { name: "Project", exact: true });
   await expect(dialog).toBeHidden();
-  await expect(page.getByRole("heading", { name: createdProject.name, exact: true })).toBeVisible();
+  await expectPlanningProjectContext(page, createdProject.id, createdProject.name, "active");
   await expect(projectPicker).toHaveValue(createdProject.id);
   await expect(projectPicker).toBeFocused();
   expect(projectRequests).toEqual([{
@@ -936,8 +933,8 @@ test("Planning recovers a created project after its first schedule load fails wi
   await recovery.getByRole("button", { name: "Retry loading", exact: true }).click();
 
   await expect(recovery).toBeHidden();
-  await expect(page.getByRole("heading", { name: createdProject.name, exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Planning commands", exact: true }).getByLabel("Project")).toHaveValue(createdProject.id);
+  await expectPlanningProjectContext(page, createdProject.id, createdProject.name, "active");
+  await expect(page.getByRole("region", { name: "Planning commands", exact: true }).getByRole("combobox", { name: "Project", exact: true })).toHaveValue(createdProject.id);
   expect(projectPosts).toBe(1);
   expect(scheduleLoads).toBe(2);
 });
@@ -1018,8 +1015,8 @@ test("Planning creates and selects a new project through the portfolio command",
   await dialog.getByRole("button", { name: "Create project", exact: true }).click();
 
   await expect(dialog).toBeHidden();
-  await expect(page.getByRole("heading", { name: "New delivery project", exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Planning commands", exact: true }).getByLabel("Project")).toHaveValue(createdProject.id);
+  await expectPlanningProjectContext(page, createdProject.id, createdProject.name, "active");
+  await expect(page.getByRole("region", { name: "Planning commands", exact: true }).getByRole("combobox", { name: "Project", exact: true })).toHaveValue(createdProject.id);
   expect(projectRequests).toEqual([{
     payload: { name: "New delivery project", start: "2026-09-01", end: "2026-09-30", timezone: "Asia/Kolkata" },
     idempotencyKey: expect.stringMatching(/^planning-project:/),
@@ -1223,6 +1220,29 @@ test("revision-aware undo references its source and rejects a stale inverse", as
   await expect(page.locator(".planning-owned-grid-row").filter({ hasText: "Remote authoritative edit" })).toBeVisible();
   expect(inversePayloads[1]).toMatchObject({ source_command_id: undoCommandId, reason: "Redo Edit task" });
 });
+
+async function expectPlanningProjectContext(page: Page, projectId: string, projectName: string, status: string) {
+  const planningCommands = page.getByRole("region", { name: "Planning commands", exact: true });
+  const projectSummary = planningCommands.getByRole("region", { name: "Project summary", exact: true });
+  const projectPicker = projectSummary.getByRole("combobox", { name: "Project", exact: true });
+  await expect(projectSummary).toBeVisible();
+  await expect(projectPicker).toHaveValue(projectId);
+  await expect(projectPicker.locator("option:checked")).toHaveText(projectName);
+  await expect(projectSummary.getByText(status, { exact: true })).toBeVisible();
+  return projectSummary;
+}
+
+async function openPlanningInspector(page: Page) {
+  const planningControlsTrigger = page.getByLabel("Open planning controls");
+  await planningControlsTrigger.click();
+  const planningControls = page.getByRole("dialog", { name: "Planning controls", exact: true });
+  await expect(planningControls).toBeVisible();
+  await planningControls.getByRole("button", { name: "Show inspector", exact: true }).click();
+  await expect(planningControls).toBeHidden();
+  const inspectorDialog = page.getByRole("dialog", { name: "Planning inspector", exact: true });
+  await expect(inspectorDialog).toBeVisible();
+  return { inspectorDialog, planningControlsTrigger };
+}
 
 async function openPlanning(page: Page) {
   await page.goto("/");

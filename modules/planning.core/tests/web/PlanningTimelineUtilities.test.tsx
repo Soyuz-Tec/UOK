@@ -20,6 +20,7 @@ describe("PlanningTimelineUtilities", () => {
     const onNewMilestone = vi.fn();
     const onOpenDependencies = vi.fn();
     const onOpenResources = vi.fn();
+    const onShowInspector = vi.fn();
     const onSelectedVisibleChange = vi.fn();
     const onSetCollapsedSummaries = vi.fn();
     render(<PlanningTimelineUtilities
@@ -48,6 +49,7 @@ describe("PlanningTimelineUtilities", () => {
       onNewMilestone={onNewMilestone}
       onOpenDependencies={onOpenDependencies}
       onOpenResources={onOpenResources}
+      onShowInspector={onShowInspector}
       onScaleChange={vi.fn()}
       onToggleBaselines={vi.fn()}
       onToggleCritical={vi.fn()}
@@ -100,6 +102,12 @@ describe("PlanningTimelineUtilities", () => {
     expect(onCreateBaseline).toHaveBeenCalledTimes(1);
     expect(onLevelResources).toHaveBeenCalledWith(260);
 
+    fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Show inspector" }));
+    await waitFor(() => expect(onShowInspector).toHaveBeenCalledTimes(1));
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+
+    fireEvent.click(trigger);
     fireEvent.click(within(scheduleCommands).getByRole("button", { name: "Milestone" }));
     await waitFor(() => expect(onNewMilestone).toHaveBeenCalledTimes(1));
     expect(trigger).toHaveAttribute("aria-expanded", "false");
