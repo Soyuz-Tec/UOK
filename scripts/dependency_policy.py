@@ -7,6 +7,7 @@ from pathlib import Path
 
 REQUIRED_RUNTIME_PINS = {
     "fastapi==0.139.0",
+    "icalendar==7.2.0",
     "sqlalchemy==2.0.51",
     "pydantic==2.13.4",
     "psycopg[binary]==3.3.4",

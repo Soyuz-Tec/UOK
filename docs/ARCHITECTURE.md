@@ -35,7 +35,8 @@ Operator browser
 
 - `apps.manager` is the only required control module.
 - `contacts.core` is the first optional capability module.
-- `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, reminders, free-busy, availability, iCalendar export, and a traditional Calendar workspace.
+- `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, persisted reminder definitions, free-busy-derived availability context, iCalendar export, and a traditional Calendar workspace. In-app/email reminder dispatch and availability-slot schedules are not current capabilities.
+- Calendar reads fail closed through actor-visible active Calendar parents; `team` visibility is reserved until a canonical membership provider exists. Public appointment booking remains a separate future `appointments.core` boundary rather than expanding `calendar.core`.
 - `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
 - `communications.core` is an optional K Connect capability module for organization-scoped thread identity, access, lifecycle state, audit evidence, and exact authorized deep links.
 - Planning Gates A-E are locally runtime-proven; scheduling, write-safety, evidence governance, integrations, analysis, measured scale, shared reach/accessibility, bounded portfolio reads, and production-like closure evidence are recorded in the Planning Gantt traceability map. The stacked draft PRs still require hosted CI, review, and merge, and no local alpha result implies production readiness.
@@ -100,6 +101,7 @@ Operator browser
 - ADR-0023: `docs/architecture/ADR-0023-module-local-frontend-composition.md`
 - ADR-0024: `docs/architecture/ADR-0024-database-connection-pooling.md`
 - ADR-0025: `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`
+- ADR-0026: `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`

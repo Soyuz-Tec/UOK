@@ -903,6 +903,7 @@
         "type": "object"
       },
       "EventPatchRequest": {
+        "additionalProperties": false,
         "properties": {
           "all_day": {
             "anyOf": [
@@ -963,6 +964,21 @@
             ],
             "title": "Location"
           },
+          "participants": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ParticipantRequest"
+                },
+                "maxItems": 100,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Participants"
+          },
           "recurrence_rule": {
             "anyOf": [
               {
@@ -987,6 +1003,21 @@
             ],
             "title": "Recurrence Until"
           },
+          "reminders": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ReminderWriteRequest"
+                },
+                "maxItems": 10,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reminders"
+          },
           "starts_at": {
             "anyOf": [
               {
@@ -998,18 +1029,6 @@
               }
             ],
             "title": "Starts At"
-          },
-          "status": {
-            "anyOf": [
-              {
-                "maxLength": 40,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Status"
           },
           "timezone": {
             "anyOf": [
@@ -1108,6 +1127,7 @@
             "items": {
               "$ref": "#/components/schemas/ParticipantRequest"
             },
+            "maxItems": 100,
             "title": "Participants",
             "type": "array"
           },
@@ -1134,6 +1154,14 @@
               }
             ],
             "title": "Recurrence Until"
+          },
+          "reminders": {
+            "items": {
+              "$ref": "#/components/schemas/ReminderWriteRequest"
+            },
+            "maxItems": 10,
+            "title": "Reminders",
+            "type": "array"
           },
           "source_module": {
             "anyOf": [
@@ -5055,9 +5083,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Event Api Calendar Events Post",
-                  "type": "object"
+                  "title": "Response Create Event Api Calendar Events Post"
                 }
               }
             },
@@ -5121,7 +5147,15 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Actor-visible event detail.",
+            "headers": {
+              "ETag": {
+                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "422": {
             "content": {
@@ -5149,6 +5183,22 @@
             "schema": {
               "title": "Event Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
             }
           },
           {
@@ -5182,14 +5232,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Event updated with a new strong ETag.",
+            "headers": {
+              "ETag": {
+                "description": "Strong validator for the actor-visible event detail and child collections.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Update Event Api Calendar Events  Event Id  Patch",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The supplied event ETag is stale."
           },
           "422": {
             "content": {
@@ -5200,6 +5264,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current event ETag is required."
           }
         },
         "summary": "Update Event",
@@ -5219,6 +5293,22 @@
             "schema": {
               "title": "Event Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
             }
           },
           {
@@ -5243,13 +5333,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Cancel Event Api Calendar Events  Event Id  Cancel Post",
-                  "type": "object"
+                  "title": "Response Cancel Event Api Calendar Events  Event Id  Cancel Post"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Event updated with a new strong ETag.",
+            "headers": {
+              "ETag": {
+                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied event ETag is stale."
           },
           "422": {
             "content": {
@@ -5260,6 +5366,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current event ETag is required."
           }
         },
         "summary": "Cancel Event",
@@ -5279,6 +5395,22 @@
             "schema": {
               "title": "Event Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
             }
           },
           {
@@ -5313,13 +5445,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Create Reminder Api Calendar Events  Event Id  Reminders Post",
-                  "type": "object"
+                  "title": "Response Create Reminder Api Calendar Events  Event Id  Reminders Post"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Event updated with a new strong ETag.",
+            "headers": {
+              "ETag": {
+                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied event ETag is stale."
           },
           "422": {
             "content": {
@@ -5330,6 +5478,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current event ETag is required."
           }
         },
         "summary": "Create Reminder",
@@ -5349,6 +5507,22 @@
             "schema": {
               "title": "Event Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
             }
           },
           {
@@ -5373,13 +5547,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Restore Event Api Calendar Events  Event Id  Restore Post",
-                  "type": "object"
+                  "title": "Response Restore Event Api Calendar Events  Event Id  Restore Post"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Event updated with a new strong ETag.",
+            "headers": {
+              "ETag": {
+                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied event ETag is stale."
           },
           "422": {
             "content": {
@@ -5390,6 +5580,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current event ETag is required."
           }
         },
         "summary": "Restore Event",
@@ -5583,6 +5783,22 @@
           },
           {
             "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
             "name": "authorization",
             "required": false,
             "schema": {
@@ -5603,13 +5819,29 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Delete Reminder Api Calendar Reminders  Reminder Id  Delete",
-                  "type": "object"
+                  "title": "Response Delete Reminder Api Calendar Reminders  Reminder Id  Delete"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Event updated with a new strong ETag.",
+            "headers": {
+              "ETag": {
+                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied event ETag is stale."
           },
           "422": {
             "content": {
@@ -5620,6 +5852,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current event ETag is required."
           }
         },
         "summary": "Delete Reminder",

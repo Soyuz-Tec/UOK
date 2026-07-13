@@ -1,6 +1,4 @@
-import { CalendarPlus } from "lucide-react";
-
-import { CommandButton } from "@uok/shared/primitives";
+import { CalendarSelector } from "./CalendarSelector";
 import type { CalendarRecord } from "./calendarTypes";
 import { dayKey, monthCells } from "./calendarDates";
 
@@ -34,24 +32,12 @@ export function CalendarMiniMonth({
           ))}
         </div>
       </section>
-      <section>
-        <h3>Calendars</h3>
-        <div className="calendar-list">
-          {calendars.map((calendar) => (
-            <button
-              key={calendar.id}
-              type="button"
-              className={calendar.id === activeCalendarId ? "selected" : ""}
-              onClick={() => onCalendarChange(calendar.id)}
-            >
-              <span className="calendar-color-dot" aria-hidden="true" />
-              <strong>{calendar.name}</strong>
-              <small>{calendar.timezone}</small>
-            </button>
-          ))}
-        </div>
-        <CommandButton icon={CalendarPlus} onClick={onCreateCalendar}>New calendar</CommandButton>
-      </section>
+      <CalendarSelector
+        calendars={calendars}
+        scopeId={activeCalendarId}
+        onScopeChange={onCalendarChange}
+        onCreateCalendar={onCreateCalendar}
+      />
     </aside>
   );
 }

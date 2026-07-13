@@ -45,8 +45,11 @@ def calendar_availability_read_model(
         return {**base, "reason": str(exc)}
     task_parties = _task_party_ids(db, actor, resources, assignments, participants)
     party_ids = set().union(*task_parties.values()) if task_parties else set()
-    busy = freebusy_rows_for_participants(db, actor, start, end, party_ids)
-    events = occurrence_rows_for_participants(db, actor, start, end, party_ids)
+    try:
+        busy = freebusy_rows_for_participants(db, actor, start, end, party_ids)
+        events = occurrence_rows_for_participants(db, actor, start, end, party_ids)
+    except ValueError as exc:
+        return {**base, "reason": str(exc)}
     return {
         **base,
         "status": "ready",

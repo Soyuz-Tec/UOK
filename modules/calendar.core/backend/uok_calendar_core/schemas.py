@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class CalendarWriteRequest(BaseModel):
@@ -31,6 +31,11 @@ class ParticipantRequest(BaseModel):
     response_status: str = Field(default="needs_action", max_length=40)
 
 
+class ReminderWriteRequest(BaseModel):
+    reminder_type: str = Field(default="in_app", max_length=40)
+    trigger_minutes_before: int = Field(..., ge=0, le=43200)
+
+
 class EventWriteRequest(BaseModel):
     calendar_id: str = Field(..., max_length=36)
     title: str = Field(..., min_length=1, max_length=240)
@@ -49,14 +54,22 @@ class EventWriteRequest(BaseModel):
     source_object_type: str | None = Field(default=None, max_length=80)
     source_object_id: str | None = Field(default=None, max_length=80)
     attrs: dict[str, Any] = Field(default_factory=dict)
-    participants: list[ParticipantRequest] = Field(default_factory=list)
+    participants: list[ParticipantRequest] = Field(default_factory=list, max_length=100)
+    reminders: list[ReminderWriteRequest] = Field(default_factory=list, max_length=10)
+
+    @model_validator(mode="after")
+    def reject_canceled_creation(self) -> "EventWriteRequest":
+        if self.status == "canceled":
+            raise ValueError("canceled events must use the event cancellation lifecycle")
+        return self
 
 
 class EventPatchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     title: str | None = Field(default=None, min_length=1, max_length=240)
     description: str | None = Field(default=None, max_length=5000)
     location: str | None = Field(default=None, max_length=240)
-    status: str | None = Field(default=None, max_length=40)
     starts_at: datetime | None = None
     ends_at: datetime | None = None
     timezone: str | None = Field(default=None, max_length=80)
@@ -65,8 +78,23 @@ class EventPatchRequest(BaseModel):
     recurrence_rule: str | None = Field(default=None, max_length=500)
     recurrence_until: datetime | None = None
     attrs: dict[str, Any] | None = None
+    participants: list[ParticipantRequest] | None = Field(default=None, max_length=100)
+    reminders: list[ReminderWriteRequest] | None = Field(default=None, max_length=10)
 
-
-class ReminderWriteRequest(BaseModel):
-    reminder_type: str = Field(default="in_app", max_length=40)
-    trigger_minutes_before: int = Field(..., ge=0, le=43200)
+    @model_validator(mode="after")
+    def validate_explicit_patch_values(self) -> "EventPatchRequest":
+        non_nullable = {
+            "title",
+            "starts_at",
+            "ends_at",
+            "timezone",
+            "all_day",
+            "transparency",
+            "attrs",
+            "participants",
+            "reminders",
+        }
+        for field in sorted(non_nullable & self.model_fields_set):
+            if getattr(self, field) is None:
+                raise ValueError(f"{field} cannot be null")
+        return self

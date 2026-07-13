@@ -18,6 +18,11 @@ function DateProbe() {
   return <div data-testid="date-probe">{useUokLocalization().formatDate("2026-08-31")}</div>;
 }
 
+function CalendarProbe() {
+  const { t } = useUokLocalization();
+  return <div data-testid="calendar-probe">{t("calendar.event.editSeries")}|{t("calendar.event.seriesDescription")}|{t("calendar.event.cancelSeries")}|{t("calendar.event.restoreSeries")}|{t("calendar.event.cancelSeriesConfirm")}|{t("calendar.event.restoreSeriesConfirm")}|{t("calendar.event.recurrenceDefaultLimit")}</div>;
+}
+
 describe("UOK localization", () => {
   it("provides shared Arabic translation, direction, fallback, and formatting", () => {
     render(<UokLocalizationProvider locale="ar"><Probe /></UokLocalizationProvider>);
@@ -34,5 +39,15 @@ describe("UOK localization", () => {
   it("formats date-only schedule facts without a UTC day shift", () => {
     render(<UokLocalizationProvider locale="en-US"><DateProbe /></UokLocalizationProvider>);
     expect(screen.getByTestId("date-probe")).toHaveTextContent("Aug 31, 2026");
+  });
+
+  it("localizes recurring Calendar series scope and confirmations", () => {
+    render(<UokLocalizationProvider locale="ar"><CalendarProbe /></UokLocalizationProvider>);
+    const probe = screen.getByTestId("calendar-probe");
+    expect(probe).toHaveTextContent("تحرير السلسلة المتكررة|تنطبق التغييرات والإلغاء والاستعادة");
+    expect(probe).toHaveTextContent("إلغاء السلسلة|استعادة السلسلة");
+    expect(probe).toHaveTextContent("هل تريد إلغاء هذه السلسلة المتكررة بأكملها؟");
+    expect(probe).toHaveTextContent("هل تريد استعادة هذه السلسلة المتكررة بأكملها؟");
+    expect(probe).toHaveTextContent("يحد UOK هذه السلسلة إلى ٣٦٦ تكرارًا");
   });
 });

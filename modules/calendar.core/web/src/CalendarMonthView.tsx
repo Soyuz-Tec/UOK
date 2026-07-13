@@ -1,15 +1,19 @@
 import type { CalendarEventRecord } from "./calendarTypes";
+import { CalendarEventStatus } from "./CalendarEventStatus";
+import { calendarEventStyle } from "./calendarPresentation";
 import { dayKey, eventTimeLabel, eventsForDay, monthCells } from "./calendarDates";
 
 export function CalendarMonthView({
   cursorDate,
   events,
+  calendarColors,
   selectedEventId,
   onSelectDay,
   onSelectEvent,
 }: {
   cursorDate: Date;
   events: CalendarEventRecord[];
+  calendarColors: Record<string, string>;
   selectedEventId?: string;
   onSelectDay: (date: Date) => void;
   onSelectEvent: (event: CalendarEventRecord) => void;
@@ -32,11 +36,13 @@ export function CalendarMonthView({
                 <button
                   key={`${event.id}-${event.occurrence_start}`}
                   type="button"
-                  className={event.id === selectedEventId ? "calendar-event-chip selected" : `calendar-event-chip ${event.status}`}
+                  className={`calendar-event-chip ${event.status}${event.id === selectedEventId ? " selected" : ""}`}
+                  style={calendarEventStyle(event.calendar_id, calendarColors)}
                   onClick={() => onSelectEvent(event)}
                 >
                   <span>{eventTimeLabel(event)}</span>
                   <strong>{event.title}</strong>
+                  <CalendarEventStatus status={event.status} />
                 </button>
               ))}
               {rows.length > 4 ? <span className="calendar-more">+{rows.length - 4} more</span> : null}

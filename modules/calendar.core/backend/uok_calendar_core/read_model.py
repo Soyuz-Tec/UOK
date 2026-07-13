@@ -9,8 +9,9 @@ from sqlalchemy.orm import Session
 from uok.security import Actor
 from uok.util import loads
 
+from .access import can_read_calendar, readable_calendar_predicate
 from .models import Calendar, CalendarEvent, CalendarEventParticipant, CalendarReminder
-from .recurrence import expanded_starts
+from .occurrence_support import event_occurrence_ranges
 
 
 def stored_utc(value: datetime) -> datetime:
@@ -71,7 +72,10 @@ def serialize_event(db: Session, event: CalendarEvent, include_detail: bool = Fa
 
 
 def list_calendars(db: Session, actor: Actor, include_deleted: bool = False) -> list[dict[str, Any]]:
-    query = select(Calendar).where(Calendar.organization_id == actor.organization_id)
+    query = select(Calendar).where(
+        Calendar.organization_id == actor.organization_id,
+        readable_calendar_predicate(actor),
+    )
     if not include_deleted:
         query = query.where(Calendar.status != "deleted")
     return [serialize_calendar(row) for row in db.scalars(query.order_by(Calendar.name)).all()]
@@ -79,7 +83,7 @@ def list_calendars(db: Session, actor: Actor, include_deleted: bool = False) -> 
 
 def calendar_or_error(db: Session, actor: Actor, calendar_id: str) -> Calendar:
     row = db.get(Calendar, calendar_id)
-    if not row or row.organization_id != actor.organization_id or row.status == "deleted":
+    if not row or not can_read_calendar(actor, row):
         raise ValueError("calendar not found")
     return row
 
@@ -88,39 +92,45 @@ def event_or_error(db: Session, actor: Actor, event_id: str) -> CalendarEvent:
     row = db.get(CalendarEvent, event_id)
     if not row or row.organization_id != actor.organization_id:
         raise ValueError("calendar event not found")
+    calendar = db.get(Calendar, row.calendar_id)
+    if not calendar or not can_read_calendar(actor, calendar):
+        raise ValueError("calendar event not found")
     return row
 
 
 def event_rows(db: Session, actor: Actor, start: datetime, end: datetime, calendar_id: str | None = None, include_canceled: bool = False) -> list[CalendarEvent]:
-    query = select(CalendarEvent).where(CalendarEvent.organization_id == actor.organization_id)
+    query = select(CalendarEvent).join(Calendar, Calendar.id == CalendarEvent.calendar_id).where(
+        CalendarEvent.organization_id == actor.organization_id,
+        Calendar.organization_id == actor.organization_id,
+        Calendar.status == "active",
+        readable_calendar_predicate(actor),
+    )
     if calendar_id:
         query = query.where(CalendarEvent.calendar_id == calendar_id)
     if not include_canceled:
         query = query.where(CalendarEvent.status != "canceled")
     overlaps = and_(CalendarEvent.ends_at > start, CalendarEvent.starts_at < end)
-    recurring = and_(CalendarEvent.recurrence_rule.is_not(None), CalendarEvent.starts_at < end, or_(CalendarEvent.recurrence_until.is_(None), CalendarEvent.recurrence_until >= start))
+    # recurrence_until stores an occurrence start. The last occurrence can start
+    # before this window and still overlap it, so duration-aware expansion owns
+    # the end-boundary check rather than this database prefilter.
+    recurring = and_(CalendarEvent.recurrence_rule.is_not(None), CalendarEvent.starts_at < end)
     return list(db.scalars(query.where(or_(overlaps, recurring)).order_by(CalendarEvent.starts_at)).all())
 
 
 def occurrence_rows(db: Session, actor: Actor, start: datetime, end: datetime, calendar_id: str | None = None, include_canceled: bool = False) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for event in event_rows(db, actor, start, end, calendar_id, include_canceled):
-        event_start = stored_utc(event.starts_at)
-        event_end = stored_utc(event.ends_at)
-        duration = event_end - event_start
-        for occurrence_start in expanded_starts(event.recurrence_rule, event_start, start - duration, end):
-            occurrence_end = occurrence_start + duration
-            if occurrence_start < end and occurrence_end > start:
-                item = serialize_event(db, event)
-                item["occurrence_start"] = occurrence_start.isoformat()
-                item["occurrence_end"] = occurrence_end.isoformat()
-                rows.append(item)
+        for occurrence_start, occurrence_end in event_occurrence_ranges(event, start, end):
+            item = serialize_event(db, event)
+            item["occurrence_start"] = occurrence_start.isoformat()
+            item["occurrence_end"] = occurrence_end.isoformat()
+            rows.append(item)
     return sorted(rows, key=lambda item: item["occurrence_start"])
 
 
 def freebusy_rows(db: Session, actor: Actor, start: datetime, end: datetime, calendar_id: str | None = None) -> list[dict[str, str]]:
     return [
-        {"event_id": row["id"], "start": row["occurrence_start"], "end": row["occurrence_end"], "title": row["title"]}
+        {"start": row["occurrence_start"], "end": row["occurrence_end"]}
         for row in occurrence_rows(db, actor, start, end, calendar_id)
         if row["transparency"] == "busy"
     ]
@@ -175,7 +185,7 @@ def freebusy_rows_for_participants(
 
 
 def participant_rows(db: Session, event_id: str) -> list[dict[str, Any]]:
-    query = select(CalendarEventParticipant).where(CalendarEventParticipant.event_id == event_id)
+    query = select(CalendarEventParticipant).where(CalendarEventParticipant.event_id == event_id).order_by(CalendarEventParticipant.id)
     return [
         {
             "id": row.id,
@@ -191,5 +201,8 @@ def participant_rows(db: Session, event_id: str) -> list[dict[str, Any]]:
 
 
 def reminder_rows(db: Session, event_id: str) -> list[dict[str, Any]]:
-    query = select(CalendarReminder).where(CalendarReminder.event_id == event_id, CalendarReminder.status == "active")
+    query = select(CalendarReminder).where(
+        CalendarReminder.event_id == event_id,
+        CalendarReminder.status == "active",
+    ).order_by(CalendarReminder.id)
     return [{"id": row.id, "reminder_type": row.reminder_type, "trigger_minutes_before": row.trigger_minutes_before} for row in db.scalars(query).all()]

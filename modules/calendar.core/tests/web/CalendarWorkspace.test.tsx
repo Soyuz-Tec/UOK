@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ModuleStatus } from "@uok/shared/types";
 
@@ -26,14 +26,19 @@ const installedCalendar: ModuleStatus = {
 };
 
 describe("CalendarWorkspace", () => {
+  afterEach(cleanup);
+
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
       const path = String(input);
       const body = path.includes("/api/calendar/calendars")
-        ? [{ id: "calendar-1", name: "Operations", status: "active", timezone: "UTC" }]
+        ? [
+            { id: "calendar-1", name: "Operations", color: "#2563eb", status: "active", timezone: "UTC" },
+            { id: "calendar-2", name: "Engineering", color: "invalid", status: "active", timezone: "America/New_York" },
+          ]
         : path.includes("/api/calendar/freebusy")
-          ? { busy: [{ event_id: "event-1", start: "2026-07-09T11:00:00Z", end: "2026-07-09T12:00:00Z", title: "Dispatch review" }] }
+          ? { busy: [{ start: "2026-07-09T11:00:00Z", end: "2026-07-09T12:00:00Z" }] }
           : path.includes("/api/calendar/events/event-1")
             ? {
                 id: "event-1",
@@ -59,7 +64,12 @@ describe("CalendarWorkspace", () => {
                 timezone: "UTC",
                 transparency: "busy",
               }];
-      return { ok: true, status: 200, json: async () => body } as Response;
+      return {
+        ok: true,
+        status: 200,
+        json: async () => body,
+        headers: { get: (name: string) => name.toLowerCase() === "etag" && path.includes("/api/calendar/events/event-1") ? '"calendar-event-sha256-test"' : null },
+      } as Response;
     }));
   });
 
@@ -83,16 +93,51 @@ describe("CalendarWorkspace", () => {
     expect(await screen.findByText("Dispatch review")).toBeInTheDocument();
     expect(screen.getByText("1 busy blocks")).toBeInTheDocument();
 
-    fireEvent.click(within(commandBar).getByRole("button", { name: "New event" }));
-    const newEventEditor = screen.getByLabelText("Event editor");
+    const newEventButton = within(commandBar).getByRole("button", { name: "New event" });
+    newEventButton.focus();
+    fireEvent.click(newEventButton);
+    const newEventEditor = screen.getByRole("dialog", { name: "New event" });
     expect(within(newEventEditor).getByRole("heading", { name: "New event" })).toBeInTheDocument();
     expect(within(newEventEditor).getByLabelText("Title")).toHaveValue("");
-    fireEvent.click(within(newEventEditor).getByRole("button", { name: "Close event editor" }));
+    expect(within(newEventEditor).getByRole("button", { name: "Move New event" })).toBeInTheDocument();
+    expect(within(newEventEditor).getByLabelText("Calendar")).toHaveValue("calendar-1");
+    fireEvent.click(within(newEventEditor).getByRole("button", { name: "Create event" }));
+    expect(within(newEventEditor).getByRole("alert")).toHaveTextContent("Enter a title before saving.");
+    fireEvent.click(within(newEventEditor).getByRole("button", { name: "Close New event" }));
+    await waitFor(() => expect(newEventButton).toHaveFocus());
 
     fireEvent.click(screen.getAllByText("Dispatch review")[0]);
 
-    await waitFor(() => expect(screen.getByRole("heading", { name: "Edit event" })).toBeInTheDocument());
-    expect(screen.getByDisplayValue("Control room")).toBeInTheDocument();
-    expect(screen.getByText("1 active reminders")).toBeInTheDocument();
+    const editDialog = await screen.findByRole("dialog", { name: "Edit event" });
+    expect(within(editDialog).getByDisplayValue("Control room")).toBeInTheDocument();
+    expect(within(editDialog).getByText(/1 saved reminder.*UOK delivery is not enabled yet/)).toBeInTheDocument();
+  });
+
+  it("switches between one calendar and the safe all-calendar overlay", async () => {
+    const fetchMock = vi.mocked(fetch);
+    render(<CalendarWorkspace token="token" moduleRows={[installedCalendar]} busyAction="" onInstall={() => undefined} />);
+
+    const allCalendars = await screen.findByRole("radio", { name: /All calendars/ });
+    expect(screen.getByRole("radio", { name: /Operations/ })).toBeChecked();
+    fireEvent.click(allCalendars);
+
+    await waitFor(() => expect(allCalendars).toBeChecked());
+    await waitFor(() => {
+      const eventCalls = fetchMock.mock.calls.map(([input]) => String(input)).filter((path) => path.includes("/api/calendar/events?"));
+      expect(eventCalls.some((path) => !new URL(path, "http://uok.local").searchParams.has("calendar_id"))).toBe(true);
+    });
+  });
+
+  it("defaults a new event to the selected calendar timezone and visible wall hour", async () => {
+    render(<CalendarWorkspace token="token" moduleRows={[installedCalendar]} busyAction="" onInstall={() => undefined} />);
+
+    const engineering = await screen.findByRole("radio", { name: /Engineering/ });
+    fireEvent.click(engineering);
+    await waitFor(() => expect(engineering).toBeChecked());
+    fireEvent.click(screen.getByRole("button", { name: "New event" }));
+
+    const dialog = screen.getByRole("dialog", { name: "New event" });
+    expect(within(dialog).getByLabelText("Time zone")).toHaveValue("America/New_York");
+    expect((within(dialog).getByLabelText("Starts") as HTMLInputElement).value).toMatch(/T09:00$/);
   });
 });

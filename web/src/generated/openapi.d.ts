@@ -1856,14 +1856,16 @@ export interface components {
             ends_at?: string | null;
             /** Location */
             location?: string | null;
+            /** Participants */
+            participants?: components["schemas"]["ParticipantRequest"][] | null;
             /** Recurrence Rule */
             recurrence_rule?: string | null;
             /** Recurrence Until */
             recurrence_until?: string | null;
+            /** Reminders */
+            reminders?: components["schemas"]["ReminderWriteRequest"][] | null;
             /** Starts At */
             starts_at?: string | null;
-            /** Status */
-            status?: string | null;
             /** Timezone */
             timezone?: string | null;
             /** Title */
@@ -1904,6 +1906,8 @@ export interface components {
             recurrence_rule?: string | null;
             /** Recurrence Until */
             recurrence_until?: string | null;
+            /** Reminders */
+            reminders?: components["schemas"]["ReminderWriteRequest"][];
             /** Source Module */
             source_module?: string | null;
             /** Source Object Id */
@@ -3363,9 +3367,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -3392,9 +3394,11 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Actor-visible event detail. */
             200: {
                 headers: {
+                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    ETag?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -3418,6 +3422,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3431,15 +3436,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Event updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3451,12 +3465,22 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     cancel_event_api_calendar_events__event_id__cancel_post: {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3466,15 +3490,24 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Event updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3486,12 +3519,22 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     create_reminder_api_calendar_events__event_id__reminders_post: {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3505,15 +3548,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Event updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3525,12 +3577,22 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     restore_event_api_calendar_events__event_id__restore_post: {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3540,15 +3602,24 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Event updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3558,6 +3629,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -3638,6 +3718,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3647,15 +3728,24 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Event updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3665,6 +3755,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };

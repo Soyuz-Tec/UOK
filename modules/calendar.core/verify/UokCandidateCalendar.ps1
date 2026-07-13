@@ -40,5 +40,18 @@ function Invoke-UokCalendarCandidateScenario {
     if (@($events | Where-Object { $_.id -eq $event.id }).Count -lt 1) {
         throw "Calendar recurrence readback failed: $($events | ConvertTo-Json -Depth 20)"
     }
+    $privateCalendar = Invoke-UokJson -Method "PATCH" -Path "/api/calendar/calendars/$($calendar.id)" -Headers $OpsHeaders -Body @{
+        visibility_scope = "private"
+    }
+    if ($privateCalendar.visibility_scope -ne "private") {
+        throw "Calendar private visibility update failed: $($privateCalendar | ConvertTo-Json -Depth 20)"
+    }
+    $privateEvents = Invoke-UokJson -Path "/api/calendar/events?from_at=2026-08-01T00%3A00%3A00Z&to_at=2026-08-20T00%3A00%3A00Z&calendar_id=$($calendar.id)" -Headers $ViewerHeaders
+    if (@($privateEvents | Where-Object { $_.id -eq $event.id }).Count -ne 0) {
+        throw "Private Calendar event leaked to viewer: $($privateEvents | ConvertTo-Json -Depth 20)"
+    }
+    Assert-UokHttpFailure -StatusCode 404 -UnexpectedSuccessMessage "Viewer private Calendar detail unexpectedly succeeded" -Action {
+        Invoke-UokJson -Path "/api/calendar/events/$($event.id)" -Headers $ViewerHeaders
+    }
     return @{ calendar_id = $calendar.id; event_id = $event.id }
 }

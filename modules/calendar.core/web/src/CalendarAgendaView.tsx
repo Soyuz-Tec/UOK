@@ -1,12 +1,16 @@
 import type { CalendarEventRecord } from "./calendarTypes";
+import { CalendarEventStatus } from "./CalendarEventStatus";
+import { calendarEventStyle } from "./calendarPresentation";
 import { dayKey, eventStart, eventTimeLabel } from "./calendarDates";
 
 export function CalendarAgendaView({
   events,
+  calendarColors,
   selectedEventId,
   onSelectEvent,
 }: {
   events: CalendarEventRecord[];
+  calendarColors: Record<string, string>;
   selectedEventId?: string;
   onSelectEvent: (event: CalendarEventRecord) => void;
 }) {
@@ -27,12 +31,14 @@ export function CalendarAgendaView({
             <button
               type="button"
               key={`${event.id}-${event.occurrence_start}`}
-              className={event.id === selectedEventId ? "calendar-agenda-event selected" : "calendar-agenda-event"}
+              className={`calendar-agenda-event ${event.status}${event.id === selectedEventId ? " selected" : ""}`}
+              style={calendarEventStyle(event.calendar_id, calendarColors)}
               onClick={() => onSelectEvent(event)}
             >
               <span>{eventTimeLabel(event)}</span>
               <strong>{event.title}</strong>
               <em>{event.location || event.transparency}</em>
+              <CalendarEventStatus status={event.status} />
             </button>
           ))}
         </section>

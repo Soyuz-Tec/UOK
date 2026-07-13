@@ -4,7 +4,7 @@ import { WorkspaceActionButton, WorkspaceActionsMenu } from "@uok/shared/actions
 import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkspaceCommandBar } from "@uok/shared/layout";
 import { CommandButton, IconButton, SegmentedControl } from "@uok/shared/primitives";
-import type { CalendarRecord, CalendarView } from "./calendarTypes";
+import type { CalendarView } from "./calendarTypes";
 import { viewTitle } from "./calendarDates";
 
 const viewOptions = [
@@ -15,14 +15,11 @@ const viewOptions = [
 ];
 
 export function CalendarToolbar({
-  calendars,
-  activeCalendarId,
   view,
   cursorDate,
   query,
   statusFilter,
   availabilityFilter,
-  onCalendarChange,
   onViewChange,
   onQueryChange,
   onStatusFilterChange,
@@ -34,14 +31,11 @@ export function CalendarToolbar({
   onRefresh,
   onExport,
 }: {
-  calendars: CalendarRecord[];
-  activeCalendarId: string;
   view: CalendarView;
   cursorDate: Date;
   query: string;
   statusFilter: string;
   availabilityFilter: string;
-  onCalendarChange: (calendarId: string) => void;
   onViewChange: (view: CalendarView) => void;
   onQueryChange: (query: string) => void;
   onStatusFilterChange: (status: string) => void;
@@ -53,10 +47,6 @@ export function CalendarToolbar({
   onRefresh: () => void;
   onExport: () => void;
 }) {
-  const calendarOptions = calendars.length
-    ? calendars.map((calendar) => ({ value: calendar.id, label: calendar.name }))
-    : [{ value: "", label: "No calendars" }];
-
   return (
     <WorkspaceCommandBar
       label="Calendar controls"
@@ -69,7 +59,6 @@ export function CalendarToolbar({
           placeholder="Search events"
           defaultSummaryLabel="Active events"
           filters={[
-            { id: "calendar", label: "Calendar", value: activeCalendarId, defaultValue: calendarOptions[0]?.value || "", options: calendarOptions, onChange: onCalendarChange },
             { id: "status", label: "Status", value: statusFilter, defaultValue: "active", options: statusOptions, onChange: onStatusFilterChange },
             { id: "availability", label: "Show as", value: availabilityFilter, defaultValue: "all", options: availabilityOptions, onChange: onAvailabilityFilterChange },
           ]}

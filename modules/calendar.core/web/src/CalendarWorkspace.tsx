@@ -1,9 +1,6 @@
-import { Download } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { EmptyState, StatusPill } from "@uok/shared/data-display";
-import { Pane } from "@uok/shared/layout";
-import { CommandButton } from "@uok/shared/primitives";
+import { EmptyState } from "@uok/shared/data-display";
 import type { ModuleStatus } from "@uok/shared/types";
 import { CalendarAgendaView } from "./CalendarAgendaView";
 import { CalendarEventEditor } from "./CalendarEventEditor";
@@ -11,11 +8,16 @@ import { CalendarMiniMonth } from "./CalendarMiniMonth";
 import { CalendarMonthView } from "./CalendarMonthView";
 import { CalendarTimeGrid } from "./CalendarTimeGrid";
 import { CalendarToolbar } from "./CalendarToolbar";
+import { CalendarModuleState, calendarErrorMessage } from "./CalendarWorkspaceSupport";
+import { calendarAuthHeaders, downloadCalendarIcs, loadCalendarEventDetail } from "./calendarClient";
+import { resolveCalendarDraftTiming } from "./calendarDraftTiming";
 import { CALENDAR_MODULE_ID } from "./calendarModule";
 import { addDays, addMonths, durationDays, eventStart, rangeForView, startOfDay } from "./calendarDates";
 import { draftFromEvent, emptyDraft, eventPayload } from "./calendarDrafts";
 import { filterCalendarEvents } from "./calendarFilters";
+import { calendarColorMap } from "./calendarPresentation";
 import type { CalendarDraft, CalendarEventRecord, CalendarRecord, CalendarView } from "./calendarTypes";
+import { LatestRequestGuard } from "./latestRequestGuard";
 
 type Props = {
   token: string;
@@ -24,56 +26,72 @@ type Props = {
   onInstall: () => void;
 };
 
-function authHeaders(token: string) {
-  return { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-}
-
 export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: Props) {
   const module = moduleRows.find((row) => row.name === CALENDAR_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const [calendars, setCalendars] = useState<CalendarRecord[]>([]);
   const [events, setEvents] = useState<CalendarEventRecord[]>([]);
-  const [activeCalendarId, setActiveCalendarId] = useState("");
+  const [activeCalendarId, setActiveCalendarId] = useState<string | null>(null);
   const [view, setView] = useState<CalendarView>("month");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [cursorDate, setCursorDate] = useState(startOfDay(new Date()));
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventRecord | undefined>();
-  const [draft, setDraft] = useState<CalendarDraft>(emptyDraft());
+  const [selectedEventEtag, setSelectedEventEtag] = useState<string | null>(null);
+  const [draft, setDraft] = useState<CalendarDraft>(() => emptyDraft(undefined, 9, "", timezone));
   const [editorOpen, setEditorOpen] = useState(false);
+  const [editorBusyAction, setEditorBusyAction] = useState<"" | "save" | "cancel" | "restore">("");
+  const [editorError, setEditorError] = useState("");
   const [busyCount, setBusyCount] = useState(0);
   const [message, setMessage] = useState("Ready");
+  const refreshSequence = useRef(0);
+  const eventDetailRequests = useRef(new LatestRequestGuard());
+  const calendarColors = useMemo(() => calendarColorMap(calendars), [calendars]);
   const eventRows = useMemo(() => filterCalendarEvents(events, query, statusFilter, availabilityFilter).sort((a, b) => a.occurrence_start.localeCompare(b.occurrence_start)), [events, query, statusFilter, availabilityFilter]);
 
   async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-    const res = await fetch(path, { ...options, headers: { ...authHeaders(token), ...(options.headers || {}) } });
+    const res = await fetch(path, { ...options, headers: { ...calendarAuthHeaders(token), ...(options.headers || {}) } });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw data;
     return data as T;
   }
 
-  async function refreshCalendar(calendarId = activeCalendarId) {
+  async function refreshCalendar(calendarId?: string) {
+    eventDetailRequests.current.cancel();
+    const requestId = ++refreshSequence.current;
     if (!token || !operational) return;
     try {
       const rows = await api<CalendarRecord[]>("/api/calendar/calendars");
-      setCalendars(rows);
-      const nextCalendarId = calendarId || rows[0]?.id || "";
-      setActiveCalendarId(nextCalendarId);
-      if (nextCalendarId) {
-        const range = rangeForView(view, cursorDate);
-        const params = new URLSearchParams({ from_at: range.from.toISOString(), to_at: range.to.toISOString(), calendar_id: nextCalendarId, include_canceled: "true" });
-        setEvents(await api<CalendarEventRecord[]>(`/api/calendar/events?${params.toString()}`));
-        const freebusy = await api<{ busy: unknown[] }>(`/api/calendar/freebusy?${params.toString()}`);
-        setBusyCount(freebusy.busy.length);
-      } else {
-        setEvents([]);
-        setBusyCount(0);
+      const requestedCalendarId = calendarId ?? activeCalendarId;
+      const nextCalendarId = requestedCalendarId === null
+        ? rows[0]?.id || ""
+        : requestedCalendarId === "" || rows.some((row) => row.id === requestedCalendarId)
+          ? requestedCalendarId
+          : rows[0]?.id || "";
+      let nextEvents: CalendarEventRecord[] = [];
+      let nextBusyCount = 0;
+      const range = rangeForView(view, cursorDate);
+      if (rows.length) {
+        const params = new URLSearchParams({ from_at: range.from.toISOString(), to_at: range.to.toISOString(), include_canceled: "true" });
+        if (nextCalendarId) params.set("calendar_id", nextCalendarId);
+        const [eventResult, freebusy] = await Promise.all([
+          api<CalendarEventRecord[]>(`/api/calendar/events?${params.toString()}`),
+          api<{ busy: unknown[] }>(`/api/calendar/freebusy?${params.toString()}`),
+        ]);
+        nextEvents = eventResult;
+        nextBusyCount = freebusy.busy.length;
       }
-      setMessage(`Loaded ${rows.length} calendars and ${durationDays(rangeForView(view, cursorDate).from, rangeForView(view, cursorDate).to)} visible days.`);
+      if (requestId !== refreshSequence.current) return;
+      setCalendars(rows);
+      setActiveCalendarId(nextCalendarId);
+      setEvents(nextEvents);
+      setBusyCount(nextBusyCount);
+      setMessage(`Loaded ${rows.length} calendars and ${durationDays(range.from, range.to)} visible days.`);
     } catch (error) {
-      setMessage(errorMessage(error));
+      if (requestId !== refreshSequence.current) return;
+      setMessage(calendarErrorMessage(error));
     }
   }
 
@@ -86,79 +104,130 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
       await refreshCalendar(row.id);
       setMessage(`Created ${row.name}.`);
     } catch (error) {
-      setMessage(errorMessage(error));
+      setMessage(calendarErrorMessage(error));
     }
   }
 
+  function showEditorError(text: string) {
+    setEditorError(text);
+    setMessage(text);
+  }
+
   async function saveEvent() {
-    if (!activeCalendarId || !draft.title.trim()) return setMessage("Enter a title before saving.");
-    const startsAt = new Date(draft.startsAt);
-    const endsAt = new Date(draft.endsAt);
-    if (Number.isNaN(startsAt.valueOf()) || Number.isNaN(endsAt.valueOf()) || endsAt <= startsAt) return setMessage("End time must be after start time.");
-    const payload = eventPayload(draft, activeCalendarId, timezone);
+    if (!draft.calendarId) return showEditorError("Choose a calendar before saving.");
+    if (!draft.title.trim()) return showEditorError("Enter a title before saving.");
+    const timing = resolveCalendarDraftTiming(draft, selectedEvent);
+    if (!timing.ok) return showEditorError(timing.error);
+    const reminderMinutes = draft.reminderMinutes === "" ? null : Number(draft.reminderMinutes);
+    if (reminderMinutes !== null && (!Number.isInteger(reminderMinutes) || reminderMinutes < 0 || reminderMinutes > 43200)) return showEditorError("Reminder minutes must be a whole number between 0 and 43200.");
+    if (draft.id && !selectedEventEtag) return showEditorError("Reload this event before saving so UOK can protect newer changes.");
+    const payload = eventPayload(draft, timezone, selectedEvent);
+    const updatePayload = { ...payload, calendar_id: undefined };
+    setEditorError("");
+    setEditorBusyAction("save");
     try {
       const saved = draft.id
-        ? await api<CalendarEventRecord>(`/api/calendar/events/${draft.id}`, { method: "PATCH", body: JSON.stringify(payload) })
+        ? await api<CalendarEventRecord>(`/api/calendar/events/${draft.id}`, {
+          method: "PATCH",
+          headers: { "If-Match": selectedEventEtag || "" },
+          body: JSON.stringify(updatePayload),
+        })
         : await api<CalendarEventRecord>("/api/calendar/events", { method: "POST", body: JSON.stringify(payload) });
-      const reminderMinutes = draft.reminderMinutes === "" ? null : Number(draft.reminderMinutes);
-      const reminderExists = selectedEvent?.reminders?.some((reminder) => reminder.trigger_minutes_before === reminderMinutes);
-      if (reminderMinutes != null && saved.id && !reminderExists) {
-        await api(`/api/calendar/events/${saved.id}/reminders`, { method: "POST", body: JSON.stringify({ reminder_type: "in_app", trigger_minutes_before: reminderMinutes }) });
-      }
+      if (!saved.id) throw new Error("Calendar event save did not return an event identifier.");
       setEditorOpen(false);
       setSelectedEvent(undefined);
+      setSelectedEventEtag(null);
       await refreshCalendar();
       setMessage(draft.id ? "Event updated." : "Event created.");
     } catch (error) {
-      setMessage(errorMessage(error));
+      showEditorError(calendarErrorMessage(error));
+    } finally {
+      setEditorBusyAction("");
     }
   }
 
   async function cancelEvent() {
     if (!draft.id) return;
-    await api(`/api/calendar/events/${draft.id}/cancel`, { method: "POST" });
-    setEditorOpen(false);
-    await refreshCalendar();
-    setMessage("Event canceled.");
+    if (!selectedEventEtag) return showEditorError("Reload this event before canceling so UOK can protect newer changes.");
+    setEditorError("");
+    setEditorBusyAction("cancel");
+    try {
+      await api(`/api/calendar/events/${draft.id}/cancel`, {
+        method: "POST",
+        headers: { "If-Match": selectedEventEtag },
+      });
+      setEditorOpen(false);
+      setSelectedEventEtag(null);
+      await refreshCalendar();
+      setMessage("Event canceled.");
+    } catch (error) {
+      showEditorError(calendarErrorMessage(error));
+    } finally {
+      setEditorBusyAction("");
+    }
   }
-
   async function restoreEvent() {
     if (!draft.id) return;
-    await api(`/api/calendar/events/${draft.id}/restore`, { method: "POST" });
-    setEditorOpen(false);
-    await refreshCalendar();
-    setMessage("Event restored.");
+    if (!selectedEventEtag) return showEditorError("Reload this event before restoring so UOK can protect newer changes.");
+    setEditorError("");
+    setEditorBusyAction("restore");
+    try {
+      await api(`/api/calendar/events/${draft.id}/restore`, {
+        method: "POST",
+        headers: { "If-Match": selectedEventEtag },
+      });
+      setEditorOpen(false);
+      setSelectedEventEtag(null);
+      await refreshCalendar();
+      setMessage("Event restored.");
+    } catch (error) {
+      showEditorError(calendarErrorMessage(error));
+    } finally {
+      setEditorBusyAction("");
+    }
   }
-
   async function selectEvent(event: CalendarEventRecord) {
-    const detail = await api<CalendarEventRecord>(`/api/calendar/events/${event.id}`);
-    const merged = { ...event, ...detail };
-    setSelectedEvent(merged);
-    setDraft(draftFromEvent(merged));
-    setEditorOpen(true);
+    const request = eventDetailRequests.current.begin();
+    try {
+      const detail = await loadCalendarEventDetail(event, token, request.signal);
+      if (!request.isCurrent()) return;
+      setSelectedEvent(detail.event);
+      setSelectedEventEtag(detail.etag);
+      setDraft(draftFromEvent(detail.event));
+      setEditorError("");
+      setEditorOpen(true);
+    } catch (error) {
+      if (!request.isCurrent()) return;
+      setMessage(calendarErrorMessage(error));
+    } finally {
+      request.release();
+    }
   }
-
   function newEvent(date = cursorDate, hour = 9) {
+    eventDetailRequests.current.cancel();
+    const calendarId = activeCalendarId || calendars[0]?.id || "";
+    const draftTimezone = calendars.find((calendar) => calendar.id === calendarId)?.timezone || timezone;
     setSelectedEvent(undefined);
-    setDraft(emptyDraft(date, hour));
+    setSelectedEventEtag(null);
+    setDraft(emptyDraft(date, hour, calendarId, draftTimezone));
+    setEditorError("");
     setEditorOpen(true);
   }
 
   async function exportIcs() {
     const range = rangeForView(view, cursorDate);
-    const params = new URLSearchParams({ from_at: range.from.toISOString(), to_at: range.to.toISOString(), calendar_id: activeCalendarId });
-    const res = await fetch(`/api/calendar/ics/export?${params.toString()}`, { headers: authHeaders(token) });
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "uok-calendar.ics";
-    link.click();
-    URL.revokeObjectURL(url);
+    const params = new URLSearchParams({ from_at: range.from.toISOString(), to_at: range.to.toISOString() });
+    if (activeCalendarId) params.set("calendar_id", activeCalendarId);
+    try {
+      await downloadCalendarIcs(token, params);
+    } catch (error) {
+      setMessage(calendarErrorMessage(error));
+    }
   }
 
   useEffect(() => {
     void refreshCalendar();
+    return () => eventDetailRequests.current.cancel();
   }, [token, operational, view, cursorDate]);
 
   if (!token) return <EmptyState text="Sign in to open Calendar." />;
@@ -167,14 +236,11 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
   return (
     <section aria-label="Calendar" className="calendar-workspace">
       <CalendarToolbar
-        calendars={calendars}
-        activeCalendarId={activeCalendarId}
         view={view}
         cursorDate={cursorDate}
         query={query}
         statusFilter={statusFilter}
         availabilityFilter={availabilityFilter}
-        onCalendarChange={(id) => void refreshCalendar(id)}
         onViewChange={setView}
         onQueryChange={setQuery}
         onStatusFilterChange={setStatusFilter}
@@ -190,11 +256,11 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
         onRefresh={() => void refreshCalendar()}
         onExport={() => void exportIcs()}
       />
-      <div className={editorOpen ? "calendar-layout" : "calendar-layout editor-closed"}>
+      <div className="calendar-layout">
         <CalendarMiniMonth
           cursorDate={cursorDate}
           calendars={calendars}
-          activeCalendarId={activeCalendarId}
+          activeCalendarId={activeCalendarId || ""}
           onDateChange={setCursorDate}
           onCalendarChange={(id) => void refreshCalendar(id)}
           onCreateCalendar={createDefaultCalendar}
@@ -203,42 +269,31 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
           <div className="calendar-summary">
             <span>{eventRows.length} events</span>
             <span>{busyCount} busy blocks</span>
-            <span>{message}</span>
+            <span role="status" aria-live="polite" aria-atomic="true">{message}</span>
           </div>
-          {view === "month" && <CalendarMonthView cursorDate={cursorDate} events={eventRows} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
-          {view === "week" && <CalendarTimeGrid view="week" cursorDate={cursorDate} events={eventRows} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
-          {view === "day" && <CalendarTimeGrid view="day" cursorDate={cursorDate} events={eventRows} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
-          {view === "agenda" && <CalendarAgendaView events={eventRows} selectedEventId={selectedEvent?.id} onSelectEvent={(event) => void selectEvent(event)} />}
+          {view === "month" && <CalendarMonthView cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
+          {view === "week" && <CalendarTimeGrid view="week" cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
+          {view === "day" && <CalendarTimeGrid view="day" cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
+          {view === "agenda" && <CalendarAgendaView events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectEvent={(event) => void selectEvent(event)} />}
         </main>
-        {editorOpen ? <CalendarEventEditor draft={draft} selectedEvent={selectedEvent} onDraftChange={setDraft} onSave={saveEvent} onCancel={cancelEvent} onRestore={restoreEvent} onClose={() => setEditorOpen(false)} /> : null}
       </div>
+      <CalendarEventEditor
+        open={editorOpen}
+        draft={draft}
+        calendars={calendars}
+        selectedEvent={selectedEvent}
+        busyAction={editorBusyAction}
+        error={editorError}
+        onDraftChange={setDraft}
+        onSave={saveEvent}
+        onCancel={cancelEvent}
+        onRestore={restoreEvent}
+        onClose={() => {
+          eventDetailRequests.current.cancel();
+          setEditorOpen(false);
+          setEditorError("");
+        }}
+      />
     </section>
   );
-}
-
-function CalendarModuleState({ module, busyAction, onInstall }: { module?: ModuleStatus; busyAction: string; onInstall: () => void }) {
-  return (
-    <section aria-label="Calendar">
-      <Pane title="Calendar" description="Module state" wide>
-        <div className="module-row">
-          <div className="module-main">
-            <div className="module-title-line">
-              <h2 className="module-name">calendar.core</h2>
-              <StatusPill label={module?.status || "available"} tone="info" />
-            </div>
-            <p className="module-meta">capability_module - {module?.version || "not loaded"}</p>
-          </div>
-          <div className="module-actions">
-            <CommandButton icon={Download} onClick={onInstall} loading={busyAction === "calendar.core:install"}>Install</CommandButton>
-          </div>
-        </div>
-      </Pane>
-    </section>
-  );
-}
-
-function errorMessage(error: unknown) {
-  if (typeof error === "string") return error;
-  if (error && typeof error === "object" && "detail" in error) return JSON.stringify((error as { detail: unknown }).detail);
-  return "Calendar operation failed.";
 }

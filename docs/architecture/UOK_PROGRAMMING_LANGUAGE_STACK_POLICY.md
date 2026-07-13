@@ -36,6 +36,7 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 | UOK backend | Python `>=3.14`, current container runtime Python `3.14` | `src/uok/`, `modules/<module>/backend` | API, command bus, module registry, workflow contracts, governance, reports, verification, local runtime, module-owned backend providers |
 | API framework | FastAPI `0.139.0` | `src/uok/main.py` | REST, WebSocket, OpenAPI surface, dependency boundaries |
 | API/data validation | Pydantic `2.13.4` and Python type hints | request/response schemas, command payload validation | Typed API contracts, JSON-compatible payload discipline |
+| Calendar interoperability | python-dateutil `2.9.0.post0` + icalendar `7.2.0` | `modules/calendar.core/backend/uok_calendar_core` | Bounded RRULE evaluation plus RFC 5545 TZID/VTIMEZONE generation and parsing; Calendar ownership remains module-local |
 | Persistence access | SQLAlchemy `2.0.51` | `src/uok/kernel_models.py`, `src/uok/module_model_registry.py`, `modules/*/backend/*/models.py`, persistence modules | Single-Base ORM mapping, validated module composition, transactional unit of work, SQL abstraction where appropriate |
 | System of record | PostgreSQL `18` | Podman compose and production-shaped runtime | Transactions, tenant scoping, RLS verification, restore drills, event/outbox durability |
 | Durable frontend | TypeScript `5.9.3` + React `19.2.7` | `web/src/`, `modules/*/web/src` | Product-neutral shell/shared controls plus module-owned operator workspaces and typed clients |
@@ -104,6 +105,9 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
    - Frontend dependencies must be declared in `web/package.json` and locked in `web/package-lock.json`.
    - Do not add `latest` dependency ranges to release-candidate code.
    - Do not add duplicate libraries for the same job without an ADR.
+   - `icalendar` is limited to RFC 5545 parsing/serialization and bounded
+     VTIMEZONE generation. It does not own UOK recurrence, storage, commands,
+     provider synchronization, or Calendar module boundaries.
 
 10. Verification before expansion
     - New language, framework, runtime, package manager, ORM, UI framework, or build tool adoption is blocked until the current candidate passes compile, tests, frontend build, language-stack verification, and architecture alignment verification.

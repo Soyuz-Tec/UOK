@@ -8,7 +8,9 @@ export function ConfirmCommandButton({
   message,
   onConfirm,
   disabled = false,
-  destructive = false
+  destructive = false,
+  loading = false,
+  loadingLabel,
 }: {
   icon: ElementType;
   children: ReactNode;
@@ -16,12 +18,14 @@ export function ConfirmCommandButton({
   onConfirm: () => void;
   disabled?: boolean;
   destructive?: boolean;
+  loading?: boolean;
+  loadingLabel?: ReactNode;
 }) {
   const runConfirmed = () => {
     if (globalThis.confirm(message)) onConfirm();
   };
   return (
-    <CommandButton icon={icon} onClick={runConfirmed} disabled={disabled} destructive={destructive}>
+    <CommandButton icon={icon} onClick={runConfirmed} disabled={disabled} destructive={destructive} loading={loading} loadingLabel={loadingLabel}>
       {children}
     </CommandButton>
   );
