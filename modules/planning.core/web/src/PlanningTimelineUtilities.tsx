@@ -147,6 +147,7 @@ export function PlanningTimelineUtilities({
                 <option value="core">Core</option>
                 <option value="progress">Progress</option>
                 <option value="resources">Resources</option>
+                <option value="logic">{t("planning.fieldPreset.logic", "Logic")}</option>
               </select>
             </label>
             <FieldVisibilityMenu label="Columns" options={columnOptions} resetLabel="Reset columns" visibility={columnVisibility} onReset={onResetColumns} onToggle={onToggleColumn} />
@@ -217,8 +218,8 @@ export function PlanningTimelineUtilities({
           <div className="planning-utility-group planning-display-controls" aria-label="Timeline display controls">
             <label className="planning-toolbar-select">
               <ChevronDown size={16} aria-hidden="true" />
-              <span>View</span>
-              <select value={viewDensity} onChange={(event) => onViewDensityChange(event.target.value as ViewDensity)}>
+              <span>Density</span>
+              <select aria-label="Density" value={viewDensity} onChange={(event) => onViewDensityChange(event.target.value as ViewDensity)}>
                 <option value="compact">Compact</option>
                 <option value="standard">Standard</option>
                 <option value="roomy">Roomy</option>

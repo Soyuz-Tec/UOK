@@ -18,6 +18,7 @@ import { visibleRows } from "./planningGanttTree";
 import { DependencyLines, ProjectBoundaryMarkers, TaskShape, TaskTimelineMarkers, TimelineBackground, TimelineCreateDraftShape, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";
 import { PlanningGanttEmptyState } from "./PlanningGanttEmptyState";
 import { PlanningGanttGrid } from "./PlanningGanttGrid";
+import { PlanningGanttSplitHandle } from "./PlanningGanttSplitHandle";
 import { taskOverlayGutter } from "./PlanningGanttTaskOverlays";
 import type { PlanningGanttProps } from "./planningGanttProps";
 import { selectedDependencyChain, taskDependencyChainClass } from "./planningDependencyChain";
@@ -52,6 +53,8 @@ export function PlanningGantt({
   dateTarget,
   dateTargetSignal,
   readOnly,
+  layoutMode,
+  splitPercent,
   onTaskSelect,
   onTaskOpen,
   onTaskReschedule,
@@ -61,11 +64,13 @@ export function PlanningGantt({
   onTimelineTaskCreate,
   onTaskMenuAction,
   onScaleChange,
+  onSplitPercentChange,
   onColumnVisible, onColumnsReset,
   onSummaryToggle,
   onViewDensityChange,
 }: PlanningGanttProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const shellRef = useRef<HTMLDivElement | null>(null);
   const gridScrollRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const rowRefs = useRef(new Map<string, HTMLDivElement>());
@@ -75,6 +80,7 @@ export function PlanningGantt({
   const [setChartSizeElement, , chartInlineSize] = useElementBlockSize<HTMLDivElement>();
   const [drag, setDrag] = useState<DragState | null>(null);
   const [chartScrollLeft, setChartScrollLeft] = useState(0);
+  const [chartScrollTop, setChartScrollTop] = useState(0);
   const [linkDrag, setLinkDrag] = useState<DependencyLinkDrag | null>(null);
   const [timelineZoom, setTimelineZoom] = useState(1);
   const [sort, setSort] = useState<PlanningGridSort>(null);
@@ -98,11 +104,10 @@ export function PlanningGantt({
   const timelineMarkers = useMemo(() => taskTimelineMarkers(renderedTasks), [renderedTasks]);
   const dependencyChain = useMemo(() => selectedDependencyChain(schedule, selectedTaskId), [schedule, selectedTaskId]);
   const width = Math.max(chart.units.length * chart.cellWidth + taskOverlayGutter, 480);
-  const headerHeight = 54;
+  const headerHeight = 66;
   const height = headerHeight + rowLayoutState.totalHeight;
   const shellHeight = virtualWindow.virtualized ? 680 : Math.max(560, height + 28);
   const canvasHeight = Math.max(height, shellBlockSize);
-  const gridWidth = Math.max(totalWidth + 64, 420);
   const gridTemplateColumns = columns.map((column) => `${widths[column.id]}px`).join(" ");
   const menuTask = taskMenu ? visibleTasks.find((task) => task.id === taskMenu.taskId) || null : null;
   const timelineInteraction = usePlanningTimelineInteraction(scrollRef, svgRef, {
@@ -117,6 +122,10 @@ export function PlanningGantt({
     scrollRef.current = element;
     setChartSizeElement(element);
   }, [setChartSizeElement]);
+  const setGanttShellElement = useCallback((element: HTMLDivElement | null) => {
+    shellRef.current = element;
+    setShellElement(element);
+  }, [setShellElement]);
 
   useEffect(() => {
     const taskId = pendingFocusRef.current;
@@ -145,14 +154,15 @@ export function PlanningGantt({
   return (
     <div
       className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance} ${readOnly ? "planning-readonly-mode" : ""} ${linkDrag ? "planning-linking" : ""}`}
-      ref={setShellElement}
+      ref={setGanttShellElement}
       aria-label={t("planning.gantt")}
       aria-readonly={readOnly}
-      style={{ "--planning-gantt-content-height": `${shellHeight}px`, "--planning-grid-width": `${gridWidth}px` } as CSSProperties}
+      style={{ "--planning-gantt-content-height": `${shellHeight}px`, "--planning-gantt-header-height": `${headerHeight}px`, "--planning-grid-width": `${splitPercent}%` } as CSSProperties}
     >
       <PlanningGanttGrid bodyRef={gridScrollRef}
         state={{ allTasks: visibleTasks, assignedByTask, columns, dependencyChain, gridTemplateColumns, pinnedOffsets, readOnly, renderedTasks, rowLayoutByTask, rowSize, selectedTaskId, showCritical, sort, summaryExpanded: (task) => !collapsedSummaryIds.has(task.id), totalHeight: rowLayoutState.totalHeight, totalWidth, virtualized: virtualWindow.virtualized, widths }}
         actions={{ onColumnMoveBefore: moveColumnBefore, onColumnVisible, onColumnsReset, onColumnWidthChange: setColumnWidth, onHeaderDoubleClick: handleHeaderDoubleClick, onKeyDown: handleRowKey, onOpenTaskMenu: openTaskMenu, onResetColumnWidth: resetColumnWidth, onRowHeightChange: setRowHeight, onRowHeightReset: resetRowHeight, onRowRef: setRowRef, onScroll: virtualWindow.onGridScroll, onSelect: onTaskOpen, onSort: (columnId) => setSort((current) => nextPlanningGridSort(current, columnId)), onSummaryToggle, onTaskInlineEdit }} />
+      {layoutMode === "split" ? <PlanningGanttSplitHandle containerRef={shellRef} value={splitPercent} onChange={onSplitPercentChange} /> : null}
       <div
         className={`planning-owned-chart ${timelineInteraction.panning ? "panning" : ""}`}
         ref={setChartElement}
@@ -173,6 +183,7 @@ export function PlanningGantt({
         }}
         onScroll={(event) => {
           setChartScrollLeft(event.currentTarget.scrollLeft);
+          setChartScrollTop(event.currentTarget.scrollTop);
           virtualWindow.onChartScroll(event);
         }}
       >
@@ -185,17 +196,19 @@ export function PlanningGantt({
           onPointerMove={(event) => updateLinkPointer(event)}
           onPointerUp={() => setLinkDrag(null)}
         >
-          <TimelineHeaders units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} width={width} />
           <TimelineBackground units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} height={canvasHeight} rowLayouts={renderedLayouts} width={width} />
-          <ProjectBoundaryMarkers project={schedule.project} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={canvasHeight} />
-          <TaskTimelineMarkers markers={timelineMarkers} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={canvasHeight} timelineWidth={width} />
-          <DependencyLines schedule={schedule} tasks={renderedTasks} rowLayoutByTask={rowLayoutByTask} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} headerHeight={headerHeight} dependencyChain={dependencyChain} />
+          <DependencyLines schedule={schedule} tasks={renderedTasks} rowLayoutByTask={rowLayoutByTask} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} headerHeight={headerHeight} timelineWidth={width} dependencyChain={dependencyChain} />
           {linkDrag ? <path className="planning-owned-link-draft" d={`M ${linkDrag.sourceX} ${linkDrag.sourceY} L ${linkDrag.pointerX} ${linkDrag.pointerY}`} /> : null}
           {timelineInteraction.createDraft ? <TimelineCreateDraftShape draft={timelineInteraction.createDraft} headerHeight={headerHeight} height={canvasHeight} /> : null}
           {renderedTasks.map((task) => (
             <TaskShape key={task.id} task={task} rowTop={rowLayoutByTask.get(task.id)?.top || 0} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} rowSize={rowLayoutByTask.get(task.id)?.height || rowSize} headerHeight={headerHeight} timelineWidth={width} viewportLeft={chartScrollLeft} viewportWidth={chartInlineSize || width} selected={task.id === selectedTaskId} chainClass={taskDependencyChainClass(dependencyChain, task.id)} showCritical={showCritical} showBaselines={showBaselines} readOnly={readOnly} onSelect={onTaskOpen} onDragStart={(taskId, mode, clientX, barWidth) => setDrag({ taskId, mode, startX: clientX, barWidth })} onLinkStart={startDependencyLink} onLinkFinish={finishDependencyLink} />
           ))}
+          <ProjectBoundaryMarkers project={schedule.project} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} headerHeight={headerHeight} height={canvasHeight} layer="lines" />
+          <TaskTimelineMarkers markers={timelineMarkers} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={canvasHeight} timelineWidth={width} layer="lines" />
           <TodayMarker chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={canvasHeight} />
+          <TimelineHeaders units={chart.units} cellWidth={chart.cellWidth} headerHeight={headerHeight} width={width} offsetY={chartScrollTop} />
+          <ProjectBoundaryMarkers project={schedule.project} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} headerHeight={headerHeight} height={canvasHeight} layer="annotations" offsetY={chartScrollTop} />
+          <TaskTimelineMarkers markers={timelineMarkers} chartStart={chart.start} scale={scale} cellWidth={chart.cellWidth} height={canvasHeight} timelineWidth={width} layer="annotations" offsetY={chartScrollTop} />
         </svg>
         {visibleTasks.length === 0 ? <PlanningGanttEmptyState variant="timeline" /> : null}
       </div>

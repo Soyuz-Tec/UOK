@@ -1,0 +1,65 @@
+.planning-owned-gantt {
+  position: relative;
+}
+
+.planning-gantt-split-handle {
+  position: absolute;
+  z-index: 11;
+  inset-block: 0;
+  inset-inline-start: calc(var(--planning-grid-track-width, var(--planning-grid-width, 42%)) - 10px);
+  width: 20px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.planning-gantt-split-handle::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 9px;
+  width: 2px;
+  background: var(--uok-row-separator-color);
+  content: "";
+}
+
+.planning-gantt-split-handle > span {
+  position: sticky;
+  top: calc(50% - 24px);
+  display: block;
+  width: 8px;
+  height: 48px;
+  margin-inline: auto;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-pill);
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-1);
+}
+
+.planning-gantt-split-handle:hover::before,
+.planning-gantt-split-handle:focus-visible::before {
+  background: var(--uok-accent);
+}
+
+.planning-gantt-split-handle:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--uok-accent) 42%, transparent);
+  outline-offset: -3px;
+}
+
+@media (max-width: 680px) {
+  .planning-gantt-split-handle {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) and (min-width: 681px) {
+  .planning-gantt-split-handle {
+    inset-inline-start: calc(var(--planning-grid-track-width, var(--planning-grid-width, 42%)) - 14px);
+    width: 28px;
+  }
+
+  .planning-gantt-split-handle::before {
+    inset-inline-start: 13px;
+  }
+}

@@ -1,4 +1,5 @@
-.planning-owned-boundary-marker line {
+.planning-owned-boundary-marker line,
+.planning-owned-boundary-marker-line line {
   stroke: color-mix(in srgb, var(--uok-accent) 68%, transparent);
   stroke-width: 1.5;
   stroke-dasharray: 2 5;
@@ -16,7 +17,8 @@
   transform: translateX(-12px);
 }
 
-.planning-owned-task-marker line {
+.planning-owned-task-marker line,
+.planning-owned-task-marker-line line {
   stroke: color-mix(in srgb, var(--uok-status-warning) 58%, transparent);
   stroke-width: 1.25;
   stroke-dasharray: 4 5;
@@ -34,10 +36,12 @@
   pointer-events: none;
 }
 
-.planning-owned-task-marker line.milestone {
+.planning-owned-task-marker line.milestone,
+.planning-owned-task-marker-line line.milestone {
   stroke: color-mix(in srgb, var(--uok-accent) 58%, transparent);
 }
 
-.planning-owned-task-marker line.variance {
+.planning-owned-task-marker line.variance,
+.planning-owned-task-marker-line line.variance {
   stroke: color-mix(in srgb, var(--uok-status-danger) 58%, transparent);
 }

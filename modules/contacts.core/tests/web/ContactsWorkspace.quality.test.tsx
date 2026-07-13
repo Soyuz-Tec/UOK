@@ -27,7 +27,7 @@ describe("ContactsWorkspace quality workflow", () => {
     expect(onMergeDuplicate).toHaveBeenCalledWith("contact-3", "contact-1", { phone: "duplicate" });
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Compare duplicate contacts" })).not.toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole("button", { name: /imported.person@example.test/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /imported.person@example.test/i }));
     expect(screen.getByLabelText("Purpose note")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Purpose note"), { target: { value: "Known from import review." } });
     expect(screen.getByLabelText("Purpose note")).toHaveValue("Known from import review.");

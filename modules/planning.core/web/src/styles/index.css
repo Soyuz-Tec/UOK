@@ -10,6 +10,7 @@
 @import "./header-menu.css";
 @import "./inline-grid-edit.css";
 @import "./layout-modes.css";
+@import "./split-handle.css";
 @import "./dependency-chain.css";
 @import "./pinned-columns.css";
 @import "./dependency-drag.css";
@@ -18,6 +19,7 @@
 @import "./row-height.css";
 @import "./row-menu.css";
 @import "./saved-views.css";
+@import "./schedule-health.css";
 @import "./timeline-interaction.css";
 @import "./timeline-markers.css";
 @import "./task-overlays.css";

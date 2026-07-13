@@ -6,7 +6,7 @@ const config: PlanningSavedViewConfig = {
   activeView: "Workload",
   cascadeScheduling: false,
   cascadeSort: false,
-  fieldPreset: "resources",
+  fieldPreset: "logic",
   filterMode: "critical",
   focusMode: true,
   layoutMode: "timeline",
@@ -18,6 +18,7 @@ const config: PlanningSavedViewConfig = {
   selectedVisible: true,
   showBaselines: true,
   showCritical: true,
+  splitPercent: 47,
   status: "blocked",
   summaryExpanded: false,
   viewDensity: "roomy",
@@ -31,7 +32,7 @@ describe("planning saved views", () => {
       activeView: "Workload",
       cascadeScheduling: "false",
       cascadeSort: "false",
-      fieldPreset: "resources",
+      fieldPreset: "logic",
       filterMode: "critical",
       focusMode: "true",
       layoutMode: "timeline",
@@ -43,6 +44,7 @@ describe("planning saved views", () => {
       selectedVisible: "true",
       showBaselines: "true",
       showCritical: "true",
+      splitPercent: "47",
       status: "blocked",
       summaryExpanded: "false",
       viewDensity: "roomy",
@@ -70,9 +72,18 @@ describe("planning saved views", () => {
       resourceId: "resource-1",
       scale: "month",
       selectedVisible: true,
+      splitPercent: 47,
       status: "blocked",
       summaryExpanded: false,
       viewDensity: "roomy",
     });
+  });
+
+  it("clamps restored split positions and preserves legacy fallback values", () => {
+    const view = createPlanningSavedView("Saved", config);
+    view.filters.splitPercent = "200";
+    expect(planningConfigFromSavedView(view, config).splitPercent).toBe(68);
+    delete view.filters.splitPercent;
+    expect(planningConfigFromSavedView(view, { ...config, splitPercent: 39 }).splitPercent).toBe(39);
   });
 });

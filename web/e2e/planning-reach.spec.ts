@@ -24,6 +24,15 @@ test("shared Arabic RTL, touch targets, and narrow reflow remain operable", asyn
 
   await page.getByRole("button", { name: "التخطيط" }).click();
   await expect(page.getByLabel("مخطط جانت للتخطيط")).toBeVisible();
+  const planningView = page.getByRole("combobox", { name: "عرض التخطيط", exact: true });
+  await expect(planningView).toHaveValue("Gantt chart");
+  await expect(planningView.locator("option")).toContainText(["مخطط جانت", "اللوحة", "القائمة", "التقويم", "عبء العمل", "الأشخاص", "لوحة المعلومات"]);
+  const splitter = page.getByRole("separator", { name: "تغيير حجم شبكة المهام والخط الزمني", exact: true });
+  await expect(splitter).toHaveCount(0);
+  await page.setViewportSize({ width: 900, height: 844 });
+  await expect(splitter).toBeVisible();
+  await expect(splitter).toHaveAttribute("aria-valuetext", /شبكة المهام.*الخط الزمني/);
+  await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole("table", { name: "شبكة مهام التخطيط" })).toHaveAttribute("aria-rowcount", "21");
   await expect(page.getByLabel("الخط الزمني للتخطيط", { exact: true })).toBeVisible();
   expect(await page.locator(".planning-owned-grid").evaluate((node) => getComputedStyle(node).direction)).toBe("rtl");

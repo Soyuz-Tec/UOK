@@ -13,6 +13,7 @@ import type { PlanningSavedViewConfig } from "./planningViewPersistence";
 import { planningColumnVisibilityOptions, projectScheduleView, type FieldPreset, type PlanningFilterState, type PlanningLayoutMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
 import type { PlanningProject, PlanningSchedule } from "./types";
 import type { PlanningDependencyCreateRequest, PlanningTaskUpdateRequest } from "./planningContracts";
+import { usePlanningGanttSplit } from "./usePlanningGanttSplit";
 
 export function PlanningTimeline({
   projects,
@@ -97,6 +98,7 @@ export function PlanningTimeline({
 }) {
   const [activeView, setActiveView] = useState<PlanningView>("Gantt chart");
   const [fieldPreset, setFieldPreset] = useState<FieldPreset>("core");
+  const { splitPercent, setSplitPercent, setSplitPercentForPreset } = usePlanningGanttSplit(schedule.project.id, fieldPreset);
   const [filters, setFilters] = useState<PlanningFilterState>({ mode: "all", query: "", partyId: "", resourceId: "", status: "" });
   const [summaryExpanded, setSummaryExpanded] = useState(true);
   const [collapsedSummaryIds, setCollapsedSummaryIds] = useState<Set<string>>(new Set());
@@ -136,9 +138,10 @@ export function PlanningTimeline({
     selectedVisible,
     showBaselines,
     showCritical,
+    splitPercent,
     summaryExpanded,
     viewDensity,
-  }), [activeView, cascadeScheduling, cascadeSort, fieldPreset, filters.mode, filters.partyId, filters.query, filters.resourceId, filters.status, focusMode, layoutMode, reviewMode, scale, selectedVisible, showBaselines, showCritical, summaryExpanded, viewDensity]);
+  }), [activeView, cascadeScheduling, cascadeSort, fieldPreset, filters.mode, filters.partyId, filters.query, filters.resourceId, filters.status, focusMode, layoutMode, reviewMode, scale, selectedVisible, showBaselines, showCritical, splitPercent, summaryExpanded, viewDensity]);
 
   return (
     <div className={`planning-timeline-workbench planning-layout-${layoutMode} ${focusMode ? "focus-mode" : ""}`}>
@@ -186,6 +189,8 @@ export function PlanningTimeline({
           dateTarget={dateTarget}
           dateTargetSignal={dateTargetSignal}
           readOnly={reviewMode}
+          layoutMode={layoutMode}
+          splitPercent={splitPercent}
           onTaskSelect={onTaskSelect}
           onTaskOpen={onTaskOpen}
           onTaskReschedule={(taskId, start, end) => onTaskReschedule(taskId, start, end, cascadeScheduling)}
@@ -195,6 +200,7 @@ export function PlanningTimeline({
           onTimelineTaskCreate={onTimelineTaskCreate}
           onTaskMenuAction={onTaskMenuAction}
           onScaleChange={onScaleChange}
+          onSplitPercentChange={setSplitPercent}
           onColumnVisible={setColumnVisible}
           onColumnsReset={resetColumnVisibility}
           onSummaryToggle={toggleSummary}
@@ -207,6 +213,7 @@ export function PlanningTimeline({
   );
 
   function applySavedView(config: PlanningSavedViewConfig) {
+    setSplitPercentForPreset(config.fieldPreset, config.splitPercent);
     setActiveView(config.activeView);
     setCascadeScheduling(config.cascadeScheduling);
     setCascadeSort(config.cascadeSort);

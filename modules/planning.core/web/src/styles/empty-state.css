@@ -23,7 +23,7 @@
 .planning-owned-empty-state.grid {
   border-bottom: 1px solid var(--uok-border);
   min-height: 104px;
-  min-width: var(--planning-grid-width);
+  min-width: var(--planning-grid-content-width, 100%);
   padding: var(--uok-space-4);
 }
 

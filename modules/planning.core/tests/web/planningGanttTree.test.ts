@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { summaryTaskIds, visibleRows } from "../../web/src/planningGanttTree";
+import { planningTaskDepths, summaryTaskIds, visibleRows } from "../../web/src/planningGanttTree";
 import type { PlanningTask } from "../../web/src/types";
 
 describe("planning Gantt tree rows", () => {
@@ -15,6 +15,19 @@ describe("planning Gantt tree rows", () => {
     expect(summaryTaskIds(tasks)).toEqual(["summary", "child-summary"]);
     expect(visibleRows(tasks, new Set(["child-summary"])).map((row) => row.id)).toEqual(["summary", "child-summary", "outside"]);
     expect(visibleRows(tasks, new Set(["summary"])).map((row) => row.id)).toEqual(["summary", "outside"]);
+  });
+
+  it("derives stable hierarchy depth from parent identity rather than presentation order", () => {
+    const tasks = [
+      task("leaf", "Leaf", "task", "child-summary"),
+      task("summary", "Summary", "summary", null),
+      task("child-summary", "Child summary", "summary", "summary"),
+      task("orphan", "Orphan", "task", "missing-parent"),
+    ];
+
+    expect(Array.from(planningTaskDepths(tasks).entries())).toEqual([
+      ["leaf", 2], ["summary", 0], ["child-summary", 1], ["orphan", 0],
+    ]);
   });
 });
 

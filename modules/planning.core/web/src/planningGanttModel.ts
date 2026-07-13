@@ -1,5 +1,11 @@
 import type { PlanningSchedule, PlanningTask } from "./types";
-import type { ViewDensity } from "./planningTimelineModel";
+import {
+  buildPlanningGridTaskFacts,
+  planningOwnerLabel,
+  type PlanningGanttTranslate,
+  type PlanningGridTaskFacts,
+} from "./planningGanttGridFacts";
+import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
 import {
   addUnit,
   cellWidth,
@@ -35,6 +41,10 @@ export type DragState = {
 export type TaskStatusIndicator = {
   code: string;
   label: string;
+};
+export type PlanningGridValueLocalization = {
+  t: PlanningGanttTranslate;
+  formatNumber: (value: number) => string;
 };
 
 export function buildTimeline(schedule: PlanningSchedule, scale: TimelineScale, viewDensity: ViewDensity, minVisibleWidth = 0, zoom = 1) {
@@ -100,14 +110,27 @@ function timelineUnit(cursor: Date, scale: TimelineScale, holidays: Set<string>)
   };
 }
 
-export function gridColumns(fieldPreset: "core" | "progress" | "resources"): PlanningGridColumn[] {
+export function gridColumns(fieldPreset: FieldPreset): PlanningGridColumn[] {
   const base = [gridColumn("wbs", "WBS", 64, 52, 120, true), gridColumn("task", "Task", 240, 150, 520, true)];
   if (fieldPreset === "progress") return [...base, gridColumn("duration", "Dur.", 84, 68, 140), gridColumn("progress", "%", 76, 64, 130), gridColumn("critical", "Critical", 104, 82, 160)];
   if (fieldPreset === "resources") return [...base, gridColumn("assigned", "Assigned", 180, 130, 360), gridColumn("status", "Status", 116, 90, 180)];
+  if (fieldPreset === "logic") return [
+    ...base,
+    gridColumn("owner", "Owner", 180, 130, 360),
+    gridColumn("predecessors", "Predecessors", 260, 170, 520),
+    gridColumn("successors", "Successors", 260, 170, 520),
+    gridColumn("totalFloat", "Total float", 104, 86, 160),
+    gridColumn("readiness", "Readiness", 132, 104, 220),
+  ];
   return [...base, gridColumn("start", "Start", 116, 90, 170), gridColumn("end", "End", 116, 90, 170)];
 }
 
-export function gridValue(columnId: string, task: PlanningTask, assignedByTask: Map<string, string>) {
+export function gridValue(
+  columnId: string,
+  task: PlanningTask,
+  assignedByTask: Map<string, string> | PlanningGridTaskFacts,
+  localization?: PlanningGridValueLocalization,
+) {
   if (columnId === "wbs") return task.wbs || "-";
   if (columnId === "task") return task.title;
   if (columnId === "start") return task.start;
@@ -117,6 +140,11 @@ export function gridValue(columnId: string, task: PlanningTask, assignedByTask: 
   if (columnId === "critical") return task.critical ? "yes" : "-";
   if (columnId === "assigned") return assignedByTask.get(task.id) || "-";
   if (columnId === "status") return task.status || "-";
+  if (columnId === "owner") return localizedOwnerValue(task.id, gridTaskFacts(assignedByTask), localization?.t);
+  if (columnId === "predecessors") return gridTaskFacts(assignedByTask)?.predecessorsByTask.get(task.id) || "-";
+  if (columnId === "successors") return gridTaskFacts(assignedByTask)?.successorsByTask.get(task.id) || "-";
+  if (columnId === "totalFloat") return formatPlanningDays(task.total_slack_days, localization);
+  if (columnId === "readiness") return planningReadinessLabel(task, localization);
   return "-";
 }
 
@@ -127,16 +155,39 @@ export function autoFitColumnWidth(column: PlanningGridColumn, tasks: PlanningTa
 }
 
 export function assignedResourceNames(schedule: PlanningSchedule) {
-  const resources = new Map(schedule.resources.map((resource) => [resource.id, resource.name]));
-  const namesByTask = new Map<string, string[]>();
-  for (const assignment of schedule.assignments) {
-    const resourceName = resources.get(assignment.resource_id);
-    if (!resourceName) continue;
-    const names = namesByTask.get(assignment.task_id) || [];
-    names.push(resourceName);
-    namesByTask.set(assignment.task_id, names);
+  return buildPlanningGridTaskFacts(schedule);
+}
+
+function gridTaskFacts(value: Map<string, string> | PlanningGridTaskFacts) {
+  return "ownersByTask" in value ? value as PlanningGridTaskFacts : null;
+}
+
+function localizedOwnerValue(taskId: string, facts: PlanningGridTaskFacts | null, t?: PlanningGanttTranslate) {
+  const participants = facts?.ownerParticipantsByTask.get(taskId);
+  if (participants?.length) return Array.from(new Set(participants.map((participant) => planningOwnerLabel(participant, t)))).join("; ");
+  return facts?.ownersByTask.get(taskId) || "-";
+}
+
+function formatPlanningDays(value: number | undefined, localization?: PlanningGridValueLocalization) {
+  if (value === undefined || !Number.isFinite(value)) return "-";
+  const number = localization?.formatNumber(Math.abs(value)) || String(Math.abs(value));
+  const sign = value > 0 ? "+" : value < 0 ? "-" : "";
+  const unit = localization?.t("planning.duration.dayShort", "d") || "d";
+  return `${sign}${number}${unit}`;
+}
+
+function planningReadinessLabel(task: PlanningTask, localization?: PlanningGridValueLocalization) {
+  const t = localization?.t || fallbackTranslate;
+  if (!task.readiness) return t("planning.readiness.notAssessed", "Not assessed");
+  if (task.readiness.ready) {
+    return task.readiness.required_count ? t("planning.readiness.ready", "Ready") : t("planning.readiness.noGates", "No gates");
   }
-  return new Map(Array.from(namesByTask.entries()).map(([taskId, names]) => [taskId, names.join(", ")]));
+  const count = localization?.formatNumber(task.readiness.blocking_count) || String(task.readiness.blocking_count);
+  return t("planning.readiness.blocked", "Blocked ({count})").replace("{count}", count);
+}
+
+function fallbackTranslate(_key: string, fallback?: string) {
+  return fallback || _key;
 }
 
 export function finishDrag(

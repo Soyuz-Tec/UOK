@@ -2,18 +2,42 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { UokLocalizationProvider } from "@uok/shared/localization/UokLocalization";
-import { ProjectBoundaryMarkers, TaskShape, TaskTimelineMarkers } from "../../web/src/PlanningGanttShapes";
+import { ProjectBoundaryMarkers, TaskShape, TaskTimelineMarkers, TimelineHeaders } from "../../web/src/PlanningGanttShapes";
 import type { PlanningProject, PlanningTask } from "../../web/src/types";
 
 afterEach(cleanup);
 
+describe("Planning Gantt timeline header", () => {
+  it("tracks vertical chart scrolling while retaining both date bands", () => {
+    const { container } = render(
+      <svg>
+        <TimelineHeaders
+          units={[
+            { key: "2027-01-04", label: "4", group: "January 2027", date: new Date("2027-01-04T00:00:00"), weekend: false, holiday: false },
+            { key: "2027-01-05", label: "5", group: "January 2027", date: new Date("2027-01-05T00:00:00"), weekend: false, holiday: false },
+          ]}
+          cellWidth={40}
+          headerHeight={54}
+          width={480}
+          offsetY={96}
+        />
+      </svg>,
+    );
+
+    const header = container.querySelector(".planning-owned-header");
+    expect(header?.getAttribute("transform")).toBe("translate(0 96)");
+    expect(header?.querySelectorAll("text")).toHaveLength(3);
+  });
+});
+
 describe("Planning Gantt project boundary markers", () => {
   it("deduplicates coincident finish markers while preserving every accessible meaning", () => {
-    const { container } = render(<svg><ProjectBoundaryMarkers project={project} chartStart={new Date("2026-08-01T00:00:00")} scale="day" cellWidth={24} height={400} /></svg>);
+    const { container } = render(<svg><ProjectBoundaryMarkers project={project} chartStart={new Date("2026-08-01T00:00:00")} scale="day" cellWidth={24} headerHeight={66} height={400} /></svg>);
 
     expect(container.querySelectorAll(".planning-owned-boundary-marker")).toHaveLength(2);
     const finish = screen.getByRole("img", { name: "Compatibility horizon: 2026-08-31; Target finish: 2026-08-31; Calculated finish: 2026-08-31" });
     expect(finish.getAttribute("class")).toContain("end target calculated");
+    expect(finish.querySelector("text")?.getAttribute("y")).toBe("62");
   });
 
   it("provides localized accessible labels", () => {
@@ -33,6 +57,25 @@ describe("Planning Gantt project boundary markers", () => {
     expect(container.innerHTML).not.toContain("NaN");
     expect(container.querySelectorAll(".planning-owned-boundary-marker")).toHaveLength(2);
     expect(screen.getByRole("img", { name: "Compatibility horizon: 2026-08-31; Target finish: 2026-08-31; Calculated finish: 2026-08-31" })).toBeTruthy();
+  });
+
+  it("keeps scrollable lines behind separately pinned accessible annotations", () => {
+    const { container } = render(
+      <svg>
+        <ProjectBoundaryMarkers project={project} chartStart={new Date("2026-08-01T00:00:00")} scale="day" cellWidth={24} headerHeight={66} height={800} layer="lines" />
+        <ProjectBoundaryMarkers project={project} chartStart={new Date("2026-08-01T00:00:00")} scale="day" cellWidth={24} headerHeight={66} height={800} layer="annotations" offsetY={320} />
+      </svg>,
+    );
+
+    const lines = container.querySelector(".planning-owned-boundary-marker-lines");
+    const annotations = container.querySelector(".planning-owned-boundary-marker-annotations");
+    expect(lines?.getAttribute("aria-hidden")).toBe("true");
+    expect(lines?.getAttribute("transform")).toBeNull();
+    expect(lines?.querySelectorAll("line")).toHaveLength(2);
+    expect(lines?.querySelector("text")).toBeNull();
+    expect(annotations?.getAttribute("transform")).toBe("translate(0 320)");
+    expect(annotations?.querySelector("line")).toBeNull();
+    expect(annotations?.querySelectorAll("[role='img']")).toHaveLength(2);
   });
 });
 
@@ -173,6 +216,26 @@ describe("Planning Gantt timeline markers", () => {
     expect(container.querySelectorAll(".planning-owned-task-marker line")).toHaveLength(2);
     expect(container.querySelector(".planning-owned-task-marker-surface")?.getAttribute("x")).toBe("62");
     expect(container.querySelector(".planning-owned-task-marker text")?.textContent).toBe("+2");
+  });
+
+  it("pins only marker pills while keeping their vertical lines in the scroll layer", () => {
+    const markers = [{ id: "deadline-1", taskId: "task-1", date: "2027-01-10", code: "DUE" as const, kind: "deadline" as const, label: "Deadline: One" }];
+    const { container } = render(
+      <svg>
+        <TaskTimelineMarkers markers={markers} chartStart={new Date("2027-01-01T00:00:00")} scale="day" cellWidth={10} height={800} timelineWidth={100} layer="lines" />
+        <TaskTimelineMarkers markers={markers} chartStart={new Date("2027-01-01T00:00:00")} scale="day" cellWidth={10} height={800} timelineWidth={100} layer="annotations" offsetY={320} />
+      </svg>,
+    );
+
+    const lines = container.querySelector(".planning-owned-task-marker-lines");
+    const annotations = container.querySelector(".planning-owned-task-marker-annotations");
+    expect(lines?.getAttribute("aria-hidden")).toBe("true");
+    expect(lines?.querySelectorAll("line")).toHaveLength(1);
+    expect(lines?.querySelector(".planning-owned-task-marker-surface")).toBeNull();
+    expect(annotations?.getAttribute("transform")).toBe("translate(0 320)");
+    expect(annotations?.querySelector("line")).toBeNull();
+    expect(annotations?.querySelector(".planning-owned-task-marker-surface")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Deadline: One" })).toBeTruthy();
   });
 });
 

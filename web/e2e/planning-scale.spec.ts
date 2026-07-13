@@ -17,7 +17,8 @@ test("500-row Gantt meets the initial interaction and long-task budgets", async 
   const boundaryText = await boundaryRow.innerText();
   const boundaryNumber = Number(boundaryText.match(/Scale task (\d+)/)?.[1] || 0);
   await boundaryRow.focus();
-  await boundaryRow.press("ArrowDown");
+  await expect(page.locator(":focus")).toContainText(`Scale task ${boundaryNumber}`);
+  await page.keyboard.press("ArrowDown");
   const nextRow = page.locator(".planning-owned-grid-row.selected").filter({ hasText: `Scale task ${boundaryNumber + 1}` });
   await expect(nextRow).toBeFocused();
 

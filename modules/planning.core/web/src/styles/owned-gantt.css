@@ -1,11 +1,14 @@
 .planning-owned-gantt {
+  --planning-gantt-grid-min-width: min(340px, 44.736842%);
+  --planning-gantt-chart-min-width: min(420px, 55.263158%);
+  --planning-grid-track-width: clamp(var(--planning-gantt-grid-min-width), var(--planning-grid-width, 42%), calc(100% - var(--planning-gantt-chart-min-width)));
   display: grid;
-  grid-template-columns: minmax(340px, var(--planning-grid-width, 40%)) minmax(420px, 1fr);
+  grid-template-columns: var(--planning-grid-track-width) minmax(var(--planning-gantt-chart-min-width), 1fr);
 }
 
 .planning-owned-grid {
   display: grid;
-  grid-template-rows: 54px minmax(0, 1fr);
+  grid-template-rows: var(--planning-gantt-header-height, 54px) minmax(0, 1fr);
   min-width: 0;
   border-inline-end: var(--uok-line);
   overflow: hidden;

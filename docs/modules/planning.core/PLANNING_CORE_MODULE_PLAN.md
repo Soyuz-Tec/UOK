@@ -28,6 +28,10 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - editable task grid and modal Inspector path for create, update, delete, hierarchy, status, progress, and task type
 - traditional Gantt workspace composed with the shared `WorkspaceCommandBar`: task search and live refinements lead; the project selector, status, visible/total task counts, and dependency count keep project context in the command bar without a separate Planning workspace heading; view and Planning controls stay grouped; and one trailing `New task` command remains primary. The Planning-owned blank `New project` editor is primary in Portfolio and the no-project state, and remains available as a low-frequency `Plan actions` command inside `All tasks`; it submits the existing permissioned `POST /api/planning/projects` contract and selects the returned validated schedule. Sample-plan, refresh, undo, and redo remain distinct low-frequency actions in that same labelled section, while `All tasks` remains the task-refinement and `Plan actions` surface. Advanced saved views, columns, review/focus, scale, navigation, exports, density, critical, and baseline controls use the same accessible expandable-panel behavior as other workspaces; `Show inspector` is a command inside Planning controls. The `Project schedule`/`Portfolio` scope switch remains unchanged and separate from these command groups. The grid/timeline, keyboard row navigation, row context menu, Gantt virtualization, read-model Board/List/Calendar/Workload/People/Dashboard views, and tabbed Inspector content remain Planning-owned. The Inspector renders in the shared modal editor popup so it does not consume a persistent secondary region and inherits the global bounded pointer, touch, and keyboard movement contract; selection-only keyboard, dependency-link, and context-menu paths do not open the modal.
 - Gantt bars
+- compact Planning view selector and focus-restoring Schedule Health panel; the panel consumes validated finish, target variance, critical, readiness, resource-capacity, baseline, working-state, and revision facts and does not recalculate the schedule
+- optional Logic field preset with actor-safe owners, typed/lagged predecessor and successor references, total float, readiness, depth-aware task hierarchy, and task-adjacent summary disclosure
+- accessible pointer/touch/keyboard grid-timeline splitter with per-project/field-preset storage and saved-view round-trip, plus a pinned two-band date header
+- professional first-party dependency geometry with correct FS/SS/FF/SF ports, bounded orthogonal collision lanes, arrowheads, compact lag/lead labels, and localized accessible descriptions
 - milestone and summary task model
 - dependency create, update, remove with finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag, and lead
 - Python scheduling propagation for dependency-driven successor movement
@@ -60,6 +64,12 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - immutable per-project revision history plus one same-transaction internal outbox envelope per successful command, exact inverse-source linkage, sanitized history reads, and explicit exclusion of dispatcher/delivery claims
 - manifest-declared API router, command handlers, command permissions, role grants, dashboard provider, evidence provider, model exports, and candidate verifier
 - Playwright UI proof for Gantt rendering, editor panels, keyboard focus, appearance, responsive layout, screenshot nonblank checks, and console cleanliness
+
+The Gantt 9+ interaction slice is runtime-proven on the rebuilt localhost
+candidate by the full `Verify` and `PlanningReleaseReadiness` operations, the
+220-row workflow candidate, 500-row virtualization proof, Arabic RTL proof, and
+live Chromium accessibility/console smoke. These UI proofs consume validated
+schedule read models; Python remains the scheduling authority.
 
 ## Module Ownership
 

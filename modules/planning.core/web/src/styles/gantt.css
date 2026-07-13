@@ -16,9 +16,9 @@
 }
 .planning-command-bar {
   grid-template-areas:
-    "query context"
-    "actions actions";
-  grid-template-columns: minmax(320px, 1fr) minmax(220px, 320px);
+    "query context actions";
+  grid-template-columns: minmax(300px, 1fr) minmax(260px, 340px) auto;
+  align-items: center;
 }
 .planning-command-bar .workspace-command-bar-query {
   grid-area: query;
@@ -29,14 +29,9 @@
 }
 .planning-command-bar .workspace-command-bar-actions {
   grid-area: actions;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  inline-size: 100%;
-  max-inline-size: 100%;
-}
-.planning-command-bar .planning-view-tabs {
-  flex: 1 1 100%;
-  max-inline-size: 100%;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  inline-size: auto;
 }
 .planning-schedule-controls {
   grid-column: 1 / -1;
@@ -44,6 +39,8 @@
 }
 .planning-project-context {
   display: grid;
+  grid-template-columns: minmax(148px, 1fr) auto;
+  align-items: center;
   gap: var(--uok-space-1);
   min-width: 0;
   width: 100%;
@@ -81,7 +78,9 @@
 
 .planning-project-picker {
   display: grid;
-  gap: 2px;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--uok-space-1);
   min-width: 0;
   color: var(--uok-text-secondary);
   font-size: var(--uok-caption);
@@ -106,34 +105,29 @@
   font-size: var(--uok-callout);
 }
 
-.planning-view-tabs {
-  display: flex;
-  align-self: center;
-  gap: var(--uok-space-3);
+.planning-view-control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
   min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: thin;
+  min-height: 34px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding-inline: var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  font-size: var(--uok-callout);
+  font-weight: 700;
 }
 
-.planning-view-tabs button {
-  min-width: max-content;
+.planning-view-control select {
+  min-width: 104px;
   min-height: 28px;
   border: 0;
-  border-bottom: 2px solid transparent;
-  padding: 0 0 2px;
-  color: var(--uok-text-tertiary);
+  padding-inline: var(--uok-space-1);
+  color: var(--uok-text-primary);
   background: transparent;
-  font: 700 var(--uok-caption) var(--uok-font-family);
-  cursor: pointer;
-}
-
-.planning-view-tabs button.selected {
-  color: var(--uok-accent);
-  border-bottom-color: var(--uok-accent);
-}
-
-.planning-view-tabs button[aria-disabled="true"] {
-  cursor: default;
+  font: inherit;
 }
 
 .planning-selection-toggle, .planning-toolbar-select, .planning-zoom-control {
@@ -221,6 +215,20 @@
   scrollbar-gutter: stable both-edges;
 }
 
+@media (max-width: 1480px) {
+  .planning-command-bar {
+    grid-template-areas:
+      "query context"
+      "actions actions";
+    grid-template-columns: minmax(300px, 1fr) minmax(260px, 340px);
+  }
+
+  .planning-command-bar .workspace-command-bar-actions {
+    justify-content: flex-start;
+    inline-size: 100%;
+  }
+}
+
 @media (max-width: 1180px) {
   .planning-command-bar {
     grid-template-areas:
@@ -248,7 +256,8 @@
   }
 
   .planning-command-bar .workspace-command-bar-actions,
-  .planning-command-bar .planning-view-tabs {
+  .planning-view-control,
+  .planning-view-control select {
     max-inline-size: 100%;
     inline-size: 100%;
   }
@@ -256,6 +265,14 @@
   .planning-command-bar .workspace-command-bar-actions {
     align-items: stretch;
     flex-wrap: wrap;
+  }
+
+  .planning-project-context {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .planning-project-picker {
+    grid-template-columns: minmax(0, 1fr);
   }
 
 }

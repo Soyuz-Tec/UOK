@@ -1,6 +1,7 @@
 import type { SavedSearchView } from "@uok/shared/forms";
 import { timelineScales, type TimelineScale } from "./planningGanttModel";
 import { planningViews, type FieldPreset, type FilterMode, type PlanningLayoutMode, type PlanningView, type ViewDensity } from "./planningTimelineModel";
+import { clampPlanningSplitPercent } from "./planningGanttSplitModel";
 
 export type PlanningSavedViewConfig = {
   activeView: PlanningView;
@@ -18,12 +19,13 @@ export type PlanningSavedViewConfig = {
   selectedVisible: boolean;
   showBaselines: boolean;
   showCritical: boolean;
+  splitPercent: number;
   status: string;
   summaryExpanded: boolean;
   viewDensity: ViewDensity;
 };
 
-const fieldPresets: FieldPreset[] = ["core", "progress", "resources"];
+const fieldPresets: FieldPreset[] = ["core", "progress", "resources", "logic"];
 const filterModes: FilterMode[] = ["all", "critical", "milestones", "not_ready"];
 const layoutModes: PlanningLayoutMode[] = ["split", "timeline"];
 const scales: readonly TimelineScale[] = timelineScales;
@@ -50,6 +52,7 @@ export function createPlanningSavedView(name: string, config: PlanningSavedViewC
       selectedVisible: String(config.selectedVisible),
       showBaselines: String(config.showBaselines),
       showCritical: String(config.showCritical),
+      splitPercent: String(config.splitPercent),
       status: config.status,
       summaryExpanded: String(config.summaryExpanded),
       viewDensity: config.viewDensity,
@@ -77,6 +80,7 @@ export function planningConfigFromSavedView(view: SavedSearchView, fallback: Pla
     selectedVisible: booleanValue(view.filters.selectedVisible, fallback.selectedVisible),
     showBaselines: booleanValue(view.filters.showBaselines, fallback.showBaselines),
     showCritical: booleanValue(view.filters.showCritical, fallback.showCritical),
+    splitPercent: numberValue(view.filters.splitPercent, fallback.splitPercent),
     status: stringValue(view.filters.status, fallback.status),
     summaryExpanded: booleanValue(view.filters.summaryExpanded, view.groupBy ? view.groupBy === "expanded" : fallback.summaryExpanded),
     viewDensity: oneOf(viewDensities, view.filters.viewDensity, fallback.viewDensity),
@@ -95,4 +99,10 @@ function booleanValue(value: string | undefined, fallback: boolean) {
 
 function stringValue(value: string | undefined, fallback: string) {
   return typeof value === "string" ? value : fallback;
+}
+
+function numberValue(value: string | undefined, fallback: number) {
+  if (value === undefined || value.trim() === "") return clampPlanningSplitPercent(fallback);
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? clampPlanningSplitPercent(parsed) : clampPlanningSplitPercent(fallback);
 }

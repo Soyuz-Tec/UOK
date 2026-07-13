@@ -32,12 +32,12 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | First-party renderer | `runtime_proven` | Owned React/SVG/HTML/CSS Gantt renderer behind `PlanningGantt`; Chromium candidate proof exercises the rendered workspace. |
 | Project picker and command context | `runtime_proven` | The shared command bar keeps the project selector, status chip, visible/total task counts, and dependency count together without a separate Planning workspace heading. The `Project schedule`/`Portfolio` scope switch remains unchanged. |
 | Project lifecycle and finish authority | `runtime_proven` | The rebuilt PostgreSQL candidate proves reasoned archive/restore, readable archive with fail-closed writes, stable exact replay, non-disclosing purge lock ordering, exact Saturday target commitment, persisted CPM-v2 finish, negative float, and generated REST contracts. |
-| View tabs | `runtime_proven` | Gantt, Board, List, Calendar, Workload, People, and Dashboard are exercised in Chromium candidate proof. |
+| Compact view and schedule-health surface | `runtime_proven` | One labelled Planning view selector replaces seven permanent tabs, while a focus-restoring Schedule Health panel summarizes only validated finish/target variance, critical, readiness, resource-capacity, baseline, working-state, and revision facts. Rebuilt live Chromium and Arabic RTL proof cover the compact localized surface without moving schedule calculation into the browser. |
 | Task creation commands | `runtime_proven` | Task and milestone creation route through inspector/API flow; keyboard-only creation is covered by Chromium candidate proof. |
-| Dependencies | `integration_tested` | Create/update/remove uses server validation and dependency lines render in Gantt. |
-| Dependency types | `source_present` | Finish-to-start, start-to-start, finish-to-finish, start-to-finish, lag/lead in backend model. |
+| Dependencies | `runtime_proven` | Create/update/remove uses server validation; the rebuilt 220-row Chromium candidate proves bounded orthogonal routes, arrowheads, collision-separated lanes, typed/lagged labels, and complete accessible descriptions. |
+| Dependency types | `runtime_proven` | The rebuilt 220-row Chromium candidate proves finish-to-start, start-to-start, finish-to-finish, and start-to-finish ports plus positive lag and negative lead while retaining validated server schedule facts. |
 | Drag-to-reschedule | `runtime_proven` | Bar drag proposes a date shift, calls the server validation path, and is exercised in Chromium candidate proof. |
-| Summary tasks and WBS | `source_present` | Summary rows, WBS sorting, hierarchy validation, collapse/expand controls. |
+| Summary tasks and WBS | `runtime_proven` | Summary rows, WBS sorting, hierarchy validation, depth-aware task indentation, and task-adjacent accessible collapse/expand controls pass the rebuilt Chromium workflow proof. |
 | Milestones | `source_present` | Milestone task type and diamond rendering. |
 | Baselines | `runtime_proven` | New captures are immutable, complete v2 canonical snapshots with SHA-256 verification, source revision/creator/correlation metadata, and exact compare reads. Legacy snapshots are labeled partial in API/UI. Variance fields, per-row timeline lanes, and non-color badges render on task rows. |
 | Critical path | `runtime_proven` | CPM v2 preserves exact weekend/holiday commitments, uses a separate working late anchor, and keeps negative float visible; the Gantt and Dashboard expose the resulting critical-path information. |
@@ -75,14 +75,14 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Resizable columns | Drag column separator to adjust width; keyboard arrows resize; widths persist locally. | `source_present` |
 | Auto-fit columns | Double-click column resize handle/header to fit visible content. | `source_present` |
 | Shared column resize primitive | Contacts and Planning use shared resize handle/sizing hook instead of local copies. | `source_present` |
-| Field presets | Core, Progress, and Resources column sets. | `source_present` |
+| Field presets | Core, Progress, Resources, and optional Logic column sets; rebuilt live Chromium and Arabic RTL proof cover actor-safe owner, typed/lagged predecessors and successors, total float, and readiness from the validated read model. | `runtime_proven` |
 | Column visibility | User-selectable individual columns beyond presets. | `source_present` |
 | Column header menu | Per-column menu supports sorting, quick action, width reset, hiding non-pinned columns, and restoring visible columns. | `source_present` |
 | Column reorder | Drag headers to reorder columns; order persists locally per field preset. | `source_present` |
 | Pinned columns | Keep WBS/task pinned ahead of reordered fields and sticky inside the grid. | `source_present` |
 | Sort by columns | Sort visible rows by WBS, task, dates, duration, progress, critical flag, assignee, and status. | `source_present` |
 | Inline grid edit | Edit task title, start, end, progress, and controlled status cells directly in the grid with server validation; derived/read-only cells stay locked and successful keyboard edits restore focus. | `runtime_proven` |
-| Tree summary expander | WBS tree cells expose accessible per-summary expand/collapse controls; nested descendants hide with their collapsed parent. | `source_present` |
+| Tree summary expander | Task identity cells expose accessible per-summary expand/collapse controls beside depth-aware hierarchy indentation; nested descendants hide with their collapsed parent in the rebuilt Chromium workflow proof. | `runtime_proven` |
 | Context row menu | Add below, add child, duplicate, delete, convert to milestone, and status actions. | `source_present` |
 
 ## Row And Density Features
@@ -115,6 +115,8 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Holiday shading | Calendar holiday visual bands. | `source_present` |
 | Minute/sprint/stage scales | Additional specialized visual scale modes. Minute view uses 30-minute visual buckets; sprint and stage use 14-day and 30-day planning buckets while server scheduling remains date-based. | `source_present` |
 | Timeline header grouping | Month/year/week grouping. | `source_present` |
+| Pinned two-band timeline header | The 220-row Chromium candidate proves that grouped/unit date bands and accessible marker annotations remain pinned above task/dependency geometry through more than 5,000px of synchronized vertical scrolling. | `runtime_proven` |
+| Resizable grid/timeline split | The 220-row Chromium candidate proves bounded keyboard minimum, maximum, intermediate, reload, saved-view restore, and timeline-only transitions; unit coverage also exercises pointer, touch, RTL, and reset behavior. | `runtime_proven` |
 | Ignored periods | Project calendar ignored ranges are persisted, returned in the read model, expanded into non-working dates, and shaded in the timeline. | `source_present` |
 
 ## Task Shape And Color Features
@@ -137,9 +139,9 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 
 | Feature | Target behavior | Status |
 |---|---|---:|
-| Dependency display | Draw connector paths between visible predecessor/successor tasks. | `source_present` |
+| Dependency display | The 220-row Chromium candidate draws bounded orthogonal connector paths between visible predecessor/successor task ports with arrowheads, collision-separated lanes, and complete accessible descriptions. | `runtime_proven` |
 | Dependency inspector | Create/update/remove dependency records. | `source_present` |
-| Dependency lag/lead | Positive lag and negative lead. | `source_present` |
+| Dependency lag/lead | Positive lag and negative lead render compact non-color labels and localized full descriptions in the 220-row and Arabic proofs without changing server schedule facts. | `runtime_proven` |
 | Dependency validation | Reject missing refs, self-links, cycles, and invalid date order. | `source_present` |
 | Dependency drag creation | Drag from one task to another to link tasks through server validation. | `source_present` |
 | Highlight chain | Show selected task predecessors and successors in grid rows, task bars, and dependency paths. | `source_present` |
@@ -166,13 +168,14 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 |---|---|---:|
 | Board/List/Calendar/Workload/People/Dashboard views | Alternate read-model views use the same validated schedule; Workload includes independently validated daily resource load lanes and overload counts. | `runtime_proven` |
 | Fullscreen/focus mode | Expand the planning workspace into a dense viewport overlay with an explicit exit action. | `source_present` |
-| Layout mode persistence | Saved views include split/timeline-only layout mode with other Gantt workspace preferences. | `source_present` |
+| Layout and split persistence | The 220-row Chromium candidate proves split/timeline-only layout, bounded split percentage, reload persistence, and saved-view restoration; local per-project/field-preset positions preserve working context. | `runtime_proven` |
 | Review/edit mode | Toolbar toggle prevents schedule mutations by disabling task creation, edit commands, row action menus, drag handles, progress handles, dependency handles, and inspector editor controls. | `runtime_proven` |
 | Bulk selection | Select visible rows and submit completion, status/progress, or date-shift intents through one atomic task-update batch. | `runtime_proven` |
 | Bulk edit | Project-scoped task updates commit one revision or roll back every operation; owner, priority, and calendar fields remain later work. | `runtime_proven` |
 | Atomic mixed mutation | The generated ten-kind contract applies ordered task, dependency, resource-assignment, calendar, typed-link, and gate changes in one transaction with one final schedule validation/revision and capability-safe correlated evidence. | `runtime_proven` |
 | Undo/redo | Supported inverse commands use the atomic endpoint with the source command ID and current revision; stale inverses preserve latest server state and unsupported/destructive history kinds fail closed. | `runtime_proven` |
-| Saved views | Store filters, density, fields, scale, and grouping. | `source_present` |
+| Saved views | Store filters, density, fields (including Logic), scale, grouping, layout mode, and split percentage with safe legacy fallbacks; the rebuilt 220-row candidate proves split-state round-trip after reload. | `runtime_proven` |
+| Schedule Health | Rebuilt live Chromium proves a compact focus-restoring panel that reports validated schedule/readiness/capacity/baseline facts, labels partial evidence, and reiterates Python scheduling authority without recalculation. | `runtime_proven` |
 | Search/filter/group | Search task titles; filter by status, critical, resource, participant, milestone, and not-ready gate blockers. | `integration_tested` |
 | Export/import | Planning uses the separately deployed global artifact boundary for PDF, PNG, HTML/office documents, Excel, iCal, MS Project, and CSV needs; no planning-specific redeployment is required. | `integration_tested` |
 | Non-drag mutation access | Start/end, progress, dependency, and task-creation changes remain operable by keyboard and form controls without drag gestures. | `runtime_proven` |
@@ -215,6 +218,31 @@ Acceptance for this polish slice:
 - task tooltips do not cover the timeline header or adjacent rows and selected tasks remain uncluttered until interaction;
 - deadline, variance, and milestone marker pills use defined semantic colors with readable non-color codes;
 - Playwright UI proof, frontend tests, build, candidate verification, and local rebuild pass.
+
+### 9+ interaction closure slice
+
+The next-generation Gantt assessment adds a focused professional-workflow layer
+without copying a third-party renderer or moving schedule authority into the
+browser:
+
+- keep the top command surface minimal through one Planning view selector and
+  one truthful Schedule Health entry point;
+- make schedule logic inspectable through the optional Logic field preset while
+  keeping the Core preset uncluttered;
+- let users allocate screen width with an accessible, persisted splitter and
+  retain the two-band date header during vertical work;
+- render FS, SS, FF, and SF dependencies from their correct ports with bounded
+  orthogonal routes, arrowheads, lag/lead semantics, and non-color accessible
+  descriptions;
+- preserve English/Arabic vocabulary, RTL-safe splitter behavior, keyboard
+  equivalents, saved-view compatibility, virtualization, and Python-validated
+  read-model authority.
+
+Runtime promotion is backed by the rebuilt localhost candidate, full `Verify`
+and `PlanningReleaseReadiness` operations, the 220-row workflow candidate,
+Arabic RTL proof, 500-row virtualization proof, and a clean live Chromium
+accessibility/console smoke. This remains runtime evidence, not a
+`production_ready` claim.
 
 ## Validation
 

@@ -1,10 +1,7 @@
 import { useId, type KeyboardEvent, type PointerEvent } from "react";
 
-import { useUokLocalization } from "@uok/shared/localization";
-import type { PlanningProject, PlanningSchedule, PlanningTask } from "./types";
-import type { PlanningDependencyChain } from "./planningDependencyChain";
+import type { PlanningTask } from "./types";
 import type { TimelineCreateDraft } from "./planningTimelineCreateModel";
-import type { PlanningTimelineMarker } from "./planningTimelineMarkers";
 import type { PlanningRowLayout } from "./planningRowHeights";
 import { PlanningBaselineLane } from "./PlanningBaselineLane";
 import { planningBaselineLane } from "./planningBaselineLaneModel";
@@ -15,7 +12,6 @@ import {
   TaskStatusCode,
   TaskTooltip,
 } from "./PlanningGanttTaskOverlays";
-import { projectBoundaryMarkers } from "./planningBoundaryMarkers";
 import {
   dateValue,
   durationUnits,
@@ -27,8 +23,10 @@ import {
 } from "./planningGanttModel";
 
 export { projectBoundaryMarkers } from "./planningBoundaryMarkers";
+export { DependencyLines } from "./PlanningDependencyLines";
+export { ProjectBoundaryMarkers, TaskTimelineMarkers } from "./PlanningPinnedTimelineMarkers";
 
-export function TimelineHeaders({ units, cellWidth, headerHeight, width }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; width: number }) {
+export function TimelineHeaders({ units, cellWidth, headerHeight, width, offsetY = 0 }: { units: TimelineUnit[]; cellWidth: number; headerHeight: number; width: number; offsetY?: number }) {
   const groups: { label: string; x: number; width: number }[] = [];
   for (const unit of units) {
     const last = groups[groups.length - 1];
@@ -36,7 +34,7 @@ export function TimelineHeaders({ units, cellWidth, headerHeight, width }: { uni
     else groups.push({ label: unit.group, x: groups.reduce((sum, group) => sum + group.width, 0), width: cellWidth });
   }
   return (
-    <g className="planning-owned-header">
+    <g className="planning-owned-header" transform={offsetY ? `translate(0 ${offsetY})` : undefined}>
       <rect x="0" y="0" width={width} height={headerHeight} />
       {groups.map((group) => <text key={`${group.label}-${group.x}`} x={group.x + group.width / 2} y="18" textAnchor="middle">{group.label}</text>)}
       {units.map((unit, index) => <text key={unit.key} x={index * cellWidth + cellWidth / 2} y="42" textAnchor="middle">{unit.label}</text>)}
@@ -53,27 +51,6 @@ export function TimelineBackground({ units, cellWidth, headerHeight, height, row
       {units.map((unit, index) => <line key={`v-${unit.key}`} x1={index * cellWidth} y1="0" x2={index * cellWidth} y2={height} />)}
       <line x1="0" y1={headerHeight} x2={width} y2={headerHeight} />
       {rowLayouts.map((layout) => <line key={`h-${layout.taskId}`} x1="0" y1={headerHeight + layout.top + layout.height} x2={width} y2={headerHeight + layout.top + layout.height} />)}
-    </g>
-  );
-}
-
-export function DependencyLines({ schedule, tasks, rowLayoutByTask, chartStart, scale, cellWidth, headerHeight, dependencyChain }: { schedule: PlanningSchedule; tasks: PlanningTask[]; rowLayoutByTask: Map<string, PlanningRowLayout>; chartStart: Date; scale: TimelineScale; cellWidth: number; headerHeight: number; dependencyChain: PlanningDependencyChain }) {
-  const taskMap = new Map(tasks.map((task) => [task.id, task]));
-  return (
-    <g className="planning-owned-dependencies">
-      {schedule.dependencies.map((dependency) => {
-        const source = taskMap.get(dependency.predecessor_task_id);
-        const target = taskMap.get(dependency.successor_task_id);
-        const sourceRow = rowLayoutByTask.get(dependency.predecessor_task_id);
-        const targetRow = rowLayoutByTask.get(dependency.successor_task_id);
-        if (!source || !target || !sourceRow || !targetRow) return null;
-        const x1 = xForDate(dateValue(source.end), chartStart, scale, cellWidth) + cellWidth * 0.75;
-        const y1 = headerHeight + sourceRow.top + sourceRow.height / 2;
-        const x2 = xForDate(dateValue(target.start), chartStart, scale, cellWidth);
-        const y2 = headerHeight + targetRow.top + targetRow.height / 2;
-        const mid = Math.max(x1 + 16, x2 - 16);
-        return <path key={dependency.id} className={dependencyChain.dependencyIds.has(dependency.id) ? "chain-highlight" : undefined} d={`M ${x1} ${y1} L ${mid} ${y1} L ${mid} ${y2} L ${x2} ${y2}`} />;
-      })}
     </g>
   );
 }
@@ -224,63 +201,6 @@ export function TodayMarker({ chartStart, scale, cellWidth, height }: { chartSta
   const x = xForDate(new Date(), chartStart, scale, cellWidth);
   if (x < 0) return null;
   return <line className="planning-owned-today" x1={x} y1="0" x2={x} y2={height} />;
-}
-
-export function ProjectBoundaryMarkers({ project, chartStart, scale, cellWidth, height }: { project: PlanningProject; chartStart: Date; scale: TimelineScale; cellWidth: number; height: number }) {
-  const { t } = useUokLocalization();
-  const markers = projectBoundaryMarkers(project, chartStart, scale, cellWidth, {
-    start: t("planning.gantt.projectStart", "Project start"),
-    end: t("planning.gantt.compatibilityHorizon", "Compatibility horizon"),
-    target: t("planning.gantt.targetFinish", "Target finish"),
-    calculated: t("planning.gantt.calculatedFinish", "Calculated finish"),
-  });
-  return (
-    <g className="planning-owned-boundary-markers">
-      {markers.map((marker) => (
-        <g key={marker.keys.join("-")} className={`planning-owned-boundary-marker ${marker.keys.join(" ")}`} role="img" aria-label={marker.accessibilityLabel}>
-          <title>{marker.accessibilityLabel}</title>
-          <line x1={marker.x} y1="0" x2={marker.x} y2={height} />
-          <text x={marker.x + 6} y="52">{marker.labels.join(" / ")}</text>
-        </g>
-      ))}
-    </g>
-  );
-}
-
-export function TaskTimelineMarkers({ markers, chartStart, scale, cellWidth, height, timelineWidth }: { markers: PlanningTimelineMarker[]; chartStart: Date; scale: TimelineScale; cellWidth: number; height: number; timelineWidth: number }) {
-  if (markers.length === 0) return null;
-  const groups = markerDisplayGroups(markers, chartStart, scale, cellWidth);
-  return (
-    <g className="planning-owned-task-markers" aria-label="Task deadline markers">
-      {groups.map((group) => {
-        const surfaceX = Math.min(Math.max(4, group.anchorX - 17), timelineWidth - 38);
-        const accessibilityLabel = group.items.map(({ marker }) => marker.label).join("; ");
-        return (
-          <g key={group.items.map(({ marker }) => marker.id).join("-")} className="planning-owned-task-marker" role="img" aria-label={accessibilityLabel}>
-            <title>{group.items.map(({ marker }) => `${marker.label} on ${marker.date}`).join("; ")}</title>
-            {group.items.map(({ marker, x }) => <line key={marker.id} className={marker.kind} x1={x} y1="0" x2={x} y2={height} />)}
-            <rect className="planning-owned-task-marker-surface" x={surfaceX} y="20" width="34" height="12" rx="3" />
-            <text x={surfaceX + 17} y="29" textAnchor="middle">{group.items.length === 1 ? group.items[0].marker.code : `+${group.items.length}`}</text>
-          </g>
-        );
-      })}
-    </g>
-  );
-}
-
-function markerDisplayGroups(markers: PlanningTimelineMarker[], chartStart: Date, scale: TimelineScale, cellWidth: number) {
-  const positioned = markers.map((marker) => ({ marker, x: xForDate(dateValue(marker.date), chartStart, scale, cellWidth) + cellWidth }));
-  return positioned.reduce<Array<{ anchorX: number; items: typeof positioned }>>((groups, item) => {
-    const current = groups[groups.length - 1];
-    const previous = current?.items[current.items.length - 1];
-    if (!current || !previous || item.x - previous.x >= 38) {
-      groups.push({ anchorX: item.x + 5, items: [item] });
-      return groups;
-    }
-    current.items.push(item);
-    current.anchorX = (current.items[0].x + item.x) / 2 + 5;
-    return groups;
-  }, []);
 }
 
 export function TimelineCreateDraftShape({ draft, headerHeight, height }: { draft: TimelineCreateDraft; headerHeight: number; height: number }) {

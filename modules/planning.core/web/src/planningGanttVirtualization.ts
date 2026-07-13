@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type RefObject, type UIEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject, type UIEvent } from "react";
 
 import type { PlanningRowLayout } from "./planningRowHeights";
 
@@ -30,6 +30,7 @@ export function usePlanningGanttVirtualization(
   const virtualized = layouts.length > planningVirtualizationThreshold;
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(640);
+  const followedSelectionRef = useRef<string | null>(null);
   const window = useMemo(
     () => planningVirtualWindow(layouts, scrollTop, viewportHeight, virtualized),
     [layouts, scrollTop, viewportHeight, virtualized],
@@ -58,13 +59,19 @@ export function usePlanningGanttVirtualization(
   }, [chartRef, gridRef, virtualized]);
 
   useEffect(() => {
-    if (!virtualized || !selectedTaskId) return;
+    if (!virtualized || !selectedTaskId) {
+      followedSelectionRef.current = selectedTaskId || null;
+      return;
+    }
+    if (followedSelectionRef.current === selectedTaskId) return;
+    followedSelectionRef.current = selectedTaskId;
     const selected = layouts.find((layout) => layout.taskId === selectedTaskId);
-    if (!selected || (selected.top >= scrollTop && selected.top + selected.height <= scrollTop + viewportHeight)) return;
+    const currentScrollTop = chartRef.current?.scrollTop ?? gridRef.current?.scrollTop ?? scrollTop;
+    if (!selected || (selected.top >= currentScrollTop && selected.top + selected.height <= currentScrollTop + viewportHeight)) return;
     const next = Math.max(0, selected.top - viewportHeight / 3);
     synchronize(next, gridRef.current);
     if (chartRef.current) chartRef.current.scrollTop = next;
-  }, [chartRef, gridRef, layouts, scrollTop, selectedTaskId, synchronize, viewportHeight, virtualized]);
+  }, [chartRef, gridRef, layouts, selectedTaskId, synchronize, viewportHeight, virtualized]);
 
   return { ...window, virtualized, onGridScroll, onChartScroll };
 }

@@ -33,6 +33,23 @@ UI receiving validated schedule read models.**
 | `ACC-ARCH-001` | Module-owned ORM definitions and trusted registration: `docs/architecture/ADR-0022-module-owned-orm-registration.md` | `tests/test_module_model_registry.py`, `tests/test_module_model_claim_contract.py`, composed-model runtime readback, and OCI inspection | `runtime_proven` |
 | `ACC-ARCH-002` | Manifest-driven, compile-time module-local frontend composition: `docs/architecture/ADR-0023-module-local-frontend-composition.md` | `tests/test_frontend_module_catalog.py`, `tests/test_frontend_module_manifest_contract.py`, module-local Vitest discovery, production Vite build, and OCI asset validation | `runtime_proven` |
 
+## Planning Gantt 9+ interaction slice
+
+This interaction/readability slice does not introduce a new scheduling engine,
+mutation path, renderer dependency, service boundary, or persistence schema.
+Python remains scheduling authority and React renders validated schedule facts.
+ADR-0025 continues to govern the compact shared command surface, so no new ADR
+is required for this implementation slice.
+
+| ID | Requirement | Focused automated evidence | Status |
+|---|---|---|---|
+| `PLA-UX-001` | Minimal command surface and truthful schedule health | Focused component tests plus rebuilt live Chromium and Arabic RTL proof cover the localized view selector, validated health facts, and focus restoration | `runtime_proven` |
+| `PLA-UX-002` | Professional logic/readability view | Focused grid/tree tests plus rebuilt live Chromium and Arabic RTL proof cover actor-safe owners, typed/lagged logic, float/readiness, hierarchy, disclosure, and full-value titles | `runtime_proven` |
+| `PLA-UX-003` | Adjustable and restorable split workspace | Focused model/component tests plus the 220-row Chromium candidate cover pointer/touch/RTL math, keyboard bounds, reset, reload persistence, saved-view round-trip, and timeline-only restoration | `runtime_proven` |
+| `PLA-UX-004` | Pinned two-band timeline header | Focused renderer tests plus the 220-row Chromium candidate prove grouped/unit bands and accessible annotations remain pinned above geometry through more than 5,000px of synchronized scroll | `runtime_proven` |
+| `PLA-UX-005` | Typed professional dependency geometry | Focused geometry/render tests plus the 220-row Chromium candidate prove FS/SS/FF/SF ports, bounded orthogonal lanes, arrowheads, lag/lead labels, selected chains, and localized accessible descriptions | `runtime_proven` |
+| `PLA-UX-006` | Integrated responsive/accessibility closure | Full `Verify`, production build, rebuilt candidate, `PlanningReleaseReadiness`, 220-row workflow, 500-row scale, Arabic RTL, and clean live Chromium accessibility/console proofs pass | `runtime_proven` |
+
 ## Gate A traceability
 
 | ID | Requirement | Initial evidence | Required proof before closure | Status |

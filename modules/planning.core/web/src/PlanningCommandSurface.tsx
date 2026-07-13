@@ -1,4 +1,4 @@
-import { FolderKanban, Redo2, Undo2 } from "lucide-react";
+import { FolderKanban, LayoutPanelTop, Redo2, Undo2 } from "lucide-react";
 import { useMemo, type Dispatch, type SetStateAction } from "react";
 
 import { WorkspaceActionButton } from "@uok/shared/actions";
@@ -7,6 +7,7 @@ import { WorkspaceCommandBar } from "@uok/shared/layout";
 import { useUokLocalization } from "@uok/shared/localization";
 import type { ColumnVisibilityMap } from "@uok/shared/tables";
 import type { PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
+import { PlanningScheduleHealth } from "./PlanningScheduleHealth";
 import { PlanningTimelineUtilities } from "./PlanningTimelineUtilities";
 import type { TimelineScale } from "./planningGanttModel";
 import type { PlanningHistoryState } from "./planningHistory";
@@ -92,6 +93,16 @@ const filterModeOptions = [
   { value: "not_ready", label: "Not ready" },
 ];
 
+const planningViewMessageKeys: Record<PlanningView, string> = {
+  "Gantt chart": "planning.view.ganttChart",
+  Board: "planning.view.board",
+  List: "planning.view.list",
+  Calendar: "planning.view.calendar",
+  Workload: "planning.view.workload",
+  People: "planning.view.people",
+  Dashboard: "planning.view.dashboard",
+};
+
 export function PlanningCommandSurface({ model, actions }: {
   model: PlanningCommandSurfaceModel;
   actions: PlanningCommandSurfaceActions;
@@ -159,9 +170,16 @@ export function PlanningCommandSurface({ model, actions }: {
           <span className="planning-command-summary">{model.visibleSchedule.tasks.length} visible of {model.schedule.tasks.length} tasks, {model.schedule.dependencies.length} dependencies</span>
         </div>
       </section>}
-      view={<nav className="planning-view-tabs" aria-label="Planning views">
-        {planningViews.map((view) => <button key={view} type="button" className={model.activeView === view ? "selected" : ""} aria-current={model.activeView === view ? "page" : undefined} onClick={() => actions.onActiveViewChange(view)}>{view}</button>)}
-      </nav>}
+      view={<>
+        <label className="planning-view-control">
+          <LayoutPanelTop size={16} aria-hidden="true" />
+          <span>{t("command.view", "View")}</span>
+          <select aria-label={t("planning.view.label", "Planning view")} value={model.activeView} onChange={(event) => actions.onActiveViewChange(event.target.value as PlanningView)}>
+            {planningViews.map((view) => <option key={view} value={view}>{t(planningViewMessageKeys[view], view)}</option>)}
+          </select>
+        </label>
+        <PlanningScheduleHealth schedule={model.schedule} reviewMode={model.reviewMode} reviewModeLocked={model.reviewModeLocked} />
+      </>}
       fields={<PlanningTimelineUtilities
         columnOptions={model.columnOptions} columnVisibility={model.columnVisibility} currentView={model.currentView}
         busy={model.busy} bulkUpdatesAvailable={model.bulkUpdatesAvailable} cascadeScheduling={model.cascadeScheduling} cascadeSort={model.cascadeSort}

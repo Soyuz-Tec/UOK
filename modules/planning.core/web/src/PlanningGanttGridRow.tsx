@@ -2,6 +2,7 @@ import { MoreHorizontal } from "lucide-react";
 import { useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 
 import type { PlanningGridColumn } from "./planningGanttModel";
+import type { PlanningGridTaskFacts } from "./planningGanttGridFacts";
 import { taskColorClass } from "./planningGanttModel";
 import { PlanningGanttGridCell } from "./PlanningGanttGridCell";
 import { fitPlanningRowHeight } from "./planningRowHeights";
@@ -26,6 +27,7 @@ export function PlanningGanttGridRow({
   showCritical,
   summaryExpanded,
   task,
+  taskDepth,
   virtualTop,
   onKeyDown,
   onOpenTaskMenu,
@@ -35,7 +37,7 @@ export function PlanningGanttGridRow({
   onRowHeightChange,
   onRowHeightReset,
 }: {
-  assignedByTask: Map<string, string>;
+  assignedByTask: PlanningGridTaskFacts;
   chainClass: string;
   columns: PlanningGridColumn[];
   gridTemplateColumns: string;
@@ -50,6 +52,7 @@ export function PlanningGanttGridRow({
   showCritical: boolean;
   summaryExpanded: boolean;
   task: PlanningTask;
+  taskDepth: number;
   virtualTop?: number;
   onKeyDown: (task: PlanningTask, event: KeyboardEvent<HTMLDivElement>) => void;
   onOpenTaskMenu: (taskId: string, x: number, y: number, event: { preventDefault: () => void; stopPropagation: () => void }) => void;
@@ -79,7 +82,7 @@ export function PlanningGanttGridRow({
       onKeyDown={(event) => onKeyDown(task, event)}
     >
       {columns.map((column) => (
-        <PlanningGanttGridCell key={column.id} assignedByTask={assignedByTask} column={column} pinnedOffsets={pinnedOffsets} readOnly={readOnly} summaryExpanded={summaryExpanded} task={task} onSummaryToggle={onSummaryToggle} onTaskEdit={onTaskInlineEdit} />
+        <PlanningGanttGridCell key={column.id} assignedByTask={assignedByTask} column={column} pinnedOffsets={pinnedOffsets} readOnly={readOnly} summaryExpanded={summaryExpanded} task={task} taskDepth={taskDepth} onSummaryToggle={onSummaryToggle} onTaskEdit={onTaskInlineEdit} />
       ))}
       <button
         type="button"

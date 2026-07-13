@@ -1,10 +1,12 @@
-import type { KeyboardEvent, RefObject, UIEvent } from "react";
+import { useMemo, type CSSProperties, type KeyboardEvent, type RefObject, type UIEvent } from "react";
 
 import type { ColumnWidthMap } from "@uok/shared/tables";
 import { useUokLocalization } from "@uok/shared/localization";
 import type { PlanningDependencyChain } from "./planningDependencyChain";
 import { taskDependencyChainClass } from "./planningDependencyChain";
 import type { PlanningGridColumn } from "./planningGanttModel";
+import type { PlanningGridTaskFacts } from "./planningGanttGridFacts";
+import { planningTaskDepths } from "./planningGanttTree";
 import { PlanningGanttEmptyState } from "./PlanningGanttEmptyState";
 import { PlanningGanttGridHeader } from "./PlanningGanttGridHeader";
 import { PlanningGanttGridRow } from "./PlanningGanttGridRow";
@@ -16,7 +18,7 @@ import type { PlanningTask } from "./types";
 
 export type PlanningGanttGridState = {
   allTasks: PlanningTask[];
-  assignedByTask: Map<string, string>;
+  assignedByTask: PlanningGridTaskFacts;
   columns: PlanningGridColumn[];
   dependencyChain: PlanningDependencyChain;
   gridTemplateColumns: string;
@@ -61,8 +63,15 @@ export function PlanningGanttGrid({ actions, bodyRef, state }: {
 }) {
   const { t } = useUokLocalization();
   const taskIndexes = new Map(state.allTasks.map((task, index) => [task.id, index]));
+  const taskDepthByTask = useMemo(() => planningTaskDepths(state.allTasks), [state.allTasks]);
   return (
-    <div className="planning-owned-grid" role="table" aria-label={t("planning.grid")} aria-rowcount={state.allTasks.length + 1}>
+    <div
+      className="planning-owned-grid"
+      role="table"
+      aria-label={t("planning.grid")}
+      aria-rowcount={state.allTasks.length + 1}
+      style={{ "--planning-grid-content-width": `${state.totalWidth}px` } as CSSProperties}
+    >
       <PlanningGanttGridHeader
         assignedByTask={state.assignedByTask} columns={state.columns} gridTemplateColumns={state.gridTemplateColumns}
         totalWidth={state.totalWidth} widths={state.widths} pinnedOffsets={state.pinnedOffsets} tasks={state.allTasks}
@@ -82,6 +91,7 @@ export function PlanningGanttGrid({ actions, bodyRef, state }: {
                 rowHeight={layout?.height || state.rowSize} rowIndex={(taskIndexes.get(task.id) || 0) + 2}
                 rowRef={(element) => actions.onRowRef(task.id, element)} rowSize={state.rowSize}
                 showCritical={state.showCritical} summaryExpanded={state.summaryExpanded(task)} task={task}
+                taskDepth={taskDepthByTask.get(task.id) || 0}
                 virtualTop={state.virtualized ? layout?.top : undefined}
                 onKeyDown={actions.onKeyDown} onOpenTaskMenu={actions.onOpenTaskMenu} onSelect={actions.onSelect}
                 onSummaryToggle={() => actions.onSummaryToggle(task.id)} onTaskInlineEdit={actions.onTaskInlineEdit}

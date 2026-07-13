@@ -83,8 +83,9 @@ describe("PlanningTimelineUtilities", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("dialog", { name: "Planning controls" })).toBeInTheDocument();
     expect(screen.getByLabelText("Fields")).toHaveValue("core");
+    expect(screen.getByLabelText("Fields")).toHaveTextContent("Logic");
     expect(screen.getByRole("button", { name: "Columns" })).toBeInTheDocument();
-    expect(screen.getByLabelText("View")).toHaveValue("standard");
+    expect(screen.getByLabelText("Density")).toHaveValue("standard");
 
     const scheduleCommands = screen.getByLabelText("Schedule commands");
     fireEvent.click(within(scheduleCommands).getByRole("checkbox", { name: "0 selected" }));
@@ -148,6 +149,7 @@ const currentView: PlanningSavedViewConfig = {
   selectedVisible: false,
   showBaselines: false,
   showCritical: true,
+  splitPercent: 42,
   status: "",
   summaryExpanded: true,
   viewDensity: "standard",

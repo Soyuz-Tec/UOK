@@ -2,7 +2,7 @@ import type { ColumnVisibilityMap } from "@uok/shared/tables";
 import type { Appearance } from "@uok/shared/types";
 import type { TimelineScale } from "./planningGanttModel";
 import type { PlanningTaskMenuAction } from "./planningTaskMenuModel";
-import type { FieldPreset, ViewDensity } from "./planningTimelineModel";
+import type { FieldPreset, PlanningLayoutMode, ViewDensity } from "./planningTimelineModel";
 import type { PlanningSchedule, PlanningTask } from "./types";
 import type { PlanningDependencyCreateRequest, PlanningTaskUpdateRequest } from "./planningContracts";
 
@@ -23,6 +23,8 @@ export type PlanningGanttProps = {
   dateTarget: string;
   dateTargetSignal: number;
   readOnly: boolean;
+  layoutMode: PlanningLayoutMode;
+  splitPercent: number;
   onTaskSelect: (taskId: string) => void;
   onTaskOpen: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string) => void;
@@ -32,6 +34,7 @@ export type PlanningGanttProps = {
   onTimelineTaskCreate: (start: string, end: string) => void;
   onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningTask) => void;
   onScaleChange: (scale: TimelineScale) => void;
+  onSplitPercentChange: (value: number) => void;
   onColumnVisible: (columnId: string, visible: boolean) => void;
   onColumnsReset: () => void;
   onSummaryToggle: (taskId: string) => void;

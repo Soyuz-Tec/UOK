@@ -2,7 +2,7 @@ import type { PlanningSchedule, PlanningTask } from "./types";
 
 export const planningViews = ["Gantt chart", "Board", "List", "Calendar", "Workload", "People", "Dashboard"] as const;
 export type PlanningView = typeof planningViews[number];
-export type FieldPreset = "core" | "progress" | "resources";
+export type FieldPreset = "core" | "progress" | "resources" | "logic";
 export type FilterMode = "all" | "critical" | "milestones" | "not_ready";
 export type PlanningLayoutMode = "split" | "timeline";
 export type ViewDensity = "compact" | "standard" | "roomy";
@@ -18,6 +18,14 @@ export function planningColumnVisibilityOptions(fieldPreset: FieldPreset) {
   const base = [{ id: "wbs", label: "WBS", locked: true }, { id: "task", label: "Task", locked: true }];
   if (fieldPreset === "progress") return [...base, { id: "duration", label: "Duration" }, { id: "progress", label: "Progress" }, { id: "critical", label: "Critical" }];
   if (fieldPreset === "resources") return [...base, { id: "assigned", label: "Assigned" }, { id: "status", label: "Status" }];
+  if (fieldPreset === "logic") return [
+    ...base,
+    { id: "owner", label: "Owner" },
+    { id: "predecessors", label: "Predecessors" },
+    { id: "successors", label: "Successors" },
+    { id: "totalFloat", label: "Total float" },
+    { id: "readiness", label: "Readiness" },
+  ];
   return [...base, { id: "start", label: "Start" }, { id: "end", label: "End" }];
 }
 

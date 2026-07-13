@@ -1,7 +1,25 @@
 .planning-owned-tree-cell {
-  display: inline-flex;
+  min-width: 0;
+}
+
+.planning-owned-task-identity {
+  display: flex;
   align-items: center;
   gap: var(--uok-space-1);
+  min-width: 0;
+  padding-inline-start: calc(var(--planning-task-depth, 0) * var(--uok-space-4));
+}
+
+.planning-owned-task-identity > .planning-owned-grid-cell-value,
+.planning-owned-task-identity > .planning-owned-inline-cell {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.planning-owned-summary-toggle-placeholder {
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
 }
 
 .planning-owned-summary-toggle {

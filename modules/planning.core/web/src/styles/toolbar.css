@@ -15,7 +15,7 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--uok-space-2);
-  min-width: 220px;
+  min-width: 176px;
   min-height: 34px;
   border: var(--uok-line);
   border-radius: var(--uok-radius-2);
@@ -87,10 +87,6 @@
 .planning-command-bar .planning-toolbar-select,
 .planning-command-bar .planning-zoom-control {
   min-height: 32px;
-}
-
-.planning-command-bar .planning-view-tabs button {
-  min-height: 24px;
 }
 
 .planning-toolbar-select input[type="date"] {

@@ -82,21 +82,22 @@ test("Gantt task overlays and semantic markers remain collision-free", async ({ 
   expect(right(wideTooltip)).toBeLessThanOrEqual(right(visibleChart));
 
   const marker = page.getByLabel("Deadline: One-day critical task with a long title");
+  const markerLine = page.locator(".planning-owned-task-marker-line line.deadline").first();
   await expect(marker).toBeVisible();
+  await expect(markerLine).toBeAttached();
   for (const appearance of ["light", "dark"] as const) {
     await page.evaluate((value) => { document.documentElement.dataset.appearance = value; }, appearance);
     const colors = await marker.evaluate((node) => {
       const surface = node.querySelector(".planning-owned-task-marker-surface");
-      const line = node.querySelector("line");
       const text = node.querySelector("text");
       return {
         fill: surface ? getComputedStyle(surface).fill : "none",
-        stroke: line ? getComputedStyle(line).stroke : "none",
         text: text ? getComputedStyle(text).fill : "none",
       };
     });
+    const markerStroke = await markerLine.evaluate((node) => getComputedStyle(node).stroke);
     expect(colors.fill).not.toBe("none");
-    expect(colors.stroke).not.toBe("none");
+    expect(markerStroke).not.toBe("none");
     expect(colors.text).not.toBe("none");
     expect(colors.fill).not.toBe(colors.text);
   }
