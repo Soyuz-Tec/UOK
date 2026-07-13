@@ -117,11 +117,14 @@ describe("CalendarWorkspace", () => {
     const fetchMock = vi.mocked(fetch);
     render(<CalendarWorkspace token="token" moduleRows={[installedCalendar]} busyAction="" onInstall={() => undefined} />);
 
-    const allCalendars = await screen.findByRole("radio", { name: /All calendars/ });
+    const scopeTrigger = await screen.findByRole("button", { name: "Calendar display: Operations" });
+    fireEvent.click(scopeTrigger);
+    const allCalendars = screen.getByRole("radio", { name: /All calendars/ });
     expect(screen.getByRole("radio", { name: /Operations/ })).toBeChecked();
     fireEvent.click(allCalendars);
 
-    await waitFor(() => expect(allCalendars).toBeChecked());
+    await waitFor(() => expect(scopeTrigger).toHaveAccessibleName("Calendar display: All calendars"));
+    expect(scopeTrigger).toHaveAttribute("aria-expanded", "false");
     await waitFor(() => {
       const eventCalls = fetchMock.mock.calls.map(([input]) => String(input)).filter((path) => path.includes("/api/calendar/events?"));
       expect(eventCalls.some((path) => !new URL(path, "http://uok.local").searchParams.has("calendar_id"))).toBe(true);
@@ -131,9 +134,11 @@ describe("CalendarWorkspace", () => {
   it("defaults a new event to the selected calendar timezone and visible wall hour", async () => {
     render(<CalendarWorkspace token="token" moduleRows={[installedCalendar]} busyAction="" onInstall={() => undefined} />);
 
-    const engineering = await screen.findByRole("radio", { name: /Engineering/ });
+    const scopeTrigger = await screen.findByRole("button", { name: "Calendar display: Operations" });
+    fireEvent.click(scopeTrigger);
+    const engineering = screen.getByRole("radio", { name: /Engineering/ });
     fireEvent.click(engineering);
-    await waitFor(() => expect(engineering).toBeChecked());
+    await waitFor(() => expect(scopeTrigger).toHaveAccessibleName("Calendar display: Engineering"));
     fireEvent.click(screen.getByRole("button", { name: "New event" }));
 
     const dialog = screen.getByRole("dialog", { name: "New event" });

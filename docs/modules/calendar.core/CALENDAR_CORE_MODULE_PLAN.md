@@ -22,8 +22,9 @@ under ADR-0026.
 
 - Traditional Calendar workspace with Month, Week, Day, and Agenda views.
 - Shared workspace command bar with event search and saved-search options, calendar selector, Today, previous/next navigation, view switching, New event, Refresh, and ICS export.
-- Mini month picker and a bounded, searchable scope selector for all Calendars
-  or one Calendar, with validated per-Calendar color presentation.
+- Mini month picker and a collapsed, focus-restoring Calendars menu containing
+  a bounded, searchable scope selector for all Calendars or one Calendar, with
+  validated per-Calendar color presentation.
 - Visual event blocks on month and agenda views plus a complete 24-hour
   Week/Day grid with midnight clipping and overlap lanes.
 - Shared draggable event editor for create and update flows, including focus
