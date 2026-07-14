@@ -6,7 +6,6 @@ import type { ContactGroupRecord, ContactRecord } from "@uok/shared/types";
 import { contact, organizationContact, renderContactsWorkspace, resetContactsWorkspaceTest } from "./ContactsWorkspace.testUtils";
 
 afterEach(() => {
-  vi.unstubAllGlobals();
   document.documentElement.dir = "ltr";
   resetContactsWorkspaceTest();
 });
@@ -112,7 +111,6 @@ describe("Contacts Groups Manager", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Close Groups manager" }));
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Groups manager" })).not.toBeInTheDocument());
     resetContactsWorkspaceTest();
-    vi.unstubAllGlobals();
     installGroupsApiMock({ failPatch: true });
     renderContactsWorkspace("table", [contact], { currentUserRole: "platform_admin" });
     dialog = await openGroupsManager();

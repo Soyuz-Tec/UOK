@@ -13,11 +13,12 @@ export { businessContactWithoutCompany, contact, contactGroup, duplicateContact,
 
 export function resetContactsWorkspaceTest() {
   cleanup();
-  localStorage.removeItem("uok_column_widths:contacts.records");
-  localStorage.removeItem("uok_column_visibility:contacts.list.display_fields");
-  localStorage.removeItem("uok_column_visibility:contacts.list.display_fields.v2");
-  localStorage.removeItem("uok_column_visibility:contacts.records");
-  localStorage.removeItem("uok_contacts_saved_search_views");
+  const storage = globalThis.localStorage;
+  storage?.removeItem("uok_column_widths:contacts.records");
+  storage?.removeItem("uok_column_visibility:contacts.list.display_fields");
+  storage?.removeItem("uok_column_visibility:contacts.list.display_fields.v2");
+  storage?.removeItem("uok_column_visibility:contacts.records");
+  storage?.removeItem("uok_contacts_saved_search_views");
   vi.unstubAllGlobals();
 }
 
