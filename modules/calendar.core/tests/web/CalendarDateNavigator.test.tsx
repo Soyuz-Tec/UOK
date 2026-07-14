@@ -25,6 +25,7 @@ describe("CalendarDateNavigator", () => {
     await waitFor(() => expect(selected).toHaveFocus());
     expect(selected).toHaveAttribute("aria-selected", "true");
     expect(within(grid).getAllByRole("gridcell").filter((cell) => cell.tabIndex === 0)).toEqual([selected]);
+    expect(screen.getByRole("button", { name: "Choose year: 2027" })).toHaveAttribute("aria-expanded", "false");
   });
 
   it("closes on Escape and restores focus to the range trigger", async () => {
@@ -82,24 +83,46 @@ describe("CalendarDateNavigator", () => {
 
     const trigger = screen.getByRole("button", { name: "Choose date: January 2027" });
     fireEvent.click(trigger);
-    const year = screen.getByRole("combobox", { name: "Year" });
-    expect(year).toHaveValue("2027");
-    const yearOptions = within(year).getAllByRole("option");
-    expect(yearOptions).toHaveLength(201);
-    expect(yearOptions[0]).toHaveTextContent("1927");
-    expect(yearOptions.at(-1)).toHaveTextContent("2127");
+    const yearTrigger = screen.getByRole("button", { name: "Choose year: 2027" });
+    fireEvent.click(yearTrigger);
+    expect(yearTrigger).toHaveAttribute("aria-expanded", "true");
+    const yearGrid = screen.getByRole("grid", { name: "Choose year: 2020–2039" });
+    expect(within(yearGrid).getAllByRole("gridcell")).toHaveLength(20);
+    const selectedYear = within(yearGrid).getByRole("gridcell", { name: "2027" });
+    await waitFor(() => expect(selectedYear).toHaveFocus());
+    expect(selectedYear).toHaveAttribute("aria-selected", "true");
 
-    year.focus();
-    fireEvent.change(year, { target: { value: "2032" } });
+    fireEvent.click(within(yearGrid).getByRole("gridcell", { name: "2032" }));
     expect(screen.getByRole("grid", { name: "January 2032" })).toBeInTheDocument();
-    expect(year).toHaveFocus();
     expect(onDateChange).not.toHaveBeenCalled();
     expect(screen.getAllByRole("gridcell").filter((cell) => cell.tabIndex === 0)).toHaveLength(1);
+    await waitFor(() => expect(screen.getByRole("gridcell", { name: /January 1, 2032/ })).toHaveFocus());
 
     fireEvent.click(screen.getByRole("gridcell", { name: /January 1, 2032/ }));
     await waitFor(() => expect(onDateChange).toHaveBeenCalledTimes(1));
     expect(dayKey(onDateChange.mock.calls[0][0])).toBe("2032-01-01");
     expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+  });
+
+  it("returns from the inline year view before Escape closes the date navigator", async () => {
+    render(<CalendarDateNavigator view="month" cursorDate={cursorDate} onDateChange={vi.fn()} />);
+
+    const trigger = screen.getByRole("button", { name: "Choose date: January 2027" });
+    fireEvent.click(trigger);
+    const yearTrigger = screen.getByRole("button", { name: "Choose year: 2027" });
+    fireEvent.click(yearTrigger);
+    const selectedYear = screen.getByRole("gridcell", { name: "2027" });
+    await waitFor(() => expect(selectedYear).toHaveFocus());
+    fireEvent.keyDown(selectedYear, { key: "Escape" });
+
+    await waitFor(() => expect(yearTrigger).toHaveFocus());
+    expect(yearTrigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("grid", { name: "January 2027" })).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
     expect(trigger).toHaveFocus();
   });
 
@@ -110,14 +133,13 @@ describe("CalendarDateNavigator", () => {
 
     const trigger = screen.getByRole("button", { name: "Choose date: February 2028" });
     fireEvent.click(trigger);
-    const year = screen.getByRole("combobox", { name: "Year" });
-    year.focus();
-    fireEvent.change(year, { target: { value: "2027" } });
+    fireEvent.click(screen.getByRole("button", { name: "Choose year: 2028" }));
+    fireEvent.click(screen.getByRole("gridcell", { name: "2027" }));
 
     expect(screen.getByRole("grid", { name: "February 2027" })).toBeInTheDocument();
-    expect(year).toHaveFocus();
     const clampedDay = screen.getByRole("gridcell", { name: /February 28, 2027/ });
     expect(clampedDay).toHaveAttribute("tabindex", "0");
+    await waitFor(() => expect(clampedDay).toHaveFocus());
     fireEvent.click(clampedDay);
 
     await waitFor(() => expect(onDateChange).toHaveBeenCalledTimes(1));
@@ -156,8 +178,11 @@ describe("CalendarDateNavigator", () => {
     expect(screen.getByRole("button", { name: "الشهر السابق" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "الشهر التالي" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /يناير/ })).toBeInTheDocument();
-    const year = screen.getByRole("combobox", { name: "السنة" });
-    expect(year).toHaveValue("2027");
-    expect(within(year).getByRole("option", { name: "٢٠٢٧" })).toBeInTheDocument();
+    const yearTrigger = screen.getByRole("button", { name: "اختر السنة: ٢٠٢٧" });
+    fireEvent.click(yearTrigger);
+    expect(screen.getByRole("button", { name: "السنوات العشرون السابقة" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "السنوات العشرون التالية" })).toBeInTheDocument();
+    const yearGrid = screen.getByRole("grid", { name: "اختر السنة: ٢٠٢٠–٢٠٣٩" });
+    expect(within(yearGrid).getByRole("gridcell", { name: "٢٠٢٧" })).toHaveAttribute("aria-selected", "true");
   });
 });

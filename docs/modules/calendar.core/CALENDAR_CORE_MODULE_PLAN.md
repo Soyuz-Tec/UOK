@@ -26,10 +26,10 @@ under ADR-0026.
   date navigator, view switching, New event, Refresh, and ICS export.
 - The persistent mini-month rail is removed so the event surface receives the
   full workspace width. The range title opens a focus-restoring 42-day date
-  navigator whose localized month header includes a direct year selector with
-  a rolling 201-year browsing range, while the separate bounded and searchable
-  Calendars menu keeps the selected scope visible without exposing the full
-  collection.
+  navigator whose localized month header opens an inline 20-year grid with
+  range paging and exact year entry across a stable 201-year browsing window.
+  The separate bounded and searchable Calendars menu keeps the selected scope
+  visible without exposing the full collection.
 - Visual event blocks on month and agenda views plus a complete 24-hour
   Week/Day grid with midnight clipping and overlap lanes.
 - Shared draggable event editor for create and update flows, including focus

@@ -1,12 +1,15 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { ExpandableControlPanel } from "@uok/shared/forms";
 import { useUokLocalization } from "@uok/shared/localization";
 import { IconButton } from "@uok/shared/primitives";
-import { addDays, dayKey, monthCells, startOfDay, startOfMonth, viewTitle } from "./calendarDates";
+import { CalendarDateGrid } from "./CalendarDateGrid";
+import { dateInMonth, dayKey, startOfDay, startOfMonth, viewTitle } from "./calendarDates";
 import type { CalendarView } from "./calendarTypes";
-import { CalendarYearSelect } from "./CalendarYearSelect";
+import { CalendarYearPicker } from "./CalendarYearPicker";
+import { CalendarYearTrigger } from "./CalendarYearTrigger";
+import { YEAR_BROWSE_RADIUS } from "./calendarYears";
 
 export function CalendarDateNavigator({
   view,
@@ -19,22 +22,22 @@ export function CalendarDateNavigator({
 }) {
   const { direction, locale, t } = useUokLocalization();
   const [open, setOpen] = useState(false);
+  const [yearPickerOpen, setYearPickerOpen] = useState(false);
   const [displayMonth, setDisplayMonth] = useState(() => startOfMonth(cursorDate));
   const [focusedDate, setFocusedDate] = useState(() => startOfDay(cursorDate));
   const gridRef = useRef<HTMLDivElement>(null);
+  const yearTriggerRef = useRef<HTMLButtonElement>(null);
+  const yearPickerId = `calendar-year-picker-${useId().replaceAll(":", "")}`;
   const formatLocale = locale === "ar" ? "ar-u-nu-arab" : locale;
   const rangeTitle = viewTitle(view, cursorDate, formatLocale);
   const monthTitle = displayMonth.toLocaleDateString(formatLocale, { month: "long", year: "numeric" });
   const monthName = displayMonth.toLocaleDateString(formatLocale, { month: "long" });
   const displayYear = displayMonth.getFullYear();
-  const selectedKey = dayKey(cursorDate);
-  const focusedKey = dayKey(focusedDate);
-  const todayKey = dayKey(new Date());
-  const cells = monthCells(displayMonth);
-  const weekdayLabels = useMemo(() => Array.from({ length: 7 }, (_, index) => {
-    const sunday = new Date(2021, 7, 1 + index, 12);
-    return sunday.toLocaleDateString(formatLocale, { weekday: "narrow" });
-  }), [formatLocale]);
+  const minYear = cursorDate.getFullYear() - YEAR_BROWSE_RADIUS;
+  const maxYear = cursorDate.getFullYear() + YEAR_BROWSE_RADIUS;
+  const canShowDate = (date: Date) => date.getFullYear() >= minYear && date.getFullYear() <= maxYear;
+  const canMoveToPreviousMonth = displayYear > minYear || displayMonth.getMonth() > 0;
+  const canMoveToNextMonth = displayYear < maxYear || displayMonth.getMonth() < 11;
 
   useEffect(() => {
     if (open) return;
@@ -44,6 +47,7 @@ export function CalendarDateNavigator({
 
   const moveFocus = (date: Date) => {
     const next = startOfDay(date);
+    if (!canShowDate(next)) return;
     setFocusedDate(next);
     if (next.getMonth() !== displayMonth.getMonth() || next.getFullYear() !== displayMonth.getFullYear()) {
       setDisplayMonth(startOfMonth(next));
@@ -55,6 +59,7 @@ export function CalendarDateNavigator({
     const nextMonth = new Date(displayMonth);
     nextMonth.setDate(1);
     nextMonth.setMonth(displayMonth.getMonth() + offset);
+    if (!canShowDate(nextMonth)) return;
     const nextFocused = dateInMonth(nextMonth, focusedDate.getDate());
     setDisplayMonth(nextMonth);
     setFocusedDate(nextFocused);
@@ -64,32 +69,21 @@ export function CalendarDateNavigator({
     const nextMonth = new Date(displayMonth);
     nextMonth.setDate(1);
     nextMonth.setFullYear(year);
+    const nextFocused = dateInMonth(nextMonth, focusedDate.getDate());
     setDisplayMonth(nextMonth);
-    setFocusedDate(dateInMonth(nextMonth, focusedDate.getDate()));
+    setFocusedDate(nextFocused);
+    return nextFocused;
   };
 
-  const onDateKeyDown = (event: KeyboardEvent<HTMLButtonElement>, date: Date) => {
-    const horizontalStep = direction === "rtl" ? -1 : 1;
-    const next = event.key === "ArrowLeft"
-      ? addDays(date, -horizontalStep)
-      : event.key === "ArrowRight"
-        ? addDays(date, horizontalStep)
-        : event.key === "ArrowUp"
-          ? addDays(date, -7)
-          : event.key === "ArrowDown"
-            ? addDays(date, 7)
-            : event.key === "Home"
-              ? addDays(date, -date.getDay())
-              : event.key === "End"
-                ? addDays(date, 6 - date.getDay())
-                : event.key === "PageUp"
-                  ? shiftDateMonth(date, -1)
-                  : event.key === "PageDown"
-                    ? shiftDateMonth(date, 1)
-                    : null;
-    if (!next) return;
-    event.preventDefault();
-    moveFocus(next);
+  const closeYearPicker = () => {
+    setYearPickerOpen(false);
+    queueMicrotask(() => yearTriggerRef.current?.focus());
+  };
+
+  const selectYear = (year: number) => {
+    const nextFocused = changeDisplayedYear(year);
+    setYearPickerOpen(false);
+    queueMicrotask(() => gridRef.current?.querySelector<HTMLElement>(`[data-calendar-date="${dayKey(nextFocused)}"]`)?.focus());
   };
 
   return (
@@ -102,6 +96,7 @@ export function CalendarDateNavigator({
       initialFocusSelector="[data-calendar-date-focus='true']"
       open={open}
       onOpenChange={(nextOpen) => {
+        setYearPickerOpen(false);
         if (nextOpen) {
           setDisplayMonth(startOfMonth(cursorDate));
           setFocusedDate(startOfDay(cursorDate));
@@ -110,84 +105,73 @@ export function CalendarDateNavigator({
       }}
     >
       {({ close }) => open ? (
-        <section className="calendar-date-navigator-content" aria-label={monthTitle}>
+        <section
+          className="calendar-date-navigator-content"
+          aria-label={monthTitle}
+          onKeyDown={(event) => {
+            if (!yearPickerOpen || event.key !== "Escape") return;
+            event.preventDefault();
+            event.stopPropagation();
+            closeYearPicker();
+          }}
+        >
           <header className="calendar-date-navigator-header">
-            <IconButton
-              icon={ChevronLeft}
-              label={t("calendar.navigator.previousMonth", "Previous month")}
-              onClick={() => changeDisplayedMonth(-1)}
-            />
+            {yearPickerOpen ? <span aria-hidden="true" /> : (
+              <IconButton
+                icon={ChevronLeft}
+                label={t("calendar.navigator.previousMonth", "Previous month")}
+                onClick={() => changeDisplayedMonth(-1)}
+                disabled={!canMoveToPreviousMonth}
+              />
+            )}
             <div className="calendar-date-navigator-period">
               <h3>{monthName}</h3>
-              <CalendarYearSelect
+              <CalendarYearTrigger
+                ref={yearTriggerRef}
+                controls={yearPickerId}
+                open={yearPickerOpen}
                 year={displayYear}
-                locale={formatLocale}
-                label={t("calendar.navigator.year", "Year")}
-                onChange={changeDisplayedYear}
+                onClick={() => yearPickerOpen ? closeYearPicker() : setYearPickerOpen(true)}
               />
             </div>
-            <IconButton
-              icon={ChevronRight}
-              label={t("calendar.navigator.nextMonth", "Next month")}
-              onClick={() => changeDisplayedMonth(1)}
-            />
+            {yearPickerOpen ? <span aria-hidden="true" /> : (
+              <IconButton
+                icon={ChevronRight}
+                label={t("calendar.navigator.nextMonth", "Next month")}
+                onClick={() => changeDisplayedMonth(1)}
+                disabled={!canMoveToNextMonth}
+              />
+            )}
           </header>
-          <div ref={gridRef} className="calendar-date-grid" role="grid" aria-label={monthTitle}>
-            <div className="calendar-date-weekdays" role="row">
-              {weekdayLabels.map((label, index) => <span key={`${label}-${index}`} role="columnheader">{label}</span>)}
-            </div>
-            {Array.from({ length: 6 }, (_, weekIndex) => (
-              <div key={weekIndex} className="calendar-date-week" role="row">
-                {cells.slice(weekIndex * 7, (weekIndex + 1) * 7).map((date) => {
-                  const key = dayKey(date);
-                  const outside = date.getMonth() !== displayMonth.getMonth();
-                  const fullLabel = date.toLocaleDateString(formatLocale, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      role="gridcell"
-                      className={[outside ? "outside" : "", key === selectedKey ? "selected" : "", key === todayKey ? "today" : ""].filter(Boolean).join(" ")}
-                      aria-current={key === todayKey ? "date" : undefined}
-                      aria-label={fullLabel}
-                      aria-selected={key === selectedKey}
-                      data-calendar-date={key}
-                      data-calendar-date-focus={key === focusedKey ? "true" : undefined}
-                      tabIndex={key === focusedKey ? 0 : -1}
-                      onFocus={() => setFocusedDate(startOfDay(date))}
-                      onKeyDown={(event) => onDateKeyDown(event, date)}
-                      onClick={() => {
-                        close();
-                        queueMicrotask(() => onDateChange(startOfDay(date)));
-                      }}
-                    >
-                      {date.toLocaleDateString(formatLocale, { day: "numeric" })}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
+          {yearPickerOpen ? (
+            <CalendarYearPicker
+              id={yearPickerId}
+              year={displayYear}
+              minYear={minYear}
+              maxYear={maxYear}
+              onSelect={selectYear}
+              onCancel={closeYearPicker}
+            />
+          ) : (
+            <CalendarDateGrid
+              ref={gridRef}
+              direction={direction}
+              displayMonth={displayMonth}
+              focusedDate={focusedDate}
+              selectedDate={cursorDate}
+              locale={formatLocale}
+              minYear={minYear}
+              maxYear={maxYear}
+              onFocusDate={setFocusedDate}
+              onMoveFocus={moveFocus}
+              onSelect={(date) => {
+                close();
+                queueMicrotask(() => onDateChange(date));
+              }}
+            />
+          )}
         </section>
       ) : null}
     </ExpandableControlPanel>
   );
-}
-
-function dateInMonth(month: Date, requestedDay: number) {
-  const monthEnd = new Date(month);
-  monthEnd.setDate(1);
-  monthEnd.setFullYear(month.getFullYear(), month.getMonth() + 1, 0);
-  const result = new Date(month);
-  result.setDate(1);
-  result.setFullYear(month.getFullYear(), month.getMonth(), Math.min(requestedDay, monthEnd.getDate()));
-  result.setHours(0, 0, 0, 0);
-  return result;
-}
-
-function shiftDateMonth(date: Date, offset: -1 | 1) {
-  const targetMonth = new Date(date);
-  targetMonth.setDate(1);
-  targetMonth.setMonth(date.getMonth() + offset);
-  return dateInMonth(targetMonth, date.getDate());
 }

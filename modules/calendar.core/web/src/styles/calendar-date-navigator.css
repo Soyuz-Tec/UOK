@@ -25,7 +25,7 @@
 
 .calendar-date-navigator .expandable-control-trigger:focus-visible,
 .calendar-date-navigator-panel button:focus-visible,
-.calendar-date-navigator-panel select:focus-visible {
+.calendar-date-navigator-panel input:focus-visible {
   outline: 3px solid var(--uok-focus-ring);
   outline-offset: 2px;
 }
@@ -83,20 +83,6 @@
   white-space: nowrap;
 }
 
-.calendar-date-navigator-period select {
-  flex: 0 0 auto;
-  min-height: 36px;
-  max-width: 6rem;
-  border: var(--uok-line);
-  border-radius: var(--uok-radius-2);
-  padding-inline: var(--uok-space-2);
-  color: var(--uok-text-primary);
-  background: var(--uok-bg-elevated);
-  font: inherit;
-  font-weight: 740;
-  cursor: pointer;
-}
-
 :root[dir="rtl"] .calendar-date-navigator-header .icon-button svg {
   transform: scaleX(-1);
 }
@@ -141,7 +127,12 @@
   color: var(--uok-text-tertiary);
 }
 
-.calendar-date-week button:hover {
+.calendar-date-week button:disabled {
+  color: var(--uok-text-placeholder);
+  cursor: not-allowed;
+}
+
+.calendar-date-week button:not(:disabled):hover {
   background: var(--uok-bg-grouped-secondary);
 }
 
@@ -165,11 +156,5 @@
     width: auto;
     max-block-size: calc(100vh - (var(--uok-space-3) * 2));
     overflow: auto;
-  }
-}
-
-@media (pointer: coarse) {
-  .calendar-date-navigator-period select {
-    min-height: 44px;
   }
 }

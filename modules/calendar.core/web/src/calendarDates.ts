@@ -16,6 +16,24 @@ export function addMonths(date: Date, months: number) {
   return new Date(date.getFullYear(), date.getMonth() + months, 1);
 }
 
+export function dateInMonth(month: Date, requestedDay: number) {
+  const monthEnd = new Date(month);
+  monthEnd.setDate(1);
+  monthEnd.setFullYear(month.getFullYear(), month.getMonth() + 1, 0);
+  const result = new Date(month);
+  result.setDate(1);
+  result.setFullYear(month.getFullYear(), month.getMonth(), Math.min(requestedDay, monthEnd.getDate()));
+  result.setHours(0, 0, 0, 0);
+  return result;
+}
+
+export function shiftDateMonth(date: Date, offset: -1 | 1) {
+  const targetMonth = new Date(date);
+  targetMonth.setDate(1);
+  targetMonth.setMonth(date.getMonth() + offset);
+  return dateInMonth(targetMonth, date.getDate());
+}
+
 export function startOfWeek(date: Date) {
   return addDays(startOfDay(date), -date.getDay());
 }

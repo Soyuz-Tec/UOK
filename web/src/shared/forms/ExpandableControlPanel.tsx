@@ -4,6 +4,13 @@ import { useUokLocalization } from "../localization";
 
 type PanelChildren = ReactNode | ((controls: { close: () => void }) => ReactNode);
 
+const FOCUSABLE_SELECTOR = [
+  "input:not(:disabled):not([tabindex='-1'])",
+  "select:not(:disabled):not([tabindex='-1'])",
+  "button:not(:disabled):not([tabindex='-1'])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(", ");
+
 export function ExpandableControlPanel({
   label,
   triggerLabel,
@@ -85,7 +92,7 @@ export function ExpandableControlPanel({
       const preferredControl = initialFocusSelector
         ? panel?.querySelector<HTMLElement>(initialFocusSelector)
         : null;
-      const firstControl = preferredControl || panel?.querySelector<HTMLElement>("input:not(:disabled), select:not(:disabled), button:not(:disabled), [tabindex]:not([tabindex='-1'])");
+      const firstControl = preferredControl || panel?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
       (firstControl || panel)?.focus();
     });
   }, [initialFocusSelector, isOpen]);
@@ -104,7 +111,7 @@ export function ExpandableControlPanel({
         return;
       }
       if (event.key !== "Tab" || !compactPresentation) return;
-      const focusable = Array.from(panelRef.current?.querySelectorAll<HTMLElement>("input:not(:disabled), select:not(:disabled), button:not(:disabled), [tabindex]:not([tabindex='-1'])") || []);
+      const focusable = Array.from(panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) || []);
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];

@@ -1,0 +1,154 @@
+.calendar-year-trigger {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--uok-space-1);
+  min-height: 36px;
+  border: 0;
+  border-radius: var(--uok-radius-2);
+  padding-inline: var(--uok-space-2);
+  color: var(--uok-text-primary);
+  background: transparent;
+  font: inherit;
+  font-weight: 740;
+  cursor: pointer;
+}
+
+.calendar-year-trigger:hover,
+.calendar-year-trigger[aria-expanded="true"] {
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.calendar-year-trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.calendar-year-picker {
+  display: grid;
+  gap: var(--uok-space-3);
+}
+
+.calendar-year-range-nav {
+  display: grid;
+  grid-template-columns: var(--uok-control-height) minmax(0, 1fr) var(--uok-control-height);
+  align-items: center;
+  gap: var(--uok-space-2);
+}
+
+.calendar-year-range-nav h4 {
+  margin: 0;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption-1);
+  text-align: center;
+}
+
+:root[dir="rtl"] .calendar-year-range-nav .icon-button svg {
+  transform: scaleX(-1);
+}
+
+.calendar-year-grid {
+  display: grid;
+  gap: var(--uok-space-1);
+}
+
+.calendar-year-grid > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--uok-space-1);
+}
+
+.calendar-year-grid button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--uok-radius-2);
+  color: var(--uok-text-primary);
+  background: transparent;
+  font: inherit;
+  font-size: var(--uok-caption-1);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.calendar-year-grid button:hover {
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.calendar-year-grid button.selected {
+  color: var(--uok-bg-elevated);
+  background: var(--uok-accent);
+}
+
+.calendar-year-grid button.current:not(.selected) {
+  box-shadow: inset 0 0 0 2px var(--uok-accent);
+  color: var(--uok-accent);
+}
+
+.calendar-year-jump {
+  display: grid;
+  gap: var(--uok-space-1);
+}
+
+.calendar-year-jump label {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption-1);
+  font-weight: 700;
+}
+
+.calendar-year-jump > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--uok-space-2);
+}
+
+.calendar-year-jump input,
+.calendar-year-go,
+.calendar-year-back {
+  min-height: 44px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding-inline: var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-elevated);
+  font: inherit;
+}
+
+.calendar-year-jump input {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar-year-jump input[aria-invalid="true"] {
+  border-color: var(--uok-status-danger);
+}
+
+.calendar-year-go,
+.calendar-year-back {
+  font-weight: 740;
+  cursor: pointer;
+}
+
+.calendar-year-go:hover,
+.calendar-year-back:hover {
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.calendar-year-jump p {
+  margin: 0;
+  color: var(--uok-status-danger);
+  font-size: var(--uok-caption-1);
+}
+
+.calendar-year-back {
+  width: 100%;
+}
+
+@media (pointer: coarse) {
+  .calendar-year-trigger {
+    min-height: 44px;
+  }
+}
