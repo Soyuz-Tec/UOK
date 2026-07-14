@@ -34,7 +34,7 @@ Operator browser
 ## Current Module Model
 
 - `apps.manager` is the only required control module.
-- `contacts.core` is the first optional capability module.
+- `contacts.core` is the optional governed Party and Contacts system of record. It owns first-class contact facts, consent evidence, Contacts-specific teams, groups, quality/import state, saved views, external identities, and custom fields while engagement records remain owned by their source modules.
 - `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, persisted reminder definitions, free-busy-derived availability context, iCalendar export, and a traditional Calendar workspace. In-app/email reminder dispatch and availability-slot schedules are not current capabilities.
 - Calendar reads fail closed through actor-visible active Calendar parents; `team` visibility is reserved until a canonical membership provider exists. Public appointment booking remains a separate future `appointments.core` boundary rather than expanding `calendar.core`.
 - `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
@@ -48,7 +48,7 @@ Operator browser
 - Manifests use closed schema `uok.module.v1`, declare evidence-bounded maturity, reserve canonical non-overlapping API prefixes, and pass runtime validation before extension imports or router composition; release validation separately proves tests and verifier assets.
 - The Apps Manager HTTP adapter is owned by `modules/apps.manager` and mounted through the same manifest router mechanism as capability modules; shared lifecycle services provide locked, audited, idempotent reconciliation when persisted control-plane state drifts from current manifest truth.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, command replay guards, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
-- Static runtime validation completes before extension imports. The deterministic module model registry then composes 29 module-owned mappings with nine kernel mappings on the single `uok.db.Base` before migration inspection, schema creation, or router composition.
+- Static runtime validation completes before extension imports. The deterministic module model registry then composes 40 module-owned mappings with nine kernel mappings on the single `uok.db.Base` before migration inspection, schema creation, or router composition.
 - Apps Manager, Calendar, Communications, Contacts, and Planning own executable React source and local CSS under `modules/<module_name>/web/src`; their frontend tests live under `modules/<module_name>/tests/web`.
 - Workbench surfaces declare the release/build extension `web_surface` plus canonical `web_entry` and unique `web_section` metadata in the closed manifest. A deterministic generator validates those manifests and emits literal TypeScript imports in `web/src/generated/moduleSurfaceCatalog.ts` for the typed registry under `web/src/features/modules`.
 - Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and all declared entries into the normal static application bundle.
@@ -102,10 +102,12 @@ Operator browser
 - ADR-0024: `docs/architecture/ADR-0024-database-connection-pooling.md`
 - ADR-0025: `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`
 - ADR-0026: `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md`
+- ADR-0027: `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
 - Standard operations: `docs/operations/UOK_STANDARD_OPERATIONS.md`
+- Contacts Core operations: `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`
 - Database connection-pooling operations: `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`
 - ASUH test events: `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - GitHub engineering guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`

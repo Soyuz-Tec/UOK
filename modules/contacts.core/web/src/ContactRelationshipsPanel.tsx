@@ -4,6 +4,7 @@ import { Check, Link2, Pencil, Unlink2, X } from "lucide-react";
 import { formatLabel } from "@uok/shared/format";
 import { EmptyState } from "@uok/shared/data-display";
 import { CommandButton, IconButton } from "@uok/shared/primitives";
+import { ContactRelationshipLookup } from "./ContactRelationshipLookup";
 import type { ContactsWorkspaceProps } from "./types";
 
 export function ContactRelationshipsPanel(props: ContactsWorkspaceProps & { contact: NonNullable<ContactsWorkspaceProps["selectedContact"]> }) {
@@ -40,13 +41,13 @@ export function ContactRelationshipsPanel(props: ContactsWorkspaceProps & { cont
     <div className="detail-section pane-section">
       <p className="eyebrow">Relationships</p>
       <div className="relationship-composer">
-        <label className="field">
-          <span>Related contact</span>
-          <select value={props.relationshipTarget} onChange={(event) => props.onRelationshipTargetChange(event.target.value)}>
-            <option value="">Select contact</option>
-            {props.contacts.filter((row) => row.id !== contact.id).map((row) => <option key={row.id} value={row.id}>{row.display_name}</option>)}
-          </select>
-        </label>
+        <ContactRelationshipLookup
+          token={props.token}
+          contactId={contact.id}
+          value={props.relationshipTarget}
+          initialLabel={props.contacts.find((row) => row.id === props.relationshipTarget)?.display_name}
+          onChange={props.onRelationshipTargetChange}
+        />
         <label className="field">
           <span>Relationship</span>
           <select value={props.relationshipType} onChange={(event) => props.onRelationshipTypeChange(event.target.value)}>
@@ -62,7 +63,7 @@ export function ContactRelationshipsPanel(props: ContactsWorkspaceProps & { cont
             <div className={editingRelationship ? "record-row relationship-row editing" : "record-row relationship-row"} key={rel.id}>
               {editingRelationship ? (
                 <RelationshipEditor
-                  contacts={props.contacts}
+                  token={props.token}
                   contactId={contact.id}
                   rel={rel}
                   target={relationshipEditTarget}
@@ -97,7 +98,7 @@ export function ContactRelationshipsPanel(props: ContactsWorkspaceProps & { cont
 function RelationshipEditor({
   busyAction,
   contactId,
-  contacts,
+  token,
   rel,
   target,
   type,
@@ -108,7 +109,7 @@ function RelationshipEditor({
 }: {
   busyAction: string;
   contactId: string;
-  contacts: ContactsWorkspaceProps["contacts"];
+  token: string;
   rel: ContactRelationship;
   target: string;
   type: string;
@@ -120,12 +121,13 @@ function RelationshipEditor({
   return (
     <>
       <div className="relationship-edit-fields">
-        <label className="field">
-          <span>Related contact</span>
-          <select value={target} onChange={(event) => onTargetChange(event.target.value)}>
-            {relationshipTargetOptions(contacts, contactId, rel).map((option) => <option key={option.id} value={option.id}>{option.display_name}</option>)}
-          </select>
-        </label>
+        <ContactRelationshipLookup
+          token={token}
+          contactId={contactId}
+          value={target}
+          initialLabel={rel.related_party_name || relatedPartyFallback(rel)}
+          onChange={onTargetChange}
+        />
         <label className="field">
           <span>Relationship</span>
           <select value={type} onChange={(event) => onTypeChange(event.target.value)}>
@@ -168,13 +170,4 @@ function relationshipIsInbound(contactId: string, rel: ContactRelationship) {
   if (rel.direction === "inbound") return true;
   if (rel.direction === "outbound") return false;
   return rel.to_party_id === contactId;
-}
-
-function relationshipTargetOptions(contacts: ContactsWorkspaceProps["contacts"], contactId: string, rel: ContactRelationship) {
-  const relatedId = relatedPartyId(rel);
-  const rows = contacts.filter((row) => row.id !== contactId);
-  if (relatedId && !rows.some((row) => row.id === relatedId)) {
-    return [{ id: relatedId, display_name: rel.related_party_name || relatedPartyFallback(rel) }, ...rows];
-  }
-  return rows;
 }

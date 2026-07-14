@@ -2,35 +2,47 @@ from __future__ import annotations
 
 from typing import Any
 
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from .command_support import _emit_event, _party
 from .duplicate_merge_support import (
-    datetime_or_none,
     field_choices,
-    mark_snapshot_rolled_back,
-    merge_snapshot,
     merged_attrs,
     move_group_memberships,
+    move_governed_records,
     move_notes,
     move_relationships,
     record_merge_history,
-    restore_primary_merge_attrs,
+)
+from .duplicate_merge_rollback import (
+    rollback_governed_records,
     rollback_groups,
     rollback_notes,
     rollback_relationships,
 )
+from .duplicate_merge_history import (
+    assert_merge_state_unchanged,
+    datetime_or_none,
+    mark_snapshot_rolled_back,
+    merge_snapshot,
+    restore_primary_merge_attrs,
+    store_merge_snapshot,
+)
 from .facade import bounded_text, serialize_party, touch_party
 from .models import utcnow
+from .system_models import ContactDuplicateCandidate
 from uok.security import Actor
 from uok.util import dumps, loads
 
 
 def cmd_merge_duplicate_contact(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     primary, duplicate, choices, merge_id, moved = _prepare_duplicate_merge(db, actor, payload, command_id)
-    primary_attrs = _merged_primary_attrs(primary, duplicate, choices, merge_id, moved)
+    primary_attrs, snapshot = _merged_primary_attrs(primary, duplicate, choices, merge_id, moved)
     _apply_duplicate_merge_state(primary, duplicate, primary_attrs)
+    _set_candidate_state(db, actor, primary.id, duplicate.id, "merged")
     db.flush()
+    store_merge_snapshot(db, actor, primary, duplicate, snapshot)
 
     _emit_duplicate_merge_event(db, actor, primary, duplicate, choices, moved)
     return _duplicate_merge_result(db, actor, primary, duplicate, merge_id, moved)
@@ -43,6 +55,12 @@ def _prepare_duplicate_merge(db: Session, actor: Actor, payload: dict[str, Any],
         raise ValueError("primary_party_id and duplicate_party_id must be different")
     if primary.status == "purged" or duplicate.status == "purged":
         raise ValueError("purged contacts cannot be merged")
+    primary_merged_into = str(loads(primary.attrs_json, {}).get("merged_into_party_id") or "")
+    duplicate_merged_into = str(loads(duplicate.attrs_json, {}).get("merged_into_party_id") or "")
+    if primary_merged_into:
+        raise ValueError("primary_party_id is already merged into another contact")
+    if duplicate_merged_into:
+        raise ValueError("duplicate_party_id is already merged into another contact")
 
     choices = field_choices(payload.get("field_choices"))
     merge_id = bounded_text(payload.get("merge_id") or command_id, "client_reference")
@@ -50,15 +68,22 @@ def _prepare_duplicate_merge(db: Session, actor: Actor, payload: dict[str, Any],
         "notes": move_notes(db, actor, primary, duplicate),
         "groups": move_group_memberships(db, actor, primary, duplicate),
         "relationships": move_relationships(db, actor, primary, duplicate),
+        "governed_records": move_governed_records(db, actor, primary, duplicate),
     }
     return primary, duplicate, choices, merge_id, moved
 
 
-def _merged_primary_attrs(primary: Any, duplicate: Any, choices: dict[str, str], merge_id: str, moved: dict[str, list[Any]]) -> dict[str, Any]:
+def _merged_primary_attrs(
+    primary: Any,
+    duplicate: Any,
+    choices: dict[str, str],
+    merge_id: str,
+    moved: dict[str, list[Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
     primary_attrs_before = loads(primary.attrs_json, {})
     duplicate_attrs_before = loads(duplicate.attrs_json, {})
     primary_attrs = merged_attrs(primary, duplicate, choices)
-    record_merge_history(
+    snapshot = record_merge_history(
         primary_attrs,
         merge_id=merge_id,
         primary=primary,
@@ -69,8 +94,9 @@ def _merged_primary_attrs(primary: Any, duplicate: Any, choices: dict[str, str],
         notes=moved["notes"],
         groups=moved["groups"],
         relationships=moved["relationships"],
+        governed_records=moved["governed_records"],
     )
-    return primary_attrs
+    return primary_attrs, snapshot
 
 
 def _apply_duplicate_merge_state(primary: Any, duplicate: Any, primary_attrs: dict[str, Any]) -> None:
@@ -120,15 +146,17 @@ def cmd_rollback_duplicate_merge(db: Session, actor: Actor, payload: dict[str, A
     duplicate = _party(db, actor, bounded_text(payload.get("duplicate_party_id"), "party_id"), "duplicate_party_id")
     merge_id = bounded_text(payload.get("merge_id"), "client_reference")
     primary_attrs = loads(primary.attrs_json, {})
-    snapshot = merge_snapshot(primary_attrs, primary.id, duplicate.id, merge_id)
+    snapshot = merge_snapshot(db, actor, primary.id, duplicate.id, merge_id)
     if not snapshot:
         raise ValueError("merge history not found for the selected contacts")
+    assert_merge_state_unchanged(db, actor, primary, duplicate, snapshot)
 
     rollback_notes(db, actor, primary, duplicate, snapshot.get("notes", []))
     rollback_groups(db, actor, primary, duplicate, snapshot.get("groups", []))
     rollback_relationships(db, actor, snapshot.get("relationships", []))
+    rollback_governed_records(db, actor, primary, duplicate, snapshot.get("governed_records", {}))
     restore_primary_merge_attrs(primary_attrs, snapshot)
-    mark_snapshot_rolled_back(primary_attrs, snapshot, command_id)
+    mark_snapshot_rolled_back(primary_attrs, snapshot)
 
     duplicate.attrs_json = dumps(snapshot.get("duplicate_attrs_before") or {})
     duplicate.status = snapshot.get("duplicate_status_before") or "active"
@@ -136,6 +164,7 @@ def cmd_rollback_duplicate_merge(db: Session, actor: Actor, payload: dict[str, A
     duplicate.archived_at = datetime_or_none(snapshot.get("duplicate_archived_at_before"))
     primary.review_state = snapshot.get("primary_review_state_before") or primary.review_state
     primary.attrs_json = dumps(primary_attrs)
+    _set_candidate_state(db, actor, primary.id, duplicate.id, "open")
     touch_party(primary)
     touch_party(duplicate)
     db.flush()
@@ -152,3 +181,19 @@ def cmd_rollback_duplicate_merge(db: Session, actor: Actor, payload: dict[str, A
         "merge_id": snapshot.get("merge_id"),
     })
     return result
+
+
+def _set_candidate_state(db: Session, actor: Actor, left_id: str, right_id: str, status: str) -> None:
+    candidate = db.scalar(select(ContactDuplicateCandidate).where(
+        ContactDuplicateCandidate.organization_id == actor.organization_id,
+        or_(
+            (ContactDuplicateCandidate.left_party_id == left_id) & (ContactDuplicateCandidate.right_party_id == right_id),
+            (ContactDuplicateCandidate.left_party_id == right_id) & (ContactDuplicateCandidate.right_party_id == left_id),
+        ),
+    ))
+    if not candidate:
+        return
+    candidate.status = status
+    candidate.resolved_by_user_id = actor.user_id if status != "open" else None
+    candidate.resolved_at = utcnow() if status != "open" else None
+    candidate.updated_at = utcnow()

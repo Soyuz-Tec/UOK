@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from .command_support import _emit_event
@@ -23,6 +23,12 @@ RULE_LABELS = {
     "party_type": "Type",
     "review_state": "Review",
     "source": "Source",
+}
+COMPANY_RELATIONSHIP_PRIORITY = {
+    "works_for": 0,
+    "primary_contact": 1,
+    "supplier_contact": 2,
+    "customer": 3,
 }
 
 
@@ -51,8 +57,15 @@ def smart_group_members(db: Session, actor: Actor, rule: str) -> dict[str, list[
         Party.organization_id == actor.organization_id,
         Party.status == "active",
     )).all()
+    linked_organizations = relationship_organization_values(db, actor, parties) if rule == "organization" else {}
     for party in parties:
-        value = smart_group_value(db, actor, rule, party)
+        if rule == "organization" and party.party_type != "organization":
+            attrs = loads(party.attrs_json, {})
+            value = linked_organizations.get(party.id) or clean_group_value(
+                attrs.get("organization_name") or attrs.get("company_name")
+            )
+        else:
+            value = smart_group_value(db, actor, rule, party)
         if value and party.id not in {existing.id for existing in buckets[value]}:
             buckets[value].append(party)
     return buckets
@@ -76,21 +89,49 @@ def smart_group_value(db: Session, actor: Actor, rule: str, party: Party) -> str
 def organization_value(db: Session, actor: Actor, party: Party, attrs: dict[str, Any]) -> str:
     if party.party_type == "organization":
         return clean_group_value(party.display_name)
+    relationship_value = relationship_organization_value(db, actor, party)
     local_value = clean_group_value(attrs.get("organization_name") or attrs.get("company_name"))
-    return local_value or relationship_organization_value(db, actor, party)
+    return relationship_value or local_value
 
 
 def relationship_organization_value(db: Session, actor: Actor, party: Party) -> str:
-    relationship = db.scalar(select(PartyRelationship).where(
-        PartyRelationship.organization_id == actor.organization_id,
-        PartyRelationship.from_party_id == party.id,
-    ).order_by(PartyRelationship.created_at.asc()))
-    if not relationship:
-        return ""
-    organization = db.get(Party, relationship.to_party_id)
-    if not organization or organization.organization_id != actor.organization_id or organization.party_type != "organization":
-        return ""
-    return clean_group_value(organization.display_name)
+    return relationship_organization_values(db, actor, [party]).get(party.id, "")
+
+
+def relationship_organization_values(db: Session, actor: Actor, parties: list[Party]) -> dict[str, str]:
+    party_ids = [party.id for party in parties if party.party_type != "organization"]
+    if not party_ids:
+        return {}
+    rows = db.execute(
+        select(PartyRelationship, Party)
+        .join(
+            Party,
+            and_(
+                Party.id == PartyRelationship.to_party_id,
+                Party.organization_id == PartyRelationship.organization_id,
+            ),
+        )
+        .where(
+            PartyRelationship.organization_id == actor.organization_id,
+            PartyRelationship.from_party_id.in_(party_ids),
+            PartyRelationship.relationship_type.in_(tuple(COMPANY_RELATIONSHIP_PRIORITY)),
+            Party.party_type == "organization",
+            Party.status == "active",
+        )
+    ).all()
+    candidates: dict[str, list[tuple[PartyRelationship, Party]]] = defaultdict(list)
+    for relationship, organization in rows:
+        candidates[relationship.from_party_id].append((relationship, organization))
+    result: dict[str, str] = {}
+    for party_id, party_candidates in candidates.items():
+        _relationship, organization = min(party_candidates, key=lambda row: (
+            COMPANY_RELATIONSHIP_PRIORITY[row[0].relationship_type],
+            row[0].created_at.isoformat(),
+            row[0].id,
+            row[1].id,
+        ))
+        result[party_id] = clean_group_value(organization.display_name)
+    return result
 
 
 def country_value(value: Any) -> str:
@@ -101,8 +142,13 @@ def country_value(value: Any) -> str:
     return clean_group_value(parts[-1] if parts else "")
 
 
-def smart_rule_group(db: Session, actor: Actor, rule: str, value: str) -> ContactGroup:
-    existing = existing_smart_rule_group(db, actor, rule, value)
+def smart_rule_group(
+    db: Session,
+    actor: Actor,
+    rule: str,
+    value: str,
+    existing: ContactGroup | None,
+) -> ContactGroup:
     base_name = smart_group_name(rule, value)
     name = available_group_name(db, actor, base_name, value, existing.id if existing else None)
     description = f"Contacts grouped automatically by {RULE_LABELS[rule].lower()}."
@@ -114,20 +160,36 @@ def smart_rule_group(db: Session, actor: Actor, rule: str, value: str) -> Contac
 
 def update_smart_rule_group(db: Session, actor: Actor, group: ContactGroup, name: str, description: str, attrs: dict[str, str], rule: str, value: str) -> ContactGroup:
     previous_name = group.name
+    changed_fields: list[str] = []
+    restored = False
     if group.status == "archived":
         group.status = "active"
         group.archived_at = None
-    group.name = name
-    group.description = description
-    group.kind = "smart_rule"
-    group.attrs_json = dumps(attrs)
-    group.updated_at = utcnow()
-    if previous_name != group.name:
+        restored = True
+    attrs_json = dumps(attrs)
+    for field, field_value in (
+        ("name", name),
+        ("description", description),
+        ("kind", "smart_rule"),
+        ("attrs_json", attrs_json),
+    ):
+        if getattr(group, field) != field_value:
+            setattr(group, field, field_value)
+            changed_fields.append(field)
+    if restored or changed_fields:
+        group.updated_at = utcnow()
+    if restored:
+        _emit_event(db, actor, "ContactGroupRestored", "ContactGroup", group.id, {
+            "name": group.name,
+            "generated": True,
+        })
+    if changed_fields:
         _emit_event(db, actor, "ContactGroupUpdated", "ContactGroup", group.id, {
             "name": group.name,
             "previous_name": previous_name,
             "rule": rule,
             "value": value,
+            "changed_fields": changed_fields,
         })
     return group
 
@@ -152,15 +214,24 @@ def create_smart_rule_group(db: Session, actor: Actor, name: str, description: s
 
 
 def existing_smart_rule_group(db: Session, actor: Actor, rule: str, value: str) -> ContactGroup | None:
+    for group in generated_smart_rule_groups(db, actor, rule):
+        attrs = loads(group.attrs_json, {})
+        if attrs.get("value") == value:
+            return group
+    return None
+
+
+def generated_smart_rule_groups(db: Session, actor: Actor, rule: str) -> list[ContactGroup]:
     groups = db.scalars(select(ContactGroup).where(
         ContactGroup.organization_id == actor.organization_id,
         ContactGroup.kind == "smart_rule",
-    )).all()
-    for group in groups:
-        attrs = loads(group.attrs_json, {})
-        if attrs.get("generated_by") == "smart_rule" and attrs.get("rule") == rule and attrs.get("value") == value:
-            return group
-    return None
+    ).order_by(ContactGroup.created_at.asc(), ContactGroup.id.asc())).all()
+    return [
+        group
+        for group in groups
+        if (attrs := loads(group.attrs_json, {})).get("generated_by") == "smart_rule"
+        and attrs.get("rule") == rule
+    ]
 
 
 def smart_group_name(rule: str, value: str) -> str:

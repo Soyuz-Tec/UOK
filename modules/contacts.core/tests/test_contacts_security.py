@@ -34,6 +34,16 @@ def test_contact_visibility_metadata_is_enforced_on_reads(client: TestClient) ->
     assert private_contact.status_code == 200, private_contact.text
     private_contact_id = private_contact.json()["result"]["contact_id"]
 
+    team = command(
+        client,
+        ops,
+        "CreateContactTeam",
+        {"name": f"Security Team {suffix}"},
+        f"uok-contact-team-{suffix}",
+    )
+    assert team.status_code == 200, team.text
+    team_id = team.json()["result"]["id"]
+
     team_contact = command(
         client,
         ops,
@@ -41,7 +51,7 @@ def test_contact_visibility_metadata_is_enforced_on_reads(client: TestClient) ->
         {
             "display_name": f"Team Contact {suffix}",
             "owner_user_id": trader_user_id,
-            "team_id": f"team-{suffix}",
+            "team_id": team_id,
             "visibility_scope": "team",
         },
         f"uok-team-contact-{suffix}",

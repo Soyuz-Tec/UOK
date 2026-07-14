@@ -51,4 +51,22 @@ function Invoke-UokContactsCandidateGroupScenario {
     if ($regrouped.result.added_count -lt 1) {
         throw "Contact group membership re-add failed: $($regrouped | ConvertTo-Json -Depth 20)"
     }
+
+    $cleanupMembership = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "RemoveContactFromGroup"
+        payload = @{ group_id = $groupId; party_id = $ContactId }
+        idempotency_key = "uok-contact-group-membership-cleanup-$Stamp"
+    }
+    if ($cleanupMembership.result.removed_count -lt 1) {
+        throw "Contact group membership cleanup failed: $($cleanupMembership | ConvertTo-Json -Depth 20)"
+    }
+
+    $archivedGroup = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "ArchiveContactGroup"
+        payload = @{ group_id = $groupId }
+        idempotency_key = "uok-contact-group-cleanup-$Stamp"
+    }
+    if ($archivedGroup.result.status -ne "archived") {
+        throw "Contact group cleanup failed: $($archivedGroup | ConvertTo-Json -Depth 20)"
+    }
 }

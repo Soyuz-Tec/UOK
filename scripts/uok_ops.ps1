@@ -1,11 +1,15 @@
 param(
-    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "DatabaseCapacity", "PlanningReleaseReadiness", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
+    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "DatabaseCapacity", "PlanningReleaseReadiness", "ContactsVerifierGroupCleanup", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
     [string]$Action = "Audit",
     [string]$BaseUrl = "http://127.0.0.1:18088",
     [string]$ProjectName = "uok",
     [string]$ComposeFile = "deploy\compose-local-18088.yaml",
     [string]$BackupPath = "",
     [switch]$ConfirmRestore,
+    [string]$ContactsCleanupUsername = "ops",
+    [string]$ContactsCleanupPlanPath = "",
+    [switch]$ExecuteContactsCleanup,
+    [switch]$ConfirmContactsCleanup,
     [int]$PullRequestNumber = 0,
     [switch]$WatchChecks,
     [string]$IncidentReason = "manual ASUH test",
@@ -43,6 +47,7 @@ function Invoke-UokHealth {
 }
 
 . (Join-Path $PSScriptRoot "uok_db_ops.ps1")
+. (Join-Path $PSScriptRoot "uok_contacts_cleanup_ops.ps1")
 . (Join-Path $PSScriptRoot "uok_planning_release_ops.ps1")
 
 function Test-UokSourceSize {
@@ -268,6 +273,7 @@ switch ($Action) {
     "Health" { Invoke-UokHealth }
     "DatabaseCapacity" { Invoke-UokDatabaseCapacity }
     "PlanningReleaseReadiness" { Invoke-UokPlanningReleaseReadiness }
+    "ContactsVerifierGroupCleanup" { Invoke-UokContactsVerifierGroupCleanup }
     "BackupDb" { Invoke-UokBackupDb }
     "RestoreDb" { Invoke-UokRestoreDb }
     "AsuhTest" { Invoke-UokAsuhTest }

@@ -45,6 +45,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md` | Repeatable Planning backend/browser budgets, profiles, evidence, and rollback-only fixture rules | Planning scale threshold, benchmark profile, virtualization trigger, or performance evidence changes |
 | `docs/operations/UOK_PLANNING_RELEASE_READINESS.md` | Gate E production-like local health, candidate, scale, recovery, live-browser, and evidence profile | Planning release-readiness composition or evidence boundary changes |
 | `docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md` | Calendar Core deployment scope, controls, deferred adapters, and local verification boundary | Calendar deployment scope, security controls, adapter status, or verification changes |
+| `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md` | Contacts verifier-group dry run, exact empty/legacy membership evidence, recoverable membership removal and archive, backup, verification, and rollback | Contacts verifier cleanup criteria, execution controls, backup, archive, evidence, or rollback changes |
 | `docs/architecture/ADR-*` | Material architecture decisions | Boundary, runtime, data model, auth, deployment, framework, or major policy decisions change |
 | `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md` | Planning Gantt and UI proof dependency decision | Planning UI library, scheduling authority, or UI proof automation changes |
 | `docs/architecture/ADR-0003-planning-gate-a-stabilization.md` | Planning Gate A scheduling-correctness, write-safety, and evidence-maturity decision | Gate A scope, sequencing, evidence states, or closure requirements change |
@@ -71,6 +72,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0024-database-connection-pooling.md` | Bounded process-local pooling, capacity enforcement, telemetry, and evidence-gated deferral of PgBouncer | Database pooling ownership, capacity formula, connection topology, or PgBouncer activation conditions change |
 | `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md` | Minimal shared workspace command surface, common action vocabulary, and shared/module ownership split | Command grouping, shared labels, primary-action rules, low-frequency action placement, or exception policy changes |
 | `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md` | Calendar access, integrity, interoperability sequencing, and the separate appointments capability boundary | Calendar visibility, recurrence authority, free-busy disclosure, provider synchronization sequencing, or appointment ownership changes |
+| `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md` | Contacts system-of-record scope, first-class facts, consent, team access, purge, quality, and interoperability boundary | Contacts storage, privacy, authorization, import/export, dedupe, activity, custom fields, or provider adapter changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -119,6 +121,7 @@ Active policies are mandatory until replaced through an ADR or explicit policy u
 - `docs/operations/UOK_STANDARD_OPERATIONS.md`
 - `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - `docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md`
+- `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`
 - `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
 - `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`
 - `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md`
@@ -158,6 +161,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0024-database-connection-pooling.md`
 - `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`
 - `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md`
+- `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`

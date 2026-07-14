@@ -1,342 +1,163 @@
-# Contacts App Plan
+# Contacts Core Implementation Plan
 
 **Module:** `contacts.core`
 
 **Target candidate:** `UOK-3.1.0-alpha.3`
 
-**Status:** Active alpha module plan. Current implementation is a working Contacts CRM slice with module-owned backend behavior, module-owned tests, manifest-declared runtime surfaces, and a React workspace composed through the UOK frontend shell.
+**Status:** Active implementation and qualification plan. The 5 Groups Manager slices and 7 Contacts system slices are implemented in the current branch; production qualification is tracked separately and must be evidenced before promotion.
 
 **Source root:** `modules/contacts.core`
 
-## Purpose
+## Purpose And Authority
 
-`contacts.core` is the first optional UOK capability module. It provides reusable party, person, organization, note, relationship, group, review, duplicate-resolution, CSV import, and derived contact intelligence capabilities.
+`contacts.core` is UOK's optional, governed Party and Contacts system of record. It owns people, organizations, first-class contact facts, consent evidence, Contacts-specific team membership, relationships, groups, contact quality state, durable import evidence, duplicate candidates, saved views, contact activity, provider-neutral external identities, and custom-field definitions/values.
 
-The module must stay independently developable, installable, upgradable, disableable, uninstallable, maintainable, and portable without compromising the UOK runtime kernel. Contacts behavior belongs in `modules/contacts.core`; `src/uok` may expose compatibility facades and shared runtime services only.
+The module does not own messages, meetings, tasks, opportunities, or other engagement records. Calendar, Communications, Planning, and future CRM capabilities retain their own records and expose only actor-authorized references or summaries through typed boundaries.
+
+The accepted architecture decision is `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`.
 
 ## Current Ownership
 
-| Surface | Current owner |
+| Surface | Owner |
 |---|---|
-| Manifest and lifecycle contract | `modules/contacts.core/manifest.yaml` |
-| Backend implementation | `modules/contacts.core/backend/uok_contacts_core` |
-| Module migrations | `modules/contacts.core/migrations` |
-| Module tests and verifier | `modules/contacts.core/tests` and `modules/contacts.core/verify` |
-| Executable UI and local CSS | `modules/contacts.core/web/src` |
+| Manifest/lifecycle contract | `modules/contacts.core/manifest.yaml` |
+| Backend, commands, API, access policy, ORM | `modules/contacts.core/backend/uok_contacts_core` |
+| Schema changes | `modules/contacts.core/migrations` |
+| Backend behavior tests | `modules/contacts.core/tests` |
+| Candidate verifier/evidence | `modules/contacts.core/verify` |
+| Production React/CSS | `modules/contacts.core/web/src` |
 | Frontend tests | `modules/contacts.core/tests/web` |
-| Frontend composition | `web/src/features/modules/moduleSurfaceRegistry.tsx` |
-
-The Contacts frontend is module-owned and compiled into the shared UOK React build through its validated manifest entry and generated catalog. Shared React dependencies, generated API contracts, product-neutral primitives, and shell composition remain under the root `web` package.
-
-## Manifest Contract
-
-The module currently declares these runtime surfaces:
-
-- API router: `uok_contacts_core.api:router`
-- command handlers: `uok_contacts_core.commands:command_handlers`
-- command permissions: `uok_contacts_core.commands:command_permissions`
-- role grants: `uok_contacts_core.policy:role_grants`
-- dashboard provider: `uok_contacts_core.reports:dashboard_counts`
-- evidence provider: `uok_contacts_core.reports:evidence`
-- model exports: `uok_contacts_core.models:owned_models`
-- candidate verifier: `modules/contacts.core/verify/UokCandidateContacts.ps1`
+| Compile-time shell composition | validated manifest plus generated module-surface catalog |
 
-The command bus must discover Contacts commands through the manifest provider. Contacts permission atoms must not be hardcoded in `src/uok/security.py`.
-
-## Implemented Capability Baseline
-
-The alpha.3 baseline currently includes:
-
-- install, upgrade, disable, enable, and uninstall lifecycle behavior;
-- party records for people and organizations;
-- create, update, archive, restore, admin purge, and read workflows;
-- role-aware read/write permissions;
-- ownership, visibility, and team-ready metadata;
-- private notes and unified activity timeline signals;
-- party relationships with editable and removable links;
-- persistent manual contact groups;
-- business-domain group generation from eligible business email domains;
-- smart-rule group generation by company, country, type, review state, and source;
-- CSV import batches with review-first imported records;
-- review queue and quality views;
-- duplicate detection, merge, and rollback;
-- derived business intelligence profiles;
-- shared contact signal helpers so quality, readiness, and profile derivation count facts consistently;
-- PostgreSQL-native search with Python fallback for compatibility paths;
-- List + Detail, Table, and Cards views;
-- saved search presets and user-saved searches;
-- shared resizable table column behavior;
-- shared user-configurable table column visibility for optional contact data points;
-- shared user-configurable List + Detail display-field visibility for compact identity lanes;
-- a shared contact field registry so List + Detail and Table views reuse the same field labels and value extraction;
-- one toolbar-level `Fields` menu that controls visible contact fields for the active view instead of separate `Columns` and `Display fields` menus in different locations;
-- the shared workspace command bar for one coherent search, paging, view, fields, and primary-create surface;
-- shared module-neutral pagination controls adapted with Contacts-specific accessible labels and record-range status;
-- local candidate verifier coverage.
+Contacts commands and permission atoms are discovered through the validated manifest. Product-specific Contacts behavior must not move into `src/uok` or the shared shell.
 
-## Domain Model
+## Modernization Implementation Ledger
 
-### Party
+"Implemented" means source, contracts, and focused tests for the slice are present. It does not mean all release gates have passed in every target environment.
 
-`Party` is the shared Contacts entity for people and organizations.
+### Groups Manager: 5 slices
 
-Required fields and concepts:
+| Slice | Implemented behavior | Primary evidence |
+|---|---|---|
+| 1. Persistent manual group lifecycle | Create, edit name/description, archive, restore, idempotent events | `group_commands.py`, `test_contacts_groups.py` |
+| 2. Safe contact membership lifecycle | Authorized add/remove, duplicate prevention, visible counts | `group_membership_commands.py`, `test_contacts_groups.py` |
+| 3. Governed smart/domain generation and exact reconciliation | Generated groups reject direct mutation, exactly reconcile active members, retire stale generated groups | `group_domain_*`, `group_smart_*`, domain/smart group tests |
+| 4. Aggregate/filter performance plus stale/empty hygiene | Bounded aggregate reads; manual/generated, empty, and archived filters; exact-evidence verifier cleanup | `group_read_model.py`, group tests, `scripts/uok_contacts_cleanup_ops.ps1` |
+| 5. Draggable capability-aware Groups Manager | Shared draggable popup, focus restoration, manual/generated governance, read-only capability behavior, localization/RTL | `ContactGroupsManager*`, `ContactsWorkspace.groupManager.test.tsx` |
 
-- `party_type`: `person` or `organization`
-- `display_name`
-- `given_name`, `family_name`, and `organization_name` where applicable
-- `status`: `active`, `archived`, or `purged`
-- `review_state`: `ready`, `needs_review`, `possible_duplicate`, or `incomplete`
-- `owner_user_id`
-- `visibility_scope`
-- `team_id`
-- `source`
-- `client_reference`
-- `sync_state`
-- timestamps for create, update, archive, and purge
+### Contacts System: 7 slices
 
-### Contact Facts
+| Slice | Implemented behavior | Primary evidence |
+|---|---|---|
+| 1. First-class facts | Multi-valued labelled facts, normalization, primary synchronization, source/confidence/verification provenance | `system_models.py`, `system_commands.py`, `test_contacts_system_of_record.py` |
+| 2. Privacy/consent/team authorization | Fail-closed team reads, append-only consent evidence, restricted export, anonymizing purge | `access.py`, `privacy_commands.py`, system-of-record/security tests |
+| 3. Guided import/export/bulk | CSV/vCard preview, explicit execution, durable row outcomes, bulk commands and batch evidence | `guided_import.py`, `contact_exchange.py`, system commands/tests |
+| 4. Global quality/dedupe/rollback | Persisted duplicate candidates, normalized blocking, resolution state, merge/import recovery | duplicate modules, system read model, focused tests |
+| 5. Saved views plus global relationship productivity | Actor-scoped saved views and actor-authorized relationship lookup | `system_commands.py`, `system_read_model.py`, focused tests |
+| 6. Genuine activity plus truthful interoperability boundary | Server-backed activity, vCard exchange, provider-neutral external identities; no false live-provider claim | command support, exchange/system modules, focused tests |
+| 7. Custom-field extensibility plus production qualification | Governed definitions/values are implemented; full release proof remains an explicit gate | system models/commands, migration 003, qualification checklist below |
 
-The alpha.3 release exposes typed API fields for email, phone, website, address, birthday, important date, instant message, tags, consent status, allowed use, confidence level, title, and note-backed context. Contacts normalizes valid phone numbers to E.164 at the module command boundary while preserving bounded non-normalizable alpha, placeholder, or imported values for review.
+## Data And Integrity Rules
 
-For alpha.3, many repeated or optional contact facts may remain in module-owned JSON attributes if the API and UI expose stable typed fields. Future releases should split repeated values into dedicated tables when multiple values, consent history, validation, sync, or dedupe require stronger relational behavior.
+- `Party` is the canonical person/organization identity. Archive is recoverable; purge irreversibly anonymizes contact-owned PII while retaining a non-PII tombstone and platform audit evidence.
+- `PartyFact` is the authoritative multi-valued contact-fact model. A primary compatible fact updates the legacy flat projection during migration.
+- Consent is append-only evidence by purpose and channel. Prior evidence is not overwritten. Export excludes a contact for an `any` or unmappable denial and redacts channel-specific email, phone/SMS, or postal facts.
+- Contacts team access fails closed. A team-scoped record is visible only to an active team member, its owner, or an actor with explicit organization-wide Contacts authority.
+- Manual groups are user-managed. Business-domain and smart-rule groups are generated read models whose membership is reconciled exactly by their generator.
+- Duplicate candidates are persisted and scored; list reads must not run repeated quadratic comparisons.
+- Import preview does not write contacts. Execution records durable row outcomes and a rollback boundary; rollback applies rows in reverse order and refuses to overwrite intervening edits.
+- Custom-field definitions and values stay organization-scoped and Contacts-owned.
+- Relationships cannot self-link and duplicate typed links are rejected by module-owned constraints.
 
-### Relationships
+Migration `003_contacts_core_system_of_record.sql` adds the governed tables and indexes without dropping the compatibility projection. See `modules/contacts.core/migrations/README.md` for rollout and rollback.
 
-Relationships connect two parties with explicit labels. Supported labels include:
+## API And Command Scope
 
-- `works_for`
-- `primary_contact`
-- `billing_contact`
-- `decision_maker`
-- `finance_contact`
-- `operations_contact`
-- `advisor`
-- `supplier`
-- `supplier_contact`
-- `customer`
-
-Relationship rows must show the related party name, type, and available email. Users must be able to edit the relationship type and unlink the relationship without leaving the workspace.
-
-### Notes And Activity
-
-Notes are private internal timeline entries, separate from editable party facts.
-
-The Activity pane should answer why the contact exists. It should combine:
-
-- import/source context;
-- human notes;
-- relationship links;
-- group membership signals;
-- duplicate candidates;
-- duplicate merge history.
+The module exposes actor-authorized reads for parties, groups, facts, consent history, teams, imports, duplicates, saved views, activity, relationships, external identities, and custom fields. Writes use the audited UOK command bus for:
 
-Create, update, archive, restore, purge, note, relationship, group, import, merge, and rollback commands must emit actor-stamped events.
+- party create/update/archive/restore/purge;
+- manual group create/update/archive/restore and membership changes;
+- governed domain/smart generation;
+- fact save/remove and consent recording;
+- team lifecycle and membership;
+- CSV/vCard import preview/execution and import rollback;
+- duplicate refresh/resolution, merge, and rollback;
+- saved-view save/delete;
+- bulk update/export policy enforcement;
+- external-identity links and custom-field definition/value changes.
 
-### Groups
+Public contracts must remain OpenAPI-compatible and generated TypeScript artifacts must match the rendered API.
 
-Groups are persistent contact working sets owned by `contacts.core`.
+## Permission And Privacy Scope
 
-Group rules:
+The manifest separates routine read/manage permissions from restore, purge, import, bulk, consent, customization, dedupe, export, sync, and team administration. Every endpoint and command must enforce organization isolation and actor visibility; UI capability hiding is not an authorization control.
 
-- Groups do not replace relationships.
-- Groups do not duplicate contact facts.
-- Manual, business-domain, and smart-rule groups are normal `ContactGroup` records.
-- Group membership is stored through `ContactGroupMember`.
-- Group membership is many-to-many: one contact can belong to multiple groups, and one group can contain multiple contacts. The same contact must not be duplicated inside the same group.
-- Group schema changes stay under `modules/contacts.core/migrations`.
+Bulk and export paths must honor consent and explicit permissions. Purge must remove contact-owned PII from facts, notes, relationships, memberships, consent details, custom values, external identities, and unresolved import/duplicate references while redacting affected command/event payloads.
 
-Business-domain groups are generated from eligible business email domains. Their stable identity is the email domain, but their display name should prefer the best company signal: linked organization first, organization record second, readable domain fallback last. Personal, free-mail, test, and demo domains must be excluded.
+## Workspace Scope
 
-Smart-rule groups are generated from existing facts. Alpha.3 rules are company, country, contact type, review state, and source. Company grouping should use linked organization relationships before inline organization fields.
+Contacts uses the shared minimal workspace command surface for search, paging, view selection, fields, and New Contact. List + Detail, Table, and Cards keep distinct purposes. Search options own filters, saved views, sort, and sectioning.
 
-### Import Batches
+The Groups Manager replaces the redundant persistent rail. It is a shared draggable popup with:
 
-CSV import creates an import batch and row-level results. Imported rows should enter `needs_review`, `possible_duplicate`, or `incomplete` states when trust is not high enough for normal use.
+- manual/generated/empty/archived filters;
+- create, edit, archive, restore, and membership operations for authorized users;
+- a clear explanation that generated groups are reconciled by UOK;
+- read-only rendering when the actor lacks management capability;
+- focus restoration, keyboard operation, touch targets, localization/RTL, and narrow-layout behavior.
 
-Automated marketing contacts should be rejected or quarantined before they pollute normal contact records.
+Contacts data tools expose facts, privacy/consent, team assignment, guided import/export/bulk, quality/dedupe/rollback, saved views/activity/relationships, interoperability state, and custom fields without claiming unavailable providers.
 
-### Duplicate Merge
+## Interoperability Boundary
 
-Duplicate merge is a recoverable Contacts command, not a destructive delete.
+vCard is the implemented exchange format. External identities, cursors, and conflict state form a provider-neutral adapter boundary. Google, Microsoft, CardDAV, or other two-way synchronization remains unavailable until a separate adapter provides credentials, tenant consent, deletion semantics, rate-limit/retry handling, conflict policy, observability, and qualification evidence. The UI must distinguish supported format, configured adapter, and successful synchronization.
 
-The selected primary party remains authoritative. The duplicate is archived and annotated with merge metadata. Missing facts may be filled from the duplicate; explicit user field choices override the default. Notes, group memberships, and relationships move to the primary party.
+## Operations And Hygiene
 
-Each merge stores a rollback snapshot in module-owned attributes. `RollbackDuplicateMerge` restores the archived duplicate, moves owned evidence back where possible, marks the snapshot as rolled back, and emits recovery evidence.
+New candidate verifier runs remove temporary membership and archive their temporary group. Historical empty verifier groups can be identified only through the dry-run-first `ContactsVerifierGroupCleanup` operation. It requires exact name/description, command-log, event, API visibility, and zero-member evidence; execution requires a reviewed plan, an existing backup, and two explicit switches. It archives and never deletes.
 
-## API Scope
+See `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`.
 
-Current alpha.3 API scope:
+## Qualification Checklist
 
-- list/search parties;
-- read party detail;
-- create/update/archive/restore/purge party;
-- list/add notes;
-- list/link/update/remove relationships;
-- list/create/update/archive groups;
-- add/remove contacts from groups;
-- filter parties by group;
-- generate business-domain groups;
-- generate smart-rule groups;
-- import CSV rows;
-- list review queue;
-- read module readiness/evidence.
-
-Public contracts must remain OpenAPI-compatible and reflected in the generated TypeScript client.
-
-## UI Scope
-
-The Contacts workspace must stay clean, low-distraction, and aligned with the UOK UI policy and Contacts workspace minimal design plan.
-
-Current UI responsibilities:
-
-- support List + Detail, Table, and Cards views;
-- persist the user's last selected view;
-- keep search always available;
-- unify filters, saved searches, sort, and sectioning into one search surface;
-- compose search, paging, view selection, field visibility, and New Contact through the shared workspace command bar rather than a Contacts-only toolbar layout;
-- preserve Contacts-specific paging labels and range announcements while delegating paging interaction and responsive layout to the shared pagination primitive;
-- use `Group` only for persistent contact groups;
-- use `Section by` for result sectioning;
-- keep the group rail secondary and compact;
-- keep group destructive actions visually quiet until hover, focus, or narrow/touch layouts require explicit access;
-- support group creation, selection, archive, business-domain grouping, and smart grouping;
-- support add/remove group membership from contact detail;
-- support editable/removable relationship rows;
-- use a global workspace popup primitive for table/cards detail editing;
-- keep New Contact clean and independent from any previously selected contact;
-- keep table review workflows compact, with explicit row-level open-detail affordances in addition to row click and keyboard activation;
-- let users add or remove optional Table view data points without changing the default low-distraction view;
-- let users choose the compact List + Detail secondary display fields while keeping the contact name as the fixed primary identity;
-- expose active-view field visibility through one consistent toolbar-level `Fields` control; avoid duplicate user-facing names such as `Columns` and `Display fields` for the same visibility workflow;
-- use shared record-detail primitives for profile headers, fact rows, and tags so detail surfaces stay consistent, reusable, and print-ready;
-- keep contact detail profile pages print-friendly by preserving semantic facts and labels while hiding interactive controls in print media;
-- separate user-managed groups from generated system labels in contact detail so users can manage working groups without confusing them with derived metadata;
-- keep create/edit forms progressive, with essentials first and optional addable sections;
-- keep validation messages specific and near the affected fields;
-- support light, dark, and system appearance through design tokens.
-
-The three views have distinct purposes:
-
-- List + Detail: default low-distraction contact workspace.
-- Table: dense review and correction workflow with resizable columns.
-- Cards: recognition-focused browsing.
-
-List + Detail rows must stay selection-focused. They show the contact name and, only when useful, a compact identity cue such as linked/inline organization or title. On desktop, the compact identity cue belongs in a secondary aligned row column with a lightweight sticky `Organization` header rather than directly below the name. They must not force generic `Person` or `Organization` subtitles, and they must not repeat email, phone, website, address, or other full contact facts that already belong in the detail inspector. Table view remains the comparison surface for contact-fact columns, and Cards view remains the richer preview surface.
-
-## Permission Scope
-
-Initial permission behavior:
-
-- `platform_admin`: full module and record management, restore, purge, reassignment.
-- `ops_manager`: create, edit, archive, restore permitted records, import CSV, manage notes, manage relationships, and manage groups.
-- `viewer`, `trader`, `finance_manager`: read permitted records.
-
-Ownership and team fields must remain in the data/API shape even while full team enforcement matures.
-
-## Search And Review Scope
-
-Search is layered:
-
-- default simple search for normal users;
-- saved views for common workflows;
-- filters for status, review, type, source, quality, and group;
-- sort and direction controls;
-- result sectioning;
-- PostgreSQL-native text search in the PostgreSQL runtime;
-- Python fallback for SQLite tests and local compatibility paths.
-
-Review workflows should guide users rather than expose raw technical state. The quality workspace should surface:
-
-- possible duplicates;
-- email-only records;
-- placeholder names;
-- missing company context;
-- missing purpose notes;
-- imported review records;
-- incomplete records;
-- ready records.
-
-## Evidence And Dashboard Scope
-
-Contacts dashboard and baseline evidence are module-owned providers:
-
-- `uok_contacts_core.reports:dashboard_counts`
-- `uok_contacts_core.reports:evidence`
-
-Evidence must prove:
-
-- module lifecycle works;
-- command permissions work;
-- contact CRUD works;
-- note, relationship, group, import, duplicate, and review workflows work;
-- group tables and memberships exist;
-- group-filtered contacts can be read through the API;
-- candidate verifier scenario passes.
-
-## Current Verification
-
-Before accepting Contacts work, run the relevant narrow test and then the broader UOK gate before publication:
+Before promotion, record the exact result or explicit skip reason for:
 
 ```powershell
 python -m compileall -q src modules tests conftest.py
 python -m pytest modules/contacts.core/tests -q
+python -m pytest tests/test_module_model_registry.py tests/test_module_physical_boundaries.py -q
 npm --prefix web test
+npm --prefix web run check:contracts
 npm --prefix web run build:static
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```
 
-For quality and source-size work:
+For runtime/UI changes, rebuild the PostgreSQL candidate and verify authenticated browser/API behavior, console cleanliness, keyboard/focus, 320 px, 200% text, light/dark/system appearance, RTL, touch targets, module lifecycle, candidate cleanup, backup, and rollback. Source presence alone is not production proof.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action EngineeringEvidence
-```
+## Residual Backlog
 
-Browser verification must confirm:
+1. Implement and qualify individual provider adapters only when real credentials and provider policies are available.
+2. Add production-environment load, recovery, retention, and observability evidence before any production-ready claim.
+3. Narrow the transitional Workbench host compatibility contract without moving Contacts behavior into the shell.
+4. Continue additive module-owned migrations and remove the legacy primary projection only through a separately accepted migration decision.
 
-- title and primary shell labels use `UOK`;
-- Contacts exposes List + Detail, Table, and Cards;
-- groups can be selected, created, generated, archived, and used to filter records;
-- contact detail supports group and relationship operations without leaving the workspace;
-- Review Queue and quality workflows are understandable;
-- no product-specific labels appear;
-- no console errors appear.
+## Non-Goals
 
-## Next Backlog
-
-Near-term development should prioritize:
-
-1. Improve guided review/import/duplicate workflows so each queue has clear next actions.
-2. Add richer contact fact handling for multiple emails, phones, addresses, URLs, and labels.
-3. Add stronger privacy and consent workflows around allowed use, source, confidence, and audit history.
-4. Improve group management with rename, description edit, membership review, and clearer generated/manual distinction.
-5. Add contact activity filtering and clearer source provenance.
-6. Add optional vCard import/export under explicit permission rules.
-7. Expand team/ownership enforcement beyond the current metadata foundation.
-8. Narrow the transitional Workbench host contract without moving Contacts behavior back into the shell.
-9. Keep module migrations under `modules/contacts.core/migrations` and avoid expanding the shared baseline for Contacts-only changes.
-
-## Non-Goals For Alpha.3
-
-- Full offline sync.
-- Bulk export for normal users.
-- External address book synchronization.
-- Runtime-loaded frontend modules from YAML.
-- Product-specific CRM, cargo, accounting, or industry workflows.
-- Replacing UOK shared auth, command bus, or module lifecycle behavior.
+- Owning engagement records from Calendar, Communications, Planning, or CRM modules.
+- Runtime-loading React code from manifest YAML.
+- Unconsented bulk export or implicit marketing activation.
+- Destructive deletion of verifier groups or governance/audit evidence.
+- Claiming live address-book synchronization from a vCard formatter or provider-neutral identity record.
 
 ## Source Basis
 
-This plan is based on:
-
-- UOK architecture: `docs/ARCHITECTURE.md`
-- UOK module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
-- UOK UI design policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
-- Contacts workspace design phases: `docs/design/UOK_CONTACTS_WORKSPACE_MINIMAL_PHASES.md`
-- Contacts business intelligence profile guidance: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
-- Apple Contacts documentation: https://developer.apple.com/documentation/contacts
-- Apple Human Interface Guidelines: https://developer.apple.com/design/human-interface-guidelines/
-- Apple layout guidance: https://developer.apple.com/design/human-interface-guidelines/layout-and-organization
-- Apple lists and tables guidance: https://developer.apple.com/design/human-interface-guidelines/lists-and-tables
-- Apple split views guidance: https://developer.apple.com/design/human-interface-guidelines/split-views
+- `docs/ARCHITECTURE.md`
+- `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
+- `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
+- `docs/design/UOK_UI_DESIGN_POLICY.md`
+- `docs/design/UOK_CONTACTS_WORKSPACE_MINIMAL_PHASES.md`
+- `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`
+- `modules/contacts.core/manifest.yaml`
+- `modules/contacts.core/migrations/README.md`
+- `modules/contacts.core/verify/README.md`

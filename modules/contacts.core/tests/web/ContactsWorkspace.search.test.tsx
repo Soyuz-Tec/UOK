@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { contact, duplicateContact, importedContact, renderContactsWorkspace, resetContactsWorkspaceTest } from "./ContactsWorkspace.testUtils";
 
@@ -29,7 +29,28 @@ describe("ContactsWorkspace search and paging", () => {
 
     fireEvent.change(screen.getByLabelText("Saved search name"), { target: { value: "Source review" } });
     fireEvent.click(screen.getByRole("button", { name: "Save search" }));
-    expect(screen.getByRole("button", { name: "Apply Source review" })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Apply Source review" })).toBeInTheDocument();
+    expect(JSON.parse(localStorage.getItem("uok_contacts_saved_search_views") || "[]")).toEqual([]);
+    const savedRequest = vi.mocked(fetch).mock.calls.find(([input, options]) =>
+      String(input) === "/api/contacts/saved-views" && options?.method === "POST"
+    );
+    const savedPayload = JSON.parse(String(savedRequest?.[1]?.body));
+    expect(savedPayload.query).toEqual({
+      query: "Example",
+      filters: {
+        "contact-group": "all",
+        quality: "all",
+        review: "all",
+        source: "all",
+        status: "all",
+        type: "all"
+      },
+      groupBy: "source",
+      sortBy: "updated_at",
+      sortDir: "desc"
+    });
+    expect(savedPayload.query).not.toHaveProperty("id");
+    expect(savedPayload.query).not.toHaveProperty("name");
 
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
     await expectSearchOptionsClosedWithFocus();
@@ -124,6 +145,36 @@ describe("ContactsWorkspace search and paging", () => {
     fireEvent.click(screen.getByRole("button", { name: "Apply Duplicate risk" }));
     expect(screen.getByLabelText("Active search refinements")).toHaveTextContent("Quality: Duplicate risk");
   });
+
+  it("loads governed saved views from the server and only deletes owned views", async () => {
+    let savedViews = [
+      savedViewRow("shared-view", "Shared follow-up", false),
+      savedViewRow("personal-view", "My follow-up", true)
+    ];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, options: RequestInit = {}) => {
+      const path = String(input);
+      const method = options.method || "GET";
+      if (path === "/api/contacts/saved-views" && method === "GET") return response(savedViews);
+      if (path === "/api/contacts/saved-views/personal-view" && method === "DELETE") {
+        savedViews = savedViews.filter((view) => view.id !== "personal-view");
+        return response({ deleted: true });
+      }
+      return response({ detail: "Unexpected request" }, 500);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderContactsWorkspace("table", [contact]);
+    openSearchOptions();
+
+    expect(await screen.findByRole("button", { name: "Apply Shared follow-up" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Delete Shared follow-up" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Delete My follow-up" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/contacts/saved-views/personal-view",
+      expect.objectContaining({ method: "DELETE" })
+    ));
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Apply My follow-up" })).not.toBeInTheDocument());
+  });
 });
 
 function searchOptionsTrigger() {
@@ -143,4 +194,28 @@ async function expectSearchOptionsClosedWithFocus() {
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(trigger).toHaveFocus();
   });
+}
+
+function savedViewRow(id: string, name: string, canEdit: boolean) {
+  return {
+    id,
+    name,
+    can_edit: canEdit,
+    query: {
+      query: "follow-up",
+      filters: { status: "active" },
+      groupBy: "none",
+      sortBy: "updated_at",
+      sortDir: "desc"
+    }
+  };
+}
+
+function response(body: unknown, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: () => null },
+    json: vi.fn().mockResolvedValue(body)
+  } as unknown as Response;
 }

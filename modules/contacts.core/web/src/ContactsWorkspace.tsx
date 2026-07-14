@@ -6,7 +6,8 @@ import { Pane, WorkflowSplitView } from "@uok/shared/layout";
 import { WorkspaceEditorPopup } from "@uok/shared/overlays";
 import { CommandButton } from "@uok/shared/primitives";
 import { ContactDetailPanel } from "./ContactDetailPanel";
-import { ContactGroupsPanel } from "./ContactGroupsPanel";
+import { ContactDataToolsManager } from "./ContactDataToolsManager";
+import { ContactGroupsManager } from "./ContactGroupsManager";
 import { ContactQualityWorkspace } from "./ContactQualityWorkspace";
 import { ContactResultsPanel } from "./ContactResultsPanel";
 import { ContactsToolbar } from "./ContactsToolbar";
@@ -16,6 +17,9 @@ import { useContactFieldVisibility } from "./useContactFieldVisibility";
 export function ContactsWorkspace(props: ContactsWorkspaceProps) {
   const popupMode = props.contactsView === "table" || props.contactsView === "cards" || props.contactsView === "quality";
   const [detailPopupOpen, setDetailPopupOpen] = useState(false);
+  const [groupsManagerOpen, setGroupsManagerOpen] = useState(false);
+  const [dataToolsOpen, setDataToolsOpen] = useState(false);
+  const canManageGroups = props.currentUserRole === "platform_admin" || props.currentUserRole === "ops_manager";
 
   useEffect(() => {
     if (!popupMode) setDetailPopupOpen(false);
@@ -24,6 +28,13 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
   useEffect(() => {
     if (!props.selectedContact && !props.editing) setDetailPopupOpen(false);
   }, [props.editing, props.selectedContact]);
+
+  useEffect(() => {
+    if (!props.token || !props.operational) {
+      setGroupsManagerOpen(false);
+      setDataToolsOpen(false);
+    }
+  }, [props.operational, props.token]);
 
   const selectContact = useCallback((id: string) => {
     props.onSelect(id);
@@ -86,6 +97,7 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
   return (
     <section className={`contacts-workspace contacts-view-${props.contactsView}`} aria-label="Contacts">
       <ContactsToolbar
+        token={props.token}
         query={props.query}
         statusFilter={props.statusFilter}
         reviewFilter={props.reviewFilter}
@@ -119,21 +131,11 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
         onContactSortDirChange={props.onContactSortDirChange}
         onViewChange={changeView}
         onCreate={createContact}
+        onOpenGroupsManager={() => setGroupsManagerOpen(true)}
+        onOpenDataToolsManager={() => setDataToolsOpen(true)}
+        currentUserRole={props.currentUserRole}
       />
       <div className="contacts-workspace-body">
-        <ContactGroupsPanel
-          groups={props.contactGroups}
-          selectedGroupId={props.contactGroupId}
-          newGroupName={props.newGroupName}
-          onGroupChange={props.onContactGroupChange}
-          onNewGroupNameChange={props.onNewGroupNameChange}
-          onCreateGroup={props.onCreateGroup}
-          onGroupContactsByBusinessDomain={props.onGroupContactsByBusinessDomain}
-          onGroupContactsBySmartRules={props.onGroupContactsBySmartRules}
-          onArchiveGroup={props.onArchiveGroup}
-          domainGroupingBusy={props.busyAction === "GroupContactsByBusinessEmailDomain"}
-          smartGroupingBusy={props.busyAction === "GroupContactsBySmartRule"}
-        />
         <div className="contacts-workspace-main">
           {props.contactsView === "quality" ? (
             <ContactQualityWorkspace {...props} onOpenEditor={() => setDetailPopupOpen(true)} />
@@ -163,6 +165,26 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
       >
         <ContactDetailPanel {...props} onCreate={createContact} />
       </WorkspaceEditorPopup>
+      <ContactGroupsManager
+        open={groupsManagerOpen}
+        token={props.token}
+        canManage={canManageGroups}
+        onClose={() => setGroupsManagerOpen(false)}
+        onChanged={props.onRefreshContacts}
+        onGroupArchived={(groupId) => {
+          if (props.contactGroupId === groupId) props.onContactGroupChange("");
+        }}
+      />
+      <ContactDataToolsManager
+        open={dataToolsOpen}
+        token={props.token}
+        currentUserRole={props.currentUserRole}
+        contacts={props.contacts}
+        groups={props.contactGroups}
+        selectedContact={props.selectedContact}
+        onClose={() => setDataToolsOpen(false)}
+        onChanged={props.onRefreshContacts}
+      />
     </section>
   );
 }

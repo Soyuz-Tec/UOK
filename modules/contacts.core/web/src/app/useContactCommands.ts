@@ -12,7 +12,6 @@ export function useContactCommands({
   data,
   draft,
   noteText,
-  newGroupName,
   relationshipTarget,
   relationshipType,
   setContactDetailPane,
@@ -20,7 +19,6 @@ export function useContactCommands({
   setDraft,
   setEditing,
   setNoteText,
-  setNewGroupName,
   setRelationshipTarget
 }: {
   command: WorkbenchActions["command"];
@@ -28,7 +26,6 @@ export function useContactCommands({
   data: WorkbenchData;
   draft: ContactDraft;
   noteText: string;
-  newGroupName: string;
   relationshipTarget: string;
   relationshipType: string;
   setContactDetailPane: Dispatch<SetStateAction<ContactDetailPane>>;
@@ -36,7 +33,6 @@ export function useContactCommands({
   setDraft: Dispatch<SetStateAction<ContactDraft>>;
   setEditing: Dispatch<SetStateAction<boolean>>;
   setNoteText: Dispatch<SetStateAction<string>>;
-  setNewGroupName: Dispatch<SetStateAction<string>>;
   setRelationshipTarget: Dispatch<SetStateAction<string>>;
 }) {
   async function saveDraft() {
@@ -83,28 +79,6 @@ export function useContactCommands({
     await command("AddContactNote", { party_id: data.selectedContactId, body: noteText }, "contact-note");
     setNoteText("");
     await data.loadContactDetail(data.selectedContactId);
-  }
-
-  async function createGroup() {
-    const name = newGroupName.trim();
-    if (!name) return;
-    await command("CreateContactGroup", { name }, "contact-group-create");
-    setNewGroupName("");
-  }
-
-  async function archiveGroup(groupId: string) {
-    if (!groupId) return;
-    await command("ArchiveContactGroup", { group_id: groupId }, "contact-group-archive");
-  }
-
-  async function groupContactsByBusinessDomain() {
-    await command("GroupContactsByBusinessEmailDomain", { minimum_members: 2 }, "contact-group-domain");
-  }
-
-  async function groupContactsBySmartRules() {
-    for (const rule of ["organization", "country", "party_type", "review_state", "source"]) {
-      await command("GroupContactsBySmartRule", { rule, minimum_members: 2 }, "contact-group-smart");
-    }
   }
 
   async function addSelectedContactToGroup(groupId: string) {
@@ -164,10 +138,6 @@ export function useContactCommands({
     addNote,
     addSelectedContactToGroup,
     archiveSelected,
-    archiveGroup,
-    createGroup,
-    groupContactsByBusinessDomain,
-    groupContactsBySmartRules,
     linkRelationship,
     markSelectedReady,
     mergeDuplicate,

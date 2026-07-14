@@ -17,23 +17,44 @@ from .facade import (
     review_state_for_payload,
     serialize_party,
     touch_party,
+    validate_contact_assignment,
     validate_contact_payload_lengths,
 )
 from .models import PartyNote, utcnow
 from .duplicate_commands import cmd_merge_duplicate_contact, cmd_rollback_duplicate_merge
 from .group_commands import (
-    cmd_add_contacts_to_group,
     cmd_archive_contact_group,
     cmd_create_contact_group,
-    cmd_group_contacts_by_business_email_domain,
-    cmd_group_contacts_by_smart_rule,
-    cmd_remove_contact_from_group,
+    cmd_restore_contact_group,
     cmd_update_contact_group,
 )
+from .group_domain_commands import cmd_group_contacts_by_business_email_domain
+from .group_membership_commands import cmd_add_contacts_to_group, cmd_remove_contact_from_group
+from .group_smart_commands import cmd_group_contacts_by_smart_rule
 from .relationship_commands import (
     cmd_link_contact_relationship,
     cmd_remove_contact_relationship,
     cmd_update_contact_relationship,
+)
+from .privacy_commands import cmd_anonymize_contact
+from .guided_import import guided_vcard_import, rollback_contact_import
+from .system_commands import (
+    cmd_add_contact_team_member,
+    cmd_bulk_contacts,
+    cmd_create_contact_team,
+    cmd_define_contact_custom_field,
+    cmd_delete_contact_view,
+    cmd_link_external_identity,
+    cmd_record_contact_consent,
+    cmd_refresh_duplicate_candidates,
+    cmd_remove_contact_fact,
+    cmd_remove_contact_team_member,
+    cmd_resolve_duplicate_candidate,
+    cmd_save_contact_view,
+    cmd_set_contact_custom_field,
+    cmd_update_contact_team,
+    cmd_upsert_contact_fact,
+    sync_legacy_payload_facts,
 )
 from uok.security import Actor
 from uok.util import dumps, loads
@@ -43,6 +64,7 @@ def cmd_create_contact(db: Session, actor: Actor, payload: dict[str, Any], comma
     from .command_support import _create_party
 
     party, duplicate_candidates = _create_party(db, actor, payload, "manual")
+    sync_legacy_payload_facts(db, actor, party, payload)
     company_party_id = _link_company_payload(db, actor, party, payload)
     _emit_event(db, actor, "ContactCreated", "Party", party.id, {
         "display_name": party.display_name,
@@ -74,12 +96,28 @@ def cmd_update_contact(db: Session, actor: Actor, payload: dict[str, Any], comma
     duplicate_candidates = find_duplicate_candidates(db, actor, {**attrs, "display_name": party.display_name, "party_type": party.party_type}, party.id)
     attrs["duplicate_candidates"] = duplicate_candidates
     party.review_state = review_state_for_payload({**attrs, **payload, "display_name": party.display_name}, duplicate_candidates)
-    if "owner_user_id" in payload:
-        party.owner_user_id = bounded_text(payload.get("owner_user_id"), "owner_user_id") or None
-    if "team_id" in payload:
-        party.team_id = bounded_text(payload.get("team_id"), "team_id") or None
-    if "visibility_scope" in payload:
-        party.visibility_scope = contact_visibility_scope(payload.get("visibility_scope"))
+    next_owner_user_id = (
+        bounded_text(payload.get("owner_user_id"), "owner_user_id") or None
+        if "owner_user_id" in payload else party.owner_user_id
+    )
+    next_team_id = (
+        bounded_text(payload.get("team_id"), "team_id") or None
+        if "team_id" in payload else party.team_id
+    )
+    next_visibility_scope = (
+        contact_visibility_scope(payload.get("visibility_scope"))
+        if "visibility_scope" in payload else party.visibility_scope
+    )
+    validate_contact_assignment(
+        db,
+        actor,
+        owner_user_id=next_owner_user_id,
+        team_id=next_team_id,
+        visibility_scope=next_visibility_scope,
+    )
+    party.owner_user_id = next_owner_user_id
+    party.team_id = next_team_id
+    party.visibility_scope = next_visibility_scope
     if "source" in payload:
         party.source = bounded_text(payload.get("source"), "source") or party.source
     if "client_reference" in payload:
@@ -88,6 +126,7 @@ def cmd_update_contact(db: Session, actor: Actor, payload: dict[str, Any], comma
         party.sync_state = bounded_text(payload.get("sync_state"), "sync_state") or party.sync_state
     party.attrs_json = dumps(attrs)
     touch_party(party)
+    sync_legacy_payload_facts(db, actor, party, payload)
     _emit_event(db, actor, "ContactUpdated", "Party", party.id, {"display_name": party.display_name, "review_state": party.review_state})
     return serialize_party(db, party, include_detail=True, actor=actor)
 
@@ -115,12 +154,7 @@ def cmd_restore_contact(db: Session, actor: Actor, payload: dict[str, Any], comm
 
 
 def cmd_purge_contact(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
-    party = _party(db, actor, bounded_text(payload.get("party_id") or payload.get("contact_id"), "party_id"), "party_id")
-    party.status = "purged"
-    party.purged_at = utcnow()
-    touch_party(party)
-    _emit_event(db, actor, "ContactPurged", "Party", party.id, {"display_name": party.display_name})
-    return serialize_party(db, party, include_detail=True, actor=actor)
+    return cmd_anonymize_contact(db, actor, payload, command_id)
 
 
 def cmd_add_contact_note(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
@@ -153,6 +187,7 @@ def command_handlers() -> dict[str, CommandHandler]:
     return {
         "AddContactsToGroup": cmd_add_contacts_to_group,
         "ArchiveContactGroup": cmd_archive_contact_group,
+        "RestoreContactGroup": cmd_restore_contact_group,
         "CreateContact": cmd_create_contact,
         "CreateContactGroup": cmd_create_contact_group,
         "GroupContactsByBusinessEmailDomain": cmd_group_contacts_by_business_email_domain,
@@ -170,6 +205,23 @@ def command_handlers() -> dict[str, CommandHandler]:
         "UpdateContactRelationship": cmd_update_contact_relationship,
         "RemoveContactRelationship": cmd_remove_contact_relationship,
         "ImportContactsCsv": cmd_import_contacts_csv,
+        "ImportContactsVCard": guided_vcard_import,
+        "RollbackContactImport": rollback_contact_import,
+        "UpsertContactFact": cmd_upsert_contact_fact,
+        "RemoveContactFact": cmd_remove_contact_fact,
+        "RecordContactConsent": cmd_record_contact_consent,
+        "CreateContactTeam": cmd_create_contact_team,
+        "UpdateContactTeam": cmd_update_contact_team,
+        "AddContactTeamMember": cmd_add_contact_team_member,
+        "RemoveContactTeamMember": cmd_remove_contact_team_member,
+        "SaveContactView": cmd_save_contact_view,
+        "DeleteContactView": cmd_delete_contact_view,
+        "RefreshContactDuplicateCandidates": cmd_refresh_duplicate_candidates,
+        "ResolveContactDuplicateCandidate": cmd_resolve_duplicate_candidate,
+        "BulkUpdateContacts": cmd_bulk_contacts,
+        "LinkContactExternalIdentity": cmd_link_external_identity,
+        "DefineContactCustomField": cmd_define_contact_custom_field,
+        "SetContactCustomFieldValue": cmd_set_contact_custom_field,
     }
 
 
@@ -177,6 +229,7 @@ def command_permissions() -> dict[str, str]:
     return {
         "AddContactsToGroup": "contacts.manage",
         "ArchiveContactGroup": "contacts.manage",
+        "RestoreContactGroup": "contacts.restore",
         "CreateContact": "contacts.manage",
         "CreateContactGroup": "contacts.manage",
         "GroupContactsByBusinessEmailDomain": "contacts.manage",
@@ -194,4 +247,21 @@ def command_permissions() -> dict[str, str]:
         "UpdateContactRelationship": "contacts.manage",
         "RemoveContactRelationship": "contacts.manage",
         "ImportContactsCsv": "contacts.import",
+        "ImportContactsVCard": "contacts.import",
+        "RollbackContactImport": "contacts.restore",
+        "UpsertContactFact": "contacts.manage",
+        "RemoveContactFact": "contacts.manage",
+        "RecordContactConsent": "contacts.consent",
+        "CreateContactTeam": "contacts.team.manage",
+        "UpdateContactTeam": "contacts.team.manage",
+        "AddContactTeamMember": "contacts.team.manage",
+        "RemoveContactTeamMember": "contacts.team.manage",
+        "SaveContactView": "contacts.read",
+        "DeleteContactView": "contacts.read",
+        "RefreshContactDuplicateCandidates": "contacts.dedupe",
+        "ResolveContactDuplicateCandidate": "contacts.dedupe",
+        "BulkUpdateContacts": "contacts.bulk",
+        "LinkContactExternalIdentity": "contacts.sync",
+        "DefineContactCustomField": "contacts.customize",
+        "SetContactCustomFieldValue": "contacts.manage",
     }

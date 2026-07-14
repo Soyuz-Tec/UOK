@@ -31,6 +31,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `Health` | Check local candidate `/health` | `.\scripts\uok_ops.ps1 -Action Health` |
 | `DatabaseCapacity` | Load the committed capacity policy, enforce its offline budget, and verify cluster-wide live PostgreSQL capacity, role safety, and grouped sessions | `.\scripts\uok_ops.ps1 -Action DatabaseCapacity` |
 | `PlanningReleaseReadiness` | Run Gate E candidate, PostgreSQL scale, recovery, live Chromium, observability, compatibility, and engineering-evidence checks | `.\scripts\uok_ops.ps1 -Action PlanningReleaseReadiness` |
+| `ContactsVerifierGroupCleanup` | Dry-run and, only with a reviewed v2 plan, backup, and double confirmation, remove an exact legacy verifier membership and archive the now-empty audited group | `.\scripts\uok_ops.ps1 -Action ContactsVerifierGroupCleanup` |
 | `BackupDb` | Create local PostgreSQL 18 custom-format dump | `.\scripts\uok_ops.ps1 -Action BackupDb` |
 | `RestoreDb` | Restore a local dump into the local stack, guarded by explicit confirmation | `.\scripts\uok_ops.ps1 -Action RestoreDb -BackupPath <dump> -ConfirmRestore` |
 | `AsuhTest` | Create a local ASUH incident event and run health plus candidate verifier | `.\scripts\uok_ops.ps1 -Action AsuhTest -IncidentReason "reason"` |
@@ -144,6 +145,8 @@ The owned evidence composition and its non-production boundary are defined in
 
 The database pool settings, capacity formula, recovery checks, and future external-pooler boundary
 are defined in `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`.
+
+Contacts verifier-group hygiene, exact empty/legacy-one-member audit criteria, API membership removal, archive execution, and per-group/database rollback are defined in `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`. The cleanup action is a dry run unless a reviewed v2 plan, a non-empty backup, and both execution switches are supplied.
 
 ## Folder Organization Standard
 

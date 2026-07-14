@@ -46,11 +46,11 @@ def test_registry_matches_checked_in_metadata_contract() -> None:
     actual.update(report["module_models"])
 
     assert actual == expected
-    assert report["model_count"] == 38
-    assert report["table_count"] == 38
+    assert report["model_count"] == 49
+    assert report["table_count"] == 49
     assert tuple(report["provider_order"]) == EXPECTED_PROVIDER_ORDER
-    assert len(Base.registry.mappers) == 38
-    assert len(Base.metadata.tables) == 38
+    assert len(Base.registry.mappers) == 49
+    assert len(Base.metadata.tables) == 49
 
 
 def test_full_sqlalchemy_metadata_matches_pre_move_contract() -> None:
@@ -184,10 +184,10 @@ def test_import_order_produces_the_same_registry(setup: str) -> None:
 from uok.module_model_registry import module_model_registry_report
 from uok.db import Base
 report = module_model_registry_report()
-assert report['model_count'] == 38
-assert report['table_count'] == 38
+assert report['model_count'] == 49
+assert report['table_count'] == 49
 assert report['provider_order'] == {list(EXPECTED_PROVIDER_ORDER)!r}
-assert len(Base.registry.mappers) == 38
+assert len(Base.registry.mappers) == 49
 """
     environment = os.environ.copy()
     source_root = str(repo_root() / "src")

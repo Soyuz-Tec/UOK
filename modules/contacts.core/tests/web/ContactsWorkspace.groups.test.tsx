@@ -44,7 +44,8 @@ describe("ContactsWorkspace group detail behavior", () => {
     expect(within(inspector).getByText("Company: Example Organization")).toBeInTheDocument();
     expect(within(inspector).getByText("Review: Ready")).toBeInTheDocument();
 
-    fireEvent.click(within(inspector).getByRole("button", { name: "Remove Example Contact from Company: Example Organization" }));
-    expect(onRemoveSelectedContactFromGroup).toHaveBeenCalledWith("group-company");
+    expect(within(inspector).queryByRole("button", { name: "Remove Example Contact from Company: Example Organization" })).not.toBeInTheDocument();
+    fireEvent.click(within(inspector).getByRole("button", { name: "Remove Example Contact from Important contacts" }));
+    expect(onRemoveSelectedContactFromGroup).toHaveBeenCalledWith("group-user");
   });
 });

@@ -23,10 +23,14 @@ export function SearchWorkspace({
   groupDefaultValue = "none",
   defaultSummaryLabel = "All records",
   savedViewsStorageKey,
+  savedViews: externalSavedViews,
+  savedViewsStatus,
   presetViews = [],
   supplementalSections,
   onChange,
   onGroupByChange,
+  onDeleteSavedView,
+  onSaveSavedView,
   onClear
 }: {
   label: string;
@@ -39,10 +43,14 @@ export function SearchWorkspace({
   groupDefaultValue?: string;
   defaultSummaryLabel?: string;
   savedViewsStorageKey: string;
+  savedViews?: SavedSearchView[];
+  savedViewsStatus?: ReactNode;
   presetViews?: SavedSearchView[];
   supplementalSections?: SupplementalSections;
   onChange: (value: string) => void;
   onGroupByChange: (value: string) => void;
+  onDeleteSavedView?: (id: string) => void | Promise<void>;
+  onSaveSavedView?: (view: SavedSearchView) => void | Promise<void>;
   onClear: () => void;
 }) {
   const { t } = useUokLocalization();
@@ -50,7 +58,8 @@ export function SearchWorkspace({
   const [viewName, setViewName] = useState("");
   const groupingEnabled = groupOptions.length > 0;
   const sortingEnabled = Boolean(sort);
-  const { savedViews, upsertSavedView, deleteSavedView } = useSavedSearchViews(savedViewsStorageKey);
+  const localViews = useSavedSearchViews(savedViewsStorageKey);
+  const savedViews = externalSavedViews ?? localViews.savedViews;
   const presetNames = new Set(presetViews.map((view) => view.name.trim().toLocaleLowerCase()));
   const availableSavedViews = [...presetViews, ...savedViews.filter((view) => !presetNames.has(view.name.trim().toLocaleLowerCase()))];
   const canSaveView = Boolean(viewName.trim()) && !presetNames.has(viewName.trim().toLocaleLowerCase());
@@ -79,7 +88,7 @@ export function SearchWorkspace({
   const saveCurrentView = () => {
     const trimmedName = viewName.trim();
     if (!trimmedName || presetNames.has(trimmedName.toLocaleLowerCase())) return;
-    upsertSavedView({
+    const nextView = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       name: trimmedName,
       query: value,
@@ -87,7 +96,9 @@ export function SearchWorkspace({
       groupBy: effectiveGroupBy,
       sortBy: sort?.value,
       sortDir: sort?.direction
-    });
+    };
+    if (onSaveSavedView) void onSaveSavedView(nextView);
+    else localViews.upsertSavedView(nextView);
     setViewName("");
   };
 
@@ -133,6 +144,7 @@ export function SearchWorkspace({
           groupOptions={groupOptions}
           groupingEnabled={groupingEnabled}
           savedViews={availableSavedViews}
+          savedViewsStatus={savedViewsStatus}
           sort={sort}
           supplementalSections={typeof supplementalSections === "function" ? supplementalSections({ close }) : supplementalSections}
           viewName={viewName}
@@ -142,7 +154,10 @@ export function SearchWorkspace({
           }}
           onClearAll={clearAll}
           onClose={close}
-          onDeleteView={deleteSavedView}
+          onDeleteView={(id) => {
+            if (onDeleteSavedView) void onDeleteSavedView(id);
+            else localViews.deleteSavedView(id);
+          }}
           onGroupByChange={onGroupByChange}
           onSaveCurrentView={saveCurrentView}
           onViewNameChange={setViewName}

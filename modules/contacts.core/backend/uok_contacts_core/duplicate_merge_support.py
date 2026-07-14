@@ -1,17 +1,37 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .facade import CONTACT_ATTR_FIELDS
+from .duplicate_merge_history import (
+    group_snapshot,
+    iso_or_none,
+    relationship_snapshot,
+    unique_texts,
+)
 from .models import ContactGroupMember, Party, PartyNote, PartyRelationship, utcnow
+from .system_models import (
+    ContactActivity,
+    ContactConsentRecord,
+    ContactExternalIdentity,
+    ContactImportRow,
+    PartyCustomFieldValue,
+    PartyFact,
+)
 from uok.security import Actor
 from uok.util import loads
 
 VALID_FIELD_CHOICES = {"primary", "duplicate"}
+PUBLIC_MERGE_HISTORY_FIELDS = {
+    "merge_id",
+    "primary_party_id",
+    "duplicate_party_id",
+    "merged_at",
+    "rolled_back_at",
+}
 
 
 def field_choices(value: Any) -> dict[str, str]:
@@ -63,9 +83,22 @@ def record_merge_history(
     notes: list[dict[str, Any]],
     groups: list[dict[str, Any]],
     relationships: list[dict[str, Any]],
-) -> None:
-    history = list(attrs.get("merge_history") or [])
+    governed_records: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any]:
+    merged_at = iso_or_none(utcnow())
+    history = [
+        {key: value for key, value in item.items() if key in PUBLIC_MERGE_HISTORY_FIELDS}
+        for item in list(attrs.get("merge_history") or [])
+        if isinstance(item, dict)
+    ]
     history.append({
+        "merge_id": merge_id,
+        "primary_party_id": primary.id,
+        "duplicate_party_id": duplicate.id,
+        "merged_at": merged_at,
+    })
+    attrs["merge_history"] = history
+    return {
         "merge_id": merge_id,
         "primary_party_id": primary.id,
         "duplicate_party_id": duplicate.id,
@@ -80,9 +113,9 @@ def record_merge_history(
         "notes": notes,
         "groups": groups,
         "relationships": relationships,
-        "merged_at": iso_or_none(utcnow()),
-    })
-    attrs["merge_history"] = history
+        "governed_records": governed_records,
+        "merged_at": merged_at,
+    }
 
 
 def remaining_duplicate_candidates(attrs: dict[str, Any], duplicate_id: str, primary_id: str) -> list[dict[str, Any]]:
@@ -145,62 +178,66 @@ def move_relationships(db: Session, actor: Actor, primary: Party, duplicate: Par
     return snapshots
 
 
-def rollback_notes(db: Session, actor: Actor, primary: Party, duplicate: Party, notes: list[dict[str, Any]]) -> None:
-    for item in notes:
-        note = db.get(PartyNote, item.get("id"))
-        if note and note.organization_id == actor.organization_id and note.party_id == primary.id:
-            note.party_id = duplicate.id
-
-
-def rollback_groups(db: Session, actor: Actor, primary: Party, duplicate: Party, groups: list[dict[str, Any]]) -> None:
-    for item in groups:
-        membership = db.get(ContactGroupMember, item.get("id"))
-        if membership and membership.organization_id == actor.organization_id and membership.party_id == primary.id:
-            membership.party_id = duplicate.id
-            continue
-        if membership:
-            continue
-        existing = db.scalar(select(ContactGroupMember).where(
-            ContactGroupMember.organization_id == actor.organization_id,
-            ContactGroupMember.group_id == item.get("group_id"),
-            ContactGroupMember.party_id == duplicate.id,
+def move_governed_records(db: Session, actor: Actor, primary: Party, duplicate: Party) -> dict[str, list[dict[str, Any]]]:
+    moved: dict[str, list[dict[str, Any]]] = {
+        "activities": [],
+        "consents": [],
+        "custom_values": [],
+        "external_identities": [],
+        "facts": [],
+        "import_rows": [],
+    }
+    facts = db.scalars(select(PartyFact).where(
+        PartyFact.organization_id == actor.organization_id,
+        PartyFact.party_id == duplicate.id,
+    )).all()
+    for row in facts:
+        conflict = db.scalar(select(PartyFact.id).where(
+            PartyFact.organization_id == actor.organization_id,
+            PartyFact.party_id == primary.id,
+            PartyFact.fact_type == row.fact_type,
+            PartyFact.label == row.label,
+            PartyFact.normalized_value == row.normalized_value,
         ))
-        if not existing:
-            db.add(ContactGroupMember(
-                id=item.get("id"),
-                organization_id=item.get("organization_id"),
-                group_id=item.get("group_id"),
-                party_id=duplicate.id,
-                added_by_user_id=item.get("added_by_user_id"),
-                attrs_json=item.get("attrs_json") or "{}",
-                created_at=datetime_or_none(item.get("created_at")) or utcnow(),
-            ))
-
-
-def rollback_relationships(db: Session, actor: Actor, relationships: list[dict[str, Any]]) -> None:
-    for item in relationships:
-        relationship = db.get(PartyRelationship, item.get("id"))
-        if relationship and relationship.organization_id == actor.organization_id:
-            relationship.from_party_id = item.get("from_party_id") or relationship.from_party_id
-            relationship.to_party_id = item.get("to_party_id") or relationship.to_party_id
-            relationship.relationship_type = item.get("relationship_type") or relationship.relationship_type
+        if conflict:
             continue
-        existing = db.scalar(select(PartyRelationship).where(
-            PartyRelationship.organization_id == actor.organization_id,
-            PartyRelationship.from_party_id == item.get("from_party_id"),
-            PartyRelationship.to_party_id == item.get("to_party_id"),
-            PartyRelationship.relationship_type == item.get("relationship_type"),
+        moved["facts"].append({"id": row.id})
+        row.party_id = primary.id
+    custom_values = db.scalars(select(PartyCustomFieldValue).where(
+        PartyCustomFieldValue.organization_id == actor.organization_id,
+        PartyCustomFieldValue.party_id == duplicate.id,
+    )).all()
+    for row in custom_values:
+        conflict = db.scalar(select(PartyCustomFieldValue.id).where(
+            PartyCustomFieldValue.organization_id == actor.organization_id,
+            PartyCustomFieldValue.party_id == primary.id,
+            PartyCustomFieldValue.field_definition_id == row.field_definition_id,
         ))
-        if not existing:
-            db.add(PartyRelationship(
-                id=item.get("id"),
-                organization_id=item.get("organization_id"),
-                from_party_id=item.get("from_party_id"),
-                to_party_id=item.get("to_party_id"),
-                relationship_type=item.get("relationship_type"),
-                attrs_json=item.get("attrs_json") or "{}",
-                created_at=datetime_or_none(item.get("created_at")) or utcnow(),
-            ))
+        if conflict:
+            continue
+        moved["custom_values"].append({"id": row.id})
+        row.party_id = primary.id
+    for key, model in (
+        ("activities", ContactActivity),
+        ("consents", ContactConsentRecord),
+        ("external_identities", ContactExternalIdentity),
+    ):
+        rows = db.scalars(select(model).where(model.organization_id == actor.organization_id, model.party_id == duplicate.id)).all()
+        for row in rows:
+            moved[key].append({"id": row.id})
+            row.party_id = primary.id
+    import_rows = db.scalars(select(ContactImportRow).where(
+        ContactImportRow.organization_id == actor.organization_id,
+        (ContactImportRow.party_id == duplicate.id) | (ContactImportRow.matched_party_id == duplicate.id),
+    )).all()
+    for row in import_rows:
+        snapshot = {"id": row.id, "party_id": row.party_id, "matched_party_id": row.matched_party_id}
+        moved["import_rows"].append(snapshot)
+        if row.party_id == duplicate.id:
+            row.party_id = primary.id
+        if row.matched_party_id == duplicate.id:
+            row.matched_party_id = primary.id
+    return moved
 
 
 def same_relationship_exists(
@@ -217,84 +254,3 @@ def same_relationship_exists(
         PartyRelationship.to_party_id == to_party_id,
         PartyRelationship.relationship_type == relationship.relationship_type,
     )) is not None
-
-
-def merge_snapshot(attrs: dict[str, Any], primary_id: str, duplicate_id: str, merge_id: str) -> dict[str, Any] | None:
-    for item in reversed(list(attrs.get("merge_history") or [])):
-        if not isinstance(item, dict):
-            continue
-        if item.get("primary_party_id") != primary_id or item.get("duplicate_party_id") != duplicate_id:
-            continue
-        if item.get("rolled_back_at"):
-            continue
-        if merge_id and item.get("merge_id") != merge_id:
-            continue
-        return item
-    return None
-
-
-def restore_primary_merge_attrs(attrs: dict[str, Any], snapshot: dict[str, Any]) -> None:
-    before = snapshot.get("primary_attrs_before") or {}
-    for field in CONTACT_ATTR_FIELDS:
-        if field in before:
-            attrs[field] = before[field]
-        else:
-            attrs.pop(field, None)
-    duplicate_id = snapshot.get("duplicate_party_id")
-    attrs["merged_duplicate_ids"] = [value for value in list(attrs.get("merged_duplicate_ids") or []) if value != duplicate_id]
-    attrs["merged_duplicate_names"] = [
-        value for value in list(attrs.get("merged_duplicate_names") or [])
-        if value != snapshot.get("duplicate_display_name")
-    ]
-
-
-def mark_snapshot_rolled_back(attrs: dict[str, Any], snapshot: dict[str, Any], command_id: str) -> None:
-    for item in list(attrs.get("merge_history") or []):
-        if isinstance(item, dict) and item.get("merge_id") == snapshot.get("merge_id"):
-            item["rolled_back_at"] = iso_or_none(utcnow())
-            item["rollback_command_id"] = command_id
-
-
-def group_snapshot(row: ContactGroupMember) -> dict[str, Any]:
-    return {
-        "id": row.id,
-        "organization_id": row.organization_id,
-        "group_id": row.group_id,
-        "party_id": row.party_id,
-        "added_by_user_id": row.added_by_user_id,
-        "attrs_json": row.attrs_json,
-        "created_at": iso_or_none(row.created_at),
-    }
-
-
-def relationship_snapshot(row: PartyRelationship) -> dict[str, Any]:
-    return {
-        "id": row.id,
-        "organization_id": row.organization_id,
-        "from_party_id": row.from_party_id,
-        "to_party_id": row.to_party_id,
-        "relationship_type": row.relationship_type,
-        "attrs_json": row.attrs_json,
-        "created_at": iso_or_none(row.created_at),
-    }
-
-
-def datetime_or_none(value: Any) -> datetime | None:
-    if not value:
-        return None
-    if isinstance(value, datetime):
-        return value
-    return datetime.fromisoformat(str(value))
-
-
-def iso_or_none(value: Any) -> str | None:
-    return value.isoformat() if hasattr(value, "isoformat") else None
-
-
-def unique_texts(values: list[Any]) -> list[str]:
-    result: list[str] = []
-    for value in values:
-        text = str(value or "").strip()
-        if text and text not in result:
-            result.append(text)
-    return result

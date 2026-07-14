@@ -16,8 +16,9 @@ from .api_schemas import (
     ContactWriteRequest,
 )
 from .api_groups import register_group_routes
+from .api_system import register_system_routes
 from .api_support import require_contacts_module_operational, run_contact_command
-from .facade import count_parties, get_party_or_error, import_batch_rows, list_parties, note_rows, relationship_rows, review_queue, serialize_party
+from .facade import count_parties, get_party_or_error, import_batch_rows, list_parties, note_rows, relationship_rows, review_queue, review_queue_count, serialize_party
 
 router = APIRouter(prefix="/api/contacts", tags=["contacts"])
 
@@ -80,10 +81,17 @@ def create_contact(req: ContactWriteRequest, actor: Actor = Depends(current_acto
 
 
 @router.get("/review-queue")
-def contacts_review_queue(actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
+def contacts_review_queue(
+    response: Response,
+    limit: int = Query(default=100, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> list[dict[str, Any]]:
     require_permission(actor, "contacts.read")
     require_contacts_module_operational(db, actor)
-    return review_queue(db, actor)
+    response.headers["X-Total-Count"] = str(review_queue_count(db, actor))
+    return review_queue(db, actor, limit=limit, offset=offset)
 
 
 @router.get("/import-batches")
@@ -99,6 +107,7 @@ def import_contacts_csv(req: ContactCsvImportRequest, actor: Actor = Depends(cur
 
 
 register_group_routes(router)
+register_system_routes(router)
 
 
 @router.get("/{party_id}")

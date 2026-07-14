@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import String, cast, func, literal_column, select
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 
 from .access import can_manage_contacts, readable_note_records, readable_party_filter, readable_relationship_records
@@ -63,18 +64,35 @@ def count_parties(
     return len(_filtered_python_parties(db, actor, query, group_id, status, review_state, party_type, source, quality))
 
 
-def review_queue(db: Session, actor: Actor) -> list[dict[str, Any]]:
-    rows = db.scalars(
-        select(Party)
-        .where(
+def review_queue(db: Session, actor: Actor, limit: int = 100, offset: int = 0) -> list[dict[str, Any]]:
+    stmt = _readable_party_statement(
+        select(Party).where(
             Party.organization_id == actor.organization_id,
             Party.status != "purged",
             Party.review_state.in_(("needs_review", "possible_duplicate", "incomplete")),
-        )
-        .order_by(Party.updated_at.desc(), Party.created_at.desc())
+        ),
+        db,
+        actor,
+    )
+    rows = db.scalars(
+        stmt.order_by(Party.updated_at.desc(), Party.created_at.desc(), Party.id.asc())
+        .offset(_bounded_offset(offset))
+        .limit(_bounded_limit(limit))
     ).all()
-    allowed = readable_party_filter(actor)
-    return [serialize_party(db, row) for row in rows if allowed(row)]
+    return [serialize_party(db, row) for row in rows]
+
+
+def review_queue_count(db: Session, actor: Actor) -> int:
+    stmt = _readable_party_statement(
+        select(Party.id).where(
+            Party.organization_id == actor.organization_id,
+            Party.status != "purged",
+            Party.review_state.in_(("needs_review", "possible_duplicate", "incomplete")),
+        ),
+        db,
+        actor,
+    )
+    return int(db.scalar(select(func.count()).select_from(stmt.subquery())) or 0)
 
 
 def _list_parties_python(
@@ -116,7 +134,7 @@ def _filtered_python_parties(
         .where(Party.organization_id == actor.organization_id)
         .order_by(*_contact_ordering(sort_by, sort_dir))
     ).all())
-    allowed = readable_party_filter(actor)
+    allowed = readable_party_filter(actor, db)
     group_party_ids = readable_group_party_ids(db, actor, group_id) if group_id else None
     query_value = query.lower().strip()
     result: list[dict[str, Any]] = []
@@ -161,7 +179,7 @@ def _list_parties_postgres(
 
 
 def _filtered_postgres_party_statement(db: Session, actor: Actor, query: str, group_id: str, status: str, review_state: str, party_type: str, source: str, quality: str):
-    stmt = _readable_party_statement(select(Party).where(Party.organization_id == actor.organization_id), actor)
+    stmt = _readable_party_statement(select(Party).where(Party.organization_id == actor.organization_id), db, actor)
     if group_id:
         group_party_ids = readable_group_party_ids(db, actor, group_id)
         if not group_party_ids:
@@ -184,16 +202,26 @@ def _filtered_postgres_party_statement(db: Session, actor: Actor, query: str, gr
 
 
 def _postgres_contact_search_vector():
-    text = func.concat_ws(
-        " ",
+    attrs = cast(Party.attrs_json, JSONB)
+    parts = [
         func.coalesce(Party.display_name, ""),
         func.coalesce(Party.party_type, ""),
         func.coalesce(Party.status, ""),
         func.coalesce(Party.review_state, ""),
         func.coalesce(Party.source, ""),
-        func.coalesce(Party.attrs_json, ""),
-    )
-    return func.to_tsvector("simple", text)
+        *[
+            func.coalesce(
+                attrs.op("->>", return_type=String)(literal_column(f"'{field}'")),
+                "",
+            )
+            for field in CONTACT_ATTR_FIELDS
+        ],
+    ]
+    separator = literal_column("' '", type_=String)
+    text = parts[0]
+    for part in parts[1:]:
+        text = text + separator + part
+    return func.to_tsvector(literal_column("'simple'::regconfig"), text)
 
 
 def _party_search_text(party: Party, notes: list[PartyNote] | None = None, relationships: list[PartyRelationship] | None = None) -> str:
@@ -212,14 +240,20 @@ def _is_postgres(db: Session) -> bool:
     return bool(bind and bind.dialect.name == "postgresql")
 
 
-def _readable_party_statement(stmt, actor: Actor):
+def _readable_party_statement(stmt, db: Session, actor: Actor):
     if can_manage_contacts(actor):
         if has_permission(actor, "contacts.purge"):
             return stmt
         return stmt.where(Party.status != "purged")
+    from .access import actor_contact_team_ids
+
+    team_ids = actor_contact_team_ids(db, actor)
+    visibility = (Party.owner_user_id == actor.user_id) | (Party.visibility_scope == "organization")
+    if team_ids:
+        visibility = visibility | ((Party.visibility_scope == "team") & Party.team_id.in_(team_ids))
     return stmt.where(
         Party.status != "purged",
-        (Party.owner_user_id == actor.user_id) | (Party.visibility_scope == "organization"),
+        visibility,
     )
 
 

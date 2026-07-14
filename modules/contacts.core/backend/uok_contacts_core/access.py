@@ -3,7 +3,8 @@ from __future__ import annotations
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import Party, PartyNote, PartyRelationship
+from .models import ContactTeam, ContactTeamMember, Party, PartyNote, PartyRelationship
+from uok.kernel_models import Membership
 from uok.security import Actor, has_permission
 
 
@@ -11,7 +12,40 @@ def can_manage_contacts(actor: Actor) -> bool:
     return has_permission(actor, "contacts.manage") or has_permission(actor, "contacts.restore") or has_permission(actor, "contacts.purge")
 
 
-def can_read_party(actor: Actor, party: Party) -> bool:
+def actor_contact_team_ids(db: Session, actor: Actor) -> set[str]:
+    return set(db.scalars(select(ContactTeamMember.team_id).join(
+        ContactTeam,
+        ContactTeam.id == ContactTeamMember.team_id,
+    ).where(
+        ContactTeamMember.organization_id == actor.organization_id,
+        ContactTeam.organization_id == actor.organization_id,
+        ContactTeamMember.user_id == actor.user_id,
+        ContactTeamMember.status == "active",
+        ContactTeam.status == "active",
+    )).all())
+
+
+def validate_contact_assignment(
+    db: Session,
+    actor: Actor,
+    *,
+    owner_user_id: str | None,
+    team_id: str | None,
+    visibility_scope: str,
+) -> None:
+    if owner_user_id and not db.scalar(select(Membership.id).where(
+        Membership.organization_id == actor.organization_id,
+        Membership.user_id == owner_user_id,
+    )):
+        raise ValueError("contact owner must belong to the current organization")
+    team = db.get(ContactTeam, team_id) if team_id else None
+    if team_id and (not team or team.organization_id != actor.organization_id or team.status != "active"):
+        raise ValueError("contact team must be active in the current organization")
+    if visibility_scope == "team" and not team_id:
+        raise ValueError("team visibility requires an active contact team")
+
+
+def can_read_party(actor: Actor, party: Party, team_ids: set[str] | None = None) -> bool:
     if party.status == "purged" and not has_permission(actor, "contacts.purge"):
         return False
     if not (has_permission(actor, "contacts.read") or can_manage_contacts(actor)):
@@ -20,12 +54,16 @@ def can_read_party(actor: Actor, party: Party) -> bool:
         return True
     if party.owner_user_id and party.owner_user_id == actor.user_id:
         return True
-    return party.visibility_scope == "organization"
+    if party.visibility_scope == "organization":
+        return True
+    return party.visibility_scope == "team" and bool(party.team_id and party.team_id in (team_ids or set()))
 
 
-def readable_party_filter(actor: Actor):
+def readable_party_filter(actor: Actor, db: Session | None = None):
+    team_ids = actor_contact_team_ids(db, actor) if db is not None else set()
+
     def allowed(party: Party) -> bool:
-        return can_read_party(actor, party)
+        return can_read_party(actor, party, team_ids)
 
     return allowed
 
@@ -34,7 +72,7 @@ def get_party_or_error(db: Session, actor: Actor, party_id: str) -> Party:
     party = db.get(Party, party_id)
     if not party or party.organization_id != actor.organization_id:
         raise ValueError("contact not found")
-    if not readable_party_filter(actor)(party):
+    if not readable_party_filter(actor, db)(party):
         raise PermissionError("contacts.read")
     return party
 

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -50,50 +50,45 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(inspector).getByText("Signals")).toBeInTheDocument();
   });
 
-  it("shows a unified contact activity timeline", () => {
+  it("loads and pages the server-recorded contact activity timeline", async () => {
+    const activityRows = Array.from({ length: 11 }, (_, index) => ({
+      id: `activity-${index + 1}`,
+      party_id: contact.id,
+      actor_user_id: index ? "user-1" : null,
+      activity_type: index === 0 ? "ContactImported" : "ContactUpdated",
+      object_type: "Party",
+      object_id: contact.id,
+      summary: `Server activity ${index + 1}`,
+      payload: index === 0 ? { source: "csv_import" } : {},
+      occurred_at: `2026-07-${String(13 - index).padStart(2, "0")}T00:00:00Z`
+    }));
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === "/api/contacts/saved-views") return response([]);
+      if (path.includes(`/api/contacts/${contact.id}/activity?`)) {
+        const params = new URLSearchParams(path.split("?")[1]);
+        const limit = Number(params.get("limit"));
+        const offset = Number(params.get("offset"));
+        return response(activityRows.slice(offset, offset + limit), 200, { "X-Total-Count": String(activityRows.length) });
+      }
+      return response({ detail: "Unexpected request" }, 500);
+    }));
     renderContactsWorkspace("split", [{
       ...contact,
-      source: "csv_import",
-      attrs: {
-        merge_history: [{
-          merge_id: "merge-1",
-          duplicate_display_name: "Duplicate Example",
-          merged_at: "2026-07-07T00:00:00Z"
-        }]
-      },
-      notes: [{ id: "note-1", body: "Known from supplier onboarding.", created_at: "2026-07-07T00:00:00Z" }],
-      groups: [{
-        id: "group-existing",
-        name: "Review list",
-        visibility_scope: "organization",
-        member_id: "member-1",
-        created_at: "2026-07-07T00:00:00Z"
-      }],
-      relationships: [{
-        id: "relationship-1",
-        from_party_id: contact.id,
-        to_party_id: organizationContact.id,
-        relationship_type: "works_for",
-        direction: "outbound",
-        related_party_id: organizationContact.id,
-        related_party_name: organizationContact.display_name,
-        related_party_type: organizationContact.party_type,
-        related_party_email: organizationContact.email
-      }],
-      duplicate_candidates: [{ id: "duplicate-1", display_name: "Duplicate Example", reason: "email" }]
+      notes: [{ id: "note-client-only", body: "Client-only synthetic note", created_at: "2026-07-07T00:00:00Z" }]
     }, organizationContact]);
 
     fireEvent.click(screen.getByRole("button", { name: /Example Contact/i }));
     fireEvent.click(screen.getByRole("button", { name: "Activity" }));
 
     const timeline = within(screen.getByLabelText("Contact inspector")).getByLabelText("Contact activity timeline");
-    expect(within(timeline).getByText("Why this contact exists")).toBeInTheDocument();
-    expect(within(timeline).getByText("Imported for review")).toBeInTheDocument();
-    expect(within(timeline).getByText("Known from supplier onboarding.")).toBeInTheDocument();
-    expect(within(timeline).getByText("Works For")).toBeInTheDocument();
-    expect(within(timeline).getByText("Review list")).toBeInTheDocument();
-    expect(within(timeline).getByText("Duplicate candidate")).toBeInTheDocument();
-    expect(within(timeline).getByText("Merged Duplicate Example")).toBeInTheDocument();
+    expect(within(timeline).getByText("Activity history")).toBeInTheDocument();
+    expect(await within(timeline).findByText("Server activity 1")).toBeInTheDocument();
+    expect(within(timeline).queryByText("Client-only synthetic note")).not.toBeInTheDocument();
+    expect(within(timeline).getByLabelText("Activity paging")).toBeInTheDocument();
+    fireEvent.click(within(timeline).getByRole("button", { name: "Next" }));
+    expect(await within(timeline).findByText("Server activity 11")).toBeInTheDocument();
+    expect(within(timeline).queryByText("Server activity 1")).not.toBeInTheDocument();
   });
 
   it("opens contact detail in the same popup primitive from cards view", () => {
@@ -174,13 +169,13 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(dialog).getByLabelText("Source")).toBeInTheDocument();
     expect(within(dialog).getByLabelText("Consent")).toBeInTheDocument();
   });
-
-  it("runs smart contact grouping from the group rail", async () => {
-    const onGroupContactsBySmartRules = vi.fn();
-    renderContactsWorkspace("table", [contact, organizationContact], { onGroupContactsBySmartRules });
-
-    fireEvent.click(screen.getByRole("button", { name: "Smart groups" }));
-
-    await waitFor(() => expect(onGroupContactsBySmartRules).toHaveBeenCalledTimes(1));
-  });
 });
+
+function response(body: unknown, status = 200, headers: Record<string, string> = {}) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: (name: string) => headers[name] ?? headers[name.toLowerCase()] ?? null },
+    json: vi.fn().mockResolvedValue(body)
+  } as unknown as Response;
+}

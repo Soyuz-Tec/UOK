@@ -7,8 +7,9 @@ import type { ContactGroupRecord, ContactRecord } from "@uok/shared/types";
 
 const systemGroupPrefixes = ["Company:", "Country:", "Review:", "Source:", "Type:"];
 
-function isSystemGroup(name: string) {
-  return systemGroupPrefixes.some((prefix) => name.startsWith(prefix));
+function isSystemGroup(group: { kind?: string; name: string }) {
+  if (group.kind) return group.kind !== "manual";
+  return systemGroupPrefixes.some((prefix) => group.name.startsWith(prefix));
 }
 
 export function ContactGroupMembership({
@@ -25,9 +26,9 @@ export function ContactGroupMembership({
   const [nextGroupId, setNextGroupId] = useState("");
   const memberships = contact.groups || [];
   const memberGroupIds = useMemo(() => new Set(memberships.map((group) => group.id)), [memberships]);
-  const availableGroups = groups.filter((group) => !memberGroupIds.has(group.id));
-  const userGroups = memberships.filter((group) => !isSystemGroup(group.name));
-  const systemGroups = memberships.filter((group) => isSystemGroup(group.name));
+  const availableGroups = groups.filter((group) => group.kind === "manual" && group.status === "active" && !memberGroupIds.has(group.id));
+  const userGroups = memberships.filter((group) => !isSystemGroup(group));
+  const systemGroups = memberships.filter((group) => isSystemGroup(group));
 
   async function addMembership() {
     if (!nextGroupId) return;
@@ -69,11 +70,8 @@ export function ContactGroupMembership({
                 items={systemGroups.map((group) => ({
                   id: group.id,
                   label: group.name,
-                  tone: "system",
-                  removeLabel: `Remove ${contact.display_name} from ${group.name}`
+                  tone: "system"
                 }))}
-                onRemove={(groupId) => void onRemoveFromGroup(groupId)}
-                removeIcon={X}
               />
             </div>
           ) : null}

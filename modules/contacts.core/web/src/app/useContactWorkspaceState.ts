@@ -22,7 +22,6 @@ export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
   const [contactSortBy, setContactSortBy] = useState<ContactSortBy>("updated_at");
   const [contactSortDir, setContactSortDir] = useState<ContactSortDir>("desc");
   const [noteText, setNoteText] = useState("");
-  const [newGroupName, setNewGroupName] = useState("");
   const [relationshipTarget, setRelationshipTarget] = useState("");
   const [relationshipType, setRelationshipType] = useState("primary_contact");
 
@@ -152,7 +151,6 @@ export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
     editing,
     filters,
     noteText,
-    newGroupName,
     query,
     relationshipTarget,
     relationshipType,
@@ -165,7 +163,6 @@ export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
     setDraft,
     setEditing,
     setNoteText,
-    setNewGroupName,
     setRelationshipTarget,
     setRelationshipType,
     setReviewFilter: changeReviewFilter,

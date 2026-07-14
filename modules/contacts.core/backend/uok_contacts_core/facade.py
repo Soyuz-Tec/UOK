@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from .access import (
+    actor_contact_team_ids,
     can_manage_contacts,
     can_read_note,
     can_read_party,
@@ -9,6 +10,7 @@ from .access import (
     readable_party_filter,
     readable_relationship_records,
     relationship_is_readable,
+    validate_contact_assignment,
 )
 from .duplicates import find_duplicate_candidates
 from .group_read_model import (
@@ -28,6 +30,7 @@ from .read_model import (
     note_rows,
     relationship_rows,
     review_queue,
+    review_queue_count,
     serialize_party,
     touch_party,
 )
@@ -96,6 +99,7 @@ __all__ = [
     "VALID_CONTACT_GROUP_KINDS",
     "VALID_NOTE_VISIBILITY_SCOPES",
     "bounded_text",
+    "actor_contact_team_ids",
     "can_manage_contacts",
     "can_read_contact_group",
     "can_read_note",
@@ -129,9 +133,11 @@ __all__ = [
     "relationship_is_readable",
     "relationship_rows",
     "review_queue",
+    "review_queue_count",
     "review_state_for_payload",
     "serialize_contact_group",
     "serialize_party",
     "touch_party",
+    "validate_contact_assignment",
     "validate_contact_payload_lengths",
 ]

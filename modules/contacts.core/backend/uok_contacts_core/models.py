@@ -2,11 +2,26 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from uok.db import Base
 from uok.models_base import new_id, utcnow
+
+from .system_models import (
+    ContactActivity,
+    ContactConsentRecord,
+    ContactCustomFieldDefinition,
+    ContactDuplicateCandidate,
+    ContactExternalIdentity,
+    ContactImportRow,
+    ContactSavedView,
+    ContactTeam,
+    ContactTeamMember,
+    PartyCustomFieldValue,
+    PartyFact,
+    SYSTEM_MODELS,
+)
 
 
 class Party(Base):
@@ -84,6 +99,8 @@ class PartyRelationship(Base):
     attrs_json: Mapped[str] = mapped_column(Text, default="{}")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     __table_args__ = (
+        CheckConstraint("from_party_id <> to_party_id", name="ck_contacts_core_relationship_not_self"),
+        UniqueConstraint("organization_id", "from_party_id", "to_party_id", "relationship_type"),
         Index("ix_contacts_core_party_relationships_from", "organization_id", "from_party_id"),
         Index("ix_contacts_core_party_relationships_to", "organization_id", "to_party_id"),
     )
@@ -127,6 +144,7 @@ def owned_models() -> dict[str, type]:
         "PartyNote": PartyNote,
         "PartyRelationship": PartyRelationship,
         "ContactImportBatch": ContactImportBatch,
+        **SYSTEM_MODELS,
     }
 
 
@@ -134,6 +152,17 @@ __all__ = [
     "ContactGroup",
     "ContactGroupMember",
     "ContactImportBatch",
+    "ContactActivity",
+    "ContactConsentRecord",
+    "ContactCustomFieldDefinition",
+    "ContactDuplicateCandidate",
+    "ContactExternalIdentity",
+    "ContactImportRow",
+    "ContactSavedView",
+    "ContactTeam",
+    "ContactTeamMember",
+    "PartyCustomFieldValue",
+    "PartyFact",
     "Party",
     "PartyNote",
     "PartyRelationship",

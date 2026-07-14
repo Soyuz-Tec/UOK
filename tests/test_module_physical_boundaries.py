@@ -153,7 +153,7 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["checks"]["owned_table_claims_valid"] is True
     assert extension_contract["checks"]["owned_tables_resolve_to_models"] is True
     assert contracts["model_registry"]["ok"] is True
-    assert contracts["model_registry"]["model_count"] == 38
+    assert contracts["model_registry"]["model_count"] == 49
     assert extension_contract["violations"] == []
 
 

@@ -81,7 +81,11 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
                 </label>
                 <CommandButton icon={FileCheck2} onClick={props.onAddNote} disabled={!contact || !props.noteText.trim()}>Add</CommandButton>
               </div>
-              <ContactActivityTimeline contact={contact} />
+              <ContactActivityTimeline
+                token={props.token}
+                contactId={contact.id}
+                refreshKey={`${contact.updated_at || ""}:${contact.notes?.length || 0}`}
+              />
             </div>
           )}
           {props.detailPane === "relationships" && (

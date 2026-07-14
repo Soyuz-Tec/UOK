@@ -19,6 +19,8 @@ def cmd_link_contact_relationship(db: Session, actor: Actor, payload: dict[str, 
     relationship_type = bounded_text(payload.get("relationship_type"), "relationship_type")
     if not relationship_type:
         raise ValueError("relationship_type is required")
+    if from_party.id == to_party.id:
+        raise ValueError("a contact cannot have a relationship to itself")
     existing = db.scalar(select(PartyRelationship).where(
         PartyRelationship.organization_id == actor.organization_id,
         PartyRelationship.from_party_id == from_party.id,
@@ -62,7 +64,19 @@ def cmd_update_contact_relationship(db: Session, actor: Actor, payload: dict[str
     relationship_type = bounded_text(payload.get("relationship_type") or rel.relationship_type, "relationship_type")
     if not relationship_type:
         raise ValueError("relationship_type is required")
+    if from_party.id == to_party.id:
+        raise ValueError("a contact cannot have a relationship to itself")
     siblings = _duplicate_relationships(db, rel)
+    sibling_ids = {row.id for row in siblings}
+    duplicate_target = db.scalar(select(PartyRelationship.id).where(
+        PartyRelationship.organization_id == actor.organization_id,
+        PartyRelationship.from_party_id == from_party.id,
+        PartyRelationship.to_party_id == to_party.id,
+        PartyRelationship.relationship_type == relationship_type,
+        PartyRelationship.id.not_in(sibling_ids),
+    ))
+    if duplicate_target:
+        raise ValueError("contact relationship already exists")
     attrs = loads(rel.attrs_json, {})
     if "description" in payload:
         attrs["description"] = bounded_text(payload.get("description"), "description")

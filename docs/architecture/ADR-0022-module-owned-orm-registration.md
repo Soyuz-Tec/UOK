@@ -87,7 +87,7 @@ UI receiving validated schedule read models.
 - Import-order subprocesses cover `uok.models`, module providers, migration
   inspection, and module table inspection as first imports.
 - Registry tests prove deterministic provider order, idempotence, complete
-  manifest ownership, backend source origins, and all 38 SQLite `create_all`
+  manifest ownership, backend source origins, and all registered SQLite `create_all`
   tables.
 - Existing module, migration, PostgreSQL candidate, and full sequential test
   gates prove unchanged behavior and schema compatibility.

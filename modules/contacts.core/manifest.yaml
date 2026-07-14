@@ -2,7 +2,7 @@ manifest_schema: uok.module.v1
 name: contacts.core
 kind: capability_module
 version: APP_VERSION
-description: "Optional reusable party, person, organization, note, relationship, review, and CSV import capability."
+description: "Governed optional Party and Contacts system of record with first-class facts, consent, teams, groups, quality, import/export evidence, saved views, external identities, and custom fields."
 maturity: runtime_proven
 installable: true
 uninstallable: true
@@ -22,6 +22,7 @@ commands:
   - UpdateContactGroup
   - ArchiveContact
   - ArchiveContactGroup
+  - RestoreContactGroup
   - RestoreContact
   - PurgeContact
   - AddContactNote
@@ -35,11 +36,29 @@ commands:
   - UpdateContactRelationship
   - RemoveContactRelationship
   - ImportContactsCsv
+  - ImportContactsVCard
+  - RollbackContactImport
+  - UpsertContactFact
+  - RemoveContactFact
+  - RecordContactConsent
+  - CreateContactTeam
+  - UpdateContactTeam
+  - AddContactTeamMember
+  - RemoveContactTeamMember
+  - SaveContactView
+  - DeleteContactView
+  - RefreshContactDuplicateCandidates
+  - ResolveContactDuplicateCandidate
+  - BulkUpdateContacts
+  - LinkContactExternalIdentity
+  - DefineContactCustomField
+  - SetContactCustomFieldValue
 events:
   - ContactCreated
   - ContactGroupCreated
   - ContactGroupUpdated
   - ContactGroupArchived
+  - ContactGroupRestored
   - ContactAddedToGroup
   - ContactRemovedFromGroup
   - ContactsGroupedByBusinessEmailDomain
@@ -56,6 +75,25 @@ events:
   - ContactRelationshipRemoved
   - ContactLinkedToOrganization
   - ContactsImported
+  - ContactsImportPreviewed
+  - ContactsVCardPreviewed
+  - ContactsVCardImported
+  - ContactsImportRolledBack
+  - ContactFactSaved
+  - ContactFactRemoved
+  - ContactConsentRecorded
+  - ContactTeamCreated
+  - ContactTeamUpdated
+  - ContactTeamMemberAdded
+  - ContactTeamMemberRemoved
+  - ContactSavedViewSaved
+  - ContactSavedViewDeleted
+  - ContactDuplicateCandidatesRefreshed
+  - ContactDuplicateCandidateResolved
+  - ContactsBulkUpdated
+  - ContactExternalIdentityLinked
+  - ContactCustomFieldDefined
+  - ContactCustomFieldValueSet
 dependencies: []
 backend_path: modules/contacts.core/backend
 web_path: modules/contacts.core/web
@@ -80,6 +118,13 @@ permissions:
   - contacts.restore
   - contacts.purge
   - contacts.import
+  - contacts.bulk
+  - contacts.consent
+  - contacts.customize
+  - contacts.dedupe
+  - contacts.export
+  - contacts.sync
+  - contacts.team.manage
 owned_tables:
   - ContactGroup
   - ContactGroupMember
@@ -87,6 +132,17 @@ owned_tables:
   - PartyNote
   - PartyRelationship
   - ContactImportBatch
+  - ContactActivity
+  - ContactConsentRecord
+  - ContactCustomFieldDefinition
+  - ContactDuplicateCandidate
+  - ContactExternalIdentity
+  - ContactImportRow
+  - ContactSavedView
+  - ContactTeam
+  - ContactTeamMember
+  - PartyCustomFieldValue
+  - PartyFact
   - CommandLog:contacts.core
   - EventRecord:Contact
 extension_points:
@@ -99,4 +155,4 @@ extension_points:
   - model_exports
   - web_surface
   - candidate_verifier
-data_retention_policy: "User delete archives contacts; admin can restore or purge. Module uninstall disables access while retaining records for admin-controlled recovery unless a future purge workflow is explicitly executed."
+data_retention_policy: "User delete archives contacts; authorized purge irreversibly anonymizes contact-owned PII while retaining a non-PII tombstone and platform audit evidence. Consent and import evidence follow explicit organization retention policy. Module uninstall disables access while retaining records for admin-controlled recovery."

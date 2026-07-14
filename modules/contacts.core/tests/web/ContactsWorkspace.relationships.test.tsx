@@ -4,7 +4,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { contact, contactGroup, organizationContact, renderContactsWorkspace, resetContactsWorkspaceTest } from "./ContactsWorkspace.testUtils";
 
-afterEach(resetContactsWorkspaceTest);
+afterEach(() => {
+  document.documentElement.dir = "ltr";
+  resetContactsWorkspaceTest();
+});
 
 describe("ContactsWorkspace relationship and group interactions", () => {
   it("shows related contact names in the relationships pane", () => {
@@ -34,6 +37,8 @@ describe("ContactsWorkspace relationship and group interactions", () => {
   });
 
   it("edits and unlinks relationship rows without leaving the contact workspace", async () => {
+    const remoteContact = { id: "remote-contact", display_name: "Remote Decision Maker", party_type: "person", email: "remote@example.test" };
+    installRelationshipLookupMock([remoteContact]);
     const onUpdateRelationship = vi.fn().mockResolvedValue(undefined);
     const onRemoveRelationship = vi.fn().mockResolvedValue(undefined);
     renderContactsWorkspace("split", [{
@@ -57,16 +62,40 @@ describe("ContactsWorkspace relationship and group interactions", () => {
     const inspector = screen.getByLabelText("Contact inspector");
     const relationshipRow = within(inspector).getByText(contact.email || "").closest(".relationship-row") as HTMLElement;
     fireEvent.click(within(relationshipRow).getByLabelText("Edit relationship with Example Contact"));
+    const relatedContactLookup = within(relationshipRow).getByRole("combobox", { name: "Related contact" });
+    fireEvent.change(relatedContactLookup, { target: { value: "Remote" } });
+    const remoteOption = await within(relationshipRow).findByRole("option", { name: /Remote Decision Maker/ });
+    fireEvent.click(remoteOption);
     const relationshipSelector = within(relationshipRow).getByLabelText("Relationship");
     expect(within(relationshipSelector).getByRole("option", { name: "Finance contact" })).toBeInTheDocument();
     expect(within(relationshipSelector).getByRole("option", { name: "Supplier contact" })).toBeInTheDocument();
     fireEvent.change(relationshipSelector, { target: { value: "billing_contact" } });
     fireEvent.click(within(relationshipRow).getByLabelText("Save relationship"));
 
-    await waitFor(() => expect(onUpdateRelationship).toHaveBeenCalledWith("relationship-1", contact.id, organizationContact.id, "billing_contact"));
+    await waitFor(() => expect(onUpdateRelationship).toHaveBeenCalledWith("relationship-1", remoteContact.id, organizationContact.id, "billing_contact"));
 
     fireEvent.click(within(relationshipRow).getByLabelText("Unlink Example Contact"));
     await waitFor(() => expect(onRemoveRelationship).toHaveBeenCalledWith("relationship-1"));
+  });
+
+  it("searches the full readable contact set before linking a relationship", async () => {
+    const remoteContact = { id: "remote-organization", display_name: "Remote Operations Group", party_type: "organization", email: "ops@remote.example" };
+    const fetchMock = installRelationshipLookupMock([remoteContact]);
+    const onLinkRelationship = vi.fn();
+    renderContactsWorkspace("split", [contact], { onLinkRelationship });
+
+    fireEvent.click(screen.getByRole("button", { name: /Example Contact/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Relationships" }));
+    const inspector = screen.getByLabelText("Contact inspector");
+    fireEvent.change(within(inspector).getByRole("combobox", { name: "Related contact" }), { target: { value: "Remote" } });
+    fireEvent.click(await within(inspector).findByRole("option", { name: /Remote Operations Group/ }));
+    fireEvent.click(within(inspector).getByRole("button", { name: "Link" }));
+
+    expect(onLinkRelationship).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(`/api/contacts/relationship-options?query=Remote&exclude_party_id=${contact.id}`),
+      expect.objectContaining({ headers: { Authorization: "Bearer token" } })
+    );
   });
 
   it("adds and removes contact group memberships from the contact workspace", async () => {
@@ -103,4 +132,36 @@ describe("ContactsWorkspace relationship and group interactions", () => {
     fireEvent.click(within(inspector).getByLabelText("Add contact to selected group"));
     await waitFor(() => expect(onAddSelectedContactToGroup).toHaveBeenCalledWith(contactGroup.id));
   });
+
+  it("localizes relationship lookup and server activity states in an RTL workspace", async () => {
+    document.documentElement.dir = "rtl";
+    renderContactsWorkspace("split", [contact], {}, "ar");
+    fireEvent.click(screen.getByRole("button", { name: /Example Contact/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Relationships" }));
+    expect(screen.getByRole("combobox", { name: "جهة الاتصال المرتبطة" })).toHaveAttribute("placeholder", "اكتب حرفين على الأقل");
+    fireEvent.click(screen.getByRole("button", { name: "Activity" }));
+    expect(screen.getByText("سجل النشاط")).toBeInTheDocument();
+    expect(await screen.findByText("لا يوجد نشاط مسجل بعد.")).toBeInTheDocument();
+    expect(document.documentElement).toHaveAttribute("dir", "rtl");
+  });
 });
+
+function installRelationshipLookupMock(options: Array<Record<string, unknown>>) {
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const path = String(input);
+    if (path === "/api/contacts/saved-views") return response([]);
+    if (path.startsWith("/api/contacts/relationship-options?")) return response(options);
+    return response({ detail: "Unexpected request" }, 500);
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
+function response(body: unknown, status = 200) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: () => null },
+    json: vi.fn().mockResolvedValue(body)
+  } as unknown as Response;
+}

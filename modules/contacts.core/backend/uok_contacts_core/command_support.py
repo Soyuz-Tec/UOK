@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any, Callable
 
 from sqlalchemy import select
@@ -15,9 +16,11 @@ from .facade import (
     find_duplicate_candidates,
     has_meaningful_contact_value,
     review_state_for_payload,
+    validate_contact_assignment,
     validate_contact_payload_lengths,
 )
 from .models import Party, PartyNote, PartyRelationship, utcnow
+from .system_models import ContactActivity
 from uok.module_events import emit_module_event
 from uok.security import Actor
 from uok.util import dumps
@@ -27,6 +30,46 @@ CommandHandler = Callable[[Session, Actor, dict[str, Any], str], dict[str, Any]]
 
 def _emit_event(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:
     emit_module_event(db, actor, event_type, object_type, object_id, payload)
+    _record_contact_event_activity(db, actor, event_type, object_type, object_id, payload)
+
+
+def _record_contact_event_activity(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:
+    if event_type in {
+        "ContactConsentRecorded",
+        "ContactCustomFieldValueSet",
+        "ContactExternalIdentityLinked",
+        "ContactFactRemoved",
+        "ContactFactSaved",
+        "ContactsBulkUpdated",
+    }:
+        return
+    party_ids: set[str] = set()
+    if object_type == "Party":
+        party_ids.add(object_id)
+    for key, value in payload.items():
+        if key == "party_id" or key.endswith("_party_id"):
+            if isinstance(value, str) and value:
+                party_ids.add(value)
+    safe_payload = {
+        key: value for key, value in payload.items()
+        if not any(sensitive in key.lower() for sensitive in ("address", "display_name", "email", "name", "note", "phone"))
+    }
+    summary = re.sub(r"(?<!^)(?=[A-Z])", " ", event_type).strip()
+    for party_id in party_ids:
+        party = db.get(Party, party_id)
+        if not party or party.organization_id != actor.organization_id:
+            continue
+        db.add(ContactActivity(
+            organization_id=actor.organization_id,
+            party_id=party_id,
+            actor_user_id=actor.user_id,
+            activity_type=event_type,
+            object_type=object_type,
+            object_id=object_id,
+            summary=summary[:240],
+            payload_json=dumps(safe_payload),
+            occurred_at=utcnow(),
+        ))
 
 
 def _party(db: Session, actor: Actor, party_id: str, field: str, allowed_types: set[str] | None = None) -> Party:
@@ -78,15 +121,25 @@ def _create_party(db: Session, actor: Actor, payload: dict[str, Any], source: st
     if bounded_text(payload.get("import_batch_id"), "import_batch_id"):
         attrs["import_batch_id"] = bounded_text(payload.get("import_batch_id"), "import_batch_id")
     now = utcnow()
+    owner_user_id = bounded_text(payload.get("owner_user_id"), "owner_user_id") or actor.user_id
+    team_id = bounded_text(payload.get("team_id"), "team_id") or None
+    visibility_scope = contact_visibility_scope(payload.get("visibility_scope"))
+    validate_contact_assignment(
+        db,
+        actor,
+        owner_user_id=owner_user_id,
+        team_id=team_id,
+        visibility_scope=visibility_scope,
+    )
     party = Party(
         organization_id=actor.organization_id,
         party_type=choose_party_type(payload),
         display_name=choose_display_name(payload),
         status="active",
         review_state=review_state_for_payload(payload, duplicate_candidates),
-        owner_user_id=bounded_text(payload.get("owner_user_id"), "owner_user_id") or actor.user_id,
-        team_id=bounded_text(payload.get("team_id"), "team_id") or None,
-        visibility_scope=contact_visibility_scope(payload.get("visibility_scope")),
+        owner_user_id=owner_user_id,
+        team_id=team_id,
+        visibility_scope=visibility_scope,
         source=bounded_text(payload.get("source"), "source") or source,
         client_reference=bounded_text(payload.get("client_reference"), "client_reference") or None,
         sync_state=bounded_text(payload.get("sync_state"), "sync_state") or "server",

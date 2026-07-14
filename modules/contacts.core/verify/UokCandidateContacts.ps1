@@ -158,9 +158,12 @@ function Invoke-UokContactsCandidateScenario {
         throw "Contact restore failed: $($restored | ConvertTo-Json -Depth 20)"
     }
 
+    $stampText = [string]$Stamp
+    $phoneDigits = $stampText.Substring([Math]::Max(0, $stampText.Length - 10)).PadLeft(10, "0")
     $imported = Invoke-UokJson -Method "POST" -Path "/api/contacts/import-csv" -Headers $OpsHeaders -Body @{
-        filename = "contacts-alpha3.csv"
-        csv_text = "display_name,email,company,phone`nImported Contact $Stamp,imported-$Stamp@example.test,Imported Account $Stamp,+1 555 9999`n"
+        filename = "contacts-alpha3-$Stamp.csv"
+        csv_text = "display_name,email,company,phone`nImported Contact $Stamp,imported-$Stamp@example.test,Imported Account $Stamp,+1$phoneDigits`n"
+        mode = "create"
     }
     if ($imported.imported_count -lt 1) {
         throw "Contact CSV import failed: $($imported | ConvertTo-Json -Depth 20)"

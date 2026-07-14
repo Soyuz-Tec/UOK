@@ -110,7 +110,7 @@ def contact_visibility_scope(value: Any) -> str:
 def contact_group_kind(value: Any) -> str:
     kind = bounded_text(value, "kind").lower() or "manual"
     if kind not in VALID_CONTACT_GROUP_KINDS:
-        raise ValueError("contact group kind must be one of: business_domain, manual")
+        raise ValueError("contact group kind must be one of: business_domain, manual, smart_rule")
     return kind
 
 

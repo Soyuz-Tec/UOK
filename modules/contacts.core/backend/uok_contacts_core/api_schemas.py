@@ -91,3 +91,6 @@ class ContactRelationshipUpdateRequest(BaseModel):
 class ContactCsvImportRequest(BaseModel):
     filename: str | None = Field(default=None, max_length=240)
     csv_text: str = Field(..., min_length=1, max_length=MAX_CSV_IMPORT_BYTES)
+    dry_run: bool = False
+    mode: str = Field(default="create", pattern="^(create|update|upsert)$")
+    mapping: dict[str, str] = Field(default_factory=dict)

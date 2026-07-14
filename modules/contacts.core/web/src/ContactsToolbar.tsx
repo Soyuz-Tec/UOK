@@ -1,14 +1,21 @@
+import { RefreshCw } from "lucide-react";
+
 import { WorkspaceActionButton } from "@uok/shared/actions";
 import { contactsViewOptions } from "@uok/shared/options";
 import type { ContactGroupBy, ContactGroupRecord, ContactQualityFilter, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "@uok/shared/types";
 import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkspaceCommandBar } from "@uok/shared/layout";
-import { SegmentedControl } from "@uok/shared/primitives";
+import { useUokLocalization } from "@uok/shared/localization";
+import { CommandButton, SegmentedControl } from "@uok/shared/primitives";
 import { FieldVisibilityMenu, type FieldVisibilityMenuConfig } from "@uok/shared/tables";
 import { ContactPagingControls } from "./ContactPagingControls";
+import { ContactDataToolsSection } from "./ContactDataToolsSection";
+import { ContactGroupsToolsSection } from "./ContactGroupsToolsSection";
 import { contactsSavedViewsKey, groupOptions, presetSavedViews, qualityOptions, reviewOptions, sortOptions, sourceOptions, statusOptions, typeOptions } from "./contactsToolbarOptions";
+import { useContactSavedViews } from "./useContactSavedViews";
 
 export function ContactsToolbar({
+  token,
   query,
   statusFilter,
   reviewFilter,
@@ -41,8 +48,12 @@ export function ContactsToolbar({
   onContactSortByChange,
   onContactSortDirChange,
   onViewChange,
-  onCreate
+  onCreate,
+  onOpenGroupsManager,
+  onOpenDataToolsManager,
+  currentUserRole,
 }: {
+  token: string;
   query: string;
   statusFilter: string;
   reviewFilter: string;
@@ -76,7 +87,12 @@ export function ContactsToolbar({
   onContactSortDirChange: (value: ContactSortDir) => void;
   onViewChange: (value: ContactsView) => void;
   onCreate: () => void;
+  onOpenGroupsManager: () => void;
+  onOpenDataToolsManager: () => void;
+  currentUserRole: string;
 }) {
+  const { t } = useUokLocalization();
+  const contactSavedViews = useContactSavedViews(token);
   const groupingEnabled = contactsView !== "quality";
   const contactGroupFilterOptions = [
     { value: "all", label: "All groups" },
@@ -117,8 +133,40 @@ export function ContactsToolbar({
           groupBy={groupingEnabled ? contactGroupBy : "none"}
           groupOptions={groupingEnabled ? groupOptions : []}
           savedViewsStorageKey={contactsSavedViewsKey}
+          savedViews={contactSavedViews.savedViews}
+          savedViewsStatus={contactSavedViews.loading || contactSavedViews.pendingAction ? (
+            <p className="contacts-saved-view-status" role="status">
+              {t("contacts.savedViews.working", "Updating saved searches...")}
+            </p>
+          ) : contactSavedViews.error ? (
+            <div className="contacts-saved-view-error" role="alert">
+              <p>{t("contacts.savedViews.error", "Saved searches are temporarily unavailable.")} {contactSavedViews.error}</p>
+              <CommandButton icon={RefreshCw} onClick={() => void contactSavedViews.reload()}>
+                {t("command.refresh", "Refresh")}
+              </CommandButton>
+            </div>
+          ) : null}
           presetViews={presetSavedViews}
+          supplementalSections={({ close }) => (
+            <>
+              <ContactGroupsToolsSection
+                onOpen={() => {
+                  close();
+                  queueMicrotask(onOpenGroupsManager);
+                }}
+              />
+              <ContactDataToolsSection
+                canGovern={currentUserRole === "platform_admin" || currentUserRole === "ops_manager"}
+                onOpen={() => {
+                  close();
+                  queueMicrotask(onOpenDataToolsManager);
+                }}
+              />
+            </>
+          )}
           onGroupByChange={(value) => onContactGroupByChange(groupingEnabled ? value as ContactGroupBy : "none")}
+          onDeleteSavedView={async (viewId) => { await contactSavedViews.remove(viewId); }}
+          onSaveSavedView={async (view) => { await contactSavedViews.save(view); }}
           onClear={onClearFilters}
         />
       )}

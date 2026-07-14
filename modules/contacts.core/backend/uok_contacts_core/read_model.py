@@ -9,7 +9,7 @@ from .read_model_rows import (
     serialize_party,
     touch_party,
 )
-from .read_model_search import count_parties, list_parties, review_queue
+from .read_model_search import count_parties, list_parties, review_queue, review_queue_count
 
 __all__ = [
     "business_intelligence_profile",
@@ -20,6 +20,7 @@ __all__ = [
     "note_rows",
     "relationship_rows",
     "review_queue",
+    "review_queue_count",
     "serialize_party",
     "touch_party",
 ]

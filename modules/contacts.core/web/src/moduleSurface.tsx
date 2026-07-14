@@ -14,6 +14,7 @@ export const contactsModuleSurface: ModuleSurface = {
   render: (workbench) => (
     <ContactsWorkspace
       token={workbench.token}
+      currentUserRole={workbench.currentUser?.role || ""}
       operational={workbench.contactsOperational}
       module={workbench.contactsModule}
       contacts={workbench.contacts}
@@ -23,7 +24,6 @@ export const contactsModuleSurface: ModuleSurface = {
       contactsView={workbench.contactsView}
       contactGroupBy={workbench.contactGroupBy}
       contactGroupId={workbench.contactGroupId}
-      newGroupName={workbench.newGroupName}
       detailPane={workbench.contactDetailPane}
       query={workbench.query}
       statusFilter={workbench.statusFilter}
@@ -44,6 +44,7 @@ export const contactsModuleSurface: ModuleSurface = {
       relationshipType={workbench.relationshipType}
       busyAction={workbench.busyAction}
       onActivate={() => workbench.moduleAction(CONTACTS_MODULE_ID, workbench.contactsModule?.status === "disabled" ? "enable" : "install")}
+      onRefreshContacts={workbench.refresh}
       onViewChange={workbench.setContactsView}
       onContactGroupByChange={workbench.setContactGroupBy}
       onContactGroupChange={workbench.setContactGroupId}
@@ -61,11 +62,6 @@ export const contactsModuleSurface: ModuleSurface = {
       onContactSortDirChange={workbench.setContactSortDir}
       onSelect={workbench.setSelectedContactId}
       onCreate={workbench.startCreate}
-      onNewGroupNameChange={workbench.setNewGroupName}
-      onCreateGroup={workbench.createGroup}
-      onGroupContactsByBusinessDomain={workbench.groupContactsByBusinessDomain}
-      onGroupContactsBySmartRules={workbench.groupContactsBySmartRules}
-      onArchiveGroup={workbench.archiveGroup}
       onAddSelectedContactToGroup={workbench.addSelectedContactToGroup}
       onRemoveSelectedContactFromGroup={workbench.removeSelectedContactFromGroup}
       onEdit={() => workbench.selectedContact && workbench.startEdit(workbench.selectedContact)}

@@ -3,6 +3,26 @@
   gap: var(--uok-space-4);
 }
 
+.contacts-saved-view-status,
+.contacts-saved-view-error p {
+  margin: 0;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.contacts-saved-view-error {
+  display: grid;
+  gap: var(--uok-space-2);
+  border: 1px solid color-mix(in srgb, var(--uok-danger) 35%, var(--uok-border));
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-2);
+  background: color-mix(in srgb, var(--uok-danger) 8%, var(--uok-bg-elevated));
+}
+
+.contacts-saved-view-error .command-button {
+  justify-self: start;
+}
+
 .contacts-view-split .workflow-split-view {
   grid-template-columns: minmax(280px, 0.78fr) minmax(420px, 1.22fr);
   gap: 0;

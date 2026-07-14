@@ -13,7 +13,6 @@ from .group_domain_names import (
     available_group_name,
     business_domain_group_description,
     business_domain_group_name,
-    existing_business_domain_group,
 )
 from .models import ContactGroup, ContactGroupMember, Party, utcnow
 from uok.security import Actor
@@ -90,9 +89,14 @@ def is_business_domain(domain: str) -> bool:
     )
 
 
-def business_domain_group(db: Session, actor: Actor, domain: str, parties: list[Party]) -> ContactGroup:
+def business_domain_group(
+    db: Session,
+    actor: Actor,
+    domain: str,
+    parties: list[Party],
+    existing: ContactGroup | None,
+) -> ContactGroup:
     base_name, name_source = business_domain_group_name(db, actor, domain, parties)
-    existing = existing_business_domain_group(db, actor, domain)
     name = available_group_name(db, actor, base_name, domain, existing.id if existing else None)
     if existing:
         return update_business_domain_group(db, actor, existing, domain, name, name_source)
@@ -101,20 +105,37 @@ def business_domain_group(db: Session, actor: Actor, domain: str, parties: list[
 
 def update_business_domain_group(db: Session, actor: Actor, group: ContactGroup, domain: str, name: str, name_source: str) -> ContactGroup:
     previous_name = group.name
+    changed_fields: list[str] = []
+    restored = False
     if group.status == "archived":
         group.status = "active"
         group.archived_at = None
-    group.name = name
-    group.description = business_domain_group_description(domain, name_source)
-    group.kind = "business_domain"
-    group.attrs_json = dumps({"domain": domain, "generated_by": "business_email_domain", "name_source": name_source})
-    group.updated_at = utcnow()
-    if previous_name != group.name:
+        restored = True
+    description = business_domain_group_description(domain, name_source)
+    attrs_json = dumps({"domain": domain, "generated_by": "business_email_domain", "name_source": name_source})
+    for field, value in (
+        ("name", name),
+        ("description", description),
+        ("kind", "business_domain"),
+        ("attrs_json", attrs_json),
+    ):
+        if getattr(group, field) != value:
+            setattr(group, field, value)
+            changed_fields.append(field)
+    if restored or changed_fields:
+        group.updated_at = utcnow()
+    if restored:
+        _emit_event(db, actor, "ContactGroupRestored", "ContactGroup", group.id, {
+            "name": group.name,
+            "generated": True,
+        })
+    if changed_fields:
         _emit_event(db, actor, "ContactGroupUpdated", "ContactGroup", group.id, {
             "name": group.name,
             "previous_name": previous_name,
             "domain": domain,
             "name_source": name_source,
+            "changed_fields": changed_fields,
         })
     return group
 
@@ -138,11 +159,36 @@ def create_business_domain_group(db: Session, actor: Actor, domain: str, name: s
     return group
 
 
-def add_party_ids_to_group(db: Session, actor: Actor, group: ContactGroup, party_ids: list[str], attrs: dict[str, str]) -> int:
-    added_count = 0
-    for party_id in party_ids:
-        if party_already_in_group(db, actor, group, party_id):
-            continue
+def generated_business_domain_groups(db: Session, actor: Actor) -> list[ContactGroup]:
+    return list(db.scalars(select(ContactGroup).where(
+        ContactGroup.organization_id == actor.organization_id,
+        ContactGroup.kind == "business_domain",
+    ).order_by(ContactGroup.created_at.asc(), ContactGroup.id.asc())).all())
+
+
+def reconcile_party_ids_to_group(
+    db: Session,
+    actor: Actor,
+    group: ContactGroup,
+    party_ids: list[str],
+    attrs: dict[str, str],
+) -> dict[str, int]:
+    requested_ids = sorted(set(party_ids))
+    target_ids = set(db.scalars(select(Party.id).where(
+        Party.organization_id == actor.organization_id,
+        Party.status == "active",
+        Party.id.in_(requested_ids),
+    )).all()) if requested_ids else set()
+    existing_rows = list(db.scalars(select(ContactGroupMember).where(
+        ContactGroupMember.organization_id == actor.organization_id,
+        ContactGroupMember.group_id == group.id,
+    )).all())
+    existing_ids = {row.party_id for row in existing_rows}
+    removed_rows = [row for row in existing_rows if row.party_id not in target_ids]
+    added_ids = sorted(target_ids - existing_ids)
+    for row in removed_rows:
+        db.delete(row)
+    for party_id in added_ids:
         db.add(ContactGroupMember(
             organization_id=actor.organization_id,
             group_id=group.id,
@@ -151,17 +197,38 @@ def add_party_ids_to_group(db: Session, actor: Actor, group: ContactGroup, party
             attrs_json=dumps(attrs),
             created_at=utcnow(),
         ))
-        added_count += 1
-    group.updated_at = utcnow()
-    db.flush()
+    added_count = len(added_ids)
+    removed_count = len(removed_rows)
+    if added_count or removed_count:
+        group.updated_at = utcnow()
+        db.flush()
     if added_count:
-        _emit_event(db, actor, "ContactAddedToGroup", "ContactGroup", group.id, {"name": group.name, "added_count": added_count})
-    return added_count
+        _emit_event(db, actor, "ContactAddedToGroup", "ContactGroup", group.id, {
+            "name": group.name,
+            "added_count": added_count,
+            "generated": True,
+        })
+    if removed_count:
+        _emit_event(db, actor, "ContactRemovedFromGroup", "ContactGroup", group.id, {
+            "name": group.name,
+            "removed_count": removed_count,
+            "generated": True,
+        })
+    return {
+        "added_count": added_count,
+        "removed_count": removed_count,
+        "unchanged_count": len(target_ids & existing_ids),
+    }
 
 
-def party_already_in_group(db: Session, actor: Actor, group: ContactGroup, party_id: str) -> bool:
-    return db.scalar(select(ContactGroupMember).where(
-        ContactGroupMember.organization_id == actor.organization_id,
-        ContactGroupMember.group_id == group.id,
-        ContactGroupMember.party_id == party_id,
-    )) is not None
+def archive_generated_group(db: Session, actor: Actor, group: ContactGroup) -> bool:
+    if group.status == "archived":
+        return False
+    group.status = "archived"
+    group.archived_at = utcnow()
+    group.updated_at = utcnow()
+    _emit_event(db, actor, "ContactGroupArchived", "ContactGroup", group.id, {
+        "name": group.name,
+        "generated": True,
+    })
+    return True

@@ -30,6 +30,71 @@ def test_business_email_domain_groups_are_created_idempotently(client: TestClien
     assert rerun.status_code == 200, rerun.text
     assert rerun.json()["result"]["domain_count"] == 1
     assert rerun.json()["result"]["added_count"] == 0
+    rerun_group = next(row for row in rerun.json()["result"]["groups"] if row["group"]["id"] == group["id"])
+    assert rerun_group["removed_count"] == 0
+    assert rerun_group["unchanged_count"] == 2
+
+    for command_type, payload in (
+        ("UpdateContactGroup", {"group_id": group["id"], "name": f"Mutated Domain Group {suffix}"}),
+        ("ArchiveContactGroup", {"group_id": group["id"]}),
+        ("AddContactsToGroup", {"group_id": group["id"], "party_ids": [second_id]}),
+        ("RemoveContactFromGroup", {"group_id": group["id"], "party_id": second_id}),
+    ):
+        rejected = command(
+            client,
+            ops,
+            command_type,
+            payload,
+            f"uok-domain-generated-mutation-{command_type}-{suffix}",
+        )
+        assert rejected.status_code == 400, rejected.text
+        assert "managed by their generator" in rejected.text
+
+    archived_first = command(
+        client,
+        ops,
+        "ArchiveContact",
+        {"party_id": first_id},
+        f"uok-domain-contact-archive-first-{suffix}",
+    )
+    assert archived_first.status_code == 200, archived_first.text
+    reconciled = command(
+        client,
+        ops,
+        "GroupContactsByBusinessEmailDomain",
+        {"minimum_members": 1},
+        f"uok-domain-grouping-reconcile-{suffix}",
+    )
+    assert reconciled.status_code == 200, reconciled.text
+    reconciled_group = next(row for row in reconciled.json()["result"]["groups"] if row["group"]["id"] == group["id"])
+    assert reconciled_group["removed_count"] == 1
+    assert reconciled_group["unchanged_count"] == 1
+    assert reconciled_group["group"]["member_count"] == 1
+    reconciled_contacts = client.get("/api/contacts", headers=ops, params={"status": "all", "group_id": group["id"]})
+    assert reconciled_contacts.status_code == 200, reconciled_contacts.text
+    assert {row["id"] for row in reconciled_contacts.json()} == {second_id}
+
+    archived_second = command(
+        client,
+        ops,
+        "ArchiveContact",
+        {"party_id": second_id},
+        f"uok-domain-contact-archive-second-{suffix}",
+    )
+    assert archived_second.status_code == 200, archived_second.text
+    retired = command(
+        client,
+        ops,
+        "GroupContactsByBusinessEmailDomain",
+        {},
+        f"uok-domain-grouping-retire-{suffix}",
+    )
+    assert retired.status_code == 200, retired.text
+    assert retired.json()["result"]["removed_count"] >= 1
+    assert retired.json()["result"]["archived_count"] >= 1
+    active_groups = client.get("/api/contacts/groups", headers=ops)
+    assert active_groups.status_code == 200, active_groups.text
+    assert group["id"] not in {row["id"] for row in active_groups.json()}
 
 
 def _create_domain_group_contacts(client: TestClient, ops: dict[str, str], suffix: str) -> tuple[str, str]:

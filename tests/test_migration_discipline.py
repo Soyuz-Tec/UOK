@@ -30,6 +30,11 @@ def test_uok_migration_discipline_uses_single_active_baseline(client: TestClient
         "planning_tasks",
         "planning_task_dependencies",
     }.issubset(set(body["declared_module_tables"]))
-    assert any(item["module"] == "contacts.core" for item in body["module_migration_files"])
+    contacts_migrations = {
+        item["filename"]
+        for item in body["module_migration_files"]
+        if item["module"] == "contacts.core"
+    }
+    assert "004_contacts_core_merge_privacy.sql" in contacts_migrations
     assert any(item["module"] == "planning.core" for item in body["module_migration_files"])
     assert body["checks"]["baseline_has_no_business_module_tables"] is True

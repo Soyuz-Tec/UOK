@@ -20,10 +20,21 @@
     "CommunicationThread": "communication_threads"
   },
   "contacts.core": {
+    "ContactActivity": "contact_activities",
+    "ContactConsentRecord": "contact_consent_records",
+    "ContactCustomFieldDefinition": "contact_custom_field_definitions",
+    "ContactDuplicateCandidate": "contact_duplicate_candidates",
+    "ContactExternalIdentity": "contact_external_identities",
     "ContactGroup": "contact_groups",
     "ContactGroupMember": "contact_group_members",
     "ContactImportBatch": "contact_import_batches",
+    "ContactImportRow": "contact_import_rows",
+    "ContactSavedView": "contact_saved_views",
+    "ContactTeam": "contact_teams",
+    "ContactTeamMember": "contact_team_members",
     "Party": "parties",
+    "PartyCustomFieldValue": "party_custom_field_values",
+    "PartyFact": "party_facts",
     "PartyNote": "party_notes",
     "PartyRelationship": "party_relationships"
   },

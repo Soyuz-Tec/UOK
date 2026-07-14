@@ -4,16 +4,9 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from uok.data_exchange import csv_dict_rows
 from .facade import (
-    MAX_CSV_IMPORT_BYTES,
-    MAX_CSV_IMPORT_ROWS,
-    MAX_IMPORT_RESULT_ITEMS,
-    bounded_text,
     clean_text,
 )
-from .command_support import _create_party, _emit_event
-from .models import ContactImportBatch
 from uok.security import Actor
 from uok.util import dumps, loads
 
@@ -43,51 +36,9 @@ def _csv_payload(row: dict[str, Any], batch_id: str, filename: str, row_number: 
 
 
 def cmd_import_contacts_csv(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
-    csv_text = clean_text(payload.get("csv_text"))
-    if not csv_text:
-        raise ValueError("csv_text is required")
-    filename = bounded_text(payload.get("filename"), "filename") or "contacts.csv"
-    batch = ContactImportBatch(
-        organization_id=actor.organization_id,
-        created_by_user_id=actor.user_id,
-        source_filename=filename,
-        status="completed",
-        attrs_json=dumps({"filename": filename}),
-    )
-    db.add(batch)
-    db.flush()
-    imported: list[dict[str, Any]] = []
-    failures: list[dict[str, Any]] = []
-    for row_number, row in csv_dict_rows(csv_text, MAX_CSV_IMPORT_BYTES, MAX_CSV_IMPORT_ROWS):
-        try:
-            if _looks_like_automated_marketing(row):
-                raise ValueError("automated marketing contact rejected")
-            party, duplicate_candidates = _create_party(db, actor, _csv_payload(row, batch.id, filename, row_number), "csv_import")
-            _attach_import_evidence(party, batch.id, filename, row_number)
-            imported.append({"row": row_number, "party_id": party.id, "display_name": party.display_name, "duplicates": duplicate_candidates})
-        except ValueError as exc:
-            failures.append({"row": row_number, "error": str(exc)})
-    imported_sample = imported[:MAX_IMPORT_RESULT_ITEMS]
-    failure_sample = failures[:MAX_IMPORT_RESULT_ITEMS]
-    result_truncated = len(imported) > MAX_IMPORT_RESULT_ITEMS or len(failures) > MAX_IMPORT_RESULT_ITEMS
-    batch.imported_count = len(imported)
-    batch.failed_count = len(failures)
-    batch.attrs_json = dumps({"filename": filename, "imported": imported_sample, "failures": failure_sample, "result_truncated": result_truncated})
-    db.flush()
-    _emit_event(db, actor, "ContactsImported", "ContactImportBatch", batch.id, {
-        "filename": filename,
-        "imported_count": batch.imported_count,
-        "failed_count": batch.failed_count,
-    })
-    return {
-        "batch_id": batch.id,
-        "filename": filename,
-        "imported_count": batch.imported_count,
-        "failed_count": batch.failed_count,
-        "imported": imported_sample,
-        "failures": failure_sample,
-        "result_truncated": result_truncated,
-    }
+    from .guided_import import guided_csv_import
+
+    return guided_csv_import(db, actor, payload, command_id)
 
 
 def _attach_import_evidence(party, batch_id: str, filename: str, row_number: int) -> None:

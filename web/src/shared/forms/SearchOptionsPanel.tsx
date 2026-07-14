@@ -15,6 +15,7 @@ export function SearchOptionsPanel({
   groupOptions,
   groupingEnabled,
   savedViews,
+  savedViewsStatus,
   sort,
   supplementalSections,
   viewName,
@@ -34,6 +35,7 @@ export function SearchOptionsPanel({
   groupOptions: SearchWorkspaceOption[];
   groupingEnabled: boolean;
   savedViews: SavedSearchView[];
+  savedViewsStatus?: ReactNode;
   sort?: SearchWorkspaceSort;
   supplementalSections?: ReactNode;
   viewName: string;
@@ -110,6 +112,7 @@ export function SearchOptionsPanel({
       {supplementalSections}
       <section className="search-workspace-section search-workspace-saved-searches" aria-label={t("command.savedSearches", "Saved searches")}>
         <h3><Bookmark size={16} aria-hidden="true" /> {t("command.savedSearches", "Saved searches")}</h3>
+        {savedViewsStatus}
         <label className="search-workspace-save-field">
           <span>{t("command.searchName", "Search name")}</span>
           <input aria-label={t("command.savedSearchName", "Saved search name")} value={viewName} placeholder={t("command.nameThisSearch", "Name this search")} onChange={(event) => onViewNameChange(event.target.value)} />

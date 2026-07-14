@@ -2,6 +2,7 @@ import type { ContactDetailPane, ContactDraft, ContactGroupBy, ContactGroupRecor
 
 export type ContactsWorkspaceProps = {
   token: string;
+  currentUserRole: string;
   operational: boolean;
   module?: ModuleStatus;
   contacts: ContactRecord[];
@@ -11,7 +12,6 @@ export type ContactsWorkspaceProps = {
   contactsView: ContactsView;
   contactGroupBy: ContactGroupBy;
   contactGroupId: string;
-  newGroupName: string;
   detailPane: ContactDetailPane;
   query: string;
   statusFilter: string;
@@ -32,6 +32,7 @@ export type ContactsWorkspaceProps = {
   relationshipType: string;
   busyAction: string;
   onActivate: () => void;
+  onRefreshContacts: () => Promise<void> | void;
   onViewChange: (value: ContactsView) => void;
   onContactGroupByChange: (value: ContactGroupBy) => void;
   onContactGroupChange: (value: string) => void;
@@ -49,11 +50,6 @@ export type ContactsWorkspaceProps = {
   onContactSortDirChange: (value: ContactSortDir) => void;
   onSelect: (id: string) => void;
   onCreate: () => void;
-  onNewGroupNameChange: (value: string) => void;
-  onCreateGroup: () => void;
-  onGroupContactsByBusinessDomain: () => void;
-  onGroupContactsBySmartRules: () => void;
-  onArchiveGroup: (groupId: string) => void;
   onAddSelectedContactToGroup: (groupId: string) => Promise<void>;
   onRemoveSelectedContactFromGroup: (groupId: string) => Promise<void>;
   onEdit: () => void;
