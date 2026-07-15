@@ -35,6 +35,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `BackupDb` | Create local PostgreSQL 18 custom-format dump | `.\scripts\uok_ops.ps1 -Action BackupDb` |
 | `RestoreDb` | Restore a local dump into the local stack, guarded by explicit confirmation | `.\scripts\uok_ops.ps1 -Action RestoreDb -BackupPath <dump> -ConfirmRestore` |
 | `AsuhTest` | Create a local ASUH incident event and run health plus candidate verifier | `.\scripts\uok_ops.ps1 -Action AsuhTest -IncidentReason "reason"` |
+| `AutoStartInstall` | Install or refresh the owned, user-scoped Windows sign-in recovery task and frozen no-build payload | `.\scripts\uok_ops.ps1 -Action AutoStartInstall` |
+| `AutoStartStatus` | Read task ownership, last result, maintenance state, and payload integrity without starting Podman | `.\scripts\uok_ops.ps1 -Action AutoStartStatus` |
+| `AutoStartVerify` | Run the managed task now and require task result zero plus the expected UOK health identity | `.\scripts\uok_ops.ps1 -Action AutoStartVerify` |
+| `AutoStartDisable` | Preserve an intentional maintenance stop across sign-in without uninstalling | `.\scripts\uok_ops.ps1 -Action AutoStartDisable` |
+| `AutoStartEnable` | Remove the maintenance-disable marker and allow the next managed recovery | `.\scripts\uok_ops.ps1 -Action AutoStartEnable` |
+| `AutoStartUninstall` | Remove only the owned task and installed payload while retaining runtime data and logs | `.\scripts\uok_ops.ps1 -Action AutoStartUninstall` |
 | `GithubPreflight` | Show branch, remote, latest commit, diff hygiene, and changed files before commit/push/PR | `.\scripts\uok_ops.ps1 -Action GithubPreflight` |
 | `GithubReadiness` | Check GitHub auth, repo metadata, upstream sync, latest branch runs, current PR status, Dependabot alerts, and enforcement availability | `.\scripts\uok_ops.ps1 -Action GithubReadiness` |
 | `GithubSecuritySetup` | Enable Dependabot alerts/security updates, configure merge hygiene, and report branch-protection/ruleset availability | `.\scripts\uok_ops.ps1 -Action GithubSecuritySetup` |
@@ -313,6 +319,38 @@ This uses PostgreSQL 18 and serves UOK at:
 ```text
 http://127.0.0.1:18088/
 ```
+
+Both local services use `restart: unless-stopped`. On Windows, `Rebuild` also
+refreshes an installed auto-start payload after the new API image, database
+capacity, and health checks pass. It does nothing to auto-start state when the
+managed task is not installed.
+
+## Windows Sign-In Auto-Start
+
+Install and prove the supported user-scoped recovery path:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartInstall
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartVerify
+```
+
+The owned `\UOK\UOK Podman Auto Start` task runs 30 seconds after the installing
+user signs in. It uses limited privilege, no stored password, bounded native
+command timeouts, a pinned Podman connection and Compose provider, an exclusive
+lock, and a frozen `%LOCALAPPDATA%` payload. Existing image-pinned UOK containers
+are started first; frozen Compose is a no-build/no-pull fallback only when a
+service container is missing.
+
+Use `AutoStartStatus` for a read-only ownership, task-result, maintenance, and
+payload-integrity report. Use `AutoStartDisable` before an intentional maintenance
+stop and `AutoStartEnable` to resume recovery. `AutoStartUninstall` removes only
+the owned task and payload; it never stops Podman, deletes containers or volumes,
+or removes local data or logs.
+
+This is sign-in recovery for rootless Podman, not a pre-login service or a
+production boot claim. Full behavior, security boundaries, troubleshooting,
+logs, rollback, and reboot acceptance are defined in
+`docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`.
 
 ## Source Boundary And Naming
 

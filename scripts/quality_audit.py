@@ -9,10 +9,9 @@ import dependency_policy
 import documentation_reference_policy
 import frontend_quality_policy
 import source_size_policy
-
+import windows_autostart_policy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-
 
 @dataclass
 class CheckResult:
@@ -189,6 +188,7 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("documentation index must route the database pooling ADR")
     if "UOK_DATABASE_CONNECTION_POOLING.md" not in index:
         problems.append("documentation index must route the database pooling runbook")
+    problems.extend(windows_autostart_policy.windows_autostart_policy_problems(REPO_ROOT))
     return CheckResult("operations_hygiene", not problems, "; ".join(problems) or "documented")
 
 
