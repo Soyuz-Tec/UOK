@@ -32,3 +32,22 @@ export function planningFlowTargets(
   const allowed = new Set(current.allowed_transitions);
   return (schedule.task_flow?.statuses || []).filter((item) => allowed.has(item.status));
 }
+
+export function planningFlowDropTarget(
+  schedule: PlanningSchedule,
+  taskId: string,
+  targetStatus: PlanningTaskStatus,
+): PlanningTaskFlowStatus | undefined {
+  const task = schedule.tasks.find((item) => item.id === taskId);
+  if (!task) return undefined;
+  return planningFlowTargets(schedule, task).find((item) => item.status === targetStatus);
+}
+
+export function localizedPlanningStatusLabel(
+  schedule: PlanningSchedule,
+  status: PlanningTaskStatus,
+  t: (key: string, fallback?: string) => string,
+) {
+  const serverLabel = schedule.task_flow?.statuses.find((item) => item.status === status)?.display_label || status;
+  return t(`planning.taskStatus.${status}`, serverLabel);
+}

@@ -1,4 +1,5 @@
 import {
+  ArrowRightLeft,
   Download,
   FolderOpen,
   Pencil,
@@ -22,6 +23,7 @@ export type WorkspaceActionKind =
   | "create"
   | "delete"
   | "edit"
+  | "move"
   | "save"
   | "cancel"
   | "search"
@@ -41,6 +43,7 @@ const workspaceActionDefinitions: Record<WorkspaceActionKind, WorkspaceActionDef
   create: { icon: Plus, labelKey: "command.create", fallbackLabel: "Create" },
   delete: { icon: Trash2, labelKey: "command.delete", fallbackLabel: "Delete" },
   edit: { icon: Pencil, labelKey: "command.edit", fallbackLabel: "Edit" },
+  move: { icon: ArrowRightLeft, labelKey: "command.move", fallbackLabel: "Move" },
   save: { icon: Save, labelKey: "command.save", fallbackLabel: "Save" },
   cancel: { icon: X, labelKey: "command.cancel", fallbackLabel: "Cancel" },
   search: { icon: Search, labelKey: "command.search", fallbackLabel: "Search" },

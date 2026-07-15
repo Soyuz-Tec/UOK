@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { planningFlowLanes, planningFlowTargets } from "../../web/src/planningFlowBoardModel";
+import { planningFlowDropTarget, planningFlowLanes, planningFlowTargets } from "../../web/src/planningFlowBoardModel";
 import { planningSchedule } from "./planningFlowBoardFixtures";
 
 describe("planningFlowBoardModel", () => {
@@ -22,5 +22,14 @@ describe("planningFlowBoardModel", () => {
       "in_progress", "blocked", "complete",
     ]);
     expect(planningFlowTargets({ ...schedule, task_flow: undefined }, schedule.tasks[0])).toEqual([]);
+  });
+
+  it("resolves drop targets from the current schedule instead of drag payload data", () => {
+    const schedule = planningSchedule();
+
+    expect(planningFlowDropTarget(schedule, "scope", "in_progress")?.status).toBe("in_progress");
+    expect(planningFlowDropTarget(schedule, "scope", "planned")).toBeUndefined();
+    expect(planningFlowDropTarget(schedule, "unknown", "in_progress")).toBeUndefined();
+    expect(planningFlowDropTarget({ ...schedule, task_flow: undefined }, "scope", "in_progress")).toBeUndefined();
   });
 });

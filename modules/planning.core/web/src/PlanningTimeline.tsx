@@ -213,7 +213,7 @@ export function PlanningTimeline({
           readOnly={reviewMode}
           schedule={visibleSchedule}
           onTaskSelect={onTaskOpen}
-          onTaskStatusChange={(taskId, status) => onTaskInlineEdit(taskId, { status }, true)}
+          onTaskUpdate={(taskId, payload) => onTaskInlineEdit(taskId, payload, shouldCascadeEdit(payload))}
         />
       )}
     </div>

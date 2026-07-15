@@ -1,5 +1,5 @@
 import type { PlanningSchedule } from "./types";
-import type { PlanningTaskStatus } from "./types";
+import type { PlanningTaskUpdateRequest } from "./planningContracts";
 import type { PlanningView } from "./planningTimelineModel";
 import { planningCriticalPathSummary, planningTargetVarianceLabel } from "./planningCriticalPathModel";
 import { planningResourceWorkloads } from "./planningWorkloadModel";
@@ -12,16 +12,16 @@ export function PlanningReadModelView({
   readOnly = false,
   schedule,
   onTaskSelect,
-  onTaskStatusChange = () => false,
+  onTaskUpdate = () => false,
 }: {
   view: PlanningView;
   busy?: boolean;
   readOnly?: boolean;
   schedule: PlanningSchedule;
   onTaskSelect: (taskId: string) => void;
-  onTaskStatusChange?: (taskId: string, status: PlanningTaskStatus) => Promise<boolean> | boolean;
+  onTaskUpdate?: (taskId: string, payload: PlanningTaskUpdateRequest) => Promise<boolean> | boolean;
 }) {
-  if (view === "Board") return <PlanningFlowBoard busy={busy} readOnly={readOnly} schedule={schedule} onTaskOpen={onTaskSelect} onTaskStatusChange={onTaskStatusChange} />;
+  if (view === "Board") return <PlanningFlowBoard busy={busy} readOnly={readOnly} schedule={schedule} onTaskOpen={onTaskSelect} onTaskUpdate={onTaskUpdate} />;
   if (view === "List") return <PlanningScheduleList schedule={schedule} onTaskOpen={onTaskSelect} />;
   if (view === "Calendar") return <PlanningCalendarView schedule={schedule} onTaskSelect={onTaskSelect} />;
   if (view === "Workload") return <PlanningWorkload schedule={schedule} />;

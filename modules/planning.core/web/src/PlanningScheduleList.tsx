@@ -4,7 +4,7 @@ import { WorkspaceActionButton } from "@uok/shared/actions";
 import { useUokLocalization } from "@uok/shared/localization";
 import { ResizableDataTable, type DataTableColumn } from "@uok/shared/tables";
 
-import { localizedStatusLabel } from "./PlanningFlowBoard";
+import { localizedPlanningStatusLabel } from "./planningFlowBoardModel";
 import type { PlanningSchedule, PlanningTask } from "./types";
 
 export function PlanningScheduleList({
@@ -19,7 +19,7 @@ export function PlanningScheduleList({
     { id: "wbs", header: t("planning.column.wbs", "WBS"), defaultWidth: 90, minWidth: 72, renderCell: (task) => <bdi dir="auto">{task.wbs || "-"}</bdi> },
     { id: "task", header: t("planning.column.task", "Task"), defaultWidth: 260, minWidth: 180, renderCell: (task) => <strong><bdi dir="auto">{task.title}</bdi></strong>, getCellTitle: (task) => task.title },
     { id: "type", header: t("planning.list.type", "Type"), defaultWidth: 110, renderCell: (task) => t(`planning.taskType.${task.task_type}`, task.task_type) },
-    { id: "status", header: t("planning.column.status", "Status"), defaultWidth: 130, renderCell: (task) => localizedStatusLabel(schedule, task.status, t) },
+    { id: "status", header: t("planning.column.status", "Status"), defaultWidth: 130, renderCell: (task) => localizedPlanningStatusLabel(schedule, task.status, t) },
     { id: "start", header: t("planning.column.start", "Start"), defaultWidth: 150, renderCell: (task) => formatDate(task.start) },
     { id: "end", header: t("planning.column.end", "End"), defaultWidth: 150, renderCell: (task) => formatDate(task.end) },
     { id: "progress", header: t("planning.list.progress", "Progress"), defaultWidth: 100, renderCell: (task) => `${formatNumber(task.progress)}%` },

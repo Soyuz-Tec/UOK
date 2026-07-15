@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -9,105 +9,125 @@ import { planningSchedule } from "./planningFlowBoardFixtures";
 afterEach(cleanup);
 
 describe("PlanningFlowBoard", () => {
-  it("renders all governed lanes and moves through the published status policy", async () => {
-    const schedule = planningSchedule();
+  it("renders governed lanes with direct card opening and no visible Open or Move footer", () => {
     const onTaskOpen = vi.fn();
-    const onTaskStatusChange = vi.fn().mockResolvedValue(true);
-    renderBoard({ schedule, onTaskOpen, onTaskStatusChange });
+    renderBoard({ onTaskOpen });
 
     expect(screen.getByRole("region", { name: "Planning flow board" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Planned, 2 tasks" })).toHaveAttribute("data-planning-status", "planned");
     expect(screen.getByRole("region", { name: "In progress, 1 task" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Blocked, 0 tasks" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Complete, 0 tasks" })).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveClass("visually-hidden");
-    expect(screen.getByText("Move task Define scope")).toHaveClass("visually-hidden");
+    expect(screen.queryByRole("combobox", { name: /Move task/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("Open", { selector: "button" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Open task Define scope" }));
     expect(onTaskOpen).toHaveBeenCalledWith("scope");
+  });
 
-    fireEvent.change(screen.getByRole("combobox", { name: "Move task Define scope" }), { target: { value: "in_progress" } });
-    expect(onTaskStatusChange).toHaveBeenCalledWith("scope", "in_progress");
+  it("drags a task only to a server-permitted stage", async () => {
+    const onTaskUpdate = vi.fn().mockResolvedValue(true);
+    renderBoard({ onTaskUpdate });
+    const card = screen.getByRole("article", { name: "Task 1 Define scope" });
+    const destination = screen.getByRole("region", { name: "In progress, 1 task" });
+    const dataTransfer = dragDataTransfer();
+
+    fireEvent.dragStart(card, { dataTransfer });
+    fireEvent.dragEnter(destination, { dataTransfer });
+    fireEvent.dragOver(destination, { dataTransfer });
+    expect(destination).toHaveAttribute("data-flow-drop-state", "allowed");
+    fireEvent.drop(destination, { dataTransfer });
+    fireEvent.dragEnd(card, { dataTransfer });
+
+    expect(onTaskUpdate).toHaveBeenCalledTimes(1);
+    expect(onTaskUpdate).toHaveBeenCalledWith("scope", { status: "in_progress" });
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Define scope moved to In progress."));
-    await waitFor(() => expect(screen.getByRole("combobox", { name: "Move task Define scope" })).toHaveFocus());
+    await waitFor(() => expect(screen.getByRole("button", { name: "Open task Define scope" })).toHaveFocus());
   });
 
-  it("does not announce success when a stale command reloads an identical remote move", async () => {
-    const schedule = planningSchedule();
-    let resolveMove!: (applied: boolean) => void;
-    const onTaskStatusChange = vi.fn(() => new Promise<boolean>((resolve) => { resolveMove = resolve; }));
-    const view = renderBoard({ schedule, onTaskStatusChange });
+  it("rejects a self-stage and external drag without a mutation", () => {
+    const onTaskUpdate = vi.fn().mockResolvedValue(true);
+    renderBoard({ onTaskUpdate });
+    const source = screen.getByRole("region", { name: "Planned, 2 tasks" });
+    const card = screen.getByRole("article", { name: "Task 1 Define scope" });
+    const dataTransfer = dragDataTransfer();
 
-    fireEvent.change(screen.getByRole("combobox", { name: "Move task Define scope" }), { target: { value: "in_progress" } });
-    expect(screen.getByRole("combobox", { name: "Move task Define scope" })).toBeDisabled();
-    expect(screen.getByRole("combobox", { name: "Move task Define scope" })).toHaveAttribute("aria-busy", "true");
-    const remotelyMoved = { ...schedule, tasks: schedule.tasks.map((task) => task.id === "scope" ? { ...task, status: "in_progress" as const } : task) };
-    view.rerender(board({ schedule: remotelyMoved, onTaskStatusChange }));
-    resolveMove(false);
-
-    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Task move was not applied."));
-    expect(screen.getByRole("status")).not.toHaveTextContent("moved to In progress");
+    fireEvent.drop(source, { dataTransfer });
+    expect(onTaskUpdate).not.toHaveBeenCalled();
+    fireEvent.dragStart(card, { dataTransfer });
+    fireEvent.dragEnter(source, { dataTransfer });
+    fireEvent.dragOver(source, { dataTransfer });
+    expect(source).toHaveAttribute("data-flow-drop-state", "invalid");
+    fireEvent.drop(source, { dataTransfer });
+    fireEvent.dragEnd(card, { dataTransfer });
+    expect(onTaskUpdate).not.toHaveBeenCalled();
+    expect(screen.getByRole("status")).toHaveTextContent("Define scope cannot move to Planned.");
   });
 
-  it("restores focus to the destination control after an authoritative lane reparent", async () => {
+  it("does not advertise drag or More actions when the server publishes no destination", () => {
     const schedule = planningSchedule();
-    let resolveMove!: (applied: boolean) => void;
-    const onTaskStatusChange = vi.fn(() => new Promise<boolean>((resolve) => { resolveMove = resolve; }));
-    const view = renderBoard({ schedule, onTaskStatusChange });
-
-    const sourceControl = screen.getByRole("combobox", { name: "Move task Define scope" });
-    sourceControl.focus();
-    fireEvent.change(sourceControl, { target: { value: "in_progress" } });
-    const movedSchedule = {
-      ...schedule,
-      tasks: schedule.tasks.map((task) => task.id === "scope" ? { ...task, status: "in_progress" as const } : task),
+    schedule.task_flow = {
+      ...schedule.task_flow!,
+      statuses: schedule.task_flow!.statuses.map((status) => status.status === "planned"
+        ? { ...status, allowed_transitions: [] }
+        : status),
     };
-    view.rerender(board({ schedule: movedSchedule, onTaskStatusChange }));
-    resolveMove(true);
+    renderBoard({ schedule });
+    const card = screen.getByRole("article", { name: "Task 1 Define scope" });
 
-    await waitFor(() => expect(screen.getByRole("region", { name: "In progress, 2 tasks" })).toBeInTheDocument());
-    await waitFor(() => expect(screen.getByRole("combobox", { name: "Move task Define scope" })).toHaveFocus());
+    expect(card).toHaveAttribute("draggable", "false");
+    expect(within(card).queryByRole("button", { name: "More actions for Define scope" })).not.toBeInTheDocument();
   });
 
-  it("disables moves, isolates mixed-direction text, and localizes governed controls", () => {
+  it("keeps review-only cards inspectable while removing all mutation affordances", () => {
     const schedule = planningSchedule();
     schedule.tasks[0] = { ...schedule.tasks[0], title: "Scope نطاق", wbs: "WBS-١" };
+    const onTaskOpen = vi.fn();
     render(
       <UokLocalizationProvider locale="ar">
-        <PlanningFlowBoard busy={false} readOnly schedule={schedule} onTaskOpen={vi.fn()} onTaskStatusChange={vi.fn()} />
+        <PlanningFlowBoard busy={false} readOnly schedule={schedule} onTaskOpen={onTaskOpen} onTaskUpdate={vi.fn()} />
       </UokLocalizationProvider>,
     );
 
-    expect(screen.getByRole("region", { name: "لوحة تدفق التخطيط" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "مخططة, ٢ مهام" })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "نقل المهمة Scope نطاق" })).toBeDisabled();
+    const card = screen.getByRole("article", { name: "المهمة WBS-١ Scope نطاق" });
+    expect(card).toHaveAttribute("draggable", "false");
+    expect(within(card).queryByRole("button", { name: /تحرير/ })).not.toBeInTheDocument();
+    expect(within(card).queryByRole("button", { name: /مزيد من الإجراءات/ })).not.toBeInTheDocument();
     expect(screen.getByText("Scope نطاق")).toHaveAttribute("dir", "auto");
     expect(screen.getByText("WBS-١")).toHaveAttribute("dir", "auto");
+    fireEvent.click(screen.getByText("Scope نطاق"));
+    expect(onTaskOpen).toHaveBeenCalledWith("scope");
+    expect(screen.getByRole("button", { name: "فتح المهمة Scope نطاق" })).toHaveFocus();
   });
 
   it("exposes an actionable alert when the server flow contract is unavailable", () => {
-    const schedule = { ...planningSchedule(), task_flow: undefined };
-    renderBoard({ schedule });
-
+    renderBoard({ schedule: { ...planningSchedule(), task_flow: undefined } });
     expect(screen.getByRole("alert")).toHaveTextContent("Task flow is unavailable. Refresh the validated schedule.");
   });
 });
 
-function renderBoard(overrides: Partial<Parameters<typeof PlanningFlowBoard>[0]> = {}) {
-  const schedule = planningSchedule();
-  return render(board({ schedule, onTaskOpen: vi.fn(), onTaskStatusChange: vi.fn().mockResolvedValue(true), ...overrides }));
+export function renderBoard(overrides: Partial<Parameters<typeof PlanningFlowBoard>[0]> = {}) {
+  return render(board(overrides));
 }
 
-function board(props: Partial<Parameters<typeof PlanningFlowBoard>[0]>) {
-  const schedule = planningSchedule();
+export function board(props: Partial<Parameters<typeof PlanningFlowBoard>[0]> = {}) {
   return (
     <PlanningFlowBoard
       busy={false}
       readOnly={false}
-      schedule={schedule}
+      schedule={planningSchedule()}
       onTaskOpen={vi.fn()}
-      onTaskStatusChange={vi.fn().mockResolvedValue(true)}
+      onTaskUpdate={vi.fn().mockResolvedValue(true)}
       {...props}
     />
   );
+}
+
+function dragDataTransfer() {
+  return {
+    dropEffect: "none",
+    effectAllowed: "uninitialized",
+    setData: vi.fn(),
+    getData: vi.fn(),
+  } as unknown as DataTransfer;
 }

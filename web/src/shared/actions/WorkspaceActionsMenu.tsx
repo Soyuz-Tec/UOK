@@ -22,10 +22,12 @@ export function WorkspaceActionsMenu({
   items,
   label,
   className = "",
+  onOpenChange,
 }: {
   items: readonly WorkspaceActionsMenuItem[];
   label?: string;
   className?: string;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const { t } = useUokLocalization();
   const accessibleLabel = label ?? t("command.moreActions", "More actions");
@@ -38,6 +40,7 @@ export function WorkspaceActionsMenu({
       triggerIcon={MoreHorizontal}
       triggerLabel={accessibleLabel}
       triggerSummary={t("command.more", "More")}
+      onOpenChange={onOpenChange}
     >
       {({ close }) => (
         <div className="workspace-actions-menu-list" role="group" aria-label={accessibleLabel}>

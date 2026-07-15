@@ -840,9 +840,9 @@ test("Planning Gantt 9+ candidate preserves split state, pinned annotations, and
   await expect.poll(async () => Math.abs((await planningPinnedMarkerTops(chart)).task - pinnedBefore.task)).toBeLessThanOrEqual(1);
 });
 
-test("Planning Board moves a task through a validated schedule reload and restores focus", async ({ page }) => {
+test("Planning Board supports direct drag, inline title edit, card opening, and guarded reloads", async ({ page }) => {
   const boardSchedule = structuredClone(sampleSchedule);
-  const statuses = ["complete", "planned", "in_progress", "blocked"] as const;
+  const statuses = ["complete", "planned", "planned", "blocked"] as const;
   boardSchedule.tasks = boardSchedule.tasks.map((task, index) => ({ ...task, status: statuses[index] }));
   const movedTask = boardSchedule.tasks.find((task) => task.id === "task-1");
   if (!movedTask) throw new Error("Board proof task is missing");
@@ -863,13 +863,15 @@ test("Planning Board moves a task through a validated schedule reload and restor
   });
   await page.route(`/api/planning/tasks/${movedTask.id}`, async (route) => {
     const request = route.request();
+    const payload = request.postDataJSON() as { status?: typeof movedTask.status; title?: string };
     taskUpdates.push({
       method: request.method(),
-      payload: request.postDataJSON(),
+      payload,
       ifMatch: request.headers()["if-match"],
       idempotencyKey: request.headers()["idempotency-key"],
     });
-    movedTask.status = "in_progress";
+    if (payload.status) movedTask.status = payload.status;
+    if (payload.title) movedTask.title = payload.title;
     revision += 1;
     boardSchedule.project.revision = revision;
     etag = proofEtag(revision);
@@ -878,7 +880,7 @@ test("Planning Board moves a task through a validated schedule reload and restor
         task: movedTask,
         validation: boardSchedule.validation,
         revision,
-        correlation_id: "board-move-proof",
+        correlation_id: "board-direct-interaction-proof",
       },
       headers: { ETag: etag },
     });
@@ -889,13 +891,25 @@ test("Planning Board moves a task through a validated schedule reload and restor
 
   const board = page.getByRole("region", { name: "Planning flow board", exact: true });
   await expect(board).toBeVisible();
-  for (const lane of ["Planned, 1 task", "In progress, 1 task", "Blocked, 1 task", "Complete, 1 task"]) {
+  for (const lane of ["Planned, 2 tasks", "In progress, 0 tasks", "Blocked, 1 task", "Complete, 1 task"]) {
     await expect(board.getByRole("region", { name: lane, exact: true })).toBeVisible();
   }
 
-  const moveTask = board.getByRole("combobox", { name: "Move task Define schedule scope", exact: true });
-  await moveTask.focus();
-  await moveTask.selectOption({ label: "Move to In progress" });
+  const plannedLane = board.getByRole("region", { name: "Planned, 2 tasks", exact: true });
+  const sourceCard = board.locator('article[data-planning-task-id="task-1"]');
+  await sourceCard.getByRole("button", { name: "More actions for Define schedule scope", exact: true }).click();
+  const sourceMenu = page.getByRole("dialog", { name: "More actions for Define schedule scope", exact: true });
+  await expect(sourceMenu).toBeVisible();
+  const menuBox = await sourceMenu.boundingBox();
+  const laterCardBox = await plannedLane.locator("article").nth(1).boundingBox();
+  expect(menuBox && laterCardBox && menuBox.y + menuBox.height > laterCardBox.y).toBe(true);
+  await sourceMenu.getByRole("button", { name: "Move to Complete", exact: true }).click({ trial: true });
+  await page.keyboard.press("Escape");
+  await expect(sourceMenu).toBeHidden();
+  await expect(plannedLane.locator("article")).toHaveCount(2);
+
+  const destinationLane = board.getByRole("region", { name: "In progress, 0 tasks", exact: true });
+  await sourceCard.dragTo(destinationLane);
 
   await expect.poll(() => taskUpdates).toHaveLength(1);
   expect(taskUpdates[0]).toEqual({
@@ -905,11 +919,37 @@ test("Planning Board moves a task through a validated schedule reload and restor
     idempotencyKey: expect.stringMatching(/^planning-task-update:/),
   });
   await expect.poll(() => scheduleLoads).toBe(2);
-  await expect(board.getByRole("region", { name: "Planned, 0 tasks", exact: true })).toBeVisible();
-  const destination = board.getByRole("region", { name: "In progress, 2 tasks", exact: true });
-  await expect(destination.locator('article[data-planning-task-id="task-1"]')).toContainText("Define schedule scope");
+  await expect(board.getByRole("region", { name: "Planned, 1 task", exact: true })).toBeVisible();
+  const destination = board.getByRole("region", { name: "In progress, 1 task", exact: true });
+  const movedCard = destination.locator('article[data-planning-task-id="task-1"]');
+  await expect(movedCard).toContainText("Define schedule scope");
   await expect(page.getByRole("status").filter({ hasText: "Define schedule scope moved to In progress." })).toBeVisible();
-  await expect(moveTask).toBeFocused();
+  const movedOpenSurface = board.getByRole("button", { name: "Open task Define schedule scope", exact: true });
+  await expect(movedOpenSurface).toBeFocused();
+
+  await movedCard.getByRole("button", { name: "Edit Task title for Define schedule scope", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Planning inspector", exact: true })).toBeHidden();
+  const titleInput = movedCard.getByRole("textbox", { name: "Task title for Define schedule scope", exact: true });
+  await titleInput.fill("Define governed schedule scope");
+  await movedCard.getByRole("button", { name: "Save", exact: true }).click();
+
+  await expect.poll(() => taskUpdates).toHaveLength(2);
+  expect(taskUpdates[1]).toEqual({
+    method: "PATCH",
+    payload: { title: "Define governed schedule scope" },
+    ifMatch: proofEtag(2),
+    idempotencyKey: expect.stringMatching(/^planning-task-update:/),
+  });
+  await expect.poll(() => scheduleLoads).toBe(3);
+  await expect(movedCard).toContainText("Define governed schedule scope");
+  await expect(movedCard.getByRole("button", { name: "Edit Task title for Define governed schedule scope", exact: true })).toBeFocused();
+
+  await movedCard.click({ position: { x: 18, y: 86 } });
+  const inspector = page.getByRole("dialog", { name: "Planning inspector", exact: true });
+  await expect(inspector).toBeVisible();
+  await inspector.getByRole("button", { name: "Close Planning inspector", exact: true }).click();
+  const renamedOpenSurface = board.getByRole("button", { name: "Open task Define governed schedule scope", exact: true });
+  await expect(renamedOpenSurface).toBeFocused();
   await expect.poll(() => consoleErrors).toEqual([]);
   await expect.poll(() => pageErrors).toEqual([]);
 });
@@ -938,11 +978,15 @@ test("Planning Board remains inspectable and mutation-free in server review-only
   const board = page.getByRole("region", { name: "Planning flow board", exact: true });
   await expect(board).toBeVisible();
   await expect(board.getByRole("region")).toHaveCount(4);
-  for (const move of await board.getByRole("combobox", { name: /^Move task / }).all()) await expect(move).toBeDisabled();
+  await expect(board.getByRole("combobox", { name: /^Move task / })).toHaveCount(0);
+  await expect(board.getByRole("button", { name: /^More actions for / })).toHaveCount(0);
+  await expect(board.getByRole("button", { name: /^Edit Task title for / })).toHaveCount(0);
 
   const openTask = board.getByRole("button", { name: "Open task Define schedule scope", exact: true });
   await expect(openTask).toBeEnabled();
-  await openTask.click();
+  const taskCard = board.locator('article[data-planning-task-id="task-1"]');
+  await expect(taskCard).toHaveAttribute("draggable", "false");
+  await taskCard.getByText("Define schedule scope", { exact: true }).click();
   const inspector = page.getByRole("dialog", { name: "Planning inspector", exact: true });
   await expect(inspector).toBeVisible();
   await expect(inspector.getByRole("button", { name: "Save task", exact: true })).toBeDisabled();
