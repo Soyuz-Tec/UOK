@@ -125,6 +125,7 @@ Operator browser
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
 - Standard operations: `docs/operations/UOK_STANDARD_OPERATIONS.md`
+- Windows Podman sign-in recovery: `docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`
 - Contacts Core operations: `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`
 - Database connection-pooling operations: `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`
 - ASUH test events: `docs/operations/UOK_ASUH_TEST_EVENTS.md`

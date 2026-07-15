@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "DatabaseCapacity", "PlanningReleaseReadiness", "ContactsVerifierGroupCleanup", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
+    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "DatabaseCapacity", "PlanningReleaseReadiness", "ContactsVerifierGroupCleanup", "BackupDb", "RestoreDb", "AsuhTest", "AutoStartInstall", "AutoStartStatus", "AutoStartVerify", "AutoStartDisable", "AutoStartEnable", "AutoStartUninstall", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
     [string]$Action = "Audit",
     [string]$BaseUrl = "http://127.0.0.1:18088",
     [string]$ProjectName = "uok",
@@ -172,6 +172,7 @@ function Invoke-UokRebuild {
     }
     Invoke-UokHealth
     Invoke-UokDatabaseCapacityLive
+    if ($env:OS -eq "Windows_NT") { Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_autostart_ops.ps1", "-Action", "Refresh") }
 }
 
 function Invoke-UokDatabaseCapacityOffline {
@@ -262,6 +263,14 @@ function Invoke-UokGithubOperation {
     }
     Invoke-PowerShellScript $arguments
 }
+function Invoke-UokAutoStartOperation {
+    param([string]$AutoStartAction)
+    $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_autostart_ops.ps1", "-Action", $AutoStartAction)
+    if ($AutoStartAction -eq "Uninstall") {
+        $arguments += "-ConfirmUninstall"
+    }
+    Invoke-PowerShellScript $arguments
+}
 
 switch ($Action) {
     "Audit" { Invoke-UokAudit }
@@ -277,6 +286,12 @@ switch ($Action) {
     "BackupDb" { Invoke-UokBackupDb }
     "RestoreDb" { Invoke-UokRestoreDb }
     "AsuhTest" { Invoke-UokAsuhTest }
+    "AutoStartInstall" { Invoke-UokAutoStartOperation "Install" }
+    "AutoStartStatus" { Invoke-UokAutoStartOperation "Status" }
+    "AutoStartVerify" { Invoke-UokAutoStartOperation "Verify" }
+    "AutoStartDisable" { Invoke-UokAutoStartOperation "Disable" }
+    "AutoStartEnable" { Invoke-UokAutoStartOperation "Enable" }
+    "AutoStartUninstall" { Invoke-UokAutoStartOperation "Uninstall" }
     "GithubPreflight" { Invoke-UokGithubPreflight }
     "GithubReadiness" { Invoke-UokGithubOperation "Readiness" }
     "GithubSecuritySetup" { Invoke-UokGithubOperation "SecuritySetup" }

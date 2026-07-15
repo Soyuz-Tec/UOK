@@ -53,6 +53,19 @@ cd .\UOK
 podman compose -p uok -f deploy\compose-local-18088.yaml up -d --build
 ```
 
+On Windows, install and verify the supported user-scoped sign-in recovery after
+the first successful build:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartInstall
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartVerify
+```
+
+Use `AutoStartStatus`, `AutoStartDisable`, `AutoStartEnable`, or
+`AutoStartUninstall` for the managed lifecycle. The task starts after user
+sign-in, never before login, and restores only the frozen no-build local
+candidate. See `docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`.
+
 Open:
 
 ```text
