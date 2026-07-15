@@ -27,6 +27,16 @@ test("shared Arabic RTL, touch targets, and narrow reflow remain operable", asyn
   const planningView = page.getByRole("combobox", { name: "عرض التخطيط", exact: true });
   await expect(planningView).toHaveValue("Gantt chart");
   await expect(planningView.locator("option")).toContainText(["مخطط جانت", "اللوحة", "القائمة", "التقويم", "عبء العمل", "الأشخاص", "لوحة المعلومات"]);
+  await planningView.selectOption("Board");
+  const touchCard = page.locator(".planning-flow-card").filter({ has: page.locator(".planning-flow-card-menu") }).first();
+  const touchEditMark = touchCard.locator(".inline-edit-display > svg");
+  const touchMoreActions = touchCard.locator(".planning-flow-card-actions-menu .expandable-control-trigger");
+  await expect(touchEditMark).toHaveCSS("opacity", "1");
+  await expect(touchMoreActions).toHaveCSS("opacity", "1");
+  await touchMoreActions.tap();
+  await expect(touchCard.locator(".workspace-actions-menu-panel")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await planningView.selectOption("Gantt chart");
   const splitter = page.getByRole("separator", { name: "تغيير حجم شبكة المهام والخط الزمني", exact: true });
   await expect(splitter).toHaveCount(0);
   await page.setViewportSize({ width: 900, height: 844 });

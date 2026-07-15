@@ -897,7 +897,21 @@ test("Planning Board supports direct drag, inline title edit, card opening, and 
 
   const plannedLane = board.getByRole("region", { name: "Planned, 2 tasks", exact: true });
   const sourceCard = board.locator('article[data-planning-task-id="task-1"]');
-  await sourceCard.getByRole("button", { name: "More actions for Define schedule scope", exact: true }).click();
+  const editTitle = sourceCard.getByRole("button", { name: "Edit Task title for Define schedule scope", exact: true });
+  const editMark = editTitle.locator("svg");
+  const moreActions = sourceCard.getByRole("button", { name: "More actions for Define schedule scope", exact: true });
+  await expect(editMark).toHaveCSS("opacity", "0");
+  await expect(moreActions).toHaveCSS("opacity", "0");
+  await sourceCard.hover({ position: { x: 8, y: 8 } });
+  await expect(editMark).toHaveCSS("opacity", "0.38");
+  await expect(moreActions).toHaveCSS("opacity", "0.38");
+  await sourceCard.getByRole("button", { name: "Open task Define schedule scope", exact: true }).focus();
+  await page.keyboard.press("Tab");
+  await expect(editTitle).toBeFocused();
+  await expect(editMark).toHaveCSS("opacity", "1");
+  await moreActions.hover();
+  await expect(moreActions).toHaveCSS("opacity", "1");
+  await moreActions.click();
   const sourceMenu = page.getByRole("dialog", { name: "More actions for Define schedule scope", exact: true });
   await expect(sourceMenu).toBeVisible();
   const menuBox = await sourceMenu.boundingBox();

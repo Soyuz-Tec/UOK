@@ -14,6 +14,15 @@ const dependencyPairs = [
 ];
 const schedule = {
   project, capabilities, tasks,
+  task_flow: {
+    schema_version: 1 as const,
+    statuses: [
+      { status: "planned" as const, display_label: "Planned", allowed_transitions: ["in_progress" as const, "blocked" as const, "complete" as const] },
+      { status: "in_progress" as const, display_label: "In progress", allowed_transitions: ["planned" as const, "blocked" as const, "complete" as const] },
+      { status: "blocked" as const, display_label: "Blocked", allowed_transitions: ["planned" as const, "in_progress" as const, "complete" as const] },
+      { status: "complete" as const, display_label: "Complete", allowed_transitions: ["planned" as const, "in_progress" as const] },
+    ],
+  },
   dependencies: dependencyPairs.map(([source, target], index) => ({
     id: `scale-dependency-${index + 1}`, project_id: project.id,
     predecessor_task_id: tasks[source].id, successor_task_id: tasks[target].id, dependency_type: "start_to_start", lag_days: 0,

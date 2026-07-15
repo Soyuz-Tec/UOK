@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -37,12 +37,49 @@ describe("PlanningFlowBoard", () => {
     fireEvent.dragOver(destination, { dataTransfer });
     expect(destination).toHaveAttribute("data-flow-drop-state", "allowed");
     fireEvent.drop(destination, { dataTransfer });
-    fireEvent.dragEnd(card, { dataTransfer });
 
     expect(onTaskUpdate).toHaveBeenCalledTimes(1);
     expect(onTaskUpdate).toHaveBeenCalledWith("scope", { status: "in_progress" });
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Define scope moved to In progress."));
     await waitFor(() => expect(screen.getByRole("button", { name: "Open task Define scope" })).toHaveFocus());
+  });
+
+  it("cancels an obsolete focus fallback when the same card starts another drag", async () => {
+    let resolveMove!: (accepted: boolean) => void;
+    const onTaskUpdate = vi.fn(() => new Promise<boolean>((resolve) => { resolveMove = resolve; }));
+    renderBoard({ onTaskUpdate });
+    const card = screen.getByRole("article", { name: "Task 1 Define scope" });
+    const destination = screen.getByRole("region", { name: "In progress, 1 task" });
+    const dataTransfer = dragDataTransfer();
+
+    fireEvent.dragStart(card, { dataTransfer });
+    fireEvent.drop(destination, { dataTransfer });
+    await waitFor(() => expect(onTaskUpdate).toHaveBeenCalledTimes(1));
+    await act(async () => resolveMove(true));
+    fireEvent.dragStart(card, { dataTransfer });
+    await act(async () => new Promise((resolve) => window.setTimeout(resolve, 130)));
+
+    expect(screen.getByRole("button", { name: "Open task Define scope" })).not.toHaveFocus();
+    fireEvent.dragEnd(card, { dataTransfer });
+  });
+
+  it("does not steal deliberate edit focus when dragend is omitted", async () => {
+    let resolveMove!: (accepted: boolean) => void;
+    const onTaskUpdate = vi.fn(() => new Promise<boolean>((resolve) => { resolveMove = resolve; }));
+    renderBoard({ onTaskUpdate });
+    const card = screen.getByRole("article", { name: "Task 1 Define scope" });
+    const destination = screen.getByRole("region", { name: "In progress, 1 task" });
+    const dataTransfer = dragDataTransfer();
+
+    fireEvent.dragStart(card, { dataTransfer });
+    fireEvent.drop(destination, { dataTransfer });
+    await waitFor(() => expect(onTaskUpdate).toHaveBeenCalledTimes(1));
+    await act(async () => resolveMove(true));
+    fireEvent.click(within(card).getByRole("button", { name: "Edit Task title for Define scope" }));
+    const input = within(card).getByRole("textbox", { name: "Task title for Define scope" });
+    await act(async () => new Promise((resolve) => window.setTimeout(resolve, 130)));
+
+    expect(input).toHaveFocus();
   });
 
   it("rejects a self-stage and external drag without a mutation", () => {

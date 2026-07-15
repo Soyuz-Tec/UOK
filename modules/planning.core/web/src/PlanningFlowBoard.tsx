@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { DragEvent as ReactDragEvent } from "react";
 
 import { useUokLocalization } from "@uok/shared/localization";
@@ -27,6 +27,10 @@ export function PlanningFlowBoard({
   const { formatDate, formatNumber, t } = useUokLocalization();
   const boardRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
+  const activeDragTaskId = useRef<string | null>(null);
+  const deferredFocusTaskId = useRef<string | null>(null);
+  const deferredFocusOrigin = useRef<Element | null>(null);
+  const deferredFocusTimer = useRef<number | null>(null);
   const openControlRefs = useRef(new Map<string, HTMLButtonElement>());
   const pendingMoveTaskId = useRef<string | null>(null);
   const instructionsId = useId();
@@ -34,6 +38,8 @@ export function PlanningFlowBoard({
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const lanes = planningFlowLanes(schedule);
+
+  useEffect(() => () => cancelDeferredFocus(), []);
 
   if (!schedule.task_flow) {
     return (
@@ -98,7 +104,7 @@ export function PlanningFlowBoard({
                   t={t}
                   onDragBegin={() => beginDrag(task)}
                   onDragFinish={() => finishDrag(task)}
-                  onMove={(status) => { void moveTask(task.id, status); }}
+                  onMove={(status) => { void moveTask(task.id, status, false); }}
                   onOpen={() => onTaskOpen(task.id)}
                   onTitleChange={(title) => updateTitle(task.id, title)}
                 />
@@ -119,6 +125,8 @@ export function PlanningFlowBoard({
   function beginDrag(task: PlanningTask) {
     if (busy || readOnly || pendingMoveTaskId.current) return;
     const next = { taskId: task.id };
+    cancelDeferredFocus();
+    activeDragTaskId.current = task.id;
     dragRef.current = next;
     setDragState(next);
     setAnnouncement(template(t("planning.board.dragging", "Dragging {task}. Choose an allowed stage."), { task: task.title }));
@@ -156,7 +164,7 @@ export function PlanningFlowBoard({
     const accepted = planningFlowDropTarget(schedule, current.taskId, status);
     clearDrag();
     if (accepted) {
-      void moveTask(current.taskId, status);
+      void moveTask(current.taskId, status, true);
       return;
     }
     const task = schedule.tasks.find((item) => item.id === current.taskId);
@@ -168,6 +176,13 @@ export function PlanningFlowBoard({
   }
 
   function finishDrag(task: PlanningTask) {
+    if (activeDragTaskId.current === task.id) {
+      activeDragTaskId.current = null;
+      if (deferredFocusTaskId.current === task.id) {
+        cancelDeferredFocus();
+        restoreTaskFocus(task.id);
+      }
+    }
     if (dragRef.current?.taskId !== task.id) return;
     clearDrag();
     setAnnouncement(template(t("planning.board.dragCancelled", "Drag canceled for {task}."), { task: task.title }));
@@ -178,10 +193,12 @@ export function PlanningFlowBoard({
     setDragState(null);
   }
 
-  async function moveTask(taskId: string, targetStatus: PlanningTaskStatus) {
+  async function moveTask(taskId: string, targetStatus: PlanningTaskStatus, fromDrag: boolean) {
     const task = schedule.tasks.find((item) => item.id === taskId);
     if (!task || readOnly || busy || pendingMoveTaskId.current) return;
     if (!planningFlowDropTarget(schedule, taskId, targetStatus)) return;
+    cancelDeferredFocus();
+    if (!fromDrag) activeDragTaskId.current = null;
     const statusLabel = localizedPlanningStatusLabel(schedule, targetStatus, t);
     pendingMoveTaskId.current = task.id;
     setPendingMove({ taskId: task.id });
@@ -195,12 +212,40 @@ export function PlanningFlowBoard({
     } finally {
       pendingMoveTaskId.current = null;
       setPendingMove(null);
-      window.requestAnimationFrame(() => {
-        const control = openControlRefs.current.get(task.id);
-        if (control?.isConnected) control.focus();
-        else boardRef.current?.focus();
-      });
+      if (fromDrag && activeDragTaskId.current === task.id) deferTaskFocus(task.id);
+      else restoreTaskFocus(task.id);
     }
+  }
+
+  function deferTaskFocus(taskId: string) {
+    cancelDeferredFocus();
+    deferredFocusTaskId.current = taskId;
+    deferredFocusOrigin.current = document.activeElement;
+    deferredFocusTimer.current = window.setTimeout(() => {
+      if (activeDragTaskId.current !== taskId || deferredFocusTaskId.current !== taskId) return;
+      const focusMoved = document.activeElement !== deferredFocusOrigin.current
+        && document.activeElement instanceof HTMLElement
+        && document.activeElement !== document.body
+        && document.activeElement.isConnected;
+      activeDragTaskId.current = null;
+      cancelDeferredFocus();
+      if (!focusMoved) restoreTaskFocus(taskId);
+    }, 100);
+  }
+
+  function cancelDeferredFocus() {
+    if (deferredFocusTimer.current !== null) window.clearTimeout(deferredFocusTimer.current);
+    deferredFocusTimer.current = null;
+    deferredFocusTaskId.current = null;
+    deferredFocusOrigin.current = null;
+  }
+
+  function restoreTaskFocus(taskId: string) {
+    window.requestAnimationFrame(() => {
+      const control = openControlRefs.current.get(taskId);
+      if (control?.isConnected) control.focus();
+      else boardRef.current?.focus();
+    });
   }
 
   async function updateTitle(taskId: string, title: string) {
