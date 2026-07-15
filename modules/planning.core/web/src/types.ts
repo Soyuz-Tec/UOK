@@ -1,8 +1,10 @@
 import type { Appearance, ModuleStatus } from "@uok/shared/types";
 import type { PlanningCapacityUnit, PlanningResourceCalendar, PlanningResourceCanonicalKind, PlanningResourceType } from "./resourceTypes";
 import type { PlanningCapabilities } from "./planningCapabilities";
+import type { PlanningTaskFlow, PlanningTaskStatus } from "./planningTaskFlowTypes";
 export type { PlanningCapacityUnit, PlanningResourceCalendar, PlanningResourceCanonicalKind, PlanningResourceType } from "./resourceTypes";
 export type { PlanningCapabilities } from "./planningCapabilities";
+export type { PlanningTaskFlow, PlanningTaskFlowStatus, PlanningTaskStatus } from "./planningTaskFlowTypes";
 
 export type PlanningProjectStatus = "draft" | "active" | "on_hold" | "completed" | "archived";
 
@@ -22,7 +24,6 @@ export type PlanningProject = {
 export type PlanningTaskType = "task" | "summary" | "milestone";
 export type PlanningSchedulingMode = "auto" | "manual";
 export type PlanningDependencyType = "finish_to_start" | "start_to_start" | "finish_to_finish" | "start_to_finish";
-export type PlanningTaskStatus = "planned" | "in_progress" | "blocked" | "complete";
 export type PlanningLinkTargetKind = "operation" | "gate" | "evidence" | "party" | "shipment" | "document" | "location" | "asset" | "agreement" | "communication_thread" | "calendar_event";
 export type PlanningLinkRelationship = "implements" | "blocks_on" | "requires" | "proves" | "owned_by" | "moves" | "occurs_at" | "discussed_in" | "publishes_to";
 export type PlanningParticipantRole = "owner" | "assignee" | "approver" | "consulted" | "informed" | "external_contact";
@@ -233,6 +234,7 @@ export type PlanningBaselineComparison = {
 export type PlanningSchedule = {
   project: PlanningProject;
   capabilities?: PlanningCapabilities;
+  task_flow?: PlanningTaskFlow;
   tasks: PlanningTask[];
   dependencies: PlanningDependency[];
   calendar?: PlanningCalendar;

@@ -4005,6 +4005,19 @@
         "title": "PlanningRiskTaskRequest",
         "type": "object"
       },
+      "PlanningScheduleReadModel": {
+        "additionalProperties": true,
+        "properties": {
+          "task_flow": {
+            "$ref": "#/components/schemas/PlanningTaskFlowContract"
+          }
+        },
+        "required": [
+          "task_flow"
+        ],
+        "title": "PlanningScheduleReadModel",
+        "type": "object"
+      },
       "PlanningTaskDateUpdateRequest": {
         "additionalProperties": false,
         "properties": {
@@ -4099,6 +4112,70 @@
           }
         },
         "title": "PlanningTaskDateUpdateRequest",
+        "type": "object"
+      },
+      "PlanningTaskFlowContract": {
+        "additionalProperties": false,
+        "properties": {
+          "schema_version": {
+            "const": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "statuses": {
+            "items": {
+              "$ref": "#/components/schemas/PlanningTaskFlowStatus"
+            },
+            "title": "Statuses",
+            "type": "array"
+          }
+        },
+        "required": [
+          "schema_version",
+          "statuses"
+        ],
+        "title": "PlanningTaskFlowContract",
+        "type": "object"
+      },
+      "PlanningTaskFlowStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "allowed_transitions": {
+            "items": {
+              "enum": [
+                "planned",
+                "in_progress",
+                "blocked",
+                "complete"
+              ],
+              "type": "string"
+            },
+            "title": "Allowed Transitions",
+            "type": "array"
+          },
+          "display_label": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Display Label",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "planned",
+              "in_progress",
+              "blocked",
+              "complete"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "display_label",
+          "allowed_transitions"
+        ],
+        "title": "PlanningTaskFlowStatus",
         "type": "object"
       },
       "PlanningTaskParticipantRequest": {
@@ -14626,9 +14703,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Project Schedule Api Planning Projects  Project Id  Schedule Get",
-                  "type": "object"
+                  "$ref": "#/components/schemas/PlanningScheduleReadModel"
                 }
               }
             },

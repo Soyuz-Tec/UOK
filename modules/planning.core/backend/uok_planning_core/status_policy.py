@@ -6,6 +6,12 @@ from uok.command_context import CommandDomainError
 
 TASK_STATUSES = ("planned", "in_progress", "blocked", "complete", "deleted")
 USER_TASK_STATUSES = TASK_STATUSES[:-1]
+TASK_STATUS_DISPLAY_LABELS = {
+    "planned": "Planned",
+    "in_progress": "In progress",
+    "blocked": "Blocked",
+    "complete": "Complete",
+}
 TASK_STATUS_TRANSITIONS = {
     "planned": {"in_progress", "blocked", "complete"},
     "in_progress": {"planned", "blocked", "complete"},
@@ -13,6 +19,24 @@ TASK_STATUS_TRANSITIONS = {
     "complete": {"planned", "in_progress"},
     "deleted": set(),
 }
+
+
+def task_flow_read_model() -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "statuses": [
+            {
+                "status": status,
+                "display_label": TASK_STATUS_DISPLAY_LABELS[status],
+                "allowed_transitions": [
+                    target
+                    for target in USER_TASK_STATUSES
+                    if target in TASK_STATUS_TRANSITIONS[status]
+                ],
+            }
+            for status in USER_TASK_STATUSES
+        ],
+    }
 
 
 def planning_task_status(value: Any, *, allow_deleted: bool = False) -> str:
@@ -50,8 +74,10 @@ def assert_task_status_transition(
 
 __all__ = [
     "TASK_STATUSES",
+    "TASK_STATUS_DISPLAY_LABELS",
     "TASK_STATUS_TRANSITIONS",
     "USER_TASK_STATUSES",
     "assert_task_status_transition",
     "planning_task_status",
+    "task_flow_read_model",
 ]

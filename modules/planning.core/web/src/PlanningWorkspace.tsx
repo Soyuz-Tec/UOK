@@ -186,7 +186,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           }}
           onTaskReschedule={actions.rescheduleTask}
           onTaskProgress={(taskId, progress) => void actions.saveTask(taskId, { progress })}
-          onTaskInlineEdit={(taskId, payload, cascade) => void actions.saveTask(taskId, payload, cascade)}
+          onTaskInlineEdit={(taskId, payload, cascade) => actions.saveTaskWithOutcome(taskId, payload, cascade)}
           onBulkTaskEdit={(updates) => void actions.saveTaskBatch(updates)}
           onDependencyCreate={(payload) => void actions.addDependency(payload)}
           onTimelineTaskCreate={(start, end) => void actions.addTask(timelineTaskPayload(activeSchedule.tasks, start, end))}

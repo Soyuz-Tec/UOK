@@ -149,6 +149,33 @@ describe("usePlanningWorkspaceMutations concurrency recovery", () => {
     expect(secondHeaders.get("Idempotency-Key")).not.toBe(firstHeaders.get("Idempotency-Key"));
   });
 
+  it("returns a rejected outcome when stale recovery reloads the requested remote status", async () => {
+    let scheduleReads = 0;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path === "/api/planning/projects") return jsonResponse([schedule(1).project]);
+      if (path.endsWith("/schedule")) {
+        scheduleReads += 1;
+        const current = schedule(scheduleReads === 1 ? 1 : 2);
+        if (scheduleReads > 1) current.tasks[0].status = "in_progress";
+        return jsonResponse(current, 200, scheduleReads === 1 ? etag1 : etag2);
+      }
+      if (path === "/api/planning/tasks/task-1") return preconditionResponse();
+      throw new Error(`Unexpected Planning test request: ${path}`);
+    }));
+
+    const { result } = renderHook(usePlanningHarness);
+    await waitFor(() => expect(result.current.actions.scheduleEtag).toBe(etag1));
+    let applied = true;
+    await act(async () => {
+      applied = await result.current.actions.saveTaskWithOutcome("task-1", { status: "in_progress" });
+    });
+
+    expect(applied).toBe(false);
+    expect(result.current.schedule?.tasks[0].status).toBe("in_progress");
+    expect(result.current.actions.staleRecovery).toMatchObject({ label: "Edit task", reloadFailed: false });
+  });
+
   it("submits bulk updates as one atomic batch and reloads once", async () => {
     const batchRequests: RequestInit[] = [];
     let scheduleReads = 0;

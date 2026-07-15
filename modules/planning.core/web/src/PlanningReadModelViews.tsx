@@ -1,60 +1,32 @@
 import type { PlanningSchedule } from "./types";
+import type { PlanningTaskStatus } from "./types";
 import type { PlanningView } from "./planningTimelineModel";
 import { planningCriticalPathSummary, planningTargetVarianceLabel } from "./planningCriticalPathModel";
 import { planningResourceWorkloads } from "./planningWorkloadModel";
+import { PlanningFlowBoard } from "./PlanningFlowBoard";
+import { PlanningScheduleList } from "./PlanningScheduleList";
 
 export function PlanningReadModelView({
   view,
+  busy = false,
+  readOnly = false,
   schedule,
   onTaskSelect,
+  onTaskStatusChange = () => false,
 }: {
   view: PlanningView;
+  busy?: boolean;
+  readOnly?: boolean;
   schedule: PlanningSchedule;
   onTaskSelect: (taskId: string) => void;
+  onTaskStatusChange?: (taskId: string, status: PlanningTaskStatus) => Promise<boolean> | boolean;
 }) {
-  if (view === "Board") return <PlanningBoard schedule={schedule} onTaskSelect={onTaskSelect} />;
-  if (view === "List") return <PlanningList schedule={schedule} onTaskSelect={onTaskSelect} />;
+  if (view === "Board") return <PlanningFlowBoard busy={busy} readOnly={readOnly} schedule={schedule} onTaskOpen={onTaskSelect} onTaskStatusChange={onTaskStatusChange} />;
+  if (view === "List") return <PlanningScheduleList schedule={schedule} onTaskOpen={onTaskSelect} />;
   if (view === "Calendar") return <PlanningCalendarView schedule={schedule} onTaskSelect={onTaskSelect} />;
   if (view === "Workload") return <PlanningWorkload schedule={schedule} />;
   if (view === "People") return <PlanningPeople schedule={schedule} />;
   return <PlanningDashboard schedule={schedule} onTaskSelect={onTaskSelect} />;
-}
-
-function PlanningBoard({ schedule, onTaskSelect }: { schedule: PlanningSchedule; onTaskSelect: (taskId: string) => void }) {
-  const statuses = Array.from(new Set(schedule.tasks.map((task) => task.status || "planned")));
-  return (
-    <div className="planning-read-view planning-board-view" aria-label="Planning board">
-      {statuses.map((status) => (
-        <section key={status} className="planning-read-lane">
-          <h3>{status}</h3>
-          {schedule.tasks.filter((task) => (task.status || "planned") === status).map((task) => (
-            <button key={task.id} type="button" onClick={() => onTaskSelect(task.id)}>
-              <strong>{task.wbs || "-"}</strong>
-              <span>{task.title}</span>
-              <small>{task.start} - {task.end}</small>
-            </button>
-          ))}
-        </section>
-      ))}
-    </div>
-  );
-}
-
-function PlanningList({ schedule, onTaskSelect }: { schedule: PlanningSchedule; onTaskSelect: (taskId: string) => void }) {
-  return (
-    <div className="planning-read-view" aria-label="Planning list">
-      <table className="planning-read-table">
-        <thead><tr><th>WBS</th><th>Task</th><th>Type</th><th>Start</th><th>End</th><th>Progress</th><th>Readiness</th></tr></thead>
-        <tbody>
-          {schedule.tasks.map((task) => (
-            <tr key={task.id} onClick={() => onTaskSelect(task.id)}>
-              <td>{task.wbs || "-"}</td><td>{task.title}</td><td>{task.task_type}</td><td>{task.start}</td><td>{task.end}</td><td>{task.progress}%</td><td>{task.readiness?.ready === false ? `${task.readiness.blocking_count} blocker(s)` : "Ready"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
 }
 
 function PlanningCalendarView({ schedule, onTaskSelect }: { schedule: PlanningSchedule; onTaskSelect: (taskId: string) => void }) {

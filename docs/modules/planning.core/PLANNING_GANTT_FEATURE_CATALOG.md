@@ -159,14 +159,14 @@ External feature intake from DHTMLX Gantt and SVAR React Gantt is tracked in `do
 | Resource leveling | Explicit `simple_forward` command uses a bounded configured horizon, moves only eligible auto tasks, and returns leveled/partial/infeasible, exact changed tasks, remaining overloads, stable reasons, audit evidence, and independent post-level validation without changing approved baselines. | `runtime_proven` |
 | Constraints | Must-start, must-finish, start/finish no-earlier-than, and start/finish no-later-than constraints are stored per task, enforced by Python scheduling, returned in read models, editable in the inspector, and exported. | `integration_tested` |
 | Manual/auto scheduling | Per-task auto/manual scheduling mode is stored with each task; auto tasks participate in dependency propagation, while manual tasks keep their dates and surface validation conflicts. | `integration_tested` |
-| Controlled task status | Planned, in-progress, blocked, and complete values use a server-owned registry and transition policy; unknown values and forbidden transitions return structured errors without schedule mutation. | `runtime_proven` |
+| Controlled task status | Planned, in-progress, blocked, and complete values use a server-owned ordered flow contract and transition policy; unknown values and forbidden transitions return structured errors without schedule mutation. | `runtime_proven` |
 | Optimistic concurrency | Project revisions and task versions are persisted; actor-visible schedules return canonical strong ETags; existing-project writes require exact `If-Match` and expose typed 428/412 reload/reapply recovery. | `runtime_proven` |
 
 ## Workspace And Professional Features
 
 | Feature | Target behavior | Status |
 |---|---|---:|
-| Board/List/Calendar/Workload/People/Dashboard views | Alternate read-model views use the same validated schedule; Workload includes independently validated daily resource load lanes and overload counts. | `runtime_proven` |
+| Board/List/Calendar/Workload/People/Dashboard views | Alternate views use the same validated schedule. Board renders the four server-ordered flow lanes and sends explicit Move commands through the guarded task API before authoritative reload, outcome-based announcement, and focus recovery; stale/failed writes cannot be inferred as successful from matching remote state, and a missing flow contract fails visibly. Review-only mode permits Open but no mutation. Board/List isolate mixed-direction business text, and List uses the shared resizable table with explicit keyboard-safe Open actions. Workload includes independently validated daily resource load lanes and overload counts. | `runtime_proven` |
 | Fullscreen/focus mode | Expand the planning workspace into a dense viewport overlay with an explicit exit action. | `source_present` |
 | Layout and split persistence | The 220-row Chromium candidate proves split/timeline-only layout, bounded split percentage, reload persistence, and saved-view restoration; local per-project/field-preset positions preserve working context. | `runtime_proven` |
 | Review/edit mode | Toolbar toggle prevents schedule mutations by disabling task creation, edit commands, row action menus, drag handles, progress handles, dependency handles, and inspector editor controls. | `runtime_proven` |

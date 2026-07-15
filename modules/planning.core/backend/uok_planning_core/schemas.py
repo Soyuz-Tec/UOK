@@ -10,6 +10,30 @@ from .resource_contract import resource_definition
 from .resource_calendar import resource_calendar_definition
 
 
+PlanningTaskStatus = Literal["planned", "in_progress", "blocked", "complete"]
+
+
+class PlanningTaskFlowStatus(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: PlanningTaskStatus
+    display_label: str = Field(..., min_length=1, max_length=80)
+    allowed_transitions: list[PlanningTaskStatus]
+
+
+class PlanningTaskFlowContract(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: Literal[1]
+    statuses: list[PlanningTaskFlowStatus]
+
+
+class PlanningScheduleReadModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    task_flow: PlanningTaskFlowContract
+
+
 class PlanningProjectRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=180)
     start: str = Field(..., min_length=10, max_length=32)

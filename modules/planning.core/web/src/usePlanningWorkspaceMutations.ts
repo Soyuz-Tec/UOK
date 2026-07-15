@@ -61,7 +61,7 @@ export function usePlanningWorkspaceMutations({
     setStaleRecovery(null);
   }, []);
   const history = planningWorkspaceHistoryState(undoStack, redoStack);
-  const workspaceActions = planningWorkspaceActions({ token, projectId: selectedProjectId, mutate });
+  const workspaceActions = planningWorkspaceActions({ token, projectId: selectedProjectId, mutate, mutateWithOutcome });
   const reloadSchedule = useCallback(async (projectId: string, current: () => boolean = () => true) => {
     const snapshot = await loadPlanningSchedule(token, projectId);
     if (!current()) throw new Error("Planning operation was superseded.");
@@ -93,26 +93,35 @@ export function usePlanningWorkspaceMutations({
     status,
   };
   async function mutate(mutation: PlanningMutationIntent) {
-    if (!selectedProjectId || !etagRef.current) return setStatus({ status: "unavailable", message: "Reload the schedule before making changes." });
+    await mutateWithOutcome(mutation);
+  }
+
+  async function mutateWithOutcome(mutation: PlanningMutationIntent) {
+    if (!selectedProjectId || !etagRef.current) {
+      setStatus({ status: "unavailable", message: "Reload the schedule before making changes." });
+      return false;
+    }
     const before = schedule;
     const ticket = startOperation(mutation.action);
-    if (!ticket) return;
+    if (!ticket) return false;
     try {
       const response = await mutation.run(etagRef.current);
-      if (!isOperationCurrent(ticket)) return;
+      if (!isOperationCurrent(ticket)) return false;
       setCurrentEtag(response.etag);
       const after = await reloadSchedule(selectedProjectId, () => isOperationCurrent(ticket));
-      if (!isOperationCurrent(ticket)) return;
+      if (!isOperationCurrent(ticket)) return false;
       if (before) pushHistory(withPlanningHistorySource(mutation.history(before, after, mutation.label), response.data, after.project.revision));
       clearRecovery();
       setStatus({ status: "validated", ...mutation.okStatus, ...mutation.successStatus?.(response.data) });
+      return true;
     } catch (error) {
-      if (!isOperationCurrent(ticket)) return;
+      if (!isOperationCurrent(ticket)) return false;
       if (isPlanningPreconditionError(error)) await beginStaleRecovery(error, mutation, ticket);
       else {
         setStatus(planningWorkspaceErrorStatus(error));
         await reloadSchedule(selectedProjectId, () => isOperationCurrent(ticket)).catch(() => undefined);
       }
+      return false;
     } finally {
       finishOperation(ticket);
     }

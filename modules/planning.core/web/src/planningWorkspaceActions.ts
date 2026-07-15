@@ -57,14 +57,17 @@ export function planningWorkspaceActions({
   token,
   projectId,
   mutate,
+  mutateWithOutcome,
 }: {
   token: string;
   projectId: string;
   mutate: (intent: PlanningMutationIntent) => Promise<void>;
+  mutateWithOutcome: (intent: PlanningMutationIntent) => Promise<boolean>;
 }) {
   const actions = {
     rescheduleTask: (taskId: string, start: string, end: string, cascade = true) => mutate(rescheduleTaskIntent(token, taskId, start, end, cascade)),
     saveTask: (taskId: string, payload: PlanningTaskUpdateRequest, cascade = true) => mutate(saveTaskIntent(token, taskId, payload, cascade)),
+    saveTaskWithOutcome: (taskId: string, payload: PlanningTaskUpdateRequest, cascade = true) => mutateWithOutcome(saveTaskIntent(token, taskId, payload, cascade)),
     saveTaskDates: (taskId: string, payload: PlanningTaskDateUpdateRequest) => mutate(saveTaskDatesIntent(token, taskId, payload)),
     addTask: (payload: PlanningTaskCreateRequest) => mutate(addTaskIntent(token, projectId, payload)),
     removeTask: (taskId: string) => mutate(removeTaskIntent(token, taskId)),

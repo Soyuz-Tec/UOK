@@ -222,6 +222,17 @@ def assert_domain_error_schema(schema: dict[str, object]) -> None:
 def assert_schedule_read_contract(schema: dict[str, object]) -> None:
     response = schema["paths"]["/api/planning/projects/{project_id}/schedule"]["get"]["responses"]["200"]
     assert response["headers"]["ETag"]["schema"]["type"] == "string"
+    assert response["content"]["application/json"]["schema"]["$ref"] == "#/components/schemas/PlanningScheduleReadModel"
+    schedule = schema["components"]["schemas"]["PlanningScheduleReadModel"]
+    task_flow = schema["components"]["schemas"]["PlanningTaskFlowContract"]
+    status = schema["components"]["schemas"]["PlanningTaskFlowStatus"]
+    assert schedule["required"] == ["task_flow"]
+    assert task_flow["required"] == ["schema_version", "statuses"]
+    assert task_flow["properties"]["schema_version"]["const"] == 1
+    assert status["additionalProperties"] is False
+    assert set(status["required"]) == {"status", "display_label", "allowed_transitions"}
+    assert status["properties"]["status"]["enum"] == ["planned", "in_progress", "blocked", "complete"]
+    assert status["properties"]["allowed_transitions"]["items"]["enum"] == ["planned", "in_progress", "blocked", "complete"]
 
 
 def assert_baseline_read_contract(schema: dict[str, object]) -> None:

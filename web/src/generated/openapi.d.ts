@@ -3365,6 +3365,12 @@ export interface components {
             /** Task Id */
             task_id: string;
         };
+        /** PlanningScheduleReadModel */
+        PlanningScheduleReadModel: {
+            task_flow: components["schemas"]["PlanningTaskFlowContract"];
+        } & {
+            [key: string]: unknown;
+        };
         /** PlanningTaskDateUpdateRequest */
         PlanningTaskDateUpdateRequest: {
             /** Actual End */
@@ -3381,6 +3387,28 @@ export interface components {
             forecast_start?: string | null;
             /** Reason */
             reason?: string | null;
+        };
+        /** PlanningTaskFlowContract */
+        PlanningTaskFlowContract: {
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: 1;
+            /** Statuses */
+            statuses: components["schemas"]["PlanningTaskFlowStatus"][];
+        };
+        /** PlanningTaskFlowStatus */
+        PlanningTaskFlowStatus: {
+            /** Allowed Transitions */
+            allowed_transitions: ("planned" | "in_progress" | "blocked" | "complete")[];
+            /** Display Label */
+            display_label: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "planned" | "in_progress" | "blocked" | "complete";
         };
         /** PlanningTaskParticipantRequest */
         PlanningTaskParticipantRequest: {
@@ -8994,9 +9022,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PlanningScheduleReadModel"];
                 };
             };
             /** @description Validation Error */

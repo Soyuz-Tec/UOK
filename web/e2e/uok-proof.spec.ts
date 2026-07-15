@@ -15,6 +15,15 @@ const sampleProject = {
 const sampleSchedule = {
   project: sampleProject,
   capabilities: { read: true, edit: true, baseline_create: true, level: true, link: true, gate_approve: true, admin: true, review_only: false },
+  task_flow: {
+    schema_version: 1,
+    statuses: [
+      { status: "planned", display_label: "Planned", allowed_transitions: ["in_progress", "blocked", "complete"] },
+      { status: "in_progress", display_label: "In progress", allowed_transitions: ["planned", "blocked", "complete"] },
+      { status: "blocked", display_label: "Blocked", allowed_transitions: ["planned", "in_progress", "complete"] },
+      { status: "complete", display_label: "Complete", allowed_transitions: ["planned", "in_progress"] },
+    ],
+  },
   validation: { ok: true, violations: [], warnings: ["Planner is allocated 120% against 100% capacity on 2026-08-06"] },
   calculation: {
     engine_version: "uok-cpm-2",
@@ -459,7 +468,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
       await expect(headers.filter({ hasText: "Start" })).toHaveCount(1);
     }
     await planningView.selectOption("Board");
-    await expect(page.getByLabel("Planning board")).toBeVisible();
+    await expect(page.getByLabel("Planning flow board")).toBeVisible();
     await planningView.selectOption("People");
     await expect(page.getByLabel("Planning people")).toContainText("Pilot approver");
     await planningView.selectOption("Workload");
@@ -829,6 +838,120 @@ test("Planning Gantt 9+ candidate preserves split state, pinned annotations, and
   await expect.poll(async () => Math.abs((await planningPinnedMarkerTops(chart)).header - pinnedBefore.header)).toBeLessThanOrEqual(1);
   await expect.poll(async () => Math.abs((await planningPinnedMarkerTops(chart)).boundary - pinnedBefore.boundary)).toBeLessThanOrEqual(1);
   await expect.poll(async () => Math.abs((await planningPinnedMarkerTops(chart)).task - pinnedBefore.task)).toBeLessThanOrEqual(1);
+});
+
+test("Planning Board moves a task through a validated schedule reload and restores focus", async ({ page }) => {
+  const boardSchedule = structuredClone(sampleSchedule);
+  const statuses = ["complete", "planned", "in_progress", "blocked"] as const;
+  boardSchedule.tasks = boardSchedule.tasks.map((task, index) => ({ ...task, status: statuses[index] }));
+  const movedTask = boardSchedule.tasks.find((task) => task.id === "task-1");
+  if (!movedTask) throw new Error("Board proof task is missing");
+
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+  const taskUpdates: Array<{ method: string; payload: unknown; ifMatch: string | undefined; idempotencyKey: string | undefined }> = [];
+  let scheduleLoads = 0;
+  let revision = 1;
+  let etag = proofEtag(revision);
+  page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  await installMockApi(page, [], [], [], [], boardSchedule);
+  await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => {
+    scheduleLoads += 1;
+    return route.fulfill({ json: boardSchedule, headers: { ETag: etag } });
+  });
+  await page.route(`/api/planning/tasks/${movedTask.id}`, async (route) => {
+    const request = route.request();
+    taskUpdates.push({
+      method: request.method(),
+      payload: request.postDataJSON(),
+      ifMatch: request.headers()["if-match"],
+      idempotencyKey: request.headers()["idempotency-key"],
+    });
+    movedTask.status = "in_progress";
+    revision += 1;
+    boardSchedule.project.revision = revision;
+    etag = proofEtag(revision);
+    await route.fulfill({
+      json: {
+        task: movedTask,
+        validation: boardSchedule.validation,
+        revision,
+        correlation_id: "board-move-proof",
+      },
+      headers: { ETag: etag },
+    });
+  });
+
+  await openPlanning(page);
+  await page.getByRole("combobox", { name: "Planning view", exact: true }).selectOption("Board");
+
+  const board = page.getByRole("region", { name: "Planning flow board", exact: true });
+  await expect(board).toBeVisible();
+  for (const lane of ["Planned, 1 task", "In progress, 1 task", "Blocked, 1 task", "Complete, 1 task"]) {
+    await expect(board.getByRole("region", { name: lane, exact: true })).toBeVisible();
+  }
+
+  const moveTask = board.getByRole("combobox", { name: "Move task Define schedule scope", exact: true });
+  await moveTask.focus();
+  await moveTask.selectOption({ label: "Move to In progress" });
+
+  await expect.poll(() => taskUpdates).toHaveLength(1);
+  expect(taskUpdates[0]).toEqual({
+    method: "PATCH",
+    payload: { status: "in_progress" },
+    ifMatch: proofEtag(1),
+    idempotencyKey: expect.stringMatching(/^planning-task-update:/),
+  });
+  await expect.poll(() => scheduleLoads).toBe(2);
+  await expect(board.getByRole("region", { name: "Planned, 0 tasks", exact: true })).toBeVisible();
+  const destination = board.getByRole("region", { name: "In progress, 2 tasks", exact: true });
+  await expect(destination.locator('article[data-planning-task-id="task-1"]')).toContainText("Define schedule scope");
+  await expect(page.getByRole("status").filter({ hasText: "Define schedule scope moved to In progress." })).toBeVisible();
+  await expect(moveTask).toBeFocused();
+  await expect.poll(() => consoleErrors).toEqual([]);
+  await expect.poll(() => pageErrors).toEqual([]);
+});
+
+test("Planning Board remains inspectable and mutation-free in server review-only mode", async ({ page }) => {
+  const reviewOnly = { read: true, edit: false, baseline_create: false, level: false, link: false, gate_approve: false, admin: false, review_only: true };
+  const boardSchedule = structuredClone(sampleSchedule);
+  const statuses = ["complete", "planned", "in_progress", "blocked"] as const;
+  boardSchedule.tasks = boardSchedule.tasks.map((task, index) => ({ ...task, status: statuses[index] }));
+  boardSchedule.capabilities = reviewOnly;
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+  const taskUpdates: unknown[] = [];
+  page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  await installMockApi(page, [], [], taskUpdates, [], boardSchedule);
+  await page.route("/api/planning/capabilities", (route) => route.fulfill({ json: reviewOnly }));
+  await page.route(`/api/planning/projects/${sampleProject.id}/schedule`, (route) => route.fulfill({
+    json: boardSchedule,
+    headers: { ETag: proofEtag(1) },
+  }));
+
+  await openPlanning(page);
+  await page.getByRole("combobox", { name: "Planning view", exact: true }).selectOption("Board");
+  const board = page.getByRole("region", { name: "Planning flow board", exact: true });
+  await expect(board).toBeVisible();
+  await expect(board.getByRole("region")).toHaveCount(4);
+  for (const move of await board.getByRole("combobox", { name: /^Move task / }).all()) await expect(move).toBeDisabled();
+
+  const openTask = board.getByRole("button", { name: "Open task Define schedule scope", exact: true });
+  await expect(openTask).toBeEnabled();
+  await openTask.click();
+  const inspector = page.getByRole("dialog", { name: "Planning inspector", exact: true });
+  await expect(inspector).toBeVisible();
+  await expect(inspector.getByRole("button", { name: "Save task", exact: true })).toBeDisabled();
+  await inspector.getByRole("button", { name: "Close Planning inspector", exact: true }).click();
+  await expect(inspector).toBeHidden();
+  await expect(openTask).toBeFocused();
+  expect(taskUpdates).toEqual([]);
+  await expect.poll(() => consoleErrors).toEqual([]);
+  await expect.poll(() => pageErrors).toEqual([]);
 });
 
 test("server review-only capabilities disable Planning writes", async ({ page }) => {

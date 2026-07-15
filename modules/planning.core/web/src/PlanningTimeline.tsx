@@ -76,7 +76,7 @@ export function PlanningTimeline({
   onTaskOpen: (taskId: string) => void;
   onTaskReschedule: (taskId: string, start: string, end: string, cascade: boolean) => void;
   onTaskProgress: (taskId: string, progress: number) => void;
-  onTaskInlineEdit: (taskId: string, payload: PlanningTaskUpdateRequest, cascade: boolean) => void;
+  onTaskInlineEdit: (taskId: string, payload: PlanningTaskUpdateRequest, cascade: boolean) => Promise<boolean> | boolean;
   onBulkTaskEdit: (updates: PlanningBulkTaskUpdate[]) => void;
   onDependencyCreate: (payload: PlanningDependencyCreateRequest) => void;
   onTimelineTaskCreate: (start: string, end: string) => void;
@@ -195,7 +195,7 @@ export function PlanningTimeline({
           onTaskOpen={onTaskOpen}
           onTaskReschedule={(taskId, start, end) => onTaskReschedule(taskId, start, end, cascadeScheduling)}
           onTaskProgress={onTaskProgress}
-          onTaskInlineEdit={(taskId, payload) => onTaskInlineEdit(taskId, payload, shouldCascadeEdit(payload))}
+          onTaskInlineEdit={(taskId, payload) => { void onTaskInlineEdit(taskId, payload, shouldCascadeEdit(payload)); }}
           onDependencyCreate={onDependencyCreate}
           onTimelineTaskCreate={onTimelineTaskCreate}
           onTaskMenuAction={onTaskMenuAction}
@@ -207,7 +207,14 @@ export function PlanningTimeline({
           onViewDensityChange={setViewDensity}
         />
       ) : (
-        <PlanningReadModelView view={activeView} schedule={visibleSchedule} onTaskSelect={onTaskOpen} />
+        <PlanningReadModelView
+          view={activeView}
+          busy={Boolean(busy)}
+          readOnly={reviewMode}
+          schedule={visibleSchedule}
+          onTaskSelect={onTaskOpen}
+          onTaskStatusChange={(taskId, status) => onTaskInlineEdit(taskId, { status }, true)}
+        />
       )}
     </div>
   );

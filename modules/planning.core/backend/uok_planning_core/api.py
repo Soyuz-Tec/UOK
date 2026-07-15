@@ -26,6 +26,7 @@ from .schemas import (
     PlanningProjectRequest,
     PlanningProjectTransitionRequest,
     PlanningResourceRequest,
+    PlanningScheduleReadModel,
     PlanningTaskRequest,
     PlanningTaskDateUpdateRequest,
     PlanningTaskParticipantRequest,
@@ -96,6 +97,7 @@ def transition_project(project_id: str, req: PlanningProjectTransitionRequest, r
 @router.get(
     "/projects/{project_id}/schedule",
     responses={200: {"description": "Actor-visible schedule snapshot.", "headers": ETAG_RESPONSE_HEADERS}},
+    response_model=PlanningScheduleReadModel,
 )
 def project_schedule(project_id: str, response: Response, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
     require_planning_read(db, actor)

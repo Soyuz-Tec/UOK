@@ -36,6 +36,7 @@ from .scheduler import (
 )
 from .schedule_math import working_duration
 from .task_constraints import serialize_task_constraint
+from .status_policy import task_flow_read_model
 from uok.security import Actor
 from uok.util import loads
 
@@ -77,6 +78,7 @@ def schedule_read_model(db: Session, actor: Actor, project: PlanningProject) -> 
     return {
         "project": serialize_project(project),
         "capabilities": capability_read_model(actor),
+        "task_flow": task_flow_read_model(),
         "tasks": [serialize_task(task, metrics.get(task.id, {}), latest_baseline.get(task.id), wbs.get(task.id, ""), project.timezone_name, participants_by_task.get(task.id, []), readiness_by_task.get(task.id)) for task in tasks],
         "dependencies": [serialize_dependency(dep) for dep in dependencies],
         "calendar": _calendar_row(db, actor, project.id),

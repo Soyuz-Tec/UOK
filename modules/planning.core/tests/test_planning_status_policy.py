@@ -10,7 +10,14 @@ from uok.command_context import CommandDomainError
 from uok.db import SessionLocal
 from uok.models import CommandLog
 from uok.util import loads
-from uok_planning_core.status_policy import TASK_STATUSES, TASK_STATUS_TRANSITIONS, assert_task_status_transition
+from uok_planning_core.status_policy import (
+    TASK_STATUSES,
+    TASK_STATUS_DISPLAY_LABELS,
+    TASK_STATUS_TRANSITIONS,
+    USER_TASK_STATUSES,
+    assert_task_status_transition,
+    task_flow_read_model,
+)
 
 
 def test_every_task_status_pair_uses_the_controlled_policy() -> None:
@@ -29,6 +36,43 @@ def test_every_task_status_pair_uses_the_controlled_policy() -> None:
                 assert rejected.value.code == "planning_status_transition_invalid"
                 assert rejected.value.field == "status"
                 assert rejected.value.current_revision == 3
+
+
+def test_task_flow_read_model_publishes_the_ordered_server_policy() -> None:
+    task_flow = task_flow_read_model()
+
+    assert task_flow == {
+        "schema_version": 1,
+        "statuses": [
+            {
+                "status": "planned",
+                "display_label": "Planned",
+                "allowed_transitions": ["in_progress", "blocked", "complete"],
+            },
+            {
+                "status": "in_progress",
+                "display_label": "In progress",
+                "allowed_transitions": ["planned", "blocked", "complete"],
+            },
+            {
+                "status": "blocked",
+                "display_label": "Blocked",
+                "allowed_transitions": ["planned", "in_progress", "complete"],
+            },
+            {
+                "status": "complete",
+                "display_label": "Complete",
+                "allowed_transitions": ["planned", "in_progress"],
+            },
+        ],
+    }
+    assert [row["status"] for row in task_flow["statuses"]] == list(USER_TASK_STATUSES)
+    for row in task_flow["statuses"]:
+        status = row["status"]
+        assert row["display_label"] == TASK_STATUS_DISPLAY_LABELS[status]
+        assert row["allowed_transitions"] == [
+            target for target in USER_TASK_STATUSES if target in TASK_STATUS_TRANSITIONS[status]
+        ]
 
 
 def test_task_status_registry_and_transitions_are_server_controlled(client: TestClient) -> None:
@@ -102,4 +146,5 @@ def test_task_status_registry_and_transitions_are_server_controlled(client: Test
 
     schedule = client.get(f"/api/planning/projects/{project_id}/schedule", headers=ops)
     assert schedule.status_code == 200, schedule.text
+    assert schedule.json()["task_flow"] == task_flow_read_model()
     assert schedule.json()["tasks"][0]["status"] == "complete"
