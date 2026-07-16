@@ -1,6 +1,6 @@
 # Planning And Contacts Size Fix – 2026-07-15
 
-**Status:** Implemented and locally verified; hosted Gap 2 CI pending publication.
+**Status:** Implemented, locally verified, and hosted Gap 2 CI green.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -160,8 +160,11 @@ Current evidence:
   passed**;
 - frontend Vitest: **108 test files / 391 tests passed**;
 - frontend static TypeScript/Vite build: passed;
-- hosted Gap 2 CI: pending until this change is published. The branch's prior
-  Gap 1 head was green; that result is not claimed as Gap 2 verification.
+- hosted Gap 2 CI for implementation commit
+  `4b03a66505f2809f473f63c83617cb968236ca8f`: passed in both the push and
+  pull-request runs:
+  `https://github.com/Soyuz-Tec/UOK/actions/runs/29504806387` and
+  `https://github.com/Soyuz-Tec/UOK/actions/runs/29504809396`;
 - quality, generated-contract, module-release, container-asset, source-boundary,
   whitespace, and Python/frontend dependency audits: passed.
 
@@ -205,5 +208,5 @@ tenant, permission, lifecycle, or disclosure rule changed.
 their implementations and ORM mappings are private; no speculative split was
 introduced; and Gap 1 remains independently enforced. All local gates pass.
 Gap 3 can therefore address the kernel/host mix and frontend shell–Contacts
-cycle without reopening owner data access or broadening either facade. Hosted
-CI must still pass before merge.
+cycle without reopening owner data access or broadening either facade. Both
+hosted CI triggers passed before this handoff.
