@@ -33,6 +33,16 @@ MODULES = {
             "role_grants",
         },
     },
+    "product": {
+        "package": "uok_product_master",
+        "folder": "product.master",
+        "symbols": {
+            "api_router",
+            "command_handlers",
+            "command_permissions",
+            "role_grants",
+        },
+    },
 }
 
 PYTHON_SCAN_ROOTS = ("src", "scripts", "modules", "tests")

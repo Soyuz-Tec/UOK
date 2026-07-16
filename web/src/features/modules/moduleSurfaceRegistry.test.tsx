@@ -70,6 +70,7 @@ describe("module surface registry", () => {
     expect(moduleSurfaces.map(({ moduleName, id }) => [moduleName, id])).toEqual([
       ["apps.manager", "apps"],
       ["contacts.core", "contacts"],
+      ["product.master", "products"],
       ["calendar.core", "calendar"],
       ["communications.core", "communications"],
       ["planning.core", "planning"],

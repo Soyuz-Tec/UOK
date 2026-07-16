@@ -27,6 +27,7 @@ def test_repository_frontend_surfaces_are_manifest_owned() -> None:
         ),
         "contacts.core": ("contacts", "modules/contacts.core/web/src/moduleSurface.tsx"),
         "planning.core": ("planning", "modules/planning.core/web/src/moduleSurface.tsx"),
+        "product.master": ("products", "modules/product.master/web/src/moduleSurface.tsx"),
     }
     assert manifests["planning.core"]["dependencies"] == ["calendar.core"]
 

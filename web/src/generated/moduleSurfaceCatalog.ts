@@ -6,6 +6,7 @@ import moduleSurface1 from "../../../modules/calendar.core/web/src/moduleSurface
 import moduleSurface2 from "../../../modules/communications.core/web/src/moduleSurface";
 import moduleSurface3 from "../../../modules/contacts.core/web/src/moduleSurface";
 import moduleSurface4 from "../../../modules/planning.core/web/src/moduleSurface";
+import moduleSurface5 from "../../../modules/product.master/web/src/moduleSurface";
 
 export const generatedModuleSurfaceCatalog = [
   {
@@ -52,5 +53,14 @@ export const generatedModuleSurfaceCatalog = [
       dependencies: ["calendar.core"]
     },
     surface: moduleSurface4
+  },
+  {
+    manifest: {
+      moduleName: "product.master",
+      sectionId: "products",
+      webEntry: "modules/product.master/web/src/moduleSurface.tsx",
+      dependencies: []
+    },
+    surface: moduleSurface5
   },
 ] as const satisfies readonly GeneratedModuleSurfaceRegistration[];

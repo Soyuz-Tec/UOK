@@ -33,6 +33,7 @@ Production React source and CSS for a declared workbench surface live under `mod
 | `communications.core` | Optional K Connect thread provider and exact authorized deep-link capability. |
 | `contacts.core` | Optional Party, Contacts workflow, grouping, relationship, and quality capability. |
 | `planning.core` | Optional project planning, Python-authoritative scheduling, Gantt, analysis, and portfolio capability. |
+| `product.master` | Optional tenant-scoped Product/Material definition, lifecycle, and name-history capability. |
 | `reports.core` | Optional secure report artifact and typed report-client capability. |
 
 Read the owning module `README.md`, its manifest, and the corresponding plan under `docs/modules` before changing module behavior. Run the module release contract and standard verification workflow before publication.

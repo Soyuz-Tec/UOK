@@ -24,6 +24,7 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
         "communications.core",
         "contacts.core",
         "planning.core",
+        "product.master",
         "reports.core",
     ]
     assert modules["apps.manager"]["status"] == "installed"

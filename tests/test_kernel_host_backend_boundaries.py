@@ -73,7 +73,7 @@ def test_feature_backends_have_no_transitive_host_dependency() -> None:
 
 
 def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
-    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 27
+    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 29
     allowed = python_imports(
         "from uok.host.database import get_db",
         "feature.api",
@@ -92,6 +92,26 @@ def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
     assert not any(allowlisted_host_import(path, reference) for reference in forbidden)
     assert not allowlisted_host_import(
         "modules/calendar.core/backend/uok_calendar_core/service.py",
+        allowed,
+    )
+
+    product_path = (
+        "modules/product.master/backend/"
+        "uok_product_master/_internal/delivery/api.py"
+    )
+    product_actor = python_imports(
+        "from uok.host.security import current_actor",
+        "feature.api",
+    )[0]
+    product_command = python_imports(
+        "from uok.host.commands import execute_command",
+        "feature.api",
+    )[0]
+    assert allowlisted_host_import(product_path, allowed)
+    assert allowlisted_host_import(product_path, product_actor)
+    assert not allowlisted_host_import(product_path, product_command)
+    assert not allowlisted_host_import(
+        "modules/product.master/backend/uok_product_master/_internal/delivery/service.py",
         allowed,
     )
 

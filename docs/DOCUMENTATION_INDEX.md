@@ -84,6 +84,8 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/kernel-host-shell-gap3-fix-2026-07-16.md` | Host/kernel refactor, shell/Contacts cycle removal, architecture enforcement, verification, and score uplift | Host/kernel/shell boundary implementation, allowlist, proof, or residual risk changes |
 | `docs/architecture/modular-monolith-structure-re-audit-2026-07-16.md` | Post-Gap 1–3 modular-monolith verdict, module inventory, boundary evidence, scorecard, residuals, and next actions | Module boundaries, ownership evidence, SCC findings, enforcement status, or the dated verdict needs correction |
 | `docs/architecture/ARCHITECTURE-FREEZE-2026-07-16.md` | Active Host/Kernel/module/shell placement, public API, data ownership, module creation/split, dependency, and merge-test freeze rules | An approved unfreeze ADR changes a frozen boundary or required gate |
+| `docs/delivery/party-mdm-slice-design-2026-07-16.md` | Evidence-first design for the tenant-scoped Product Master vertical slice | The chosen capability, owner, data model, tenant model, non-goals, or test plan changes |
+| `docs/delivery/party-mdm-slice-delivery-2026-07-16.md` | Product Master API, data, UI, freeze compliance, verification, demo, and next-slice handoff | Product Master delivery evidence or residual-risk status changes |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
 | `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` | AI-operated business workflow architecture, governed agent tools, human approval gates, and compliance evidence model | Agent governance, Codex tool binding, AI workflow, approval, or evidence architecture changes |
 | `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md` | Global export artifact boundary for CSV, JSON, image/SVG, PDF, document, and future import/export helpers | Export format ownership, shared artifact primitives, module export behavior, or export UI patterns change |
@@ -103,6 +105,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` | Communications Core thread-provider roadmap and scope | K Connect thread identity, access, lifecycle, UI, or Planning integration changes |
 | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` | Contacts module roadmap and scope | Contacts behavior, workflows, module ownership, or acceptance changes |
 | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` | Planning Core module roadmap and scope | Gantt, scheduling, dependency, project, baseline, calendar, or planning verification behavior changes |
+| `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md` | Product Master ownership, first-slice behavior, integrity rules, contracts, and qualification | Product Definition ownership, lifecycle, public surface, data model, UI, or qualification changes |
 | `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md` | Planning Gantt feature inventory and evidence maturity | Gantt grid, timeline, scheduling, dependency, resource, baseline, color, workspace feature, or maturity evidence changes |
 | `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md` | Gates A-E and architecture requirement-to-evidence map, closure status, and production-hardening boundary | A requirement, evidence link, verification result, maturity state, architecture closure, or residual hardening item changes |
 | `docs/modules/planning.core/PLANNING_GANTT_EXTERNAL_FEATURE_INTAKE.md` | DHTMLX/SVAR-inspired Gantt research and UOK intake disposition | External Gantt research or adopted/partial/deferred/global-boundary disposition changes; evidence maturity remains in the catalog and traceability map |
@@ -198,6 +201,7 @@ The current active module plans are:
 - `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md`
 - `docs/modules/contacts.core/CONTACTS_APP_PLAN.md`
 - `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
+- `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md`
 
 Module plans should describe module-owned behavior, workflows, acceptance checks, and open next work. They should not redefine UOK-level architecture unless they link to the relevant architecture document.
 

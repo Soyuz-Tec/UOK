@@ -12,7 +12,16 @@ from uok.host.module_routers import load_module_routers
 from uok.module_tables import declared_module_table_names
 from uok.modules import module_contracts
 
-BASELINE_MODULES = ["agents.core", "apps.manager", "calendar.core", "communications.core", "contacts.core", "planning.core", "reports.core"]
+BASELINE_MODULES = [
+    "agents.core",
+    "apps.manager",
+    "calendar.core",
+    "communications.core",
+    "contacts.core",
+    "planning.core",
+    "product.master",
+    "reports.core",
+]
 
 
 def test_file_backed_module_manifests_define_baseline_catalog() -> None:
@@ -149,7 +158,7 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["checks"]["owned_table_claims_valid"] is True
     assert extension_contract["checks"]["owned_tables_resolve_to_models"] is True
     assert contracts["model_registry"]["ok"] is True
-    assert contracts["model_registry"]["model_count"] == 49
+    assert contracts["model_registry"]["model_count"] == 51
     assert extension_contract["violations"] == []
 
 
@@ -164,6 +173,7 @@ def test_kernel_does_not_statically_import_module_backends() -> None:
     assert "uok_calendar_core" in package_names
     assert "uok_communications_core" in package_names
     assert "uok_planning_core" in package_names
+    assert "uok_product_master" in package_names
     assert "uok_reports_core" in package_names
 
     import_pattern = re.compile(rf"^\s*(?:from|import)\s+(?:{'|'.join(sorted(package_names))})\b", re.MULTILINE)
@@ -185,6 +195,7 @@ def test_module_routers_mount_from_manifest_declarations() -> None:
         "communications.core",
         "contacts.core",
         "planning.core",
+        "product.master",
         "reports.core",
     ]
     for module_name, router in routers:
@@ -202,6 +213,10 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "CreateContact" in handlers
     assert "CreateCalendarEvent" in handlers
     assert "CreateCommunicationThread" in handlers
+    assert "CreateProductDefinition" in handlers
+    assert "UpdateProductDefinition" in handlers
+    assert "ArchiveProductDefinition" in handlers
+    assert "RestoreProductDefinition" in handlers
     assert "ImportContactsCsv" in handlers
     assert "GenerateReport" in handlers
     assert "DeleteReportArtifact" in handlers
@@ -215,6 +230,10 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert permissions["RunPlanningRiskAnalysis"] == "planning.analyze"
     assert permissions["RunPlanningOptimization"] == "planning.analyze"
     assert permissions["DecidePlanningRecommendation"] == "planning.analysis.approve"
+    assert permissions["CreateProductDefinition"] == "products.manage"
+    assert permissions["UpdateProductDefinition"] == "products.manage"
+    assert permissions["ArchiveProductDefinition"] == "products.manage"
+    assert permissions["RestoreProductDefinition"] == "products.manage"
     assert permissions["RestoreContact"] == "contacts.restore"
     assert permissions["GenerateReport"] == "reports.render"
     assert permissions["DeleteReportArtifact"] == "reports.delete"
@@ -230,6 +249,8 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "communications.edit" in grants["ops_manager"]
     assert grants["trader"] >= {"planning.read", "planning.edit"}
     assert "reports.manage" in grants["ops_manager"]
+    assert "products.manage" in grants["ops_manager"]
+    assert "products.read" in grants["viewer"]
     assert "contacts.read" in grants["viewer"]
     assert "calendar.read" in grants["viewer"]
     assert "reports.read" in grants["viewer"]
@@ -247,6 +268,8 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
         "planning_tasks",
         "planning_task_dependencies",
         "planning_resource_calendars",
+        "product_definitions",
+        "product_name_history",
         "report_artifacts",
     }.issubset(declared_module_table_names())
 
@@ -260,6 +283,11 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
     assert "/api/contacts/review-queue" in app_paths
     assert "/api/planning/projects" in app_paths
     assert "/api/planning/projects/{project_id}/resources/{resource_id}/calendar" in app_paths
+    assert "/api/products/definitions" in app_paths
+    assert (
+        "/api/products/definitions/{product_definition_id}/name-history"
+        in app_paths
+    )
     assert "/api/reports/formats" in app_paths
 
     main_source = (repo_root() / "src" / "uok" / "host" / "application.py").read_text(encoding="utf-8")

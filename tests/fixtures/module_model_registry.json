@@ -57,6 +57,10 @@
     "PlanningTaskRequirement": "planning_task_requirements",
     "PlanningWhatIfSnapshot": "planning_what_if_snapshots"
   },
+  "product.master": {
+    "ProductDefinition": "product_definitions",
+    "ProductNameHistory": "product_name_history"
+  },
   "reports.core": {
     "ReportArtifact": "report_artifacts"
   }

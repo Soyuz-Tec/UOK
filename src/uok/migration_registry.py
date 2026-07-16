@@ -64,7 +64,7 @@ def verify_migration_discipline(db: Session | None = None) -> dict[str, Any]:
         "baseline_has_uok_tables": all(name in text for name in ("organizations", "users", "modules", "command_logs", "events")),
         "baseline_has_declared_module_tables": all(name in f"{text}\n{module_text}" for name in declared_tables),
         "baseline_has_contacts_tables": all(name in text for name in ("parties", "party_relationships", "party_notes", "contact_import_batches")),
-        "baseline_has_no_business_module_tables": all(name not in text for name in FORBIDDEN_BUSINESS_TABLES),
+        "baseline_has_no_business_module_tables": _baseline_has_no_business_module_tables(text),
         "module_migration_directories_present": all((repo_root() / str(manifest["migrations_path"])).is_dir() for manifest in manifests.values()),
         "module_migration_files_scoped": not module_scope_violations,
         "contacts_core_module_migration_present": any(item["module"] == "contacts.core" for item in module_files),
@@ -97,6 +97,11 @@ def _declared_tables_for_module(manifest: dict[str, Any]) -> set[str]:
     return tables
 
 
+def _baseline_has_no_business_module_tables(text: str) -> bool:
+    lowered = text.lower()
+    return all(name not in lowered for name in FORBIDDEN_BUSINESS_TABLES)
+
+
 def _module_migration_text() -> str:
     root = repo_root()
     chunks: list[str] = []
@@ -117,8 +122,20 @@ def _module_migration_scope_violations() -> list[dict[str, str]]:
         for path in sql_files:
             text = path.read_text(encoding="utf-8")
             lowered = text.lower()
-            if any(name in lowered for name in FORBIDDEN_BUSINESS_TABLES):
-                violations.append({"module": module_name, "path": path.relative_to(root).as_posix(), "reason": "business module table reference"})
+            foreign_business_tables = sorted(
+                name
+                for name in FORBIDDEN_BUSINESS_TABLES
+                if name in lowered and name not in declared_tables
+            )
+            if foreign_business_tables:
+                violations.append({
+                    "module": module_name,
+                    "path": path.relative_to(root).as_posix(),
+                    "reason": (
+                        "foreign business module table references: "
+                        + ", ".join(foreign_business_tables)
+                    ),
+                })
             referenced_tables = set(CREATE_TABLE_PATTERN.findall(text)) | set(INDEX_ON_PATTERN.findall(text))
             undeclared = sorted(table for table in referenced_tables if table not in declared_tables)
             if undeclared:

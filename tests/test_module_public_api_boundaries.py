@@ -109,16 +109,19 @@ def _frontend_violations(source: str, relative_path: Path) -> list[str]:
     owner = _owner(relative_path)
     violations = []
     root = repo_root()
+    module_folders = "|".join(re.escape(str(contract["folder"])) for contract in MODULES.values())
     for match in FRONTEND_SPECIFIER_PATTERN.finditer(source):
         target = match.group(1)
         module_owner: str | None = None
         suffix = ""
-        alias_match = re.fullmatch(
-            r"@uok-modules/(planning|contacts)\.core/web/src/(.+)",
-            target,
-        )
+        alias_match = re.fullmatch(rf"@uok-modules/({module_folders})/web/src/(.+)", target)
         if alias_match:
-            module_owner, suffix = alias_match.groups()
+            module_folder, suffix = alias_match.groups()
+            module_owner = next(
+                candidate_owner
+                for candidate_owner, contract in MODULES.items()
+                if contract["folder"] == module_folder
+            )
         elif target.startswith("."):
             resolved = (root / relative_path.parent / target).resolve()
             for candidate_owner, contract in MODULES.items():
@@ -180,6 +183,9 @@ def test_manifests_compose_through_public_facades_and_keep_models_private() -> N
         manifest = manifests[str(contract["folder"])]
         public_module = str(contract["package"]) + ".public_api"
         for field in public_fields:
+            if field not in manifest["extension_points"]:
+                assert field not in manifest
+                continue
             target_module, _, target_symbol = str(manifest[field]).partition(":")
             assert target_module == public_module
             assert target_symbol in contract["symbols"]
@@ -192,22 +198,27 @@ def test_manifests_compose_through_public_facades_and_keep_models_private() -> N
         )
 
 
-def test_supported_python_surface_is_exact_and_contacts_dto_is_immutable() -> None:
+def test_supported_python_surfaces_are_exact_and_contacts_dto_is_immutable() -> None:
     ensure_module_backend_paths()
     from uok_contacts_core.public_api import PartyReferenceResolution
     from uok_planning_core.public_api import command_handlers as planning_command_handlers
+    from uok_product_master.public_api import command_handlers as product_command_handlers
 
     contacts_api = sys.modules[PartyReferenceResolution.__module__]
     planning_api = sys.modules[planning_command_handlers.__module__]
+    product_api = sys.modules[product_command_handlers.__module__]
 
     assert set(planning_api.__all__) == MODULES["planning"]["symbols"]
     assert set(contacts_api.__all__) == MODULES["contacts"]["symbols"]
+    assert set(product_api.__all__) == MODULES["product"]["symbols"]
     assert {name for name in dir(planning_api) if not name.startswith("_")} == MODULES["planning"]["symbols"]
     assert {name for name in dir(contacts_api) if not name.startswith("_")} == MODULES["contacts"]["symbols"]
+    assert {name for name in dir(product_api) if not name.startswith("_")} == MODULES["product"]["symbols"]
     assert is_dataclass(contacts_api.PartyReferenceResolution)
     assert contacts_api.PartyReferenceResolution.__dataclass_params__.frozen is True
     assert all("model" not in name.casefold() for name in planning_api.__all__)
     assert all("model" not in name.casefold() for name in contacts_api.__all__)
+    assert all("model" not in name.casefold() for name in product_api.__all__)
 
 
 def test_python_rule_rejects_private_root_deep_star_and_unknown_public_imports() -> None:
@@ -223,6 +234,12 @@ def test_python_rule_rejects_private_root_deep_star_and_unknown_public_imports()
         "from importlib import import_module as load\nload('uok_contacts_core._internal.persistence.models')",
         "import importlib as loader\nloader.import_module('uok_contacts_core._internal.persistence.models')",
         "import importlib.util\nimportlib.import_module('uok_contacts_core._internal.persistence.models')",
+        "import uok_product_master",
+        "from uok_product_master import public_api",
+        "from uok_product_master.public_api import *",
+        "from uok_product_master.public_api import ProductDefinition",
+        "import uok_product_master.public_api as product_api",
+        "from importlib import import_module\nimport_module('uok_product_master._internal.persistence.models')",
         "from uok.models import Party",
         "from uok.models import PlanningTask",
         "import uok.models as models",
@@ -233,6 +250,10 @@ def test_python_rule_rejects_private_root_deep_star_and_unknown_public_imports()
 
     assert _python_violations(
         "from uok_contacts_core.public_api import resolve_party_reference",
+        path,
+    ) == []
+    assert _python_violations(
+        "from uok_product_master.public_api import command_handlers",
         path,
     ) == []
 
@@ -264,4 +285,12 @@ def test_frontend_rule_rejects_deep_imports_and_accepts_module_surface() -> None
     assert _frontend_violations(
         'import surface from "../../../modules/contacts.core/web/src/moduleSurface";',
         generated_path,
+    ) == []
+    assert _frontend_violations(
+        'import { ProductMasterWorkspace } from "@uok-modules/product.master/web/src/ProductMasterWorkspace";',
+        path,
+    )
+    assert _frontend_violations(
+        'import surface from "@uok-modules/product.master/web/src/moduleSurface";',
+        path,
     ) == []

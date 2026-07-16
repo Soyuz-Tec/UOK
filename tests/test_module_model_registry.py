@@ -30,8 +30,10 @@ EXPECTED_PROVIDER_ORDER = (
     "communications.core",
     "contacts.core",
     "planning.core",
+    "product.master",
     "reports.core",
 )
+EXPECTED_MODEL_COUNT = 51
 
 
 def _expected_registry() -> dict[str, dict[str, str]]:
@@ -47,11 +49,11 @@ def test_registry_matches_checked_in_metadata_contract() -> None:
     actual.update(report["module_models"])
 
     assert actual == expected
-    assert report["model_count"] == 49
-    assert report["table_count"] == 49
+    assert report["model_count"] == EXPECTED_MODEL_COUNT
+    assert report["table_count"] == EXPECTED_MODEL_COUNT
     assert tuple(report["provider_order"]) == EXPECTED_PROVIDER_ORDER
-    assert len(Base.registry.mappers) == 49
-    assert len(Base.metadata.tables) == 49
+    assert len(Base.registry.mappers) == EXPECTED_MODEL_COUNT
+    assert len(Base.metadata.tables) == EXPECTED_MODEL_COUNT
 
 
 def test_full_sqlalchemy_metadata_matches_pre_move_contract() -> None:
@@ -160,6 +162,10 @@ def test_complete_registry_can_create_all_tables_in_sqlite() -> None:
         ),
         (
             "from uok.host.module_paths import ensure_module_backend_paths; "
+            "ensure_module_backend_paths(); import uok_product_master.public_api"
+        ),
+        (
+            "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); import uok_reports_core.models"
         ),
     ],
@@ -170,10 +176,10 @@ def test_import_order_produces_the_same_registry(setup: str) -> None:
 from uok.host.model_registry import module_model_registry_report
 from uok.kernel.persistence import Base
 report = module_model_registry_report()
-assert report['model_count'] == 49
-assert report['table_count'] == 49
+assert report['model_count'] == {EXPECTED_MODEL_COUNT}
+assert report['table_count'] == {EXPECTED_MODEL_COUNT}
 assert report['provider_order'] == {list(EXPECTED_PROVIDER_ORDER)!r}
-assert len(Base.registry.mappers) == 49
+assert len(Base.registry.mappers) == {EXPECTED_MODEL_COUNT}
 """
     environment = os.environ.copy()
     source_root = str(repo_root() / "src")

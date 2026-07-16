@@ -43,21 +43,22 @@ Operator browser
 - Planning Gates A-E are locally runtime-proven; scheduling, write-safety, evidence governance, integrations, analysis, measured scale, shared reach/accessibility, bounded portfolio reads, and production-like closure evidence are recorded in the Planning Gantt traceability map. The stacked draft PRs still require hosted CI, review, and merge, and no local alpha result implies production readiness.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
+- `product.master` is an optional Product/Material master-data capability for tenant-scoped canonical Product Definitions, governed lifecycle, and append-only canonical-name history. Cargo, pricing, inventory, routes, documents, and Party relationships remain outside this owner.
 - `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context and uses `reports.core` as an availability-gated optional frontend integration for secure report artifact actions, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.
 - Module metadata is read from `modules/<module_name>/manifest.yaml`.
 - Backend runtime extension points are declared in manifests; only validated manifest `backend_path` roots enter import resolution, and imported provider origins must remain inside the owning backend.
-- Planning and Contacts expose one supported Python facade each at `uok_planning_core.public_api` and `uok_contacts_core.public_api`. All other implementation code is capability-organized below the owner's `_internal` package; external static imports are rejected by `tests/test_module_public_api_boundaries.py`.
-- Module-owned ORM mappings remain private even when the model registry resolves their privileged manifest `model_exports` hook. Neither Planning nor Contacts exports an ORM mapping through its public facade.
+- Planning, Contacts, and Product Master expose supported Python facades at `uok_planning_core.public_api`, `uok_contacts_core.public_api`, and `uok_product_master.public_api`. All other implementation code is capability-organized below the owner's `_internal` package; external static imports are rejected by `tests/test_module_public_api_boundaries.py`.
+- Module-owned ORM mappings remain private even when the model registry resolves their privileged manifest `model_exports` hook. Planning, Contacts, and Product Master export no ORM mapping through a public facade.
 - Manifests use closed schema `uok.module.v1`, declare evidence-bounded maturity, reserve canonical non-overlapping API prefixes, and pass runtime validation before extension imports or router composition; release validation separately proves tests and verifier assets.
 - The Apps Manager HTTP adapter is owned by `modules/apps.manager` and mounted through the same manifest router mechanism as capability modules; shared lifecycle services provide locked, audited, idempotent reconciliation when persisted control-plane state drifts from current manifest truth.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, command replay guards, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
-- Static runtime validation completes before extension imports. The host-owned deterministic model registry then composes 40 module-owned mappings with nine kernel mappings on the single `uok.kernel.persistence.Base` before migration inspection, schema creation, or router composition.
-- Apps Manager, Calendar, Communications, Contacts, and Planning own executable React source and local CSS under `modules/<module_name>/web/src`; their frontend tests live under `modules/<module_name>/tests/web`.
+- Static runtime validation completes before extension imports. The host-owned deterministic model registry then composes 42 module-owned mappings with nine kernel mappings on the single `uok.kernel.persistence.Base` before migration inspection, schema creation, or router composition.
+- Apps Manager, Calendar, Communications, Contacts, Planning, and Product Master own executable React source and local CSS under `modules/<module_name>/web/src`; their frontend tests live under `modules/<module_name>/tests/web`.
 - Workbench surfaces declare the release/build extension `web_surface` plus canonical `web_entry` and unique `web_section` metadata in the closed manifest. A deterministic generator validates those manifests and emits literal TypeScript imports in `web/src/generated/moduleSurfaceCatalog.ts` for the typed registry under `web/src/features/modules`.
 - Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and all declared entries into the normal static application bundle.
 - Module surfaces receive only the nine-field neutral host port in `web/src/contracts/moduleSurface.ts`, including a monotonic global-refresh revision. Contacts owns its HTTP reads, DTOs, state, preferences, storage keys, and commands; the shell owns only product-neutral auth/layout/navigation/orchestration and keeps visited module roots mounted without importing module internals.
 - Durable module workspaces compose one minimal shared command surface with optional query, context, and actions groups plus the common localized action vocabulary accepted in ADR-0025. Shared code owns layout and accessibility; modules retain domain nouns, state, permissions, options, and handlers.
-- Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
+- Product Master owns its complete Product DTO, HTTP, state, command, and workbench surface under `modules/product.master/web/src`. Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
 - Docker copies module production source into the frontend build stage, TypeScript/Vitest discover the module-owned source and test roots, and final-image validation keeps module tests out of the runtime image.
 
 ## Boundaries
@@ -120,7 +121,11 @@ Operator browser
 - Global export artifacts: `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
 - Global shared features: `docs/architecture/UOK_GLOBAL_SHARED_FEATURES.md`
 - Module roadmap: `docs/architecture/UOK_MODULE_ROADMAP.md`
+- Product and Cargo separation policy: `docs/architecture/UOK_PRODUCT_CARGO_SEPARATION_POLICY.md`
 - Contacts business intelligence profiles: `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md`
+- Product Master module plan: `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md`
+- Party/MDM Product Master slice design: `docs/delivery/party-mdm-slice-design-2026-07-16.md`
+- Party/MDM Product Master slice delivery: `docs/delivery/party-mdm-slice-delivery-2026-07-16.md`
 - Planning Core module plan: `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
 - Communications Core module plan: `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md`
 - Planning Gantt Gate A traceability: `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`

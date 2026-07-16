@@ -44,6 +44,7 @@ MODULE_HTTP_ADAPTERS = {
     "modules/planning.core/backend/uok_planning_core/_internal/portfolio_audit/portfolio_api.py",
     "modules/planning.core/backend/uok_planning_core/_internal/portfolio_audit/revision_api.py",
     "modules/planning.core/backend/uok_planning_core/_internal/resources/resource_calendar_api.py",
+    "modules/product.master/backend/uok_product_master/_internal/delivery/api.py",
     "modules/reports.core/backend/uok_reports_core/api.py",
 }
 MODULE_COMMAND_ADAPTERS = {

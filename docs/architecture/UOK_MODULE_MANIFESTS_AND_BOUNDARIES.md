@@ -81,14 +81,14 @@ The source-boundary scan must remain a strict candidate gate before any product 
 ## Current Bridge Status
 
 The ORM ownership and compatibility bridges are closed: capability mappings are
-physically owned by Calendar, Communications, Contacts, Planning, and Reports
+physically owned by Calendar, Communications, Contacts, Planning, Product Master, and Reports
 backends, while nine product-neutral mappings remain in `uok.kernel_models`.
 `uok.host.model_registry` alone resolves manifest model providers, and the
 former `uok.models`, `uok.calendar_models`, and `uok.communication_models`
 imports are retired.
 
 The former frontend-location bridge is also closed. Apps Manager, Calendar,
-Communications, Contacts, and Planning own production React source and CSS under
+Communications, Contacts, Planning, and Product Master own production React source and CSS under
 their canonical module web roots; their frontend tests live under
 `modules/<module_name>/tests/web`. Reports owns its typed report client and tests without
 declaring a workbench surface. Closed manifest metadata generates literal

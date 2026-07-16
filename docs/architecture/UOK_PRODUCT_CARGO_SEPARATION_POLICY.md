@@ -4,6 +4,8 @@
 
 UOK must not treat product and cargo as the same concept.
 
+**Current implementation:** `product.master` owns the first tenant-scoped `ProductDefinition` registry. `cargo.transactions` and `crm.basic` remain future modules.
+
 ## Definitions
 
 - **Product** is a master-data definition: canonical name, code, category, grade/specification, unit conventions, and product governance.
@@ -35,3 +37,14 @@ The product/cargo expansion path must model these as separate module-owned conce
 - `product.master`: installable capability module; owns product definitions and product metadata.
 - `cargo.transactions`: installable business module; depends on `product.master` and `contacts.core`; owns cargo lifecycle.
 - `crm.basic`: installable business module; depends on `contacts.core`; owns CRM opportunity workflow.
+
+## Current Product Master Slice
+
+The first implemented slice is intentionally limited to canonical Product Definition identity, organization-scoped code uniqueness, optional category/grade/specification/base-unit metadata, governed lifecycle, optimistic versions, and append-only canonical-name history. It does not own Cargo, Party relationships, pricing, inventory, logistics, routes, compliance documents, or transaction evidence.
+
+Implementation and validation:
+
+- `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md`
+- `docs/delivery/party-mdm-slice-design-2026-07-16.md`
+- `docs/delivery/party-mdm-slice-delivery-2026-07-16.md`
+- `modules/product.master`
