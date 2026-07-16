@@ -152,6 +152,8 @@ Operator browser
 - Planning and Contacts size/surface fix and verification: `docs/architecture/planning-contacts-size-fix-2026-07-15.md`
 - Kernel/host/shell Gap 3 inventory: `docs/architecture/kernel-host-shell-gap3-inventory-2026-07-16.md`
 - Kernel/host/shell Gap 3 fix and verification: `docs/architecture/kernel-host-shell-gap3-fix-2026-07-16.md`
+- Modular-monolith structure re-audit: `docs/architecture/modular-monolith-structure-re-audit-2026-07-16.md`
+- Active modular-monolith architecture freeze: `docs/architecture/ARCHITECTURE-FREEZE-2026-07-16.md`
 
 ## Verification
 
