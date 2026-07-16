@@ -111,12 +111,12 @@ def test_planning_degrades_when_calendar_recurrence_data_is_invalid(
     }, f"invalid-calendar-project-{suffix}")
     assert project.status_code == 200, project.text
 
-    import uok_calendar_core.facade as calendar_facade
+    import uok_calendar_core.public_api as calendar_public_api
 
     def invalid_recurrence(*_args: object, **_kwargs: object) -> list[dict[str, object]]:
         raise ValueError("recurrence_rule contains invalid legacy data")
 
-    monkeypatch.setattr(calendar_facade, "freebusy_rows_for_participants", invalid_recurrence)
+    monkeypatch.setattr(calendar_public_api, "freebusy_rows_for_participants", invalid_recurrence)
     schedule = client.get(
         f"/api/planning/projects/{project.json()['result']['id']}/schedule",
         headers=ops,

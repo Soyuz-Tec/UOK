@@ -18,7 +18,7 @@ from .revision_history import project_revision_for_command
 from .read_model import schedule_read_model
 from .scheduler import apply_schedule, project_or_error
 from uok.command_context import CommandDomainError
-from uok.models import CommandLog
+from uok.kernel_models import CommandLog
 from uok.security import Actor
 
 MAX_BATCH_OPERATIONS = 500

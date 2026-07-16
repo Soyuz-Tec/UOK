@@ -120,6 +120,7 @@ Operator browser
 - Communications Core module plan: `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md`
 - Planning Gantt Gate A traceability: `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`
 - Planning Gate B typed links resolve through module-owned adapters; K Connect threads now resolve through `communications.core`, while absent Operation Graph providers remain explicit `unavailable` states rather than simulated source objects.
+- Planning reads Contacts, Calendar, Communications, and Reports reference data only through immutable DTO query contracts in each owner's `public_api.py`; `tests/test_planning_data_boundary.py` rejects foreign ORM, schema, repository, infrastructure, broad-facade, and compatibility-registry imports from Planning production code.
 - Planning schedule writes append one immutable revision-ledger row and one internal transactional outbox envelope in the same project transaction. This is durable commit evidence only; no dispatcher or external-delivery claim exists.
 - Planning projects use a reasoned controlled lifecycle with recoverable read-only archive semantics and hidden internal purge. Exact target commitment and persisted CPM-v2 calculated finish are separate from the compatible `end` horizon; legacy calculated backfill mismatches fail visible and block immutable capture until a scheduler write repairs them.
 - Python module service first, with React UI receiving validated schedule read models.
@@ -140,6 +141,8 @@ Operator browser
 - Planning Gate E release readiness is a repeatable production-like local profile combining candidate contracts, PostgreSQL scale, persistent CPM and concurrency recovery, live Chromium compatibility/accessibility/console checks, and engineering evidence. It is not a production deployment or `production_ready` claim.
 - Calendar Core module plan: `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
+- Planning data-boundary inventory: `docs/architecture/planning-data-boundary-inventory-2026-07-15.md`
+- Planning data-boundary fix and verification: `docs/architecture/planning-data-boundary-fix-2026-07-15.md`
 
 ## Verification
 

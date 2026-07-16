@@ -40,7 +40,7 @@ def calendar_availability_read_model(
     try:
         require_permission(actor, "calendar.freebusy.read")
         ensure_module_operational(db, actor.organization_id, "calendar.core")
-        from uok_calendar_core.facade import freebusy_rows_for_participants, occurrence_rows_for_participants
+        from uok_calendar_core.public_api import freebusy_rows_for_participants, occurrence_rows_for_participants
     except (ImportError, PermissionError, ValueError) as exc:
         return {**base, "reason": str(exc)}
     task_parties = _task_party_ids(db, actor, resources, assignments, participants)

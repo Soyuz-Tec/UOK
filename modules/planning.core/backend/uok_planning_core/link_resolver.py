@@ -2,13 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Protocol
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .models import PlanningLink
-from uok.models import CalendarEvent, CommunicationThread, Party, ReportArtifact
 from uok.module_dependencies import OPERATIONAL_STATUSES, module_record
 from uok.security import Actor, has_permission
 
@@ -46,6 +44,13 @@ class LinkResolution:
             "checked_at": checked_at or self.checked_at,
             "open_path": self.open_path,
         }
+
+
+class _ReferenceResolution(Protocol):
+    status: str
+    display_label: str | None
+    status_summary: str
+    open_path: str | None
 
 
 _SPECS = {
@@ -113,48 +118,39 @@ def serialize_link(db: Session, actor: Actor, link: PlanningLink) -> dict[str, A
 
 
 def _resolve_party(db: Session, actor: Actor, target_id: str, checked_at: str) -> LinkResolution:
-    row = db.scalar(select(Party).where(Party.id == target_id, Party.organization_id == actor.organization_id))
-    if row is None:
-        return LinkResolution("missing", None, "The party target does not exist in this organization.", checked_at)
     try:
-        from uok_contacts_core.facade import can_read_party
+        from uok_contacts_core.public_api import resolve_party_reference
     except ImportError:
         return LinkResolution("unavailable", None, "The Party authorization provider is unavailable.", checked_at)
-    if not can_read_party(actor, row):
-        return LinkResolution("denied", None, "The linked target is not visible to this actor.", checked_at)
-    if row.purged_at is not None or row.status != "active":
-        return LinkResolution("unavailable", row.display_name, f"Party is {row.status}.", checked_at)
-    return LinkResolution("ready", row.display_name, f"Party is {row.status}.", checked_at, f"/?view=contacts&party_id={row.id}")
+    return _from_reference_resolution(resolve_party_reference(db, actor, target_id), checked_at)
 
 
 def _resolve_artifact(db: Session, actor: Actor, target_id: str, checked_at: str) -> LinkResolution:
-    row = db.scalar(select(ReportArtifact).where(ReportArtifact.id == target_id, ReportArtifact.organization_id == actor.organization_id))
-    if row is None:
-        return LinkResolution("missing", None, "The report artifact target does not exist in this organization.", checked_at)
-    if row.deleted_at is not None or row.status == "deleted":
-        return LinkResolution("unavailable", row.filename, "Report artifact is deleted.", checked_at)
-    return LinkResolution("ready", row.filename, f"Report artifact is {row.status}.", checked_at, f"/api/reports/artifacts/{row.id}")
+    from uok_reports_core.public_api import resolve_report_artifact_reference
+
+    return _from_reference_resolution(resolve_report_artifact_reference(db, actor, target_id), checked_at)
 
 
 def _resolve_calendar_event(db: Session, actor: Actor, target_id: str, checked_at: str) -> LinkResolution:
-    row = db.scalar(select(CalendarEvent).where(CalendarEvent.id == target_id, CalendarEvent.organization_id == actor.organization_id))
-    if row is None:
-        return LinkResolution("missing", None, "The calendar event target does not exist in this organization.", checked_at)
-    if row.canceled_at is not None or row.status == "canceled":
-        return LinkResolution("unavailable", row.title, "Calendar event is canceled.", checked_at)
-    return LinkResolution("ready", row.title, f"Calendar event is {row.status}.", checked_at, f"/?view=calendar&event_id={row.id}")
+    from uok_calendar_core.public_api import resolve_calendar_event_reference
+
+    return _from_reference_resolution(resolve_calendar_event_reference(db, actor, target_id), checked_at)
 
 
 def _resolve_communication_thread(db: Session, actor: Actor, target_id: str, checked_at: str) -> LinkResolution:
-    row = db.scalar(select(CommunicationThread).where(
-        CommunicationThread.id == target_id,
-        CommunicationThread.organization_id == actor.organization_id,
-    ))
-    if row is None:
-        return LinkResolution("missing", None, "The communication thread does not exist in this organization.", checked_at)
-    if row.archived_at is not None or row.status == "archived":
-        return LinkResolution("unavailable", row.title, "Communication thread is archived.", checked_at)
-    return LinkResolution("ready", row.title, f"Communication thread is {row.status}.", checked_at, f"/?view=communications&thread_id={row.id}")
+    from uok_communications_core.public_api import resolve_communication_thread_reference
+
+    return _from_reference_resolution(resolve_communication_thread_reference(db, actor, target_id), checked_at)
+
+
+def _from_reference_resolution(reference: _ReferenceResolution, checked_at: str) -> LinkResolution:
+    return LinkResolution(
+        reference.status,
+        reference.display_label,
+        reference.status_summary,
+        checked_at,
+        reference.open_path,
+    )
 
 
 def _timestamp(value: datetime) -> str:

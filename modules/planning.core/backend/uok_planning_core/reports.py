@@ -6,7 +6,7 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from .models import PlanningProject, PlanningScheduleEvent, PlanningTask, PlanningTaskDependency
-from uok.models import EventRecord, ModuleRecord
+from uok.kernel_models import EventRecord, ModuleRecord
 from uok.modules import module_catalog
 from uok.security import Actor
 
