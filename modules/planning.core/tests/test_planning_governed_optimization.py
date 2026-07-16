@@ -9,8 +9,8 @@ from sqlalchemy import select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import PlanningAnalysisRecommendation, PlanningScheduleEvent
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import PlanningAnalysisRecommendation, PlanningScheduleEvent
 from uok.util import loads
 from uok_planning_core._internal.analysis.optimizer_engine import run_optimizer
 

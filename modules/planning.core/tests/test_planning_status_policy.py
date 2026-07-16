@@ -7,8 +7,8 @@ from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
 from uok.command_context import CommandDomainError
-from uok.db import SessionLocal
-from uok.models import CommandLog
+from uok.host.database import SessionLocal
+from uok.kernel_models import CommandLog
 from uok.util import loads
 from uok_planning_core._internal.scheduling.status_policy import (
     TASK_STATUSES,

@@ -1,25 +1,7 @@
 import type { ModuleAction } from "../shared/types";
-import type { CommandResponse, WorkbenchData } from "./useWorkbenchData";
+import type { WorkbenchData } from "./useWorkbenchData";
 
 export function useWorkbenchActions(data: WorkbenchData) {
-  async function command(command_type: string, payload: Record<string, unknown>, prefix: string) {
-    try {
-      data.setBusyAction(command_type);
-      const response = await data.api<CommandResponse>("/api/commands", {
-        method: "POST",
-        body: JSON.stringify({ command_type, payload, idempotency_key: `${prefix}:${Date.now()}` })
-      });
-      data.setOut(response);
-      await data.refresh();
-      return response;
-    } catch (error) {
-      data.setOut(error);
-      return null;
-    } finally {
-      data.setBusyAction("");
-    }
-  }
-
   async function moduleAction(moduleName: string, action: ModuleAction) {
     try {
       data.setBusyAction(`${moduleName}:${action}`);
@@ -33,7 +15,7 @@ export function useWorkbenchActions(data: WorkbenchData) {
     }
   }
 
-  return { command, moduleAction };
+  return { moduleAction };
 }
 
 export type WorkbenchActions = ReturnType<typeof useWorkbenchActions>;

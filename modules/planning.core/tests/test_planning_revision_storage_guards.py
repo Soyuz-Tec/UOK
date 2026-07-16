@@ -10,8 +10,8 @@ from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
 from uok_planning_core._internal.portfolio_audit.revision_history import PlanningRevisionNotFound, list_project_revisions
-from uok.db import SessionLocal
-from uok.models import PlanningOutboxEvent, PlanningScheduleRevision
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import PlanningOutboxEvent, PlanningScheduleRevision
 from uok.security import Actor
 
 

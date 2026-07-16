@@ -12,8 +12,8 @@ UOK is a small modular-monolith kernel for installable business and capability m
 
 ```text
 Operator browser
-  -> FastAPI UOK runtime
-     -> runtime kernel under src/uok
+  -> FastAPI UOK host under src/uok/host
+     -> stable shared kernel contracts under src/uok/kernel
      -> module packages under modules/<module_name>
      -> validated bounded SQLAlchemy QueuePool per API process
      -> PostgreSQL 18 local candidate database
@@ -24,8 +24,9 @@ Operator browser
 
 | Container | Location | Responsibility |
 |---|---|---|
-| Backend kernel | `src/uok` | FastAPI composition, auth/session security, command bus, module registry, lifecycle APIs, static asset serving, baseline evidence, migration gates, and validated composition adapters. |
-| Database connectivity | `src/uok/db.py`, `src/uok/db_pool.py` | Validated process-local SQLAlchemy pooling, stale-connection pre-ping, safe telemetry, bounded timeout behavior, and session lifecycle. |
+| Backend host | `src/uok/host` | FastAPI application/lifespan, DI, engine/session/pool ownership, manifest provider resolution, ORM registration, router/command/policy/report composition, and static asset serving. |
+| Shared kernel | `src/uok/kernel`, `src/uok/kernel_models.py` | Single declarative metadata contract, host-configured module-runtime port, and product-neutral organization, identity, governance, lifecycle, command-log, and event mappings. |
+| Database connectivity | `src/uok/host/database.py`, `src/uok/host/db_pool.py` | Validated process-local SQLAlchemy pooling, stale-connection pre-ping, safe telemetry, bounded timeout behavior, and session lifecycle. |
 | Module packages | `modules/<module_name>` | Module manifest, backend package, module-owned ORM mappings, module-local React source and CSS, module tests, migrations, candidate verifier scenarios, and behavior. |
 | Frontend shell | `web/src` | React + TypeScript + Vite workbench shell, navigation, shared controls and tokens, typed module surface contract, and generated API/module catalogs. |
 | Database baseline | `migrations/001_initial_baseline.sql` | Initial shared candidate schema plus schema-version evidence. Future schema changes must be migration-gated and module-owned where applicable. |
@@ -50,21 +51,22 @@ Operator browser
 - Manifests use closed schema `uok.module.v1`, declare evidence-bounded maturity, reserve canonical non-overlapping API prefixes, and pass runtime validation before extension imports or router composition; release validation separately proves tests and verifier assets.
 - The Apps Manager HTTP adapter is owned by `modules/apps.manager` and mounted through the same manifest router mechanism as capability modules; shared lifecycle services provide locked, audited, idempotent reconciliation when persisted control-plane state drifts from current manifest truth.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, command replay guards, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
-- Static runtime validation completes before extension imports. The deterministic module model registry then composes 40 module-owned mappings with nine kernel mappings on the single `uok.db.Base` before migration inspection, schema creation, or router composition.
+- Static runtime validation completes before extension imports. The host-owned deterministic model registry then composes 40 module-owned mappings with nine kernel mappings on the single `uok.kernel.persistence.Base` before migration inspection, schema creation, or router composition.
 - Apps Manager, Calendar, Communications, Contacts, and Planning own executable React source and local CSS under `modules/<module_name>/web/src`; their frontend tests live under `modules/<module_name>/tests/web`.
 - Workbench surfaces declare the release/build extension `web_surface` plus canonical `web_entry` and unique `web_section` metadata in the closed manifest. A deterministic generator validates those manifests and emits literal TypeScript imports in `web/src/generated/moduleSurfaceCatalog.ts` for the typed registry under `web/src/features/modules`.
 - Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and all declared entries into the normal static application bundle.
-- The shell currently passes its existing Workbench state through a typed module-surface host context. That shared shell compatibility bridge is intentionally transitional and must not become a new place for module behavior.
+- Module surfaces receive only the eight-field neutral host port in `web/src/contracts/moduleSurface.ts`. Contacts owns its HTTP reads, DTOs, state, preferences, storage keys, and commands; the shell owns only product-neutral auth/layout/navigation/orchestration.
 - Durable module workspaces compose one minimal shared command surface with optional query, context, and actions groups plus the common localized action vocabulary accepted in ADR-0025. Shared code owns layout and accessibility; modules retain domain nouns, state, permissions, options, and handlers.
 - Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
 - Docker copies module production source into the frontend build stage, TypeScript/Vitest discover the module-owned source and test roots, and final-image validation keeps module tests out of the runtime image.
 
 ## Boundaries
 
-- `src/uok` may provide shared services, shared database primitives, static serving, module composition, and compatibility facades.
+- `src/uok/host` owns application composition, provider registration, static serving, engine/session infrastructure, and the exact FastAPI `get_db` adapter.
+- `src/uok/kernel` provides only stable module-neutral contracts. Feature modules may use the host-configured module-runtime port, but only HTTP adapter files may import the exact `uok.host.database.get_db` framework seam.
 - `modules/<module_name>` owns module behavior and must declare every extension point it uses.
 - Product, cargo, CRM, accounting, inventory, document, and integration behavior must not be hardcoded into the kernel.
-- Product-neutral organization, identity, governance, module-lifecycle, workflow, command-log, and event mappings live in `src/uok/kernel_models.py`. Capability mappings are physically defined in their owning backend packages; `src/uok/models.py` is an exact-identity compatibility facade over the validated registry.
+- Product-neutral organization, identity, governance, module-lifecycle, workflow, command-log, and event mappings live in `src/uok/kernel_models.py`. Capability mappings are physically defined in their owning backend packages. The former global `uok.models`, `uok.calendar_models`, and `uok.communication_models` compatibility import paths are retired.
 - Module-specific production UI lives in `modules/<module_name>/web/src`, module-specific frontend tests live in `modules/<module_name>/tests/web`, and module CSS is imported from the owning module surface. Product-neutral shell, shared controls, global tokens, generated contracts, and composition remain in `web/src`.
 - `web_surface`, `web_entry`, and `web_section` are compile-time composition metadata, not Python import targets or browser runtime loading instructions. Their checked-in generated catalog must match the validated closed manifests.
 - Contacts pytest suites live under `modules/contacts.core/tests`; its candidate verifier and evidence composition live under `modules/contacts.core/verify`.
@@ -105,6 +107,7 @@ Operator browser
 - ADR-0025: `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`
 - ADR-0026: `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md`
 - ADR-0027: `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
+- ADR-0028: `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -147,6 +150,8 @@ Operator browser
 - Planning data-boundary fix and verification: `docs/architecture/planning-data-boundary-fix-2026-07-15.md`
 - Planning and Contacts size/surface inventory: `docs/architecture/planning-contacts-size-inventory-2026-07-15.md`
 - Planning and Contacts size/surface fix and verification: `docs/architecture/planning-contacts-size-fix-2026-07-15.md`
+- Kernel/host/shell Gap 3 inventory: `docs/architecture/kernel-host-shell-gap3-inventory-2026-07-16.md`
+- Kernel/host/shell Gap 3 fix and verification: `docs/architecture/kernel-host-shell-gap3-fix-2026-07-16.md`
 
 ## Verification
 
@@ -154,6 +159,7 @@ Before publishing a candidate, run:
 
 ```powershell
 python -m compileall -q src modules tests conftest.py
+python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
 python scripts/validate_container_module_assets.py
 python scripts/run_python_tests.py
 npm --prefix web run check:contracts

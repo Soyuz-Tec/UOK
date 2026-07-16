@@ -1,4 +1,4 @@
-import type { ContactBusinessIntelligenceProfile, ContactRecord } from "@uok/shared/types";
+import type { ContactBusinessIntelligenceProfile, ContactRecord } from "./contracts";
 import { contactDataFactCount, contactIdentitySignalCount, normalizedContactText } from "./contactSignals";
 
 const WARNING_READINESS = new Set(["needs_review", "possible_duplicate", "incomplete"]);

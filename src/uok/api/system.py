@@ -7,11 +7,11 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .. import APP_VERSION, TARGET_VERSION
-from ..db import database_pool_snapshot, get_db
+from ..host.database import database_pool_snapshot, get_db
+from ..host.module_reports import module_dashboard_counts
+from ..kernel_models import CommandLog, EventRecord, ModuleRecord
 from ..evidence import baseline_evidence
 from ..migration_registry import verify_migration_discipline
-from ..models import CommandLog, EventRecord, ModuleRecord
-from ..module_reports import module_dashboard_counts
 from ..quality import baseline_report, source_boundary_report
 from ..security import Actor, current_actor, require_permission
 

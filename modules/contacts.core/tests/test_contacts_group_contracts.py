@@ -6,7 +6,7 @@ from sqlalchemy import event
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import engine
+from uok.host.database import engine
 
 
 def test_contact_group_list_uses_a_bounded_query_count(client: TestClient) -> None:

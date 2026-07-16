@@ -5,9 +5,9 @@ from typing import Any, Callable
 
 from sqlalchemy.orm import Session
 
+from ..module_manifest_loader import load_module_manifests
+from ..security_types import ActorProtocol
 from .module_imports import resolve_module_import
-from .module_manifest_loader import load_module_manifests
-from .security_types import ActorProtocol
 
 CommandHandler = Callable[[Session, ActorProtocol, dict[str, Any], str], dict[str, Any]]
 CommandReplayGuard = Callable[[Session, ActorProtocol, str, dict[str, Any], dict[str, Any], str], None]

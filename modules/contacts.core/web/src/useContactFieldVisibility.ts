@@ -5,7 +5,7 @@ import {
   useColumnVisibilityOptions,
   type FieldVisibilityMenuConfig
 } from "@uok/shared/tables";
-import type { ContactsView } from "@uok/shared/types";
+import type { ContactsView } from "./contracts";
 import { contactListDisplayFieldOptions } from "./contactListDisplayFields";
 import { contactTableColumns, contactTableColumnVisibilityOptions } from "./contactTableColumns";
 

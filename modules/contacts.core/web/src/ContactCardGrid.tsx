@@ -1,5 +1,5 @@
 import { formatLabel } from "@uok/shared/format";
-import type { ContactGroupBy, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupBy, ContactRecord } from "./contracts";
 import { ContactFactRows } from "./ContactFactRows";
 import { ContactResultsEmptyState } from "./ContactResultState";
 import { groupContacts } from "./contactGrouping";

@@ -116,7 +116,7 @@ function AppView({ workbench }: { workbench: Workbench }) {
           </section>
         )}
 
-        {renderModuleSurface(workbench.active, workbench)}
+        {renderModuleSurface(workbench.active, workbench.moduleHost)}
 
         {workbench.active === "evidence" && (
           <section aria-label="Evidence">

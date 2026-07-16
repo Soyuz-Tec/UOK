@@ -11,10 +11,10 @@ import pytest
 
 from tests.module_manifest_contract_support import write_module
 import uok.module_contract_validation as module_contract_validation
-import uok.module_paths as module_paths
-from uok.module_imports import resolve_module_import
+import uok.host.module_paths as module_paths
+from uok.host.module_imports import resolve_module_import
 from uok.module_manifest_loader import load_module_manifests
-from uok.module_paths import ensure_module_backend_paths, module_backend_paths, repo_root
+from uok.host.module_paths import ensure_module_backend_paths, module_backend_paths, repo_root
 
 
 def test_runtime_contract_completes_before_extension_packages_import() -> None:
@@ -45,7 +45,7 @@ class RejectEarlyExtensionImport(importlib.abc.MetaPathFinder):
 contracts.validate_module_runtime_contracts = validate_then_mark_complete
 sys.meta_path.insert(0, RejectEarlyExtensionImport())
 
-from uok.main import app
+from uok.host.application import app
 
 assert validation_complete
 assert app.title == "UOK"

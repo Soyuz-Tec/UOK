@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from uok.main import app
+from uok.host.application import app
 
 
 def test_revision_history_contract_matches_runtime_and_generated_openapi() -> None:

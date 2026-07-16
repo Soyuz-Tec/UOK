@@ -8,9 +8,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .command_context import COMMAND_ETAG_RESULT_KEY, COMMAND_IF_MATCH_CONTEXT_KEY, CommandDomainError, CommandPermissionError, CommandPreconditionError
-from .module_commands import assert_command_replay_visible, command_permissions, load_module_command_handlers
+from .host.module_commands import assert_command_replay_visible, command_permissions, load_module_command_handlers
+from .kernel_models import CommandLog
 from .module_ops import ensure_command_module_operational
-from .models import CommandLog
 from .security import Actor, require_permission
 from .util import dumps, loads
 

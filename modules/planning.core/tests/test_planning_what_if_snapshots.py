@@ -6,8 +6,8 @@ import pytest
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import PlanningWhatIfSnapshot
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import PlanningWhatIfSnapshot
 
 
 def test_what_if_snapshot_is_immutable_verified_and_does_not_mutate_schedule(client: TestClient) -> None:

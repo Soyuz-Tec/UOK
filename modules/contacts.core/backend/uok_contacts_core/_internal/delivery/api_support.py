@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from uok.commands import execute_command
-from uok.module_ops import ensure_module_operational
+from uok.kernel.module_runtime import ensure_module_operational
 from uok.security import Actor
 
 

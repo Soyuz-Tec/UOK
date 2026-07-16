@@ -9,36 +9,74 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import TimeoutError as SQLAlchemyTimeoutError
 
-from . import APP_VERSION
-from .module_contract_validation import validate_module_runtime_contracts
+from .. import APP_VERSION
+from ..module_contract_validation import validate_module_runtime_contracts
 
 
 runtime_contract = validate_module_runtime_contracts()
 if not runtime_contract["ok"]:
     raise RuntimeError(f"Module runtime contract is invalid: {runtime_contract['violations']}")
 
-from .module_model_registry import ensure_module_models_registered
+from .model_registry import ensure_module_models_registered
 
 ensure_module_models_registered()
 
+from ..kernel.module_runtime import ModuleRuntimePort, configure_module_runtime
+from ..module_ops import (
+    disable_module,
+    enable_module,
+    ensure_module_operational,
+    install_module,
+    module_maintenance_report,
+    module_record,
+    module_status,
+    reconcile_module_record,
+    uninstall_module,
+    upgrade_module,
+)
+from ..modules import module_catalog, module_contracts, module_lifecycle_report
 
-from .api.auth import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth
-from .api.errors import uok_request_validation_error_handler
-from .api.auth import router as auth_router
-from .api.commands import router as commands_router
-from .api.system import router as system_router
-from .api.schemas import (
+
+def _module_record_status(db: object, organization_id: str, module_name: str) -> str | None:
+    record = module_record(db, organization_id, module_name)
+    return None if record is None else str(record.status)
+
+
+configure_module_runtime(ModuleRuntimePort(
+    catalog=module_catalog,
+    contracts=module_contracts,
+    lifecycle_report=module_lifecycle_report,
+    status=module_status,
+    maintenance_report=module_maintenance_report,
+    install=install_module,
+    uninstall=uninstall_module,
+    disable=disable_module,
+    enable=enable_module,
+    upgrade=upgrade_module,
+    reconcile=reconcile_module_record,
+    ensure_operational=ensure_module_operational,
+    record_status=_module_record_status,
+))
+
+
+from ..api.auth import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth
+from ..api.errors import uok_request_validation_error_handler
+from ..api.auth import router as auth_router
+from ..api.commands import router as commands_router
+from ..api.system import router as system_router
+from ..api.schemas import (
     CommandRequest,
     LoginRequest,
     RegisterRequest,
 )
-from .config import env_flag
-from .db import Base, SessionLocal, database_pool_telemetry, engine
+from ..config import env_flag
+from ..kernel.persistence import Base
+from ..seed import seed
+from .database import SessionLocal, database_pool_telemetry, engine
 from .module_routers import mount_module_routers
-from .seed import seed
 
 APP_TITLE = "UOK"
-STATIC_DIR = Path(__file__).parent / "static"
+STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
 REACT_APP_INDEX = STATIC_DIR / "app" / "index.html"
 
 

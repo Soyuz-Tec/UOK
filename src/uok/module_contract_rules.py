@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .module_api_prefixes import validate_api_prefix_ownership, validate_api_prefixes
-from .module_imports import IMPORT_TARGET_SPEC_PATTERN
+from .host.module_imports import IMPORT_TARGET_SPEC_PATTERN
 from .module_manifest_schema import IMPORT_TARGET_FIELDS
 from .module_model_claims import validate_owned_table_claims
 from .module_web_contract import validate_web_section_ownership, validate_web_surface

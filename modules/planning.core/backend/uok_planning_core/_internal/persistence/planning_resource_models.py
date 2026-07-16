@@ -7,7 +7,7 @@ from uuid import uuid4
 from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Index, Integer, Numeric, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from uok.db import Base
+from uok.kernel.persistence import Base
 
 
 def planning_resource_id() -> str:

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.coordination.link_resolver import resolve_target
 from uok_planning_core._internal.persistence.models import PlanningAssignment, PlanningProject, PlanningResource, PlanningTask
-from uok.module_ops import ensure_module_operational
+from uok.kernel.module_runtime import ensure_module_operational
 from uok.security import Actor, require_permission
 
 

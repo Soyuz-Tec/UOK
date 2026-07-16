@@ -7,11 +7,10 @@ import { tokenKey, userKey } from "../shared/session";
 import { removeStorageItem, writeStorageJson, writeStorageString } from "../shared/storage";
 import type { SessionUser } from "../shared/types";
 
-export function useAuthWorkflows(auth: AuthState, data: WorkbenchData, onClearSession: () => void) {
+export function useAuthWorkflows(auth: AuthState, data: WorkbenchData) {
   function clearSession(message = "Signed out.") {
     auth.clearAuthState();
     data.clearData(message);
-    onClearSession();
   }
 
   async function login(event?: FormEvent) {

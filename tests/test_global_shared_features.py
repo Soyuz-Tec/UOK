@@ -5,8 +5,8 @@ from types import SimpleNamespace
 from sqlalchemy import select
 
 from uok.data_exchange import csv_dict_rows, safe_spreadsheet_cell
-from uok.db import SessionLocal
-from uok.models import EventRecord
+from uok.host.database import SessionLocal
+from uok.kernel_models import EventRecord
 from uok.module_events import emit_module_event
 
 

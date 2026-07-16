@@ -6,8 +6,8 @@ from sqlalchemy import func, select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import EventRecord
+from uok.host.database import SessionLocal
+from uok.kernel_models import EventRecord
 
 
 def test_contact_groups_can_be_created_filtered_and_managed(client: TestClient) -> None:

@@ -5,7 +5,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .models import EventRecord
+from .kernel_models import EventRecord
 from .security_types import ActorProtocol
 from .util import dumps
 

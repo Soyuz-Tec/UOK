@@ -1,6 +1,6 @@
 import { Building2, CalendarDays, FileText, MessageCircle, ShieldCheck, UserRound } from "lucide-react";
 
-import type { ContactDraft } from "@uok/shared/types";
+import type { ContactDraft } from "./contracts";
 
 export type AddableSection = "person" | "organization" | "dates" | "messaging" | "source" | "more";
 

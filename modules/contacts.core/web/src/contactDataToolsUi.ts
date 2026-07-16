@@ -1,4 +1,4 @@
-import type { ContactGroupRecord, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupRecord, ContactRecord } from "./contracts";
 import type { ContactDataToolsApi } from "./contactDataToolsApi";
 
 export type ContactDataToolsRun = <T,>(

@@ -7,13 +7,12 @@ from dataclasses import is_dataclass
 from pathlib import Path
 
 from uok.module_manifest_loader import load_module_manifests
-from uok.module_paths import ensure_module_backend_paths, repo_root
+from uok.host.module_paths import ensure_module_backend_paths, repo_root
 from tests.module_public_api_contract import (
     FRONTEND_EXCLUDED_PARTS,
     FRONTEND_SCAN_ROOTS,
     FRONTEND_SPECIFIER_PATTERN,
     MODULES,
-    OWNED_ORM_SYMBOLS,
     PYTHON_SCAN_ROOTS,
 )
 
@@ -34,25 +33,14 @@ def _python_violations(source: str, relative_path: Path) -> list[str]:
     def validate_kernel_model_access(target: str, names: list[str] | None, line: int) -> bool:
         if target == "uok" and names is not None and "models" in names:
             violations.append(
-                f"{relative_path.as_posix()}:{line} imports opaque module-owned ORM facade uok.models"
+                f"{relative_path.as_posix()}:{line} imports retired module-owned ORM facade uok.models"
             )
             return True
         if target != "uok.models":
             return False
-        if names is None or "*" in names:
-            violations.append(
-                f"{relative_path.as_posix()}:{line} imports opaque module-owned ORM facade uok.models"
-            )
-            return True
-        for model_owner, symbols in OWNED_ORM_SYMBOLS.items():
-            if owner == model_owner:
-                continue
-            forbidden = sorted(set(names) & symbols)
-            if forbidden:
-                violations.append(
-                    f"{relative_path.as_posix()}:{line} imports {model_owner} ORM symbols "
-                    f"through uok.models: {forbidden}"
-                )
+        violations.append(
+            f"{relative_path.as_posix()}:{line} imports retired module-owned ORM facade uok.models"
+        )
         return True
 
     def validate(target: str, names: list[str] | None, line: int) -> None:
@@ -249,7 +237,7 @@ def test_python_rule_rejects_private_root_deep_star_and_unknown_public_imports()
     ) == []
 
     planning_owner = Path("modules/planning.core/tests/example.py")
-    assert _python_violations("from uok.models import PlanningTask", planning_owner) == []
+    assert _python_violations("from uok.models import PlanningTask", planning_owner)
     assert _python_violations("from uok.models import Party", planning_owner)
 
 

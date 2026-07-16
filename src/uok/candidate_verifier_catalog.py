@@ -15,7 +15,7 @@ from .candidate_verifier_preflight import (
 from .module_manifest_loader import load_module_manifests
 from .module_order import ModuleOrderError, dependency_order
 from .module_release_contract import validate_module_release_contracts
-from .module_paths import modules_root
+from .host.module_paths import modules_root
 
 
 POWERSHELL_FUNCTION_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z][A-Za-z0-9]*)*$")

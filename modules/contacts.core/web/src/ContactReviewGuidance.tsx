@@ -1,6 +1,6 @@
 import { FileInput, GitMerge, Info, TriangleAlert } from "lucide-react";
 
-import type { ContactRecord } from "@uok/shared/types";
+import type { ContactRecord } from "./contracts";
 
 function reviewCopy(contact: ContactRecord) {
   if (contact.review_state === "possible_duplicate") {

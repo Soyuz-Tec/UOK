@@ -14,7 +14,7 @@ from ..commands import (
     clean_command_text,
     execute_command,
 )
-from ..db import get_db
+from ..host.database import get_db
 from ..security import Actor, current_actor
 
 router = APIRouter(tags=["commands"])

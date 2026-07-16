@@ -9,13 +9,13 @@ from typing import Any, Mapping
 
 from sqlalchemy import inspect as sqlalchemy_inspect
 
-from .db import Base
-from .kernel_models import KERNEL_MODELS
-from .module_contract_validation import validate_module_runtime_contracts
+from ..kernel.persistence import Base
+from ..kernel_models import KERNEL_MODELS
+from ..module_contract_validation import validate_module_runtime_contracts
+from ..module_manifest_loader import load_module_manifests
+from ..module_model_claims import KERNEL_MODEL_NAMES
+from ..module_order import dependency_order
 from .module_imports import resolve_module_import
-from .module_manifest_loader import load_module_manifests
-from .module_model_claims import KERNEL_MODEL_NAMES
-from .module_order import dependency_order
 from .module_paths import repo_root
 
 
@@ -182,7 +182,7 @@ def _validate_model(
         )
     if not isinstance(model, type) or not issubclass(model, Base):
         raise ModuleModelRegistryError(
-            f"module {module_name} model {model_name} must inherit uok.db.Base"
+            f"module {module_name} model {model_name} must inherit uok.kernel.persistence.Base"
         )
     if model.__name__ != model_name:
         raise ModuleModelRegistryError(

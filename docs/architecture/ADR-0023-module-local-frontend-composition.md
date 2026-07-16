@@ -1,6 +1,6 @@
 # ADR-0023: Module-Local Frontend Composition
 
-**Status:** Accepted
+**Status:** Accepted; shell contract amended by ADR-0028
 **Date:** 2026-07-10
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -41,15 +41,13 @@ Python service remains the scheduling authority.
    the generated compile-time catalog and the statically compiled Vite bundle.
 6. `web/src` remains the shell, shared UI/control, generated contract, and
    composition layer. The generated catalog feeds one typed module-surface
-   registry; the shell no longer maintains a parallel hardcoded module import
-   list. Product neutrality is the target boundary, but the current shell still
-   contains transitional Contacts data fetching, preferences, domain types,
-   options, and Workbench orchestration adapters.
-7. The current `ModuleSurfaceHostContext` deliberately adapts the existing
-   shell-owned `Workbench` state into module renderers. This shared shell
-   compatibility bridge is transitional: it preserves behavior during physical
-   relocation, but new module behavior must not expand that broad coupling.
-   Later slices may replace it with narrower module-neutral host services.
+   registry; it is the only shell source allowed to import exact module surface
+   entries.
+7. ADR-0028 replaces the former `Workbench` compatibility alias with the
+   dependency-free `web/src/contracts/moduleSurface.ts` port. The shell passes
+   only token, role, appearance, readonly module status, busy action, lifecycle
+   action, refresh, and unauthorized callback. Contacts owns its data fetching,
+   preferences, storage keys, DTOs, options, state, and commands.
 8. Apps Manager, Calendar, Communications, Contacts, and Planning declare
    `web_surface`. Reports owns its typed report HTTP client under
    `modules/reports.core/web/src` but does not declare a workbench surface.
@@ -68,11 +66,8 @@ Python service remains the scheduling authority.
 ## Consequences
 
 - Physical ownership now matches manifest ownership for feature components,
-  feature tests, module-local styles, surface entrypoints, and the Reports HTTP
-  client. Contacts-specific shell orchestration in `useWorkbench`,
-  `useWorkbenchData`, `useWorkbenchPreferences`, shared domain types, and shared
-  options is an explicit compatibility exception; it is not claimed as fully
-  extracted module ownership in this slice.
+  feature tests, module-local styles, surface entrypoints, the Reports HTTP
+  client, and Contacts frontend orchestration/data/contracts.
 - Adding or removing a workbench surface requires one closed manifest change,
   its canonical TypeScript entry, regenerated catalog output, and tests; a
   forgotten manual shell import cannot silently define catalog truth.
@@ -86,8 +81,9 @@ Python service remains the scheduling authority.
   provider outage.
 - Development and OCI builds need the repository-level `modules/` tree in the
   Vite filesystem boundary; a web-only directory copy is no longer sufficient.
-- The broad Workbench host type remains a known migration constraint, not the
-  desired permanent public contract for independently evolving module UI.
+- Architecture tests reject module-to-shell implementation imports,
+  shell-to-module imports outside the generated catalog, Contacts domain
+  orchestration in shell code, and cross-owner source cycles.
 
 ## Alternatives Considered
 

@@ -8,7 +8,7 @@ from sqlalchemy import text
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
+from uok.host.database import SessionLocal
 from uok_planning_core._internal.analysis.optimizer_engine import run_optimizer
 from uok_planning_core._internal.analysis.risk_engine import run_risk_engine
 

@@ -18,7 +18,7 @@ from uok_planning_core._internal.analysis.what_if import list_what_if_snapshots,
 from uok_planning_core._internal.analysis.risk_analysis import analysis_detail, list_risk_analyses, risk_analysis_or_error
 from uok_planning_core._internal.analysis.optimization import list_optimizations, list_recommendations, optimization_detail, optimization_or_error
 from uok.commands import MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH, MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH
-from uok.db import get_db
+from uok.host.database import get_db
 from uok.security import Actor, current_actor
 
 router = APIRouter(prefix="/api/planning", tags=["planning-analysis"])

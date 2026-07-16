@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { GeneratedModuleSurfaceRegistration, ModuleSurface } from "./moduleSurfaceContract";
+import type { GeneratedModuleSurfaceRegistration, ModuleSurface } from "@uok/contracts/moduleSurface";
 import { moduleSurfaces, validateModuleSurfaceCatalog } from "./moduleSurfaceRegistry";
 
 

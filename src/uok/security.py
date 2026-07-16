@@ -14,8 +14,8 @@ from fastapi import Depends, Header, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .db import get_db
-from .models import Membership, User
+from .host.database import get_db
+from .kernel_models import Membership, User
 
 
 KERNEL_ROLE_PERMISSIONS = {
@@ -140,7 +140,7 @@ def require_permission(actor: Actor, permission: str) -> None:
 
 def effective_role_permissions() -> dict[str, set[str]]:
     permissions = {role: set(values) for role, values in KERNEL_ROLE_PERMISSIONS.items()}
-    from .module_policy import module_role_grants
+    from .host.module_policy import module_role_grants
 
     for role, grants in module_role_grants().items():
         permissions.setdefault(role, set()).update(grants)

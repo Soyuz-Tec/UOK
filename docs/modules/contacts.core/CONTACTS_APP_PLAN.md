@@ -139,7 +139,8 @@ For runtime/UI changes, rebuild the PostgreSQL candidate and verify authenticate
 
 1. Implement and qualify individual provider adapters only when real credentials and provider policies are available.
 2. Add production-environment load, recovery, retention, and observability evidence before any production-ready claim.
-3. Narrow the transitional Workbench host compatibility contract without moving Contacts behavior into the shell.
+3. Keep the neutral module-surface host port narrow and the shell/Contacts
+   cycle enforcement green as new Contacts workflows are added.
 4. Continue additive module-owned migrations and remove the legacy primary projection only through a separately accepted migration decision.
 
 ## Non-Goals

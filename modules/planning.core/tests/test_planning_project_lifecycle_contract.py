@@ -10,9 +10,9 @@ from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
 from uok.command_context import CommandDomainError
-from uok.db import SessionLocal
-from uok.main import app
-from uok.models import PlanningProject
+from uok.host.application import app
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import PlanningProject
 from uok_planning_core._internal.delivery.commands import command_handlers, command_permissions
 from uok_planning_core._internal.scheduling.project_lifecycle import (
     PROJECT_STATUSES,

@@ -1,5 +1,5 @@
 import { formatLabel } from "@uok/shared/format";
-import type { ContactRecord } from "@uok/shared/types";
+import type { ContactRecord } from "./contracts";
 
 export type StatusTone = "success" | "warning" | "danger" | "info";
 export type ContactFactKind = "email" | "phone" | "website" | "address" | "organization" | "governance";

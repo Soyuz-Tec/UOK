@@ -3,7 +3,7 @@ import { Plus, X } from "lucide-react";
 
 import { EmptyState, RecordTagList } from "@uok/shared/data-display";
 import { IconButton } from "@uok/shared/primitives";
-import type { ContactGroupRecord, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupRecord, ContactRecord } from "./contracts";
 
 const systemGroupPrefixes = ["Company:", "Country:", "Review:", "Source:", "Type:"];
 

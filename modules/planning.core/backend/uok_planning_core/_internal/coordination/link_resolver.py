@@ -7,7 +7,7 @@ from typing import Any, Protocol
 from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.persistence.models import PlanningLink
-from uok.module_dependencies import OPERATIONAL_STATUSES, module_record
+from uok.kernel.module_runtime import OPERATIONAL_STATUSES, module_record_status
 from uok.security import Actor, has_permission
 
 LINK_TARGET_KINDS = (
@@ -78,8 +78,8 @@ def resolver_spec(target_kind: str) -> ResolverSpec:
 def resolve_target(db: Session, actor: Actor, target_kind: str, target_id: str) -> LinkResolution:
     spec = resolver_spec(target_kind)
     checked_at = datetime.now(timezone.utc).isoformat()
-    provider = module_record(db, actor.organization_id, spec.module_name)
-    if provider is None or provider.status not in OPERATIONAL_STATUSES:
+    provider_status = module_record_status(db, actor.organization_id, spec.module_name)
+    if provider_status not in OPERATIONAL_STATUSES:
         return LinkResolution("unavailable", None, f"Resolver provider {spec.module_name} is not installed or enabled.", checked_at)
     if not has_permission(actor, spec.permission):
         return LinkResolution("denied", None, "The linked target is not visible to this actor.", checked_at)

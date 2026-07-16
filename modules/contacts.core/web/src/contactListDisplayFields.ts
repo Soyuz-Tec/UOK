@@ -1,5 +1,5 @@
 import type { ColumnVisibilityMap, ColumnVisibilityOption } from "@uok/shared/tables";
-import type { ContactRecord } from "@uok/shared/types";
+import type { ContactRecord } from "./contracts";
 import { contactFieldValue, contactVisibilityOptions, type ContactFieldId } from "./contactFieldRegistry";
 
 export const contactListDisplayFieldOptions: ColumnVisibilityOption[] = contactVisibilityOptions([

@@ -1,4 +1,4 @@
-import type { ContactGroupRecord, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupRecord, ContactRecord } from "../../web/src/contracts";
 
 export const contact: ContactRecord = {
   id: "contact-1",

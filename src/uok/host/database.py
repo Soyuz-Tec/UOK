@@ -3,9 +3,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
 from .db_pool import create_database_engine
+from ..kernel.persistence import Base
 
 
 def _database_url() -> str:
@@ -19,10 +20,6 @@ engine, database_pool_telemetry = create_database_engine(DATABASE_URL, os.enviro
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 
-class Base(DeclarativeBase):
-    pass
-
-
 def get_db():
     with SessionLocal() as db:
         yield db
@@ -30,3 +27,13 @@ def get_db():
 
 def database_pool_snapshot() -> dict[str, object]:
     return database_pool_telemetry.snapshot()
+
+
+__all__ = [
+    "DATABASE_URL",
+    "SessionLocal",
+    "database_pool_snapshot",
+    "database_pool_telemetry",
+    "engine",
+    "get_db",
+]

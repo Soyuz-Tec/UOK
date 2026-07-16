@@ -6,8 +6,8 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.persistence.models import PlanningProject, PlanningScheduleEvent, PlanningTask, PlanningTaskDependency
+from uok.kernel.module_runtime import module_declared
 from uok.kernel_models import EventRecord, ModuleRecord
-from uok.modules import module_catalog
 from uok.security import Actor
 
 
@@ -48,7 +48,7 @@ def evidence(db: Session, organization_id: str) -> dict[str, Any]:
     ))
     operational = module is not None and module.status in {"installed", "upgraded"}
     checks = {
-        "planning_module_available_to_install": "planning.core" in module_catalog(),
+        "planning_module_available_to_install": module_declared("planning.core"),
         "planning_module_operational": not module or operational,
         "planning_project_available": not operational or projects > 0,
         "planning_tasks_available": not operational or tasks >= 2,

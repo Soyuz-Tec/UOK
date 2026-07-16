@@ -1,5 +1,5 @@
 import type { SavedSearchView } from "@uok/shared/forms";
-import type { ContactGroupBy, ContactQualityFilter, ContactSortBy, ContactSortDir, ContactSourceFilter } from "@uok/shared/types";
+import type { ContactGroupBy, ContactQualityFilter, ContactSortBy, ContactSortDir, ContactSourceFilter } from "./contracts";
 
 export const contactsSavedViewsKey = "uok_contacts_saved_search_views";
 

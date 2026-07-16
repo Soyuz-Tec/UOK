@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from uok_planning_core._internal.delivery.api_support import require_planning_read
 from uok_planning_core._internal.portfolio_audit.portfolio import planning_portfolio_read_model
 from uok_planning_core._internal.portfolio_audit.portfolio_contracts import PlanningPortfolioResponse, PlanningProjectStatusFilter
-from uok.db import get_db
+from uok.host.database import get_db
 from uok.security import Actor, current_actor
 
 router = APIRouter(prefix="/api/planning", tags=["planning-portfolio"])

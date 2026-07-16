@@ -49,7 +49,7 @@ def _authoritative_provider_manifest(
 ) -> dict[str, Any]:
     # Import lazily because manifest validation imports this module's target
     # pattern while the catalog contract is initialized.
-    from .module_manifest_loader import load_module_manifests
+    from ..module_manifest_loader import load_module_manifests
 
     authoritative = load_module_manifests().get(module_name)
     if authoritative is None:

@@ -4,9 +4,9 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from ..module_manifest_loader import load_module_manifests
+from ..security_types import ActorProtocol
 from .module_imports import resolve_module_import
-from .module_manifest_loader import load_module_manifests
-from .security_types import ActorProtocol
 
 
 def module_dashboard_counts(db: Session, actor: ActorProtocol) -> dict[str, int]:

@@ -9,8 +9,9 @@ from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
 from uok_contacts_core.public_api import command_handlers as contact_command_handlers
-from uok.db import SessionLocal
-from uok.models import CommandLog, EventRecord, Membership, Organization, PlanningScheduleEvent, PlanningTaskParticipant, User
+from uok.host.database import SessionLocal
+from uok.kernel_models import CommandLog, EventRecord, Membership, Organization, User
+from uok_planning_core._internal.persistence.models import PlanningScheduleEvent, PlanningTaskParticipant
 from uok.security import Actor
 from uok_planning_core._internal.coordination.participant_resolver import serialize_participant
 

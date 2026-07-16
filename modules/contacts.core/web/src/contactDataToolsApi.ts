@@ -1,4 +1,4 @@
-import type { ContactGroupRecord, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupRecord, ContactRecord } from "./contracts";
 
 export type ContactFactRow = {
   id: string;

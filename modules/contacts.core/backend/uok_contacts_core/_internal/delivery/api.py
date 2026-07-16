@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
-from uok.db import get_db
+from uok.host.database import get_db
 from uok.security import Actor, current_actor, require_permission
 
 from uok_contacts_core._internal.delivery.api_schemas import (

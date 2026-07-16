@@ -7,7 +7,7 @@ from hashlib import sha256
 from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, event
 from sqlalchemy.orm import Mapped, mapped_column
 
-from uok.db import Base
+from uok.kernel.persistence import Base
 from uok_planning_core._internal.persistence.planning_models import planning_id, planning_now
 
 

@@ -5,10 +5,10 @@ import sys
 from pathlib import Path
 
 from uok.module_manifest_loader import load_module_manifests
-from uok.module_paths import ensure_module_backend_paths, module_backend_paths, modules_root, repo_root
-from uok.module_routers import load_module_routers
-from uok.module_commands import command_permissions, load_module_command_handlers
-from uok.module_policy import module_role_grants
+from uok.host.module_commands import command_permissions, load_module_command_handlers
+from uok.host.module_paths import ensure_module_backend_paths, module_backend_paths, modules_root, repo_root
+from uok.host.module_policy import module_role_grants
+from uok.host.module_routers import load_module_routers
 from uok.module_tables import declared_module_table_names
 from uok.modules import module_contracts
 
@@ -252,7 +252,7 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
 
 
 def test_app_composes_module_routes_without_kernel_module_references() -> None:
-    from uok.main import app
+    from uok.host.application import app
 
     app_paths = set(app.openapi()["paths"])
     assert "/api/contacts" in app_paths
@@ -262,5 +262,5 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
     assert "/api/planning/projects/{project_id}/resources/{resource_id}/calendar" in app_paths
     assert "/api/reports/formats" in app_paths
 
-    main_source = (repo_root() / "src" / "uok" / "main.py").read_text(encoding="utf-8")
+    main_source = (repo_root() / "src" / "uok" / "host" / "application.py").read_text(encoding="utf-8")
     assert "contacts" not in main_source.lower()

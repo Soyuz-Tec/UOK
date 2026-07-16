@@ -10,9 +10,10 @@ from sqlalchemy import event, select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal, engine
-from uok.main import app
-from uok.models import Membership, Organization, PlanningProject, PlanningTask
+from uok.host.application import app
+from uok.host.database import SessionLocal, engine
+from uok.kernel_models import Membership, Organization
+from uok_planning_core._internal.persistence.models import PlanningProject, PlanningTask
 from uok.security import Actor
 from uok_planning_core._internal.portfolio_audit.portfolio import planning_portfolio_read_model
 

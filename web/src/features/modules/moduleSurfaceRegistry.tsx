@@ -1,14 +1,13 @@
 import type { ReactNode } from "react";
 
-import type { Workbench } from "@uok/app/useWorkbench";
-import { generatedModuleSurfaceCatalog } from "@uok/generated/moduleSurfaceCatalog";
-import type { Option } from "@uok/shared/options";
-import type { Section } from "@uok/shared/types";
-
 import type {
   GeneratedModuleSurfaceRegistration,
   ModuleSurface,
-} from "./moduleSurfaceContract";
+  ModuleSurfaceHostContext,
+} from "@uok/contracts/moduleSurface";
+import { generatedModuleSurfaceCatalog } from "@uok/generated/moduleSurfaceCatalog";
+import type { Option } from "@uok/shared/options";
+import type { Section } from "@uok/shared/types";
 
 type ValidatedModuleSurface = Omit<ModuleSurface, "id"> & { id: Section };
 
@@ -51,6 +50,6 @@ export const moduleSections: Array<Option<Section>> = moduleSurfaces.map(
   ({ id, label, icon }) => ({ id, label, icon }),
 );
 
-export function renderModuleSurface(section: Section, workbench: Workbench): ReactNode {
-  return moduleSurfaces.find((surface) => surface.id === section)?.render(workbench) ?? null;
+export function renderModuleSurface(section: Section, host: ModuleSurfaceHostContext): ReactNode {
+  return moduleSurfaces.find((surface) => surface.id === section)?.render(host) ?? null;
 }

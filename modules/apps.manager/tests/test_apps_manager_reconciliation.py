@@ -9,8 +9,8 @@ from starlette.testclient import TestClient
 
 from tests.helpers import auth
 from uok import module_dependencies
-from uok.db import SessionLocal
-from uok.models import EventRecord, ModuleRecord, Organization
+from uok.host.database import SessionLocal
+from uok.kernel_models import EventRecord, ModuleRecord, Organization
 from uok.module_dependencies import ensure_dependencies_operational, ensure_module_operational
 from uok.modules import module_catalog
 from uok.util import dumps, loads

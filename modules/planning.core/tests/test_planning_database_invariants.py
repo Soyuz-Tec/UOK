@@ -10,8 +10,8 @@ from sqlalchemy.exc import IntegrityError
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import (
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import (
     PlanningAssignment,
     PlanningCalendar,
     PlanningProject,

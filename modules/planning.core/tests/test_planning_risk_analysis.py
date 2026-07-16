@@ -6,8 +6,8 @@ import pytest
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import PlanningAnalysisRun
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import PlanningAnalysisRun
 from uok_planning_core._internal.analysis.risk_engine import run_risk_engine, validate_risk_result
 
 

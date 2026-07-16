@@ -13,8 +13,9 @@ from starlette.requests import Request
 from starlette.testclient import TestClient
 
 from tests.helpers import auth
-from uok import db_pool, main
-from uok.db_pool import DatabasePoolTelemetry, PostgresPoolSettings, create_database_engine
+from uok.host import application as main
+from uok.host import db_pool
+from uok.host.db_pool import DatabasePoolTelemetry, PostgresPoolSettings, create_database_engine
 
 
 def test_postgresql_pool_settings_have_bounded_safe_defaults() -> None:

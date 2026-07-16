@@ -1,4 +1,4 @@
-import type { ContactRecord } from "@uok/shared/types";
+import type { ContactRecord } from "./contracts";
 
 const contactDataFactFields: Array<keyof ContactRecord> = [
   "email",

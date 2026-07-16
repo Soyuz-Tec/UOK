@@ -6,8 +6,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from uok_contacts_core._internal.persistence.models import ContactGroup, ContactGroupMember, ContactImportBatch, Party, PartyNote, PartyRelationship
-from uok.models import EventRecord, ModuleRecord
-from uok.modules import module_catalog
+from uok.kernel.module_runtime import module_declared
+from uok.kernel_models import EventRecord, ModuleRecord
 from uok.security import Actor
 
 
@@ -53,7 +53,7 @@ def evidence(db: Session, organization_id: str) -> dict[str, Any]:
         ModuleRecord.name == "contacts.core",
     ))
     checks = {
-        "contacts_module_available_to_install": "contacts.core" in module_catalog(),
+        "contacts_module_available_to_install": module_declared("contacts.core"),
         "contacts_module_operational": contacts_module is not None and contacts_module.status in {"installed", "upgraded"},
         "contacts_available": people > 0,
         "organizations_available": organizations > 0,

@@ -6,8 +6,8 @@ from sqlalchemy import func, select, text
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import PlanningOutboxEvent, PlanningScheduleEvent, PlanningScheduleRevision
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import PlanningOutboxEvent, PlanningScheduleEvent, PlanningScheduleRevision
 
 
 def test_purged_project_hides_all_public_schedule_and_analysis_reads(client: TestClient) -> None:

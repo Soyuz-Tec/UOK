@@ -58,4 +58,4 @@ RUN useradd -r -u 10001 uok && mkdir -p /data && chown -R uok:uok /data /app
 USER uok
 
 EXPOSE 8080
-CMD ["python", "-m", "uvicorn", "uok.main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1"]
+CMD ["python", "-m", "uvicorn", "uok.host.application:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1"]

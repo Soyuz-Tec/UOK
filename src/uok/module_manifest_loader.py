@@ -5,7 +5,7 @@ from typing import Any
 
 from . import APP_VERSION
 from .module_manifest_schema import validate_manifest_shape
-from .module_paths import modules_root
+from .host.module_paths import modules_root
 
 DOUBLE_QUOTED_ESCAPES = {"\\": "\\", '"': '"'}
 

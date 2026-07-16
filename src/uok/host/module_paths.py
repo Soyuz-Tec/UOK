@@ -8,7 +8,7 @@ from typing import Any
 
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[3]
 
 
 def modules_root() -> Path:
@@ -29,8 +29,8 @@ def module_backend_paths(root: Path | None = None) -> list[Path]:
     # Import lazily because the manifest loader uses modules_root() from this
     # module while it initializes. Raw paths are preflighted before semantic
     # validation can inspect backend source.
-    from .module_contract_validation import validate_module_runtime_contracts
-    from .module_manifest_loader import load_module_manifests
+    from ..module_contract_validation import validate_module_runtime_contracts
+    from ..module_manifest_loader import load_module_manifests
 
     manifests = load_module_manifests(module_root)
     backend_paths = [

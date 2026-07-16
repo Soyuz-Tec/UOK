@@ -1,6 +1,6 @@
 import { formatDate, formatLabel } from "@uok/shared/format";
 import type { ColumnVisibilityOption } from "@uok/shared/tables";
-import type { ContactRecord } from "@uok/shared/types";
+import type { ContactRecord } from "./contracts";
 
 export type ContactFieldId =
   | "address"

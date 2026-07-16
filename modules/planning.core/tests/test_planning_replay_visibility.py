@@ -8,12 +8,13 @@ from starlette.testclient import TestClient
 
 import uok.commands as command_gateway
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import CommandLog, PlanningProject, PlanningScheduleRevision
-from uok.module_commands import load_module_command_replay_guards
+from uok.host.database import SessionLocal
+from uok.host.module_commands import load_module_command_replay_guards
+from uok.kernel_models import CommandLog
 from uok.module_contract_validation import validate_module_extension_contracts
 from uok.module_manifest_loader import load_module_manifests
 from uok.util import dumps
+from uok_planning_core._internal.persistence.models import PlanningProject, PlanningScheduleRevision
 from uok_planning_core._internal.portfolio_audit.replay_visibility import (
     _trusted_result_project_id,
 )

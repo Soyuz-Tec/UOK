@@ -3,8 +3,9 @@ import { cleanup, render } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { UokLocalizationProvider } from "@uok/shared/localization";
-import { emptyDraft } from "@uok/shared/types";
-import type { ContactDetailPane, ContactGroupBy, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView, UokLocale } from "@uok/shared/types";
+import type { UokLocale } from "@uok/shared/types";
+import { emptyDraft } from "../../web/src/contracts";
+import type { ContactDetailPane, ContactGroupBy, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "../../web/src/contracts";
 import { ContactsWorkspace } from "../../web/src/ContactsWorkspace";
 import { contact, contactGroup } from "./ContactsWorkspace.fixtures";
 import type { ContactsWorkspaceProps } from "../../web/src/types";

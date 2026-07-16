@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from ..module_manifest_loader import load_module_manifests
 from .module_imports import resolve_module_import
-from .module_manifest_loader import load_module_manifests
 
 
 @lru_cache(maxsize=1)

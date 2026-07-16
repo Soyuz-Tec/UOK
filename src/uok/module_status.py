@@ -5,7 +5,7 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .models import CommandLog, EventRecord
+from .kernel_models import CommandLog, EventRecord
 from .module_dependencies import ensure_dependencies_operational, module_dependents, module_record
 from .module_lifecycle_policy import (
     default_module_status,

@@ -7,7 +7,7 @@ from uuid import uuid4
 from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, event, inspect
 from sqlalchemy.orm import Mapped, mapped_column
 
-from uok.db import Base
+from uok.kernel.persistence import Base
 
 
 def planning_id() -> str:

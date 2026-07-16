@@ -4,9 +4,9 @@ from typing import Any
 
 from fastapi import APIRouter, FastAPI
 
-from .module_api_prefixes import is_canonical_api_route_path
+from ..module_api_prefixes import is_canonical_api_route_path
+from ..module_manifest_loader import load_module_manifests
 from .module_imports import IMPORT_TARGET_SPEC_PATTERN, resolve_module_import
-from .module_manifest_loader import load_module_manifests
 from .module_paths import ensure_module_backend_paths
 
 

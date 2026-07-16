@@ -1,6 +1,6 @@
 import { Store } from "lucide-react";
 
-import type { ModuleSurface } from "@uok/features/modules/moduleSurfaceContract";
+import type { ModuleSurface } from "@uok/contracts/moduleSurface";
 
 import { AppsManagerPanel } from "./AppsManagerPanel";
 import "./styles/index.css";
@@ -11,11 +11,11 @@ export const appsManagerModuleSurface: ModuleSurface = {
   icon: Store,
   moduleName: "apps.manager",
   order: 20,
-  render: (workbench) => (
+  render: (host) => (
     <AppsManagerPanel
-      modules={workbench.moduleRows}
-      busyAction={workbench.busyAction}
-      onAction={workbench.moduleAction}
+      modules={[...host.moduleRows]}
+      busyAction={host.busyAction}
+      onAction={host.moduleAction}
     />
   )
 };

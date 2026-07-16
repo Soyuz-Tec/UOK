@@ -5,7 +5,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .models import ModuleRecord, Organization
+from .kernel_models import ModuleRecord, Organization
 from .module_dependencies import emit_module_event, ensure_dependencies_operational, installed_dependents, module_record
 from .module_lifecycle_policy import (
     default_module_status,

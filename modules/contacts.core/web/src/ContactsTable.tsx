@@ -1,6 +1,6 @@
 import { type KeyboardEvent } from "react";
 
-import type { ContactGroupBy, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupBy, ContactRecord } from "./contracts";
 import {
   ResizableDataTable,
   type DataTableColumn,

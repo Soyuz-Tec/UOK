@@ -6,7 +6,7 @@ from sqlalchemy import select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
+from uok.host.database import SessionLocal
 from uok.kernel_models import EventRecord
 from uok.util import loads
 from uok_contacts_core._internal.exchange_quality.duplicate_merge_history import PRIVATE_MERGE_SNAPSHOT_EVENT

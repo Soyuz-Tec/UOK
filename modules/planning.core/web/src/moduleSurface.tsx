@@ -1,6 +1,6 @@
 import { CalendarRange } from "lucide-react";
 
-import type { ModuleSurface } from "@uok/features/modules/moduleSurfaceContract";
+import type { ModuleSurface } from "@uok/contracts/moduleSurface";
 import { PLANNING_MODULE_ID, PLANNING_SECTION_ID } from "./planningModule";
 import { PlanningWorkspace } from "./PlanningWorkspace";
 import "./styles/index.css";
@@ -11,17 +11,17 @@ export const planningModuleSurface: ModuleSurface = {
   icon: CalendarRange,
   moduleName: PLANNING_MODULE_ID,
   order: 60,
-  render: (workbench) => {
-    const planningModule = workbench.moduleRows.find((row) => row.name === PLANNING_MODULE_ID);
+  render: (host) => {
+    const planningModule = host.moduleRows.find((row) => row.name === PLANNING_MODULE_ID);
     return (
       <PlanningWorkspace
-        token={workbench.token}
-        appearance={workbench.appearance}
+        token={host.token}
+        appearance={host.appearance}
         module={planningModule}
-        moduleRows={workbench.moduleRows}
-        busyAction={workbench.busyAction}
+        moduleRows={[...host.moduleRows]}
+        busyAction={host.busyAction}
         onActivate={(moduleName = PLANNING_MODULE_ID, action) =>
-          workbench.moduleAction(moduleName, action || (planningModule?.status === "disabled" ? "enable" : "install"))
+          void host.moduleAction(moduleName, action || (planningModule?.status === "disabled" ? "enable" : "install"))
         }
       />
     );

@@ -1,10 +1,11 @@
-import type { ContactDetailPane, ContactDraft, ContactGroupBy, ContactGroupRecord, ContactMergeFieldChoices, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView, ModuleStatus } from "@uok/shared/types";
+import type { HostModuleStatus } from "@uok/contracts/moduleSurface";
+import type { ContactDetailPane, ContactDraft, ContactGroupBy, ContactGroupRecord, ContactMergeFieldChoices, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "./contracts";
 
 export type ContactsWorkspaceProps = {
   token: string;
   currentUserRole: string;
   operational: boolean;
-  module?: ModuleStatus;
+  module?: HostModuleStatus;
   contacts: ContactRecord[];
   contactGroups: ContactGroupRecord[];
   selectedContact: ContactRecord | null;

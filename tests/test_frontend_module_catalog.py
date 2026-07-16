@@ -11,14 +11,17 @@ if str(SCRIPTS) not in sys.path:
 
 from generate_frontend_module_catalog import (  # noqa: E402
     OUTPUT_PATH,
+    SECTIONS_OUTPUT_PATH,
     ordered_module_names,
     render_frontend_module_catalog,
+    render_frontend_module_sections,
 )
 from tests.module_manifest_contract_support import write_module  # noqa: E402
 
 
 def test_checked_frontend_catalog_matches_validated_manifests() -> None:
     assert OUTPUT_PATH.read_text(encoding="utf-8") == render_frontend_module_catalog()
+    assert SECTIONS_OUTPUT_PATH.read_text(encoding="utf-8") == render_frontend_module_sections()
 
 
 def test_frontend_catalog_is_manifest_driven_and_dependency_ordered(tmp_path: Path) -> None:
@@ -34,6 +37,7 @@ def test_frontend_catalog_is_manifest_driven_and_dependency_ordered(tmp_path: Pa
     write_module(module_root, "headless.core")
 
     rendered = render_frontend_module_catalog(module_root)
+    sections = render_frontend_module_sections(module_root)
 
     assert rendered.index("../../../modules/beta.core/web/src/moduleSurface") < rendered.index(
         "../../../modules/alpha.core/web/src/moduleSurface"
@@ -41,7 +45,8 @@ def test_frontend_catalog_is_manifest_driven_and_dependency_ordered(tmp_path: Pa
     assert 'sectionId: "apps"' in rendered
     assert 'sectionId: "alpha"' in rendered
     assert 'sectionId: "beta"' in rendered
-    assert 'export const defaultModuleSection: GeneratedModuleSection = "apps";' in rendered
+    assert 'export const defaultModuleSection: GeneratedModuleSection = "apps";' in sections
+    assert 'export const generatedModuleSections = ["beta", "alpha", "apps"]' in sections
     assert "headless.core/web/src/moduleSurface" not in rendered
 
 

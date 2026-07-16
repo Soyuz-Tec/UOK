@@ -9,8 +9,8 @@ from sqlalchemy.exc import IntegrityError
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import PlanningProject, PlanningTask
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import PlanningProject, PlanningTask
 
 
 def test_project_target_is_exact_and_calculated_finish_is_persisted_cpm(client: TestClient) -> None:

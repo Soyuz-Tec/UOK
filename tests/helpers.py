@@ -3,8 +3,8 @@ from __future__ import annotations
 from starlette.testclient import TestClient
 from sqlalchemy import select
 
-from uok.db import SessionLocal
-from uok.models import User
+from uok.host.database import SessionLocal
+from uok.kernel_models import User
 
 
 def auth(client: TestClient, username: str, password: str) -> dict[str, str]:

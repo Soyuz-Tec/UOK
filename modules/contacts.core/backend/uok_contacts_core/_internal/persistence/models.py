@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from uok.db import Base
+from uok.kernel.persistence import Base
 from uok.models_base import new_id, utcnow
 
 from uok_contacts_core._internal.persistence.system_models import (

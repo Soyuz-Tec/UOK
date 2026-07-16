@@ -3,8 +3,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from uok.db import get_db
-from uok.module_ops import ensure_module_operational
+from uok.host.database import get_db
+from uok.kernel.module_runtime import ensure_module_operational
 from uok.security import Actor, current_actor, require_permission
 
 from .service import list_threads, serialize_thread, thread_or_error

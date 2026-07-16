@@ -103,8 +103,8 @@ jobs:
           DATA_DIR: ./data
         run: |
           python - <<'PY'
-          from uok.main import bootstrap
-          from uok.db import SessionLocal
+          from uok.host.application import bootstrap
+          from uok.host.database import SessionLocal
           from uok.migration_registry import verify_migration_discipline
           from uok.module_contract_validation import validate_module_runtime_contracts
           from uok.quality import source_boundary_report

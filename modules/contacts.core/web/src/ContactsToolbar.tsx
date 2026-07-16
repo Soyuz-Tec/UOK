@@ -1,8 +1,8 @@
 import { RefreshCw } from "lucide-react";
 
 import { WorkspaceActionButton } from "@uok/shared/actions";
-import { contactsViewOptions } from "@uok/shared/options";
-import type { ContactGroupBy, ContactGroupRecord, ContactQualityFilter, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "@uok/shared/types";
+import { contactsViewOptions } from "./contactWorkspaceOptions";
+import type { ContactGroupBy, ContactGroupRecord, ContactQualityFilter, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "./contracts";
 import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkspaceCommandBar } from "@uok/shared/layout";
 import { useUokLocalization } from "@uok/shared/localization";

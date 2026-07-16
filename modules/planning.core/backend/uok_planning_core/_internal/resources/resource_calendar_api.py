@@ -10,7 +10,7 @@ from uok_planning_core._internal.delivery.api_contracts import PLANNING_MUTATION
 from uok_planning_core._internal.delivery.api_support import run_planning_command
 from uok_planning_core._internal.delivery.schemas import PlanningResourceCalendarRequest
 from uok.commands import MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH, MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH
-from uok.db import get_db
+from uok.host.database import get_db
 from uok.security import Actor, current_actor
 
 router = APIRouter()

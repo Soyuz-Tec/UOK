@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 
 import { draftFromContact } from "./contactDraft";
-import type { WorkbenchPreferences } from "@uok/app/useWorkbenchPreferences";
-import type { ContactDetailPane, ContactDraft, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter } from "@uok/shared/types";
-import { emptyDraft } from "@uok/shared/types";
+import type { ContactPreferences } from "./useContactPreferences";
+import type { ContactDetailPane, ContactDraft, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter } from "../contracts";
+import { emptyDraft } from "../contracts";
 
-export function useContactWorkspaceState(preferences: WorkbenchPreferences) {
+export function useContactWorkspaceState(preferences: ContactPreferences) {
   const [draft, setDraft] = useState<ContactDraft>(emptyDraft);
   const [editing, setEditing] = useState(false);
   const [creating, setCreating] = useState(false);

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
-from uok.db import get_db
+from uok.host.database import get_db
 from uok.security import Actor, current_actor, require_permission
 
 from .schemas import GenerateReportRequest, ReportFormatResponse, SUPPORTED_REPORT_FORMATS

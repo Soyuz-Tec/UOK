@@ -39,10 +39,10 @@ identity and access.
   notification delivery remain later `communications.core` work.
 
 ADR-0022 closed the accepted alpha ORM bridge. The canonical SQLAlchemy mapping
-now lives in `modules/communications.core/backend/uok_communications_core`, and
-`src/uok/communication_models.py` re-exports that exact class. Module behavior,
-manifest, migration, API, commands, policy, tests, and candidate verification
-remain owned by `communications.core`.
+now lives in `modules/communications.core/backend/uok_communications_core`.
+ADR-0028 retired the former root compatibility alias; module behavior,
+manifest, migration, API, commands, policy, tests, mapping, and candidate
+verification remain owned by `communications.core`.
 
 ## Consequences
 

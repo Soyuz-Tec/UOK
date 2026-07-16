@@ -80,7 +80,7 @@ All implementation code is now capability-organized below
 
 The broad package-root facade, the kernel `contact*` compatibility shims, the
 kernel request-schema re-exports, and four Planning-specific kernel ORM aliases
-were retired. `src/uok/models.py` remains the existing validated registry
+were retired. `pre-gap3:src/uok/models.py` remains the existing validated registry
 compatibility surface; removing the kernel/host mix is Gap 3 and was not folded
 into this change.
 

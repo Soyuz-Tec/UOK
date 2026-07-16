@@ -11,16 +11,16 @@ import pytest
 from sqlalchemy import create_engine
 
 from tests.model_metadata_contract import normalized_model_metadata
-from uok.db import Base
-from uok.kernel_models import KERNEL_MODELS
-from uok.module_manifest_loader import load_module_manifests
-from uok.module_imports import resolve_module_import
-from uok.module_model_registry import (
+from uok.host.model_registry import (
     ensure_module_models_registered,
     module_model_provider_order,
     module_model_registry_report,
 )
-from uok.module_paths import repo_root
+from uok.host.module_imports import resolve_module_import
+from uok.host.module_paths import repo_root
+from uok.kernel.persistence import Base
+from uok.kernel_models import KERNEL_MODELS
+from uok.module_manifest_loader import load_module_manifests
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "module_model_registry.json"
@@ -73,7 +73,6 @@ def test_registry_is_idempotent_and_uses_one_base_metadata() -> None:
 
 
 def test_manifest_model_providers_preserve_exact_class_identity() -> None:
-    from uok import calendar_models, communication_models
     from uok_calendar_core import models as calendar_owner
     from uok_communications_core import models as communications_owner
 
@@ -85,8 +84,8 @@ def test_manifest_model_providers_preserve_exact_class_identity() -> None:
         for name, model in provider().items():
             assert registered[name] is model
 
-    assert calendar_models.Calendar is calendar_owner.Calendar
-    assert communication_models.CommunicationThread is communications_owner.CommunicationThread
+    assert registered["Calendar"] is calendar_owner.Calendar
+    assert registered["CommunicationThread"] is communications_owner.CommunicationThread
 
 
 def test_manifest_direct_ownership_matches_provider_exports_and_origins() -> None:
@@ -131,33 +130,36 @@ def test_complete_registry_can_create_all_tables_in_sqlite() -> None:
 @pytest.mark.parametrize(
     "setup",
     [
-        "import uok.models",
+        (
+            "from uok.host.model_registry import ensure_module_models_registered; "
+            "ensure_module_models_registered()"
+        ),
         "from uok.module_tables import model_table_names; model_table_names()",
         "from uok.migration_registry import verify_migration_discipline; verify_migration_discipline()",
         (
-            "from uok.module_paths import ensure_module_backend_paths; "
+            "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); import uok_calendar_core.models"
         ),
         (
-            "from uok.module_paths import ensure_module_backend_paths; "
+            "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); import uok_communications_core.models"
         ),
         (
-            "from uok.module_paths import ensure_module_backend_paths; "
+            "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); import uok_contacts_core.public_api"
         ),
         (
-            "from uok.module_paths import ensure_module_backend_paths; "
+            "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); "
             "from uok_contacts_core.public_api import PartyReferenceResolution; "
             "assert PartyReferenceResolution.__name__ == 'PartyReferenceResolution'"
         ),
         (
-            "from uok.module_paths import ensure_module_backend_paths; "
+            "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); import uok_planning_core.public_api"
         ),
         (
-            "from uok.module_paths import ensure_module_backend_paths; "
+            "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); import uok_reports_core.models"
         ),
     ],
@@ -165,8 +167,8 @@ def test_complete_registry_can_create_all_tables_in_sqlite() -> None:
 def test_import_order_produces_the_same_registry(setup: str) -> None:
     script = f"""
 {setup}
-from uok.module_model_registry import module_model_registry_report
-from uok.db import Base
+from uok.host.model_registry import module_model_registry_report
+from uok.kernel.persistence import Base
 report = module_model_registry_report()
 assert report['model_count'] == 49
 assert report['table_count'] == 49
@@ -193,7 +195,7 @@ assert len(Base.registry.mappers) == 49
     ("provider_expression", "message"),
     [
         ("{}", "provider mismatch"),
-        ("{'OwnedModel': 'not-a-class'}", "must inherit uok.db.Base"),
+        ("{'OwnedModel': 'not-a-class'}", "must inherit uok.kernel.persistence.Base"),
         (
             "{'OwnedModel': 'not-a-class', 'ExtraModel': 'not-a-class'}",
             "provider mismatch",
@@ -205,8 +207,8 @@ def test_malformed_model_provider_fails_terminally_in_subprocess(
     message: str,
 ) -> None:
     script = f"""
-import uok.module_model_registry as registry
-from uok.module_model_registry import ModuleModelRegistryError
+import uok.host.model_registry as registry
+from uok.host.model_registry import ModuleModelRegistryError
 
 manifest = {{
     'name': 'alpha.core',

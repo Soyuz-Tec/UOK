@@ -6,8 +6,8 @@ from sqlalchemy import select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import EventRecord
+from uok.host.database import SessionLocal
+from uok.kernel_models import EventRecord
 from uok.util import loads
 
 
