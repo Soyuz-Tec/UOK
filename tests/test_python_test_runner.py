@@ -83,6 +83,26 @@ def test_runner_environment_ignores_ambient_pytest_configuration(
     assert environment["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] == "1"
 
 
+def test_database_cleanup_retries_a_transient_file_lock(monkeypatch: pytest.MonkeyPatch) -> None:
+    attempts = 0
+    sleeps: list[float] = []
+
+    class TransientlyLockedPath:
+        def unlink(self, *, missing_ok: bool) -> None:
+            nonlocal attempts
+            attempts += 1
+            assert missing_ok is True
+            if attempts < 3:
+                raise PermissionError("transient Windows file lock")
+
+    monkeypatch.setattr(run_python_tests.time, "sleep", sleeps.append)
+
+    run_python_tests._unlink_with_retry(TransientlyLockedPath(), attempts=3, delay_seconds=0.25)
+
+    assert attempts == 3
+    assert sleeps == [0.25, 0.25]
+
+
 def test_runner_invokes_each_file_in_its_own_sequential_subprocess(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
