@@ -1,7 +1,6 @@
 # Kernel, Host, And Frontend Shell Gap 3 Fix – 2026-07-16
 
-**Status:** Implemented and locally verified; hosted CI status is recorded
-below.
+**Status:** Implemented and verified locally and in hosted CI.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -144,7 +143,7 @@ only non-singleton component is that two-file Planning-internal SCC.
 | Repository quality/documentation policy | `python scripts/quality_audit.py` | Pass |
 | Rebuilt local runtime | `uok_ops.ps1 -Action Rebuild` | Pass: new host entrypoint healthy at `127.0.0.1:18088`; offline/live database-capacity gates pass |
 | Module candidate verification | `scripts/verify_uok_candidate.ps1` | Pass: Apps Manager, Calendar, Communications, Contacts, Planning, and Reports |
-| GitHub Actions candidate checks | Existing workflow discovers all repository tests | Prior implementation push `5c17907` passed; final review-fix commit pending |
+| GitHub Actions candidate checks | Existing workflow discovers all repository tests | Pass for implementation commit `2590e00`: [push run 29518290517](https://github.com/Soyuz-Tec/UOK/actions/runs/29518290517), [PR run 29518293376](https://github.com/Soyuz-Tec/UOK/actions/runs/29518293376) |
 
 Run locally:
 
@@ -201,7 +200,7 @@ product behavior, or UI workflow changed.
 
 ## 6. Ready For Full Modular-Monolith Re-Audit?
 
-**Yes, after the recorded full local gates and hosted CI are green.**
+**Yes.**
 
 Gap 3 closes the two structural defects identified by the prior audit:
 composition is explicitly host-owned, and the frontend shell no longer owns or
