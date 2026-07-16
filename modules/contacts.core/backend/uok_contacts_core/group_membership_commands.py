@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from .command_support import _emit_event, _party
 from .group_read_model import (
     ensure_manually_managed_contact_group,
-    get_contact_group_or_error,
+    get_contact_group_for_update_or_error,
     serialize_contact_group,
 )
 from .models import ContactGroupMember, utcnow
@@ -19,7 +19,7 @@ from uok.util import dumps
 
 def cmd_add_contacts_to_group(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     validate_contact_payload_lengths(payload)
-    group = get_contact_group_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
+    group = get_contact_group_for_update_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
     ensure_manually_managed_contact_group(group)
     if group.status == "archived":
         raise ValueError("archived contact groups cannot be edited")
@@ -50,12 +50,12 @@ def cmd_add_contacts_to_group(db: Session, actor: Actor, payload: dict[str, Any]
             "name": group.name,
             "added_count": added_count,
         })
-    return {"group": serialize_contact_group(db, group), "added_count": added_count}
+    return {"group": serialize_contact_group(db, group, actor=actor), "added_count": added_count}
 
 
 def cmd_remove_contact_from_group(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     validate_contact_payload_lengths(payload)
-    group = get_contact_group_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
+    group = get_contact_group_for_update_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
     ensure_manually_managed_contact_group(group)
     if group.status == "archived":
         raise ValueError("archived contact groups cannot be edited")
@@ -74,7 +74,7 @@ def cmd_remove_contact_from_group(db: Session, actor: Actor, payload: dict[str, 
             "party_id": party.id,
             "removed_count": len(rows),
         })
-    return {"group": serialize_contact_group(db, group), "removed_count": len(rows)}
+    return {"group": serialize_contact_group(db, group, actor=actor), "removed_count": len(rows)}
 
 
 def _party_ids(payload: dict[str, Any]) -> list[str]:

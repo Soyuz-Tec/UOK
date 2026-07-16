@@ -23,6 +23,11 @@ from .facade import count_parties, get_party_or_error, import_batch_rows, list_p
 router = APIRouter(prefix="/api/contacts", tags=["contacts"])
 
 
+def _private_actor_response(response: Response) -> None:
+    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["Vary"] = "Authorization"
+
+
 @router.get("")
 def contacts(
     response: Response,
@@ -42,6 +47,7 @@ def contacts(
 ) -> list[dict[str, Any]]:
     require_permission(actor, "contacts.read")
     require_contacts_module_operational(db, actor)
+    _private_actor_response(response)
     try:
         response.headers["X-Total-Count"] = str(count_parties(
             db,
@@ -90,6 +96,7 @@ def contacts_review_queue(
 ) -> list[dict[str, Any]]:
     require_permission(actor, "contacts.read")
     require_contacts_module_operational(db, actor)
+    _private_actor_response(response)
     response.headers["X-Total-Count"] = str(review_queue_count(db, actor))
     return review_queue(db, actor, limit=limit, offset=offset)
 
@@ -111,9 +118,10 @@ register_system_routes(router)
 
 
 @router.get("/{party_id}")
-def contact_detail(party_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
+def contact_detail(party_id: str, response: Response, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
     require_permission(actor, "contacts.read")
     require_contacts_module_operational(db, actor)
+    _private_actor_response(response)
     try:
         return serialize_party(db, get_party_or_error(db, actor, party_id), include_detail=True, actor=actor)
     except PermissionError as exc:

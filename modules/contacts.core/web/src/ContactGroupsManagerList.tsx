@@ -98,6 +98,7 @@ export function ContactGroupsManagerList({
           <div role="listitem" key={group.id}>
             <button
               type="button"
+              data-group-id={group.id}
               className={group.id === selectedGroupId ? "contact-groups-manager-row selected" : "contact-groups-manager-row"}
               aria-current={group.id === selectedGroupId ? "true" : undefined}
               disabled={Boolean(busyAction)}

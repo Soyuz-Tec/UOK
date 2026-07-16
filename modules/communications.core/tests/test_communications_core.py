@@ -62,12 +62,20 @@ def test_thread_provider_is_scoped_audited_idempotent_and_lifecycle_safe(client:
 def test_communication_migration_and_manifest_are_module_owned() -> None:
     root = Path(__file__).parents[1]
     sql = (root / "migrations" / "001_communications_core.sql").read_text(encoding="utf-8")
+    lifecycle_sql = (root / "migrations" / "002_communications_thread_recoverable_delete.sql").read_text(encoding="utf-8")
     manifest = (root / "manifest.yaml").read_text(encoding="utf-8")
     assert "CREATE TABLE IF NOT EXISTS communication_threads" in sql
     assert "ck_communication_thread_status" in sql
+    assert "archived_from_status" in lifecycle_sql
+    assert "ck_communication_thread_archive_state" in lifecycle_sql
+    assert "ck_communication_thread_revision_positive" in lifecycle_sql
     for value in (
         "CreateCommunicationThread",
+        "ArchiveCommunicationThread",
+        "RestoreCommunicationThread",
         "CommunicationThreadCreated",
+        "CommunicationThreadArchived",
+        "CommunicationThreadRestored",
         "CommunicationThread",
         "communications.read",
         "communications.edit",
@@ -80,3 +88,12 @@ def test_communication_thread_rejects_whitespace_only_title() -> None:
 
     with pytest.raises(ValidationError):
         CommunicationThreadCreateRequest(title="   ")
+
+
+def test_candidate_verifier_archives_the_restored_thread_before_returning() -> None:
+    root = Path(__file__).parents[1]
+    script = (root / "verify" / "UokCandidateCommunications.ps1").read_text(encoding="utf-8")
+
+    assert '$cleanupHeaders["If-Match"] = $restored.etag' in script
+    assert 'Invoke-UokJson -Method "DELETE" -Path "/api/communications/threads/$threadId" -Headers $cleanupHeaders' in script
+    assert 'final_status = $cleanup.status' in script

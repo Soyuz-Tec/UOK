@@ -32,7 +32,9 @@ describe("CalendarWorkspace", () => {
     vi.restoreAllMocks();
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
       const path = String(input);
-      const body = path.includes("/api/calendar/calendars")
+      const body = path.includes("/api/calendar/capabilities")
+        ? { read: true, manage: true, create: true, delete: true, restore: true }
+        : path.includes("/api/calendar/calendars")
         ? [
             { id: "calendar-1", name: "Operations", color: "#2563eb", status: "active", timezone: "UTC" },
             { id: "calendar-2", name: "Engineering", color: "invalid", status: "active", timezone: "America/New_York" },
@@ -69,7 +71,7 @@ describe("CalendarWorkspace", () => {
         status: 200,
         json: async () => body,
         headers: { get: (name: string) => name.toLowerCase() === "etag" && path.includes("/api/calendar/events/event-1") ? '"calendar-event-sha256-test"' : null },
-      } as Response;
+      } as unknown as Response;
     }));
   });
 
@@ -152,5 +154,65 @@ describe("CalendarWorkspace", () => {
     const dialog = screen.getByRole("dialog", { name: "New event" });
     expect(within(dialog).getByLabelText("Time zone")).toHaveValue("America/New_York");
     expect((within(dialog).getByLabelText("Starts") as HTMLInputElement).value).toMatch(/T09:00$/);
+  });
+
+  it("soft deletes the selected calendar and falls back to the next visible calendar", async () => {
+    let calendars = [
+      { id: "calendar-1", name: "Operations", color: "#2563eb", status: "active", timezone: "UTC", etag: '"calendar-sha256-operations"', user_managed: true, can_delete: true, can_restore: false },
+      { id: "calendar-2", name: "Engineering", color: null, status: "active", timezone: "UTC", etag: '"calendar-sha256-engineering"', user_managed: true, can_delete: true, can_restore: false },
+    ];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const path = String(input);
+      let body: unknown = [];
+      if (path === "/api/calendar/capabilities") body = { read: true, manage: true, create: true, delete: true, restore: true };
+      else if (path === "/api/calendar/calendars/calendar-1" && init?.method === "DELETE") {
+        calendars = calendars.map((row) => row.id === "calendar-1"
+          ? { ...row, status: "deleted", etag: '"calendar-sha256-operations-deleted"', can_delete: false, can_restore: true }
+          : row);
+        body = calendars[0];
+      } else if (path === "/api/calendar/calendars/calendar-1/restore" && init?.method === "POST") {
+        calendars = calendars.map((row) => row.id === "calendar-1"
+          ? { ...row, status: "active", etag: '"calendar-sha256-operations-restored"', can_delete: true, can_restore: false }
+          : row);
+        body = calendars[0];
+      } else if (path.startsWith("/api/calendar/calendars")) body = path.includes("include_deleted=true") ? calendars : calendars.filter((row) => row.status !== "deleted");
+      else if (path.startsWith("/api/calendar/freebusy?")) body = { busy: [] };
+      return {
+        ok: true,
+        status: 200,
+        json: async () => body,
+        headers: { get: () => null },
+      } as unknown as Response;
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<CalendarWorkspace token="token" moduleRows={[installedCalendar]} busyAction="" onInstall={() => undefined} />);
+
+    const trigger = await screen.findByRole("button", { name: "Calendar display: Operations" });
+    fireEvent.click(trigger);
+    const deleteButton = await screen.findByRole("button", { name: "Delete calendar" });
+    await waitFor(() => expect(deleteButton).toBeEnabled());
+    fireEvent.click(deleteButton);
+    const dialog = screen.getByRole("dialog", { name: "Delete calendar" });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete calendar" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/calendar/calendars/calendar-1",
+      expect.objectContaining({ method: "DELETE", headers: expect.objectContaining({ "If-Match": '"calendar-sha256-operations"' }) }),
+    ));
+    await waitFor(() => expect(trigger).toHaveAccessibleName("Calendar display: Engineering"));
+    expect(trigger).toHaveFocus();
+    expect(screen.getByRole("status")).toHaveTextContent("Deleted Operations. Its events remain retained for audit.");
+
+    fireEvent.click(trigger);
+    fireEvent.click(await screen.findByRole("button", { name: "Restore calendar: Operations" }));
+    const restoreDialog = screen.getByRole("dialog", { name: "Restore calendar" });
+    fireEvent.click(within(restoreDialog).getByRole("button", { name: "Restore calendar" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/calendar/calendars/calendar-1/restore",
+      expect.objectContaining({ method: "POST", headers: expect.objectContaining({ "If-Match": '"calendar-sha256-operations-deleted"' }) }),
+    ));
+    await waitFor(() => expect(trigger).toHaveAccessibleName("Calendar display: Operations"));
+    expect(trigger).toHaveFocus();
+    expect(screen.getByRole("status")).toHaveTextContent("Restored Operations. Its retained events are active again.");
   });
 });

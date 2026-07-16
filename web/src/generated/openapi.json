@@ -768,6 +768,21 @@
         "title": "ContactGroupWriteRequest",
         "type": "object"
       },
+      "ContactLifecycleReasonRequest": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "ContactLifecycleReasonRequest",
+        "type": "object"
+      },
       "ContactNoteRequest": {
         "properties": {
           "body": {
@@ -5200,6 +5215,16 @@
         "operationId": "calendars_api_calendar_calendars_get",
         "parameters": [
           {
+            "in": "query",
+            "name": "include_deleted",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Deleted",
+              "type": "boolean"
+            }
+          },
+          {
             "in": "header",
             "name": "authorization",
             "required": false,
@@ -5323,6 +5348,22 @@
           },
           {
             "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
             "name": "authorization",
             "required": false,
             "schema": {
@@ -5342,14 +5383,28 @@
           "200": {
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Calendar lifecycle updated with a new strong ETag.",
+            "headers": {
+              "ETag": {
+                "description": "Strong validator for the returned Calendar aggregate or event detail.",
                 "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Delete Calendar Api Calendar Calendars  Calendar Id  Delete",
-                  "type": "object"
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "The supplied Calendar ETag is stale."
           },
           "422": {
             "content": {
@@ -5360,6 +5415,16 @@
               }
             },
             "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current Calendar ETag is required."
           }
         },
         "summary": "Delete Calendar",
@@ -5431,6 +5496,159 @@
           }
         },
         "summary": "Update Calendar",
+        "tags": [
+          "calendar"
+        ]
+      }
+    },
+    "/api/calendar/calendars/{calendar_id}/restore": {
+      "post": {
+        "operationId": "restore_calendar_api_calendar_calendars__calendar_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "calendar_id",
+            "required": true,
+            "schema": {
+              "title": "Calendar Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Calendar lifecycle updated with a new strong ETag.",
+            "headers": {
+              "ETag": {
+                "description": "Strong validator for the returned Calendar aggregate or event detail.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "412": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "The supplied Calendar ETag is stale."
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPreconditionResponse"
+                }
+              }
+            },
+            "description": "A current Calendar ETag is required."
+          }
+        },
+        "summary": "Restore Calendar",
+        "tags": [
+          "calendar"
+        ]
+      }
+    },
+    "/api/calendar/capabilities": {
+      "get": {
+        "operationId": "calendar_capabilities_api_calendar_capabilities_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Calendar Capabilities Api Calendar Capabilities Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Calendar Capabilities",
         "tags": [
           "calendar"
         ]
@@ -5637,7 +5855,7 @@
             "description": "Actor-visible event detail.",
             "headers": {
               "ETag": {
-                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "description": "Strong validator for the returned Calendar aggregate or event detail.",
                 "schema": {
                   "type": "string"
                 }
@@ -5725,7 +5943,7 @@
             "description": "Event updated with a new strong ETag.",
             "headers": {
               "ETag": {
-                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "description": "Strong validator for the returned Calendar aggregate or event detail.",
                 "schema": {
                   "type": "string"
                 }
@@ -5827,7 +6045,7 @@
             "description": "Event updated with a new strong ETag.",
             "headers": {
               "ETag": {
-                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "description": "Strong validator for the returned Calendar aggregate or event detail.",
                 "schema": {
                   "type": "string"
                 }
@@ -5939,7 +6157,7 @@
             "description": "Event updated with a new strong ETag.",
             "headers": {
               "ETag": {
-                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "description": "Strong validator for the returned Calendar aggregate or event detail.",
                 "schema": {
                   "type": "string"
                 }
@@ -6041,7 +6259,7 @@
             "description": "Event updated with a new strong ETag.",
             "headers": {
               "ETag": {
-                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "description": "Strong validator for the returned Calendar aggregate or event detail.",
                 "schema": {
                   "type": "string"
                 }
@@ -6313,7 +6531,7 @@
             "description": "Event updated with a new strong ETag.",
             "headers": {
               "ETag": {
-                "description": "Strong validator for the actor-visible event detail and child collections.",
+                "description": "Strong validator for the returned Calendar aggregate or event detail.",
                 "schema": {
                   "type": "string"
                 }
@@ -6488,10 +6706,78 @@
         ]
       }
     },
+    "/api/communications/capabilities": {
+      "get": {
+        "operationId": "communication_capabilities_api_communications_capabilities_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "title": "Response Communication Capabilities Api Communications Capabilities Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Communication Capabilities",
+        "tags": [
+          "communications"
+        ]
+      }
+    },
     "/api/communications/threads": {
       "get": {
         "operationId": "threads_api_communications_threads_get",
         "parameters": [
+          {
+            "in": "query",
+            "name": "lifecycle",
+            "required": false,
+            "schema": {
+              "default": "active",
+              "enum": [
+                "active",
+                "archived",
+                "all"
+              ],
+              "title": "Lifecycle",
+              "type": "string"
+            }
+          },
           {
             "in": "header",
             "name": "authorization",
@@ -6543,6 +6829,76 @@
       }
     },
     "/api/communications/threads/{thread_id}": {
+      "delete": {
+        "operationId": "archive_thread_api_communications_threads__thread_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "thread_id",
+            "required": true,
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Archive Thread",
+        "tags": [
+          "communications"
+        ]
+      },
       "get": {
         "operationId": "thread_detail_api_communications_threads__thread_id__get",
         "parameters": [
@@ -6553,6 +6909,16 @@
             "schema": {
               "title": "Thread Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Archived",
+              "type": "boolean"
             }
           },
           {
@@ -6597,6 +6963,78 @@
           }
         },
         "summary": "Thread Detail",
+        "tags": [
+          "communications"
+        ]
+      }
+    },
+    "/api/communications/threads/{thread_id}/restore": {
+      "post": {
+        "operationId": "restore_thread_api_communications_threads__thread_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "thread_id",
+            "required": true,
+            "schema": {
+              "title": "Thread Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore Thread",
         "tags": [
           "communications"
         ]
@@ -7011,6 +7449,168 @@
           }
         },
         "summary": "Define Custom Field",
+        "tags": [
+          "contacts"
+        ]
+      }
+    },
+    "/api/contacts/custom-fields/{field_definition_id}": {
+      "delete": {
+        "operationId": "delete_custom_field_api_contacts_custom_fields__field_definition_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "field_definition_id",
+            "required": true,
+            "schema": {
+              "title": "Field Definition Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactLifecycleReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Delete Custom Field Api Contacts Custom Fields  Field Definition Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Custom Field",
+        "tags": [
+          "contacts"
+        ]
+      }
+    },
+    "/api/contacts/custom-fields/{field_definition_id}/restore": {
+      "post": {
+        "operationId": "restore_custom_field_api_contacts_custom_fields__field_definition_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "field_definition_id",
+            "required": true,
+            "schema": {
+              "title": "Field Definition Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Restore Custom Field Api Contacts Custom Fields  Field Definition Id  Restore Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore Custom Field",
         "tags": [
           "contacts"
         ]
@@ -7510,6 +8110,22 @@
           },
           {
             "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
             "name": "authorization",
             "required": false,
             "schema": {
@@ -7773,6 +8389,22 @@
             "schema": {
               "title": "Group Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
             }
           },
           {
@@ -8891,6 +9523,90 @@
       }
     },
     "/api/contacts/teams/{team_id}": {
+      "delete": {
+        "operationId": "delete_team_api_contacts_teams__team_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "title": "Team Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactLifecycleReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Delete Team Api Contacts Teams  Team Id  Delete",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Team",
+        "tags": [
+          "contacts"
+        ]
+      },
       "patch": {
         "operationId": "update_team_api_contacts_teams__team_id__patch",
         "parameters": [
@@ -8955,66 +9671,6 @@
           }
         },
         "summary": "Update Team",
-        "tags": [
-          "contacts"
-        ]
-      }
-    },
-    "/api/contacts/teams/{team_id}/archive": {
-      "post": {
-        "operationId": "archive_team_api_contacts_teams__team_id__archive_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "team_id",
-            "required": true,
-            "schema": {
-              "title": "Team Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "authorization",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Archive Team Api Contacts Teams  Team Id  Archive Post",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Archive Team",
         "tags": [
           "contacts"
         ]
@@ -9154,6 +9810,82 @@
           }
         },
         "summary": "Remove Team Member",
+        "tags": [
+          "contacts"
+        ]
+      }
+    },
+    "/api/contacts/teams/{team_id}/restore": {
+      "post": {
+        "operationId": "restore_team_api_contacts_teams__team_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "team_id",
+            "required": true,
+            "schema": {
+              "title": "Team Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Restore Team Api Contacts Teams  Team Id  Restore Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Restore Team",
         "tags": [
           "contacts"
         ]

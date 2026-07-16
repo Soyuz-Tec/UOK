@@ -175,6 +175,7 @@ function Get-UokContactsVerifierCandidateState {
             kind = "$($audit.kind)"; status = "$($audit.status)"; stamp = "$($audit.stamp)"
             created_at = "$($audit.created_at)"; cleanup_mode = "$($audit.cleanup_mode)"
             member_count = [int]$audit.member_count; active_member_count = 0
+            etag = "$($api.etag)"; can_delete = [bool]$api.can_delete; can_restore = [bool]$api.can_restore
             membership_id = "$($audit.membership_id)"; party_id = "$($audit.party_id)"
             command_log_id = "$($audit.command_log_id)"; event_id = "$($audit.event_id)"
             create_contact_command_id = "$($audit.create_contact_command_id)"

@@ -59,6 +59,7 @@ export function PlanningInspector(props: {
   onSaveTaskDates: (taskId: string, payload: PlanningTaskDateUpdateRequest) => Promise<void>;
   onCreateTask: (payload: PlanningTaskCreateRequest) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
+  onDeleteTaskComplete?: () => void;
   onCreateDependency: (payload: PlanningDependencyCreateRequest) => Promise<void>;
   onUpdateDependency: (dependencyId: string, payload: PlanningDependencyUpdateRequest) => Promise<void>;
   onRemoveDependency: (dependencyId: string) => Promise<void>;
@@ -117,7 +118,7 @@ export function PlanningInspector(props: {
       </div>
       {readOnly ? <span className="planning-muted">Review mode prevents schedule changes.</span> : null}
       <fieldset className="planning-editor-fieldset" disabled={readOnly} aria-disabled={readOnly}>
-        {activeTab === "task" && <PlanningTaskEditor key={selectedTask?.id || "new"} schedule={schedule} selectedTask={selectedTask} newTaskType={newTaskType} busy={busy} onSaveTask={props.onSaveTask} onSaveTaskDates={props.onSaveTaskDates} onCreateTask={props.onCreateTask} onDeleteTask={props.onDeleteTask} />}
+        {activeTab === "task" && <PlanningTaskEditor key={selectedTask?.id || "new"} schedule={schedule} selectedTask={selectedTask} newTaskType={newTaskType} busy={busy} onSaveTask={props.onSaveTask} onSaveTaskDates={props.onSaveTaskDates} onCreateTask={props.onCreateTask} onDeleteTask={props.onDeleteTask} onDeleteTaskComplete={props.onDeleteTaskComplete} />}
         {activeTab === "dependencies" && <DependencyEditor schedule={schedule} busy={busy} onCreateDependency={props.onCreateDependency} onUpdateDependency={props.onUpdateDependency} onRemoveDependency={props.onRemoveDependency} />}
         {activeTab === "links" && <PlanningOperationLinksPanel schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly || linkReadOnly} onCreate={props.onCreatePlanningLink} onRemove={props.onRemovePlanningLink} />}
         {activeTab === "participants" && <PlanningParticipantsPanel token={props.token} schedule={schedule} selectedTask={selectedTask} busy={busy} readOnly={readOnly} onAdd={props.onAddTaskParticipant} onRemove={props.onRemoveTaskParticipant} />}

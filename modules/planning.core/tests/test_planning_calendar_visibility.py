@@ -29,7 +29,8 @@ def test_planning_hides_private_calendar_events_even_when_party_is_visible(clien
         "visibility_scope": "private",
     }, f"private-planning-calendar-{suffix}")
     assert calendar.status_code == 200, calendar.text
-    calendar_id = calendar.json()["result"]["id"]
+    calendar_row = calendar.json()["result"]
+    calendar_id = calendar_row["id"]
     event_title = f"Private planning conflict {suffix}"
     event = command(client, ops, "CreateCalendarEvent", {
         "calendar_id": calendar_id,
@@ -130,3 +131,67 @@ def test_planning_degrades_when_calendar_recurrence_data_is_invalid(
     assert availability["warnings"] == [
         "Calendar availability unavailable: recurrence_rule contains invalid legacy data",
     ]
+
+
+def test_planning_calendar_event_links_follow_parent_visibility_and_lifecycle(client: TestClient) -> None:
+    suffix = uuid4().hex[:8]
+    admin = auth(client, "admin", "admin")
+    ops = auth(client, "ops", "ops123")
+    viewer = auth(client, "viewer", "viewer123")
+    for module in ("calendar.core", "planning.core"):
+        assert client.post(f"/api/modules/{module}/install", headers=admin).status_code == 200
+
+    calendar = command(client, ops, "CreateCalendar", {
+        "name": f"Private linked calendar {suffix}",
+        "timezone": "UTC",
+        "visibility_scope": "private",
+    }, f"private-linked-calendar-{suffix}")
+    calendar_row = calendar.json()["result"]
+    calendar_id = calendar_row["id"]
+    event = command(client, ops, "CreateCalendarEvent", {
+        "calendar_id": calendar_id,
+        "title": f"Private linked event {suffix}",
+        "starts_at": "2031-04-04T13:00:00+00:00",
+        "ends_at": "2031-04-04T14:00:00+00:00",
+        "timezone": "UTC",
+    }, f"private-linked-event-{suffix}")
+    event_id = event.json()["result"]["id"]
+    project = command(client, ops, "CreatePlanningProject", {
+        "name": f"Calendar link plan {suffix}",
+        "start": "2031-04-01",
+        "end": "2031-04-10",
+    }, f"calendar-link-project-{suffix}")
+    project_id = project.json()["result"]["id"]
+    schedule = client.get(f"/api/planning/projects/{project_id}/schedule", headers=ops)
+    linked = client.post(
+        f"/api/planning/projects/{project_id}/links",
+        headers={
+            **ops,
+            "Idempotency-Key": f"calendar-event-link-{suffix}",
+            "If-Match": schedule.headers["ETag"],
+        },
+        json={
+            "scope_type": "project",
+            "relationship": "occurs_at",
+            "target": {"kind": "calendar_event", "id": event_id},
+        },
+    )
+    assert linked.status_code == 200, linked.text
+    assert linked.json()["resolution"]["status"] == "ready"
+
+    viewer_link = client.get(f"/api/planning/projects/{project_id}/schedule", headers=viewer).json()["links"][0]
+    assert viewer_link["resolution"]["status"] == "denied"
+    assert viewer_link["resolution"]["display_label"] is None
+    assert viewer_link["resolution"]["open_path"] is None
+    assert viewer_link["target"]["id"] is None
+
+    deleted = client.delete(
+        f"/api/calendar/calendars/{calendar_id}",
+        headers={**ops, "If-Match": calendar_row["etag"]},
+    )
+    assert deleted.status_code == 200, deleted.text
+    deleted_link = client.get(f"/api/planning/projects/{project_id}/schedule", headers=ops).json()["links"][0]
+    assert deleted_link["resolution"]["status"] == "denied"
+    assert deleted_link["resolution"]["display_label"] is None
+    assert deleted_link["resolution"]["open_path"] is None
+    assert deleted_link["target"]["id"] is None

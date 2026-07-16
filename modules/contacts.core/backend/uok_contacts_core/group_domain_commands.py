@@ -62,6 +62,7 @@ def cmd_group_contacts_by_business_email_domain(db: Session, actor: Actor, paylo
             "group": serialize_contact_group(
                 db,
                 group,
+                actor=actor,
                 member_count=len(party_ids),
                 active_member_count=len(party_ids),
             ),

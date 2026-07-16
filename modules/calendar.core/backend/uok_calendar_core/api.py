@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -22,6 +22,7 @@ from uok.security import Actor, current_actor, require_permission
 
 from .ics_codec import export_ics
 from .concurrency import strong_event_etag
+from .policy import capability_read_model
 from .read_model import event_or_error, freebusy_rows, list_calendars, occurrence_rows, serialize_event
 from .schemas import CalendarPatchRequest, CalendarWriteRequest, EventPatchRequest, EventWriteRequest, ReminderWriteRequest
 from .validation import as_utc_datetime
@@ -29,7 +30,7 @@ from .validation import as_utc_datetime
 router = APIRouter(prefix="/api/calendar", tags=["calendar"])
 CALENDAR_ETAG_HEADERS = {
     "ETag": {
-        "description": "Strong validator for the actor-visible event detail and child collections.",
+        "description": "Strong validator for the returned Calendar aggregate or event detail.",
         "schema": {"type": "string"},
     },
 }
@@ -38,6 +39,11 @@ CALENDAR_UPDATE_RESPONSES = {
     412: {"model": CommandPreconditionResponse, "description": "The supplied event ETag is stale."},
     428: {"model": CommandPreconditionResponse, "description": "A current event ETag is required."},
 }
+CALENDAR_LIFECYCLE_RESPONSES = {
+    200: {"description": "Calendar lifecycle updated with a new strong ETag.", "headers": CALENDAR_ETAG_HEADERS},
+    412: {"model": CommandPreconditionResponse, "description": "The supplied Calendar ETag is stale."},
+    428: {"model": CommandPreconditionResponse, "description": "A current Calendar ETag is required."},
+}
 
 
 def require_calendar_module_operational(db: Session, actor: Actor) -> None:
@@ -45,6 +51,19 @@ def require_calendar_module_operational(db: Session, actor: Actor) -> None:
         ensure_module_operational(db, actor.organization_id, "calendar.core")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+
+
+@router.get("/capabilities")
+def calendar_capabilities(
+    response: Response,
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> dict[str, bool]:
+    require_permission(actor, "calendar.read")
+    require_calendar_module_operational(db, actor)
+    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["Vary"] = "Authorization"
+    return capability_read_model(actor)
 
 
 def run_calendar_command(
@@ -85,10 +104,19 @@ def _set_private_etag(response: Response, etag: str) -> None:
 
 
 @router.get("/calendars")
-def calendars(actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
+def calendars(
+    response: Response,
+    include_deleted: bool = Query(default=False),
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> list[dict[str, Any]]:
     require_permission(actor, "calendar.read")
+    if include_deleted:
+        require_permission(actor, "calendar.manage")
     require_calendar_module_operational(db, actor)
-    return list_calendars(db, actor)
+    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["Vary"] = "Authorization"
+    return list_calendars(db, actor, include_deleted=include_deleted)
 
 
 @router.post("/calendars")
@@ -103,9 +131,26 @@ def update_calendar(calendar_id: str, req: CalendarPatchRequest, actor: Actor = 
     return run_calendar_command(db, actor, "UpdateCalendar", payload)
 
 
-@router.delete("/calendars/{calendar_id}")
-def delete_calendar(calendar_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
-    return run_calendar_command(db, actor, "DeleteCalendar", {"calendar_id": calendar_id})
+@router.delete("/calendars/{calendar_id}", responses=CALENDAR_LIFECYCLE_RESPONSES, response_model=None)
+def delete_calendar(
+    calendar_id: str,
+    response: Response,
+    if_match: str | None = Header(default=None, alias="If-Match"),
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> Any:
+    return run_calendar_command(db, actor, "DeleteCalendar", {"calendar_id": calendar_id}, response, if_match)
+
+
+@router.post("/calendars/{calendar_id}/restore", responses=CALENDAR_LIFECYCLE_RESPONSES, response_model=None)
+def restore_calendar(
+    calendar_id: str,
+    response: Response,
+    if_match: str | None = Header(default=None, alias="If-Match"),
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> Any:
+    return run_calendar_command(db, actor, "RestoreCalendar", {"calendar_id": calendar_id}, response, if_match)
 
 
 @router.get("/events")

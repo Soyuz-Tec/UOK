@@ -29,12 +29,20 @@ from .system_command_support import (
     serialize_fact,
     serialize_team,
 )
+from .system_lifecycle import (
+    cmd_delete_contact_custom_field,
+    cmd_delete_contact_team,
+    cmd_restore_contact_custom_field,
+    cmd_restore_contact_team,
+)
 
 __all__ = [
     "cmd_add_contact_team_member",
     "cmd_bulk_contacts",
     "cmd_create_contact_team",
     "cmd_define_contact_custom_field",
+    "cmd_delete_contact_custom_field",
+    "cmd_delete_contact_team",
     "cmd_delete_contact_view",
     "cmd_link_external_identity",
     "cmd_record_contact_consent",
@@ -42,6 +50,8 @@ __all__ = [
     "cmd_remove_contact_fact",
     "cmd_remove_contact_team_member",
     "cmd_resolve_duplicate_candidate",
+    "cmd_restore_contact_custom_field",
+    "cmd_restore_contact_team",
     "cmd_save_contact_view",
     "cmd_set_contact_custom_field",
     "cmd_update_contact_team",

@@ -20,6 +20,9 @@ def test_business_email_domain_groups_are_created_idempotently(client: TestClien
     assert grouped.status_code == 200, grouped.text
 
     group = _assert_domain_group_result(grouped.json()["result"], suffix)
+    assert group["user_managed"] is False
+    assert group["can_delete"] is False
+    assert group["can_restore"] is False
     grouped_contacts = client.get("/api/contacts", headers=ops, params={"status": "all", "group_id": group["id"]})
     assert grouped_contacts.status_code == 200, grouped_contacts.text
     grouped_ids = {row["id"] for row in grouped_contacts.json()}
@@ -49,6 +52,10 @@ def test_business_email_domain_groups_are_created_idempotently(client: TestClien
         )
         assert rejected.status_code == 400, rejected.text
         assert "managed by their generator" in rejected.text
+
+    rejected_delete = client.delete(f"/api/contacts/groups/{group['id']}", headers=ops)
+    assert rejected_delete.status_code == 400, rejected_delete.text
+    assert "managed by their generator" in rejected_delete.text
 
     archived_first = command(
         client,

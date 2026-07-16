@@ -58,11 +58,13 @@ export function planningWorkspaceActions({
   projectId,
   mutate,
   mutateWithOutcome,
+  mutateConfirmed,
 }: {
   token: string;
   projectId: string;
   mutate: (intent: PlanningMutationIntent) => Promise<void>;
   mutateWithOutcome: (intent: PlanningMutationIntent) => Promise<boolean>;
+  mutateConfirmed: (intent: PlanningMutationIntent) => Promise<void>;
 }) {
   const actions = {
     rescheduleTask: (taskId: string, start: string, end: string, cascade = true) => mutate(rescheduleTaskIntent(token, taskId, start, end, cascade)),
@@ -70,7 +72,7 @@ export function planningWorkspaceActions({
     saveTaskWithOutcome: (taskId: string, payload: PlanningTaskUpdateRequest, cascade = true) => mutateWithOutcome(saveTaskIntent(token, taskId, payload, cascade)),
     saveTaskDates: (taskId: string, payload: PlanningTaskDateUpdateRequest) => mutate(saveTaskDatesIntent(token, taskId, payload)),
     addTask: (payload: PlanningTaskCreateRequest) => mutate(addTaskIntent(token, projectId, payload)),
-    removeTask: (taskId: string) => mutate(removeTaskIntent(token, taskId)),
+    removeTask: (taskId: string) => mutateConfirmed(removeTaskIntent(token, taskId)),
     addDependency: (payload: PlanningDependencyCreateRequest) => mutate(addDependencyIntent(token, projectId, payload)),
     saveDependency: (dependencyId: string, payload: PlanningDependencyUpdateRequest) => mutate(saveDependencyIntent(token, dependencyId, payload)),
     removeDependency: (dependencyId: string) => mutate(removeDependencyIntent(token, dependencyId)),

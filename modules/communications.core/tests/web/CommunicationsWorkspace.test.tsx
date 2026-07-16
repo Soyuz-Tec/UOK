@@ -16,6 +16,7 @@ describe("K Connect workspace", () => {
     window.history.replaceState({}, "", "/?view=communications&thread_id=thread-2");
     const created = thread("thread-3", "Created control room");
     const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(editableCapabilities))
       .mockResolvedValueOnce(jsonResponse([thread("thread-1", "General room"), thread("thread-2", "Exact linked room")]))
       .mockResolvedValueOnce(jsonResponse({ result: created }))
       .mockResolvedValueOnce(jsonResponse([created, thread("thread-2", "Exact linked room")]));
@@ -36,7 +37,7 @@ describe("K Connect workspace", () => {
     fireEvent.change(screen.getByLabelText("Thread title"), { target: { value: "Created control room" } });
     fireEvent.click(screen.getByRole("button", { name: "Create thread" }));
     await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Created Created control room."));
-    const commandBody = JSON.parse(String((fetchMock.mock.calls[1][1] as RequestInit).body));
+    const commandBody = JSON.parse(String((fetchMock.mock.calls[2][1] as RequestInit).body));
     expect(commandBody).toMatchObject({
       command_type: "CreateCommunicationThread",
       payload: { title: "Created control room", context_type: "general" },
@@ -45,10 +46,12 @@ describe("K Connect workspace", () => {
   });
 
   it("filters and sorts authorized threads from the shared command surface", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse([
-      thread("thread-1", "Zulu room", { status: "open", context_type: "general", updated_at: "2026-08-01T00:00:00Z" }),
-      thread("thread-2", "Alpha room", { status: "closed", context_type: "planning.task", updated_at: "2026-08-03T00:00:00Z" }),
-    ]));
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(editableCapabilities))
+      .mockResolvedValueOnce(jsonResponse([
+        thread("thread-1", "Zulu room", { status: "open", context_type: "general", updated_at: "2026-08-01T00:00:00Z" }),
+        thread("thread-2", "Alpha room", { status: "closed", context_type: "planning.task", updated_at: "2026-08-03T00:00:00Z" }),
+      ]));
     vi.stubGlobal("fetch", fetchMock);
 
     const { container } = render(<CommunicationsWorkspace token="token" moduleRows={[moduleRow]} busyAction="" onInstall={vi.fn()} />);
@@ -80,6 +83,7 @@ describe("K Connect workspace", () => {
   it("commits a created thread even when the follow-up list refresh fails", async () => {
     const created = thread("thread-3", "Durable room", { context_type: "general" });
     vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(jsonResponse(editableCapabilities))
       .mockResolvedValueOnce(jsonResponse([thread("thread-1", "General room")]))
       .mockResolvedValueOnce(jsonResponse({ result: created }))
       .mockRejectedValueOnce(new Error("refresh unavailable")));
@@ -96,13 +100,27 @@ describe("K Connect workspace", () => {
     expect(screen.getByText("Durable room", { selector: "h2" })).toBeInTheDocument();
   });
 
+  it("keeps the workspace operable when the thread-list contract is malformed", async () => {
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(jsonResponse(editableCapabilities))
+      .mockResolvedValueOnce(jsonResponse({ detail: "not a thread list" })));
+
+    render(<CommunicationsWorkspace token="token" moduleRows={[moduleRow]} busyAction="" onInstall={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("thread list response was invalid"));
+    expect(screen.getByRole("region", { name: "K Connect" })).toBeInTheDocument();
+    expect(screen.getByText("No communication threads are available.")).toBeInTheDocument();
+  });
+
   it("prevents refresh and create operations from overlapping", async () => {
     const existing = thread("thread-1", "General room");
     const created = thread("thread-3", "Serialized room", { context_type: "general" });
     const refreshRequest = deferred<Response>();
     const createRequest = deferred<Response>();
     const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(editableCapabilities))
       .mockResolvedValueOnce(jsonResponse([existing]))
+      .mockResolvedValueOnce(jsonResponse(editableCapabilities))
       .mockReturnValueOnce(refreshRequest.promise)
       .mockReturnValueOnce(createRequest.promise)
       .mockResolvedValueOnce(jsonResponse([created, existing]));
@@ -128,20 +146,22 @@ describe("K Connect workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create thread" }));
     expect(document.querySelector<HTMLButtonElement>('.workspace-actions-menu [data-command="refresh"]')).toBeDisabled();
     fireEvent.submit(screen.getByRole("dialog", { name: "Create communication thread" }).querySelector("form")!);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
 
     createRequest.resolve(jsonResponse({ result: created }));
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Created Serialized room."));
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(6));
   });
 
   it("drops a created-thread fallback after an authoritative list refresh succeeds", async () => {
     const existing = thread("thread-1", "General room");
     const created = thread("thread-3", "Temporary fallback", { context_type: "general" });
     const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(editableCapabilities))
       .mockResolvedValueOnce(jsonResponse([existing]))
       .mockResolvedValueOnce(jsonResponse({ result: created }))
       .mockResolvedValueOnce(jsonResponse([created, existing]))
+      .mockResolvedValueOnce(jsonResponse(editableCapabilities))
       .mockResolvedValueOnce(jsonResponse([existing]));
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("crypto", { randomUUID: () => "11111111-1111-4111-8111-111111111111" });
@@ -151,7 +171,7 @@ describe("K Connect workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "New thread" }));
     fireEvent.change(screen.getByLabelText("Thread title"), { target: { value: "Temporary fallback" } });
     fireEvent.click(screen.getByRole("button", { name: "Create thread" }));
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
     expect(container.querySelector(".communications-thread-list")?.textContent).toContain("Temporary fallback");
 
     refreshFromMoreActions();
@@ -172,10 +192,13 @@ const moduleRow = {
 function thread(id: string, title: string, overrides: Partial<CommunicationThread> = {}): CommunicationThread {
   return {
     id, title, status: "open", context_type: "planning.task", context_id: "task-1",
+    restore_status: null, revision: 1, etag: `"communication-thread:${id}:v1"`,
     created_by_user_id: "user-1", created_at: "2026-08-03T00:00:00Z", updated_at: "2026-08-03T00:00:00Z",
     ...overrides,
   };
 }
+
+const editableCapabilities = { read: true, create: true, delete: true, restore: true };
 
 function jsonResponse(value: unknown) {
   return new Response(JSON.stringify(value), { status: 200, headers: { "Content-Type": "application/json" } });

@@ -1,5 +1,16 @@
 from __future__ import annotations
 
+from uok.security import Actor, has_permission
+
+
+CALENDAR_CAPABILITY_PERMISSIONS = {
+    "read": "calendar.read",
+    "manage": "calendar.manage",
+    "create": "calendar.manage",
+    "delete": "calendar.manage",
+    "restore": "calendar.manage",
+}
+
 
 def role_grants() -> dict[str, set[str]]:
     manager = {
@@ -28,4 +39,11 @@ def role_grants() -> dict[str, set[str]]:
         "trader": contributor,
         "finance_manager": contributor,
         "viewer": reader,
+    }
+
+
+def capability_read_model(actor: Actor) -> dict[str, bool]:
+    return {
+        name: has_permission(actor, permission)
+        for name, permission in CALENDAR_CAPABILITY_PERMISSIONS.items()
     }

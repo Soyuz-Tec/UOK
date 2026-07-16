@@ -8,6 +8,13 @@ from sqlalchemy.orm import Session
 from uok.db import get_db
 from uok.security import Actor, current_actor, require_permission
 
+from .api_system_lifecycle import (
+    apply_private_no_store_headers,
+    delete_custom_field,
+    delete_team,
+    restore_custom_field,
+    restore_team,
+)
 from .api_support import require_contacts_module_operational, run_contact_command
 from .contact_exchange import contacts_csv_text, contacts_vcard_text, exportable_contact_rows
 from .system_read_model import (
@@ -44,7 +51,8 @@ def register_system_routes(router: APIRouter) -> None:
     router.add_api_route("/teams", teams, methods=["GET"])
     router.add_api_route("/teams", create_team, methods=["POST"])
     router.add_api_route("/teams/{team_id}", update_team, methods=["PATCH"])
-    router.add_api_route("/teams/{team_id}/archive", archive_team, methods=["POST"])
+    router.add_api_route("/teams/{team_id}", delete_team, methods=["DELETE"])
+    router.add_api_route("/teams/{team_id}/restore", restore_team, methods=["POST"])
     router.add_api_route("/teams/{team_id}/members", add_team_member, methods=["POST"])
     router.add_api_route("/teams/{team_id}/members/{user_id}", remove_team_member, methods=["DELETE"])
     router.add_api_route("/saved-views", saved_views, methods=["GET"])
@@ -63,6 +71,8 @@ def register_system_routes(router: APIRouter) -> None:
     router.add_api_route("/interoperability", interoperability_status, methods=["GET"])
     router.add_api_route("/custom-fields", custom_fields, methods=["GET"])
     router.add_api_route("/custom-fields", define_custom_field, methods=["POST"])
+    router.add_api_route("/custom-fields/{field_definition_id}", delete_custom_field, methods=["DELETE"])
+    router.add_api_route("/custom-fields/{field_definition_id}/restore", restore_custom_field, methods=["POST"])
     router.add_api_route("/{party_id}/facts", facts, methods=["GET"])
     router.add_api_route("/{party_id}/facts", save_fact, methods=["POST"])
     router.add_api_route("/{party_id}/facts/{fact_id}", update_fact, methods=["PATCH"])
@@ -107,8 +117,9 @@ def record_consent(party_id: str, req: ContactConsentWriteRequest, actor: Actor 
     return run_contact_command(db, actor, "RecordContactConsent", {"party_id": party_id, **req.model_dump()})
 
 
-def teams(include_archived: bool = False, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
+def teams(response: Response, include_archived: bool = False, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
     _ready(db, actor, "contacts.read")
+    apply_private_no_store_headers(response)
     return contact_team_rows(db, actor, include_archived)
 
 
@@ -118,10 +129,6 @@ def create_team(req: ContactTeamWriteRequest, actor: Actor = Depends(current_act
 
 def update_team(team_id: str, req: ContactTeamWriteRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
     return run_contact_command(db, actor, "UpdateContactTeam", {"team_id": team_id, **req.model_dump()})
-
-
-def archive_team(team_id: str, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
-    return run_contact_command(db, actor, "UpdateContactTeam", {"team_id": team_id, "status": "archived"})
 
 
 def add_team_member(team_id: str, req: ContactTeamMemberRequest, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> dict[str, Any]:
@@ -227,8 +234,9 @@ def link_external_identity(party_id: str, req: ContactExternalIdentityWriteReque
     return run_contact_command(db, actor, "LinkContactExternalIdentity", {"party_id": party_id, **req.model_dump()})
 
 
-def custom_fields(include_archived: bool = False, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
+def custom_fields(response: Response, include_archived: bool = False, actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
     _ready(db, actor, "contacts.read")
+    apply_private_no_store_headers(response)
     return contact_custom_field_rows(db, actor, include_archived)
 
 

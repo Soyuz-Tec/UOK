@@ -1,6 +1,7 @@
 import { ChevronDown, type LucideIcon } from "lucide-react";
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useUokLocalization } from "../localization";
+import { hasOpenWorkspaceOverlay } from "../overlays/overlayStack";
 
 type PanelChildren = ReactNode | ((controls: { close: () => void }) => ReactNode);
 
@@ -103,6 +104,7 @@ export function ExpandableControlPanel({
       if (event.target instanceof Node && !rootRef.current?.contains(event.target)) setOpen(false, true);
     };
     const closeFromEscape = (event: KeyboardEvent) => {
+      if (hasOpenWorkspaceOverlay()) return;
       if (event.key === "Escape") {
         const nestedOpenPanel = rootRef.current?.querySelector<HTMLElement>('.expandable-control-panel[data-open="true"]');
         if (nestedOpenPanel?.contains(document.activeElement)) return;

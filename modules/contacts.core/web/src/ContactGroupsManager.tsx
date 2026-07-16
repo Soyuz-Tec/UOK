@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 
 import { EmptyState } from "@uok/shared/data-display";
@@ -35,6 +35,22 @@ export function ContactGroupsManager({
   const [statusFilter, setStatusFilter] = useState<ContactGroupStatusFilter>("active");
   const [emptyOnly, setEmptyOnly] = useState(false);
   const busy = Boolean(manager.busyAction);
+
+  useEffect(() => {
+    if (manager.notice === "archived") setStatusFilter("archived");
+  }, [manager.notice]);
+
+  useEffect(() => {
+    if (!manager.focusRecovery) return;
+    const frame = window.requestAnimationFrame(() => {
+      const popup = document.querySelector<HTMLElement>(".contact-groups-manager-popup");
+      const groupButton = Array.from(popup?.querySelectorAll<HTMLButtonElement>("button[data-group-id]") || [])
+        .find((button) => button.dataset.groupId === manager.focusRecovery?.groupId);
+      (groupButton || popup?.querySelector<HTMLButtonElement>(".workspace-popup-close") || popup)?.focus();
+      manager.clearFocusRecovery();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [manager.clearFocusRecovery, manager.focusRecovery]);
 
   return (
     <WorkspaceEditorPopup
@@ -81,6 +97,7 @@ export function ContactGroupsManager({
             candidateQuery={manager.candidateQuery}
             canManage={canManage}
             busyAction={manager.busyAction}
+            focusRestore={manager.notice === "archived"}
             onNameChange={manager.setName}
             onDescriptionChange={manager.setDescription}
             onCandidateQueryChange={manager.setCandidateQuery}
@@ -107,7 +124,7 @@ function noticeText(notice: ContactGroupManagerNotice, t: (key: string, fallback
   const messages: Record<ContactGroupManagerNotice, string> = {
     created: t("contacts.groups.noticeCreated", "Group created."),
     updated: t("contacts.groups.noticeUpdated", "Group updated."),
-    archived: t("contacts.groups.noticeArchived", "Group archived."),
+    archived: t("contacts.groups.noticeDeleted", "Group deleted from active use. It remains available under Archived."),
     restored: t("contacts.groups.noticeRestored", "Group restored."),
     memberAdded: t("contacts.groups.noticeMemberAdded", "Member added."),
     memberRemoved: t("contacts.groups.noticeMemberRemoved", "Member removed."),

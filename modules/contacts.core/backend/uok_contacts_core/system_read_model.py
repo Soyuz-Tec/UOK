@@ -11,6 +11,7 @@ from uok.util import loads, row_dict
 from .access import actor_contact_team_ids, can_manage_contacts, get_party_or_error, readable_party_filter
 from .models import ContactImportBatch, Party
 from .system_commands import serialize_duplicate_candidate, serialize_fact, serialize_team
+from .system_command_support import serialize_custom_field_definition
 from .system_models import (
     ContactActivity,
     ContactConsentRecord,
@@ -53,7 +54,7 @@ def contact_team_rows(db: Session, actor: Actor, include_archived: bool = False)
             return []
         stmt = stmt.where(ContactTeam.id.in_(team_ids))
     rows = db.scalars(stmt.order_by(ContactTeam.name.asc())).all()
-    return [serialize_team(db, row) for row in rows]
+    return [serialize_team(db, row, actor) for row in rows]
 
 
 def contact_saved_view_rows(db: Session, actor: Actor) -> list[dict[str, Any]]:
@@ -147,7 +148,7 @@ def contact_custom_field_rows(db: Session, actor: Actor, include_archived: bool 
     if not include_archived:
         stmt = stmt.where(ContactCustomFieldDefinition.status == "active")
     rows = db.scalars(stmt.order_by(ContactCustomFieldDefinition.label.asc())).all()
-    return [row_dict(row) for row in rows]
+    return [serialize_custom_field_definition(actor, row) for row in rows]
 
 
 def party_custom_value_rows(db: Session, actor: Actor, party_id: str) -> list[dict[str, Any]]:
@@ -158,6 +159,7 @@ def party_custom_value_rows(db: Session, actor: Actor, party_id: str) -> list[di
     ).where(
         PartyCustomFieldValue.organization_id == actor.organization_id,
         PartyCustomFieldValue.party_id == party_id,
+        ContactCustomFieldDefinition.status == "active",
     ).order_by(ContactCustomFieldDefinition.label.asc())).all()
     return [row_dict(value, {
         "field_key": definition.field_key,

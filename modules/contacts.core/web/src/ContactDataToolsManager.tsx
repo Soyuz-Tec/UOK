@@ -62,7 +62,7 @@ export function ContactDataToolsManager({
     setSelectedIds(selectedContact ? [selectedContact.id] : []);
   }, [open, selectedContact?.id]);
 
-  const run: ContactDataToolsRun = async (action, operation, successMessage) => {
+  const run: ContactDataToolsRun = async (action, operation, successMessage, options) => {
     setBusyAction(action);
     setError("");
     setNotice("");
@@ -71,7 +71,9 @@ export function ContactDataToolsManager({
       if (successMessage) setNotice(successMessage);
       return result;
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : t("contacts.dataTools.failed", "The governed Contacts action failed."));
+      const actionError = reason instanceof Error ? reason : new Error(t("contacts.dataTools.failed", "The governed Contacts action failed."));
+      setError(actionError.message);
+      if (options?.rethrow) throw actionError;
       return undefined;
     } finally {
       setBusyAction("");

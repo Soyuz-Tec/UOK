@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -36,6 +36,42 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(dialog).queryByText("Ready for use")).not.toBeInTheDocument();
     expect(within(dialog).getByText("100 Example Street")).toBeInTheDocument();
     expect(within(dialog).getByText("Technical details")).toBeInTheDocument();
+  });
+
+  it("confirms recoverable contact Delete while keeping permanent Purge distinct", async () => {
+    const onArchive = vi.fn();
+    const onPurge = vi.fn();
+    renderContactsWorkspace("table", [contact], { onArchive, onPurge });
+
+    fireEvent.click(screen.getByRole("row", { name: "Open Example Contact" }));
+    const detail = screen.getByRole("dialog", { name: "Contact details" });
+
+    expect(within(detail).getByRole("button", { name: "Delete" })).toBeInTheDocument();
+    expect(within(detail).getByRole("button", { name: "Purge" })).toBeInTheDocument();
+    fireEvent.click(within(detail).getByRole("button", { name: "Delete" }));
+
+    let confirmation = await screen.findByRole("dialog", { name: "Confirm contact deletion" });
+    expect(confirmation).toHaveTextContent("Delete “Example Contact” from active use?");
+    expect(confirmation).toHaveTextContent("group memberships, and audit history remain");
+    fireEvent.click(within(confirmation).getByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(within(detail).getByRole("button", { name: "Delete" })).toHaveFocus());
+    expect(onArchive).not.toHaveBeenCalled();
+
+    fireEvent.click(within(detail).getByRole("button", { name: "Delete" }));
+    confirmation = await screen.findByRole("dialog", { name: "Confirm contact deletion" });
+    fireEvent.click(within(confirmation).getByRole("button", { name: "Delete" }));
+    await waitFor(() => expect(onArchive).toHaveBeenCalledTimes(1));
+    expect(onPurge).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the contact read model does not grant lifecycle actions", () => {
+    renderContactsWorkspace("table", [{ ...contact, can_delete: false, can_restore: false, can_purge: false }]);
+    fireEvent.click(screen.getByRole("row", { name: "Open Example Contact" }));
+    const detail = screen.getByRole("dialog", { name: "Contact details" });
+
+    expect(within(detail).queryByRole("button", { name: "Delete" })).not.toBeInTheDocument();
+    expect(within(detail).queryByRole("button", { name: "Restore" })).not.toBeInTheDocument();
+    expect(within(detail).queryByRole("button", { name: "Purge" })).not.toBeInTheDocument();
   });
 
   it("shows the business intelligence profile pane in the contact inspector", () => {

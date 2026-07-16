@@ -56,7 +56,9 @@ export function useContactCommands({
   }
 
   async function archiveSelected() {
-    if (data.selectedContactId) await command("ArchiveContact", { party_id: data.selectedContactId }, "contact-archive");
+    if (!data.selectedContactId) throw new Error("No contact selected.");
+    const result = await command("ArchiveContact", { party_id: data.selectedContactId }, "contact-archive");
+    if (!result) throw new Error("The contact could not be deleted. Review the latest record and try again.");
   }
 
   async function restoreSelected() {
@@ -64,7 +66,9 @@ export function useContactCommands({
   }
 
   async function purgeSelected() {
-    if (data.selectedContactId) await command("PurgeContact", { party_id: data.selectedContactId }, "contact-purge");
+    if (!data.selectedContactId) throw new Error("No contact selected.");
+    const result = await command("PurgeContact", { party_id: data.selectedContactId }, "contact-purge");
+    if (!result) throw new Error("The contact could not be purged. Review the latest record and try again.");
   }
 
   async function markSelectedReady() {

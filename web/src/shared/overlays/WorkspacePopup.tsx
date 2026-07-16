@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { GripHorizontal, X } from "lucide-react";
 
 import { useUokLocalization } from "../localization";
+import { isTopWorkspaceOverlay, registerWorkspaceOverlay } from "./overlayStack";
 import { useWorkspacePopupDrag } from "./useWorkspacePopupDrag";
 
 const focusableSelector = [
@@ -81,6 +82,7 @@ export function WorkspacePopup({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   const dismissibleRef = useRef(dismissible);
+  const overlayId = useId();
   const dragHintId = useId();
   const { popupStyle, dragging, dragHandleProps } = useWorkspacePopupDrag(popupRef, open);
 
@@ -95,6 +97,7 @@ export function WorkspacePopup({
   useEffect(() => {
     if (!open) return undefined;
 
+    const unregisterOverlay = registerWorkspaceOverlay(overlayId);
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const restoreBackground = backdropRef.current ? isolateBackground(backdropRef.current) : () => undefined;
     const popup = popupRef.current;
@@ -106,6 +109,7 @@ export function WorkspacePopup({
     (initialFocus || popup)?.focus();
 
     const handleKeyboard = (event: KeyboardEvent) => {
+      if (!isTopWorkspaceOverlay(overlayId)) return;
       if (event.key === "Escape") {
         if (!dismissibleRef.current) return;
         event.stopPropagation();
@@ -136,10 +140,11 @@ export function WorkspacePopup({
     document.addEventListener("keydown", handleKeyboard);
     return () => {
       document.removeEventListener("keydown", handleKeyboard);
+      unregisterOverlay();
       restoreBackground();
       if (previousFocus?.isConnected) previousFocus.focus();
     };
-  }, [open]);
+  }, [open, overlayId]);
 
   if (!open) return null;
 

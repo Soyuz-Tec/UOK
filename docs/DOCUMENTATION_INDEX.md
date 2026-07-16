@@ -74,6 +74,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md` | Minimal shared workspace command surface, common action vocabulary, and shared/module ownership split | Command grouping, shared labels, primary-action rules, low-frequency action placement, or exception policy changes |
 | `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md` | Calendar access, integrity, interoperability sequencing, and the separate appointments capability boundary | Calendar visibility, recurrence authority, free-busy disclosure, provider synchronization sequencing, or appointment ownership changes |
 | `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md` | Contacts system-of-record scope, first-class facts, consent, team access, purge, quality, and interoperability boundary | Contacts storage, privacy, authorization, import/export, dedupe, activity, custom fields, or provider adapter changes |
+| `docs/architecture/ADR-0028-communications-thread-recoverable-delete-and-concurrency.md` | K Connect retained Delete/Restore, prior-state persistence, row locking, strong ETags, stale repair, and no-cascade boundary | Thread archive/restore, lifecycle validators, capability projection, archived discovery, or Planning-link behavior changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
@@ -163,6 +164,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`
 - `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md`
 - `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
+- `docs/architecture/ADR-0028-communications-thread-recoverable-delete-and-concurrency.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`

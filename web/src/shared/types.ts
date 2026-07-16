@@ -139,6 +139,9 @@ export type ContactRecord = {
   updated_at?: string | null;
   archived_at?: string | null;
   purged_at?: string | null;
+  can_delete?: boolean;
+  can_restore?: boolean;
+  can_purge?: boolean;
   email?: string;
   phone?: string;
   website?: string;

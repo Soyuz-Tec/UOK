@@ -4,6 +4,18 @@ export type CalendarRecord = {
   color?: string | null;
   status: string;
   timezone: string;
+  etag: string;
+  user_managed: boolean;
+  can_delete: boolean;
+  can_restore: boolean;
+};
+
+export type CalendarCapabilities = {
+  read: boolean;
+  manage: boolean;
+  create: boolean;
+  delete: boolean;
+  restore: boolean;
 };
 
 export type CalendarView = "month" | "week" | "day" | "agenda";

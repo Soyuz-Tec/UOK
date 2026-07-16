@@ -38,7 +38,7 @@ function taskMenuItems(task: PlanningTask, run: (action: PlanningTaskMenuAction)
     item("mark-complete", "Mark complete", "Set status and progress", CheckCircle2, run),
     item("mark-blocked", "Mark blocked", "Flag schedule risk", Ban, run),
     item("mark-planned", "Mark planned", "Return to planned state", Flag, run),
-    item("delete", "Delete task", "Remove this task", Trash2, run, false, true),
+    item("delete", "Delete task", "Review and confirm deletion in the Inspector", Trash2, run, false, true),
   ];
 }
 

@@ -69,7 +69,10 @@ def test_calendar_visibility_filters_every_read_surface_and_deleted_parents(clie
     private_event = _event(client, ops, private["id"], f"Private event {suffix}", 11)
     team_event = _event(client, ops, team["id"], f"Team event {suffix}", 13)
     deleted_event = _event(client, ops, deleted["id"], f"Deleted event {suffix}", 15)
-    assert client.delete(f"/api/calendar/calendars/{deleted['id']}", headers=ops).status_code == 200
+    assert client.delete(
+        f"/api/calendar/calendars/{deleted['id']}",
+        headers={**ops, "If-Match": deleted["etag"]},
+    ).status_code == 200
 
     viewer_calendar_ids = {row["id"] for row in client.get("/api/calendar/calendars", headers=viewer).json()}
     assert organization["id"] in viewer_calendar_ids

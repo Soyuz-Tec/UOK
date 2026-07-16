@@ -176,6 +176,40 @@ export interface paths {
         patch: operations["update_calendar_api_calendar_calendars__calendar_id__patch"];
         trace?: never;
     };
+    "/api/calendar/calendars/{calendar_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Calendar */
+        post: operations["restore_calendar_api_calendar_calendars__calendar_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/calendar/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Calendar Capabilities */
+        get: operations["calendar_capabilities_api_calendar_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/calendar/events": {
         parameters: {
             query?: never;
@@ -331,6 +365,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/communications/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Communication Capabilities */
+        get: operations["communication_capabilities_api_communications_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/communications/threads": {
         parameters: {
             query?: never;
@@ -359,6 +410,24 @@ export interface paths {
         get: operations["thread_detail_api_communications_threads__thread_id__get"];
         put?: never;
         post?: never;
+        /** Archive Thread */
+        delete: operations["archive_thread_api_communications_threads__thread_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/communications/threads/{thread_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Thread */
+        post: operations["restore_thread_api_communications_threads__thread_id__restore_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -412,6 +481,40 @@ export interface paths {
         put?: never;
         /** Define Custom Field */
         post: operations["define_custom_field_api_contacts_custom_fields_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/custom-fields/{field_definition_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Custom Field */
+        delete: operations["delete_custom_field_api_contacts_custom_fields__field_definition_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/custom-fields/{field_definition_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Custom Field */
+        post: operations["restore_custom_field_api_contacts_custom_fields__field_definition_id__restore_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -825,28 +928,12 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete?: never;
+        /** Delete Team */
+        delete: operations["delete_team_api_contacts_teams__team_id__delete"];
         options?: never;
         head?: never;
         /** Update Team */
         patch: operations["update_team_api_contacts_teams__team_id__patch"];
-        trace?: never;
-    };
-    "/api/contacts/teams/{team_id}/archive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Archive Team */
-        post: operations["archive_team_api_contacts_teams__team_id__archive_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/contacts/teams/{team_id}/members": {
@@ -878,6 +965,23 @@ export interface paths {
         post?: never;
         /** Remove Team Member */
         delete: operations["remove_team_member_api_contacts_teams__team_id__members__user_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/teams/{team_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Team */
+        post: operations["restore_team_api_contacts_teams__team_id__restore_post"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2364,6 +2468,11 @@ export interface components {
             team_id?: string | null;
             /** Visibility Scope */
             visibility_scope?: string | null;
+        };
+        /** ContactLifecycleReasonRequest */
+        ContactLifecycleReasonRequest: {
+            /** Reason */
+            reason: string;
         };
         /** ContactNoteRequest */
         ContactNoteRequest: {
@@ -3852,7 +3961,9 @@ export interface operations {
     };
     calendars_api_calendar_calendars_get: {
         parameters: {
-            query?: never;
+            query?: {
+                include_deleted?: boolean;
+            };
             header?: {
                 authorization?: string | null;
             };
@@ -3924,6 +4035,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3933,15 +4045,24 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Calendar lifecycle updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied Calendar ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3951,6 +4072,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current Calendar ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -3980,6 +4110,93 @@ export interface operations {
                 content: {
                     "application/json": {
                         [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_calendar_api_calendar_calendars__calendar_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                calendar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Calendar lifecycle updated with a new strong ETag. */
+            200: {
+                headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied Calendar ETag is stale. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current Calendar ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    calendar_capabilities_api_calendar_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
                     };
                 };
             };
@@ -4083,7 +4300,7 @@ export interface operations {
             /** @description Actor-visible event detail. */
             200: {
                 headers: {
-                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
                     ETag?: string;
                     [name: string]: unknown;
                 };
@@ -4125,7 +4342,7 @@ export interface operations {
             /** @description Event updated with a new strong ETag. */
             200: {
                 headers: {
-                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
                     ETag?: string;
                     [name: string]: unknown;
                 };
@@ -4179,7 +4396,7 @@ export interface operations {
             /** @description Event updated with a new strong ETag. */
             200: {
                 headers: {
-                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
                     ETag?: string;
                     [name: string]: unknown;
                 };
@@ -4237,7 +4454,7 @@ export interface operations {
             /** @description Event updated with a new strong ETag. */
             200: {
                 headers: {
-                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
                     ETag?: string;
                     [name: string]: unknown;
                 };
@@ -4291,7 +4508,7 @@ export interface operations {
             /** @description Event updated with a new strong ETag. */
             200: {
                 headers: {
-                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
                     ETag?: string;
                     [name: string]: unknown;
                 };
@@ -4417,7 +4634,7 @@ export interface operations {
             /** @description Event updated with a new strong ETag. */
             200: {
                 headers: {
-                    /** @description Strong validator for the actor-visible event detail and child collections. */
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
                     ETag?: string;
                     [name: string]: unknown;
                 };
@@ -4537,9 +4754,44 @@ export interface operations {
             };
         };
     };
-    threads_api_communications_threads_get: {
+    communication_capabilities_api_communications_capabilities_get: {
         parameters: {
             query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    threads_api_communications_threads_get: {
+        parameters: {
+            query?: {
+                lifecycle?: "active" | "archived" | "all";
+            };
             header?: {
                 authorization?: string | null;
             };
@@ -4572,7 +4824,9 @@ export interface operations {
     };
     thread_detail_api_communications_threads__thread_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                include_archived?: boolean;
+            };
             header?: {
                 authorization?: string | null;
             };
@@ -4592,6 +4846,74 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    archive_thread_api_communications_threads__thread_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_thread_api_communications_threads__thread_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -4773,6 +5095,82 @@ export interface operations {
                 "application/json": components["schemas"]["ContactCustomFieldDefinitionRequest"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_custom_field_api_contacts_custom_fields__field_definition_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                field_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactLifecycleReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_custom_field_api_contacts_custom_fields__field_definition_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                field_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -5049,6 +5447,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -5198,6 +5597,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -5839,10 +6239,11 @@ export interface operations {
             };
         };
     };
-    update_team_api_contacts_teams__team_id__patch: {
+    delete_team_api_contacts_teams__team_id__delete: {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -5852,7 +6253,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ContactTeamWriteRequest"];
+                "application/json": components["schemas"]["ContactLifecycleReasonRequest"];
             };
         };
         responses: {
@@ -5878,7 +6279,7 @@ export interface operations {
             };
         };
     };
-    archive_team_api_contacts_teams__team_id__archive_post: {
+    update_team_api_contacts_teams__team_id__patch: {
         parameters: {
             query?: never;
             header?: {
@@ -5889,7 +6290,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactTeamWriteRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -5961,6 +6366,42 @@ export interface operations {
             path: {
                 team_id: string;
                 user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_team_api_contacts_teams__team_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                team_id: string;
             };
             cookie?: never;
         };

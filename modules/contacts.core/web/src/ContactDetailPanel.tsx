@@ -28,6 +28,7 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
         onRestore={props.onRestore}
         onPurge={props.onPurge}
         onInlineUpdate={props.onInlineUpdate}
+        busyAction={props.busyAction}
       />
 
       {props.editing ? (

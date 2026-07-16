@@ -62,8 +62,7 @@
 .contact-groups-manager-detail-heading p,
 .contact-groups-manager-members-heading p,
 .contact-groups-manager-generation p,
-.contact-groups-manager-governance p,
-.contact-groups-manager-confirm p {
+.contact-groups-manager-governance p {
   margin: var(--uok-space-1) 0 0;
   color: var(--uok-text-secondary);
   font-size: var(--uok-caption);
@@ -198,8 +197,7 @@
 }
 
 .contact-groups-manager-generation > div,
-.contact-groups-manager-form-actions,
-.contact-groups-manager-confirm {
+.contact-groups-manager-form-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--uok-space-2);

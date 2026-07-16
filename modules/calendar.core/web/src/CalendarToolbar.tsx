@@ -19,6 +19,7 @@ export function CalendarToolbar({
   view,
   cursorDate,
   calendars,
+  deletedCalendars,
   activeCalendarId,
   query,
   statusFilter,
@@ -27,6 +28,12 @@ export function CalendarToolbar({
   onDateChange,
   onCalendarChange,
   onCreateCalendar,
+  onDeleteCalendar,
+  onRestoreCalendar,
+  canCreateCalendar,
+  canDeleteCalendar,
+  canRestoreCalendar,
+  calendarBusyAction,
   onQueryChange,
   onStatusFilterChange,
   onAvailabilityFilterChange,
@@ -34,12 +41,14 @@ export function CalendarToolbar({
   onToday,
   onMove,
   onCreate,
+  canCreateEvent,
   onRefresh,
   onExport,
 }: {
   view: CalendarView;
   cursorDate: Date;
   calendars: CalendarRecord[];
+  deletedCalendars: CalendarRecord[];
   activeCalendarId: string;
   query: string;
   statusFilter: string;
@@ -48,6 +57,12 @@ export function CalendarToolbar({
   onDateChange: (date: Date) => void;
   onCalendarChange: (calendarId: string) => void;
   onCreateCalendar: () => void;
+  onDeleteCalendar: (calendar: CalendarRecord) => Promise<void>;
+  onRestoreCalendar: (calendar: CalendarRecord) => Promise<void>;
+  canCreateCalendar: boolean;
+  canDeleteCalendar: boolean;
+  canRestoreCalendar: boolean;
+  calendarBusyAction: string;
   onQueryChange: (query: string) => void;
   onStatusFilterChange: (status: string) => void;
   onAvailabilityFilterChange: (availability: string) => void;
@@ -55,6 +70,7 @@ export function CalendarToolbar({
   onToday: () => void;
   onMove: (direction: -1 | 1) => void;
   onCreate: () => void;
+  canCreateEvent: boolean;
   onRefresh: () => void;
   onExport: () => void;
 }) {
@@ -84,9 +100,16 @@ export function CalendarToolbar({
         <div className="calendar-context-controls">
           <CalendarSelector
             calendars={calendars}
+            deletedCalendars={deletedCalendars}
             scopeId={activeCalendarId}
             onScopeChange={onCalendarChange}
             onCreateCalendar={onCreateCalendar}
+            onDeleteCalendar={onDeleteCalendar}
+            onRestoreCalendar={onRestoreCalendar}
+            canCreateCalendar={canCreateCalendar}
+            canDeleteCalendar={canDeleteCalendar}
+            canRestoreCalendar={canRestoreCalendar}
+            busyAction={calendarBusyAction}
           />
           <div className="calendar-range-group">
             <CommandButton icon={CalendarClock} onClick={onToday}>Today</CommandButton>
@@ -101,7 +124,7 @@ export function CalendarToolbar({
         { id: "export", action: "export", labelKey: "command.exportIcs", fallbackLabel: "Export ICS", onSelect: onExport },
         { id: "refresh", action: "refresh", onSelect: onRefresh },
       ]} />}
-      primaryAction={<WorkspaceActionButton action="create" labelKey="command.newEvent" fallbackLabel="New event" onClick={onCreate} primary />}
+      primaryAction={<WorkspaceActionButton action="create" labelKey="command.newEvent" fallbackLabel="New event" onClick={onCreate} disabled={!canCreateEvent} primary />}
     />
   );
 }

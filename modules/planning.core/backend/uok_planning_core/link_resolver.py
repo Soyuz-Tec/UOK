@@ -140,6 +140,14 @@ def _resolve_calendar_event(db: Session, actor: Actor, target_id: str, checked_a
     row = db.scalar(select(CalendarEvent).where(CalendarEvent.id == target_id, CalendarEvent.organization_id == actor.organization_id))
     if row is None:
         return LinkResolution("missing", None, "The calendar event target does not exist in this organization.", checked_at)
+    try:
+        from uok_calendar_core.facade import calendar_or_error
+    except ImportError:
+        return LinkResolution("unavailable", None, "The Calendar authorization provider is unavailable.", checked_at)
+    try:
+        calendar_or_error(db, actor, row.calendar_id)
+    except ValueError:
+        return LinkResolution("denied", None, "The linked target is not visible to this actor.", checked_at)
     if row.canceled_at is not None or row.status == "canceled":
         return LinkResolution("unavailable", row.title, "Calendar event is canceled.", checked_at)
     return LinkResolution("ready", row.title, f"Calendar event is {row.status}.", checked_at, f"/?view=calendar&event_id={row.id}")

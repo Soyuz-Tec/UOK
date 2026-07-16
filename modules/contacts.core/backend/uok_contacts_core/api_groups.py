@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Header, Query, Response
 from sqlalchemy.orm import Session
 
 from uok.db import get_db
@@ -24,6 +24,7 @@ def register_group_routes(router: APIRouter) -> None:
 
 
 def contact_groups(
+    response: Response,
     kind: str | None = Query(default=None, pattern="^(manual|business_domain|smart_rule)$"),
     include_empty: bool = Query(default=True),
     include_archived: bool = Query(default=False),
@@ -32,6 +33,8 @@ def contact_groups(
 ) -> list[dict[str, Any]]:
     require_permission(actor, "contacts.read")
     require_contacts_module_operational(db, actor)
+    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["Vary"] = "Authorization"
     return contact_group_rows(
         db,
         actor,
@@ -62,18 +65,30 @@ def update_contact_group(
 
 def archive_contact_group(
     group_id: str,
+    response: Response,
+    if_match: Annotated[str | None, Header(alias="If-Match")] = None,
     actor: Actor = Depends(current_actor),
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    return run_contact_command(db, actor, "ArchiveContactGroup", {"group_id": group_id})
+    result = run_contact_command(db, actor, "ArchiveContactGroup", {"group_id": group_id}, if_match=if_match)
+    response.headers["ETag"] = str(result["etag"])
+    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["Vary"] = "Authorization"
+    return result
 
 
 def restore_contact_group(
     group_id: str,
+    response: Response,
+    if_match: Annotated[str | None, Header(alias="If-Match")] = None,
     actor: Actor = Depends(current_actor),
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    return run_contact_command(db, actor, "RestoreContactGroup", {"group_id": group_id})
+    result = run_contact_command(db, actor, "RestoreContactGroup", {"group_id": group_id}, if_match=if_match)
+    response.headers["ETag"] = str(result["etag"])
+    response.headers["Cache-Control"] = "private, no-store"
+    response.headers["Vary"] = "Authorization"
+    return result
 
 
 def add_contacts_to_group(

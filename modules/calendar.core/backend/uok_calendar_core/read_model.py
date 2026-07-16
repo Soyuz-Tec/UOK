@@ -10,6 +10,7 @@ from uok.security import Actor
 from uok.util import loads
 
 from .access import can_read_calendar, readable_calendar_predicate
+from .calendar_lifecycle import calendar_lifecycle_capabilities, strong_calendar_etag
 from .models import Calendar, CalendarEvent, CalendarEventParticipant, CalendarReminder
 from .occurrence_support import event_occurrence_ranges
 
@@ -26,8 +27,8 @@ def iso_or_none(value: Any) -> str | None:
     return value.isoformat() if hasattr(value, "isoformat") else None
 
 
-def serialize_calendar(calendar: Calendar) -> dict[str, Any]:
-    return {
+def serialize_calendar(calendar: Calendar, actor: Actor | None = None) -> dict[str, Any]:
+    data = {
         "id": calendar.id,
         "name": calendar.name,
         "color": calendar.color,
@@ -37,7 +38,11 @@ def serialize_calendar(calendar: Calendar) -> dict[str, Any]:
         "attrs": loads(calendar.attrs_json, {}),
         "created_at": iso_or_none(calendar.created_at),
         "updated_at": iso_or_none(calendar.updated_at),
+        "etag": strong_calendar_etag(calendar),
     }
+    if actor is not None:
+        data.update(calendar_lifecycle_capabilities(actor, calendar))
+    return data
 
 
 def serialize_event(db: Session, event: CalendarEvent, include_detail: bool = False) -> dict[str, Any]:
@@ -76,9 +81,12 @@ def list_calendars(db: Session, actor: Actor, include_deleted: bool = False) -> 
         Calendar.organization_id == actor.organization_id,
         readable_calendar_predicate(actor),
     )
-    if not include_deleted:
-        query = query.where(Calendar.status != "deleted")
-    return [serialize_calendar(row) for row in db.scalars(query.order_by(Calendar.name)).all()]
+    query = query.where(
+        Calendar.status.in_(("active", "deleted"))
+        if include_deleted
+        else Calendar.status == "active"
+    )
+    return [serialize_calendar(row, actor) for row in db.scalars(query.order_by(Calendar.name)).all()]
 
 
 def calendar_or_error(db: Session, actor: Actor, calendar_id: str) -> Calendar:

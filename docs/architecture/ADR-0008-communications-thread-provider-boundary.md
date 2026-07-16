@@ -36,13 +36,19 @@ identity and access.
   exact authorized thread.
 - This slice provides real thread records and navigation. Message exchange,
   membership management, close/reopen commands, retention automation, and
-  notification delivery remain later `communications.core` work.
+  notification delivery remain later `communications.core` work. Recoverable
+  thread Delete/Restore and its concurrency contract are governed separately
+  by ADR-0028.
 
 ADR-0022 closed the accepted alpha ORM bridge. The canonical SQLAlchemy mapping
 now lives in `modules/communications.core/backend/uok_communications_core`, and
 `src/uok/communication_models.py` re-exports that exact class. Module behavior,
 manifest, migration, API, commands, policy, tests, and candidate verification
 remain owned by `communications.core`.
+
+ADR-0028 extends this boundary without transferring ownership: Communications
+retains archived rows and prior lifecycle state, while Planning keeps the same
+typed reference and never cascades a thread lifecycle change.
 
 ## Consequences
 

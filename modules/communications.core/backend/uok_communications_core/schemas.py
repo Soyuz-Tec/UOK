@@ -29,10 +29,27 @@ class CommunicationThreadCreateRequest(BaseModel):
         return normalized
 
 
+class CommunicationThreadLifecycleRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    thread_id: str = Field(..., min_length=1, max_length=80)
+
+    @field_validator("thread_id")
+    @classmethod
+    def normalize_thread_id(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("thread_id cannot be empty")
+        return normalized
+
+
 class CommunicationThreadResponse(BaseModel):
     id: str
     title: str
     status: str
+    restore_status: str | None
+    revision: int
+    etag: str
     context_type: str
     context_id: str | None
     created_by_user_id: str

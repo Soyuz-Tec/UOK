@@ -79,7 +79,7 @@ def review_queue(db: Session, actor: Actor, limit: int = 100, offset: int = 0) -
         .offset(_bounded_offset(offset))
         .limit(_bounded_limit(limit))
     ).all()
-    return [serialize_party(db, row) for row in rows]
+    return [serialize_party(db, row, actor=actor) for row in rows]
 
 
 def review_queue_count(db: Session, actor: Actor) -> int:
@@ -149,7 +149,7 @@ def _filtered_python_parties(
         relationships = readable_relationship_records(db, actor, party.id, allowed)
         if query_value and query_value not in _party_search_text(party, notes, relationships):
             continue
-        result.append(serialize_party(db, party))
+        result.append(serialize_party(db, party, actor=actor))
     return result
 
 
@@ -175,7 +175,7 @@ def _list_parties_postgres(
     else:
         stmt = stmt.order_by(*_contact_ordering(sort_by, sort_dir))
     rows = db.scalars(stmt.offset(_bounded_offset(offset)).limit(_bounded_limit(limit))).all()
-    return [serialize_party(db, row) for row in rows]
+    return [serialize_party(db, row, actor=actor) for row in rows]
 
 
 def _filtered_postgres_party_statement(db: Session, actor: Actor, query: str, group_id: str, status: str, review_state: str, party_type: str, source: str, quality: str):

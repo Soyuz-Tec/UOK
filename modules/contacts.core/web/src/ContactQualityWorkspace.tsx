@@ -1,7 +1,9 @@
-import { Archive, CheckCircle2, ClipboardList, FileCheck2, GitMerge, Pencil, StickyNote } from "lucide-react";
+import { CheckCircle2, ClipboardList, FileCheck2, GitMerge, Pencil, StickyNote, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { ConfirmCommandButton } from "@uok/shared/actions";
 import { EmptyState } from "@uok/shared/data-display";
+import { useUokLocalization } from "@uok/shared/localization";
 import { CommandButton } from "@uok/shared/primitives";
 import type { ContactMergeFieldChoices } from "@uok/shared/types";
 import { ContactDuplicateComparisonPopup } from "./ContactDuplicateComparisonPopup";
@@ -16,6 +18,7 @@ export function ContactQualityWorkspace({
 }: ContactsWorkspaceProps & {
   onOpenEditor: () => void;
 }) {
+  const { t } = useUokLocalization();
   const groups = useMemo(() => contactQualityGroups(props.contacts), [props.contacts]);
   const selected = props.selectedContact;
   const selectedIssue = selected ? contactPrimaryQualityIssue(selected) : null;
@@ -113,7 +116,20 @@ export function ContactQualityWorkspace({
                 <CommandButton icon={StickyNote} onClick={() => props.onDetailPaneChange("activity")}>Add purpose note</CommandButton>
                 <CommandButton icon={GitMerge} onClick={() => setComparisonOpen(true)} disabled={!matches.length && !(selected.duplicate_candidates || []).length}>Compare duplicates</CommandButton>
                 <CommandButton icon={CheckCircle2} onClick={props.onMarkReady} disabled={selected.review_state === "ready"} primary>Mark ready</CommandButton>
-                <CommandButton icon={Archive} onClick={props.onArchive} destructive>Archive irrelevant</CommandButton>
+                {selected.can_delete === true ? <ConfirmCommandButton
+                  key={`${selected.id}:${selected.status}:delete`}
+                  icon={Trash2}
+                  message={`${t("contacts.deletePrefix", "Delete")} “${selected.display_name}” ${t("contacts.deleteImpact", "from active use? The contact will leave active records, but its notes, group memberships, and audit history remain. Restore it from Archived at any time.")}`}
+                  dialogLabel={t("contacts.deleteConfirm", "Confirm contact deletion")}
+                  title={`${t("contacts.deletePrefix", "Delete")} “${selected.display_name}”?`}
+                  confirmLabel={t("command.delete", "Delete")}
+                  onConfirm={props.onArchive}
+                  disabled={Boolean(props.busyAction)}
+                  loading={props.busyAction === "ArchiveContact"}
+                  destructive
+                >
+                  {t("contacts.deleteIrrelevant", "Delete irrelevant contact")}
+                </ConfirmCommandButton> : null}
               </div>
             </section>
             <section className="quality-note-composer">

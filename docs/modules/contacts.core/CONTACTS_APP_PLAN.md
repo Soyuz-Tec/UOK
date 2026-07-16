@@ -39,7 +39,7 @@ Contacts commands and permission atoms are discovered through the validated mani
 
 | Slice | Implemented behavior | Primary evidence |
 |---|---|---|
-| 1. Persistent manual group lifecycle | Create, edit name/description, archive, restore, idempotent events | `group_commands.py`, `test_contacts_groups.py` |
+| 1. Persistent manual group lifecycle | Create, edit name/description, user-facing recoverable Delete through archive, restore, idempotent events | `group_commands.py`, `test_contacts_groups.py` |
 | 2. Safe contact membership lifecycle | Authorized add/remove, duplicate prevention, visible counts | `group_membership_commands.py`, `test_contacts_groups.py` |
 | 3. Governed smart/domain generation and exact reconciliation | Generated groups reject direct mutation, exactly reconcile active members, retire stale generated groups | `group_domain_*`, `group_smart_*`, domain/smart group tests |
 | 4. Aggregate/filter performance plus stale/empty hygiene | Bounded aggregate reads; manual/generated, empty, and archived filters; exact-evidence verifier cleanup | `group_read_model.py`, group tests, `scripts/uok_contacts_cleanup_ops.ps1` |
@@ -50,23 +50,24 @@ Contacts commands and permission atoms are discovered through the validated mani
 | Slice | Implemented behavior | Primary evidence |
 |---|---|---|
 | 1. First-class facts | Multi-valued labelled facts, normalization, primary synchronization, source/confidence/verification provenance | `system_models.py`, `system_commands.py`, `test_contacts_system_of_record.py` |
-| 2. Privacy/consent/team authorization | Fail-closed team reads, append-only consent evidence, restricted export, anonymizing purge | `access.py`, `privacy_commands.py`, system-of-record/security tests |
+| 2. Privacy/consent/team authorization | Fail-closed team reads, recoverable reasoned team Delete/Restore with preserved membership, append-only consent evidence, restricted export, anonymizing purge | `access.py`, `system_lifecycle.py`, `privacy_commands.py`, lifecycle/security tests |
 | 3. Guided import/export/bulk | CSV/vCard preview, explicit execution, durable row outcomes, bulk commands and batch evidence | `guided_import.py`, `contact_exchange.py`, system commands/tests |
 | 4. Global quality/dedupe/rollback | Persisted duplicate candidates, normalized blocking, resolution state, merge/import recovery | duplicate modules, system read model, focused tests |
 | 5. Saved views plus global relationship productivity | Actor-scoped saved views and actor-authorized relationship lookup | `system_commands.py`, `system_read_model.py`, focused tests |
 | 6. Genuine activity plus truthful interoperability boundary | Server-backed activity, vCard exchange, provider-neutral external identities; no false live-provider claim | command support, exchange/system modules, focused tests |
-| 7. Custom-field extensibility plus production qualification | Governed definitions/values are implemented; full release proof remains an explicit gate | system models/commands, migration 003, qualification checklist below |
+| 7. Custom-field extensibility plus production qualification | Governed definitions/values plus recoverable definition Delete/Restore are implemented; archived definitions leave active editing while stored values remain recoverable; full release proof remains an explicit gate | system models/commands/lifecycle, migration 003, lifecycle tests, qualification checklist below |
 
 ## Data And Integrity Rules
 
-- `Party` is the canonical person/organization identity. Archive is recoverable; purge irreversibly anonymizes contact-owned PII while retaining a non-PII tombstone and platform audit evidence.
+- `Party` is the canonical person/organization identity. User-facing Delete invokes recoverable archive; purge remains a distinct privileged operation that irreversibly anonymizes contact-owned PII while retaining a non-PII tombstone and platform audit evidence.
 - `PartyFact` is the authoritative multi-valued contact-fact model. A primary compatible fact updates the legacy flat projection during migration.
 - Consent is append-only evidence by purpose and channel. Prior evidence is not overwritten. Export excludes a contact for an `any` or unmappable denial and redacts channel-specific email, phone/SMS, or postal facts.
-- Contacts team access fails closed. A team-scoped record is visible only to an active team member, its owner, or an actor with explicit organization-wide Contacts authority.
+- Contacts team access fails closed. A team-scoped record is visible only to an active team member, its owner, or an actor with explicit organization-wide Contacts authority. Deleting a user-created team archives it and preserves membership; archived teams reject edits until Restore.
 - Manual groups are user-managed. Business-domain and smart-rule groups are generated read models whose membership is reconciled exactly by their generator.
 - Duplicate candidates are persisted and scored; list reads must not run repeated quadratic comparisons.
 - Import preview does not write contacts. Execution records durable row outcomes and a rollback boundary; rollback applies rows in reverse order and refuses to overwrite intervening edits.
-- Custom-field definitions and values stay organization-scoped and Contacts-owned.
+- Custom-field definitions and values stay organization-scoped and Contacts-owned. Definition Delete archives the definition, hides it from active value reads/editors, and preserves its values for the same-definition Restore.
+- Team and custom-field lifecycle reads return server-computed `can_delete`, `can_restore`, revision, and strong ETag facts. Delete requires a reason and both Delete and Restore require `If-Match`; a stale ETag returns structured `412` recovery guidance and requires a fresh human confirmation.
 - Relationships cannot self-link and duplicate typed links are rejected by module-owned constraints.
 
 Migration `003_contacts_core_system_of_record.sql` adds the governed tables and indexes without dropping the compatibility projection. See `modules/contacts.core/migrations/README.md` for rollout and rollback.
@@ -76,15 +77,15 @@ Migration `003_contacts_core_system_of_record.sql` adds the governed tables and 
 The module exposes actor-authorized reads for parties, groups, facts, consent history, teams, imports, duplicates, saved views, activity, relationships, external identities, and custom fields. Writes use the audited UOK command bus for:
 
 - party create/update/archive/restore/purge;
-- manual group create/update/archive/restore and membership changes;
+- manual group create/update/recoverable Delete through archive/restore and membership changes;
 - governed domain/smart generation;
 - fact save/remove and consent recording;
-- team lifecycle and membership;
+- team create/update, reasoned recoverable Delete/Restore, and membership;
 - CSV/vCard import preview/execution and import rollback;
 - duplicate refresh/resolution, merge, and rollback;
 - saved-view save/delete;
 - bulk update/export policy enforcement;
-- external-identity links and custom-field definition/value changes.
+- external-identity links, custom-field definition/value changes, and reasoned recoverable definition Delete/Restore.
 
 Public contracts must remain OpenAPI-compatible and generated TypeScript artifacts must match the rendered API.
 
@@ -101,12 +102,14 @@ Contacts uses the shared minimal workspace command surface for search, paging, v
 The Groups Manager replaces the redundant persistent rail. It is a shared draggable popup with:
 
 - manual/generated/empty/archived filters;
-- create, edit, archive, restore, and membership operations for authorized users;
+- create, edit, confirmed recoverable Delete, restore, and membership operations for authorized users;
+- Delete is available only for active manual groups with management capability; generated groups remain generator-owned and archived groups expose Restore instead;
+- deleting a manual group preserves its memberships and audit history under Archived, and deleting a contact preserves its recoverable record while permanent Purge remains visibly distinct;
 - a clear explanation that generated groups are reconciled by UOK;
 - read-only rendering when the actor lacks management capability;
 - focus restoration, keyboard operation, touch targets, localization/RTL, and narrow-layout behavior.
 
-Contacts data tools expose facts, privacy/consent, team assignment, guided import/export/bulk, quality/dedupe/rollback, saved views/activity/relationships, interoperability state, and custom fields without claiming unavailable providers.
+Contacts data tools expose facts, privacy/consent, team assignment, guided import/export/bulk, quality/dedupe/rollback, saved views/activity/relationships, interoperability state, and custom fields without claiming unavailable providers. User-created teams and custom-field definitions expose consistent Delete and Restore controls driven by server eligibility; Delete uses the shared draggable confirmation, requires a reason, keeps stale confirmations open after reloading current state, and restores focus to a surviving record control.
 
 ## Interoperability Boundary
 

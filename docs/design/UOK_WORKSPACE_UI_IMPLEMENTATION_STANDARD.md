@@ -97,6 +97,14 @@ an inline loading state for committed work, and do not use a vocabulary change
 to hide a permission or validation failure. Record a justified exception in the
 owning module plan.
 
+For user-managed records, visible `Delete` may map to an owning module's
+retained soft-delete or recoverable archive lifecycle. The confirmation must
+name the selected record, explain retained children/history and restoration,
+and use the shared draggable confirmation primitive. Generated or system-owned
+records are never made deletable through client-side heuristics. A stale
+destructive request reloads authoritative state and requires a new explicit
+confirmation; it is not eligible for generic automatic reapply.
+
 3. Results surface
    - Supports list/detail, table, and cards only when each view has a clear user need.
    - Table behavior such as pagination, sorting, column sizing, and selection must use reusable primitives.
@@ -121,6 +129,13 @@ settles. The close control must provide at least a 44-by-44 CSS-pixel target for
 coarse pointers. Shared overlay labels and controls, plus module-owned title,
 description, fields, actions, validation, and status text, must use the shared
 UOK localization provider rather than hard-coded visible strings.
+
+Nested overlays participate in the shared overlay stack. Only the topmost open
+popup or context menu may process Escape or contain the active Tab cycle; a
+parent expandable panel must remain open while its child confirmation is
+active. Closing the child restores focus inside the parent, and only a later,
+separate dismissal may close the parent. Modules must not add document-level
+keyboard handlers that bypass this stack.
 
 Every `WorkspacePopup` and `WorkspaceEditorPopup` is draggable through the
 shared overlay implementation rather than module-local handlers. A dedicated

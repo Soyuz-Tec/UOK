@@ -17,8 +17,12 @@ lifecycle:
   - uninstalled
 commands:
   - CreateCommunicationThread
+  - ArchiveCommunicationThread
+  - RestoreCommunicationThread
 events:
   - CommunicationThreadCreated
+  - CommunicationThreadArchived
+  - CommunicationThreadRestored
 dependencies: []
 backend_path: modules/communications.core/backend
 web_path: modules/communications.core/web
@@ -50,4 +54,4 @@ extension_points:
   - model_exports
   - web_surface
   - candidate_verifier
-data_retention_policy: "Communication threads are organization-scoped and retained for audit; archival hides active use without implicit deletion or cross-module cascade."
+data_retention_policy: "User-facing Delete archives organization-scoped communication threads and preserves their prior open or closed state for authorized Restore. Thread identity and audit evidence remain; Planning links are not deleted or cascaded and resolve unavailable only while the thread is archived."

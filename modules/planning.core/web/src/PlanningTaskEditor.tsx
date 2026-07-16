@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 
-import { WorkspaceActionButton } from "@uok/shared/actions";
+import { ConfirmCommandButton, WorkspaceActionButton } from "@uok/shared/actions";
+import { useUokLocalization } from "@uok/shared/localization";
 import type { PlanningTaskCreateRequest, PlanningTaskDateUpdateRequest, PlanningTaskUpdateRequest } from "./planningContracts";
 import { PlanningTaskConstraintFields } from "./PlanningTaskConstraintFields";
 import { PlanningTaskDateFields } from "./PlanningTaskDateFields";
 import type { PlanningSchedule, PlanningSchedulingMode, PlanningTask, PlanningTaskStatus, PlanningTaskType } from "./types";
 
-export function PlanningTaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onSaveTaskDates, onCreateTask, onDeleteTask }: {
+export function PlanningTaskEditor({ schedule, selectedTask, newTaskType, busy, onSaveTask, onSaveTaskDates, onCreateTask, onDeleteTask, onDeleteTaskComplete }: {
   schedule: PlanningSchedule;
   selectedTask: PlanningTask | null;
   newTaskType: "task" | "milestone";
@@ -15,7 +17,9 @@ export function PlanningTaskEditor({ schedule, selectedTask, newTaskType, busy, 
   onSaveTaskDates: (taskId: string, payload: PlanningTaskDateUpdateRequest) => Promise<void>;
   onCreateTask: (payload: PlanningTaskCreateRequest) => Promise<void>;
   onDeleteTask: (taskId: string) => Promise<void>;
+  onDeleteTaskComplete?: () => void;
 }) {
+  const { t } = useUokLocalization();
   const [form, setForm] = useState(taskForm(selectedTask, schedule.tasks.length + 1, newTaskType));
   useEffect(() => setForm(taskForm(selectedTask, schedule.tasks.length + 1, newTaskType)), [newTaskType, schedule.tasks.length, selectedTask]);
   const payload = {
@@ -55,7 +59,22 @@ export function PlanningTaskEditor({ schedule, selectedTask, newTaskType, busy, 
       </div>
       <div className="planning-action-row">
         <WorkspaceActionButton action={selectedTask ? "save" : "create"} labelKey={selectedTask ? "command.saveTask" : "command.addTask"} fallbackLabel={selectedTask ? "Save task" : "Add task"} loading={busy === "task"} onClick={() => selectedTask ? onSaveTask(selectedTask.id, payload) : onCreateTask(payload)} />
-        {selectedTask && <WorkspaceActionButton action="delete" loading={busy === "task"} onClick={() => onDeleteTask(selectedTask.id)} />}
+        {selectedTask && <ConfirmCommandButton
+          icon={Trash2}
+          message={t("planning.taskDelete.question", "Delete {name}? Child tasks are also deleted, and linked dependencies and assignments are removed. This cannot currently be undone.").replace("{name}", selectedTask.title)}
+          dialogLabel={t("planning.taskDelete.dialog", "Delete task {name}").replace("{name}", selectedTask.title)}
+          title={t("planning.taskDelete.title", "Delete task")}
+          confirmLabel={t("planning.taskDelete.action", "Delete task")}
+          onConfirm={async () => {
+            await onDeleteTask(selectedTask.id);
+            onDeleteTaskComplete?.();
+          }}
+          disabled={Boolean(busy)}
+          loading={busy === "task"}
+          destructive
+        >
+          {t("planning.taskDelete.action", "Delete task")}
+        </ConfirmCommandButton>}
       </div>
       {selectedTask ? <PlanningTaskDateFields task={selectedTask} timezone={schedule.project.timezone || "UTC"} busy={busy === "task-dates"} onSave={(dates) => onSaveTaskDates(selectedTask.id, dates)} /> : <span className="planning-muted">Create the task before recording forecast, actual, or deadline dates.</span>}
     </section>

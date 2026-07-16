@@ -110,7 +110,15 @@ def test_archived_contact_team_membership_does_not_grant_access(client: TestClie
     party_id = created.json()["result"]["contact_id"]
     assert client.get(f"/api/contacts/{party_id}", headers=trader).status_code == 200
 
-    archived = client.post(f"/api/contacts/teams/{team_id}/archive", headers=ops)
+    team_rows = client.get("/api/contacts/teams?include_archived=true", headers=ops)
+    assert team_rows.status_code == 200, team_rows.text
+    etag = next(row["etag"] for row in team_rows.json() if row["id"] == team_id)
+    archived = client.request(
+        "DELETE",
+        f"/api/contacts/teams/{team_id}",
+        headers={**ops, "If-Match": etag},
+        json={"reason": "Access scope no longer required"},
+    )
     assert archived.status_code == 200, archived.text
     assert client.get(f"/api/contacts/{party_id}", headers=trader).status_code == 403
     rows = client.get("/api/contacts", headers=trader, params={"query": display_name, "status": "all"})

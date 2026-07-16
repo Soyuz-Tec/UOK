@@ -107,6 +107,8 @@ def test_contact_groups_can_be_created_filtered_and_managed(client: TestClient) 
     assert _event_count("ContactAddedToGroup", group_id) == add_event_count
 
     groups = client.get("/api/contacts/groups", headers=ops)
+    assert groups.headers["Cache-Control"] == "private, no-store"
+    assert groups.headers["Vary"] == "Authorization"
     assert groups.status_code == 200, groups.text
     matching_groups = [row for row in groups.json() if row["id"] == group_id]
     assert matching_groups
@@ -189,22 +191,57 @@ def test_contact_groups_can_be_created_filtered_and_managed(client: TestClient) 
     )
     assert restored_member.status_code == 200, restored_member.text
 
-    archived = command(
+    current_group = next(row for row in client.get(
+        "/api/contacts/groups",
+        headers=ops,
+        params={"include_archived": True},
+    ).json() if row["id"] == group_id)
+    assert current_group["user_managed"] is True
+    assert current_group["can_delete"] is True
+    assert current_group["can_restore"] is False
+    denied_delete = client.delete(
+        f"/api/contacts/groups/{group_id}",
+        headers={**viewer, "If-Match": current_group["etag"]},
+    )
+    assert denied_delete.status_code == 403, denied_delete.text
+
+    missing_precondition = client.delete(f"/api/contacts/groups/{group_id}", headers=ops)
+    assert missing_precondition.status_code == 428, missing_precondition.text
+    assert missing_precondition.json()["detail"]["code"] == "contact_group_precondition_required"
+
+    changed_after_confirmation = command(
         client,
         ops,
-        "ArchiveContactGroup",
-        {"group_id": group_id},
-        f"uok-contact-group-archive-{suffix}",
+        "UpdateContactGroup",
+        {"group_id": group_id, "description": "Changed after the delete confirmation opened."},
+        f"uok-contact-group-stale-confirmation-{suffix}",
+    )
+    assert changed_after_confirmation.status_code == 200, changed_after_confirmation.text
+    stale_delete = client.delete(
+        f"/api/contacts/groups/{group_id}",
+        headers={**ops, "If-Match": current_group["etag"]},
+    )
+    assert stale_delete.status_code == 412, stale_delete.text
+    assert stale_delete.json()["detail"]["code"] == "contact_group_precondition_stale"
+
+    latest_group = next(row for row in client.get(
+        "/api/contacts/groups",
+        headers=ops,
+        params={"include_archived": True},
+    ).json() if row["id"] == group_id)
+    archived = client.delete(
+        f"/api/contacts/groups/{group_id}",
+        headers={**ops, "If-Match": latest_group["etag"]},
     )
     assert archived.status_code == 200, archived.text
-    assert archived.json()["result"]["status"] == "archived"
+    assert archived.json()["status"] == "archived"
+    assert archived.json()["member_count"] == 1
+    assert archived.json()["can_delete"] is False
+    assert archived.json()["can_restore"] is True
     archive_event_count = _event_count("ContactGroupArchived", group_id)
-    unchanged_archive = command(
-        client,
-        ops,
-        "ArchiveContactGroup",
-        {"group_id": group_id},
-        f"uok-contact-group-archive-unchanged-{suffix}",
+    unchanged_archive = client.delete(
+        f"/api/contacts/groups/{group_id}",
+        headers={**ops, "If-Match": archived.json()["etag"]},
     )
     assert unchanged_archive.status_code == 200, unchanged_archive.text
     assert _event_count("ContactGroupArchived", group_id) == archive_event_count
@@ -227,23 +264,23 @@ def test_contact_groups_can_be_created_filtered_and_managed(client: TestClient) 
     assert implicit_restore.status_code == 400, implicit_restore.text
     assert "RestoreContactGroup" in implicit_restore.text
 
-    restored_group = command(
-        client,
-        ops,
-        "RestoreContactGroup",
-        {"group_id": group_id},
-        f"uok-contact-group-restore-{suffix}",
+    restored_group = client.post(
+        f"/api/contacts/groups/{group_id}/restore",
+        headers={**ops, "If-Match": unchanged_archive.json()["etag"]},
     )
     assert restored_group.status_code == 200, restored_group.text
-    assert restored_group.json()["result"]["id"] == group_id
-    assert restored_group.json()["result"]["status"] == "active"
+    assert restored_group.json()["id"] == group_id
+    assert restored_group.json()["status"] == "active"
+    assert restored_group.json()["member_count"] == 1
+    assert restored_group.json()["can_delete"] is True
+    assert restored_group.json()["can_restore"] is False
+    restored_filter = client.get("/api/contacts", headers=ops, params={"status": "all", "group_id": group_id})
+    assert restored_filter.status_code == 200, restored_filter.text
+    assert person_id in {row["id"] for row in restored_filter.json()}
     restore_event_count = _event_count("ContactGroupRestored", group_id)
-    unchanged_restore = command(
-        client,
-        ops,
-        "RestoreContactGroup",
-        {"group_id": group_id},
-        f"uok-contact-group-restore-unchanged-{suffix}",
+    unchanged_restore = client.post(
+        f"/api/contacts/groups/{group_id}/restore",
+        headers={**ops, "If-Match": restored_group.json()["etag"]},
     )
     assert unchanged_restore.status_code == 200, unchanged_restore.text
     assert _event_count("ContactGroupRestored", group_id) == restore_event_count
