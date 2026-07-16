@@ -1,6 +1,6 @@
 # Party/MDM Product Master Slice Delivery – 2026-07-16
 
-**Status:** Implementation and local qualification complete; hosted CI pending publication.
+**Status:** Complete. Implementation, local qualification, live candidate verification, and hosted CI passed.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -90,9 +90,9 @@ Current local verification:
 | Runtime-proven verifier assets | Pass: 7 module verifiers |
 | Rebuilt PostgreSQL candidate | Pass: healthy API plus live capacity policy |
 | Full candidate verifier | Pass: all 7 module scenarios, including `product.master` |
-| Hosted GitHub CI | Pending first publication of `feature/product-master-slice` |
+| Hosted GitHub CI | Pass on code-bearing commit `a1f36ff`: [push run 29541983549](https://github.com/Soyuz-Tec/UOK/actions/runs/29541983549) and [PR run 29542058801](https://github.com/Soyuz-Tec/UOK/actions/runs/29542058801) |
 
-No local gate is failing. The only pre-publication status is hosted GitHub CI, which cannot run until the branch exists on the remote.
+No local or hosted code gate is failing. Draft PR [#62](https://github.com/Soyuz-Tec/UOK/pull/62) targets the frozen `feature/planning-flow-board` baseline.
 
 ## Manual Demo
 
@@ -122,4 +122,4 @@ Implement a tenant-scoped **Location Master** registry next, limited to canonica
 
 ## Validation
 
-The full commands in `docs/architecture/ARCHITECTURE-FREEZE-2026-07-16.md` passed. The repository-required `TechnologyAudit`, `EngineeringEvidence`, `Audit`, `Rebuild`, and `Verify` operations also passed. The rebuilt candidate exposed both Product owner tables and the full candidate verifier proved the Product Definition lifecycle against PostgreSQL. Hosted CI remains the final publication gate.
+The full commands in `docs/architecture/ARCHITECTURE-FREEZE-2026-07-16.md` passed. The repository-required `TechnologyAudit`, `EngineeringEvidence`, `Audit`, `Rebuild`, and `Verify` operations also passed. The rebuilt candidate exposed both Product owner tables and the full candidate verifier proved the Product Definition lifecycle against PostgreSQL. Both GitHub workflows for code-bearing commit `a1f36ff` completed successfully; the final documentation-only evidence commit must keep the same current-head checks green.
