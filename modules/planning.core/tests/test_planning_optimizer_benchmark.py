@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import date
 from time import perf_counter
 
-from uok_planning_core.optimizer_engine import run_optimizer
-from uok_planning_core.schedule_math import default_calendar, end_for_start, shift_working
+from uok_planning_core._internal.analysis.optimizer_engine import run_optimizer
+from uok_planning_core._internal.scheduling.schedule_math import default_calendar, end_for_start, shift_working
 
 
 def test_fifty_task_chain_optimizer_benchmark_stays_within_bound() -> None:

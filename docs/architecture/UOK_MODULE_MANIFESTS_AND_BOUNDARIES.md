@@ -51,6 +51,15 @@ UOK verifies:
 
 Runtime validation runs before manifest router mounting and does not require development test folders. Release validation adds every source ownership folder, maturity-appropriate module tests, and candidate verifier assets. Local/CI release gates call `validate_module_release_contracts`; runtime and container startup call `validate_module_runtime_contracts`.
 
+Planning and Contacts additionally enforce one supported Python facade per
+module. Runtime router, command, policy, dashboard, evidence, and Planning replay
+hooks resolve through `public_api`; implementation packages live below
+`_internal`. The sole exception is the privileged `model_exports` bootstrap
+hook, which stays manifest-resolved under `_internal.persistence` and is never a
+business API. `tests/test_module_public_api_boundaries.py` rejects external
+Python implementation imports, unsupported facade symbols, dynamic literal
+deep imports, and external frontend imports other than `moduleSurface`.
+
 ## Source-boundary scan
 
 The source-boundary scan checks UOK core files for product-specific tokens. The baseline gate is strict: product-specific source must stay inside installable product modules, not in the UOK core.

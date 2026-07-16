@@ -5,8 +5,8 @@ from uuid import uuid4
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok_planning_core.commands import command_permissions
-from uok_planning_core.policy import PLANNING_CAPABILITY_PERMISSIONS, PLANNING_ROLE_GRANTS
+from uok_planning_core._internal.delivery.commands import command_permissions
+from uok_planning_core._internal.delivery.policy import PLANNING_CAPABILITY_PERMISSIONS, PLANNING_ROLE_GRANTS
 
 
 def test_capability_endpoint_returns_server_authority_by_role(client: TestClient) -> None:

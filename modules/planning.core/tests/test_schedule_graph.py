@@ -6,7 +6,7 @@ BACKEND = Path(__file__).resolve().parents[1] / "backend"
 if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
-from uok_planning_core.schedule_graph import dependency_order
+from uok_planning_core._internal.scheduling.schedule_graph import dependency_order
 
 
 @dataclass(frozen=True)

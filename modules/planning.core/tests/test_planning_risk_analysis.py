@@ -8,7 +8,7 @@ from starlette.testclient import TestClient
 from tests.helpers import auth, command
 from uok.db import SessionLocal
 from uok.models import PlanningAnalysisRun
-from uok_planning_core.risk_engine import run_risk_engine, validate_risk_result
+from uok_planning_core._internal.analysis.risk_engine import run_risk_engine, validate_risk_result
 
 
 def test_fixed_seed_risk_engine_is_exactly_reproducible(client: TestClient) -> None:

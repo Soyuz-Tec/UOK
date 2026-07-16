@@ -9,7 +9,7 @@ from tests.helpers import auth, command, user_id
 from uok.db import SessionLocal
 from uok.models import EventRecord
 from uok.util import loads
-from uok_contacts_core.models import (
+from uok_contacts_core._internal.persistence.models import (
     ContactConsentRecord,
     ContactExternalIdentity,
     ContactGroupMember,

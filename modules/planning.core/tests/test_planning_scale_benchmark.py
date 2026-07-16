@@ -2,7 +2,16 @@ from __future__ import annotations
 
 from starlette.testclient import TestClient
 
-from scripts.planning_scale_benchmark import run_benchmarks
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
+
+
+BENCHMARK_PATH = Path(__file__).resolve().parents[1] / "verify" / "runtime" / "planning_scale_benchmark.py"
+SPEC = spec_from_file_location("uok_planning_scale_benchmark", BENCHMARK_PATH)
+assert SPEC is not None and SPEC.loader is not None
+BENCHMARK_MODULE = module_from_spec(SPEC)
+SPEC.loader.exec_module(BENCHMARK_MODULE)
+run_benchmarks = BENCHMARK_MODULE.run_benchmarks
 
 
 def test_approved_planning_scale_budgets_are_measured(client: TestClient) -> None:

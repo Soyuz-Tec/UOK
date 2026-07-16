@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 from uok.module_manifest_loader import load_module_manifests
@@ -11,17 +12,6 @@ from uok.module_policy import module_role_grants
 from uok.module_tables import declared_module_table_names
 from uok.modules import module_contracts
 
-KERNEL_MODULE_FACADE_FILES = {
-    "src/uok/contacts.py",
-    "src/uok/contacts_commands.py",
-    "src/uok/contact_access.py",
-    "src/uok/contact_api_schemas.py",
-    "src/uok/contact_command_support.py",
-    "src/uok/contact_duplicates.py",
-    "src/uok/contact_import_commands.py",
-    "src/uok/contact_read_model.py",
-    "src/uok/contact_validation.py",
-}
 BASELINE_MODULES = ["agents.core", "apps.manager", "calendar.core", "communications.core", "contacts.core", "planning.core", "reports.core"]
 
 
@@ -72,20 +62,22 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert "ContactCreated" in manifests["contacts.core"]["events"]
     assert manifests["contacts.core"]["backend_path"] == "modules/contacts.core/backend"
     assert "/api/contacts" in manifests["contacts.core"]["api_prefixes"]
-    assert manifests["contacts.core"]["command_handlers"] == "uok_contacts_core.commands:command_handlers"
-    assert manifests["contacts.core"]["command_permissions"] == "uok_contacts_core.commands:command_permissions"
-    assert manifests["contacts.core"]["role_grants"] == "uok_contacts_core.policy:role_grants"
-    assert manifests["contacts.core"]["dashboard_provider"] == "uok_contacts_core.reports:dashboard_counts"
-    assert manifests["contacts.core"]["evidence_provider"] == "uok_contacts_core.reports:evidence"
-    assert manifests["contacts.core"]["model_exports"] == "uok_contacts_core.models:owned_models"
+    assert manifests["contacts.core"]["api_router"] == "uok_contacts_core.public_api:api_router"
+    assert manifests["contacts.core"]["command_handlers"] == "uok_contacts_core.public_api:command_handlers"
+    assert manifests["contacts.core"]["command_permissions"] == "uok_contacts_core.public_api:command_permissions"
+    assert manifests["contacts.core"]["role_grants"] == "uok_contacts_core.public_api:role_grants"
+    assert manifests["contacts.core"]["dashboard_provider"] == "uok_contacts_core.public_api:dashboard_counts"
+    assert manifests["contacts.core"]["evidence_provider"] == "uok_contacts_core.public_api:evidence"
+    assert manifests["contacts.core"]["model_exports"] == "uok_contacts_core._internal.persistence.models:owned_models"
     assert manifests["contacts.core"]["candidate_verifier_script"] == "modules/contacts.core/verify/UokCandidateContacts.ps1"
     assert "contacts.manage" in manifests["contacts.core"]["permissions"]
     assert (root / "contacts.core" / "migrations" / "001_contacts_core_operational_indexes.sql").is_file()
     assert manifests["planning.core"]["required"] is False
     assert manifests["planning.core"]["backend_path"] == "modules/planning.core/backend"
     assert manifests["planning.core"]["dependencies"] == ["calendar.core"]
-    assert manifests["planning.core"]["api_router"] == "uok_planning_core.api:router"
-    assert manifests["planning.core"]["command_handlers"] == "uok_planning_core.commands:command_handlers"
+    assert manifests["planning.core"]["api_router"] == "uok_planning_core.public_api:api_router"
+    assert manifests["planning.core"]["command_handlers"] == "uok_planning_core.public_api:command_handlers"
+    assert manifests["planning.core"]["command_permissions"] == "uok_planning_core.public_api:command_permissions"
     assert "SetPlanningResourceCalendar" in manifests["planning.core"]["commands"]
     assert "PlanningResourceCalendarUpdated" in manifests["planning.core"]["events"]
     assert manifests["planning.core"]["candidate_verifier_script"] == "modules/planning.core/verify/UokCandidatePlanning.ps1"
@@ -120,19 +112,23 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
 def test_contacts_core_backend_loads_from_physical_module_root() -> None:
     ensure_module_backend_paths()
 
-    import uok_contacts_core
-    import uok_contacts_core.facade as contacts_facade
-    from uok import contacts
+    from uok_contacts_core.public_api import PartyReferenceResolution
 
-    backend_file = Path(uok_contacts_core.__file__).resolve()
+    contacts_api = sys.modules[PartyReferenceResolution.__module__]
+
+    backend_file = Path(contacts_api.__file__).resolve()
     assert "modules" in backend_file.parts
     assert "contacts.core" in backend_file.parts
-    assert contacts.clean_text(" UOK ") == "UOK"
-    assert uok_contacts_core.clean_text(" UOK ") == "UOK"
-    assert uok_contacts_core.__all__ == contacts_facade.__all__
-    star_namespace: dict[str, object] = {}
-    exec("from uok_contacts_core import *", star_namespace)
-    assert set(contacts_facade.__all__).issubset(star_namespace)
+    assert set(contacts_api.__all__) == {
+        "PartyReferenceResolution",
+        "api_router",
+        "command_handlers",
+        "command_permissions",
+        "dashboard_counts",
+        "evidence",
+        "resolve_party_reference",
+        "role_grants",
+    }
 
 
 def test_module_extension_contract_is_enforced() -> None:
@@ -157,7 +153,7 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["violations"] == []
 
 
-def test_kernel_imports_module_backends_only_in_declared_facades() -> None:
+def test_kernel_does_not_statically_import_module_backends() -> None:
     package_names = set()
     for backend_dir in module_backend_paths():
         for child in sorted(backend_dir.iterdir()):
@@ -175,7 +171,6 @@ def test_kernel_imports_module_backends_only_in_declared_facades() -> None:
         path.relative_to(repo_root()).as_posix()
         for path in (repo_root() / "src" / "uok").rglob("*.py")
         if import_pattern.search(path.read_text(encoding="utf-8"))
-        and path.relative_to(repo_root()).as_posix() not in KERNEL_MODULE_FACADE_FILES
     )
     assert offenders == []
 

@@ -9,8 +9,8 @@ from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
 from uok.db import SessionLocal
-from uok_planning_core.optimizer_engine import run_optimizer
-from uok_planning_core.risk_engine import run_risk_engine
+from uok_planning_core._internal.analysis.optimizer_engine import run_optimizer
+from uok_planning_core._internal.analysis.risk_engine import run_risk_engine
 
 
 def test_legacy_cpm_snapshot_requires_resnapshot_for_risk_and_optimization(client: TestClient) -> None:

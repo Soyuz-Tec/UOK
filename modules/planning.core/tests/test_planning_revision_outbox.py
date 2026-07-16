@@ -106,7 +106,7 @@ def test_failed_transaction_and_idempotent_replay_do_not_duplicate_history(
     project_id = project.json()["result"]["id"]
     before = _history_counts(project_id)
 
-    from uok_planning_core import revision_completion
+    from uok_planning_core._internal.portfolio_audit import revision_completion
 
     original = revision_completion.record_schedule_revision
 

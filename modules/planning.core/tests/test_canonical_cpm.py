@@ -11,8 +11,8 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 from planning_cpm_fixtures import Dependency, task
-from uok_planning_core.cpm import CpmCycleError, calculate_cpm
-from uok_planning_core.schedule_math import CalendarSpec, default_calendar
+from uok_planning_core._internal.scheduling.cpm import CpmCycleError, calculate_cpm
+from uok_planning_core._internal.scheduling.schedule_math import CalendarSpec, default_calendar
 
 START = date(2026, 8, 3)
 

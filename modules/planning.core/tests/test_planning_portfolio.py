@@ -14,7 +14,7 @@ from uok.db import SessionLocal, engine
 from uok.main import app
 from uok.models import Membership, Organization, PlanningProject, PlanningTask
 from uok.security import Actor
-from uok_planning_core.portfolio import planning_portfolio_read_model
+from uok_planning_core._internal.portfolio_audit.portfolio import planning_portfolio_read_model
 
 
 def test_portfolio_is_actor_scoped_filterable_and_explainable(client: TestClient) -> None:

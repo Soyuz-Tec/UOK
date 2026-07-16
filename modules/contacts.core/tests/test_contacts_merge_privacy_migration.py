@@ -4,9 +4,9 @@ from pathlib import Path
 
 from sqlalchemy.dialects import postgresql
 
-from uok_contacts_core.read_model_rows import _public_party_attrs
-from uok_contacts_core.read_model_search import _postgres_contact_search_vector
-from uok_contacts_core.validation import CONTACT_ATTR_FIELDS
+from uok_contacts_core._internal.registry.read_model_rows import _public_party_attrs
+from uok_contacts_core._internal.registry.read_model_search import _postgres_contact_search_vector
+from uok_contacts_core._internal.registry.validation import CONTACT_ATTR_FIELDS
 
 PUBLIC_MERGE_FIELDS = {
     "duplicate_party_id",

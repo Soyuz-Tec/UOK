@@ -25,7 +25,7 @@ ensure_module_backend_paths()
 
 from uok.security import Actor  # noqa: E402
 from uok.util import loads  # noqa: E402
-from uok_planning_core.replay_visibility import assert_planning_replay_visible  # noqa: E402
+from uok_planning_core._internal.portfolio_audit.replay_visibility import assert_planning_replay_visible  # noqa: E402
 
 
 def main() -> None:

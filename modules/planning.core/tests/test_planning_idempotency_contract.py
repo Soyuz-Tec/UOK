@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from uok_planning_core.batch_schemas import PlanningBatchRequest
+from uok_planning_core._internal.delivery.batch_schemas import PlanningBatchRequest
 from uok.main import app
 
 

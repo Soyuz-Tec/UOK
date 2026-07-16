@@ -24,7 +24,7 @@ Operator browser
 
 | Container | Location | Responsibility |
 |---|---|---|
-| Backend kernel | `src/uok` | FastAPI composition, auth/session security, command bus, module registry, lifecycle APIs, static asset serving, baseline evidence, migration gates, compatibility facades. |
+| Backend kernel | `src/uok` | FastAPI composition, auth/session security, command bus, module registry, lifecycle APIs, static asset serving, baseline evidence, migration gates, and validated composition adapters. |
 | Database connectivity | `src/uok/db.py`, `src/uok/db_pool.py` | Validated process-local SQLAlchemy pooling, stale-connection pre-ping, safe telemetry, bounded timeout behavior, and session lifecycle. |
 | Module packages | `modules/<module_name>` | Module manifest, backend package, module-owned ORM mappings, module-local React source and CSS, module tests, migrations, candidate verifier scenarios, and behavior. |
 | Frontend shell | `web/src` | React + TypeScript + Vite workbench shell, navigation, shared controls and tokens, typed module surface contract, and generated API/module catalogs. |
@@ -45,6 +45,8 @@ Operator browser
 - `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context and uses `reports.core` as an availability-gated optional frontend integration for secure report artifact actions, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.
 - Module metadata is read from `modules/<module_name>/manifest.yaml`.
 - Backend runtime extension points are declared in manifests; only validated manifest `backend_path` roots enter import resolution, and imported provider origins must remain inside the owning backend.
+- Planning and Contacts expose one supported Python facade each at `uok_planning_core.public_api` and `uok_contacts_core.public_api`. All other implementation code is capability-organized below the owner's `_internal` package; external static imports are rejected by `tests/test_module_public_api_boundaries.py`.
+- Module-owned ORM mappings remain private even when the model registry resolves their privileged manifest `model_exports` hook. Neither Planning nor Contacts exports an ORM mapping through its public facade.
 - Manifests use closed schema `uok.module.v1`, declare evidence-bounded maturity, reserve canonical non-overlapping API prefixes, and pass runtime validation before extension imports or router composition; release validation separately proves tests and verifier assets.
 - The Apps Manager HTTP adapter is owned by `modules/apps.manager` and mounted through the same manifest router mechanism as capability modules; shared lifecycle services provide locked, audited, idempotent reconciliation when persisted control-plane state drifts from current manifest truth.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, command replay guards, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
@@ -143,6 +145,8 @@ Operator browser
 - Secure reports artifact engine: `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 - Planning data-boundary inventory: `docs/architecture/planning-data-boundary-inventory-2026-07-15.md`
 - Planning data-boundary fix and verification: `docs/architecture/planning-data-boundary-fix-2026-07-15.md`
+- Planning and Contacts size/surface inventory: `docs/architecture/planning-contacts-size-inventory-2026-07-15.md`
+- Planning and Contacts size/surface fix and verification: `docs/architecture/planning-contacts-size-fix-2026-07-15.md`
 
 ## Verification
 

@@ -14,10 +14,10 @@ from uok.module_commands import load_module_command_replay_guards
 from uok.module_contract_validation import validate_module_extension_contracts
 from uok.module_manifest_loader import load_module_manifests
 from uok.util import dumps
-from uok_planning_core.replay_visibility import (
+from uok_planning_core._internal.portfolio_audit.replay_visibility import (
     _trusted_result_project_id,
-    assert_planning_replay_visible,
 )
+from uok_planning_core.public_api import assert_planning_replay_visible
 
 
 def test_exact_replay_visibility_allows_visible_and_archived_projects(client: TestClient) -> None:
@@ -156,7 +156,7 @@ def test_only_documented_legacy_result_shapes_recover_project_identity(
 
 def test_planning_manifest_loads_one_valid_replay_guard_for_every_declared_command() -> None:
     manifest = load_module_manifests()["planning.core"]
-    assert manifest["command_replay_guard"] == "uok_planning_core.replay_visibility:assert_planning_replay_visible"
+    assert manifest["command_replay_guard"] == "uok_planning_core.public_api:assert_planning_replay_visible"
     assert "command_replay_guard" in manifest["extension_points"]
 
     guards = load_module_command_replay_guards()

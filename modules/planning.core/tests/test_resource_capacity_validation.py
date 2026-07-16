@@ -4,9 +4,9 @@ from dataclasses import replace
 from datetime import date
 
 from uok.models import PlanningAssignment, PlanningResource, PlanningTask
-from uok_planning_core.resource_capacity import calculate_resource_capacity, resource_capacity_warnings
-from uok_planning_core.resource_capacity_validation import validate_resource_capacity_result
-from uok_planning_core.schedule_math import at_utc, default_calendar
+from uok_planning_core._internal.resources.resource_capacity import calculate_resource_capacity, resource_capacity_warnings
+from uok_planning_core._internal.resources.resource_capacity_validation import validate_resource_capacity_result
+from uok_planning_core._internal.scheduling.schedule_math import at_utc, default_calendar
 
 
 def test_resource_capacity_result_reports_overallocation_and_validates_independently() -> None:

@@ -17,7 +17,7 @@ from uok.models import (
     PlanningTask,
 )
 from uok.util import loads
-from uok_planning_core.project_lifecycle import PROJECT_STATUS_TRANSITIONS
+from uok_planning_core._internal.scheduling.project_lifecycle import PROJECT_STATUS_TRANSITIONS
 
 
 def test_project_transition_graph_is_exact_and_purge_is_internal() -> None:

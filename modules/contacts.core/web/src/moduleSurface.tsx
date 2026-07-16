@@ -5,6 +5,10 @@ import { CONTACTS_MODULE_ID, CONTACTS_SECTION_ID } from "./contactModule";
 import { ContactsWorkspace } from "./ContactsWorkspace";
 import "./styles/index.css";
 
+export { CONTACTS_MODULE_ID };
+export { useContactCommands } from "./app/useContactCommands";
+export { useContactWorkspaceState } from "./app/useContactWorkspaceState";
+
 export const contactsModuleSurface: ModuleSurface = {
   id: CONTACTS_SECTION_ID,
   label: "Contacts",

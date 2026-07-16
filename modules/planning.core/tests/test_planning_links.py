@@ -8,9 +8,10 @@ from sqlalchemy import select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok_planning_core.link_resolver import serialize_link
+from uok_contacts_core.public_api import command_handlers as contact_command_handlers
+from uok_planning_core._internal.coordination.link_resolver import serialize_link
 from uok.db import SessionLocal
-from uok.models import CommandLog, EventRecord, Organization, Party, PlanningLink, PlanningScheduleEvent
+from uok.models import CommandLog, EventRecord, Membership, Organization, PlanningLink, PlanningScheduleEvent, User
 from uok.security import Actor
 
 
@@ -139,12 +140,23 @@ def _schedule(client: TestClient, headers: dict[str, str], project_id: str):
 def _cross_org_party(suffix: str) -> str:
     with SessionLocal() as db:
         org = Organization(name=f"Other links org {suffix}")
-        db.add(org)
+        user = User(
+            username=f"cross-org-links-{suffix}",
+            password_hash="not-used",
+            display_name="Cross-organization link owner",
+        )
+        db.add_all([org, user])
         db.flush()
-        party = Party(organization_id=org.id, party_type="person", display_name="Hidden other party")
-        db.add(party)
+        db.add(Membership(organization_id=org.id, user_id=user.id, role="platform_admin"))
+        db.flush()
+        result = contact_command_handlers()["CreateContact"](
+            db,
+            Actor(user.id, user.username, org.id, "platform_admin"),
+            {"party_type": "person", "display_name": "Hidden other party"},
+            f"cross-org-links-{suffix}",
+        )
         db.commit()
-        return party.id
+        return str(result["id"])
 
 
 def _assert_link_correlation(link_id: str, command_id: str, project_id: str) -> None:

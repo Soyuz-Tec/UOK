@@ -39,9 +39,10 @@ SQLAlchemy class and table identities.
 7. Registration completes before migration inspection or
    `Base.metadata.create_all`. Repeated registration is idempotent and verifies
    that no mapper was added after the immutable snapshot.
-8. `uok.models` and the former specialized `src/uok/*_models.py` files remain
-   compatibility facades only. They re-export the exact canonical class objects
-   and never define or subclass module mappings.
+8. `uok.models` remains an exact-class registry compatibility facade. Any
+   retained specialized kernel aliases re-export the canonical objects and
+   never define or subclass module mappings. Gap 2 retired the Planning-specific
+   aliases after confirming no production callers; new aliases are forbidden.
 9. Kernel table use is declared as an explicit scope, including
    `ModuleRecord:apps.manager`, `CommandLog:<module>`, and
    `EventRecord:<aggregate>`. Those claims do not move the kernel mappings.
@@ -61,8 +62,9 @@ UI receiving validated schedule read models.
   manifest provider.
 - The kernel keeps product-neutral control and audit mappings while modules own
   capability schemas and listeners.
-- Direct imports from `uok.models` remain supported for existing callers, but
-  new module implementation code should import its own `.models` provider.
+- Direct imports from `uok.models` remain supported for existing kernel/fixture
+  callers, but module implementation code imports its own private persistence
+  package and another module must use the owner's public facade.
 
 ## Alternatives Considered
 
@@ -82,8 +84,9 @@ UI receiving validated schedule read models.
 
 - The checked-in registry fixture proves the exact 9 kernel and 29 module model
   names and table names.
-- Identity tests prove every compatibility alias is the owning module's exact
-  class object on the single `Base.metadata`.
+- Provider identity tests prove every manifest-owned mapping is the registry's
+  exact class object on the single `Base.metadata`; retained specialized aliases
+  are checked separately.
 - Import-order subprocesses cover `uok.models`, module providers, migration
   inspection, and module table inspection as first imports.
 - Registry tests prove deterministic provider order, idempotence, complete

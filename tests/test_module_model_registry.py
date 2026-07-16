@@ -14,6 +14,7 @@ from tests.model_metadata_contract import normalized_model_metadata
 from uok.db import Base
 from uok.kernel_models import KERNEL_MODELS
 from uok.module_manifest_loader import load_module_manifests
+from uok.module_imports import resolve_module_import
 from uok.module_model_registry import (
     ensure_module_models_registered,
     module_model_provider_order,
@@ -71,33 +72,21 @@ def test_registry_is_idempotent_and_uses_one_base_metadata() -> None:
     assert all(model.registry is Base.registry for model in second.values())
 
 
-def test_compatibility_facades_preserve_exact_class_identity() -> None:
-    from uok import calendar_models, communication_models, models
-    from uok import planning_analysis_models, planning_audit_models
-    from uok import planning_models, planning_resource_models
+def test_manifest_model_providers_preserve_exact_class_identity() -> None:
+    from uok import calendar_models, communication_models
     from uok_calendar_core import models as calendar_owner
     from uok_communications_core import models as communications_owner
-    from uok_contacts_core import models as contacts_owner
-    from uok_planning_core import models as planning_owner
-    from uok_reports_core import models as reports_owner
 
-    owners = (
-        calendar_owner,
-        communications_owner,
-        contacts_owner,
-        planning_owner,
-        reports_owner,
-    )
-    for owner in owners:
-        for name, model in owner.owned_models().items():
-            assert getattr(models, name) is model
+    manifests = load_module_manifests()
+    registered = ensure_module_models_registered()
+    for module_name in EXPECTED_PROVIDER_ORDER:
+        manifest = manifests[module_name]
+        provider = resolve_module_import(module_name, manifest, "model_exports")
+        for name, model in provider().items():
+            assert registered[name] is model
 
     assert calendar_models.Calendar is calendar_owner.Calendar
     assert communication_models.CommunicationThread is communications_owner.CommunicationThread
-    assert planning_models.PlanningProject is planning_owner.PlanningProject
-    assert planning_resource_models.PlanningResource is planning_owner.PlanningResource
-    assert planning_analysis_models.PlanningAnalysisRun is planning_owner.PlanningAnalysisRun
-    assert planning_audit_models.PlanningScheduleRevision is planning_owner.PlanningScheduleRevision
 
 
 def test_manifest_direct_ownership_matches_provider_exports_and_origins() -> None:
@@ -155,22 +144,17 @@ def test_complete_registry_can_create_all_tables_in_sqlite() -> None:
         ),
         (
             "from uok.module_paths import ensure_module_backend_paths; "
-            "ensure_module_backend_paths(); import uok_contacts_core.models"
+            "ensure_module_backend_paths(); import uok_contacts_core.public_api"
         ),
         (
             "from uok.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); "
-            "from uok_contacts_core import clean_text; assert clean_text(' UOK ') == 'UOK'"
+            "from uok_contacts_core.public_api import PartyReferenceResolution; "
+            "assert PartyReferenceResolution.__name__ == 'PartyReferenceResolution'"
         ),
         (
             "from uok.module_paths import ensure_module_backend_paths; "
-            "ensure_module_backend_paths(); namespace = {}; "
-            "exec('from uok_contacts_core import *', namespace); "
-            "assert namespace['clean_text'](' UOK ') == 'UOK'"
-        ),
-        (
-            "from uok.module_paths import ensure_module_backend_paths; "
-            "ensure_module_backend_paths(); import uok_planning_core.models"
+            "ensure_module_backend_paths(); import uok_planning_core.public_api"
         ),
         (
             "from uok.module_paths import ensure_module_backend_paths; "

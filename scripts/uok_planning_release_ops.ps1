@@ -4,7 +4,7 @@ function Invoke-UokPlanningReleaseReadiness {
         Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate.ps1", "-BaseUrl", $BaseUrl)
     }
     Invoke-UokStep "Planning PostgreSQL scale budgets" {
-        Invoke-Native "podman" @("exec", "uok-api-1", "python", "/app/scripts/planning_scale_benchmark.py", "--samples", "6")
+        Invoke-Native "podman" @("exec", "uok-api-1", "python", "/app/modules/planning.core/verify/runtime/planning_scale_benchmark.py", "--samples", "6")
     }
     Invoke-UokStep "Planning persistent CPM recovery" {
         Invoke-Native "python" @("modules/planning.core/verify/runtime/verify_planning_cpm.py", "--base-url", $BaseUrl)

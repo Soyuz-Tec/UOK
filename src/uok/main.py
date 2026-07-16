@@ -29,10 +29,6 @@ from .api.commands import router as commands_router
 from .api.system import router as system_router
 from .api.schemas import (
     CommandRequest,
-    ContactCsvImportRequest,
-    ContactNoteRequest,
-    ContactRelationshipRequest,
-    ContactWriteRequest,
     LoginRequest,
     RegisterRequest,
 )
@@ -104,10 +100,6 @@ __all__ = [
     "AUTH_ATTEMPTS",
     "AUTH_RATE_LIMIT_MAX_KEYS",
     "CommandRequest",
-    "ContactCsvImportRequest",
-    "ContactNoteRequest",
-    "ContactRelationshipRequest",
-    "ContactWriteRequest",
     "LoginRequest",
     "RegisterRequest",
     "app",

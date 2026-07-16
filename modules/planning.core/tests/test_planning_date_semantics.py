@@ -11,7 +11,7 @@ from starlette.testclient import TestClient
 from tests.helpers import auth, command
 from uok.db import SessionLocal
 from uok.models import EventRecord, PlanningScheduleEvent, PlanningTask
-from uok_planning_core.date_semantics import parse_execution_date
+from uok_planning_core._internal.scheduling.date_semantics import parse_execution_date
 
 
 def test_planned_forecast_actual_and_deadline_dates_are_distinct_and_audited(client: TestClient) -> None:

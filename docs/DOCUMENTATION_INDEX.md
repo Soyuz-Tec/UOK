@@ -77,6 +77,8 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/planning-data-boundary-inventory-2026-07-15.md` | Pre-refactor evidence of Planning reads across capability-module data boundaries | A correction is needed to the dated leak inventory or its audit method |
 | `docs/architecture/planning-data-boundary-fix-2026-07-15.md` | Planning owner-API refactor mapping, enforcement command, verification, and residual risks | Planning's provider API boundary or enforcement evidence changes |
+| `docs/architecture/planning-contacts-size-inventory-2026-07-15.md` | Pre-refactor Planning and Contacts surface, capability-size, data-ownership, and split evidence | Planning or Contacts size evidence or the dated split assessment needs correction |
+| `docs/architecture/planning-contacts-size-fix-2026-07-15.md` | Planning and Contacts facade/internal-package refactor, enforcement, verification, and residual risks | Either module's supported surface, internal package boundary, or verification evidence changes |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
 | `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` | AI-operated business workflow architecture, governed agent tools, human approval gates, and compliance evidence model | Agent governance, Codex tool binding, AI workflow, approval, or evidence architecture changes |
 | `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md` | Global export artifact boundary for CSV, JSON, image/SVG, PDF, document, and future import/export helpers | Export format ownership, shared artifact primitives, module export behavior, or export UI patterns change |
@@ -167,6 +169,8 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/planning-data-boundary-inventory-2026-07-15.md`
 - `docs/architecture/planning-data-boundary-fix-2026-07-15.md`
+- `docs/architecture/planning-contacts-size-inventory-2026-07-15.md`
+- `docs/architecture/planning-contacts-size-fix-2026-07-15.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
 - `docs/architecture/UOK_GLOBAL_SHARED_FEATURES.md`

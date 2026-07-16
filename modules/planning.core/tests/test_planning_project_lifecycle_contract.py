@@ -13,8 +13,8 @@ from uok.command_context import CommandDomainError
 from uok.db import SessionLocal
 from uok.main import app
 from uok.models import PlanningProject
-from uok_planning_core.commands import command_handlers, command_permissions
-from uok_planning_core.project_lifecycle import (
+from uok_planning_core._internal.delivery.commands import command_handlers, command_permissions
+from uok_planning_core._internal.scheduling.project_lifecycle import (
     PROJECT_STATUSES,
     PROJECT_STATUS_TRANSITIONS,
     PUBLIC_PROJECT_STATUSES,
