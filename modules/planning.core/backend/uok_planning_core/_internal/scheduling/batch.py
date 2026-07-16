@@ -17,9 +17,9 @@ from uok_planning_core._internal.portfolio_audit.planning_audit import add_plann
 from uok_planning_core._internal.portfolio_audit.revision_history import project_revision_for_command
 from uok_planning_core._internal.scheduling.read_model import schedule_read_model
 from uok_planning_core._internal.scheduling.scheduler import apply_schedule, project_or_error
-from uok.command_context import CommandDomainError
+from uok.kernel.command_contracts import CommandDomainError
 from uok.kernel_models import CommandLog
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 MAX_BATCH_OPERATIONS = 500
 

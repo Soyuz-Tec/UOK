@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 from uok_contacts_core._internal.registry.fact_commands import cmd_upsert_contact_fact, normalized_fact_value, sync_legacy_payload_facts

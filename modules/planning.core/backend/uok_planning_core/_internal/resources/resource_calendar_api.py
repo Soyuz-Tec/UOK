@@ -9,9 +9,13 @@ from sqlalchemy.orm import Session
 from uok_planning_core._internal.delivery.api_contracts import PLANNING_MUTATION_RESPONSES
 from uok_planning_core._internal.delivery.api_support import run_planning_command
 from uok_planning_core._internal.delivery.schemas import PlanningResourceCalendarRequest
-from uok.commands import MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH, MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH
 from uok.host.database import get_db
-from uok.security import Actor, current_actor
+from uok.host.security import current_actor
+from uok.kernel.command_contracts import (
+    MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+    MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+)
+from uok.kernel.security import Actor
 
 router = APIRouter()
 IdempotencyKey = Annotated[str, Header(alias="Idempotency-Key", min_length=MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH, max_length=MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH, pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")]

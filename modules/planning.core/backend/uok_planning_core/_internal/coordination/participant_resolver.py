@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.coordination.link_resolver import resolve_target
 from uok_planning_core._internal.persistence.models import PlanningTask, PlanningTaskParticipant
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 PARTICIPANT_ROLES = ("owner", "assignee", "approver", "consulted", "informed", "external_contact")
 

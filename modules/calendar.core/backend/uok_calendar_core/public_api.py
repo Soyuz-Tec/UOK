@@ -6,7 +6,7 @@ from typing import Literal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from uok.security import Actor, has_permission
+from uok.kernel.security import Actor, has_permission
 
 from .models import CalendarEvent as _CalendarEvent
 from .read_model import freebusy_rows_for_participants, occurrence_rows_for_participants

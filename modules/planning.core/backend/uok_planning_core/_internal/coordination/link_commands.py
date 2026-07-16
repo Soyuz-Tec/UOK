@@ -10,8 +10,8 @@ from uok_planning_core._internal.coordination.link_resolver import LINK_RELATION
 from uok_planning_core._internal.persistence.models import PlanningLink, PlanningTaskRequirement, utcnow
 from uok_planning_core._internal.portfolio_audit.planning_audit import add_planning_schedule_event, emit_planning_event
 from uok_planning_core._internal.scheduling.scheduler import project_or_error, task_or_error
-from uok.command_context import CommandDomainError
-from uok.security import Actor
+from uok.kernel.command_contracts import CommandDomainError
+from uok.kernel.security import Actor
 from uok.util import dumps
 
 

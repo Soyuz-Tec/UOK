@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.persistence.models import PlanningOutboxEvent, PlanningProject, PlanningScheduleRevision, PlanningTask, utcnow
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 OUTBOX_EVENT_TYPE = "PlanningScheduleRevisionCommitted"

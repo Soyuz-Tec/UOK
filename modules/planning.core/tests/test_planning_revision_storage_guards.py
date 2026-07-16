@@ -12,7 +12,7 @@ from tests.helpers import auth, command
 from uok_planning_core._internal.portfolio_audit.revision_history import PlanningRevisionNotFound, list_project_revisions
 from uok.host.database import SessionLocal
 from uok_planning_core._internal.persistence.models import PlanningOutboxEvent, PlanningScheduleRevision
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def test_revision_and_outbox_orm_records_are_append_only(client: TestClient) -> None:

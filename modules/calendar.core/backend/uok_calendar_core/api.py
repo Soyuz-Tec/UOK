@@ -9,16 +9,17 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from uok.api.schemas import CommandPreconditionResponse
-from uok.commands import (
+from uok.host.commands import execute_command
+from uok.host.database import get_db
+from uok.host.security import current_actor
+from uok.kernel.command_contracts import (
     COMMAND_ETAG_RESULT_KEY,
     CommandDomainError,
     CommandPermissionError,
     CommandPreconditionError,
-    execute_command,
 )
-from uok.host.database import get_db
 from uok.kernel.module_runtime import ensure_module_operational
-from uok.security import Actor, current_actor, require_permission
+from uok.kernel.security import Actor, require_permission
 
 from .ics_codec import export_ics
 from .concurrency import strong_event_etag

@@ -9,7 +9,7 @@ from uok_planning_core._internal.scheduling.date_semantics import apply_task_dat
 from uok_planning_core._internal.portfolio_audit.planning_audit import add_planning_schedule_event, emit_planning_event
 from uok_planning_core._internal.scheduling.read_model import schedule_read_model, serialize_task
 from uok_planning_core._internal.scheduling.scheduler import project_or_error, task_or_error
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def cmd_update_planning_task_dates(

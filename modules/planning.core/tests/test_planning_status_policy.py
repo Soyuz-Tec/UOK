@@ -6,7 +6,7 @@ import pytest
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.command_context import CommandDomainError
+from uok.kernel.command_contracts import CommandDomainError
 from uok.host.database import SessionLocal
 from uok.kernel_models import CommandLog
 from uok.util import loads

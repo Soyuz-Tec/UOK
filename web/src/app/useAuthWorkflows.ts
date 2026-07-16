@@ -1,4 +1,4 @@
-import type { FormEvent } from "react";
+import { useCallback, type FormEvent } from "react";
 
 import type { AuthState } from "./useAuthState";
 import type { WorkbenchData } from "./useWorkbenchData";
@@ -8,10 +8,10 @@ import { removeStorageItem, writeStorageJson, writeStorageString } from "../shar
 import type { SessionUser } from "../shared/types";
 
 export function useAuthWorkflows(auth: AuthState, data: WorkbenchData) {
-  function clearSession(message = "Signed out.") {
+  const clearSession = useCallback((message = "Signed out.") => {
     auth.clearAuthState();
     data.clearData(message);
-  }
+  }, [auth.clearAuthState, data.clearData]);
 
   async function login(event?: FormEvent) {
     event?.preventDefault();

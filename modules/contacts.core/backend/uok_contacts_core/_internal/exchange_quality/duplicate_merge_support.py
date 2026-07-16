@@ -21,7 +21,7 @@ from uok_contacts_core._internal.persistence.system_models import (
     PartyCustomFieldValue,
     PartyFact,
 )
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 VALID_FIELD_CHOICES = {"primary", "duplicate"}

@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.scheduling.concurrency import _command_project_id
 from uok_planning_core._internal.persistence.models import PlanningProject, PlanningScheduleRevision
-from uok.command_context import CommandDomainError
-from uok.security import Actor
+from uok.kernel.command_contracts import CommandDomainError
+from uok.kernel.security import Actor
 
 
 TRUSTED_RESULT_PROJECT_PATHS = (

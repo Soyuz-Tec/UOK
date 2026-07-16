@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.coordination.link_resolver import serialize_link
 from uok_planning_core._internal.persistence.models import PlanningLink
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def planning_links_read_model(db: Session, actor: Actor, project_id: str) -> list[dict[str, object]]:

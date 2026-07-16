@@ -37,7 +37,7 @@ from uok_planning_core._internal.scheduling.scheduler import (
 from uok_planning_core._internal.scheduling.schedule_math import working_duration
 from uok_planning_core._internal.scheduling.task_constraints import serialize_task_constraint
 from uok_planning_core._internal.scheduling.status_policy import task_flow_read_model
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 

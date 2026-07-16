@@ -6,7 +6,7 @@
 
 ## Context
 
-UOK manifests already declared table ownership, but 29 capability mappings were
+UOK manifests already declared table ownership, but 40 capability mappings were
 physically defined below `src/uok`. Module `model_exports` providers imported
 those mappings back through `uok.models`, and metadata completeness depended on
 that compatibility module's import side effects. Moving definitions directly
@@ -21,7 +21,7 @@ SQLAlchemy class and table identities.
 2. The nine product-neutral mappings for organizations, users, memberships,
    schema versions, governance rules, module lifecycle records, workflow
    instances, command logs, and event records live in `uok.kernel_models`.
-3. Contacts, Calendar, Communications, Planning, and Reports define their 29
+3. Contacts, Calendar, Communications, Planning, and Reports define their 40
    exclusive mappings inside their owning backend packages. Planning keeps
    schedule, resource, analysis, and audit definitions in focused module-local
    files.
@@ -84,7 +84,7 @@ UI receiving validated schedule read models.
 
 ## Validation
 
-- The checked-in registry fixture proves the exact 9 kernel and 29 module model
+- The checked-in registry fixture proves the exact 9 kernel and 40 module model
   names and table names.
 - Provider identity tests prove every manifest-owned mapping is the registry's
   exact class object on the single `Base.metadata`.

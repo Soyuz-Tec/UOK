@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT / "modules" / "planning.core" / "backend"))
 
 from uok.host.database import SessionLocal, engine
 from uok.kernel_models import Membership
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok_planning_core._internal.persistence.models import PlanningProject, PlanningTask, PlanningTaskDependency
 from uok_planning_core._internal.scheduling.batch import cmd_batch_operations
 from uok_planning_core._internal.scheduling.read_model import schedule_read_model

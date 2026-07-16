@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from uok.command_context import CommandDomainError
+from uok.kernel.command_contracts import CommandDomainError
 
 TASK_STATUSES = ("planned", "in_progress", "blocked", "complete", "deleted")
 USER_TASK_STATUSES = TASK_STATUSES[:-1]

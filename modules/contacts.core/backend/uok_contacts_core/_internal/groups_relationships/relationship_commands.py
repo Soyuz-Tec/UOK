@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from uok_contacts_core._internal.delivery.command_support import _emit_event, _party
 from uok_contacts_core._internal.delivery.facade import bounded_text, serialize_party, touch_party, validate_contact_payload_lengths
 from uok_contacts_core._internal.persistence.models import PartyRelationship, utcnow
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 

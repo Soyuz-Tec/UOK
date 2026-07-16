@@ -37,6 +37,7 @@ export type ModuleSurfaceHostContext = {
   busyAction: string;
   moduleAction: (moduleName: string, action: HostModuleAction) => Promise<void>;
   refreshHost: (overrideToken?: string) => Promise<void>;
+  moduleRefreshRevision: number;
   onUnauthorized: () => void;
 };
 

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from uok_contacts_core._internal.registry.validation import choose_display_name, contact_attrs, normalize_match
 from uok_contacts_core._internal.persistence.models import Party
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 

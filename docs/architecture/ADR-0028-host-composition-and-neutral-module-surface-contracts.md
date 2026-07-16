@@ -40,17 +40,26 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
    - `uok.kernel.persistence.Base` is the single declarative metadata contract;
    - `uok.kernel.module_runtime` is a framework- and ORM-independent port that
      feature modules may call for module lifecycle/catalog operations;
+   - `uok.kernel.security` owns the immutable `Actor` and permission-policy
+     port, while the host supplies manifest role grants;
+   - `uok.kernel.command_contracts` owns transport-neutral command keys,
+     idempotency limits, and error envelopes;
    - product-neutral organization, identity, governance, lifecycle, command,
      and event mappings remain in `uok.kernel_models`.
 3. The host configures `ModuleRuntimePort` once during application
-   composition. Feature modules may consume its module-neutral operations but
-   may not import the host's lifecycle/catalog implementation, application
-   factory, engine, session factory, manifest loader registries, or provider
-   registries.
-4. The one documented Module → Host exception is
-   `from uok.host.database import get_db` in a module HTTP adapter. This is a
-   FastAPI dependency-injection seam only. Feature code may not import
-   `engine`, `SessionLocal`, pool configuration, or any other host symbol.
+   composition and configures the kernel security-policy port with validated
+   manifest role grants. Feature modules may consume named, module-neutral
+   operations but may not configure either port. Module lifecycle mutation
+   wrappers are restricted to Apps Manager; other features receive read-only
+   runtime queries and operational checks.
+4. Module → Host exceptions are explicit path-and-symbol adapter seams:
+   - `from uok.host.database import get_db` and
+     `from uok.host.security import current_actor` in the 12 documented module
+     HTTP adapters;
+   - `from uok.host.commands import execute_command` in the exact Calendar,
+     Contacts, and Planning command adapters.
+   Feature code may not import `engine`, `SessionLocal`, pool configuration,
+   application composition, host registries, or any other host symbol.
 5. Module-owned mappings continue to expose their privileged manifest
    `model_exports` hooks below the owning backend. Only
    `uok.host.model_registry` resolves those hooks after static manifest
@@ -63,8 +72,9 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
 7. `web/src/contracts/moduleSurface.ts` is the neutral frontend port. It
    exposes exactly the shell capabilities a module renderer needs: token,
    current role, appearance, readonly module status rows, current busy action,
-   module lifecycle action, host refresh, and unauthorized callback. It does
-   not import `Workbench`, generated runtime catalogs, or feature code.
+   module lifecycle action, host refresh, a monotonic module-refresh revision,
+   and unauthorized callback. It does not import `Workbench`, generated
+   runtime catalogs, or feature code.
 8. `web/src/generated/moduleSurfaceCatalog.ts` is the sole shell source that
    imports exact module `moduleSurface.tsx` entries. Pure navigation section
    types are generated separately in `web/src/generated/moduleSections.ts` so
@@ -73,12 +83,19 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
    and storage keys, commands, and workspace root below
    `modules/contacts.core/web/src`. Its public UI entry renders the owner-local
    root and exports no hooks or shell-facing domain constants.
-10. Architecture tests parse Python and TypeScript source, including relative,
-    aliased, dynamic, re-export, and type-only imports. They reject kernel
-    feature dependencies, feature-to-host/composition imports outside the exact
-    `get_db` adapter allowlist, non-catalog shell-to-module imports,
-    module-to-shell implementation imports, cross-owner strongly connected
-    components, and Contacts domain orchestration in shell app/shared code.
+10. The shell keeps only visited module roots mounted behind a generic
+    `ModuleSurfaceOutlet`, preserving owner-local unsaved state without
+    importing a feature. Global refresh increments the neutral revision, and a
+    module-reported 401 clears both authentication and all host-scoped tenant
+    data.
+11. Architecture tests use Python AST import analysis plus a TypeScript
+    import/source scanner covering relative, aliased, dynamic, re-export, and
+    type-only imports. They reject kernel feature dependencies, direct or
+    transitive feature-to-host dependencies outside the exact adapter
+    allowlist, non-Apps-Manager lifecycle mutation imports, non-catalog
+    shell-to-module imports, module-to-shell implementation imports,
+    cross-owner strongly connected components, and Contacts domain
+    orchestration in shell app/shared code.
 
 ## Consequences
 
@@ -87,15 +104,19 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
 - Manifest-only ORM registration remains deterministic and behavior-preserving,
   but ordinary code can no longer obtain every module mapping through a global
   compatibility graph.
-- Feature modules depend on a small stable runtime port instead of host
-  implementations. The port is process-local and must be configured by the host
-  before feature operations execute; an unconfigured call fails explicitly.
-- The FastAPI request-session adapter remains a narrow, documented framework
-  exception. Extraction would replace that adapter with an injected unit of
-  work without changing module domain behavior.
+- Feature modules depend on small stable runtime, security, and command
+  contracts instead of host implementations. Process-local ports must be
+  configured by the host before feature operations execute; unconfigured calls
+  fail explicitly.
+- FastAPI request-session/auth dependencies and command dispatch remain narrow,
+  documented adapter exceptions. Extraction would replace those adapters with
+  an injected unit of work, actor context, and command bus without changing
+  module domain behavior.
 - The shell no longer owns Contacts behavior or imports Contacts internals.
   Contacts can evolve behind its exact module surface and backend public API
-  without changing shell orchestration.
+  without changing shell orchestration. Visited module roots retain unsaved
+  owner-local state, global refresh reaches owner-local reads, and a module 401
+  clears host-scoped data before another tenant can sign in.
 - The generated catalog remains compile-time composition. No browser runtime
   plugin loader, remote bundle, or microservice boundary is introduced.
 
@@ -121,7 +142,7 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
 Run the focused architecture gates:
 
 ```powershell
-python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
+python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
 ```
 
 Then run the repository and frontend gates:
@@ -133,5 +154,7 @@ npm --prefix web test
 npm --prefix web run build:static
 ```
 
-`tests/test_kernel_host_shell_boundaries.py` is discovered by the normal Python
-test runner and therefore by the existing GitHub Actions candidate-check job.
+`tests/test_kernel_host_backend_boundaries.py` and
+`tests/test_kernel_host_shell_boundaries.py` are discovered by the normal
+Python test runner and therefore by the existing GitHub Actions
+candidate-check job.

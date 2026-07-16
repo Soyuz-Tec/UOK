@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from uok_planning_core._internal.coordination.link_resolver import resolve_target
 from uok_planning_core._internal.persistence.models import PlanningResource
 from uok_planning_core._internal.resources.resource_calendar import ResourceCalendarSpec
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def serialize_resource(db: Session, actor: Actor, row: PlanningResource, calendar: ResourceCalendarSpec | None = None) -> dict[str, Any]:

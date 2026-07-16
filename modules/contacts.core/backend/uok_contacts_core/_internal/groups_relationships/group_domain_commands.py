@@ -15,7 +15,7 @@ from uok_contacts_core._internal.groups_relationships.group_domain_support impor
 )
 from uok_contacts_core._internal.groups_relationships.group_read_model import serialize_contact_group
 from uok_contacts_core._internal.registry.validation import validate_contact_payload_lengths
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 

@@ -12,7 +12,7 @@ from typing import Literal as _Literal
 
 from sqlalchemy.orm import Session as _Session
 
-from uok.security import Actor as _Actor
+from uok.kernel.security import Actor as _Actor
 
 _ReferenceStatus = _Literal["ready", "unavailable", "denied", "missing"]
 
@@ -37,7 +37,7 @@ def resolve_party_reference(db: _Session, actor: _Actor, party_id: str) -> Party
 
     from uok_contacts_core._internal.persistence.models import Party as _Party
     from uok_contacts_core._internal.registry.access import can_read_party as _can_read_party
-    from uok.security import has_permission as _has_permission
+    from uok.kernel.security import has_permission as _has_permission
 
     if not _has_permission(actor, "contacts.read"):
         return PartyReferenceResolution("denied", None, "The linked target is not visible to this actor.")

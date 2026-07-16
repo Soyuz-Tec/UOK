@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from sqlalchemy import or_, true
 
-from uok.security import Actor, has_permission
+from uok.kernel.security import Actor, has_permission
 
 from .models import Calendar
 

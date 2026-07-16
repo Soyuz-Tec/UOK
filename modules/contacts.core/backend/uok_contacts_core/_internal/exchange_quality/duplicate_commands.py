@@ -32,7 +32,7 @@ from uok_contacts_core._internal.exchange_quality.duplicate_merge_history import
 from uok_contacts_core._internal.delivery.facade import bounded_text, serialize_party, touch_party
 from uok_contacts_core._internal.persistence.models import utcnow
 from uok_contacts_core._internal.persistence.system_models import ContactDuplicateCandidate
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 

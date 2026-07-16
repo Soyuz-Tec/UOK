@@ -14,7 +14,7 @@ from uok_planning_core._internal.analysis.risk_engine import require_current_sna
 from uok_planning_core._internal.scheduling.scheduler import apply_schedule, parse_planning_date, project_calendar, project_or_error, task_or_error
 from uok_planning_core._internal.scheduling.schedule_math import working_duration
 from uok_planning_core._internal.analysis.what_if import what_if_integrity, what_if_or_error
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 

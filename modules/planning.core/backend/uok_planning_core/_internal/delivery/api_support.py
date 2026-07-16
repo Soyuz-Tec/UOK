@@ -6,16 +6,16 @@ from fastapi import HTTPException, Response
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from uok.commands import (
+from uok.host.commands import execute_command
+from uok.kernel.command_contracts import (
     COMMAND_ETAG_RESULT_KEY,
     CommandDomainError,
     CommandPermissionError,
     CommandPreconditionError,
     IdempotencyConflictError,
-    execute_command,
 )
 from uok.kernel.module_runtime import ensure_module_operational
-from uok.security import Actor, require_permission
+from uok.kernel.security import Actor, require_permission
 
 
 def require_planning_read(db: Session, actor: Actor) -> None:

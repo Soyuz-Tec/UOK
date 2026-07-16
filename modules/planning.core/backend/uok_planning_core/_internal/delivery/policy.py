@@ -25,7 +25,7 @@ def role_grants() -> dict[str, set[str]]:
 
 
 def capability_read_model(actor: object) -> dict[str, bool]:
-    from uok.security import has_permission
+    from uok.kernel.security import has_permission
 
     values = {name: has_permission(actor, permission) for name, permission in PLANNING_CAPABILITY_PERMISSIONS.items()}
     return {**values, "review_only": not values["edit"]}

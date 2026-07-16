@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+from typing import Any
+
+
 COMMAND_IF_MATCH_CONTEXT_KEY = "_uok_if_match"
 COMMAND_ETAG_RESULT_KEY = "_uok_response_etag"
+MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH = 16
+MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH = 128
+MAX_IDEMPOTENCY_KEY_LENGTH = 180
 
 
 class CommandDomainError(ValueError):
@@ -113,4 +119,38 @@ class CommandPreconditionError(ValueError):
         }
 
 
-__all__ = ["COMMAND_ETAG_RESULT_KEY", "COMMAND_IF_MATCH_CONTEXT_KEY", "CommandDomainError", "CommandPermissionError", "CommandPreconditionError"]
+class IdempotencyConflictError(CommandDomainError):
+    """Raised when one idempotency key is reused for different command content."""
+
+    def __init__(
+        self,
+        correlation_id: str | None = None,
+        object_ids: list[str] | None = None,
+    ) -> None:
+        super().__init__(
+            code="idempotency_conflict",
+            message="idempotency_key is already used for a different command request",
+            status_code=409,
+            field="idempotency_key",
+            object_ids=object_ids,
+            repair="Retry the original payload with this key, or use a new key for a different intent.",
+            correlation_id=correlation_id,
+        )
+
+
+def clean_command_text(value: Any) -> str:
+    return str(value or "").strip()
+
+
+__all__ = [
+    "COMMAND_ETAG_RESULT_KEY",
+    "COMMAND_IF_MATCH_CONTEXT_KEY",
+    "MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH",
+    "MAX_IDEMPOTENCY_KEY_LENGTH",
+    "MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH",
+    "CommandDomainError",
+    "CommandPermissionError",
+    "CommandPreconditionError",
+    "IdempotencyConflictError",
+    "clean_command_text",
+]

@@ -6,7 +6,7 @@ from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from uok_planning_core._internal.persistence.models import PlanningProject, PlanningTask, utcnow
-from uok.command_context import CommandDomainError
+from uok.kernel.command_contracts import CommandDomainError
 
 EXECUTION_DATE_FIELDS = {
     "forecast_start": "forecast_start_at",

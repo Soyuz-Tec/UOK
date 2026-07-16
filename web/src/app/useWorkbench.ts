@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import type { ModuleSurfaceHostContext } from "../contracts/moduleSurface";
 import { useAuthState } from "./useAuthState";
@@ -11,6 +11,7 @@ import { sectionFromSearch } from "./workbenchNavigation";
 
 export function useWorkbench() {
   const [active, setActive] = useState<Section>(() => sectionFromSearch(window.location.search));
+  const [moduleRefreshRevision, setModuleRefreshRevision] = useState(0);
   const preferences = useWorkbenchPreferences();
   const auth = useAuthState();
   const {
@@ -35,6 +36,10 @@ export function useWorkbench() {
   const data = useWorkbenchData(token, clearAuthState);
   const authWorkflows = useAuthWorkflows(auth, data);
   const actions = useWorkbenchActions(data);
+  const refresh = useCallback(async (overrideToken?: string) => {
+    await data.refresh(overrideToken);
+    setModuleRefreshRevision((revision) => revision + 1);
+  }, [data.refresh]);
   const moduleHost: ModuleSurfaceHostContext = {
     token,
     currentUserRole: currentUser?.role || "",
@@ -43,7 +48,8 @@ export function useWorkbench() {
     busyAction: data.busyAction,
     moduleAction: actions.moduleAction,
     refreshHost: data.refresh,
-    onUnauthorized: clearAuthState,
+    moduleRefreshRevision,
+    onUnauthorized: authWorkflows.clearSession,
   };
 
   return {
@@ -78,7 +84,7 @@ export function useWorkbench() {
     alignment: data.alignment,
     busyAction: data.busyAction,
     clearSession: authWorkflows.clearSession,
-    refresh: data.refresh,
+    refresh,
     login: authWorkflows.login,
     register: authWorkflows.register,
     moduleAction: actions.moduleAction,

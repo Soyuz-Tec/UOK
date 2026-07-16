@@ -11,8 +11,8 @@ from uok_planning_core._internal.persistence.models import PlanningTaskParticipa
 from uok_planning_core._internal.coordination.participant_resolver import planning_participant_role, serialize_participant
 from uok_planning_core._internal.portfolio_audit.planning_audit import add_planning_schedule_event, emit_planning_event
 from uok_planning_core._internal.scheduling.scheduler import project_or_error, task_or_error
-from uok.command_context import CommandDomainError
-from uok.security import Actor
+from uok.kernel.command_contracts import CommandDomainError
+from uok.kernel.security import Actor
 
 
 def cmd_add_planning_task_participant(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:

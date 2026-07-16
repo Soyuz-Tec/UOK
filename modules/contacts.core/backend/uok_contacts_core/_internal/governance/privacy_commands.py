@@ -4,7 +4,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from uok.kernel_models import CommandLog, EventRecord
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 from uok_contacts_core._internal.delivery.command_support import _emit_event, _party

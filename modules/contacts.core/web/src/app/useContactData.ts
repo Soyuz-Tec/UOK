@@ -10,6 +10,7 @@ export function useContactData(
   token: string,
   operational: boolean,
   filters: ContactFilters,
+  moduleRefreshRevision: number,
   onUnauthorized: () => void,
 ) {
   const [contacts, setContacts] = useState<ContactRecord[]>([]);
@@ -111,7 +112,7 @@ export function useContactData(
       return;
     }
     void refresh();
-  }, [token, operational]);
+  }, [moduleRefreshRevision, operational, token]);
 
   useEffect(() => {
     if (!token || !operational) return;

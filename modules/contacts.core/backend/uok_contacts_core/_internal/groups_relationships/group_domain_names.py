@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from uok_contacts_core._internal.persistence.models import ContactGroup, Party, PartyRelationship
 from uok_contacts_core._internal.registry.validation import MAX_CONTACT_GROUP_NAME_LENGTH
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 

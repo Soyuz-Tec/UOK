@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from uok.kernel_models import Membership, User
-from uok.security import Actor, has_permission
+from uok.kernel.security import Actor, has_permission
 from uok.util import dumps, loads, row_dict
 
 from uok_contacts_core._internal.delivery.command_support import _emit_event, _party

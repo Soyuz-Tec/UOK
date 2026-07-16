@@ -8,7 +8,7 @@ from uok_planning_core._internal.scheduling.batch_context_operations import assi
 from uok_planning_core._internal.scheduling.batch_operation_types import AppliedBatchOperation
 from uok_planning_core._internal.scheduling.batch_schedule_operations import create_dependency, remove_dependency, set_calendar, update_dependency, update_task
 from uok_planning_core._internal.persistence.models import PlanningProject
-from uok.security import Actor, has_permission
+from uok.kernel.security import Actor, has_permission
 
 BatchOperationHandler = Callable[[Session, Actor, PlanningProject, dict[str, Any], str], AppliedBatchOperation]
 SUPPORTED_BATCH_KINDS = (

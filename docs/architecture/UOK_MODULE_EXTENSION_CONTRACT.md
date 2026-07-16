@@ -72,7 +72,7 @@ Every module manifest must declare:
 | `command_handlers` | Import target for a provider returning this module's command handler mapping. Every returned command must be declared in `commands`, and every declared command must have one handler. |
 | `command_permissions` | Import target for a provider returning command-to-permission mappings. Every mapped command must be declared in `commands`, and every mapped permission must be declared in `permissions`. |
 | `command_replay_guard` | Optional product-neutral replay-visibility callable invoked only after command type and canonical request bytes exactly match the stored succeeded command. A mismatched reuse remains the kernel's stable `409`; an exact replay may be hidden when lifecycle or retention state makes its former result unavailable. |
-| `role_grants` | Import target for module-owned role permission grants. Grants extend kernel roles without hardcoding module permissions in `src/uok/security.py`. |
+| `role_grants` | Import target for module-owned role permission grants. Grants extend kernel roles without hardcoding module permissions in `src/uok/kernel/security.py`. |
 | `dashboard_provider` | Import target for module-owned dashboard count fragments merged into `/api/dashboard`. |
 | `evidence_provider` | Import target for module-owned baseline evidence checks and counts merged into `/api/baseline-evidence`. |
 | `model_exports` | Import target for a provider returning the module's exact `dict[str, mapped class]`. Registration validates direct manifest ownership, source origin, the single kernel `Base`, complete metadata, and hidden/extra mappings before schema or migration inspection. |
@@ -124,10 +124,14 @@ New extension points require an architecture update and a failing validation tes
   concrete Workbench implementation types.
 - Feature backends may use `uok.kernel.module_runtime` wrapper operations. They
   may not configure that port or import lifecycle/catalog composition
-  implementations.
-- The sole Module → Host production exception is exact
-  `uok.host.database.get_db` use in HTTP adapter files. Engine, `SessionLocal`,
-  pool, application, and host registry imports are forbidden.
+  implementations. Lifecycle mutations are restricted to the Apps Manager
+  adapter; other capabilities receive read-only runtime operations.
+- Module → Host production exceptions are path-and-symbol exact:
+  `uok.host.database.get_db` and `uok.host.security.current_actor` in the 12
+  documented HTTP adapters, plus `uok.host.commands.execute_command` in the
+  Calendar, Contacts, and Planning command adapters. Engine, `SessionLocal`,
+  pool, application, host registries, and every unlisted host import are
+  forbidden.
 - Product, cargo, CRM, accounting, inventory, document, and industry-specific logic must not be embedded in the kernel.
 - A module may use shared UOK database tables only when its manifest declares the table or shared-table scope it owns.
 - A module must not require manual edits to unrelated modules for normal install, upgrade, disable, uninstall, or maintenance workflows.
@@ -156,7 +160,7 @@ Before pushing a candidate to GitHub, run these gates one by one:
 
 ```powershell
 python -m compileall -q src modules tests
-python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
+python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
 python scripts/validate_container_module_assets.py
 python scripts/run_python_tests.py
 npm --prefix web run check:contracts

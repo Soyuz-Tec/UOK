@@ -10,7 +10,7 @@ from uok_planning_core._internal.scheduling.schedule_math import working_duratio
 from uok_planning_core._internal.scheduling.scheduler import parse_planning_date, project_calendar, task_or_error
 from uok_planning_core._internal.scheduling.status_policy import assert_task_status_transition, planning_task_status
 from uok_planning_core._internal.scheduling.task_constraints import set_task_planning_attrs
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def apply_task_update(

@@ -22,7 +22,7 @@ from uok_contacts_core._internal.delivery.facade import (
 from uok_contacts_core._internal.persistence.models import Party, PartyNote, PartyRelationship, utcnow
 from uok_contacts_core._internal.persistence.system_models import ContactActivity
 from uok.module_events import emit_module_event
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps
 
 CommandHandler = Callable[[Session, Actor, dict[str, Any], str], dict[str, Any]]

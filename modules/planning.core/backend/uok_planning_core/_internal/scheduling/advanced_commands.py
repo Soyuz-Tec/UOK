@@ -14,7 +14,7 @@ from uok_planning_core._internal.portfolio_audit.planning_audit import add_plann
 from uok_planning_core._internal.scheduling.read_model import schedule_read_model
 from uok_planning_core._internal.resources.resource_contract import resource_definition
 from uok_planning_core._internal.scheduling.scheduler import apply_schedule, parse_planning_date, project_or_error, task_or_error
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps
 
 

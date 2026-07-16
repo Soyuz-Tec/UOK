@@ -11,7 +11,7 @@ from uok_planning_core._internal.coordination.link_commands import cmd_create_pl
 from uok_planning_core._internal.persistence.models import PlanningAssignment, PlanningProject, PlanningResource
 from uok_planning_core._internal.coordination.requirement_commands import cmd_advance_planning_task_requirement, cmd_decide_planning_task_requirement
 from uok_planning_core._internal.scheduling.scheduler import task_or_error
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def assign_resource(

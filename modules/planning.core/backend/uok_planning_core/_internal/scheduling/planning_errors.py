@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from uok.command_context import CommandDomainError
+from uok.kernel.command_contracts import CommandDomainError
 
 
 PLANNING_FIELDS = (

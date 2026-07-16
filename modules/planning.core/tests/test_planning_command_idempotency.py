@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
 
 from tests.helpers import auth
-import uok.commands as command_gateway
+import uok.host.commands as command_gateway
 
 
 def test_planning_command_path_requires_key_and_maps_conflicts(client: TestClient) -> None:

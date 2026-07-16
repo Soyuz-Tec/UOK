@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy import select, update
 from starlette.testclient import TestClient
 
-import uok.commands as command_gateway
+import uok.host.commands as command_gateway
 from tests.helpers import auth, command
 from uok.host.database import SessionLocal
 from uok.host.module_commands import load_module_command_replay_guards

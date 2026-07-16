@@ -32,7 +32,7 @@ commit. The implementation step may deliberately remove that path.
 | Global ORM compatibility graph | `pre-gap3:src/uok/models.py`, plus `pre-gap3:src/uok/calendar_models.py` and `pre-gap3:src/uok/communication_models.py` | Calls module registration during import and exposes all registered mapped classes through one global module. | A compatibility backdoor crosses data-owner boundaries and makes model bootstrap reachable from ordinary shared imports. Gap 1/2 tests currently block the most dangerous Planning/Contacts uses, but the surface still exists. |
 | Module backend path mutation and dynamic provider resolution | `pre-gap3:src/uok/module_paths.py`, `pre-gap3:src/uok/module_imports.py` | Adds validated module backend roots to `sys.path`, imports provider targets, and verifies their source origins. | Privileged host/plugin loading is stored alongside stable shared code. |
 | Router, command, role-grant, dashboard, and evidence provider composition | `pre-gap3:src/uok/module_routers.py`, `pre-gap3:src/uok/module_commands.py`, `pre-gap3:src/uok/module_policy.py`, `pre-gap3:src/uok/module_reports.py` | Dynamically resolves module-declared hooks and merges them into the running application. | These files are host registries/adapters, not shared domain contracts. |
-| Auth and request-session wiring | `src/uok/security.py`, `src/uok/api/auth.py`, `src/uok/api/commands.py`, `src/uok/api/system.py` | FastAPI dependencies use `uok.db.get_db`; security lazily loads module role grants; system APIs merge module dashboard/evidence providers. | Stable auth/authorization behavior is shared, but request DI and module-provider aggregation point back into composition concerns. |
+| Auth, permissions, request-session wiring, and command dispatch | `pre-gap3:src/uok/security.py`, `pre-gap3:src/uok/commands.py`, `src/uok/api/auth.py`, `src/uok/api/commands.py`, `src/uok/api/system.py` | FastAPI dependencies use `uok.db.get_db`; security lazily loads module role grants; the command gateway loads module handlers/replay guards; system APIs merge module dashboard/evidence providers. | Stable actor/permission and command/error contracts are mixed with Host-owned token/session DI, handler composition, persistence, and provider aggregation. Feature imports therefore reach Host transitively. |
 | Kernel ORM mappings | `src/uok/kernel_models.py` | Owns nine product-neutral organization, identity, governance, lifecycle, workflow, command-log, and event mappings. | The mappings are product-neutral, but they import `Base` from the mixed engine/session module. |
 | Module-owned ORM mappings | `modules/*/backend/<package>/**/models.py` and manifest `model_exports` | Owners define capability mappings and expose a privileged model list/provider for host registration. Planning and Contacts keep that provider below `_internal.persistence`. | Physical ownership is correct. The host-facing bootstrap SPI is intentionally not a business facade and must remain owner-local. |
 
@@ -70,7 +70,7 @@ The dynamic host-to-module import points are:
 | `pre-gap3:src/uok/module_commands.py` | module public command providers | Dynamic import | N in kernel; Y in host | Handler registration is composition-root work. |
 | `pre-gap3:src/uok/module_policy.py` | module public role-grant providers | Dynamic import | N in kernel; Y in host | Permission extension registration belongs to the host. |
 | `pre-gap3:src/uok/module_reports.py` | module public dashboard/evidence providers | Dynamic import | N in kernel; Y in host | Aggregation is application composition. |
-| Feature HTTP adapters | `pre-gap3:src/uok/db.py:get_db` | FastAPI dependency import | Transitional only | Request-session injection is a framework adapter. If retained as Module → Host, it must be the sole documented production allowlist and expose only `get_db`. |
+| Feature HTTP/command adapters | `pre-gap3:src/uok/db.py:get_db`, `pre-gap3:src/uok/security.py:current_actor`, `pre-gap3:src/uok/commands.py:execute_command` | FastAPI dependency and in-process command-dispatch imports | Transitional only | These are Host adapter seams, not domain contracts. If retained as Module → Host, each path and symbol must be explicit; engine/session factories, token implementation, provider registries, and command composition remain forbidden. |
 | Feature ORM mappings | `pre-gap3:src/uok/db.py:Base` | Static import | N | Mappings should depend on a stable shared persistence contract, not engine/session configuration. |
 | Calendar commands | `pre-gap3:src/uok/models.py:EventRecord` | Static ORM compatibility import | N | Kernel audit mappings must be imported from their explicit owner, not the global model graph. |
 | Contacts reports | `pre-gap3:src/uok/models.py:{EventRecord, ModuleRecord}` | Static ORM compatibility import | N | The global registry is an avoidable backdoor even for shared control-plane mappings. |
@@ -92,10 +92,12 @@ The dynamic host-to-module import points are:
 ## C. Cycles Found
 
 The TypeScript source graph was evaluated with static, side-effect, dynamic,
-re-export, and type-only imports included. All 207 production TS/TSX files
-currently form one source-level strongly connected component. Type-only edges
-are sufficient to create the cycle even though emitted JavaScript does not
-currently expose a runtime evaluation cycle.
+re-export, and type-only imports included. The inventory commit contains 285
+production TS/TSX files and 79 strongly connected components; one 207-file
+component contains the shell and module owners, while the remaining 78 files
+are singleton components. Type-only edges are sufficient to create the mixed
+cycle even though emitted JavaScript does not currently expose a runtime
+evaluation cycle.
 
 Concrete cycle paths include:
 
@@ -194,9 +196,10 @@ Required rules after the refactor:
 - No kernel import or dynamic import of a feature backend.
 - No production module import of the host app, registries, or composition
   package.
-- The sole candidate framework exception is named
-  `uok.host.database.get_db` in module HTTP adapters; module ORM mappings use
-  the kernel persistence contract instead.
+- Candidate framework/dispatch exceptions are exact
+  `uok.host.database.get_db`, `uok.host.security.current_actor`, and
+  `uok.host.commands.execute_command` imports in documented adapters; module
+  ORM mappings use the kernel persistence contract instead.
 - The shell imports module code only through the generated exact
   `moduleSurface.tsx` entries.
 - Module surfaces depend on a neutral, explicit host context rather than the
@@ -213,7 +216,7 @@ After implementation, run:
 ```powershell
 $env:PYTHONDONTWRITEBYTECODE='1'
 $env:UOK_BOOTSTRAP_ON_IMPORT='0'
-python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_shell_boundaries.py
+python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py
 python scripts/run_python_tests.py
 npm --prefix web run check:contracts
 npm --prefix web test

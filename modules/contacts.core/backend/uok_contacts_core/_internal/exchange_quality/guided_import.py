@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from uok.data_exchange import csv_dict_rows
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 from uok_contacts_core._internal.delivery.command_support import _create_party, _emit_event

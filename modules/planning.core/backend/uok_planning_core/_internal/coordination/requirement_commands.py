@@ -12,8 +12,8 @@ from uok_planning_core._internal.persistence.models import PlanningLink, Plannin
 from uok_planning_core._internal.portfolio_audit.planning_audit import add_planning_schedule_event, emit_planning_event
 from uok_planning_core._internal.coordination.requirement_read_model import serialize_requirement
 from uok_planning_core._internal.scheduling.scheduler import project_or_error, task_or_error
-from uok.command_context import CommandDomainError
-from uok.security import Actor
+from uok.kernel.command_contracts import CommandDomainError
+from uok.kernel.security import Actor
 
 REQUIREMENT_TYPES = ("evidence", "approval", "compliance", "finance", "shipment", "document", "custom")
 ADVANCE_TRANSITIONS = {"submit": {"missing", "rejected"}, "start_review": {"submitted"}}

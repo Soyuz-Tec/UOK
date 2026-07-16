@@ -55,15 +55,15 @@ Operator browser
 - Apps Manager, Calendar, Communications, Contacts, and Planning own executable React source and local CSS under `modules/<module_name>/web/src`; their frontend tests live under `modules/<module_name>/tests/web`.
 - Workbench surfaces declare the release/build extension `web_surface` plus canonical `web_entry` and unique `web_section` metadata in the closed manifest. A deterministic generator validates those manifests and emits literal TypeScript imports in `web/src/generated/moduleSurfaceCatalog.ts` for the typed registry under `web/src/features/modules`.
 - Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and all declared entries into the normal static application bundle.
-- Module surfaces receive only the eight-field neutral host port in `web/src/contracts/moduleSurface.ts`. Contacts owns its HTTP reads, DTOs, state, preferences, storage keys, and commands; the shell owns only product-neutral auth/layout/navigation/orchestration.
+- Module surfaces receive only the nine-field neutral host port in `web/src/contracts/moduleSurface.ts`, including a monotonic global-refresh revision. Contacts owns its HTTP reads, DTOs, state, preferences, storage keys, and commands; the shell owns only product-neutral auth/layout/navigation/orchestration and keeps visited module roots mounted without importing module internals.
 - Durable module workspaces compose one minimal shared command surface with optional query, context, and actions groups plus the common localized action vocabulary accepted in ADR-0025. Shared code owns layout and accessibility; modules retain domain nouns, state, permissions, options, and handlers.
 - Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
 - Docker copies module production source into the frontend build stage, TypeScript/Vitest discover the module-owned source and test roots, and final-image validation keeps module tests out of the runtime image.
 
 ## Boundaries
 
-- `src/uok/host` owns application composition, provider registration, static serving, engine/session infrastructure, and the exact FastAPI `get_db` adapter.
-- `src/uok/kernel` provides only stable module-neutral contracts. Feature modules may use the host-configured module-runtime port, but only HTTP adapter files may import the exact `uok.host.database.get_db` framework seam.
+- `src/uok/host` owns application composition, provider registration, static serving, engine/session infrastructure, authentication/session dependencies, and command dispatch.
+- `src/uok/kernel` provides only stable module-neutral persistence, actor/permission, command/error, and module-runtime contracts. Feature modules may use those contracts; exact HTTP/command adapter paths alone may import the documented `get_db`, `current_actor`, and `execute_command` host seams.
 - `modules/<module_name>` owns module behavior and must declare every extension point it uses.
 - Product, cargo, CRM, accounting, inventory, document, and integration behavior must not be hardcoded into the kernel.
 - Product-neutral organization, identity, governance, module-lifecycle, workflow, command-log, and event mappings live in `src/uok/kernel_models.py`. Capability mappings are physically defined in their owning backend packages. The former global `uok.models`, `uok.calendar_models`, and `uok.communication_models` compatibility import paths are retired.
@@ -159,7 +159,7 @@ Before publishing a candidate, run:
 
 ```powershell
 python -m compileall -q src modules tests conftest.py
-python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
+python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
 python scripts/validate_container_module_assets.py
 python scripts/run_python_tests.py
 npm --prefix web run check:contracts

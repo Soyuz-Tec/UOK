@@ -37,12 +37,13 @@ from uok_planning_core._internal.delivery.schemas import (
     PlanningTaskUpdateRequest,
 )
 from uok_planning_core._internal.scheduling.scheduler import project_or_error
-from uok.commands import (
+from uok.host.database import get_db
+from uok.host.security import current_actor
+from uok.kernel.command_contracts import (
     MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
     MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
 )
-from uok.host.database import get_db
-from uok.security import Actor, current_actor
+from uok.kernel.security import Actor
 
 router = APIRouter(prefix="/api/planning", tags=["planning"])
 router.routes.extend(resource_calendar_router.routes)

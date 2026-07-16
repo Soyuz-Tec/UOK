@@ -14,7 +14,7 @@ from uok_planning_core._internal.persistence.models import PlanningAnalysisRun
 from uok_planning_core._internal.analysis.risk_engine import RISK_ENGINE_NAME, RISK_ENGINE_VERSION, run_risk_engine, validate_risk_result
 from uok_planning_core._internal.scheduling.scheduler import project_or_error
 from uok_planning_core._internal.analysis.what_if import what_if_integrity, what_if_or_error
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 

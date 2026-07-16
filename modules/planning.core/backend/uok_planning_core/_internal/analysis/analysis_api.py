@@ -17,9 +17,13 @@ from uok_planning_core._internal.delivery.api_support import require_planning_re
 from uok_planning_core._internal.analysis.what_if import list_what_if_snapshots, what_if_detail, what_if_or_error
 from uok_planning_core._internal.analysis.risk_analysis import analysis_detail, list_risk_analyses, risk_analysis_or_error
 from uok_planning_core._internal.analysis.optimization import list_optimizations, list_recommendations, optimization_detail, optimization_or_error
-from uok.commands import MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH, MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH
 from uok.host.database import get_db
-from uok.security import Actor, current_actor
+from uok.host.security import current_actor
+from uok.kernel.command_contracts import (
+    MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+    MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+)
+from uok.kernel.security import Actor
 
 router = APIRouter(prefix="/api/planning", tags=["planning-analysis"])
 AnalysisIdempotencyKey = Annotated[

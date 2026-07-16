@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from uok_planning_core._internal.persistence.models import PlanningProject, PlanningScheduleEvent, PlanningTask, PlanningTaskDependency
 from uok.kernel.module_runtime import module_declared
 from uok.kernel_models import EventRecord, ModuleRecord
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def dashboard_counts(db: Session, actor: Actor) -> dict[str, int]:

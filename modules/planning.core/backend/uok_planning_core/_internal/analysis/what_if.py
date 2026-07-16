@@ -17,7 +17,7 @@ from uok_planning_core._internal.resources.resource_capacity import calculate_re
 from uok_planning_core._internal.resources.resource_capacity_validation import validate_resource_capacity_result
 from uok_planning_core._internal.scheduling.scheduler import parse_planning_date, project_calendar, project_dependencies, project_or_error, project_tasks, schedule_analysis, validate_schedule
 from uok_planning_core._internal.scheduling.schedule_math import working_duration
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 WHAT_IF_SCHEMA_VERSION = 1

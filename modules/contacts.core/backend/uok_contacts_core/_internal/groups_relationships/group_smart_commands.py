@@ -15,7 +15,7 @@ from uok_contacts_core._internal.groups_relationships.group_smart_support import
     smart_rule_group,
 )
 from uok_contacts_core._internal.registry.validation import validate_contact_payload_lengths
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 

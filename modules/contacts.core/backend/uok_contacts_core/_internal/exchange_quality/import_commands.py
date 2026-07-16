@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from uok_contacts_core._internal.delivery.facade import (
     clean_text,
 )
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 

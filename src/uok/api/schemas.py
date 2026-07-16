@@ -4,7 +4,10 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from ..commands import MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH, MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH
+from ..kernel.command_contracts import (
+    MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+    MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+)
 
 
 class LoginRequest(BaseModel):

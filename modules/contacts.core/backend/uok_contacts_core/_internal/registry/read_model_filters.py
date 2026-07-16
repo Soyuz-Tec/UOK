@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from uok_contacts_core._internal.persistence.models import Party, PartyRelationship
 from uok_contacts_core._internal.registry.read_model_rows import _party_attrs
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 COMPANY_CONTEXT_RELATIONSHIPS = {"works_for", "primary_contact", "supplier_contact", "customer"}
 CONTACT_QUALITY_FILTERS = {"all", "no_company", "duplicate_risk"}

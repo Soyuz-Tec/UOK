@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads, row_dict
 
 from uok_contacts_core._internal.persistence.models import Party, utcnow

@@ -23,7 +23,7 @@ from uok_planning_core._internal.scheduling.schedule_math import (
 from uok_planning_core._internal.scheduling.schedule_graph import dependency_order
 from uok_planning_core._internal.scheduling.schedule_hierarchy import hierarchy_violations
 from uok_planning_core._internal.scheduling.task_constraints import constraint_violations, enforce_task_constraints, is_auto_scheduled
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 DEPENDENCY_TYPES = {"finish_to_start", "start_to_start", "finish_to_finish", "start_to_finish"}

@@ -18,7 +18,7 @@ from uok_contacts_core._internal.persistence.system_models import (
 )
 from uok_contacts_core._internal.registry.read_model_profile import business_intelligence_profile
 from uok_contacts_core._internal.registry.validation import CONTACT_ATTR_FIELDS
-from uok.security import Actor, has_permission
+from uok.kernel.security import Actor, has_permission
 from uok.util import loads, row_dict
 
 PUBLIC_MERGE_HISTORY_FIELDS = {

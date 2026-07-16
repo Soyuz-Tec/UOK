@@ -18,7 +18,7 @@ from uok_planning_core._internal.analysis.optimization import (
     rollback_recommendation,
 )
 from uok_planning_core._internal.scheduling.read_model import schedule_read_model
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def cmd_create_what_if_snapshot(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:

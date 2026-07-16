@@ -41,7 +41,7 @@ from uok_planning_core._internal.scheduling.scheduler import (
 from uok_planning_core._internal.scheduling.status_policy import planning_task_status
 from uok_planning_core._internal.scheduling.task_mutations import apply_task_update, assert_parent_valid, planning_task_type, recalculate_task_duration
 from uok_planning_core._internal.scheduling.task_constraints import set_task_planning_attrs
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 CommandHandler = Callable[[Session, Actor, dict[str, Any], str], dict[str, Any]]
 

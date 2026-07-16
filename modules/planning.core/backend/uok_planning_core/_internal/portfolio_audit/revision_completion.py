@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from uok_planning_core._internal.persistence.models import PlanningProject, PlanningTask, utcnow
 from uok_planning_core._internal.portfolio_audit.revision_history import record_schedule_revision
 from uok_planning_core._internal.scheduling.task_aggregate_state import task_context_states
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def finish_project_revision(

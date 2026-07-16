@@ -23,7 +23,7 @@ from uok_planning_core._internal.resources.resource_leveling_validation import v
 from uok_planning_core._internal.scheduling.scheduler import apply_schedule, project_calendar, project_dependencies, project_or_error, project_tasks
 from uok_planning_core._internal.scheduling.schedule_math import CalendarSpec
 from uok_planning_core._internal.scheduling.task_constraints import is_auto_scheduled
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def cmd_level_resources(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:

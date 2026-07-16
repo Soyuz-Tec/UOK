@@ -9,7 +9,8 @@ from sqlalchemy.orm import Session
 from uok_planning_core._internal.delivery.api_support import require_planning_read
 from uok_planning_core._internal.portfolio_audit.revision_history import PlanningRevisionNotFound, list_project_revisions, project_revision_detail
 from uok.host.database import get_db
-from uok.security import Actor, current_actor
+from uok.host.security import current_actor
+from uok.kernel.security import Actor
 
 router = APIRouter(prefix="/api/planning", tags=["planning-history"])
 

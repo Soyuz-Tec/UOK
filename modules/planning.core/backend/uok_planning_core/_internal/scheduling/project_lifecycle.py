@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from uok.command_context import CommandDomainError
+from uok.kernel.command_contracts import CommandDomainError
 
 from uok_planning_core._internal.scheduling.advanced_commands import clean_text
 from uok_planning_core._internal.persistence.models import PlanningProject, utcnow
 from uok_planning_core._internal.portfolio_audit.planning_audit import add_planning_schedule_event, emit_planning_event
 from uok_planning_core._internal.scheduling.read_model import serialize_project
-from uok.security import Actor
+from uok.kernel.security import Actor
 from sqlalchemy.orm import Session
 
 PROJECT_STATUSES = ("draft", "active", "on_hold", "completed", "archived", "purged")

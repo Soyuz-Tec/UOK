@@ -10,7 +10,7 @@ from uok_contacts_core._internal.delivery.command_support import _emit_event
 from uok_contacts_core._internal.groups_relationships.group_domain_names import available_group_name
 from uok_contacts_core._internal.persistence.models import ContactGroup, Party, PartyRelationship, utcnow
 from uok_contacts_core._internal.registry.validation import MAX_CONTACT_GROUP_NAME_LENGTH, bounded_text
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 

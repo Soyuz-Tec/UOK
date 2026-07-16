@@ -6,7 +6,6 @@ import hmac
 import json
 import os
 import time
-from dataclasses import dataclass
 from hashlib import sha256
 from hmac import compare_digest
 
@@ -14,36 +13,13 @@ from fastapi import Depends, Header, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .host.database import get_db
-from .kernel_models import Membership, User
+from ..kernel.security import Actor
+from ..kernel_models import Membership, User
+from .database import get_db
 
-
-KERNEL_ROLE_PERMISSIONS = {
-    "platform_admin": {"*"},
-    "ops_manager": {
-        "module.read",
-        "evidence.read",
-        "migration.verify",
-        "architecture.read",
-    },
-    "trader": {"module.read", "evidence.read"},
-    "finance_manager": {"module.read", "evidence.read"},
-    "viewer": {"module.read", "evidence.read"},
-    "registered_user": {"module.read"},
-    "pending_user": {"module.read"},
-}
-ROLE_PERMISSIONS = KERNEL_ROLE_PERMISSIONS
 
 WEAK_LOCAL_SECRETS = {"", "uok-local-secret", "change-me-local", "local-uok-change-me", "ci-uok-secret"}
 DEFAULT_TOKEN_TTL_SECONDS = 8 * 60 * 60
-
-
-@dataclass(frozen=True)
-class Actor:
-    user_id: str
-    username: str
-    organization_id: str
-    role: str
 
 
 def _secret() -> str:
@@ -113,7 +89,10 @@ def parse_token(token: str) -> Actor:
         raise HTTPException(status_code=401, detail="Invalid token") from exc
 
 
-def current_actor(authorization: str | None = Header(default=None), db: Session = Depends(get_db)) -> Actor:
+def current_actor(
+    authorization: str | None = Header(default=None),
+    db: Session = Depends(get_db),
+) -> Actor:
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Missing bearer token")
     actor = parse_token(authorization.split(" ", 1)[1])
@@ -128,20 +107,4 @@ def current_actor(authorization: str | None = Header(default=None), db: Session 
     return actor
 
 
-def has_permission(actor: Actor, permission: str) -> bool:
-    permissions = effective_role_permissions().get(actor.role, set())
-    return "*" in permissions or permission in permissions
-
-
-def require_permission(actor: Actor, permission: str) -> None:
-    if not has_permission(actor, permission):
-        raise PermissionError(permission)
-
-
-def effective_role_permissions() -> dict[str, set[str]]:
-    permissions = {role: set(values) for role, values in KERNEL_ROLE_PERMISSIONS.items()}
-    from .host.module_policy import module_role_grants
-
-    for role, grants in module_role_grants().items():
-        permissions.setdefault(role, set()).update(grants)
-    return permissions
+__all__ = ["current_actor", "issue_token", "parse_token"]

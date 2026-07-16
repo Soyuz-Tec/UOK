@@ -127,7 +127,7 @@ All durable UI work must use:
   layout, accessibility foundations, and truly reusable module-neutral controls
   remain under `web/src`; module-specific selectors stay with the owning
   module.
-- Module renderers receive only the dependency-free host port in
+- Module renderers receive only the shell- and feature-independent host port in
   `web/src/contracts/moduleSurface.ts`. The generated runtime catalog is the
   shell's sole importer of exact module surface entries. Modules must not import
   shell app/features or the concrete `Workbench`, and the shell must not own

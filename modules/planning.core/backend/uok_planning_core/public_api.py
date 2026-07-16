@@ -10,7 +10,7 @@ from typing import Any as _Any
 
 from sqlalchemy.orm import Session as _Session
 
-from uok.security import Actor as _Actor
+from uok.kernel.security import Actor as _Actor
 
 
 _EXPORTS = {

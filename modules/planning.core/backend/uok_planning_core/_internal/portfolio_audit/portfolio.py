@@ -8,7 +8,7 @@ from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.persistence.models import PlanningLink, PlanningProject, PlanningTask, PlanningTaskDependency, PlanningTaskRequirement, utcnow
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def planning_portfolio_read_model(

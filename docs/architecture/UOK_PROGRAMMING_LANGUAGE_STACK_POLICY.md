@@ -82,7 +82,7 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
    - Module/product UI must be driven by closed manifests, the generated compile-time frontend module catalog, the typed module surface registry, workflow contracts, permissions, and product metadata.
    - A workbench module declares `web_surface`, canonical `web_entry`, and unique `web_section`; its production source and local CSS live below the declared module `web_path`.
    - The browser must never load manifest YAML or interpret dynamic module paths. The generator emits literal TypeScript imports that Vite compiles into the static application bundle.
-   - Module surfaces use only the dependency-free
+   - Module surfaces use only the shell- and feature-independent
      `web/src/contracts/moduleSurface.ts` host port. The runtime catalog is the
      shell's sole exact-module importer; modules may not import shell
      implementation types.

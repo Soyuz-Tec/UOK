@@ -11,7 +11,13 @@ export function ContactsModuleRoot({ host }: { host: ModuleSurfaceHostContext })
   const state = useContactWorkspaceState(preferences);
   const module = host.moduleRows.find((row) => row.name === CONTACTS_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
-  const data = useContactData(host.token, operational, state.filters, host.onUnauthorized);
+  const data = useContactData(
+    host.token,
+    operational,
+    state.filters,
+    host.moduleRefreshRevision,
+    host.onUnauthorized,
+  );
   const commands = useContactCommands({
     creating: state.creating,
     data,

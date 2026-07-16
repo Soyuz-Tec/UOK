@@ -12,7 +12,7 @@ from uok_contacts_core._internal.persistence.models import ContactGroupMember, P
 from uok_contacts_core._internal.registry.read_model_filters import apply_contact_extra_filters, party_matches_extra_filters, validated_quality_filter
 from uok_contacts_core._internal.registry.read_model_rows import _party_attrs, serialize_party
 from uok_contacts_core._internal.registry.validation import CONTACT_ATTR_FIELDS
-from uok.security import Actor, has_permission
+from uok.kernel.security import Actor, has_permission
 
 CONTACT_SORT_COLUMNS = {
     "display_name": Party.display_name,

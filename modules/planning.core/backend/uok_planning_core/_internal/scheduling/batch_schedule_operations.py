@@ -10,7 +10,7 @@ from uok_planning_core._internal.scheduling.batch_operation_types import Applied
 from uok_planning_core._internal.persistence.models import PlanningCalendar, PlanningProject, PlanningTaskDependency
 from uok_planning_core._internal.scheduling.scheduler import DEPENDENCY_TYPES, parse_planning_date, task_or_error
 from uok_planning_core._internal.scheduling.task_mutations import apply_task_update
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps
 
 TASK_UPDATE_FIELDS = {

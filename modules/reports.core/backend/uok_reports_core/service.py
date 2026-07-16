@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from uok.kernel.module_runtime import ensure_module_operational
 from uok.models_base import new_id, utcnow
-from uok.security import Actor, require_permission
+from uok.kernel.security import Actor, require_permission
 from uok.util import dumps, loads
 
 from . import MODULE_NAME

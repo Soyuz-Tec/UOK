@@ -22,6 +22,7 @@ from .model_registry import ensure_module_models_registered
 ensure_module_models_registered()
 
 from ..kernel.module_runtime import ModuleRuntimePort, configure_module_runtime
+from ..kernel.security import configure_role_grants
 from ..module_ops import (
     disable_module,
     enable_module,
@@ -35,6 +36,7 @@ from ..module_ops import (
     upgrade_module,
 )
 from ..modules import module_catalog, module_contracts, module_lifecycle_report
+from .module_policy import module_role_grants
 
 
 def _module_record_status(db: object, organization_id: str, module_name: str) -> str | None:
@@ -57,6 +59,7 @@ configure_module_runtime(ModuleRuntimePort(
     ensure_operational=ensure_module_operational,
     record_status=_module_record_status,
 ))
+configure_role_grants(module_role_grants)
 
 
 from ..api.auth import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth

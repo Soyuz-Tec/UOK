@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.persistence.models import PlanningLink
 from uok.kernel.module_runtime import OPERATIONAL_STATUSES, module_record_status
-from uok.security import Actor, has_permission
+from uok.kernel.security import Actor, has_permission
 
 LINK_TARGET_KINDS = (
     "operation", "gate", "evidence", "party", "shipment", "document",

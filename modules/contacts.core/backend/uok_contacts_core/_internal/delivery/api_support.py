@@ -6,9 +6,9 @@ from uuid import uuid4
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from uok.commands import execute_command
+from uok.host.commands import execute_command
 from uok.kernel.module_runtime import ensure_module_operational
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def run_contact_command(db: Session, actor: Actor, command_type: str, payload: dict[str, Any]) -> dict[str, Any]:

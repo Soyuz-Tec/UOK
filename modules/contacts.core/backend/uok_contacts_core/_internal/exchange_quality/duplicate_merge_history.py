@@ -21,7 +21,7 @@ from uok_contacts_core._internal.persistence.system_models import (
 )
 from uok.kernel_models import EventRecord
 from uok.module_events import emit_module_event
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 PRIVATE_MERGE_SNAPSHOT_EVENT = "ContactDuplicateMergeRollbackSnapshot"

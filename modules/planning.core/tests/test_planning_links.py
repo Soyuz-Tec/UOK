@@ -13,7 +13,7 @@ from uok_planning_core._internal.coordination.link_resolver import serialize_lin
 from uok.host.database import SessionLocal
 from uok.kernel_models import CommandLog, EventRecord, Membership, Organization, User
 from uok_planning_core._internal.persistence.models import PlanningLink, PlanningScheduleEvent
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 
 def test_typed_party_link_resolves_tracks_lifecycle_and_enters_baseline(client: TestClient) -> None:

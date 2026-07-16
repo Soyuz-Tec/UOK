@@ -12,13 +12,13 @@ from uok_planning_core._internal.persistence.models import PlanningProject, Plan
 from uok_planning_core._internal.scheduling.planning_errors import planning_domain_error
 from uok_planning_core._internal.scheduling.project_lifecycle import assert_project_mutation_allowed
 from uok_planning_core._internal.portfolio_audit.revision_completion import finish_project_revision, task_states
-from uok.command_context import (
+from uok.kernel.command_contracts import (
     COMMAND_ETAG_RESULT_KEY,
     COMMAND_IF_MATCH_CONTEXT_KEY,
     CommandDomainError,
     CommandPreconditionError,
 )
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps
 
 PlanningHandler = Callable[[Session, Actor, dict[str, Any], str], dict[str, Any]]

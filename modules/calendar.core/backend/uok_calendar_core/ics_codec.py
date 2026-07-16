@@ -5,7 +5,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 from .ics_timezone import local_date_value, local_datetime_value, timezone_component_lines
 from .occurrence_support import event_has_occurrence

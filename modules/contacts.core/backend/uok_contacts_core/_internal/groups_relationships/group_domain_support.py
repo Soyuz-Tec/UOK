@@ -15,7 +15,7 @@ from uok_contacts_core._internal.groups_relationships.group_domain_names import 
     business_domain_group_name,
 )
 from uok_contacts_core._internal.persistence.models import ContactGroup, ContactGroupMember, Party, utcnow
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 

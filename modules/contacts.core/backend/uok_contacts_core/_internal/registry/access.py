@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from uok_contacts_core._internal.persistence.models import ContactTeam, ContactTeamMember, Party, PartyNote, PartyRelationship
 from uok.kernel_models import Membership
-from uok.security import Actor, has_permission
+from uok.kernel.security import Actor, has_permission
 
 
 def can_manage_contacts(actor: Actor) -> bool:

@@ -14,7 +14,7 @@ from uok.host.application import app
 from uok.host.database import SessionLocal, engine
 from uok.kernel_models import Membership, Organization
 from uok_planning_core._internal.persistence.models import PlanningProject, PlanningTask
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok_planning_core._internal.portfolio_audit.portfolio import planning_portfolio_read_model
 
 

@@ -56,7 +56,7 @@ from uok_contacts_core._internal.governance.system_commands import (
     cmd_upsert_contact_fact,
     sync_legacy_payload_facts,
 )
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 

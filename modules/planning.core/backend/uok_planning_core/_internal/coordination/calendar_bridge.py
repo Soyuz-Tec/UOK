@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from uok_planning_core._internal.coordination.link_resolver import resolve_target
 from uok_planning_core._internal.persistence.models import PlanningAssignment, PlanningProject, PlanningResource, PlanningTask
 from uok.kernel.module_runtime import ensure_module_operational
-from uok.security import Actor, require_permission
+from uok.kernel.security import Actor, require_permission
 
 
 def calendar_availability_read_model(

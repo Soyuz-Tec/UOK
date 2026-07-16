@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.persistence.models import PlanningScheduleEvent
 from uok.module_events import emit_module_event
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps
 
 

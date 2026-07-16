@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from uok_contacts_core._internal.registry.access import actor_contact_team_ids, can_manage_contacts, readable_party_filter
 from uok_contacts_core._internal.persistence.models import ContactGroup, ContactGroupMember, Party
-from uok.security import Actor, has_permission
+from uok.kernel.security import Actor, has_permission
 from uok.util import row_dict
 
 

@@ -8,7 +8,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from uok.data_exchange import safe_spreadsheet_cell
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 from uok_contacts_core._internal.registry.access import readable_party_filter

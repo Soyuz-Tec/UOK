@@ -99,7 +99,8 @@ The frontend shell compatibility bridge is closed. Module renderers receive the
 neutral contract in `web/src/contracts/moduleSurface.ts`; the generated runtime
 catalog is the shell's sole exact-module importer. Contacts owns its frontend
 state, HTTP reads, preferences, storage keys, DTOs, options, and commands.
-Architecture tests reject shell/module cycles, kernel feature imports, and
-feature-to-host composition imports outside the exact HTTP-adapter `get_db`
-allowlist. Module-owned ORM definitions, migrations, production UI, behavior
-tests, and verifier assets remain active baseline requirements.
+Architecture tests reject shell/module cycles, kernel feature imports, direct
+or transitive feature-to-host dependencies, and host imports outside the exact
+path-and-symbol adapter allowlist for `get_db`, `current_actor`, and
+`execute_command`. Module-owned ORM definitions, migrations, production UI,
+behavior tests, and verifier assets remain active baseline requirements.

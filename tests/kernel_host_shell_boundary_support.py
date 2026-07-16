@@ -27,6 +27,14 @@ FEATURE_MODULE_RUNTIME_SYMBOLS = {
     "uninstall_module",
     "upgrade_module",
 }
+MODULE_LIFECYCLE_MUTATORS = {
+    "disable_module",
+    "enable_module",
+    "install_module",
+    "reconcile_module_record",
+    "uninstall_module",
+    "upgrade_module",
+}
 
 
 @dataclass(frozen=True)
@@ -98,12 +106,18 @@ def import_candidates(reference: PythonImport) -> set[str]:
     return candidates
 
 
-def feature_module_runtime_import_allowed(reference: PythonImport) -> bool:
+def feature_module_runtime_import_allowed(
+    reference: PythonImport,
+    *,
+    allow_lifecycle_mutations: bool = False,
+) -> bool:
+    names = set(reference.names or ())
     return bool(
         reference.target == "uok.kernel.module_runtime"
         and not reference.dynamic
         and reference.names is not None
-        and set(reference.names).issubset(FEATURE_MODULE_RUNTIME_SYMBOLS)
+        and names.issubset(FEATURE_MODULE_RUNTIME_SYMBOLS)
+        and (allow_lifecycle_mutations or names.isdisjoint(MODULE_LIFECYCLE_MUTATORS))
         and reference.aliases == tuple(None for _ in reference.names)
     )
 

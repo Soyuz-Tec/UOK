@@ -10,7 +10,7 @@ The root `web` package owns the product-neutral React + TypeScript + Vite workbe
 
 - `web/src/app` owns product-neutral shell orchestration and navigation.
 - `web/src/shared` owns reusable module-neutral controls, data helpers, design primitives, and export helpers.
-- `web/src/contracts/moduleSurface.ts` owns the dependency-free module-surface
+- `web/src/contracts/moduleSurface.ts` owns the shell- and feature-independent module-surface
   host contract.
 - `web/src/features/modules` owns the registry adapter.
 - `web/src/generated` contains generated API contracts, pure module section

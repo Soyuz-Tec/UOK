@@ -19,7 +19,7 @@ from uok_contacts_core._internal.registry.validation import (
     contact_group_visibility_scope,
     validate_contact_payload_lengths,
 )
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps
 
 

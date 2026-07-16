@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.persistence.models import PlanningResource, PlanningResourceCalendar
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 

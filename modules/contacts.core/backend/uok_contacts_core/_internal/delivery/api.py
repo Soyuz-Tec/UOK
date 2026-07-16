@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from uok.host.database import get_db
-from uok.security import Actor, current_actor, require_permission
+from uok.host.security import current_actor
+from uok.kernel.security import Actor, require_permission
 
 from uok_contacts_core._internal.delivery.api_schemas import (
     ContactCsvImportRequest,

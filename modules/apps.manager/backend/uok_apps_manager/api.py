@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from uok.host.database import get_db
+from uok.host.security import current_actor
 from uok.kernel.module_runtime import (
     disable_module,
     enable_module,
@@ -20,7 +21,7 @@ from uok.kernel.module_runtime import (
     uninstall_module,
     upgrade_module,
 )
-from uok.security import Actor, current_actor, require_permission
+from uok.kernel.security import Actor, require_permission
 
 
 router = APIRouter(prefix="/api/modules", tags=["modules"])

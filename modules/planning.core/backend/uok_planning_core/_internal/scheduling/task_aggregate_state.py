@@ -12,7 +12,7 @@ from uok_planning_core._internal.persistence.models import (
     PlanningTaskParticipant,
     PlanningTaskRequirement,
 )
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 TaskContextRows = dict[str, list[tuple[object, ...]]]
 

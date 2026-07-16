@@ -44,10 +44,11 @@ Python service remains the scheduling authority.
    registry; it is the only shell source allowed to import exact module surface
    entries.
 7. ADR-0028 replaces the former `Workbench` compatibility alias with the
-   dependency-free `web/src/contracts/moduleSurface.ts` port. The shell passes
-   only token, role, appearance, readonly module status, busy action, lifecycle
-   action, refresh, and unauthorized callback. Contacts owns its data fetching,
-   preferences, storage keys, DTOs, options, state, and commands.
+   shell- and feature-independent `web/src/contracts/moduleSurface.ts` port.
+   The shell passes only token, role, appearance, readonly module status, busy
+   action, lifecycle action, host refresh, global module-refresh revision, and
+   unauthorized callback. Contacts owns its data fetching, preferences,
+   storage keys, DTOs, options, state, and commands.
 8. Apps Manager, Calendar, Communications, Contacts, and Planning declare
    `web_surface`. Reports owns its typed report HTTP client under
    `modules/reports.core/web/src` but does not declare a workbench surface.

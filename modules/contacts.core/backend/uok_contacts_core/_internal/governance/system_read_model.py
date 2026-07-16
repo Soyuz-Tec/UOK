@@ -5,7 +5,7 @@ from typing import Any
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads, row_dict
 
 from uok_contacts_core._internal.registry.access import actor_contact_team_ids, can_manage_contacts, get_party_or_error, readable_party_filter

@@ -13,7 +13,7 @@ from uok_contacts_core._internal.groups_relationships.group_read_model import (
 )
 from uok_contacts_core._internal.persistence.models import ContactGroupMember, utcnow
 from uok_contacts_core._internal.registry.validation import bounded_text, validate_contact_payload_lengths
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps
 
 

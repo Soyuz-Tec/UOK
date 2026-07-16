@@ -7,7 +7,8 @@ from uok_planning_core._internal.delivery.api_support import require_planning_re
 from uok_planning_core._internal.portfolio_audit.portfolio import planning_portfolio_read_model
 from uok_planning_core._internal.portfolio_audit.portfolio_contracts import PlanningPortfolioResponse, PlanningProjectStatusFilter
 from uok.host.database import get_db
-from uok.security import Actor, current_actor
+from uok.host.security import current_actor
+from uok.kernel.security import Actor
 
 router = APIRouter(prefix="/api/planning", tags=["planning-portfolio"])
 

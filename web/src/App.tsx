@@ -3,7 +3,7 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useWorkbench, type Workbench } from "./app/useWorkbench";
 import { AuthScreen } from "./features/auth/AuthScreen";
 import { AccountMenu } from "./features/layout/AccountMenu";
-import { moduleSections, renderModuleSurface } from "./features/modules/moduleSurfaceRegistry";
+import { ModuleSurfaceOutlet, moduleSections } from "./features/modules/moduleSurfaceRegistry";
 import { coreSections } from "./shared/options";
 import { JsonBlock, MetricGrid, StatusRow } from "./shared/data-display";
 import { Pane } from "./shared/layout";
@@ -116,7 +116,7 @@ function AppView({ workbench }: { workbench: Workbench }) {
           </section>
         )}
 
-        {renderModuleSurface(workbench.active, workbench.moduleHost)}
+        <ModuleSurfaceOutlet section={workbench.active} host={workbench.moduleHost} />
 
         {workbench.active === "evidence" && (
           <section aria-label="Evidence">
