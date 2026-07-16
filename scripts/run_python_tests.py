@@ -4,10 +4,12 @@ import argparse
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+TEST_DATABASE_RELATIVE_PATH = Path("data/test_uok_baseline.db")
 
 
 class TestDiscoveryError(RuntimeError):
@@ -91,10 +93,28 @@ def _test_environment(repo_root: Path) -> dict[str, str]:
     return environment
 
 
+def _unlink_with_retry(path: Path, *, attempts: int = 50, delay_seconds: float = 0.1) -> None:
+    for attempt in range(attempts):
+        try:
+            path.unlink(missing_ok=True)
+            return
+        except PermissionError:
+            if attempt + 1 >= attempts:
+                raise
+            time.sleep(delay_seconds)
+
+
+def _prepare_test_database(repo_root: Path) -> None:
+    database = repo_root / TEST_DATABASE_RELATIVE_PATH
+    for suffix in ("", "-wal", "-shm"):
+        _unlink_with_retry(Path(f"{database}{suffix}"))
+
+
 def run_test_files(repo_root: Path, files: list[Path]) -> int:
     environment = _test_environment(repo_root)
     github_groups = environment.get("GITHUB_ACTIONS", "").lower() == "true"
     for index, path in enumerate(files, start=1):
+        _prepare_test_database(repo_root)
         relative = _relative(repo_root, path)
         if github_groups:
             print(f"::group::{relative}", flush=True)
