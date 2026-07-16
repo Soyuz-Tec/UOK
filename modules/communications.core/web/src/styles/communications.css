@@ -60,6 +60,20 @@
   gap: var(--uok-space-2);
 }
 
+.communications-thread-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--uok-space-2);
+}
+
+.communications-readonly {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+  margin: 0;
+}
+
 @media (max-width: 680px) {
   .communications-create-actions,
   .communications-create-actions .command-button {

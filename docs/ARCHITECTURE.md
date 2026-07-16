@@ -38,8 +38,10 @@ Operator browser
 - `contacts.core` is the optional governed Party and Contacts system of record. It owns first-class contact facts, consent evidence, Contacts-specific teams, groups, quality/import state, saved views, external identities, and custom fields while engagement records remain owned by their source modules.
 - `calendar.core` is an optional global calendar capability module for organization calendars, events, recurrence, persisted reminder definitions, free-busy-derived availability context, iCalendar export, and a traditional Calendar workspace. In-app/email reminder dispatch and availability-slot schedules are not current capabilities.
 - Calendar reads fail closed through actor-visible active Calendar parents; `team` visibility is reserved until a canonical membership provider exists. Public appointment booking remains a separate future `appointments.core` boundary rather than expanding `calendar.core`.
+- User-managed Calendar parents use strong-ETag, row-locked retained delete/restore. All Calendar aggregate writers acquire and refresh the active parent lock before child locks or mutation; manager-only deleted discovery preserves event, participant, and reminder children, while system-owned or ownerless Calendar records are never projected as user-deletable.
 - `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
 - `communications.core` is an optional K Connect capability module for organization-scoped thread identity, access, lifecycle state, audit evidence, and exact authorized deep links.
+- User-created K Connect threads use strong-ETag, row-locked recoverable Delete/Restore. Communications preserves exact prior open/closed state and audit identity; Planning retains the same typed link and never receives a lifecycle cascade.
 - Planning Gates A-E are locally runtime-proven; scheduling, write-safety, evidence governance, integrations, analysis, measured scale, shared reach/accessibility, bounded portfolio reads, and production-like closure evidence are recorded in the Planning Gantt traceability map. The stacked draft PRs still require hosted CI, review, and merge, and no local alpha result implies production readiness.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
@@ -121,6 +123,7 @@ Operator browser
 - ADR-0026: `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md`
 - ADR-0027: `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
 - ADR-0028: `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
+- ADR-0029: `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`

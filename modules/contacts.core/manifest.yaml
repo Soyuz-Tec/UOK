@@ -43,6 +43,8 @@ commands:
   - RecordContactConsent
   - CreateContactTeam
   - UpdateContactTeam
+  - DeleteContactTeam
+  - RestoreContactTeam
   - AddContactTeamMember
   - RemoveContactTeamMember
   - SaveContactView
@@ -52,6 +54,8 @@ commands:
   - BulkUpdateContacts
   - LinkContactExternalIdentity
   - DefineContactCustomField
+  - DeleteContactCustomField
+  - RestoreContactCustomField
   - SetContactCustomFieldValue
 events:
   - ContactCreated
@@ -84,6 +88,8 @@ events:
   - ContactConsentRecorded
   - ContactTeamCreated
   - ContactTeamUpdated
+  - ContactTeamDeleted
+  - ContactTeamRestored
   - ContactTeamMemberAdded
   - ContactTeamMemberRemoved
   - ContactSavedViewSaved
@@ -93,6 +99,8 @@ events:
   - ContactsBulkUpdated
   - ContactExternalIdentityLinked
   - ContactCustomFieldDefined
+  - ContactCustomFieldDeleted
+  - ContactCustomFieldRestored
   - ContactCustomFieldValueSet
 dependencies: []
 backend_path: modules/contacts.core/backend
@@ -155,4 +163,4 @@ extension_points:
   - model_exports
   - web_surface
   - candidate_verifier
-data_retention_policy: "User delete archives contacts; authorized purge irreversibly anonymizes contact-owned PII while retaining a non-PII tombstone and platform audit evidence. Consent and import evidence follow explicit organization retention policy. Module uninstall disables access while retaining records for admin-controlled recovery."
+data_retention_policy: "User-facing Delete archives contacts, manual groups, contact teams, and custom-field definitions for authorized restore; it does not erase group or team memberships, custom-field values, or audit evidence. Authorized contact purge irreversibly anonymizes contact-owned PII while retaining a non-PII tombstone and platform audit evidence. Consent and import evidence follow explicit organization retention policy. Module uninstall disables access while retaining records for admin-controlled recovery."

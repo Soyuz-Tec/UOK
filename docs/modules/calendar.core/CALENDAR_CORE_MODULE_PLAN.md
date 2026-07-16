@@ -23,7 +23,12 @@ under ADR-0026.
 - Traditional Calendar workspace with Month, Week, Day, and Agenda views.
 - Shared workspace command bar with event search and saved-search options, a
   compact Calendar-scope menu, Today, previous/next navigation, an on-demand
-  date navigator, view switching, New event, Refresh, and ICS export.
+  date navigator, view switching, New event, Refresh, and ICS export. The
+  Calendar-scope menu also owns capability-gated creation and confirmed
+  deletion for an eligible selected Calendar plus manager-only discovery and
+  restoration of retained deleted Calendars without duplicating those
+  contextual commands in the top bar. The selector explains and suppresses
+  deletion for system-managed records.
 - The persistent mini-month rail is removed so the event surface receives the
   full workspace width. The range title opens a focus-restoring 42-day date
   navigator whose localized month header opens an inline 20-year grid with
@@ -48,6 +53,14 @@ under ADR-0026.
 ## Backend Scope
 
 - Calendar CRUD.
+- A private, actor-specific capability read model governs global Calendar
+  management authority and per-record `user_managed`, `can_delete`, and
+  `can_restore` affordances. Calendar deletion is a retained soft delete for
+  user-managed records: the Calendar and its event, participant, and reminder
+  history remain stored for audit while ordinary reads fail closed through the
+  inactive parent. Authorized managers can discover deleted Calendars and
+  restore the parent without rewriting retained children; system-owned and
+  ownerless records fail closed in both UI and command handling.
 - Event create/read/update, cancellation, and restore; hard event deletion is
   not exposed.
 - Atomic participant and reminder replacement on event create/update, with
@@ -70,7 +83,12 @@ under ADR-0026.
   private/reserved-team visibility.
 - Strong event ETags and mandatory preconditions protect event updates,
   lifecycle changes, and standalone reminder mutations from stale-client lost
-  updates.
+  updates. Strong Calendar ETags, row locking, and mandatory preconditions also
+  protect parent delete/restore; a stale destructive request reloads and needs
+  a new confirmation. Every writer locks and refreshes the Calendar parent
+  before event or reminder children, so a writer queued behind deletion cannot
+  mutate the retained inactive aggregate. Same-state lifecycle retries with the
+  current ETag are event-idempotent; malformed lifecycle states are rejected.
 - Lifecycle status is governed only by dedicated cancel/restore commands.
 
 ## Boundaries
@@ -100,8 +118,10 @@ under ADR-0026.
 2. Workspace foundation: shared draggable event editor, scroll-bounded
    searchable all-or-one Calendar scope, on-demand keyboard date navigation,
    full-width content, multi-calendar colors, complete 24-hour geometry,
-   overlap lanes, bounded month-cell density, inline errors, and
-   keyboard-roving slots.
+   overlap lanes, bounded month-cell density, inline errors, keyboard-roving
+   slots, and a shared draggable confirmation for record-qualified Calendar
+   deletion, manager-only retained Calendar restoration, stale-state reload,
+   and stable post-lifecycle focus.
 3. Candidate hygiene: Planning's Calendar-availability proof retires its
    temporary Calendar and archives its temporary Contact even when the proof
    fails, preventing verification runs from becoming visible business data.

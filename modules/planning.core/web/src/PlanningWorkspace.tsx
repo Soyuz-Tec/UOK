@@ -1,5 +1,5 @@
 import { FolderKanban, FolderPlus, RefreshCw } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { EmptyState } from "@uok/shared/data-display";
 import { Pane, WorkflowHeader } from "@uok/shared/layout";
@@ -19,7 +19,7 @@ import { timelineTaskPayload } from "./planningTimelineCreateModel";
 import type { PlanningProject, PlanningSchedule, PlanningWorkspaceProps } from "./types";
 import { usePlanningWorkspaceMutations } from "./usePlanningWorkspaceMutations";
 import { usePlanningCapabilities } from "./usePlanningCapabilities";
-
+import { usePlanningWorkspaceFocus } from "./usePlanningWorkspaceFocus";
 export function PlanningWorkspace({ token, appearance, module, moduleRows, busyAction, onActivate }: PlanningWorkspaceProps) {
   const { t } = useUokLocalization();
   const [projects, setProjects] = useState<PlanningProject[]>([]);
@@ -35,8 +35,11 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [workspaceMode, setWorkspaceMode] = useState<"project" | "portfolio">("project");
   const [projectCreateOpen, setProjectCreateOpen] = useState(false);
-  const planningWorkspaceRef = useRef<HTMLElement>(null);
-  const focusAfterCreateRef = useRef(false);
+  const { planningWorkspaceRef, focusAfterCreateRef, focusPlanningInspectorClose } = usePlanningWorkspaceFocus({
+    projectCreateOpen,
+    projectId: schedule?.project.id,
+    workspaceMode,
+  });
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const reportsOperational = moduleRows.some(
     (row) => row.name === "reports.core" && (row.status === "installed" || row.status === "upgraded"),
@@ -56,26 +59,14 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
   });
   const createdReloadFailure = planningProjectReloadFailure(actions.status);
   const canCreateProject = capabilities.edit && !reviewMode && !actions.busy && !createdReloadFailure;
+  const canTransitionProject = capabilities.edit && !reviewMode && !actions.busy && !createdReloadFailure;
   const selectedTask = useMemo(
     () => schedule?.tasks.find((task) => task.id === selectedTaskId) || null,
     [schedule, selectedTaskId],
   );
 
-  useEffect(() => {
-    if (projectCreateOpen || !focusAfterCreateRef.current) return;
-    const frame = window.requestAnimationFrame(() => {
-      focusAfterCreateRef.current = false;
-      const active = document.activeElement;
-      if (active instanceof HTMLElement && active !== document.body && active !== document.documentElement && active.isConnected) return;
-      const picker = planningWorkspaceRef.current?.querySelector<HTMLSelectElement>(".planning-project-picker select");
-      (picker || planningWorkspaceRef.current)?.focus();
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [projectCreateOpen, schedule?.project.id, workspaceMode]);
-
   if (!token) return <EmptyState text="Sign in to open Planning." />;
   if (!operational) return <PlanningModuleState module={module} moduleRows={moduleRows} busyAction={busyAction} onActivate={onActivate} />;
-
   return (
     <section className="planning-workspace" aria-label="Planning" ref={planningWorkspaceRef} tabIndex={-1}>
       <PlanningErrorNotice status={actions.status} />
@@ -190,10 +181,28 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onBulkTaskEdit={(updates) => void actions.saveTaskBatch(updates)}
           onDependencyCreate={(payload) => void actions.addDependency(payload)}
           onTimelineTaskCreate={(start, end) => void actions.addTask(timelineTaskPayload(activeSchedule.tasks, start, end))}
-          onTaskMenuAction={(action, task) => void actions.runTaskMenuAction(action, task)}
+          onTaskMenuAction={(action, task) => {
+            if (action === "delete") {
+              setSelectedTaskId(task.id);
+              setInspectorTab("task");
+              setInspectorOpen(true);
+              return;
+            }
+            void actions.runTaskMenuAction(action, task);
+          }}
           onProjectChange={(projectId) => void actions.changeProject(projectId)}
           canCreateProject={Boolean(canCreateProject)}
+          canTransitionProject={Boolean(canTransitionProject)}
           onNewProject={() => setProjectCreateOpen(true)}
+          onDeleteProject={async (reason) => {
+            const fallbackProjectId = await actions.deleteProject(reason);
+            setInspectorOpen(false);
+            if (!fallbackProjectId) {
+              focusAfterCreateRef.current = true;
+              setWorkspaceMode("portfolio");
+            }
+          }}
+          onRestoreProject={(reason) => actions.restoreProject(reason)}
           onCreateDemoSchedule={() => void actions.createDemoSchedule()}
           onRefresh={() => void actions.refresh()}
           onNewTask={(taskType) => {
@@ -254,6 +263,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
           onSaveTaskDates={actions.saveTaskDates}
           onCreateTask={actions.addTask}
           onDeleteTask={actions.removeTask}
+          onDeleteTaskComplete={focusPlanningInspectorClose}
           onCreateDependency={actions.addDependency}
           onUpdateDependency={actions.saveDependency}
           onRemoveDependency={actions.removeDependency}

@@ -1047,7 +1047,7 @@ test("Planning local review mode disables project creation in the portfolio", as
   await expect(page.getByRole("button", { name: "New project", exact: true })).toBeDisabled();
 });
 
-test("archived Planning schedules stay readable and disable every mutation surface", async ({ page }) => {
+test("archived Planning schedules stay readable and expose only governed restore", async ({ page }) => {
   const archivedProject = { ...sampleProject, status: "archived" };
   const archivedSchedule = { ...sampleSchedule, project: archivedProject };
   await installMockApi(page, [], [], [], []);
@@ -1068,6 +1068,8 @@ test("archived Planning schedules stay readable and disable every mutation surfa
   await expect(planActions.getByRole("button", { name: "New project", exact: true })).toBeEnabled();
   await expect(planActions.getByRole("button", { name: "New sample plan", exact: true })).toBeDisabled();
   await expect(planActions.getByRole("button", { name: "Refresh", exact: true })).toBeEnabled();
+  await expect(planActions.getByRole("button", { name: "Restore project", exact: true })).toBeEnabled();
+  await expect(planActions.getByRole("button", { name: "Delete project", exact: true })).toHaveCount(0);
   await searchOptions.getByRole("button", { name: "Done", exact: true }).click();
   await page.getByLabel("Open planning controls").click();
   const planningControls = page.getByRole("dialog", { name: "Planning controls", exact: true });
@@ -1645,10 +1647,16 @@ async function installMockApi(page: Page, dependencyPayloads: unknown[], taskPay
     await route.fulfill({ json: { status: "validated" }, headers: { ETag: planningEtag } });
   });
   await page.route("/api/contacts**", (route) => route.fulfill({ json: [{ id: "party-proof", display_name: "Pilot approver", status: "active" }] }));
-  await page.route("/api/communications/threads", (route) => route.fulfill({ json: [{
+  const proofThread = {
     id: "thread-proof", title: "Pilot K Connect room", status: "open", context_type: "planning.task", context_id: "task-1",
+    restore_status: null, revision: 1, etag: '"communication-thread:thread-proof:v1"', can_delete: true, can_restore: false,
     created_by_user_id: "user-proof", created_at: "2026-08-01T00:00:00Z", updated_at: "2026-08-01T00:00:00Z",
-  }] }));
+  };
+  await page.route("/api/communications/capabilities", (route) => route.fulfill({ json: { read: true, create: true, delete: true, restore: true } }));
+  await page.route("/api/communications/threads**", (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    return route.fulfill({ json: pathname === "/api/communications/threads/thread-proof" ? proofThread : [proofThread] });
+  });
 }
 
 function moduleCatalog() {

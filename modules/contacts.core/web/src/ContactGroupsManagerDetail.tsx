@@ -1,8 +1,8 @@
-import { Archive, Plus, RotateCcw, Save, ShieldCheck, X } from "lucide-react";
+import { Plus, RotateCcw, Save, ShieldCheck, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { ConfirmCommandButton, WorkspaceActionButton } from "@uok/shared/actions";
 import { EmptyState } from "@uok/shared/data-display";
-import { WorkspaceActionButton } from "@uok/shared/actions";
 import { useUokLocalization } from "@uok/shared/localization";
 import { CommandButton, IconButton } from "@uok/shared/primitives";
 import type { ContactGroupMemberRow, ManagedContactGroup } from "./contactGroupsManagerApi";
@@ -17,6 +17,7 @@ export function ContactGroupsManagerDetail({
   candidateQuery,
   canManage,
   busyAction,
+  focusRestore,
   onNameChange,
   onDescriptionChange,
   onCandidateQueryChange,
@@ -37,25 +38,24 @@ export function ContactGroupsManagerDetail({
   candidateQuery: string;
   canManage: boolean;
   busyAction: string;
+  focusRestore: boolean;
   onNameChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onCandidateQueryChange: (value: string) => void;
   onCreate: () => void;
   onCancelCreate: () => void;
   onSave: () => void;
-  onArchive: () => void;
+  onArchive: () => void | Promise<void>;
   onRestore: () => void;
   onAddMember: (partyId: string) => void;
   onRemoveMember: (partyId: string) => void;
 }) {
   const { t, formatNumber } = useUokLocalization();
   const [nextPartyId, setNextPartyId] = useState("");
-  const [archiveConfirmation, setArchiveConfirmation] = useState(false);
-  const archiveConfirmationRef = useRef<HTMLDivElement>(null);
-  const archiveSectionRef = useRef<HTMLElement>(null);
+  const detailRef = useRef<HTMLElement>(null);
   const memberIds = useMemo(() => new Set(members.map((member) => member.id)), [members]);
   const availableCandidates = candidates.filter((candidate) => !memberIds.has(candidate.id));
-  const isManual = creating || group?.kind === "manual";
+  const isManual = creating || group?.user_managed === true;
   const isArchived = group?.status === "archived";
   const editable = Boolean(canManage && isManual && !isArchived);
   const controlsEnabled = editable && !busyAction;
@@ -65,24 +65,28 @@ export function ContactGroupsManagerDetail({
 
   useEffect(() => {
     setNextPartyId("");
-    setArchiveConfirmation(false);
   }, [creating, group?.id]);
 
   useEffect(() => {
-    if (archiveConfirmation) archiveConfirmationRef.current?.focus();
-  }, [archiveConfirmation]);
-
-  const cancelArchive = () => {
-    setArchiveConfirmation(false);
-    queueMicrotask(() => archiveSectionRef.current?.querySelector<HTMLButtonElement>("button")?.focus());
-  };
+    if (!focusRestore || !isArchived) return;
+    let restoreFrame = 0;
+    const popupFrame = window.requestAnimationFrame(() => {
+      restoreFrame = window.requestAnimationFrame(() => {
+        detailRef.current?.querySelector<HTMLButtonElement>('[data-command="restore-group"]')?.focus();
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(popupFrame);
+      if (restoreFrame) window.cancelAnimationFrame(restoreFrame);
+    };
+  }, [focusRestore, isArchived]);
 
   if (!creating && !group) {
     return <section className="contact-groups-manager-detail"><EmptyState text={t("contacts.groups.choose", "Choose a group to review it.")} /></section>;
   }
 
   return (
-    <section className="contact-groups-manager-detail" aria-label={creating ? t("contacts.groups.create", "Create group") : t("contacts.groups.details", "Group details")}>
+    <section ref={detailRef} className="contact-groups-manager-detail" aria-label={creating ? t("contacts.groups.create", "Create group") : t("contacts.groups.details", "Group details")}>
       <header className="contact-groups-manager-detail-heading">
         <div>
           <p className="eyebrow">{creating ? t("contacts.groups.manual", "Manual") : groupKindLabel(group, t)}</p>
@@ -125,8 +129,8 @@ export function ContactGroupsManagerDetail({
                 {creating ? t("contacts.groups.create", "Create group") : t("command.save", "Save")}
               </CommandButton>
             ) : null}
-            {!creating && isManual && canManage && isArchived ? (
-              <CommandButton icon={RotateCcw} primary onClick={onRestore} disabled={Boolean(busyAction)} loading={busyAction === "restore"}>{t("contacts.groups.restore", "Restore group")}</CommandButton>
+            {!creating && isManual && group?.can_restore ? (
+              <CommandButton icon={RotateCcw} data-command="restore-group" primary onClick={onRestore} disabled={Boolean(busyAction)} loading={busyAction === "restore"}>{t("contacts.groups.restore", "Restore group")}</CommandButton>
             ) : null}
           </div>
         </form>
@@ -184,17 +188,22 @@ export function ContactGroupsManagerDetail({
         </section>
       ) : null}
 
-      {!creating && group && isManual && editable ? (
-        <section ref={archiveSectionRef} className="contact-groups-manager-archive" aria-label={t("contacts.groups.archive", "Archive group")}>
-          {archiveConfirmation ? (
-            <div ref={archiveConfirmationRef} className="contact-groups-manager-confirm" role="group" aria-live="assertive" aria-label={t("contacts.groups.archiveConfirm", "Confirm group archive")} tabIndex={-1}>
-              <p>{t("contacts.groups.archiveQuestion", "Archive this group? It will stop filtering active contacts until restored.")}</p>
-              <WorkspaceActionButton action="cancel" onClick={cancelArchive} disabled={Boolean(busyAction)}>{t("command.cancel", "Cancel")}</WorkspaceActionButton>
-              <CommandButton icon={Archive} destructive onClick={onArchive} disabled={Boolean(busyAction)} loading={busyAction === "archive"}>{t("contacts.groups.archive", "Archive group")}</CommandButton>
-            </div>
-          ) : (
-            <CommandButton icon={Archive} disabled={Boolean(busyAction)} onClick={() => setArchiveConfirmation(true)}>{t("contacts.groups.archive", "Archive group")}</CommandButton>
-          )}
+      {!creating && group && isManual && editable && group.can_delete ? (
+        <section className="contact-groups-manager-archive" aria-label={t("contacts.groups.delete", "Delete group")}>
+          <ConfirmCommandButton
+            key={`${group.id}:${group.status}`}
+            icon={Trash2}
+            message={`${t("contacts.groups.deletePrefix", "Delete")} “${group.name}” ${t("contacts.groups.deleteSuffix", "from active use?")} ${formatNumber(group.member_count)} ${t("contacts.groups.deleteImpact", "memberships will be hidden, but no contacts will be deleted. The group, memberships, saved-search references, and audit history remain, and the group can be restored from Archived.")}`}
+            dialogLabel={t("contacts.groups.deleteConfirm", "Confirm group deletion")}
+            title={`${t("contacts.groups.deletePrefix", "Delete")} “${group.name}”?`}
+            confirmLabel={t("contacts.groups.delete", "Delete group")}
+            onConfirm={onArchive}
+            disabled={Boolean(busyAction)}
+            loading={busyAction === "archive"}
+            destructive
+          >
+            {t("contacts.groups.delete", "Delete group")}
+          </ConfirmCommandButton>
         </section>
       ) : null}
     </section>

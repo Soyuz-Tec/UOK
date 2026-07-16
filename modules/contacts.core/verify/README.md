@@ -2,7 +2,7 @@
 
 The Contacts entry verifier, support functions, and evidence checks are module-owned release assets. The entry script invokes its evidence internally and returns only its scenario result to the generic root verifier.
 
-The current group scenario is self-cleaning: it removes its temporary membership and recoverably archives the exact manual group it created. Its group name, description, command idempotency key, creation event, and cleanup keys are deterministic enough to support audit verification without treating a user-created group as verifier data.
+The current group scenario is self-cleaning: it removes its temporary membership, reloads the exact manual group's strong ETag, proves recoverable Delete and Restore through the public lifecycle endpoints, then archives the group again with the restored validator. Its group name, description, command idempotency key, creation event, and cleanup keys are deterministic enough to support audit verification without treating a user-created group as verifier data.
 
 Historical empty groups and exact one-member groups left by older verifier runs are handled only through `ContactsVerifierGroupCleanup` in `scripts/uok_ops.ps1`. The operation:
 

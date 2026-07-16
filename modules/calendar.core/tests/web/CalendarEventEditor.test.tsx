@@ -5,6 +5,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { CalendarEventEditor } from "../../web/src/CalendarEventEditor";
 import { draftFromEvent, emptyDraft } from "../../web/src/calendarDrafts";
 
+const calendar = {
+  id: "calendar-1", name: "Operations", status: "active", timezone: "UTC",
+  etag: '"calendar-sha256-test"', user_managed: true, can_delete: true, can_restore: false,
+};
+
 describe("CalendarEventEditor", () => {
   afterEach(() => {
     cleanup();
@@ -16,7 +21,7 @@ describe("CalendarEventEditor", () => {
       <CalendarEventEditor
         open
         draft={{ ...emptyDraft(new Date(2026, 6, 10), 9, "calendar-1"), title: "Review" }}
-        calendars={[{ id: "calendar-1", name: "Operations", status: "active", timezone: "UTC" }]}
+        calendars={[calendar]}
         busyAction="save"
         onDraftChange={vi.fn()}
         onSave={vi.fn()}
@@ -37,7 +42,7 @@ describe("CalendarEventEditor", () => {
       <CalendarEventEditor
         open
         draft={{ ...emptyDraft(new Date(2026, 6, 10), 9, "calendar-1"), title: "Daily review", recurrence: "DAILY" }}
-        calendars={[{ id: "calendar-1", name: "Operations", status: "active", timezone: "UTC" }]}
+        calendars={[calendar]}
         busyAction=""
         onDraftChange={vi.fn()}
         onSave={vi.fn()}
@@ -53,10 +58,9 @@ describe("CalendarEventEditor", () => {
   it.each([
     ["confirmed", "Cancel series", "Cancel this entire recurring series? Every occurrence will be canceled.", "cancel"],
     ["canceled", "Restore series", "Restore this entire recurring series? Every occurrence will be restored.", "restore"],
-  ] as const)("labels and confirms a %s whole-series lifecycle action", (status, actionLabel, confirmation, action) => {
+  ] as const)("labels and confirms a %s whole-series lifecycle action", async (status, actionLabel, confirmation, action) => {
     const onCancel = vi.fn();
     const onRestore = vi.fn();
-    const confirm = vi.spyOn(globalThis, "confirm").mockReturnValue(true);
     const draft = {
       ...emptyDraft(new Date(2026, 6, 10), 9, "calendar-1"),
       id: "event-1",
@@ -69,7 +73,7 @@ describe("CalendarEventEditor", () => {
       <CalendarEventEditor
         open
         draft={draft}
-        calendars={[{ id: "calendar-1", name: "Operations", status: "active", timezone: "UTC" }]}
+        calendars={[calendar]}
         selectedEvent={{
           id: "event-1",
           calendar_id: "calendar-1",
@@ -93,7 +97,9 @@ describe("CalendarEventEditor", () => {
     const dialog = screen.getByRole("dialog", { name: "Edit recurring series" });
     expect(within(dialog).getByText("Changes, cancellation, and restoration apply to the entire recurring series.")).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole("button", { name: actionLabel }));
-    expect(confirm).toHaveBeenCalledWith(confirmation);
+    const confirmationDialog = await screen.findByRole("dialog", { name: "Confirm action" });
+    expect(confirmationDialog).toHaveTextContent(confirmation);
+    fireEvent.click(within(confirmationDialog).getByRole("button", { name: actionLabel }));
     expect(action === "cancel" ? onCancel : onRestore).toHaveBeenCalledOnce();
   });
 
@@ -116,7 +122,7 @@ describe("CalendarEventEditor", () => {
       <CalendarEventEditor
         open
         draft={draftFromEvent(selectedEvent)}
-        calendars={[{ id: "calendar-1", name: "Operations", status: "active", timezone: "UTC" }]}
+        calendars={[calendar]}
         selectedEvent={selectedEvent}
         busyAction=""
         onDraftChange={onDraftChange}

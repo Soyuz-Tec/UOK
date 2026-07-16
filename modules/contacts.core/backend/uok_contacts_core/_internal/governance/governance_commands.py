@@ -96,11 +96,13 @@ def cmd_create_contact_team(db: Session, actor: Actor, payload: dict[str, Any], 
         created_at=now, updated_at=now,
     ))
     _emit_event(db, actor, "ContactTeamCreated", "ContactTeam", team.id, {"name": name})
-    return serialize_team(db, team)
+    return serialize_team(db, team, actor)
 
 
 def cmd_update_contact_team(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     team = contact_team(db, actor, bounded_text(payload.get("team_id"), 80))
+    if team.status == "archived":
+        raise ValueError("archived contact teams cannot be edited; restore the team first")
     if "name" in payload:
         name = bounded_text(payload.get("name"), 120)
         if not name:
@@ -115,12 +117,9 @@ def cmd_update_contact_team(db: Session, actor: Actor, payload: dict[str, Any], 
         team.name = name
     if "description" in payload:
         team.description = bounded_text(payload.get("description"), 2_000)
-    if payload.get("status") in {"active", "archived"}:
-        team.status = str(payload["status"])
-        team.archived_at = utcnow() if team.status == "archived" else None
     team.updated_at = utcnow()
     _emit_event(db, actor, "ContactTeamUpdated", "ContactTeam", team.id, {"name": team.name, "status": team.status})
-    return serialize_team(db, team)
+    return serialize_team(db, team, actor)
 
 
 def cmd_add_contact_team_member(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
@@ -150,6 +149,7 @@ def cmd_add_contact_team_member(db: Session, actor: Actor, payload: dict[str, An
         )
         db.add(member)
     member.role, member.status, member.updated_at = role, "active", now
+    team.updated_at = now
     db.flush()
     _emit_event(db, actor, "ContactTeamMemberAdded", "ContactTeam", team.id, {"user_id": user_id, "role": role})
     return row_dict(member)
@@ -157,6 +157,8 @@ def cmd_add_contact_team_member(db: Session, actor: Actor, payload: dict[str, An
 
 def cmd_remove_contact_team_member(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     team = contact_team(db, actor, bounded_text(payload.get("team_id"), 80))
+    if team.status != "active":
+        raise ValueError("archived contact teams cannot change members")
     user_id = bounded_text(payload.get("user_id"), 80)
     member = db.scalar(select(ContactTeamMember).where(
         ContactTeamMember.organization_id == actor.organization_id,
@@ -175,7 +177,9 @@ def cmd_remove_contact_team_member(db: Session, actor: Actor, payload: dict[str,
     ))
     if member.role == "owner" and not another_owner:
         raise ValueError("assign another team owner before removing the last owner")
-    member.status, member.updated_at = "inactive", utcnow()
+    now = utcnow()
+    member.status, member.updated_at = "inactive", now
+    team.updated_at = now
     _emit_event(db, actor, "ContactTeamMemberRemoved", "ContactTeam", team.id, {"user_id": user_id})
     return {"team_id": team.id, "user_id": user_id, "removed": True}
 

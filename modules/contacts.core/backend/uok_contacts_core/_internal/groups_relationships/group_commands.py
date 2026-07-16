@@ -8,8 +8,10 @@ from sqlalchemy.orm import Session
 from uok_contacts_core._internal.delivery.command_support import _emit_event
 from uok_contacts_core._internal.registry.access import validate_contact_assignment
 from uok_contacts_core._internal.groups_relationships.group_read_model import (
+    contact_group_etag,
+    contact_group_revision,
     ensure_manually_managed_contact_group,
-    get_contact_group_or_error,
+    get_contact_group_for_update_or_error,
     serialize_contact_group,
 )
 from uok_contacts_core._internal.persistence.models import ContactGroup, utcnow
@@ -19,6 +21,7 @@ from uok_contacts_core._internal.registry.validation import (
     contact_group_visibility_scope,
     validate_contact_payload_lengths,
 )
+from uok.kernel.command_contracts import COMMAND_IF_MATCH_CONTEXT_KEY, CommandPreconditionError
 from uok.kernel.security import Actor
 from uok.util import dumps
 
@@ -65,12 +68,12 @@ def cmd_create_contact_group(db: Session, actor: Actor, payload: dict[str, Any],
     db.add(group)
     db.flush()
     _emit_event(db, actor, "ContactGroupCreated", "ContactGroup", group.id, {"name": group.name})
-    return serialize_contact_group(db, group)
+    return serialize_contact_group(db, group, actor=actor)
 
 
 def cmd_update_contact_group(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     validate_contact_payload_lengths(payload)
-    group = get_contact_group_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
+    group = get_contact_group_for_update_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
     ensure_manually_managed_contact_group(group)
     if group.status == "archived":
         raise ValueError("archived contact groups cannot be edited; restore the group first")
@@ -117,30 +120,63 @@ def cmd_update_contact_group(db: Session, actor: Actor, payload: dict[str, Any],
             "name": group.name,
             "changed_fields": changed_fields,
         })
-    return serialize_contact_group(db, group)
+    return serialize_contact_group(db, group, actor=actor)
 
 
 def cmd_archive_contact_group(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     validate_contact_payload_lengths(payload)
-    group = get_contact_group_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
+    group = get_contact_group_for_update_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
     ensure_manually_managed_contact_group(group)
+    require_current_contact_group_etag(group, payload)
     if group.status == "archived":
-        return serialize_contact_group(db, group)
+        return serialize_contact_group(db, group, actor=actor)
+    if group.status != "active":
+        raise ValueError("contact group cannot be deleted from its current status")
     group.status = "archived"
     group.archived_at = utcnow()
     group.updated_at = utcnow()
     _emit_event(db, actor, "ContactGroupArchived", "ContactGroup", group.id, {"name": group.name})
-    return serialize_contact_group(db, group)
+    return serialize_contact_group(db, group, actor=actor)
 
 
 def cmd_restore_contact_group(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     validate_contact_payload_lengths(payload)
-    group = get_contact_group_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
+    group = get_contact_group_for_update_or_error(db, actor, bounded_text(payload.get("group_id"), "group_id"))
     ensure_manually_managed_contact_group(group)
+    require_current_contact_group_etag(group, payload)
     if group.status == "active":
-        return serialize_contact_group(db, group)
+        return serialize_contact_group(db, group, actor=actor)
+    if group.status != "archived":
+        raise ValueError("contact group cannot be restored from its current status")
     group.status = "active"
     group.archived_at = None
     group.updated_at = utcnow()
     _emit_event(db, actor, "ContactGroupRestored", "ContactGroup", group.id, {"name": group.name})
-    return serialize_contact_group(db, group)
+    return serialize_contact_group(db, group, actor=actor)
+
+
+def require_current_contact_group_etag(group: ContactGroup, payload: dict[str, Any]) -> None:
+    supplied = str(payload.get(COMMAND_IF_MATCH_CONTEXT_KEY) or "").strip()
+    current = contact_group_etag(group)
+    common = {
+        "current_revision": contact_group_revision(group),
+        "current_etag": current,
+        "object_ids": [group.id],
+        "reload_url": "/api/contacts/groups?include_empty=true&include_archived=true",
+    }
+    if not supplied:
+        raise CommandPreconditionError(
+            code="contact_group_precondition_required",
+            message="A current contact-group ETag is required for this lifecycle change.",
+            status_code=428,
+            repair="Reload the group, review its latest name and membership count, then confirm the action again.",
+            **common,
+        )
+    if supplied != current:
+        raise CommandPreconditionError(
+            code="contact_group_precondition_stale",
+            message="The contact group changed after this action was prepared.",
+            status_code=412,
+            repair="The latest group has been loaded. Review it, then confirm the action again.",
+            **common,
+        )

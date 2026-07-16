@@ -149,6 +149,34 @@
   padding-top: 0;
 }
 
+.confirm-command-content {
+  display: grid;
+  gap: var(--uok-space-4);
+  padding: var(--uok-space-5);
+}
+
+.confirm-command-trigger {
+  display: contents;
+}
+
+.confirm-command-content .field textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.confirm-command-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--uok-space-2);
+}
+
+.confirm-command-error {
+  margin: 0;
+  color: var(--uok-status-danger);
+  font: 700 var(--uok-callout) var(--uok-font-family);
+}
+
 .workspace-context-menu {
   position: fixed;
   top: min(var(--context-menu-y), calc(100vh - 280px));

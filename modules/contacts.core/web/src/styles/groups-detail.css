@@ -87,14 +87,6 @@
   padding-top: var(--uok-space-3);
 }
 
-.contact-groups-manager-confirm {
-  align-items: center;
-}
-
-.contact-groups-manager-confirm p {
-  flex: 1 1 240px;
-}
-
 .contact-groups-manager-loading,
 .contact-groups-manager-empty {
   min-height: 300px;

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+from hashlib import sha256
 from typing import Any
 
 from sqlalchemy import and_, case, func, select
@@ -28,6 +30,23 @@ def can_read_contact_group(actor: Actor, group: ContactGroup, team_ids: set[str]
 def get_contact_group_or_error(db: Session, actor: Actor, group_id: str) -> ContactGroup:
     group = db.get(ContactGroup, group_id)
     if not group or group.organization_id != actor.organization_id:
+        raise ValueError("contact group not found")
+    if not can_read_contact_group(actor, group, actor_contact_team_ids(db, actor)):
+        raise PermissionError("contacts.read")
+    return group
+
+
+def get_contact_group_for_update_or_error(db: Session, actor: Actor, group_id: str) -> ContactGroup:
+    group = db.scalar(
+        select(ContactGroup)
+        .where(
+            ContactGroup.id == group_id,
+            ContactGroup.organization_id == actor.organization_id,
+        )
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if not group:
         raise ValueError("contact group not found")
     if not can_read_contact_group(actor, group, actor_contact_team_ids(db, actor)):
         raise PermissionError("contacts.read")
@@ -85,7 +104,7 @@ def contact_group_rows(
     rows = db.execute(stmt).all()
     team_ids = actor_contact_team_ids(db, actor)
     return [
-        serialize_contact_group(db, group, member_count=member_count, active_member_count=active_member_count)
+        serialize_contact_group(db, group, actor=actor, member_count=member_count, active_member_count=active_member_count)
         for group, member_count, active_member_count in rows
         if can_read_contact_group(actor, group, team_ids)
     ]
@@ -95,6 +114,7 @@ def serialize_contact_group(
     db: Session,
     group: ContactGroup,
     *,
+    actor: Actor | None = None,
     member_count: int | None = None,
     active_member_count: int | None = None,
 ) -> dict[str, Any]:
@@ -120,7 +140,32 @@ def serialize_contact_group(
     data = row_dict(group)
     data["member_count"] = int(member_count or 0)
     data["active_member_count"] = int(active_member_count or 0)
+    data["etag"] = contact_group_etag(group)
+    user_managed = group.kind == "manual"
+    data["user_managed"] = user_managed
+    data["can_delete"] = bool(actor and has_permission(actor, "contacts.manage")) and user_managed and group.status == "active"
+    data["can_restore"] = bool(actor and has_permission(actor, "contacts.restore")) and user_managed and group.status == "archived"
     return data
+
+
+def contact_group_etag(group: ContactGroup) -> str:
+    normalized = normalized_contact_group_updated_at(group.updated_at)
+    updated_at = normalized.isoformat(timespec="microseconds") if normalized else ""
+    source = f"{group.organization_id}:{group.id}:{updated_at}:{group.status}:{group.kind}"
+    return f'"contact-group-sha256-{sha256(source.encode("utf-8")).hexdigest()}"'
+
+
+def contact_group_revision(group: ContactGroup) -> int:
+    normalized = normalized_contact_group_updated_at(group.updated_at)
+    return int(normalized.replace(tzinfo=timezone.utc).timestamp() * 1_000_000) if normalized else 0
+
+
+def normalized_contact_group_updated_at(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is not None:
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
 
 
 def readable_group_party_ids(db: Session, actor: Actor, group_id: str) -> set[str]:

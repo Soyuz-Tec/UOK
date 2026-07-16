@@ -72,6 +72,9 @@ def import_batch_rows(db: Session, actor: Actor) -> list[dict[str, Any]]:
 
 def serialize_party(db: Session, party: Party, include_detail: bool = False, actor: Actor | None = None) -> dict[str, Any]:
     data = row_dict(party)
+    data["can_delete"] = bool(actor and party.status == "active" and has_permission(actor, "contacts.manage"))
+    data["can_restore"] = bool(actor and party.status == "archived" and has_permission(actor, "contacts.restore"))
+    data["can_purge"] = bool(actor and party.status != "purged" and has_permission(actor, "contacts.purge"))
     attrs = _public_party_attrs(data.get("attrs", {}))
     data["attrs"] = attrs
     data.update({field: attrs.get(field, "") for field in CONTACT_ATTR_FIELDS})

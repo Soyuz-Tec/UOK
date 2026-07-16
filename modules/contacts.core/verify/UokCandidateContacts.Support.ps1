@@ -61,12 +61,36 @@ function Invoke-UokContactsCandidateGroupScenario {
         throw "Contact group membership cleanup failed: $($cleanupMembership | ConvertTo-Json -Depth 20)"
     }
 
-    $archivedGroup = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
-        command_type = "ArchiveContactGroup"
-        payload = @{ group_id = $groupId }
-        idempotency_key = "uok-contact-group-cleanup-$Stamp"
+    $currentGroupResponse = Invoke-UokJson -Method "GET" -Path "/api/contacts/groups?include_empty=true&include_archived=true" -Headers $OpsHeaders
+    # Windows PowerShell 5.1 can retain a top-level JSON array as one pipeline
+    # object. Re-pipe it before selecting the exact candidate-created group.
+    $currentGroupRows = @($currentGroupResponse | ForEach-Object { $_ })
+    $currentGroup = $currentGroupRows | Where-Object { $_.id -eq $groupId } | Select-Object -First 1
+    if (-not $currentGroup -or -not $currentGroup.etag -or -not $currentGroup.can_delete) {
+        throw "Contact group did not expose its governed Delete validator: $($currentGroupRows | ConvertTo-Json -Depth 20)"
     }
-    if ($archivedGroup.result.status -ne "archived") {
-        throw "Contact group cleanup failed: $($archivedGroup | ConvertTo-Json -Depth 20)"
+
+    $deleteHeaders = @{}
+    foreach ($key in $OpsHeaders.Keys) { $deleteHeaders[$key] = $OpsHeaders[$key] }
+    $deleteHeaders["If-Match"] = $currentGroup.etag
+    $archivedGroup = Invoke-UokJson -Method "DELETE" -Path "/api/contacts/groups/$groupId" -Headers $deleteHeaders
+    if ($archivedGroup.status -ne "archived" -or -not $archivedGroup.etag -or -not $archivedGroup.can_restore) {
+        throw "Contact group recoverable Delete failed: $($archivedGroup | ConvertTo-Json -Depth 20)"
+    }
+
+    $restoreHeaders = @{}
+    foreach ($key in $OpsHeaders.Keys) { $restoreHeaders[$key] = $OpsHeaders[$key] }
+    $restoreHeaders["If-Match"] = $archivedGroup.etag
+    $restoredGroup = Invoke-UokJson -Method "POST" -Path "/api/contacts/groups/$groupId/restore" -Headers $restoreHeaders
+    if ($restoredGroup.status -ne "active" -or -not $restoredGroup.etag -or -not $restoredGroup.can_delete) {
+        throw "Contact group Restore failed: $($restoredGroup | ConvertTo-Json -Depth 20)"
+    }
+
+    $cleanupHeaders = @{}
+    foreach ($key in $OpsHeaders.Keys) { $cleanupHeaders[$key] = $OpsHeaders[$key] }
+    $cleanupHeaders["If-Match"] = $restoredGroup.etag
+    $cleanupGroup = Invoke-UokJson -Method "DELETE" -Path "/api/contacts/groups/$groupId" -Headers $cleanupHeaders
+    if ($cleanupGroup.status -ne "archived" -or -not $cleanupGroup.can_restore) {
+        throw "Contact group cleanup failed: $($cleanupGroup | ConvertTo-Json -Depth 20)"
     }
 }

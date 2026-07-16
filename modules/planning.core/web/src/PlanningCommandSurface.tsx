@@ -1,7 +1,7 @@
-import { FolderKanban, LayoutPanelTop, Redo2, Undo2 } from "lucide-react";
-import { useMemo, type Dispatch, type SetStateAction } from "react";
+import { FolderKanban, LayoutPanelTop, Redo2, RotateCcw, Trash2, Undo2 } from "lucide-react";
+import { useEffect, useMemo, useRef, type Dispatch, type SetStateAction } from "react";
 
-import { WorkspaceActionButton } from "@uok/shared/actions";
+import { ConfirmCommandButton, WorkspaceActionButton } from "@uok/shared/actions";
 import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkspaceCommandBar } from "@uok/shared/layout";
 import { useUokLocalization } from "@uok/shared/localization";
@@ -24,6 +24,7 @@ type PlanningCommandSurfaceModel = {
   history: PlanningHistoryState;
   bulkUpdatesAvailable: boolean;
   canCreateProject: boolean;
+  canTransitionProject: boolean;
   activeView: PlanningView;
   cascadeScheduling: boolean;
   cascadeSort: boolean;
@@ -67,6 +68,8 @@ type PlanningCommandSurfaceActions = {
   onOpenResources: () => void;
   onProjectChange: (projectId: string) => void;
   onNewProject: () => void;
+  onDeleteProject: (reason: string) => Promise<void>;
+  onRestoreProject: (reason: string) => Promise<void>;
   onRedo: () => void;
   onRefresh: () => void;
   onReviewModeChange: (reviewMode: boolean) => void;
@@ -108,6 +111,8 @@ export function PlanningCommandSurface({ model, actions }: {
   actions: PlanningCommandSurfaceActions;
 }) {
   const { t } = useUokLocalization();
+  const lifecycleActionRef = useRef<HTMLDivElement>(null);
+  const previousLifecycleRef = useRef({ id: model.schedule.project.id, status: model.schedule.project.status });
   const statusOptions = useMemo(() => [
     { value: "", label: "Any status" },
     ...Array.from(new Set(model.schedule.tasks.map((task) => task.status || "planned"))).sort().map((status) => ({ value: status, label: status })),
@@ -121,6 +126,27 @@ export function PlanningCommandSurface({ model, actions }: {
     { value: "", label: "Any resource" },
     ...model.schedule.resources.map((resource) => ({ value: resource.id, label: resource.name })),
   ], [model.schedule.resources]);
+  const pickerProjects = useMemo(
+    () => model.projects.filter((project) => project.status !== "archived" || project.id === model.selectedProjectId),
+    [model.projects, model.selectedProjectId],
+  );
+
+  useEffect(() => {
+    const previous = previousLifecycleRef.current;
+    const current = { id: model.schedule.project.id, status: model.schedule.project.status };
+    previousLifecycleRef.current = current;
+    if (previous.id !== current.id || previous.status === current.status) return undefined;
+    let focusFrame = 0;
+    const settleFrame = window.requestAnimationFrame(() => {
+      focusFrame = window.requestAnimationFrame(() => {
+        lifecycleActionRef.current?.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(settleFrame);
+      window.cancelAnimationFrame(focusFrame);
+    };
+  }, [model.schedule.project.id, model.schedule.project.status]);
 
   return <>
     <WorkspaceCommandBar
@@ -140,12 +166,59 @@ export function PlanningCommandSurface({ model, actions }: {
         groupBy="none"
         groupOptions={[]}
         savedViewsStorageKey="planning.gantt.searchViews"
-        supplementalSections={({ close }) => <section className="search-workspace-section planning-search-plan-actions" aria-label="Plan actions">
-          <h3><FolderKanban size={16} aria-hidden="true" /> Plan actions</h3>
+        supplementalSections={({ close }) => <section className="search-workspace-section planning-search-plan-actions" aria-label={t("planning.actions.label", "Plan actions")}>
+          <h3><FolderKanban size={16} aria-hidden="true" /> {t("planning.actions.label", "Plan actions")}</h3>
           <div className="planning-search-plan-action-list">
             <WorkspaceActionButton action="create" labelKey="planning.projectCreate.action" fallbackLabel="New project" onClick={() => { close(); actions.onNewProject(); }} disabled={!model.canCreateProject || Boolean(model.busy)} />
             <WorkspaceActionButton action="create" labelKey="planning.noProject.sampleAction" fallbackLabel="New sample plan" onClick={() => { actions.onCreateDemoSchedule(); close(); }} loading={model.busy === "demo"} disabled={model.reviewMode} />
             <WorkspaceActionButton action="refresh" onClick={() => { actions.onRefresh(); close(); }} loading={model.busy === "refresh"} />
+            <div ref={lifecycleActionRef} className="planning-project-lifecycle-action">
+            {model.schedule.project.status === "archived" ? (
+              <ConfirmCommandButton
+                key={`${model.schedule.project.id}:${model.schedule.project.status}`}
+                icon={RotateCcw}
+                message={t("planning.projectLifecycle.restoreQuestion", "Restore {name} to active Planning work? A reason is recorded in the project revision and audit evidence.").replace("{name}", model.schedule.project.name)}
+                dialogLabel={t("planning.projectLifecycle.restoreDialog", "Restore project {name}").replace("{name}", model.schedule.project.name)}
+                title={t("planning.projectLifecycle.restore", "Restore project")}
+                confirmLabel={t("planning.projectLifecycle.restore", "Restore project")}
+                reasonLabel={t("planning.projectLifecycle.restoreReason", "Reason for restoring")}
+                reasonPlaceholder={t("planning.projectLifecycle.restorePlaceholder", "Explain why Planning work is resuming")}
+                reasonRequired
+                onConfirm={async (reason) => {
+                  await actions.onRestoreProject(reason || "");
+                  close();
+                }}
+                disabled={!model.canTransitionProject || Boolean(model.busy)}
+                loading={model.busy === "project-restore"}
+              >
+                {t("planning.projectLifecycle.restore", "Restore project")}
+              </ConfirmCommandButton>
+            ) : (
+              <ConfirmCommandButton
+                key={`${model.schedule.project.id}:${model.schedule.project.status}`}
+                icon={Trash2}
+                message={t("planning.projectLifecycle.deleteQuestion", "Delete {name}? UOK will archive this project. Its {tasks} tasks, {dependencies} dependencies, history, and evidence are not permanently erased and can be restored.")
+                  .replace("{name}", model.schedule.project.name)
+                  .replace("{tasks}", String(model.schedule.tasks.length))
+                  .replace("{dependencies}", String(model.schedule.dependencies.length))}
+                dialogLabel={t("planning.projectLifecycle.deleteDialog", "Delete project {name}").replace("{name}", model.schedule.project.name)}
+                title={t("planning.projectLifecycle.delete", "Delete project")}
+                confirmLabel={t("planning.projectLifecycle.delete", "Delete project")}
+                reasonLabel={t("planning.projectLifecycle.deleteReason", "Reason for deleting")}
+                reasonPlaceholder={t("planning.projectLifecycle.deletePlaceholder", "Explain why this project should be archived")}
+                reasonRequired
+                onConfirm={async (reason) => {
+                  await actions.onDeleteProject(reason || "");
+                  close();
+                }}
+                disabled={!model.canTransitionProject || Boolean(model.busy)}
+                loading={model.busy === "project-delete"}
+                destructive
+              >
+                {t("planning.projectLifecycle.delete", "Delete project")}
+              </ConfirmCommandButton>
+            )}
+            </div>
             <button type="button" className="command-button planning-history-control" aria-label="Undo" title={model.history.undoLabel ? `Undo ${model.history.undoLabel}` : "Undo"} onClick={() => { actions.onUndo(); close(); }} disabled={model.reviewMode || !model.history.canUndo || model.busy === "undo"}>
               <Undo2 size={16} aria-hidden="true" /><span>Undo</span>
             </button>
@@ -162,7 +235,7 @@ export function PlanningCommandSurface({ model, actions }: {
         <label className="planning-project-picker">
           <span>Project</span>
           <select value={model.selectedProjectId} onChange={(event) => actions.onProjectChange(event.target.value)}>
-            {model.projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
+            {pickerProjects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
           </select>
         </label>
         <div className="planning-project-summary">

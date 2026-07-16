@@ -37,6 +37,7 @@ def command_permissions() -> dict[str, str]:
         "CreateCalendar": "calendar.manage",
         "UpdateCalendar": "calendar.manage",
         "DeleteCalendar": "calendar.manage",
+        "RestoreCalendar": "calendar.manage",
         "CreateCalendarEvent": "calendar.event.create",
         "UpdateCalendarEvent": "calendar.event.update",
         "CancelCalendarEvent": "calendar.event.cancel",

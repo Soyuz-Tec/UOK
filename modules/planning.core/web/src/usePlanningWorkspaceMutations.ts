@@ -61,7 +61,7 @@ export function usePlanningWorkspaceMutations({
     setStaleRecovery(null);
   }, []);
   const history = planningWorkspaceHistoryState(undoStack, redoStack);
-  const workspaceActions = planningWorkspaceActions({ token, projectId: selectedProjectId, mutate, mutateWithOutcome });
+  const workspaceActions = planningWorkspaceActions({ token, projectId: selectedProjectId, mutate, mutateWithOutcome, mutateConfirmed });
   const reloadSchedule = useCallback(async (projectId: string, current: () => boolean = () => true) => {
     const snapshot = await loadPlanningSchedule(token, projectId);
     if (!current()) throw new Error("Planning operation was superseded.");
@@ -71,8 +71,9 @@ export function usePlanningWorkspaceMutations({
     return snapshot.schedule;
   }, [setCurrentEtag, setSchedule, setSelectedTaskId, token]);
   const projectOperations = usePlanningProjectOperations({
-    token, operational, selectedProjectId, setProjects, setSchedule, setSelectedProjectId, setSelectedTaskId, setStatus,
-    setCurrentEtag, reloadSchedule, clearHistory, clearRecovery, startOperation, finishOperation, invalidateOperation, isOperationCurrent,
+    token, operational, selectedProjectId, schedule, setProjects, setSchedule, setSelectedProjectId, setSelectedTaskId, setStatus,
+    setCurrentEtag, getCurrentEtag: () => etagRef.current, reloadSchedule, clearHistory, clearRecovery,
+    startOperation, finishOperation, invalidateOperation, isOperationCurrent,
   });
 
   return {
@@ -82,11 +83,13 @@ export function usePlanningWorkspaceMutations({
     changeProject: projectOperations.changeProject,
     createProject: projectOperations.createProject,
     createDemoSchedule: projectOperations.createDemoSchedule,
+    deleteProject: projectOperations.deleteProject,
     history,
     keepLatestSchedule,
     reapplyStaleMutation,
     refresh: projectOperations.refresh,
     reloadStaleSchedule,
+    restoreProject: projectOperations.restoreProject,
     runHistory,
     scheduleEtag,
     staleRecovery,
@@ -122,6 +125,50 @@ export function usePlanningWorkspaceMutations({
         await reloadSchedule(selectedProjectId, () => isOperationCurrent(ticket)).catch(() => undefined);
       }
       return false;
+    } finally {
+      finishOperation(ticket);
+    }
+  }
+
+  async function mutateConfirmed(mutation: PlanningMutationIntent) {
+    if (!selectedProjectId || !etagRef.current) {
+      const message = "Reload the schedule before making changes.";
+      setStatus({ status: "unavailable", message });
+      throw new Error(message);
+    }
+    const before = schedule;
+    const ticket = startOperation(mutation.action);
+    if (!ticket) throw new Error("Planning is busy. Wait for the current operation to finish.");
+    try {
+      const response = await mutation.run(etagRef.current);
+      if (!isOperationCurrent(ticket)) throw new Error("Planning operation was superseded.");
+      setCurrentEtag(response.etag);
+      const after = await reloadSchedule(selectedProjectId, () => isOperationCurrent(ticket));
+      if (!isOperationCurrent(ticket)) throw new Error("Planning operation was superseded.");
+      if (before) pushHistory(withPlanningHistorySource(mutation.history(before, after, mutation.label), response.data, after.project.revision));
+      clearRecovery();
+      setStatus({ status: "validated", ...mutation.okStatus, ...mutation.successStatus?.(response.data) });
+    } catch (error) {
+      if (!isOperationCurrent(ticket)) throw error;
+      clearRecovery();
+      if (isPlanningPreconditionError(error)) {
+        clearHistory();
+        let reloaded = false;
+        try {
+          await reloadSchedule(selectedProjectId, () => isOperationCurrent(ticket));
+          reloaded = isOperationCurrent(ticket);
+        } catch {
+          reloaded = false;
+        }
+        const repair = reloaded
+          ? `The latest schedule is loaded. Review it, then confirm ${mutation.label} again.`
+          : `Reload the latest schedule before confirming ${mutation.label} again.`;
+        setStatus({ status: "stale", ...error.detail, repair });
+        throw new Error(`${error.detail.message} ${repair}`);
+      }
+      setStatus(planningWorkspaceErrorStatus(error));
+      await reloadSchedule(selectedProjectId, () => isOperationCurrent(ticket)).catch(() => undefined);
+      throw error instanceof Error ? error : new Error(planningWorkspaceErrorMessage(error));
     } finally {
       finishOperation(ticket);
     }

@@ -39,6 +39,10 @@ class ContactTeamMemberRequest(BaseModel):
     role: str = Field(default="member", pattern="^(owner|manager|member|viewer)$")
 
 
+class ContactLifecycleReasonRequest(BaseModel):
+    reason: str = Field(..., min_length=3, max_length=500)
+
+
 class ContactSavedViewWriteRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=120)
     visibility_scope: str = Field(default="personal", pattern="^(personal|organization)$")

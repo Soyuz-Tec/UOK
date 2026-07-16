@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { Plus, Save } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 
+import { ConfirmCommandButton } from "@uok/shared/actions";
 import { EmptyState } from "@uok/shared/data-display";
 import { useUokLocalization } from "@uok/shared/localization";
 import { CommandButton } from "@uok/shared/primitives";
@@ -18,10 +19,11 @@ export function ContactCustomFieldsToolsPanel(props: ContactDataToolsPanelProps)
   const [appliesTo, setAppliesTo] = useState("all");
   const [required, setRequired] = useState(false);
   const [options, setOptions] = useState("");
+  const definitionsRef = useRef<HTMLDivElement>(null);
   const partyId = props.selectedContact?.id || "";
   const normalizedFieldKey = normalizeFieldKey(fieldKey);
   const fieldKeyValid = /^[a-z][a-z0-9_]{1,79}$/.test(normalizedFieldKey);
-  const applicableDefinitions = useMemo(() => definitions.filter((definition) => !props.selectedContact || definition.applies_to === "all" || definition.applies_to === props.selectedContact.party_type), [definitions, props.selectedContact]);
+  const applicableDefinitions = useMemo(() => definitions.filter((definition) => definition.status === "active" && (!props.selectedContact || definition.applies_to === "all" || definition.applies_to === props.selectedContact.party_type)), [definitions, props.selectedContact]);
 
   const load = async () => {
     const nextDefinitions = await props.api.customFields();
@@ -68,13 +70,55 @@ export function ContactCustomFieldsToolsPanel(props: ContactDataToolsPanelProps)
     await props.onChanged();
   };
 
+  const deleteDefinition = async (definition: ContactCustomFieldDefinition, reason: string) => {
+    try {
+      const result = await props.run(
+        `custom-delete-${definition.id}`,
+        () => props.api.deleteCustomField(definition.id, definition.etag, reason),
+        t("contacts.dataTools.fieldDeleted", "Custom field deleted. Stored values are preserved for restore."),
+        { rethrow: true },
+      );
+      if (result) await load();
+      focusDefinition(definitionsRef.current, definition.id);
+    } catch (error) {
+      await load();
+      throw error;
+    }
+  };
+
+  const restoreDefinition = async (definition: ContactCustomFieldDefinition) => {
+    const result = await props.run(
+      `custom-restore-${definition.id}`,
+      () => props.api.restoreCustomField(definition.id, definition.etag),
+      t("contacts.dataTools.fieldRestored", "Custom field and its stored values restored."),
+    );
+    await load();
+    if (result) focusDefinition(definitionsRef.current, definition.id);
+  };
+
   return (
     <section className="contact-data-tool-panel" aria-label={t("contacts.dataTools.custom", "Custom fields") }>
       <header><div><p className="eyebrow">{t("contacts.dataTools.extension", "Governed extension")}</p><h3>{t("contacts.dataTools.custom", "Custom fields")}</h3></div>{props.selectedContact ? <strong>{props.selectedContact.display_name}</strong> : null}</header>
       <div className="contact-data-tools-columns">
         <section className="contact-data-tools-subsection" aria-label={t("contacts.dataTools.fieldDefinitions", "Field definitions") }>
           <h4>{t("contacts.dataTools.fieldDefinitions", "Field definitions")}</h4>
-          {definitions.length ? <div className="contact-data-tools-record-list">{definitions.map((definition) => <article className="contact-data-tools-record" key={definition.id}><div><strong>{definition.label}</strong><span>{definition.field_key} · {definition.field_type} · {definition.applies_to}</span><small>{definition.required ? t("contacts.dataTools.required", "Required") : t("contacts.dataTools.optional", "Optional")}</small></div></article>)}</div> : <EmptyState text={t("contacts.dataTools.noCustomFields", "No custom field definitions exist.")} />}
+          {definitions.length ? <div ref={definitionsRef} className="contact-data-tools-record-list">{definitions.map((definition) => <article className="contact-data-tools-record" data-field-id={definition.id} tabIndex={-1} key={definition.id}>
+            <div><strong>{definition.label}</strong><span>{definition.field_key} · {definition.field_type} · {definition.applies_to}</span><small>{definition.status === "archived" ? t("contacts.dataTools.deleted", "Deleted — values preserved") : definition.required ? t("contacts.dataTools.required", "Required") : t("contacts.dataTools.optional", "Optional")}</small></div>
+            {definition.can_delete ? <ConfirmCommandButton
+              icon={Trash2}
+              dialogLabel={t("contacts.dataTools.deleteFieldDialog", "Delete custom field")}
+              title={t("contacts.dataTools.deleteField", "Delete custom field")}
+              message={t("contacts.dataTools.deleteFieldConfirm", `Delete ${definition.label}? Existing contact values will be hidden but preserved for restore.`)}
+              reasonLabel={t("contacts.dataTools.deleteReason", "Reason for deletion")}
+              reasonPlaceholder={t("contacts.dataTools.deleteReasonPlaceholder", "Why is this no longer needed?")}
+              reasonRequired
+              onConfirm={(reason) => deleteDefinition(definition, reason || "")}
+              destructive
+              disabled={Boolean(props.busyAction)}
+              loading={props.busyAction === `custom-delete-${definition.id}`}
+            >{t("command.delete", "Delete")}</ConfirmCommandButton> : null}
+            {definition.can_restore ? <CommandButton icon={RotateCcw} onClick={() => void restoreDefinition(definition)} loading={props.busyAction === `custom-restore-${definition.id}`}>{t("command.restore", "Restore")}</CommandButton> : null}
+          </article>)}</div> : <EmptyState text={t("contacts.dataTools.noCustomFields", "No custom field definitions exist.")} />}
           {props.canGovern ? <fieldset className="contact-data-tools-form" disabled={Boolean(props.busyAction)}><legend>{t("contacts.dataTools.defineField", "Define custom field")}</legend><div><label htmlFor="contact-custom-field-key"><span>{t("contacts.dataTools.fieldKey", "Field key")}</span><input id="contact-custom-field-key" value={fieldKey} onChange={(event) => setFieldKey(event.target.value)} placeholder="account_tier" maxLength={80} aria-invalid={fieldKey.trim() && !fieldKeyValid ? true : undefined} aria-describedby="contact-custom-field-key-help" /></label><small id="contact-custom-field-key-help">{fieldKey.trim() && !fieldKeyValid ? t("contacts.dataTools.invalidFieldKey", "Use 2-80 characters: start with a letter, then lowercase letters, numbers, or underscores.") : t("contacts.dataTools.fieldKeyHint", "Starts with a letter; lowercase letters, numbers, and underscores only.")}</small></div><label><span>{t("contacts.dataTools.fieldLabel", "Label")}</span><input value={label} onChange={(event) => setLabel(event.target.value)} /></label><label><span>{t("contacts.dataTools.fieldType", "Field type")}</span><select value={fieldType} onChange={(event) => setFieldType(event.target.value)}>{["text", "number", "date", "boolean", "choice", "url"].map((value) => <option key={value}>{value}</option>)}</select></label><label><span>{t("contacts.dataTools.appliesTo", "Applies to")}</span><select value={appliesTo} onChange={(event) => setAppliesTo(event.target.value)}><option value="all">All contacts</option><option value="person">People</option><option value="organization">Organizations</option></select></label>{fieldType === "choice" ? <label className="wide"><span>{t("contacts.dataTools.choiceOptions", "Choice options")}</span><input value={options} onChange={(event) => setOptions(event.target.value)} placeholder="standard, preferred, strategic" /></label> : null}<label className="check"><input type="checkbox" checked={required} onChange={(event) => setRequired(event.target.checked)} /><span>{t("contacts.dataTools.required", "Required")}</span></label><div className="contact-data-tools-form-actions wide"><CommandButton icon={Plus} primary onClick={() => void defineField()} disabled={!fieldKeyValid || !label.trim()} loading={props.busyAction === "custom-define"}>{t("contacts.dataTools.defineField", "Define custom field")}</CommandButton></div></fieldset> : null}
         </section>
         <section className="contact-data-tools-subsection" aria-label={t("contacts.dataTools.contactValues", "Contact values") }>
@@ -102,4 +146,10 @@ function normalizedCustomValue(definition: ContactCustomFieldDefinition, value: 
 
 function normalizeFieldKey(value: string) {
   return value.trim().toLocaleLowerCase().replace(/[^a-z0-9_]/g, "_").replace(/^[^a-z]+/, "");
+}
+
+function focusDefinition(container: HTMLDivElement | null, definitionId: string) {
+  window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+    Array.from(container?.querySelectorAll<HTMLElement>("[data-field-id]") || []).find((element) => element.dataset.fieldId === definitionId)?.focus();
+  }));
 }

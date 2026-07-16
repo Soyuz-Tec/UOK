@@ -15,6 +15,7 @@ from uok_contacts_core._internal.governance.system_command_support import (
     bounded_mapping,
     bounded_text,
     record_activity,
+    serialize_custom_field_definition,
     validated_custom_field_value,
 )
 from uok_contacts_core._internal.persistence.system_models import ContactCustomFieldDefinition, ContactExternalIdentity, PartyCustomFieldValue
@@ -86,6 +87,8 @@ def cmd_define_contact_custom_field(db: Session, actor: Actor, payload: dict[str
             updated_at=now,
         )
         db.add(existing)
+    elif existing.status == "archived":
+        raise ValueError("custom field definition is archived; use RestoreContactCustomField")
     existing.label = label
     existing.field_type = field_type
     existing.applies_to = applies_to
@@ -95,7 +98,7 @@ def cmd_define_contact_custom_field(db: Session, actor: Actor, payload: dict[str
     existing.updated_at = now
     db.flush()
     _emit_event(db, actor, "ContactCustomFieldDefined", "ContactCustomFieldDefinition", existing.id, {"field_key": field_key})
-    return row_dict(existing)
+    return serialize_custom_field_definition(actor, existing)
 
 
 def _custom_field_options(value: Any) -> list[str]:

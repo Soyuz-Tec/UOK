@@ -5,6 +5,7 @@ export type ContactDataToolsRun = <T,>(
   action: string,
   operation: () => Promise<T>,
   successMessage?: string,
+  options?: { rethrow?: boolean },
 ) => Promise<T | undefined>;
 
 export type ContactDataToolsPanelProps = {

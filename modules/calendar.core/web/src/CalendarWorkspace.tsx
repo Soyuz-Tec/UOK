@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { EmptyState } from "@uok/shared/data-display";
 import type { ModuleStatus } from "@uok/shared/types";
@@ -7,15 +7,16 @@ import { CalendarEventEditor } from "./CalendarEventEditor";
 import { CalendarToolbar } from "./CalendarToolbar";
 import { CalendarModuleState, calendarErrorMessage } from "./CalendarWorkspaceSupport";
 import { CalendarWorkspaceStatus } from "./CalendarWorkspaceStatus";
-import { calendarAuthHeaders, downloadCalendarIcs, loadCalendarEventDetail } from "./calendarClient";
+import { downloadCalendarIcs, loadCalendarEventDetail } from "./calendarClient";
 import { resolveCalendarDraftTiming } from "./calendarDraftTiming";
 import { CALENDAR_MODULE_ID } from "./calendarModule";
-import { addDays, addMonths, durationDays, eventStart, rangeForView, startOfDay } from "./calendarDates";
+import { addDays, addMonths, eventStart, rangeForView, startOfDay } from "./calendarDates";
 import { draftFromEvent, emptyDraft, eventPayload } from "./calendarDrafts";
 import { filterCalendarEvents } from "./calendarFilters";
 import { calendarColorMap } from "./calendarPresentation";
-import type { CalendarDraft, CalendarEventRecord, CalendarRecord, CalendarView } from "./calendarTypes";
+import type { CalendarDraft, CalendarEventRecord, CalendarView } from "./calendarTypes";
 import { LatestRequestGuard } from "./latestRequestGuard";
+import { useCalendarCatalog } from "./useCalendarCatalog";
 
 type Props = {
   token: string;
@@ -28,9 +29,6 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
   const module = moduleRows.find((row) => row.name === CALENDAR_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  const [calendars, setCalendars] = useState<CalendarRecord[]>([]);
-  const [events, setEvents] = useState<CalendarEventRecord[]>([]);
-  const [activeCalendarId, setActiveCalendarId] = useState<string | null>(null);
   const [view, setView] = useState<CalendarView>("month");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
@@ -42,79 +40,25 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorBusyAction, setEditorBusyAction] = useState<"" | "save" | "cancel" | "restore">("");
   const [editorError, setEditorError] = useState("");
-  const [busyCount, setBusyCount] = useState(0);
-  const [statusMessage, setStatusMessage] = useState("Ready");
-  const [workspaceError, setWorkspaceError] = useState("");
-  const refreshSequence = useRef(0);
   const eventDetailRequests = useRef(new LatestRequestGuard());
+  const catalog = useCalendarCatalog({
+    token, operational, timezone, view, cursorDate,
+    onRefreshStart: () => eventDetailRequests.current.cancel(),
+    onDeleteSuccess: (calendar) => {
+      if (selectedEvent?.calendar_id !== calendar.id && draft.calendarId !== calendar.id) return;
+      setEditorOpen(false);
+      setSelectedEvent(undefined);
+      setSelectedEventEtag(null);
+      setEditorError("");
+    },
+  });
+  const {
+    activeCalendarId, api, busyCount, calendarBusyAction, calendars, capabilities, deletedCalendars,
+    createCalendar, deleteCalendar, events, refreshCalendar, restoreCalendar, setStatusMessage,
+    setWorkspaceFailure, setWorkspaceStatus, statusMessage, workspaceError,
+  } = catalog;
   const calendarColors = useMemo(() => calendarColorMap(calendars), [calendars]);
   const eventRows = useMemo(() => filterCalendarEvents(events, query, statusFilter, availabilityFilter).sort((a, b) => a.occurrence_start.localeCompare(b.occurrence_start)), [events, query, statusFilter, availabilityFilter]);
-
-  async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-    const res = await fetch(path, { ...options, headers: { ...calendarAuthHeaders(token), ...(options.headers || {}) } });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw data;
-    return data as T;
-  }
-
-  function setWorkspaceStatus(text: string) {
-    setStatusMessage(text);
-    setWorkspaceError("");
-  }
-
-  function setWorkspaceFailure(error: unknown) {
-    setWorkspaceError(calendarErrorMessage(error));
-  }
-
-  async function refreshCalendar(calendarId?: string) {
-    eventDetailRequests.current.cancel();
-    const requestId = ++refreshSequence.current;
-    if (!token || !operational) return;
-    try {
-      const rows = await api<CalendarRecord[]>("/api/calendar/calendars");
-      const requestedCalendarId = calendarId ?? activeCalendarId;
-      const nextCalendarId = requestedCalendarId === null
-        ? rows[0]?.id || ""
-        : requestedCalendarId === "" || rows.some((row) => row.id === requestedCalendarId)
-          ? requestedCalendarId
-          : rows[0]?.id || "";
-      let nextEvents: CalendarEventRecord[] = [];
-      let nextBusyCount = 0;
-      const range = rangeForView(view, cursorDate);
-      if (rows.length) {
-        const params = new URLSearchParams({ from_at: range.from.toISOString(), to_at: range.to.toISOString(), include_canceled: "true" });
-        if (nextCalendarId) params.set("calendar_id", nextCalendarId);
-        const [eventResult, freebusy] = await Promise.all([
-          api<CalendarEventRecord[]>(`/api/calendar/events?${params.toString()}`),
-          api<{ busy: unknown[] }>(`/api/calendar/freebusy?${params.toString()}`),
-        ]);
-        nextEvents = eventResult;
-        nextBusyCount = freebusy.busy.length;
-      }
-      if (requestId !== refreshSequence.current) return;
-      setCalendars(rows);
-      setActiveCalendarId(nextCalendarId);
-      setEvents(nextEvents);
-      setBusyCount(nextBusyCount);
-      setWorkspaceStatus(`Loaded ${rows.length} calendars and ${durationDays(range.from, range.to)} visible days.`);
-    } catch (error) {
-      if (requestId !== refreshSequence.current) return;
-      setWorkspaceFailure(error);
-    }
-  }
-
-  async function createDefaultCalendar() {
-    try {
-      const row = await api<CalendarRecord>("/api/calendar/calendars", {
-        method: "POST",
-        body: JSON.stringify({ name: calendars.length ? `Calendar ${calendars.length + 1}` : "Default Calendar", timezone, visibility_scope: "organization" })
-      });
-      await refreshCalendar(row.id);
-      setWorkspaceStatus(`Created ${row.name}.`);
-    } catch (error) {
-      setWorkspaceFailure(error);
-    }
-  }
 
   function showEditorError(text: string) {
     setEditorError(text);
@@ -233,11 +177,6 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
     }
   }
 
-  useEffect(() => {
-    void refreshCalendar();
-    return () => eventDetailRequests.current.cancel();
-  }, [token, operational, view, cursorDate]);
-
   if (!token) return <EmptyState text="Sign in to open Calendar." />;
   if (!operational) return <CalendarModuleState module={module} busyAction={busyAction} onInstall={onInstall} />;
 
@@ -247,6 +186,7 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
         view={view}
         cursorDate={cursorDate}
         calendars={calendars}
+        deletedCalendars={deletedCalendars}
         activeCalendarId={activeCalendarId || ""}
         query={query}
         statusFilter={statusFilter}
@@ -254,7 +194,13 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
         onViewChange={setView}
         onDateChange={setCursorDate}
         onCalendarChange={(id) => void refreshCalendar(id)}
-        onCreateCalendar={createDefaultCalendar}
+        onCreateCalendar={createCalendar}
+        onDeleteCalendar={deleteCalendar}
+        onRestoreCalendar={restoreCalendar}
+        canCreateCalendar={capabilities.create}
+        canDeleteCalendar={capabilities.delete}
+        canRestoreCalendar={capabilities.restore}
+        calendarBusyAction={calendarBusyAction}
         onQueryChange={setQuery}
         onStatusFilterChange={setStatusFilter}
         onAvailabilityFilterChange={setAvailabilityFilter}
@@ -266,6 +212,7 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
         onToday={() => setCursorDate(startOfDay(new Date()))}
         onMove={(direction) => setCursorDate(view === "month" || view === "agenda" ? addMonths(cursorDate, direction) : addDays(cursorDate, direction * (view === "week" ? 7 : 1)))}
         onCreate={() => newEvent()}
+        canCreateEvent={calendars.length > 0}
         onRefresh={() => void refreshCalendar()}
         onExport={() => void exportIcs()}
       />

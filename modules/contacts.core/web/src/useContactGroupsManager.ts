@@ -44,6 +44,8 @@ export function useContactGroupsManager({
   const [busyAction, setBusyAction] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState<ContactGroupManagerNotice | "">("");
+  const [focusRecovery, setFocusRecovery] = useState<{ groupId: string; request: number } | null>(null);
+  const clearFocusRecovery = useCallback(() => setFocusRecovery(null), []);
 
   const selectedGroup = groups.find((group) => group.id === selectedGroupId) || null;
 
@@ -103,7 +105,12 @@ export function useContactGroupsManager({
     };
   }, [api, canManage, candidateQuery, creating, fallbackError, open, selectedGroup?.id, selectedGroup?.kind, selectedGroup?.status]);
 
-  const perform = useCallback(async (action: string, nextNotice: ContactGroupManagerNotice, operation: () => Promise<void>) => {
+  const perform = useCallback(async (
+    action: string,
+    nextNotice: ContactGroupManagerNotice,
+    operation: () => Promise<void>,
+    rethrow = false,
+  ) => {
     setBusyAction(action);
     setError("");
     setNotice("");
@@ -112,7 +119,9 @@ export function useContactGroupsManager({
       setNotice(nextNotice);
       await onChanged();
     } catch (reason) {
-      setError(errorMessage(reason, fallbackError));
+      const message = errorMessage(reason, fallbackError);
+      setError(message);
+      if (rethrow) throw new Error(message);
     } finally {
       setBusyAction("");
     }
@@ -144,15 +153,34 @@ export function useContactGroupsManager({
     await refreshGroups(selectedGroup.id);
   });
 
-  const archiveGroup = () => selectedGroup && perform("archive", "archived", async () => {
-    await api.archive(selectedGroup.id);
-    onGroupArchived(selectedGroup.id);
-    await refreshGroups(selectedGroup.id);
-    setMembers([]);
-  });
+  const archiveGroup = async () => {
+    if (!selectedGroup) return;
+    const group = selectedGroup;
+    await perform("archive", "archived", async () => {
+      try {
+        await api.archive(group.id, group.etag);
+      } catch (reason) {
+        const rows = await refreshGroups(group.id);
+        if (!rows.some((row) => row.id === group.id)) {
+          const fallback = rows.find((row) => row.status === "active") || rows[0];
+          setFocusRecovery((current) => ({ groupId: fallback?.id || "", request: (current?.request || 0) + 1 }));
+        }
+        throw reason;
+      }
+      onGroupArchived(group.id);
+      await refreshGroups(group.id);
+      setMembers([]);
+    }, true);
+  };
 
   const restoreGroup = () => selectedGroup && perform("restore", "restored", async () => {
-    const restored = await api.restore(selectedGroup.id);
+    let restored: ManagedContactGroup;
+    try {
+      restored = await api.restore(selectedGroup.id, selectedGroup.etag);
+    } catch (reason) {
+      await refreshGroups(selectedGroup.id);
+      throw reason;
+    }
     await refreshGroups(restored.id);
     await refreshMembers(restored);
   });
@@ -192,6 +220,7 @@ export function useContactGroupsManager({
     creating,
     description,
     error,
+    focusRecovery,
     generateBusinessDomains,
     generateSmartGroups,
     groups,
@@ -206,6 +235,7 @@ export function useContactGroupsManager({
     setCandidateQuery,
     setDescription,
     setName,
+    clearFocusRecovery,
     setSelectedGroupId: (value: string) => {
       setCreating(false);
       setSelectedGroupId(value);

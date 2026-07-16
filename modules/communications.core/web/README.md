@@ -11,3 +11,9 @@ literal TypeScript import after manifest validation. The browser never reads
 the YAML manifest or loads a runtime module path. The current surface adapts the
 transitional shared shell host into the workspace's token, lifecycle, and
 activation props; new K Connect behavior remains module-owned.
+
+The workspace exposes server-projected create/delete/restore capabilities,
+keeps Archived as a stable lifecycle filter, and uses the shared draggable
+confirmation surface for recoverable Delete. Successful lifecycle responses
+are committed locally. A stale validator reloads only the exact thread and
+requires a new explicit confirmation; it is never retried automatically.

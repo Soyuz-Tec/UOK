@@ -1,8 +1,10 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import { afterEach, describe, expect, it } from "vitest";
+import { Trash2 } from "lucide-react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { UokLocalizationProvider } from "../localization/UokLocalization";
+import { ConfirmCommandButton } from "./ConfirmCommandButton";
 import { WorkspaceActionButton, type WorkspaceActionKind } from "./WorkspaceActionButton";
 
 afterEach(cleanup);
@@ -76,5 +78,63 @@ describe("WorkspaceActionButton", () => {
     );
 
     expect(screen.getByRole("button", { name: "حدث جديد" })).toHaveAttribute("data-command", "create");
+  });
+});
+
+describe("ConfirmCommandButton", () => {
+  it("uses the shared draggable popup and requires a reason before confirming", async () => {
+    const confirm = vi.fn().mockResolvedValue(undefined);
+    render(
+      <ConfirmCommandButton
+        icon={Trash2}
+        message="The record will leave active use but remain recoverable."
+        dialogLabel="Delete record"
+        title="Delete record"
+        confirmLabel="Delete"
+        reasonLabel="Reason"
+        reasonRequired
+        onConfirm={confirm}
+        destructive
+      >
+        Delete record
+      </ConfirmCommandButton>
+    );
+
+    const trigger = screen.getByRole("button", { name: "Delete record" });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const dialog = screen.getByRole("dialog", { name: "Delete record" });
+    expect(screen.getByRole("button", { name: "Move Delete record" })).toBeInTheDocument();
+    const deleteButton = screen.getByRole("button", { name: "Delete" });
+    expect(deleteButton).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Reason"), { target: { value: "Duplicate workspace" } });
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => expect(confirm).toHaveBeenCalledWith("Duplicate workspace"));
+    await waitFor(() => expect(dialog).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
+  });
+
+  it("keeps the popup open and reports an asynchronous failure", async () => {
+    render(
+      <ConfirmCommandButton
+        icon={Trash2}
+        message="Delete this record?"
+        dialogLabel="Delete record"
+        title="Delete record"
+        confirmLabel="Delete"
+        onConfirm={() => Promise.reject(new Error("Record is protected."))}
+        destructive
+      >
+        Delete record
+      </ConfirmCommandButton>
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete record" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Record is protected.");
+    expect(screen.getByRole("dialog", { name: "Delete record" })).toBeInTheDocument();
   });
 });

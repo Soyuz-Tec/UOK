@@ -43,7 +43,10 @@ export function PlanningTimeline({
   onTaskMenuAction,
   onProjectChange,
   canCreateProject,
+  canTransitionProject,
   onNewProject,
+  onDeleteProject,
+  onRestoreProject,
   onCreateDemoSchedule,
   onRefresh,
   onNewTask,
@@ -83,7 +86,10 @@ export function PlanningTimeline({
   onTaskMenuAction: (action: PlanningTaskMenuAction, task: PlanningSchedule["tasks"][number]) => void;
   onProjectChange: (projectId: string) => void;
   canCreateProject: boolean;
+  canTransitionProject: boolean;
   onNewProject: () => void;
+  onDeleteProject: (reason: string) => Promise<void>;
+  onRestoreProject: (reason: string) => Promise<void>;
   onCreateDemoSchedule: () => void;
   onRefresh: () => void;
   onNewTask: (taskType: "task" | "milestone") => void;
@@ -147,7 +153,7 @@ export function PlanningTimeline({
     <div className={`planning-timeline-workbench planning-layout-${layoutMode} ${focusMode ? "focus-mode" : ""}`}>
       <PlanningCommandSurface
         model={{
-          projects, schedule, visibleSchedule, selectedProjectId, busy, history, bulkUpdatesAvailable, canCreateProject,
+          projects, schedule, visibleSchedule, selectedProjectId, busy, history, bulkUpdatesAvailable, canCreateProject, canTransitionProject,
           activeView, cascadeScheduling, cascadeSort, columnOptions, columnVisibility, currentView: savedViewConfig,
           fieldPreset, filters, focusMode, layoutMode, reviewMode, reviewModeLocked, reportsOperational, scale,
           selectedCount, selectedTaskId: visibleSelectedTaskId, selectedTasks, selectedVisible, showBaselines, showCritical, token, viewDensity,
@@ -157,7 +163,8 @@ export function PlanningTimeline({
           onCascadeSchedulingChange: setCascadeScheduling, onCascadeSortChange: setCascadeSort, onCreateBaseline,
           onCreateDemoSchedule, onDateTarget: goToDate, onFieldPresetChange: setFieldPreset, onFiltersChange: setFilters,
           onFitProject: () => setFitProjectSignal((value) => value + 1), onLevelResources, onNewTask,
-          onOpenDependencies, onShowInspector, onOpenResources, onProjectChange, onNewProject, onRedo, onRefresh, onReviewModeChange,
+          onOpenDependencies, onShowInspector, onOpenResources, onProjectChange, onNewProject, onDeleteProject, onRestoreProject,
+          onRedo, onRefresh, onReviewModeChange,
           onScaleChange, onSelectedTask: () => setSelectedTaskSignal((value) => value + 1), onSelectedVisibleChange: setSelectedVisible,
           onSetCollapsedSummaries: setCollapsedSummaries, onToday: goToToday, onToggleBaselines, onToggleColumn: setColumnVisible,
           onToggleCritical, onToggleFocusMode: () => setFocusMode((value) => !value),

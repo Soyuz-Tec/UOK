@@ -45,6 +45,9 @@ def test_execution_removes_membership_before_archiving_with_all_gates() -> None:
     archive = execution.index("Invoke-UokContactsVerifierGroupArchive", empty_readback)
     archived_readback = execution.index('status -eq "archived"', archive)
     assert removal < empty_readback < archive < archived_readback
+    assert '$archiveHeaders["If-Match"] = $Etag' in script
+    assert 'Invoke-UokContactsCleanupJson -Method "DELETE" -Path "/api/contacts/groups/$GroupId"' in script
+    assert "-Etag $archiveEtag" in execution
 
 
 def test_runbook_documents_v2_legacy_safety_contract() -> None:

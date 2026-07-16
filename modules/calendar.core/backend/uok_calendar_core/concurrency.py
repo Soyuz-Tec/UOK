@@ -16,28 +16,93 @@ from uok.kernel.security import Actor
 from uok.util import dumps
 
 from .access import can_read_calendar
-from .models import Calendar, CalendarEvent
+from .models import Calendar, CalendarEvent, CalendarReminder
 from .read_model import serialize_event, stored_utc
 
 STRONG_EVENT_ETAG = re.compile(r'^"calendar-event-sha256-[a-f0-9]{64}"$')
 
 
+def locked_active_calendar_for_write(
+    db: Session,
+    actor: Actor,
+    calendar_id: str,
+    *,
+    not_found: str = "calendar not found",
+) -> Calendar:
+    calendar = db.scalar(
+        select(Calendar)
+        .where(
+            Calendar.id == calendar_id,
+            Calendar.organization_id == actor.organization_id,
+        )
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if not calendar or not can_read_calendar(actor, calendar):
+        raise ValueError(not_found)
+    return calendar
+
+
 def locked_event_for_update(db: Session, actor: Actor, event_id: str) -> CalendarEvent:
+    calendar_id = db.scalar(
+        select(CalendarEvent.calendar_id).where(
+            CalendarEvent.id == event_id,
+            CalendarEvent.organization_id == actor.organization_id,
+        )
+    )
+    if not calendar_id:
+        raise ValueError("calendar event not found")
+    calendar = locked_active_calendar_for_write(
+        db,
+        actor,
+        str(calendar_id),
+        not_found="calendar event not found",
+    )
     event = db.scalar(
         select(CalendarEvent)
         .where(
             CalendarEvent.id == event_id,
             CalendarEvent.organization_id == actor.organization_id,
+            CalendarEvent.calendar_id == calendar.id,
         )
         .with_for_update()
         .execution_options(populate_existing=True)
     )
     if not event:
         raise ValueError("calendar event not found")
-    calendar = db.get(Calendar, event.calendar_id)
-    if not calendar or not can_read_calendar(actor, calendar):
-        raise ValueError("calendar event not found")
     return event
+
+
+def locked_event_and_reminder_for_update(
+    db: Session,
+    actor: Actor,
+    reminder_id: str,
+) -> tuple[CalendarEvent, CalendarReminder]:
+    event_id = db.scalar(
+        select(CalendarReminder.event_id).where(
+            CalendarReminder.id == reminder_id,
+            CalendarReminder.organization_id == actor.organization_id,
+        )
+    )
+    if not event_id:
+        raise ValueError("calendar reminder not found")
+    try:
+        event = locked_event_for_update(db, actor, str(event_id))
+    except ValueError:
+        raise ValueError("calendar reminder not found") from None
+    reminder = db.scalar(
+        select(CalendarReminder)
+        .where(
+            CalendarReminder.id == reminder_id,
+            CalendarReminder.organization_id == actor.organization_id,
+            CalendarReminder.event_id == event.id,
+        )
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if not reminder:
+        raise ValueError("calendar reminder not found")
+    return event, reminder
 
 
 def strong_event_etag(db: Session, event: CalendarEvent) -> str:

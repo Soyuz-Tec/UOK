@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from uok.kernel.security import Actor
+from uok.kernel.security import Actor, has_permission
 from uok.util import dumps, loads, row_dict
 
 from uok_contacts_core._internal.persistence.models import Party, utcnow
@@ -25,7 +25,7 @@ def serialize_fact(fact: PartyFact) -> dict[str, Any]:
     return row_dict(fact, {"value": fact.value_text})
 
 
-def serialize_team(db: Session, team: ContactTeam) -> dict[str, Any]:
+def serialize_team(db: Session, team: ContactTeam, actor: Actor | None = None) -> dict[str, Any]:
     members = db.scalars(select(ContactTeamMember).where(
         ContactTeamMember.organization_id == team.organization_id,
         ContactTeamMember.team_id == team.id,
@@ -34,7 +34,63 @@ def serialize_team(db: Session, team: ContactTeam) -> dict[str, Any]:
     return row_dict(team, {
         "members": [row_dict(member) for member in members],
         "member_count": len(members),
+        "etag": contact_team_etag(team),
+        "revision": contact_lifecycle_revision(team.updated_at),
+        "user_managed": True,
+        "can_delete": bool(actor and team.status == "active" and has_permission(actor, "contacts.team.manage")),
+        "can_restore": bool(actor and team.status == "archived" and has_permission(actor, "contacts.restore")),
     })
+
+
+def serialize_custom_field_definition(actor: Actor, definition: ContactCustomFieldDefinition) -> dict[str, Any]:
+    return row_dict(definition, {
+        "options": loads(definition.options_json, []),
+        "etag": contact_custom_field_etag(definition),
+        "revision": contact_lifecycle_revision(definition.updated_at),
+        "user_managed": True,
+        "can_delete": definition.status == "active" and has_permission(actor, "contacts.customize"),
+        "can_restore": definition.status == "archived" and has_permission(actor, "contacts.restore"),
+    })
+
+
+def contact_team_etag(team: ContactTeam) -> str:
+    return contact_lifecycle_etag("contact-team", team.organization_id, team.id, team.updated_at, team.status)
+
+
+def contact_custom_field_etag(definition: ContactCustomFieldDefinition) -> str:
+    return contact_lifecycle_etag(
+        "contact-custom-field",
+        definition.organization_id,
+        definition.id,
+        definition.updated_at,
+        definition.status,
+    )
+
+
+def contact_lifecycle_etag(
+    object_type: str,
+    organization_id: str,
+    object_id: str,
+    updated_at: datetime | None,
+    status: str,
+) -> str:
+    normalized = normalized_contact_lifecycle_updated_at(updated_at)
+    timestamp = normalized.isoformat(timespec="microseconds") if normalized else ""
+    source = f"{organization_id}:{object_id}:{timestamp}:{status}"
+    return f'"{object_type}-sha256-{sha256(source.encode("utf-8")).hexdigest()}"'
+
+
+def contact_lifecycle_revision(updated_at: datetime | None) -> int:
+    normalized = normalized_contact_lifecycle_updated_at(updated_at)
+    return int(normalized.replace(tzinfo=timezone.utc).timestamp() * 1_000_000) if normalized else 0
+
+
+def normalized_contact_lifecycle_updated_at(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is not None:
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+    return value
 
 
 def serialize_duplicate_candidate(db: Session, row: ContactDuplicateCandidate) -> dict[str, Any]:

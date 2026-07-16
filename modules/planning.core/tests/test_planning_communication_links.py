@@ -68,6 +68,28 @@ def test_task_communication_link_opens_exact_thread_and_fails_closed(client: Tes
     assert hidden["resolution"]["display_label"] is None
     assert hidden["resolution"]["open_path"] is None
 
+    archived = client.delete(
+        f"/api/communications/threads/{thread_id}",
+        headers={**ops, "If-Match": thread.json()["result"]["etag"]},
+    )
+    assert archived.status_code == 200, archived.text
+    retained = _schedule(client, ops, project_id).json()["links"][0]
+    assert retained["id"] == body["id"]
+    assert retained["target"]["id"] == thread_id
+    assert retained["resolution"]["status"] == "unavailable"
+    assert retained["resolution"]["open_path"] is None
+
+    restored = client.post(
+        f"/api/communications/threads/{thread_id}/restore",
+        headers={**ops, "If-Match": archived.json()["etag"]},
+    )
+    assert restored.status_code == 200, restored.text
+    ready_again = _schedule(client, ops, project_id).json()["links"][0]
+    assert ready_again["id"] == body["id"]
+    assert ready_again["target"]["id"] == thread_id
+    assert ready_again["resolution"]["status"] == "ready"
+    assert ready_again["resolution"]["open_path"] == f"/?view=communications&thread_id={thread_id}"
+
     assert client.post("/api/modules/communications.core/disable", headers=admin).status_code == 200
     unavailable = _schedule(client, ops, project_id).json()["links"][0]
     assert unavailable["id"] == body["id"]

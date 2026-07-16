@@ -10,6 +10,7 @@ from uok.kernel.security import Actor
 from uok.util import dumps
 
 from .audit import emit_communication_event
+from .concurrency import communication_thread_etag
 from .models import CommunicationThread, utcnow
 from .schemas import CommunicationThreadCreateRequest
 
@@ -37,20 +38,24 @@ def create_thread(db: Session, actor: Actor, request: CommunicationThreadCreateR
     return serialize_thread(row, command_id)
 
 
-def list_threads(db: Session, actor: Actor) -> list[dict[str, Any]]:
-    rows = db.scalars(select(CommunicationThread).where(
-        CommunicationThread.organization_id == actor.organization_id,
-        CommunicationThread.status != "archived",
-    ).order_by(CommunicationThread.updated_at.desc(), CommunicationThread.id)).all()
+def list_threads(db: Session, actor: Actor, lifecycle: str = "active") -> list[dict[str, Any]]:
+    stmt = select(CommunicationThread).where(CommunicationThread.organization_id == actor.organization_id)
+    if lifecycle == "active":
+        stmt = stmt.where(CommunicationThread.status != "archived")
+    elif lifecycle == "archived":
+        stmt = stmt.where(CommunicationThread.status == "archived")
+    elif lifecycle != "all":
+        raise ValueError("communication thread lifecycle must be active, archived, or all")
+    rows = db.scalars(stmt.order_by(CommunicationThread.updated_at.desc(), CommunicationThread.id)).all()
     return [serialize_thread(row) for row in rows]
 
 
-def thread_or_error(db: Session, actor: Actor, thread_id: str) -> CommunicationThread:
+def thread_or_error(db: Session, actor: Actor, thread_id: str, *, include_archived: bool = False) -> CommunicationThread:
     row = db.scalar(select(CommunicationThread).where(
         CommunicationThread.id == thread_id,
         CommunicationThread.organization_id == actor.organization_id,
     ))
-    if row is None or row.status == "archived":
+    if row is None or (row.status == "archived" and not include_archived):
         raise ValueError("communication thread not found")
     return row
 
@@ -60,6 +65,9 @@ def serialize_thread(row: CommunicationThread, correlation_id: str | None = None
         "id": row.id,
         "title": row.title,
         "status": row.status,
+        "restore_status": row.archived_from_status,
+        "revision": row.revision,
+        "etag": communication_thread_etag(row),
         "context_type": row.context_type,
         "context_id": row.context_id,
         "created_by_user_id": row.created_by_user_id,

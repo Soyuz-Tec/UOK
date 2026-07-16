@@ -75,6 +75,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md` | Calendar access, integrity, interoperability sequencing, and the separate appointments capability boundary | Calendar visibility, recurrence authority, free-busy disclosure, provider synchronization sequencing, or appointment ownership changes |
 | `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md` | Contacts system-of-record scope, first-class facts, consent, team access, purge, quality, and interoperability boundary | Contacts storage, privacy, authorization, import/export, dedupe, activity, custom fields, or provider adapter changes |
 | `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md` | Host-owned backend composition, minimal shared kernel ports, exact request-DI exception, neutral frontend surface contract, and shell/module cycle enforcement | Host/kernel ownership, ORM/bootstrap composition, module runtime port, shell/module surface contract, or dependency enforcement changes |
+| `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md` | K Connect retained Delete/Restore, prior-state persistence, row locking, strong ETags, stale repair, and no-cascade boundary | Thread archive/restore, lifecycle validators, capability projection, archived discovery, or Planning-link behavior changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/planning-data-boundary-inventory-2026-07-15.md` | Pre-refactor evidence of Planning reads across capability-module data boundaries | A correction is needed to the dated leak inventory or its audit method |
@@ -197,6 +198,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md`
 - `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
 - `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
+- `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/planning-data-boundary-inventory-2026-07-15.md`
 - `docs/architecture/planning-data-boundary-fix-2026-07-15.md`

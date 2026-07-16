@@ -61,23 +61,46 @@ module ownership and selected Python/FastAPI/PostgreSQL plus React stack.
    a current strong event ETag so stale clients cannot replace or reorder newer
    event and child state. Lifecycle status is changed only through the dedicated
    cancellation and restore commands.
-6. Timed iCalendar export preserves the event's recurrence basis: UTC events
+6. Calendar parent lifecycle is recoverable and record-qualified:
+   - only user-managed Calendars with a non-null owning user are eligible for
+     user-facing delete or restore; generated, system-owned, and legacy
+     ownerless records fail closed in both the server command and projected
+     per-record capabilities;
+   - delete retains the Calendar, events, participants, and reminders while
+     removing the inactive parent from ordinary Calendar, event, free-busy,
+     ICS, and Planning reads;
+   - authorized managers can explicitly request the deleted Calendar catalog
+     and restore a retained Calendar, which reactivates its children through
+     the parent boundary without rewriting child records; and
+   - delete and restore lock the parent and require the exact strong Calendar
+     ETag projected by the latest read. Stale requests reload authoritative
+     state and require a new explicit confirmation rather than automatic
+     reapplication;
+   - every Calendar, event, and reminder writer acquires and refreshes the
+     Calendar parent lock before any child lock or mutation, then rechecks the
+     actor-visible active-parent invariant. A writer that waited behind delete
+     therefore fails instead of committing into a deleted aggregate; and
+   - a current-ETag retry of an already completed active-to-deleted or
+     deleted-to-active transition returns the current state without emitting a
+     duplicate domain event. Other persisted lifecycle states are invalid and
+     cannot transition.
+7. Timed iCalendar export preserves the event's recurrence basis: UTC events
    use UTC values, while non-UTC events use local `DTSTART`/`DTEND` with an IANA
    `TZID` and one bounded `VTIMEZONE` per referenced zone. Timed `UNTIL` remains
    UTC as required by RFC 5545. UOK pins BSD-2-Clause `icalendar` `7.2.0` only
    for standards parsing/serialization and bounded VTIMEZONE generation; UOK
    retains recurrence, event, command, and storage ownership.
-7. The Calendar workspace uses the shared UOK command surface and shared
+8. The Calendar workspace uses the shared UOK command surface and shared
    draggable editor popup. Multi-calendar presentation must reuse server-side
    actor visibility, and stored Calendar colors must be validated before use.
-8. External provider synchronization is added later through module-owned ports,
+9. External provider synchronization is added later through module-owned ports,
    encrypted credential references, cursors, idempotent jobs, verified
    webhooks, retry/dead-letter behavior, and explicit conflict resolution.
-9. If UOK adds public appointment booking, it belongs in a separate optional
+10. If UOK adds public appointment booking, it belongs in a separate optional
    `appointments.core` capability. That module consumes Calendar availability
    and creates confirmed Calendar events through governed commands; it does not
    take ownership of Calendar events or Planning dates.
-10. UOK may adopt behavior and protocol lessons from current calendar products,
+11. UOK may adopt behavior and protocol lessons from current calendar products,
    RFC 5545, CalDAV, and provider APIs, but it will not vendor another product,
    import a second application stack, or copy license-incompatible source.
 
@@ -85,6 +108,9 @@ module ownership and selected Python/FastAPI/PostgreSQL plus React stack.
 
 - Calendar privacy and parent lifecycle become prerequisites for all-calendar
   overlays, ICS export, free-busy, and Planning availability reads.
+- Retained Calendar deletion has an ordinary authorized restore path, while
+  system-owned records remain protected and stale lifecycle confirmations fail
+  before mutation.
 - Existing `team` Calendars become owner/manager-visible until an explicit team
   model exists. This is intentionally restrictive and avoids false sharing.
 - Recurrence, attendee, reminder, and interoperability behavior can mature
@@ -137,6 +163,11 @@ module ownership and selected Python/FastAPI/PostgreSQL plus React stack.
 - Event API tests prove guarded participant/reminder replacement, lifecycle
   permission separation, all-day normalization, stale-editor rejection, and
   recovery guidance.
+- Calendar lifecycle tests prove per-record eligibility, manager-only deleted
+  discovery, parent-first lock order and stale identity-map refresh,
+  row-locked strong-ETag delete/restore, idempotent same-state retry without
+  duplicate events, malformed-state rejection, retained children, and
+  system-record protection.
 - Frontend tests prove one shared command surface, a scroll-bounded client-side
   searchable Calendar selector,
   multi-calendar color presentation, one positioned time segment per event,

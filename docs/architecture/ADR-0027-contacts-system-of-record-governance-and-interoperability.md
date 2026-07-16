@@ -19,7 +19,8 @@ The existing `team_id` fields are metadata only. Treating them as authorization 
 7. Imports use preview/dry-run and explicit create-or-update execution, durable row outcomes, idempotency checksums, and batch rollback evidence. Import and duplicate-merge rollback use post-operation state fingerprints and fail closed when later edits make the rollback stale. Sensitive merge recovery snapshots remain internal audit evidence; public party attributes expose only non-sensitive merge identifiers and timestamps. Duplicate review uses normalized blocking keys and persisted, scored candidate state instead of repeated quadratic scans.
 8. Saved views, contact activity, and global relationship lookup are server-backed and actor-scoped. Activity links to authorized records in other modules rather than copying their private payloads.
 9. vCard import/export is the first interoperability format. Provider-neutral external identities, cursors, and conflict state establish the adapter boundary; Google, Microsoft, and CardDAV synchronization are not claimed until a provider adapter has its own credentials, deletion policy, rate-limit handling, and qualification evidence.
-10. Governed custom-field definitions and values are module-owned. They extend Contacts without adding CRM-specific behavior to the kernel.
+10. Governed custom-field definitions and values are module-owned. They extend Contacts without adding CRM-specific behavior to the kernel. User-facing Delete archives a definition and removes it from active value editing while preserving its stored values; Restore reactivates the same definition and values.
+11. User-created Contacts teams use the same recoverable lifecycle. Delete archives the team without erasing membership or audit evidence, Restore reactivates it, and archived teams reject metadata and membership edits. Team and custom-field Delete/Restore require a current strong ETag; stale intent fails with a structured reload-and-reconfirm response. Delete also records a human reason.
 
 ## Implemented Modernization Slices
 
@@ -47,7 +48,7 @@ The current branch implements the accepted design in two reviewable groups. "Imp
 
 - The Contacts schema grows through additive module migrations and indexed, organization-scoped tables.
 - Existing API fields continue to work while richer endpoints expose multiple facts and governance history.
-- New permissions separate routine management from consent, ownership, bulk export, import, dedupe, purge, and team administration.
+- New permissions separate routine management from consent, ownership, bulk export, import, dedupe, purge, and team administration. Read models project record-qualified Delete/Restore eligibility; client role checks never grant lifecycle authority.
 - Purge is intentionally destructive and must be explicit, audited, tested, and restricted.
 - Legacy merge snapshots are sanitized in place by migration 004. Losing rollback for snapshots that existed only in public party attributes is an accepted privacy consequence; current merges keep private rollback evidence in the purge-scrubbed internal event ledger.
 - PostgreSQL Contacts search indexes only an explicit public contact-field allowlist. Raw `attrs_json`, `merge_history`, and internal recovery metadata are never inputs to the current search vector.
@@ -64,7 +65,7 @@ The current branch implements the accepted design in two reviewable groups. "Imp
 ## Implementation Evidence
 
 - Model-registry and module-migration scope tests resolve every new table to `contacts.core`.
-- Focused backend tests cover organization/team isolation, primary-fact reconciliation, consent history, anonymizing purge, import preview/execution/rollback, persisted duplicate candidates, saved-view ownership, vCard round trips, manual group lifecycle, membership lifecycle, bounded group reads, and generated-group reconciliation.
+- Focused backend tests cover organization/team isolation, primary-fact reconciliation, consent history, anonymizing purge, import preview/execution/rollback, persisted duplicate candidates, saved-view ownership, vCard round trips, manual group lifecycle, team and custom-field recoverable lifecycle, preserved membership/value state, stale-intent rejection, bounded group reads, and generated-group reconciliation.
 - Focused frontend tests cover the draggable Groups Manager, capability-aware controls, manual/generated/empty/archived filters, focus restoration, localization, and RTL behavior.
 - Migration `003_contacts_core_system_of_record.sql` owns the additive system-of-record tables, indexes, and relationship constraints.
 - Migration `004_contacts_core_merge_privacy.sql` removes private legacy merge payloads from party attributes and replaces the raw JSON search index with the explicit public field allowlist.

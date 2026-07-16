@@ -40,6 +40,11 @@ export type ContactTeamRow = {
   status: string;
   member_count: number;
   members: ContactTeamMemberRow[];
+  etag: string;
+  revision: number;
+  user_managed: boolean;
+  can_delete: boolean;
+  can_restore: boolean;
 };
 
 export type ContactImportResult = {
@@ -87,6 +92,11 @@ export type ContactCustomFieldDefinition = {
   required: boolean;
   options?: string[];
   status: string;
+  etag: string;
+  revision: number;
+  user_managed: boolean;
+  can_delete: boolean;
+  can_restore: boolean;
 };
 
 export type ContactCustomFieldValue = {
@@ -182,7 +192,8 @@ export function createContactDataToolsApi(token: string) {
     teams: () => request<ContactTeamRow[]>("/api/contacts/teams?include_archived=true"),
     createTeam: (payload: { name: string; description: string }) => request<ContactTeamRow>("/api/contacts/teams", jsonRequest("POST", payload)),
     updateTeam: (teamId: string, payload: { name: string; description: string }) => request<ContactTeamRow>(`/api/contacts/teams/${encodeURIComponent(teamId)}`, jsonRequest("PATCH", payload)),
-    archiveTeam: (teamId: string) => request<ContactTeamRow>(`/api/contacts/teams/${encodeURIComponent(teamId)}/archive`, { method: "POST" }),
+    deleteTeam: (teamId: string, etag: string, reason: string) => request<ContactTeamRow>(`/api/contacts/teams/${encodeURIComponent(teamId)}`, conditionalJsonRequest("DELETE", { reason }, etag)),
+    restoreTeam: (teamId: string, etag: string) => request<ContactTeamRow>(`/api/contacts/teams/${encodeURIComponent(teamId)}/restore`, conditionalRequest("POST", etag)),
     addTeamMember: (teamId: string, payload: { user_id: string; role: string }) => request<unknown>(`/api/contacts/teams/${encodeURIComponent(teamId)}/members`, jsonRequest("POST", payload)),
     removeTeamMember: (teamId: string, userId: string) => request<unknown>(`/api/contacts/teams/${encodeURIComponent(teamId)}/members/${encodeURIComponent(userId)}`, { method: "DELETE" }),
     importCsv: (payload: { filename: string; csv_text: string; dry_run: boolean; mode: string; mapping: Record<string, string> }) => request<ContactImportResult>("/api/contacts/import-csv", jsonRequest("POST", payload)),
@@ -196,8 +207,10 @@ export function createContactDataToolsApi(token: string) {
     resolveDuplicate: (candidateId: string, status: "not_duplicate" | "ignored", expectedUpdatedAt?: string) => request<ContactDuplicateCandidateRow>(`/api/contacts/duplicate-candidates/${encodeURIComponent(candidateId)}/resolve`, jsonRequest("POST", { status, expected_updated_at: expectedUpdatedAt || null })),
     mergeDuplicate: (primaryPartyId: string, duplicatePartyId: string) => command<ContactRecord>("MergeDuplicateContact", { primary_party_id: primaryPartyId, duplicate_party_id: duplicatePartyId }, "contact-data-merge"),
     rollbackMerge: (primaryPartyId: string, duplicatePartyId: string, mergeId: string) => command<ContactRecord>("RollbackDuplicateMerge", { primary_party_id: primaryPartyId, duplicate_party_id: duplicatePartyId, merge_id: mergeId }, "contact-data-merge-rollback"),
-    customFields: () => request<ContactCustomFieldDefinition[]>("/api/contacts/custom-fields"),
+    customFields: (includeArchived = true) => request<ContactCustomFieldDefinition[]>(`/api/contacts/custom-fields${includeArchived ? "?include_archived=true" : ""}`),
     defineCustomField: (payload: { field_key: string; label: string; field_type: string; applies_to: string; required: boolean; options: string[] }) => request<ContactCustomFieldDefinition>("/api/contacts/custom-fields", jsonRequest("POST", payload)),
+    deleteCustomField: (definitionId: string, etag: string, reason: string) => request<ContactCustomFieldDefinition>(`/api/contacts/custom-fields/${encodeURIComponent(definitionId)}`, conditionalJsonRequest("DELETE", { reason }, etag)),
+    restoreCustomField: (definitionId: string, etag: string) => request<ContactCustomFieldDefinition>(`/api/contacts/custom-fields/${encodeURIComponent(definitionId)}/restore`, conditionalRequest("POST", etag)),
     customValues: (partyId: string) => request<ContactCustomFieldValue[]>(`/api/contacts/${encodeURIComponent(partyId)}/custom-fields`),
     setCustomValue: (partyId: string, definitionId: string, value: unknown) => request<ContactCustomFieldValue>(`/api/contacts/${encodeURIComponent(partyId)}/custom-fields/${encodeURIComponent(definitionId)}`, jsonRequest("PUT", { value })),
     interoperability: () => request<ContactInteroperabilityStatus>("/api/contacts/interoperability"),
@@ -217,6 +230,14 @@ function jsonRequest(method: string, payload: unknown): RequestInit {
   return { method, body: JSON.stringify(payload) };
 }
 
+function conditionalJsonRequest(method: string, payload: unknown, etag: string): RequestInit {
+  return { method, body: JSON.stringify(payload), headers: { "If-Match": etag } };
+}
+
+function conditionalRequest(method: string, etag: string): RequestInit {
+  return { method, headers: { "If-Match": etag } };
+}
+
 async function readResponseBody(response: Response): Promise<unknown> {
   const text = await response.text();
   if (!text) return {};
@@ -232,10 +253,20 @@ function contactDataToolsApiError(body: unknown, status: number) {
   if (body && typeof body === "object" && "detail" in body) {
     const detail = (body as { detail?: unknown }).detail;
     if (typeof detail === "string") return detail;
-    if (detail && typeof detail === "object" && "error" in detail) {
-      const error = (detail as { error?: unknown }).error;
-      if (typeof error === "string") return error;
-    }
+    const parsed = structuredContactError(detail);
+    if (parsed) return parsed;
   }
+  const parsed = structuredContactError(body);
+  if (parsed) return parsed;
   return `Contacts request failed (${status}).`;
+}
+
+function structuredContactError(value: unknown): string {
+  if (!value || typeof value !== "object") return "";
+  const candidate = "error" in value ? (value as { error?: unknown }).error : value;
+  if (typeof candidate === "string") return candidate;
+  if (!candidate || typeof candidate !== "object") return "";
+  const message = "message" in candidate && typeof candidate.message === "string" ? candidate.message : "";
+  const repair = "repair" in candidate && typeof candidate.repair === "string" ? candidate.repair : "";
+  return [message, repair].filter(Boolean).join(" ");
 }

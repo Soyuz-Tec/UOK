@@ -3,6 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import type { ContactGroupRecord, ContactRecord } from "../../web/src/contracts";
+import type { ManagedContactGroup } from "../../web/src/contactGroupsManagerApi";
 import { contact, organizationContact, renderContactsWorkspace, resetContactsWorkspaceTest } from "./ContactsWorkspace.testUtils";
 
 afterEach(() => {
@@ -41,7 +42,7 @@ describe("Contacts Groups Manager", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: /Company: Example/ }));
     expect(within(dialog).getByText("Generated group - read-only")).toBeInTheDocument();
     expect(within(dialog).getByText(/reconciles this group from governed contact facts/i)).toBeInTheDocument();
-    expect(within(dialog).queryByRole("button", { name: "Archive group" })).not.toBeInTheDocument();
+    expect(within(dialog).queryByRole("button", { name: "Delete group" })).not.toBeInTheDocument();
 
     fireEvent.change(within(dialog).getByLabelText("Group type"), { target: { value: "all" } });
     fireEvent.click(within(dialog).getByLabelText("Empty groups only"));
@@ -76,18 +77,25 @@ describe("Contacts Groups Manager", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Remove Example Contact" }));
     await waitFor(() => expect(api).toHaveBeenCalledWith("/api/contacts/groups/group-manual/members/contact-1", expect.objectContaining({ method: "DELETE" })));
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "Archive group" }));
-    let confirmation = within(dialog).getByRole("group", { name: "Confirm group archive" });
-    expect(confirmation).toHaveFocus();
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete group" }));
+    let confirmation = await screen.findByRole("dialog", { name: "Confirm group deletion" });
+    expect(confirmation).toHaveTextContent("Delete “Priority contacts” from active use?");
+    expect(confirmation).toHaveTextContent("1 memberships will be hidden, but no contacts will be deleted");
+    expect(confirmation).toHaveTextContent("restored from Archived");
     fireEvent.click(within(confirmation).getByRole("button", { name: "Cancel" }));
-    await waitFor(() => expect(within(dialog).getByRole("button", { name: "Archive group" })).toHaveFocus());
-    fireEvent.click(within(dialog).getByRole("button", { name: "Archive group" }));
-    confirmation = within(dialog).getByRole("group", { name: "Confirm group archive" });
-    fireEvent.click(within(confirmation).getByRole("button", { name: "Archive group" }));
-    await waitFor(() => expect(api).toHaveBeenCalledWith("/api/contacts/groups/group-manual", expect.objectContaining({ method: "DELETE" })));
+    await waitFor(() => expect(within(dialog).getByRole("button", { name: "Delete group" })).toHaveFocus());
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete group" }));
+    confirmation = await screen.findByRole("dialog", { name: "Confirm group deletion" });
+    fireEvent.click(within(confirmation).getByRole("button", { name: "Delete group" }));
+    await waitFor(() => expect(api).toHaveBeenCalledWith("/api/contacts/groups/group-manual", expect.objectContaining({
+      method: "DELETE",
+      headers: expect.objectContaining({ "If-Match": '"group-manual-v2"' })
+    })));
 
-    fireEvent.change(within(dialog).getByLabelText("Status"), { target: { value: "archived" } });
-    fireEvent.click(within(dialog).getByRole("button", { name: "Restore group" }));
+    await waitFor(() => expect(within(dialog).getByLabelText("Status")).toHaveValue("archived"));
+    const restoreButton = await within(dialog).findByRole("button", { name: "Restore group" });
+    await waitFor(() => expect(restoreButton).toHaveFocus());
+    fireEvent.click(restoreButton);
     await waitFor(() => expect(api).toHaveBeenCalledWith("/api/contacts/groups/group-manual/restore", expect.objectContaining({ method: "POST" })));
 
     fireEvent.click(within(dialog).getByRole("button", { name: "New group" }));
@@ -96,6 +104,47 @@ describe("Contacts Groups Manager", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Create group" }));
     await waitFor(() => expect(api).toHaveBeenCalledWith("/api/contacts/groups", expect.objectContaining({ method: "POST" })));
     expect(onRefreshContacts).toHaveBeenCalled();
+  });
+
+  it("reloads a stale group and requires a fresh delete confirmation", async () => {
+    const api = installGroupsApiMock({ failDeleteOnce: true });
+    renderContactsWorkspace("table", [contact]);
+    const dialog = await openGroupsManager();
+
+    fireEvent.click(await within(dialog).findByRole("button", { name: /Important contacts/ }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete group" }));
+    const confirmation = await screen.findByRole("dialog", { name: "Confirm group deletion" });
+    fireEvent.click(within(confirmation).getByRole("button", { name: "Delete group" }));
+
+    expect(await within(confirmation).findByRole("alert")).toHaveTextContent("changed after this action was prepared");
+    expect(within(confirmation).getByRole("button", { name: "Delete group" })).toBeEnabled();
+    expect(api).toHaveBeenCalledWith("/api/contacts/groups/group-manual", expect.objectContaining({
+      method: "DELETE",
+      headers: expect.objectContaining({ "If-Match": '"group-manual-v1"' })
+    }));
+
+    fireEvent.click(within(confirmation).getByRole("button", { name: "Delete group" }));
+    await waitFor(() => expect(within(dialog).getByLabelText("Status")).toHaveValue("archived"));
+    expect(api).toHaveBeenCalledWith("/api/contacts/groups/group-manual", expect.objectContaining({
+      method: "DELETE",
+      headers: expect.objectContaining({ "If-Match": '"group-manual-v2"' })
+    }));
+  });
+
+  it("closes a stale confirmation instead of retargeting it when the group disappears", async () => {
+    const api = installGroupsApiMock({ failDeleteOnce: true, removeOnFailedDelete: true });
+    renderContactsWorkspace("table", [contact]);
+    const dialog = await openGroupsManager();
+
+    fireEvent.click(await within(dialog).findByRole("button", { name: /Important contacts/ }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete group" }));
+    const confirmation = await screen.findByRole("dialog", { name: "Confirm group deletion" });
+    fireEvent.click(within(confirmation).getByRole("button", { name: "Delete group" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Confirm group deletion" })).not.toBeInTheDocument());
+    expect(api.mock.calls.filter(([path, options]) => String(path).endsWith("/group-manual") && (options as RequestInit | undefined)?.method === "DELETE")).toHaveLength(1);
+    expect(within(dialog).queryByRole("button", { name: "Delete group" })).not.toBeInTheDocument();
+    await waitFor(() => expect(within(dialog).getByRole("button", { name: /Company: Example/ })).toHaveFocus());
   });
 
   it("keeps management discoverable but disabled for read-only roles and surfaces server errors", async () => {
@@ -107,6 +156,7 @@ describe("Contacts Groups Manager", () => {
     expect(within(dialog).getByText(/can review groups and members, but it cannot change them/i)).toBeInTheDocument();
     expect(within(dialog).getByLabelText("Group name")).toBeDisabled();
     expect(within(dialog).getByRole("button", { name: "Business domains" })).toBeDisabled();
+    expect(within(dialog).queryByRole("button", { name: "Delete group" })).not.toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Close Groups manager" }));
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Groups manager" })).not.toBeInTheDocument());
@@ -145,14 +195,16 @@ async function openGroupsManager() {
   return screen.findByRole("dialog", { name: "Groups manager" });
 }
 
-function installGroupsApiMock({ failPatch = false }: { failPatch?: boolean } = {}) {
-  let groups: ContactGroupRecord[] = [
-    { id: "group-manual", name: "Important contacts", description: "Priority working set", kind: "manual", visibility_scope: "organization", status: "active", member_count: 1, active_member_count: 1 },
-    { id: "group-generated", name: "Company: Example", description: "Generated from organization facts", kind: "smart_rule", visibility_scope: "organization", status: "active", member_count: 2, active_member_count: 2 },
-    { id: "group-empty", name: "Follow up", description: "", kind: "manual", visibility_scope: "organization", status: "active", member_count: 0, active_member_count: 0 },
-    { id: "group-archived", name: "Former clients", description: "", kind: "manual", visibility_scope: "organization", status: "archived", member_count: 3, active_member_count: 3 }
+function installGroupsApiMock({ failPatch = false, failDeleteOnce = false, removeOnFailedDelete = false }: { failPatch?: boolean; failDeleteOnce?: boolean; removeOnFailedDelete?: boolean } = {}) {
+  type MockGroup = ContactGroupRecord & ManagedContactGroup;
+  let groups: MockGroup[] = [
+    { id: "group-manual", name: "Important contacts", description: "Priority working set", kind: "manual", visibility_scope: "organization", status: "active", member_count: 1, active_member_count: 1, etag: '"group-manual-v1"', user_managed: true, can_delete: true, can_restore: false },
+    { id: "group-generated", name: "Company: Example", description: "Generated from organization facts", kind: "smart_rule", visibility_scope: "organization", status: "active", member_count: 2, active_member_count: 2, etag: '"group-generated-v1"', user_managed: false, can_delete: false, can_restore: false },
+    { id: "group-empty", name: "Follow up", description: "", kind: "manual", visibility_scope: "organization", status: "active", member_count: 0, active_member_count: 0, etag: '"group-empty-v1"', user_managed: true, can_delete: true, can_restore: false },
+    { id: "group-archived", name: "Former clients", description: "", kind: "manual", visibility_scope: "organization", status: "archived", member_count: 3, active_member_count: 3, etag: '"group-archived-v1"', user_managed: true, can_delete: false, can_restore: true }
   ];
   let members: ContactRecord[] = [contact];
+  let rejectNextDelete = failDeleteOnce;
   const fetchMock = vi.fn(async (input: RequestInfo | URL, options: RequestInit = {}) => {
     const path = String(input);
     const method = options.method || "GET";
@@ -160,13 +212,13 @@ function installGroupsApiMock({ failPatch = false }: { failPatch?: boolean } = {
     if (path.startsWith("/api/contacts/groups?")) return response(groups);
     if (path === "/api/contacts/groups" && method === "POST") {
       const payload = JSON.parse(String(options.body));
-      const created = { id: "group-new", name: payload.name, description: payload.description || "", kind: "manual", visibility_scope: "organization", status: "active", member_count: 0, active_member_count: 0 };
+      const created: MockGroup = { id: "group-new", name: payload.name, description: payload.description || "", kind: "manual", visibility_scope: "organization", status: "active", member_count: 0, active_member_count: 0, etag: '"group-new-v1"', user_managed: true, can_delete: true, can_restore: false };
       groups = [...groups, created];
       return response(created);
     }
     if (path.endsWith("/restore") && method === "POST") {
       const id = path.split("/").at(-2)!;
-      groups = groups.map((group) => group.id === id ? { ...group, status: "active" } : group);
+      groups = groups.map((group) => group.id === id ? { ...group, status: "active", etag: `"${id}-restored"`, can_delete: true, can_restore: false } : group);
       return response(groups.find((group) => group.id === id));
     }
     if (path.includes("/members/") && method === "DELETE") {
@@ -183,12 +235,23 @@ function installGroupsApiMock({ failPatch = false }: { failPatch?: boolean } = {
       if (failPatch) return response({ detail: { error: "contact group name already exists" } }, 400);
       const id = path.split("/").at(-1)!;
       const payload = JSON.parse(String(options.body));
-      groups = groups.map((group) => group.id === id ? { ...group, ...payload } : group);
+      groups = groups.map((group) => group.id === id ? { ...group, ...payload, etag: `"${id}-v2"` } : group);
       return response(groups.find((group) => group.id === id));
     }
     if (path.startsWith("/api/contacts/groups/") && method === "DELETE") {
       const id = path.split("/").at(-1)!;
-      groups = groups.map((group) => group.id === id ? { ...group, status: "archived" } : group);
+      if (rejectNextDelete) {
+        rejectNextDelete = false;
+        groups = removeOnFailedDelete
+          ? groups.filter((group) => group.id !== id)
+          : groups.map((group) => group.id === id ? { ...group, description: "Changed remotely", etag: `"${id}-v2"` } : group);
+        return response({ detail: {
+          code: "contact_group_precondition_stale",
+          message: "The contact group changed after this action was prepared.",
+          repair: "The latest group has been loaded. Review it, then confirm the action again."
+        } }, 412);
+      }
+      groups = groups.map((group) => group.id === id ? { ...group, status: "archived", etag: `"${id}-archived"`, can_delete: false, can_restore: true } : group);
       return response(groups.find((group) => group.id === id));
     }
     if (path.startsWith("/api/contacts?")) {

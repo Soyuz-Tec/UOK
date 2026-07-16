@@ -43,6 +43,8 @@ from uok_contacts_core._internal.governance.system_commands import (
     cmd_bulk_contacts,
     cmd_create_contact_team,
     cmd_define_contact_custom_field,
+    cmd_delete_contact_custom_field,
+    cmd_delete_contact_team,
     cmd_delete_contact_view,
     cmd_link_external_identity,
     cmd_record_contact_consent,
@@ -50,6 +52,8 @@ from uok_contacts_core._internal.governance.system_commands import (
     cmd_remove_contact_fact,
     cmd_remove_contact_team_member,
     cmd_resolve_duplicate_candidate,
+    cmd_restore_contact_custom_field,
+    cmd_restore_contact_team,
     cmd_save_contact_view,
     cmd_set_contact_custom_field,
     cmd_update_contact_team,
@@ -221,6 +225,10 @@ def command_handlers() -> dict[str, CommandHandler]:
         "BulkUpdateContacts": cmd_bulk_contacts,
         "LinkContactExternalIdentity": cmd_link_external_identity,
         "DefineContactCustomField": cmd_define_contact_custom_field,
+        "DeleteContactCustomField": cmd_delete_contact_custom_field,
+        "DeleteContactTeam": cmd_delete_contact_team,
+        "RestoreContactCustomField": cmd_restore_contact_custom_field,
+        "RestoreContactTeam": cmd_restore_contact_team,
         "SetContactCustomFieldValue": cmd_set_contact_custom_field,
     }
 
@@ -263,5 +271,9 @@ def command_permissions() -> dict[str, str]:
         "BulkUpdateContacts": "contacts.bulk",
         "LinkContactExternalIdentity": "contacts.sync",
         "DefineContactCustomField": "contacts.customize",
+        "DeleteContactCustomField": "contacts.customize",
+        "DeleteContactTeam": "contacts.team.manage",
+        "RestoreContactCustomField": "contacts.restore",
+        "RestoreContactTeam": "contacts.restore",
         "SetContactCustomFieldValue": "contacts.manage",
     }

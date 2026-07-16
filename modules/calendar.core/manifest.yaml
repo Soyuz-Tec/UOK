@@ -19,6 +19,7 @@ commands:
   - CreateCalendar
   - UpdateCalendar
   - DeleteCalendar
+  - RestoreCalendar
   - CreateCalendarEvent
   - UpdateCalendarEvent
   - CancelCalendarEvent
@@ -29,6 +30,7 @@ events:
   - CalendarCreated
   - CalendarUpdated
   - CalendarDeleted
+  - CalendarRestored
   - CalendarEventCreated
   - CalendarEventUpdated
   - CalendarEventCanceled
@@ -76,4 +78,4 @@ extension_points:
   - model_exports
   - web_surface
   - candidate_verifier
-data_retention_policy: "Calendar records are organization-scoped. Deletion soft-deletes calendars and cancellation retains event history for audit; purge is intentionally deferred to a future governance workflow."
+data_retention_policy: "Calendar records are organization-scoped. Governed Calendar deletion soft-deletes a user-managed parent and hides retained event, participant, and reminder history from active reads until an authorized restore; event cancellation also retains history for audit. Generated and system-owned Calendars are not user-deletable. Purge is intentionally deferred to a future governance workflow."

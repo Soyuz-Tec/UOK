@@ -1,7 +1,9 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
+import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { WorkspacePopup } from "../overlays";
 import { ExpandableControlPanel } from "./ExpandableControlPanel";
 
 describe("ExpandableControlPanel", () => {
@@ -58,5 +60,40 @@ describe("ExpandableControlPanel", () => {
     fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
     expect(last).toHaveFocus();
     expect(roving).not.toHaveFocus();
+  });
+
+  it("keeps the parent panel open when a nested popup handles Escape", async () => {
+    function NestedPopupPanel() {
+      const [popupOpen, setPopupOpen] = useState(false);
+      return (
+        <ExpandableControlPanel
+          label="Calendar controls"
+          triggerLabel="Open calendar controls"
+          triggerSummary="Calendar controls"
+          defaultOpen
+        >
+          <button type="button" onClick={() => setPopupOpen(true)}>Delete calendar</button>
+          <WorkspacePopup
+            open={popupOpen}
+            label="Delete calendar confirmation"
+            onClose={() => setPopupOpen(false)}
+          >
+            <button type="button">Confirm delete</button>
+          </WorkspacePopup>
+        </ExpandableControlPanel>
+      );
+    }
+
+    render(<NestedPopupPanel />);
+    const panelTrigger = screen.getByRole("button", { name: "Open calendar controls" });
+    const deleteTrigger = screen.getByRole("button", { name: "Delete calendar" });
+    fireEvent.click(deleteTrigger);
+    await screen.findByRole("dialog", { name: "Delete calendar confirmation" });
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Delete calendar confirmation" })).not.toBeInTheDocument());
+    expect(panelTrigger).toHaveAttribute("aria-expanded", "true");
+    expect(deleteTrigger).toHaveFocus();
   });
 });

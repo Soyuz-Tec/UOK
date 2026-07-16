@@ -110,14 +110,14 @@ function Invoke-UokContactsVerifierMembershipRemoval {
 function Invoke-UokContactsVerifierGroupArchive {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Headers,
-        [Parameter(Mandatory = $true)][string]$GroupId
+        [Parameter(Mandatory = $true)][string]$GroupId,
+        [Parameter(Mandatory = $true)][string]$Etag
     )
-    $response = Invoke-UokContactsCleanupJson -Method "POST" -Path "/api/commands" -Headers $Headers -Body @{
-        command_type = "ArchiveContactGroup"
-        payload = @{ group_id = $GroupId }
-        idempotency_key = "uok-contacts-verifier-group-archive-$GroupId"
-    }
-    if ($response.result.status -ne "archived") {
+    $archiveHeaders = @{}
+    foreach ($key in $Headers.Keys) { $archiveHeaders[$key] = $Headers[$key] }
+    $archiveHeaders["If-Match"] = $Etag
+    $response = Invoke-UokContactsCleanupJson -Method "DELETE" -Path "/api/contacts/groups/$GroupId" -Headers $archiveHeaders
+    if ($response.status -ne "archived") {
         throw "ArchiveContactGroup did not return archived for group $GroupId."
     }
 }
@@ -184,6 +184,10 @@ function Invoke-UokContactsVerifierGroupCleanup {
                     $currentResult = $null
                     continue
                 }
+                $archiveEtag = "$($current[0].etag)"
+                if (-not $current[0].can_delete -or -not $archiveEtag) {
+                    throw "Group $($planned.id) did not expose its governed Delete capability and ETag."
+                }
                 $membershipOutcome = "not_present"
                 if ($current[0].cleanup_mode -eq "legacy_one_member") {
                     $currentResult.membership_outcome = "removal_started"
@@ -195,12 +199,16 @@ function Invoke-UokContactsVerifierGroupCleanup {
                         $_.id -eq $planned.id -and $_.status -eq "active" -and $_.cleanup_mode -eq "empty"
                     })
                     if ($empty.Count -ne 1) { throw "Group $($planned.id) was not strictly empty after membership removal." }
+                    $archiveEtag = "$($empty[0].etag)"
+                    if (-not $empty[0].can_delete -or -not $archiveEtag) {
+                        throw "Group $($planned.id) did not expose a refreshed governed Delete validator after membership removal."
+                    }
                 } elseif ($planned.cleanup_mode -eq "legacy_one_member") {
                     $membershipOutcome = "already_absent"
                     $currentResult.membership_outcome = $membershipOutcome
                 }
                 $currentResult.outcome = "archive_started"
-                Invoke-UokContactsVerifierGroupArchive -Headers $headers -GroupId $planned.id
+                Invoke-UokContactsVerifierGroupArchive -Headers $headers -GroupId $planned.id -Etag $archiveEtag
                 $archived = @(Get-UokContactsVerifierCandidateState -Headers $headers | Where-Object {
                     $_.id -eq $planned.id -and $_.status -eq "archived" -and $_.cleanup_mode -eq "empty"
                 })

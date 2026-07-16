@@ -6,20 +6,23 @@ from uuid import uuid4
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from uok.kernel_models import EventRecord
 from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
+from .calendar_parent_commands import cmd_delete_calendar, cmd_restore_calendar
 from .command_contract import (
     command_permissions,
     creatable_event_status as _creatable_event_status,
     validate_event_patch_payload as _validate_event_patch_payload,
 )
 from .concurrency import (
+    locked_active_calendar_for_write,
+    locked_event_and_reminder_for_update,
     locked_event_for_update,
     require_event_precondition,
     result_with_event_etag,
 )
+from .command_events import emit_calendar_event as _emit_event
 from .event_write_support import (
     normalized_event_times,
     rezoned_all_day_times,
@@ -30,7 +33,7 @@ from .event_write_support import (
     validated_event_recurrence,
 )
 from .models import Calendar, CalendarEvent, CalendarReminder, utcnow
-from .read_model import calendar_or_error, serialize_calendar, serialize_event, stored_utc
+from .read_model import serialize_calendar, serialize_event, stored_utc
 from .validation import (
     MAX_CALENDAR_NAME_LENGTH,
     MAX_EVENT_TEXT_LENGTH,
@@ -45,18 +48,6 @@ from .validation import (
     valid_timezone,
     visibility_scope,
 )
-
-def _emit_event(db: Session, actor: Actor, event_type: str, object_type: str, object_id: str, payload: dict[str, Any]) -> None:
-    last = db.scalar(select(func.max(EventRecord.sequence)).where(EventRecord.organization_id == actor.organization_id)) or 0
-    db.add(EventRecord(
-        organization_id=actor.organization_id,
-        sequence=int(last) + 1,
-        event_type=event_type,
-        object_type=object_type,
-        object_id=object_id,
-        payload_json=dumps(payload),
-    ))
-
 
 def cmd_create_calendar(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
     name = bounded_text(payload.get("name"), "name", MAX_CALENDAR_NAME_LENGTH)
@@ -74,11 +65,15 @@ def cmd_create_calendar(db: Session, actor: Actor, payload: dict[str, Any], comm
     db.add(calendar)
     db.flush()
     _emit_event(db, actor, "CalendarCreated", "Calendar", calendar.id, {"name": calendar.name})
-    return serialize_calendar(calendar)
+    return serialize_calendar(calendar, actor)
 
 
 def cmd_update_calendar(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
-    calendar = calendar_or_error(db, actor, bounded_text(payload.get("calendar_id"), "calendar_id", 36))
+    calendar = locked_active_calendar_for_write(
+        db,
+        actor,
+        bounded_text(payload.get("calendar_id"), "calendar_id", 36),
+    )
     if "name" in payload:
         calendar.name = bounded_text(payload.get("name"), "name", MAX_CALENDAR_NAME_LENGTH)
     if "color" in payload:
@@ -91,20 +86,15 @@ def cmd_update_calendar(db: Session, actor: Actor, payload: dict[str, Any], comm
         calendar.attrs_json = dumps(object_payload(payload.get("attrs"), "attrs"))
     calendar.updated_at = utcnow()
     _emit_event(db, actor, "CalendarUpdated", "Calendar", calendar.id, {"name": calendar.name})
-    return serialize_calendar(calendar)
-
-
-def cmd_delete_calendar(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
-    calendar = calendar_or_error(db, actor, bounded_text(payload.get("calendar_id"), "calendar_id", 36))
-    calendar.status = "deleted"
-    calendar.deleted_at = utcnow()
-    calendar.updated_at = utcnow()
-    _emit_event(db, actor, "CalendarDeleted", "Calendar", calendar.id, {"name": calendar.name})
-    return serialize_calendar(calendar)
+    return serialize_calendar(calendar, actor)
 
 
 def cmd_create_calendar_event(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
-    calendar = calendar_or_error(db, actor, bounded_text(payload.get("calendar_id"), "calendar_id", 36))
+    calendar = locked_active_calendar_for_write(
+        db,
+        actor,
+        bounded_text(payload.get("calendar_id"), "calendar_id", 36),
+    )
     starts_at = as_utc_datetime(payload.get("starts_at"), "starts_at")
     ends_at = as_utc_datetime(payload.get("ends_at"), "ends_at")
     if ends_at <= starts_at:
@@ -262,13 +252,11 @@ def cmd_create_calendar_reminder(db: Session, actor: Actor, payload: dict[str, A
 
 
 def cmd_delete_calendar_reminder(db: Session, actor: Actor, payload: dict[str, Any], command_id: str) -> dict[str, Any]:
-    reminder = db.get(CalendarReminder, bounded_text(payload.get("reminder_id"), "reminder_id", 36))
-    if not reminder or reminder.organization_id != actor.organization_id:
-        raise ValueError("calendar reminder not found")
-    try:
-        event = locked_event_for_update(db, actor, reminder.event_id)
-    except ValueError:
-        raise ValueError("calendar reminder not found") from None
+    event, reminder = locked_event_and_reminder_for_update(
+        db,
+        actor,
+        bounded_text(payload.get("reminder_id"), "reminder_id", 36),
+    )
     require_event_precondition(db, event, payload)
     reminder.status = "deleted"
     event.updated_at = utcnow()
@@ -283,6 +271,7 @@ def command_handlers():
         "CreateCalendar": cmd_create_calendar,
         "UpdateCalendar": cmd_update_calendar,
         "DeleteCalendar": cmd_delete_calendar,
+        "RestoreCalendar": cmd_restore_calendar,
         "CreateCalendarEvent": cmd_create_calendar_event,
         "UpdateCalendarEvent": cmd_update_calendar_event,
         "CancelCalendarEvent": cmd_cancel_calendar_event,
