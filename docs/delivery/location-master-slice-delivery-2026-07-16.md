@@ -1,6 +1,6 @@
 # Location Master Slice Delivery – 2026-07-16
 
-**Status:** Locally qualified; stacked draft pull request and hosted CI pending.
+**Status:** Qualified; stacked draft pull request open with green code-bearing hosted CI.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -121,9 +121,10 @@ Current local results:
 | Local candidate `Verify` | Pass — 123 Python files; 112 Vitest files / 413 tests; 19 Playwright tests passed and 1 intentionally skipped; 8/8 module verifiers passed |
 | `locations.core` live verifier | Pass — install, create, detail, rename/history, archive filtering, restore, disable fail-closed, re-enable |
 | Browser/runtime Location Master proof | Pass — generated navigation, tenant record/detail/history, create form, close/focus workflow, zero console warnings/errors |
-| Pull request and hosted CI | Pending publication |
+| Draft pull request | Open — [#63 Add tenant-scoped Location Master](https://github.com/Soyuz-Tec/UOK/pull/63), stacked on `feature/product-master-slice` / PR #62 |
+| Code-bearing hosted CI | Pass — [push run 29547649090](https://github.com/Soyuz-Tec/UOK/actions/runs/29547649090) and [pull-request run 29547676840](https://github.com/Soyuz-Tec/UOK/actions/runs/29547676840) on `8b51180` |
 
-The local engineering-evidence artifact remains intentionally untracked. Hosted CI and pull-request review are still required before merge.
+The local engineering-evidence artifact remains intentionally untracked. Pull-request review and the normal final-head CI requirement still apply before merge.
 
 ## Manual Demo
 
