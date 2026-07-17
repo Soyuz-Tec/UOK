@@ -1,7 +1,8 @@
 # Compliance Document Type Slice Delivery – 2026-07-17
 
-**Status:** Implemented and locally qualified; draft pull-request and hosted-CI
-evidence will be recorded after publication.
+**Status:** Delivered in draft pull request
+[#66](https://github.com/Soyuz-Tec/UOK/pull/66); local qualification and
+code-bearing hosted CI are green.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -157,7 +158,7 @@ Current evidence:
 | Local candidate Rebuild | Pass — OCI image digest `2719df7acb71fd9046065403f43e482d711329b667d8c0eda08c915acfdc0030`; `/health` reports `ok`; offline and live database-capacity checks pass |
 | Local candidate Verify and Compliance verifier | Pass — 144 Python files; 121 frontend files / 447 tests; production build; Playwright 19 passed plus 1 expected environment-gated skip; 11/11 candidate verifiers |
 | Browser Compliance proof | Pass — desktop create, audited rename, deactivate/activate, archive/restore, and stable-code search; 375px override has no horizontal overflow (`scrollWidth == clientWidth == 360`); no console warning/error |
-| Draft PR / hosted CI | Pending publication and terminal hosted checks |
+| Draft PR / hosted CI | Pass — [draft PR #66](https://github.com/Soyuz-Tec/UOK/pull/66); exact code head `68ad7526e2d84702ebb9fb5f2b746ec54ad1d6cf`; [push run 29613874618](https://github.com/Soyuz-Tec/UOK/actions/runs/29613874618) and [PR run 29613876599, attempt 2](https://github.com/Soyuz-Tec/UOK/actions/runs/29613876599) succeeded |
 
 The module release-contract totals are 12 modules, 101 commands, 111 events, 60
 ORM mappings, 17 manifest-declared HTTP adapters, 37 exact accepted Host imports,
@@ -166,6 +167,15 @@ ORM mappings, 17 manifest-declared HTTP adapters, 37 exact accepted Host imports
 The final clean `Verify` retry passed end to end. An earlier attempt had one
 unrelated Planning Board focus assertion fail transiently; the exact scenario
 passed in isolation, and the complete retry then passed without code changes.
+
+The first hosted PR run exposed a timing-sensitive await in the new Compliance
+lifecycle test while the same commit's push run passed. Commit `68ad752`
+explicitly awaits React's async lifecycle mutation flush; the focused test then
+passed 5/5 stress runs and the full local 121-file / 447-test suite. On that
+exact head the push workflow passed; the first PR attempt later hit a different,
+pre-existing Shipment async-wait flake that passed 5/5 focused local runs. The
+unchanged PR job rerun passed every test, frontend build, and OCI build. No
+production behavior or out-of-scope Shipment code changed.
 
 ## Manual Demo
 
