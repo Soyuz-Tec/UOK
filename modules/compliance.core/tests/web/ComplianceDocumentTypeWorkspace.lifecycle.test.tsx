@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -43,13 +43,13 @@ describe("Compliance Document Type lifecycle", () => {
     render(<ComplianceDocumentTypeWorkspace host={complianceHost()} />);
     await findLifecycleButton("Deactivate document type");
 
-    runLifecycle("Deactivate document type", "Temporarily not used");
+    await runLifecycle("Deactivate document type", "Temporarily not used");
     await findLifecycleButton("Activate document type");
-    runLifecycle("Activate document type", "Approved again");
+    await runLifecycle("Activate document type", "Approved again");
     await findLifecycleButton("Deactivate document type");
-    runLifecycle("Archive document type", "Superseded vocabulary");
+    await runLifecycle("Archive document type", "Superseded vocabulary");
     await findLifecycleButton("Restore document type");
-    runLifecycle("Restore document type", "Restored after review");
+    await runLifecycle("Restore document type", "Restored after review");
     await findLifecycleButton("Deactivate document type");
 
     expect(commands).toMatchObject([
@@ -61,11 +61,15 @@ describe("Compliance Document Type lifecycle", () => {
   });
 });
 
-function runLifecycle(buttonName: string, reason: string) {
+async function runLifecycle(buttonName: string, reason: string) {
   fireEvent.change(screen.getByLabelText("Lifecycle reason"), {
     target: { value: reason },
   });
-  fireEvent.click(screen.getByRole("button", { name: buttonName }));
+  const button = screen.getByRole("button", { name: buttonName });
+  expect(button).toBeEnabled();
+  await act(async () => {
+    fireEvent.click(button);
+  });
 }
 
 function findLifecycleButton(name: string) {
