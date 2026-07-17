@@ -198,7 +198,7 @@ def test_manifests_compose_through_public_facades_and_keep_models_private() -> N
         )
 
 
-def test_supported_python_surfaces_are_exact_and_contacts_dto_is_immutable() -> None:
+def test_supported_python_surfaces_are_exact_and_boundary_dtos_are_immutable() -> None:
     ensure_module_backend_paths()
     apis = {
         owner: importlib.import_module(f"{contract['package']}.public_api")
@@ -212,6 +212,12 @@ def test_supported_python_surfaces_are_exact_and_contacts_dto_is_immutable() -> 
     contacts_api = apis["contacts"]
     assert is_dataclass(contacts_api.PartyReferenceResolution)
     assert contacts_api.PartyReferenceResolution.__dataclass_params__.frozen is True
+    locations_api = apis["locations"]
+    assert is_dataclass(locations_api.LocationReferenceResolution)
+    assert locations_api.LocationReferenceResolution.__dataclass_params__.frozen is True
+    routes_api = apis["routes"]
+    assert is_dataclass(routes_api.RouteReferenceDTO)
+    assert routes_api.RouteReferenceDTO.__dataclass_params__.frozen is True
 
 
 def test_python_rule_rejects_private_root_deep_star_and_unknown_public_imports() -> None:
@@ -278,6 +284,7 @@ def test_frontend_rule_rejects_deep_imports_and_accepts_module_surface() -> None
     for folder, private_symbol in (
         ("product.master", "ProductMasterWorkspace"),
         ("locations.core", "LocationMasterWorkspace"),
+        ("routes.core", "RouteMasterWorkspace"),
     ):
         assert _frontend_violations(
             f'import {{ {private_symbol} }} from "@uok-modules/{folder}/web/src/{private_symbol}";',

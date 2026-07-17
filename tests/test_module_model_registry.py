@@ -33,8 +33,9 @@ EXPECTED_PROVIDER_ORDER = (
     "planning.core",
     "product.master",
     "reports.core",
+    "routes.core",
 )
-EXPECTED_MODEL_COUNT = 53
+EXPECTED_MODEL_COUNT = 56
 
 
 def _expected_registry() -> dict[str, dict[str, str]]:
@@ -172,6 +173,10 @@ def test_complete_registry_can_create_all_tables_in_sqlite() -> None:
         (
             "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); import uok_reports_core.models"
+        ),
+        (
+            "from uok.host.module_paths import ensure_module_backend_paths; "
+            "ensure_module_backend_paths(); import uok_routes_core.public_api"
         ),
     ],
 )

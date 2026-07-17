@@ -29,6 +29,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `planning.core` | capability module | `runtime_proven` | Gates A-E locally proven, including portfolio and production-like readiness evidence | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
 | `product.master` | capability module | `runtime_proven` | tenant-scoped Product Definition registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md` |
 | `reports.core` | capability module | `runtime_proven` | secure global report artifact foundation | `UOK-3.1.0-alpha.3` | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` |
+| `routes.core` | capability module | `runtime_proven` | tenant-scoped ordered Route/Corridor definitions over Location owner DTOs | `UOK-3.1.0-alpha.3` | `docs/modules/routes.core/ROUTE_CORRIDOR_MODULE_PLAN.md` |
 
 ## Current Target
 
@@ -96,6 +97,17 @@ It also introduces `planning.core` as the integrated planning and Gantt capabili
 - a module-owned Location Master workbench and candidate verifier;
 - no Party-address migration, Product/Planning coupling, Route topology, shipment engine, or intelligence scoring.
 
+`routes.core` adds the next post-freeze Route/Corridor MDM slice:
+
+- tenant-scoped Route Definitions with organization-unique immutable codes;
+- ordered paths with one origin, up to eight waypoints, and one destination;
+- stable Location IDs resolved only through the immutable `locations.core` public facade;
+- optional controlled transport-mode hints without schedules, rates, capacity, or optimization;
+- governed create, update, archive, and restore commands with optimistic versions;
+- append-only canonical-name history plus normal UOK audit events;
+- a module-owned Route/Corridor Master workbench and candidate verifier;
+- no Location foreign keys/joins, Planning coupling, shipment execution, tracking, GIS, or intelligence scoring.
+
 ## Governance Rule
 
 New modules must not add product-specific behavior to the UOK core. They must expose their contracts through module manifests, typed APIs, command handlers, command permissions, role grants, owned table declarations, migrations, tests, dashboard/evidence providers where applicable, and candidate verification.
@@ -106,3 +118,4 @@ New modules must not add product-specific behavior to the UOK core. They must ex
   shell/module backedges as modules are added.
 - Keep future module React/CSS source and frontend tests in canonical module roots from the first increment.
 - Keep future schema changes in module-owned migrations instead of expanding the shared initial baseline.
+- Select the next Shipment support or Compliance Document Type slice only after its minimum business facts and owner caller are locked; do not pre-embed execution behavior in Route or Planning.

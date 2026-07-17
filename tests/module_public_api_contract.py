@@ -47,9 +47,23 @@ MODULES = {
         "package": "uok_locations_core",
         "folder": "locations.core",
         "symbols": {
+            "LocationReferenceResolution",
             "api_router",
             "command_handlers",
             "command_permissions",
+            "resolve_location_references",
+            "role_grants",
+        },
+    },
+    "routes": {
+        "package": "uok_routes_core",
+        "folder": "routes.core",
+        "symbols": {
+            "RouteReferenceDTO",
+            "api_router",
+            "command_handlers",
+            "command_permissions",
+            "resolve_route_reference",
             "role_grants",
         },
     },

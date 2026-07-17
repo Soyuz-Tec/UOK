@@ -21,6 +21,9 @@ FORBIDDEN_BUSINESS_TABLES = (
     "location_name_history",
     "product_definitions",
     "product_name_history",
+    "route_definitions",
+    "route_stops",
+    "route_name_history",
     "cargo_transactions",
     "agreements",
 )

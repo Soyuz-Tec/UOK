@@ -12,7 +12,7 @@
 
 `locations.core` is the optional, governed Location master-data owner. It defines stable tenant-scoped identity and lifecycle for operational ports, warehouses, cities, and regions without owning Party addresses, Products, routes, shipments, inventory, maps, coordinates, or global geographic catalogs.
 
-The module name follows the provider boundary already reserved by Planning. This slice intentionally does not activate Planning's `location.provider`; future consumers must use an immutable owner contract rather than Location ORM mappings or tables.
+The module name follows the provider boundary already reserved by Planning. Planning's `location.provider` remains inactive. `routes.core` is the first real cross-module consumer and uses only the frozen `LocationReferenceResolution` plus the owner-authorized `resolve_location_references` batch facade; no consumer may use Location ORM mappings or tables.
 
 ## First Slice
 
@@ -26,6 +26,7 @@ The 2026-07-16 slice owns:
 - optimistic version checks for mutation safety;
 - append-only canonical-name history;
 - organization-scoped list, detail, and history reads;
+- actor-authorized immutable Location reference resolution for the Route/Corridor owner;
 - command/event audit correlation;
 - a module-owned Location Master workbench;
 - module lifecycle, candidate verification, and architecture-boundary evidence.
@@ -47,7 +48,7 @@ Detailed design and delivery evidence:
 | Production React and CSS | `modules/locations.core/web/src` |
 | Compile-time shell composition | Validated manifest and generated module-surface catalog |
 
-The module facade is limited to four runtime-composition providers. ORM mappings and implementation packages are private. No cross-module Location query API is published until a real owner-authorized caller exists.
+The module facade is limited to four runtime-composition providers plus the frozen `LocationReferenceResolution` and `resolve_location_references` query used by `routes.core`. ORM mappings and implementation packages remain private. Any later caller or contract growth requires the same real-caller and freeze review.
 
 ## Data And Integrity Rules
 
@@ -69,6 +70,7 @@ The module facade is limited to four runtime-composition providers. ORM mappings
 - Commands: `CreateLocationDefinition`, `UpdateLocationDefinition`, `ArchiveLocationDefinition`, `RestoreLocationDefinition`
 - Permissions: `locations.read`, `locations.manage`
 - Workbench section: `locations`
+- Owner DTO query: `LocationReferenceResolution` and `resolve_location_references`
 
 The UI uses the existing neutral module-surface host contract. All Location DTOs, HTTP calls, command payloads, state, components, and CSS remain module-owned.
 
@@ -98,4 +100,4 @@ Runtime changes additionally require a rebuilt local PostgreSQL candidate, authe
 
 ## Next Slice Boundary
 
-The next evidence-backed owner should be a Route/Corridor capability that references stable Location IDs through a future immutable `locations.core` query contract. Route topology and movement logic must remain outside Location Master, and the first real consumer must justify any new Location facade symbol through the freeze process.
+The Route/Corridor owner is now the first bounded consumer of the immutable Location query contract. The next consumer must still be evidence-backed: a future Shipment or Planning slice may store stable Location/Route IDs and call owner facades, but Location topology and movement logic remain outside Location Master and no new facade symbol is added without a real caller.

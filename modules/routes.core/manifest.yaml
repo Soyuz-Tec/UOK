@@ -1,0 +1,62 @@
+manifest_schema: uok.module.v1
+name: routes.core
+kind: capability_module
+version: APP_VERSION
+description: "Tenant-scoped Route/Corridor master for ordered operational Location paths."
+maturity: runtime_proven
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - CreateRouteDefinition
+  - UpdateRouteDefinition
+  - ArchiveRouteDefinition
+  - RestoreRouteDefinition
+events:
+  - RouteDefinitionCreated
+  - RouteDefinitionUpdated
+  - RouteDefinitionArchived
+  - RouteDefinitionRestored
+dependencies:
+  - locations.core
+backend_path: modules/routes.core/backend
+web_path: modules/routes.core/web
+web_entry: modules/routes.core/web/src/moduleSurface.tsx
+web_section: routes
+migrations_path: modules/routes.core/migrations
+tests_path: modules/routes.core/tests
+api_prefixes:
+  - /api/routes
+api_router: uok_routes_core.public_api:api_router
+command_handlers: uok_routes_core.public_api:command_handlers
+command_permissions: uok_routes_core.public_api:command_permissions
+role_grants: uok_routes_core.public_api:role_grants
+model_exports: uok_routes_core._internal.persistence.models:owned_models
+candidate_verifier_script: modules/routes.core/verify/UokCandidateRouteCorridor.ps1
+candidate_verifier_function: Invoke-UokRouteCorridorCandidateScenario
+permissions:
+  - routes.read
+  - routes.manage
+owned_tables:
+  - RouteDefinition
+  - RouteStop
+  - RouteNameHistory
+  - CommandLog:routes.core
+  - EventRecord:RouteDefinition
+extension_points:
+  - api_router
+  - command_handlers
+  - command_permissions
+  - role_grants
+  - model_exports
+  - web_surface
+  - candidate_verifier
+data_retention_policy: "Archive preserves Route Definitions, ordered Location references, and immutable name history. Module uninstall disables access while retaining tenant-owned records for authorized recovery."

@@ -90,12 +90,19 @@ def test_location_response_dto_is_frozen_and_excludes_tenant_identity() -> None:
         response.canonical_name = "Changed"  # type: ignore[misc]
 
 
-def test_location_master_owns_two_private_models_and_four_public_hooks() -> None:
+def test_location_master_owns_two_private_models_and_narrow_public_contract() -> None:
     assert owned_models() == {
         "LocationDefinition": LocationDefinition,
         "LocationNameHistory": LocationNameHistory,
     }
-    assert public_symbols == ["api_router", "command_handlers", "command_permissions", "role_grants"]
+    assert public_symbols == [
+        "LocationReferenceResolution",
+        "api_router",
+        "command_handlers",
+        "command_permissions",
+        "resolve_location_references",
+        "role_grants",
+    ]
     assert LocationDefinition.__tablename__ == "location_definitions"
     assert LocationNameHistory.__tablename__ == "location_name_history"
 

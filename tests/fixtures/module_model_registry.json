@@ -67,5 +67,10 @@
   },
   "reports.core": {
     "ReportArtifact": "report_artifacts"
+  },
+  "routes.core": {
+    "RouteDefinition": "route_definitions",
+    "RouteNameHistory": "route_name_history",
+    "RouteStop": "route_stops"
   }
 }

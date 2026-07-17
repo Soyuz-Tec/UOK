@@ -97,8 +97,8 @@ Any new module, public symbol, Kernel contract, Host adapter path, shell port fi
 
 ## Accepted Residuals During The Freeze
 
-- The 31 exact in-process Host request/command adapter imports, including the
-  Product Master and Location Master HTTP adapters' `get_db` and `current_actor`
+- The 33 exact in-process Host request/command adapter imports, including the
+  Product Master, Location Master, and Route/Corridor Master HTTP adapters' `get_db` and `current_actor`
   seams.
 - The six-file product-neutral Host/platform validation SCC, provided it does not grow.
 - Contacts' three-file internal guided-import SCC.

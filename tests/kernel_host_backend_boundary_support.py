@@ -47,6 +47,7 @@ MODULE_HTTP_ADAPTERS = {
     "modules/planning.core/backend/uok_planning_core/_internal/resources/resource_calendar_api.py",
     "modules/product.master/backend/uok_product_master/_internal/delivery/api.py",
     "modules/reports.core/backend/uok_reports_core/api.py",
+    "modules/routes.core/backend/uok_routes_core/_internal/delivery/api.py",
 }
 MODULE_COMMAND_ADAPTERS = {
     "modules/calendar.core/backend/uok_calendar_core/api.py",

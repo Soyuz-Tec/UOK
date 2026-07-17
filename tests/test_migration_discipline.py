@@ -14,6 +14,9 @@ OWNER_TABLE_CASES = (
     ("locations.core", "LocationNameHistory", "location_name_history"),
     ("product.master", "ProductDefinition", "product_definitions"),
     ("product.master", "ProductNameHistory", "product_name_history"),
+    ("routes.core", "RouteDefinition", "route_definitions"),
+    ("routes.core", "RouteStop", "route_stops"),
+    ("routes.core", "RouteNameHistory", "route_name_history"),
 )
 
 
@@ -51,11 +54,15 @@ def test_uok_migration_discipline_uses_single_active_baseline(client: TestClient
     assert any(item["module"] == "planning.core" for item in body["module_migration_files"])
     assert any(item["module"] == "product.master" for item in body["module_migration_files"])
     assert any(item["module"] == "locations.core" for item in body["module_migration_files"])
+    assert any(item["module"] == "routes.core" for item in body["module_migration_files"])
     assert {
         "location_definitions",
         "location_name_history",
         "product_definitions",
         "product_name_history",
+        "route_definitions",
+        "route_stops",
+        "route_name_history",
     }.issubset(set(body["declared_module_tables"]))
     assert body["checks"]["baseline_has_no_business_module_tables"] is True
 
@@ -150,5 +157,46 @@ def test_foreign_module_migration_cannot_reference_owner_table(
     )
     assert any(
         f"undeclared table references: {table_name}" in violation["reason"]
+        for violation in violations
+    )
+
+
+def test_route_migration_cannot_foreign_key_location_table(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    migration_path = tmp_path / "modules" / "routes.core" / "migrations"
+    migration_path.mkdir(parents=True)
+    (migration_path / "001_routes.sql").write_text(
+        "CREATE TABLE route_stops ("
+        "id VARCHAR(36) PRIMARY KEY, "
+        "location_definition_id VARCHAR(36) REFERENCES location_definitions(id)"
+        ");\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(migration_registry, "repo_root", lambda: tmp_path)
+    monkeypatch.setattr(
+        migration_registry,
+        "load_module_manifests",
+        lambda: {
+            "routes.core": {
+                "migrations_path": "modules/routes.core/migrations",
+                "owned_tables": ["RouteStop"],
+            }
+        },
+    )
+    monkeypatch.setattr(
+        migration_registry,
+        "model_table_names",
+        lambda: {
+            "LocationDefinition": "location_definitions",
+            "RouteStop": "route_stops",
+        },
+    )
+
+    violations = migration_registry._module_migration_scope_violations()
+
+    assert any(
+        "foreign business module table references: location_definitions" in violation["reason"]
         for violation in violations
     )

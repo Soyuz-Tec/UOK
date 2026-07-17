@@ -8,6 +8,7 @@ import moduleSurface3 from "../../../modules/contacts.core/web/src/moduleSurface
 import moduleSurface4 from "../../../modules/locations.core/web/src/moduleSurface";
 import moduleSurface5 from "../../../modules/planning.core/web/src/moduleSurface";
 import moduleSurface6 from "../../../modules/product.master/web/src/moduleSurface";
+import moduleSurface7 from "../../../modules/routes.core/web/src/moduleSurface";
 
 export const generatedModuleSurfaceCatalog = [
   {
@@ -72,5 +73,14 @@ export const generatedModuleSurfaceCatalog = [
       dependencies: []
     },
     surface: moduleSurface6
+  },
+  {
+    manifest: {
+      moduleName: "routes.core",
+      sectionId: "routes",
+      webEntry: "modules/routes.core/web/src/moduleSurface.tsx",
+      dependencies: ["locations.core"]
+    },
+    surface: moduleSurface7
   },
 ] as const satisfies readonly GeneratedModuleSurfaceRegistration[];
