@@ -58,7 +58,7 @@ Detailed feature inventory and implementation status are tracked in `docs/module
 - exact project target commitment plus separately persisted CPM-v2 calculated finish; compatible `end` remains a horizon, non-working targets stay exact, negative float remains visible, and immutable capture rejects stale persisted calculation evidence
 - revision-aware supported undo/redo operations that carry the source command through one atomic batch, reject stale inverses, preserve latest server state, and fail closed for unsupported/destructive history
 - keyboard/form alternatives for task dates, progress, dependency, and creation mutations, with successful inline focus restoration and announced stale-state recovery
-- Planning-owned typed project/task links with actor-specific `ready`, `unavailable`, `denied`, and `missing` resolver states; live Party, report-artifact/document/evidence, calendar-event, and K Connect thread providers; optional Operation Graph providers remain explicitly unavailable
+- Planning-owned typed project/task links with actor-specific `ready`, `unavailable`, `denied`, and `missing` resolver states; live Party, report-artifact/document/evidence, calendar-event, K Connect thread, and Shipment providers; optional Operation Graph providers remain explicitly unavailable
 - distinct scheduler-owned planned, planner-owned forecast/deadline, and reason-audited actual dates; project IANA timezone, UTC storage, DST-safe calendar-date conversion, variance fields, and visual-only subday scale disclosure
 - first-class task participants with controlled responsibility roles, canonical actor-authorized Party resolution, project revision/task version/audit/baseline evidence, People inspector/view, and participant filtering
 - first-class task requirements with controlled submission/review/decision states, separate gate approval authority, matching typed evidence links, fail-closed task/project readiness, baseline/audit evidence, Gates inspector, and blocker filtering
@@ -102,7 +102,7 @@ scope, relationship, blocking intent, revision, and audit evidence. Target
 modules own source identity details, authorization, lifecycle, privacy, and
 retention. A disabled or deleted provider target remains visible as an explicit
 unavailable link; an unauthorized actor receives no target identity or label.
-Operation, shipment, asset, location, and agreement providers are not present
+Operation, asset, location, and agreement providers are not present
 in this candidate and must not be represented as resolved objects. ADR-0008
 provides the real `communications.core` K Connect thread adapter; Planning still
 owns only the typed link and actor-specific resolver state.
@@ -301,4 +301,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 - richer bulk edit fields after owner, priority, and calendar become first-class task fields
 - planning adapters for the separately deployed global import/export capability as needed
 - spreadsheet-style multi-cell keyboard editing beyond the current keyboard/form alternatives
-- activate Operation Graph, shipment, asset, location, and agreement resolvers only when their owning providers expose organization-scoped authorization contracts
+- activate Operation Graph, asset, location, and agreement resolvers only when their owning providers expose organization-scoped authorization contracts; Shipment now resolves through the immutable `shipments.core` owner facade

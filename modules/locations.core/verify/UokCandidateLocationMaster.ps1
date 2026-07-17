@@ -69,10 +69,10 @@ function Invoke-UokLocationMasterCandidateScenario {
     if ($restored.result.status -ne "active" -or $restored.result.version -ne 4) {
         throw "Location restore is invalid: $($restored | ConvertTo-Json -Depth 20)"
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/locations.core/disable" -Headers $Headers | Out-Null
-    Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled Location Master unexpectedly served definitions" -Action {
-        Invoke-UokJson -Path "/api/locations/definitions" -Headers $ViewerHeaders
+    Invoke-UokWithModuleDisabled -ModuleName "locations.core" -Headers $Headers -Action {
+        Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled Location Master unexpectedly served definitions" -Action {
+            Invoke-UokJson -Path "/api/locations/definitions" -Headers $ViewerHeaders
+        }
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/locations.core/enable" -Headers $Headers | Out-Null
     return @{ location_definition_id = $locationId }
 }

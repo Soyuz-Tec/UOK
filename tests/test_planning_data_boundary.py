@@ -27,6 +27,9 @@ ALLOWED_OWNER_PUBLIC_API_SYMBOLS = {
         "ReportArtifactReferenceResolution",
         "resolve_report_artifact_reference",
     },
+    "uok_shipments_core.public_api": {
+        "resolve_shipment_reference",
+    },
 }
 FORBIDDEN_KERNEL_BACKDOORS = {
     "uok.calendar_models",
@@ -103,6 +106,7 @@ def test_planning_backend_imports_other_modules_only_through_public_apis() -> No
         "uok_communications_core",
         "uok_contacts_core",
         "uok_reports_core",
+        "uok_shipments_core",
     }
     violations = [
         f"{path.relative_to(ROOT).as_posix()}:{line}: illegal import {module_name}"
@@ -124,6 +128,7 @@ def test_planning_backend_imports_other_modules_only_through_public_apis() -> No
         "from uok_calendar_core.schemas import CalendarEventResponse",
         "import uok_communications_core.service",
         "from uok_reports_core import models",
+        "from uok_shipments_core._internal.persistence.models import Shipment",
         "from uok.contact_access import can_read_party",
     ],
 )
@@ -132,5 +137,10 @@ def test_planning_boundary_scanner_rejects_foreign_implementation_imports(source
 
 
 def test_planning_boundary_scanner_allows_exact_owner_public_api() -> None:
-    source = "from uok_contacts_core.public_api import resolve_party_reference"
+    source = "\n".join(
+        (
+            "from uok_contacts_core.public_api import resolve_party_reference",
+            "from uok_shipments_core.public_api import resolve_shipment_reference",
+        )
+    )
     assert _illegal_imports(source, _foreign_backend_packages()) == []

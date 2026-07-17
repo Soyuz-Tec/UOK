@@ -50,10 +50,12 @@ Initial live resolvers are:
 | `document`, `evidence` | `reports.artifact` v1 | `reports.core` ReportArtifact |
 | `calendar_event` | `calendar.event` v1 | `calendar.core` CalendarEvent |
 | `communication_thread` | `kconnect.thread` v1 | `communications.core` CommunicationThread |
+| `shipment` | `shipment.provider` v1 | `shipments.core` Shipment |
 
-Operation, gate, shipment, location, asset, and agreement resolver names remain
+Operation, gate, location, asset, and agreement resolver names remain
 reserved and return `unavailable` until their provider modules implement the
-contract. `communication_thread` became live under ADR-0008. No target kind may
+contract. `communication_thread` became live under ADR-0008, and `shipment`
+became live through the immutable Shipment Support facade. No target kind may
 be presented as a resolved source object before its provider contract exists.
 
 ADR-0022 closed the accepted alpha ORM bridge. The canonical `PlanningLink`
@@ -72,8 +74,10 @@ migration, APIs, resolver logic, tests, and verification remain owned by
 - A target provider changing state can change an actor-visible ETag without a
   Planning revision, which is correct for a strong representation validator.
 - Unavailable optional references are honest integration debt, not proof that
-  an Operation Graph provider exists. K Connect existence is now proved only
-  through the `communications.core` adapter accepted in ADR-0008.
+  an Operation Graph provider exists. K Connect existence is proved only
+  through the `communications.core` adapter accepted in ADR-0008; Shipment
+  existence and authorization are proved only through
+  `uok_shipments_core.public_api.resolve_shipment_reference`.
 
 ## Alternatives
 

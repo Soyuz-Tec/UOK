@@ -54,11 +54,11 @@ function Assert-UokPlanningParticipantContract {
         throw "Planning participant permission denial is invalid: $($denied | ConvertTo-Json -Depth 20)"
     }
 
-    Invoke-UokJson -Method "POST" -Path "/api/modules/contacts.core/disable" -Headers $Headers | Out-Null
-    $unavailable = Invoke-UokJson -Path "/api/planning/projects/$ProjectId/schedule" -Headers $OpsHeaders
-    $participantState = $unavailable.participants | Where-Object { $_.id -eq $participant.id } | Select-Object -First 1
-    if (-not $participantState -or $participantState.resolution.status -ne "unavailable") {
-        throw "Disabled Contacts provider removed or leaked the Planning participant: $($unavailable.participants | ConvertTo-Json -Depth 20)"
+    Invoke-UokWithModuleDisabled -ModuleName "contacts.core" -Headers $Headers -Action {
+        $unavailable = Invoke-UokJson -Path "/api/planning/projects/$ProjectId/schedule" -Headers $OpsHeaders
+        $participantState = $unavailable.participants | Where-Object { $_.id -eq $participant.id } | Select-Object -First 1
+        if (-not $participantState -or $participantState.resolution.status -ne "unavailable") {
+            throw "Disabled Contacts provider removed or leaked the Planning participant: $($unavailable.participants | ConvertTo-Json -Depth 20)"
+        }
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/contacts.core/enable" -Headers $Headers | Out-Null
 }

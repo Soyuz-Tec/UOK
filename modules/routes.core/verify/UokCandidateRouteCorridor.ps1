@@ -110,10 +110,10 @@ function Invoke-UokRouteCorridorCandidateScenario {
         throw "Route restore is invalid: $($restored | ConvertTo-Json -Depth 20)"
     }
 
-    Invoke-UokJson -Method "POST" -Path "/api/modules/routes.core/disable" -Headers $Headers | Out-Null
-    Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled Route module unexpectedly served definitions" -Action {
-        Invoke-UokJson -Path "/api/routes/definitions" -Headers $ViewerHeaders
+    Invoke-UokWithModuleDisabled -ModuleName "routes.core" -Headers $Headers -Action {
+        Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled Route module unexpectedly served definitions" -Action {
+            Invoke-UokJson -Path "/api/routes/definitions" -Headers $ViewerHeaders
+        }
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/routes.core/enable" -Headers $Headers | Out-Null
     return @{ route_definition_id = $routeId; location_definition_ids = $locationIds }
 }

@@ -30,6 +30,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `product.master` | capability module | `runtime_proven` | tenant-scoped Product Definition registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md` |
 | `reports.core` | capability module | `runtime_proven` | secure global report artifact foundation | `UOK-3.1.0-alpha.3` | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` |
 | `routes.core` | capability module | `runtime_proven` | tenant-scoped ordered Route/Corridor definitions over Location owner DTOs | `UOK-3.1.0-alpha.3` | `docs/modules/routes.core/ROUTE_CORRIDOR_MODULE_PLAN.md` |
+| `shipments.core` | business module | `runtime_proven` | tenant-scoped operational Shipment headers and auditable movement lifecycle over owner DTOs | `UOK-3.1.0-alpha.3` | `docs/modules/shipments.core/SHIPMENT_SUPPORT_MODULE_PLAN.md` |
 
 ## Current Target
 
@@ -108,6 +109,17 @@ It also introduces `planning.core` as the integrated planning and Gantt capabili
 - a module-owned Route/Corridor Master workbench and candidate verifier;
 - no Location foreign keys/joins, Planning coupling, shipment execution, tracking, GIS, or intelligence scoring.
 
+`shipments.core` adds the first post-freeze operational workflow slice over the completed master-data owners:
+
+- tenant-scoped Shipment headers with organization-unique immutable codes;
+- required shipper/consignee Party IDs and origin/destination Location IDs, plus an optional governed Route;
+- stable IDs resolved only through immutable Contacts, Location, and Route public facades;
+- optional planned dates with date-order validation;
+- governed `draft`, `planned`, `in_transit`, `arrived`, `closed`, and `cancelled` lifecycle with optimistic versions;
+- append-only status history plus normal UOK command/event evidence;
+- a module-owned Shipment Support workbench and candidate verifier;
+- no Product/Cargo lines, booking, rates, tracking, documents, inventory, customs, Planning table access, or intelligence scoring.
+
 ## Governance Rule
 
 New modules must not add product-specific behavior to the UOK core. They must expose their contracts through module manifests, typed APIs, command handlers, command permissions, role grants, owned table declarations, migrations, tests, dashboard/evidence providers where applicable, and candidate verification.
@@ -118,4 +130,4 @@ New modules must not add product-specific behavior to the UOK core. They must ex
   shell/module backedges as modules are added.
 - Keep future module React/CSS source and frontend tests in canonical module roots from the first increment.
 - Keep future schema changes in module-owned migrations instead of expanding the shared initial baseline.
-- Select the next Shipment support or Compliance Document Type slice only after its minimum business facts and owner caller are locked; do not pre-embed execution behavior in Route or Planning.
+- Select the next Compliance Document Type, thin Intelligence Signal, or Shipment Document slice from real workflow evidence; keep full cargo/commercial transactions, carrier integrations, tracking, inventory, and customs outside Shipment Support.

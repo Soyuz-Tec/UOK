@@ -17,6 +17,8 @@ OWNER_TABLE_CASES = (
     ("routes.core", "RouteDefinition", "route_definitions"),
     ("routes.core", "RouteStop", "route_stops"),
     ("routes.core", "RouteNameHistory", "route_name_history"),
+    ("shipments.core", "Shipment", "shipments"),
+    ("shipments.core", "ShipmentStatusHistory", "shipment_status_history"),
 )
 
 
@@ -55,6 +57,7 @@ def test_uok_migration_discipline_uses_single_active_baseline(client: TestClient
     assert any(item["module"] == "product.master" for item in body["module_migration_files"])
     assert any(item["module"] == "locations.core" for item in body["module_migration_files"])
     assert any(item["module"] == "routes.core" for item in body["module_migration_files"])
+    assert any(item["module"] == "shipments.core" for item in body["module_migration_files"])
     assert {
         "location_definitions",
         "location_name_history",
@@ -63,6 +66,8 @@ def test_uok_migration_discipline_uses_single_active_baseline(client: TestClient
         "route_definitions",
         "route_stops",
         "route_name_history",
+        "shipments",
+        "shipment_status_history",
     }.issubset(set(body["declared_module_tables"]))
     assert body["checks"]["baseline_has_no_business_module_tables"] is True
 

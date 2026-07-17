@@ -45,7 +45,7 @@ The 2026-07-16 slice owns:
 | Production React and CSS | `modules/routes.core/web/src` |
 | Compile-time shell composition | Validated manifest and generated module-surface catalog |
 
-The Route facade is narrow and exports only immutable reference data plus runtime-composition providers. ORM mappings, services, request schemas, Location integration details, and mutable entities remain private.
+The Route facade is narrow and exports only immutable reference data plus runtime-composition providers. In addition to the original `RouteReferenceDTO` identity resolver, the real Shipment caller consumes frozen `RoutePathReferenceDTO` values through `resolve_route_path_references`. The eight-symbol facade exposes no Route or Stop ORM object, mutable collection, or owner service. ORM mappings, services, request schemas, Location integration details, and mutable entities remain private.
 
 ## Data And Integrity Rules
 
@@ -75,7 +75,7 @@ The workbench uses the existing neutral module-surface host contract. All Route 
 ## Non-Goals
 
 - Shipment execution, booking, carrier workflow, real-time tracking, schedules, rates, capacity, route optimization, distance, duration, maps, GIS, coordinates, or intelligence scoring.
-- Party/Product/Planning/Shipment integration, Planning provider activation, cross-module table access, or copied Location master data.
+- Party/Product/Planning integration, Planning provider activation, cross-module table access, or copied Location master data. Shipment integration is limited to the immutable Route path-reference query contract.
 - Separate Corridor/Leg aggregates, route variants, circular routes, bulk import/export, path-version restore, hard delete, or global route catalogs.
 - Kernel contracts, Host business logic, shell contract changes, module splits, microservices, or runtime module loading.
 
@@ -98,4 +98,10 @@ Runtime changes additionally require a rebuilt local PostgreSQL candidate, authe
 
 ## Next Slice Boundary
 
-The next product slice should be chosen from real workflow evidence. A thin Shipment support owner may reference a stable Route ID through `RouteReferenceDTO` but must own booking/execution state and must not join Route or Location tables. If shipment facts are not yet locked, a tenant-scoped Compliance Document Type slice is safer than speculative execution or Intelligence behavior.
+The thin Shipment Support owner now references Route paths through
+`RoutePathReferenceDTO` and `resolve_route_path_references`; it owns Shipment
+state and never joins Route or Location tables. Future Route changes must keep
+that immutable query contract backward compatible or follow the architecture
+freeze exception process. A tenant-scoped Compliance Document Type remains
+safer than speculative optimization, carrier, tracking, or Intelligence
+behavior.

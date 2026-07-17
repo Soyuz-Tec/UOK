@@ -91,6 +91,8 @@ def resolve_target(db: Session, actor: Actor, target_kind: str, target_id: str) 
         return _resolve_calendar_event(db, actor, target_id, checked_at)
     if target_kind == "communication_thread":
         return _resolve_communication_thread(db, actor, target_id, checked_at)
+    if target_kind == "shipment":
+        return _resolve_shipment(db, actor, target_id, checked_at)
     return LinkResolution("unavailable", None, f"Resolver {spec.name} has no active provider implementation.", checked_at)
 
 
@@ -141,6 +143,14 @@ def _resolve_communication_thread(db: Session, actor: Actor, target_id: str, che
     from uok_communications_core.public_api import resolve_communication_thread_reference
 
     return _from_reference_resolution(resolve_communication_thread_reference(db, actor, target_id), checked_at)
+
+
+def _resolve_shipment(db: Session, actor: Actor, target_id: str, checked_at: str) -> LinkResolution:
+    try:
+        from uok_shipments_core.public_api import resolve_shipment_reference
+    except ImportError:
+        return LinkResolution("unavailable", None, "The Shipment authorization provider is unavailable.", checked_at)
+    return _from_reference_resolution(resolve_shipment_reference(db, actor, target_id), checked_at)
 
 
 def _from_reference_resolution(reference: _ReferenceResolution, checked_at: str) -> LinkResolution:

@@ -28,6 +28,7 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
         "product.master",
         "reports.core",
         "routes.core",
+        "shipments.core",
     ]
     assert modules["apps.manager"]["status"] == "installed"
     assert modules["apps.manager"]["required"] is True
@@ -44,6 +45,9 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
     assert modules["routes.core"]["kind"] == "capability_module"
     assert modules["routes.core"]["required"] is False
     assert modules["routes.core"]["installable"] is True
+    assert modules["shipments.core"]["kind"] == "business_module"
+    assert modules["shipments.core"]["required"] is False
+    assert modules["shipments.core"]["installable"] is True
     assert modules["planning.core"]["required"] is False
     assert modules["reports.core"]["kind"] == "capability_module"
     assert modules["reports.core"]["required"] is False

@@ -32,26 +32,17 @@ function Assert-UokCandidateEvidence {
         throw "Contacts upgrade failed: $($upgraded | ConvertTo-Json -Depth 20)"
     }
 
-    $uninstalled = Invoke-UokJson -Method "POST" -Path "/api/modules/contacts.core/uninstall" -Headers $Headers
-    if ($uninstalled.status -ne "uninstalled") {
-        throw "Contacts uninstall failed: $($uninstalled | ConvertTo-Json -Depth 20)"
-    }
-
-    Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Contact read unexpectedly succeeded after uninstall" -Action {
-        Invoke-UokJson -Path "/api/contacts/$ContactId" -Headers $Headers
-    }
-
-    Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Contact command unexpectedly succeeded after uninstall" -Action {
-        Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
-            command_type = "CreateContact"
-            payload = @{ display_name = "Blocked Contact $Stamp"; company_name = "Blocked Account" }
-            idempotency_key = "uok-blocked-contact-$Stamp"
+    Invoke-UokWithModuleUninstalled -ModuleName "contacts.core" -Headers $Headers -Action {
+        Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Contact read unexpectedly succeeded after uninstall" -Action {
+            Invoke-UokJson -Path "/api/contacts/$ContactId" -Headers $Headers
         }
-    }
-
-    $reinstalled = Invoke-UokJson -Method "POST" -Path "/api/modules/contacts.core/install" -Headers $Headers
-    if ($reinstalled.status -ne "installed") {
-        throw "Contacts reinstall failed: $($reinstalled | ConvertTo-Json -Depth 20)"
+        Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Contact command unexpectedly succeeded after uninstall" -Action {
+            Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+                command_type = "CreateContact"
+                payload = @{ display_name = "Blocked Contact $Stamp"; company_name = "Blocked Account" }
+                idempotency_key = "uok-blocked-contact-$Stamp"
+            }
+        }
     }
 
     $lifecycle = Invoke-UokJson -Path "/api/modules/lifecycle" -Headers $Headers

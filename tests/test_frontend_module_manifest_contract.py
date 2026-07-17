@@ -30,9 +30,18 @@ def test_repository_frontend_surfaces_are_manifest_owned() -> None:
         "planning.core": ("planning", "modules/planning.core/web/src/moduleSurface.tsx"),
         "product.master": ("products", "modules/product.master/web/src/moduleSurface.tsx"),
         "routes.core": ("routes", "modules/routes.core/web/src/moduleSurface.tsx"),
+        "shipments.core": (
+            "shipments",
+            "modules/shipments.core/web/src/moduleSurface.tsx",
+        ),
     }
     assert manifests["planning.core"]["dependencies"] == ["calendar.core"]
     assert manifests["routes.core"]["dependencies"] == ["locations.core"]
+    assert manifests["shipments.core"]["dependencies"] == [
+        "contacts.core",
+        "locations.core",
+        "routes.core",
+    ]
 
 
 def test_runtime_contract_rejects_invalid_frontend_surface_assets(tmp_path: Path) -> None:

@@ -2239,6 +2239,108 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/shipments/location-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Location Options */
+        get: operations["location_options_api_shipments_location_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/party-references/{party_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Party Reference */
+        get: operations["party_reference_api_shipments_party_references__party_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Records */
+        get: operations["records_api_shipments_records_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Record */
+        get: operations["record_api_shipments_records__shipment_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/status-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status History */
+        get: operations["status_history_api_shipments_records__shipment_id__status_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/route-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Route Options */
+        get: operations["route_options_api_shipments_route_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -2900,6 +3002,20 @@ export interface components {
              * @default required
              */
             role: string;
+        };
+        /** PartyReferenceResponse */
+        PartyReferenceResponse: {
+            /** Display Label */
+            display_label: string | null;
+            /** Open Path */
+            open_path?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "unavailable" | "denied" | "missing";
+            /** Status Summary */
+            status_summary: string;
         };
         /** PlanningAssignmentRequest */
         PlanningAssignmentRequest: {
@@ -3929,6 +4045,26 @@ export interface components {
             /** Route Definition Id */
             route_definition_id: string;
         };
+        /** RoutePathReferenceResponse */
+        RoutePathReferenceResponse: {
+            /** Canonical Name */
+            canonical_name: string | null;
+            /** Code */
+            code: string | null;
+            /** Mode Hint */
+            mode_hint: string | null;
+            /** Ordered Location Ids */
+            ordered_location_ids: string[];
+            /** Route Definition Id */
+            route_definition_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "unavailable" | "denied" | "missing";
+            /** Status Summary */
+            status_summary: string;
+        };
         /** RouteStopResponse */
         RouteStopResponse: {
             location: components["schemas"]["LocationReferenceResponse"];
@@ -3939,6 +4075,81 @@ export interface components {
              * @enum {string}
              */
             stop_role: "origin" | "waypoint" | "destination";
+        };
+        /** ShipmentResponse */
+        ShipmentResponse: {
+            /** Code */
+            code: string;
+            consignee: components["schemas"]["PartyReferenceResponse"];
+            /** Consignee Party Id */
+            consignee_party_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            destination: components["schemas"]["LocationReferenceResponse"];
+            /** Destination Location Id */
+            destination_location_id: string;
+            /** Id */
+            id: string;
+            origin: components["schemas"]["LocationReferenceResponse"];
+            /** Origin Location Id */
+            origin_location_id: string;
+            /** Planned Arrival On */
+            planned_arrival_on: string | null;
+            /** Planned Departure On */
+            planned_departure_on: string | null;
+            route: components["schemas"]["RoutePathReferenceResponse"] | null;
+            /** Route Definition Id */
+            route_definition_id: string | null;
+            shipper: components["schemas"]["PartyReferenceResponse"];
+            /** Shipper Party Id */
+            shipper_party_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "planned" | "in_transit" | "arrived" | "closed" | "cancelled";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
+        };
+        /** ShipmentStatusHistoryResponse */
+        ShipmentStatusHistoryResponse: {
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Id */
+            id: string;
+            /**
+             * New Status
+             * @enum {string}
+             */
+            new_status: "draft" | "planned" | "in_transit" | "arrived" | "closed" | "cancelled";
+            /**
+             * Previous Status
+             * @enum {string}
+             */
+            previous_status: "draft" | "planned" | "in_transit" | "arrived" | "closed" | "cancelled";
+            /** Reason */
+            reason: string;
+            /** Shipment Id */
+            shipment_id: string;
+            /** Version */
+            version: number;
         };
         /** ValidationError */
         ValidationError: {
@@ -11036,6 +11247,201 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["LocationReferenceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    location_options_api_shipments_location_options_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationReferenceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    party_reference_api_shipments_party_references__party_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyReferenceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    records_api_shipments_records_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                search?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_api_shipments_records__shipment_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_history_api_shipments_records__shipment_id__status_history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentStatusHistoryResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    route_options_api_shipments_route_options_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoutePathReferenceResponse"][];
                 };
             };
             /** @description Validation Error */

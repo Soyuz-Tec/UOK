@@ -16,7 +16,7 @@ from uok_routes_core._internal.delivery.schemas import (
     RouteStopResponse,
 )
 from uok_routes_core._internal.persistence.models import RouteDefinition, RouteNameHistory, RouteStop, owned_models
-from uok_routes_core.public_api import RouteReferenceDTO, __all__ as public_symbols
+from uok_routes_core.public_api import RoutePathReferenceDTO, RouteReferenceDTO, __all__ as public_symbols
 
 
 def test_route_definition_normalizes_identity_mode_and_ordered_path() -> None:
@@ -94,6 +94,17 @@ def test_route_boundary_dtos_are_frozen_and_exclude_tenant_identity() -> None:
     reference = RouteReferenceDTO("route-1", "ready", "ROUTE-1", "Route One", "sea", "Route is active.")
     with pytest.raises(FrozenInstanceError):
         reference.canonical_name = "Changed"  # type: ignore[misc]
+    path_reference = RoutePathReferenceDTO(
+        "route-1",
+        "ready",
+        "ROUTE-1",
+        "Route One",
+        "sea",
+        ("origin", "destination"),
+        "Route is active.",
+    )
+    with pytest.raises(FrozenInstanceError):
+        path_reference.ordered_location_ids = ()  # type: ignore[misc]
 
 
 def test_route_owner_contract_is_exact_and_has_no_foreign_location_table_reference() -> None:
@@ -103,10 +114,12 @@ def test_route_owner_contract_is_exact_and_has_no_foreign_location_table_referen
         "RouteNameHistory": RouteNameHistory,
     }
     assert public_symbols == [
+        "RoutePathReferenceDTO",
         "RouteReferenceDTO",
         "api_router",
         "command_handlers",
         "command_permissions",
+        "resolve_route_path_references",
         "resolve_route_reference",
         "role_grants",
     ]

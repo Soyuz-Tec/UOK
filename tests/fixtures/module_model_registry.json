@@ -72,5 +72,9 @@
     "RouteDefinition": "route_definitions",
     "RouteNameHistory": "route_name_history",
     "RouteStop": "route_stops"
+  },
+  "shipments.core": {
+    "Shipment": "shipments",
+    "ShipmentStatusHistory": "shipment_status_history"
   }
 }

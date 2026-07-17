@@ -31,10 +31,10 @@ function Invoke-UokCommunicationsCandidateScenario {
     Assert-UokHttpFailure -StatusCode 403 -UnexpectedSuccessMessage "Finance communication read unexpectedly succeeded" -Action {
         Invoke-UokJson -Path "/api/communications/threads/$threadId" -Headers $financeHeaders
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/communications.core/disable" -Headers $Headers | Out-Null
-    Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled communication provider unexpectedly read threads" -Action {
-        Invoke-UokJson -Path "/api/communications/threads" -Headers $OpsHeaders
+    Invoke-UokWithModuleDisabled -ModuleName "communications.core" -Headers $Headers -Action {
+        Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled communication provider unexpectedly read threads" -Action {
+            Invoke-UokJson -Path "/api/communications/threads" -Headers $OpsHeaders
+        }
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/communications.core/enable" -Headers $Headers | Out-Null
     return @{ thread_id = $threadId }
 }

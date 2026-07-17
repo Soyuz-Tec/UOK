@@ -4,15 +4,17 @@
 
 UOK must not treat product and cargo as the same concept.
 
-**Current implementation:** `product.master` owns the first tenant-scoped `ProductDefinition` registry. `cargo.transactions` and `crm.basic` remain future modules.
+**Current implementation:** `product.master` owns the tenant-scoped `ProductDefinition` registry, and `shipments.core` owns only the operational Shipment header and movement-status lifecycle. `cargo.transactions` and `crm.basic` remain future modules.
 
 ## Definitions
 
 - **Product** is a master-data definition: canonical name, code, category, grade/specification, unit conventions, and product governance.
 - **Cargo** is a transactional/physical lot or movement of a product: nomination, seller, buyer, quantity, loading state, documents, payment state, exceptions, and closeout evidence.
 - **Cargo transaction** references a Product. It does not become the Product.
+- **Shipment** is the operational movement header: shipper, consignee, origin, destination, optional governed corridor, planned dates, and auditable movement status. It does not become a Product or Cargo transaction.
 - **Product modules** define reusable product master metadata and product-specific rules.
-- **Cargo modules** define cargo lifecycle, logistics, commercial documents, payment, and transaction evidence.
+- **Shipment modules** define movement identity and operational status without owning Product facts, commercial cargo lots, documents, payments, rates, tracking, or inventory.
+- **Cargo modules** define physical/commercial lot lifecycle, Product/quantity facts, commercial documents, payment, and transaction evidence. They may reference a Shipment through a future immutable contract; they do not absorb Shipment movement state.
 - **CRM modules** define sales/account/opportunity workflows and may reference Contacts, Products, or Cargo records through explicit relationships; they must not own Product Master or Cargo lifecycle state.
 
 ## Rules
@@ -20,6 +22,7 @@ UOK must not treat product and cargo as the same concept.
 - UOK core code must use product-neutral and cargo-neutral abstractions.
 - UI labels must not combine product and cargo wording into one label.
 - A product record may exist in Product Master.
+- A shipment may reference Parties, Locations, and a Route through their immutable owner APIs while storing only stable IDs.
 - A cargo transaction may reference a Product Master record.
 - CRM opportunities may reference products or intended cargo transactions, but must not duplicate Contacts or Product Master records.
 - Products, Cargo Transactions, and CRM must be installable and separately updatable modules with explicit dependencies.
@@ -29,12 +32,14 @@ UOK must not treat product and cargo as the same concept.
 The product/cargo expansion path must model these as separate module-owned concepts:
 
 - `ProductDefinition` for product master.
+- `Shipment` for the operational movement header and status history.
 - `CargoTransaction` for cargo lots, workflow state, transaction parties, and evidence.
 - `CRMOpportunity` or an agreement record that references Contacts and may later reference Product or Cargo records.
 
 ## Initial Module Boundaries
 
 - `product.master`: installable capability module; owns product definitions and product metadata.
+- `shipments.core`: installable business module; depends on `contacts.core`, `locations.core`, and `routes.core`; owns only the operational Shipment header and movement-status history.
 - `cargo.transactions`: installable business module; depends on `product.master` and `contacts.core`; owns cargo lifecycle.
 - `crm.basic`: installable business module; depends on `contacts.core`; owns CRM opportunity workflow.
 
@@ -48,3 +53,16 @@ Implementation and validation:
 - `docs/delivery/party-mdm-slice-design-2026-07-16.md`
 - `docs/delivery/party-mdm-slice-delivery-2026-07-16.md`
 - `modules/product.master`
+
+## Current Shipment Support Slice
+
+The first Shipment slice is intentionally limited to tenant-scoped Shipment identity, required shipper/consignee and origin/destination references, an optional governed Route, planned dates, optimistic updates, a controlled movement-status machine, and append-only status history. It stores only stable foreign IDs and resolves them through immutable owner DTO APIs.
+
+It does not own Product/material lines, cargo lots, quantity/grade, pricing, inventory, bookings, carriers, rates, tracking, documents, compliance packs, customs filings, invoices, payments, or closeout evidence. Those omissions preserve the future `cargo.transactions`, compliance, inventory, and integration boundaries.
+
+Implementation and validation:
+
+- `docs/modules/shipments.core/SHIPMENT_SUPPORT_MODULE_PLAN.md`
+- `docs/delivery/shipment-support-slice-design-2026-07-17.md`
+- `docs/delivery/shipment-support-slice-delivery-2026-07-17.md`
+- `modules/shipments.core`

@@ -54,7 +54,7 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
    runtime queries and operational checks.
 4. Module → Host exceptions are explicit path-and-symbol adapter seams:
    - `from uok.host.database import get_db` and
-     `from uok.host.security import current_actor` in the 15 documented module
+    `from uok.host.security import current_actor` in the 16 documented module
      HTTP adapters;
    - `from uok.host.commands import execute_command` in the exact Calendar,
      Contacts, and Planning command adapters.
@@ -114,6 +114,15 @@ The Route/Corridor Master slice adds the same bounded adapter shape at
 exact `get_db` and `current_actor` imports increase the adapter surface from 31
 to 33. Route business behavior remains owner-local, while its only feature
 dependency uses named immutable `uok_locations_core.public_api` symbols.
+
+The Shipment Support slice adds the same bounded adapter shape at
+`modules/shipments.core/backend/uok_shipments_core/_internal/delivery/api.py`.
+Its exact `get_db` and `current_actor` imports increase the adapter surface from
+33 to 35. Shipment business behavior remains owner-local; Party, Location, and
+Route data are consumed only through named immutable owner-facade symbols. The
+Route path facade extension is value-only and owner-authorized, and the
+existing Planning typed-link resolver consumes only the immutable Shipment
+reference facade.
 
 ## Consequences
 

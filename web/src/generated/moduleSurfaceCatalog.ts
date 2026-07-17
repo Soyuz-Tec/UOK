@@ -9,6 +9,7 @@ import moduleSurface4 from "../../../modules/locations.core/web/src/moduleSurfac
 import moduleSurface5 from "../../../modules/planning.core/web/src/moduleSurface";
 import moduleSurface6 from "../../../modules/product.master/web/src/moduleSurface";
 import moduleSurface7 from "../../../modules/routes.core/web/src/moduleSurface";
+import moduleSurface8 from "../../../modules/shipments.core/web/src/moduleSurface";
 
 export const generatedModuleSurfaceCatalog = [
   {
@@ -82,5 +83,14 @@ export const generatedModuleSurfaceCatalog = [
       dependencies: ["locations.core"]
     },
     surface: moduleSurface7
+  },
+  {
+    manifest: {
+      moduleName: "shipments.core",
+      sectionId: "shipments",
+      webEntry: "modules/shipments.core/web/src/moduleSurface.tsx",
+      dependencies: ["contacts.core", "locations.core", "routes.core"]
+    },
+    surface: moduleSurface8
   },
 ] as const satisfies readonly GeneratedModuleSurfaceRegistration[];

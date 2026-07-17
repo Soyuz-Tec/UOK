@@ -27,6 +27,7 @@ RUNTIME_PROVEN_MODULES = (
     "product.master",
     "reports.core",
     "routes.core",
+    "shipments.core",
 )
 
 
@@ -48,6 +49,35 @@ def test_root_candidate_validates_catalog_before_dot_sourcing() -> None:
     assert "$parsedCatalog | ForEach-Object { $_ }" in source
     assert "Candidate verifier catalog entry has invalid field types" in source
     assert "-ChildPath $relativeScript" in source
+
+
+def test_candidate_disabled_state_proofs_restore_installed_dependents() -> None:
+    helper = (ROOT / "scripts/verify/UokCandidateHttp.ps1").read_text(
+        encoding="utf-8"
+    )
+    verifier_paths = (
+        "modules/communications.core/verify/UokCandidateCommunications.ps1",
+        "modules/contacts.core/verify/UokCandidateContacts.Evidence.ps1",
+        "modules/locations.core/verify/UokCandidateLocationMaster.ps1",
+        "modules/planning.core/verify/UokCandidatePlanningLinks.ps1",
+        "modules/planning.core/verify/UokCandidatePlanningParticipants.ps1",
+        "modules/product.master/verify/UokCandidateProductMaster.ps1",
+        "modules/routes.core/verify/UokCandidateRouteCorridor.ps1",
+        "modules/shipments.core/verify/UokCandidateShipmentSupport.ps1",
+    )
+
+    assert "Get-UokDependentUninstallOrder" in helper
+    assert '"/api/modules/$dependentName/uninstall"' in helper
+    assert "for ($index = $uninstalled.Count - 1;" in helper
+    for relative_path in verifier_paths:
+        source = (ROOT / relative_path).read_text(encoding="utf-8")
+        assert (
+            "Invoke-UokWithModuleDisabled" in source
+            or "Invoke-UokWithModuleUninstalled" in source
+        )
+        assert "/disable" not in source
+        assert "/enable" not in source
+        assert "/uninstall" not in source
 
 
 def test_container_excludes_tests_and_requires_module_verifiers() -> None:
@@ -74,7 +104,7 @@ def test_container_asset_validator_discovers_repository_verifiers_from_manifests
     )
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "Validated 9 runtime-proven module verifier assets."
+    assert result.stdout.strip() == "Validated 10 runtime-proven module verifier assets."
 
 
 def test_ci_builds_the_oci_image_without_publishing() -> None:

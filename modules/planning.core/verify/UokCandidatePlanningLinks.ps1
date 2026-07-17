@@ -62,13 +62,13 @@ function Assert-UokPlanningLinkContract {
         throw "Planning link capability denial is invalid: $($denied | ConvertTo-Json -Depth 20)"
     }
 
-    Invoke-UokJson -Method "POST" -Path "/api/modules/contacts.core/disable" -Headers $Headers | Out-Null
-    $unavailable = Invoke-UokJson -Path "/api/planning/projects/$ProjectId/schedule" -Headers $OpsHeaders
-    $partyLink = $unavailable.links | Where-Object { $_.id -eq $link.id } | Select-Object -First 1
-    if (-not $partyLink -or $partyLink.resolution.status -ne "unavailable") {
-        throw "Disabled target module removed or leaked the Planning link: $($unavailable.links | ConvertTo-Json -Depth 20)"
+    Invoke-UokWithModuleDisabled -ModuleName "contacts.core" -Headers $Headers -Action {
+        $unavailable = Invoke-UokJson -Path "/api/planning/projects/$ProjectId/schedule" -Headers $OpsHeaders
+        $partyLink = $unavailable.links | Where-Object { $_.id -eq $link.id } | Select-Object -First 1
+        if (-not $partyLink -or $partyLink.resolution.status -ne "unavailable") {
+            throw "Disabled target module removed or leaked the Planning link: $($unavailable.links | ConvertTo-Json -Depth 20)"
+        }
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/contacts.core/enable" -Headers $Headers | Out-Null
 
     $communications = Invoke-UokJson -Method "POST" -Path "/api/modules/communications.core/install" -Headers $Headers
     if ($communications.status -notin @("installed", "upgraded")) {
@@ -101,12 +101,12 @@ function Assert-UokPlanningLinkContract {
     if ($hiddenThread.resolution.status -ne "denied" -or $hiddenThread.target.id -ne $null -or $hiddenThread.resolution.open_path -ne $null) {
         throw "Planning communication permission boundary leaked thread identity: $($hiddenThread | ConvertTo-Json -Depth 20)"
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/communications.core/disable" -Headers $Headers | Out-Null
-    $threadUnavailable = Invoke-UokJson -Path "/api/planning/projects/$ProjectId/schedule" -Headers $OpsHeaders
-    $disabledThread = $threadUnavailable.links | Where-Object { $_.id -eq $threadLink.id } | Select-Object -First 1
-    if ($disabledThread.resolution.status -ne "unavailable" -or $disabledThread.resolution.open_path -ne $null) {
-        throw "Disabled Communications provider did not fail closed: $($disabledThread | ConvertTo-Json -Depth 20)"
+    Invoke-UokWithModuleDisabled -ModuleName "communications.core" -Headers $Headers -Action {
+        $threadUnavailable = Invoke-UokJson -Path "/api/planning/projects/$ProjectId/schedule" -Headers $OpsHeaders
+        $disabledThread = $threadUnavailable.links | Where-Object { $_.id -eq $threadLink.id } | Select-Object -First 1
+        if ($disabledThread.resolution.status -ne "unavailable" -or $disabledThread.resolution.open_path -ne $null) {
+            throw "Disabled Communications provider did not fail closed: $($disabledThread | ConvertTo-Json -Depth 20)"
+        }
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/communications.core/enable" -Headers $Headers | Out-Null
     return @{ party_link_id = $link.id }
 }

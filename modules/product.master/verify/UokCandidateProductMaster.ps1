@@ -71,10 +71,10 @@ function Invoke-UokProductMasterCandidateScenario {
     if ($restored.result.status -ne "active" -or $restored.result.version -ne 4) {
         throw "Product restore is invalid: $($restored | ConvertTo-Json -Depth 20)"
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/product.master/disable" -Headers $Headers | Out-Null
-    Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled Product Master unexpectedly served definitions" -Action {
-        Invoke-UokJson -Path "/api/products/definitions" -Headers $ViewerHeaders
+    Invoke-UokWithModuleDisabled -ModuleName "product.master" -Headers $Headers -Action {
+        Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled Product Master unexpectedly served definitions" -Action {
+            Invoke-UokJson -Path "/api/products/definitions" -Headers $ViewerHeaders
+        }
     }
-    Invoke-UokJson -Method "POST" -Path "/api/modules/product.master/enable" -Headers $Headers | Out-Null
     return @{ product_definition_id = $productId }
 }

@@ -73,6 +73,7 @@ describe("module surface registry", () => {
       ["product.master", "products"],
       ["locations.core", "locations"],
       ["routes.core", "routes"],
+      ["shipments.core", "shipments"],
       ["calendar.core", "calendar"],
       ["communications.core", "communications"],
       ["planning.core", "planning"],

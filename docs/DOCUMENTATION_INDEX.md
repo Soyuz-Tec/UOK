@@ -90,6 +90,8 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/delivery/location-master-slice-delivery-2026-07-16.md` | Location Master API, data, UI, freeze compliance, verification, demo, and next-slice handoff | Location Master delivery evidence or residual-risk status changes |
 | `docs/delivery/route-corridor-slice-design-2026-07-16.md` | Evidence-first design for the tenant-scoped Route/Corridor Master vertical slice | The Route capability, ordered path, Location owner contract, tenant model, non-goals, or test plan changes |
 | `docs/delivery/route-corridor-slice-delivery-2026-07-16.md` | Route/Corridor API, data, UI, Location-boundary proof, freeze compliance, verification, demo, and next-slice handoff | Route delivery evidence or residual-risk status changes |
+| `docs/delivery/shipment-support-slice-design-2026-07-17.md` | Evidence-first design for the tenant-scoped Shipment Support vertical slice | Shipment ownership, lifecycle, owner DTO calls, tenant model, non-goals, or test plan changes |
+| `docs/delivery/shipment-support-slice-delivery-2026-07-17.md` | Shipment API, data, UI, foreign-owner boundary proof, freeze compliance, verification, demo, and next-slice handoff | Shipment delivery evidence or residual-risk status changes |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
 | `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` | AI-operated business workflow architecture, governed agent tools, human approval gates, and compliance evidence model | Agent governance, Codex tool binding, AI workflow, approval, or evidence architecture changes |
 | `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md` | Global export artifact boundary for CSV, JSON, image/SVG, PDF, document, and future import/export helpers | Export format ownership, shared artifact primitives, module export behavior, or export UI patterns change |
@@ -112,6 +114,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md` | Product Master ownership, first-slice behavior, integrity rules, contracts, and qualification | Product Definition ownership, lifecycle, public surface, data model, UI, or qualification changes |
 | `docs/modules/locations.core/LOCATION_MASTER_MODULE_PLAN.md` | Location Master ownership, lifecycle, country linkage, contracts, and qualification | Location Definition ownership, lifecycle, public surface, data model, UI, or qualification changes |
 | `docs/modules/routes.core/ROUTE_CORRIDOR_MODULE_PLAN.md` | Route/Corridor ownership, ordered Location references, lifecycle, contracts, and qualification | Route Definition ownership, topology, public surface, data model, UI, or qualification changes |
+| `docs/modules/shipments.core/SHIPMENT_SUPPORT_MODULE_PLAN.md` | Shipment Support ownership, stable master-data references, lifecycle, contracts, and qualification | Shipment ownership, public surface, status model, data model, UI, or qualification changes |
 | `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md` | Planning Gantt feature inventory and evidence maturity | Gantt grid, timeline, scheduling, dependency, resource, baseline, color, workspace feature, or maturity evidence changes |
 | `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md` | Gates A-E and architecture requirement-to-evidence map, closure status, and production-hardening boundary | A requirement, evidence link, verification result, maturity state, architecture closure, or residual hardening item changes |
 | `docs/modules/planning.core/PLANNING_GANTT_EXTERNAL_FEATURE_INTAKE.md` | DHTMLX/SVAR-inspired Gantt research and UOK intake disposition | External Gantt research or adopted/partial/deferred/global-boundary disposition changes; evidence maturity remains in the catalog and traceability map |
@@ -210,6 +213,7 @@ The current active module plans are:
 - `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md`
 - `docs/modules/locations.core/LOCATION_MASTER_MODULE_PLAN.md`
 - `docs/modules/routes.core/ROUTE_CORRIDOR_MODULE_PLAN.md`
+- `docs/modules/shipments.core/SHIPMENT_SUPPORT_MODULE_PLAN.md`
 
 Module plans should describe module-owned behavior, workflows, acceptance checks, and open next work. They should not redefine UOK-level architecture unless they link to the relevant architecture document.
 

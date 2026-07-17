@@ -24,6 +24,8 @@ FORBIDDEN_BUSINESS_TABLES = (
     "route_definitions",
     "route_stops",
     "route_name_history",
+    "shipments",
+    "shipment_status_history",
     "cargo_transactions",
     "agreements",
 )

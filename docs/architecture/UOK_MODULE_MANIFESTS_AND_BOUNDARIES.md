@@ -55,8 +55,9 @@ UOK verifies:
 
 Runtime validation runs before manifest router mounting and does not require development test folders. Release validation adds every source ownership folder, maturity-appropriate module tests, and candidate verifier assets. Local/CI release gates call `validate_module_release_contracts`; runtime and container startup call `validate_module_runtime_contracts`.
 
-Planning and Contacts additionally enforce one supported Python facade per
-module. Runtime router, command, policy, dashboard, evidence, and Planning replay
+Planning, Contacts, Product Master, Location Master, Route/Corridor Master, and
+Shipment Support additionally enforce one supported Python facade per module.
+Runtime router, command, policy, dashboard, evidence, and Planning replay
 hooks resolve through `public_api`; implementation packages live below
 `_internal`. The sole exception is the privileged `model_exports` bootstrap
 hook, which stays manifest-resolved under `_internal.persistence` and is never a
@@ -81,14 +82,14 @@ The source-boundary scan must remain a strict candidate gate before any product 
 ## Current Bridge Status
 
 The ORM ownership and compatibility bridges are closed: capability mappings are
-physically owned by Calendar, Communications, Contacts, Location Master, Planning, Product Master, Reports, and Route/Corridor Master
+physically owned by Calendar, Communications, Contacts, Location Master, Planning, Product Master, Reports, Route/Corridor Master, and Shipment Support
 backends, while nine product-neutral mappings remain in `uok.kernel_models`.
 `uok.host.model_registry` alone resolves manifest model providers, and the
 former `uok.models`, `uok.calendar_models`, and `uok.communication_models`
 imports are retired.
 
 The former frontend-location bridge is also closed. Apps Manager, Calendar,
-Communications, Contacts, Location Master, Planning, Product Master, and Route/Corridor Master own production React source and CSS under
+Communications, Contacts, Location Master, Planning, Product Master, Route/Corridor Master, and Shipment Support own production React source and CSS under
 their canonical module web roots; their frontend tests live under
 `modules/<module_name>/tests/web`. Reports owns its typed report client and tests without
 declaring a workbench surface. Closed manifest metadata generates literal
