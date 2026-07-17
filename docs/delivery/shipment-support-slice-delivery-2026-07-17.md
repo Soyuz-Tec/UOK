@@ -1,6 +1,6 @@
 # Shipment Support Slice Delivery – 2026-07-17
 
-**Status:** Implementation and local qualification complete; stacked draft PR publication in progress.
+**Status:** Delivered in stacked draft PR [#65](https://github.com/Soyuz-Tec/UOK/pull/65); local qualification and hosted code-bearing CI are green.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -18,6 +18,7 @@ UOK now has a thin tenant-scoped operational Shipment capability in `shipments.c
 - a one-way `draft -> planned -> in_transit -> arrived -> closed` lifecycle, plus terminal cancellation from `draft` or `planned`;
 - optimistic versions, append-only status-transition history, and correlated command/event evidence;
 - organization-scoped list, detail, history, owner-option, and immutable stable-reference reads;
+- fail-closed Party visibility that redacts denied private/team Party IDs from actor-facing Shipment DTOs, UI labels, and search values while preserving the stored stable references;
 - a module-owned Shipment Support workspace for search/filter, list, detail, create, edit, legal reasoned status transitions, and Planning deep-link selection;
 - a closed manifest, owner migration, owner tests, exact cross-owner enforcement, generated contracts, and a runtime candidate verifier.
 
@@ -93,6 +94,7 @@ No Planning, Contacts, Product, or Location facade was widened.
 - Every Shipment list/detail/history, update, and transition predicate includes authenticated `organization_id`.
 - Request and public DTOs never accept or expose organization identity.
 - Two tenants may reuse one Shipment code; foreign Shipment, Party, Location, and Route IDs resolve as missing/denied and cannot be persisted.
+- When Contacts denies private/team Party visibility, Shipment read DTOs return `null` for the corresponding actor-facing Party ID and the UI renders only a restricted label; `modules/shipments.core/tests/test_shipment_party_visibility.py` proves the persisted owner reference remains unchanged.
 - Header updates and transitions select by `(id, organization_id)` under an optimistic expected version.
 - Owner resolution uses the same immutable actor and fails closed when a reference is foreign, inactive, missing, denied, or its provider is disabled.
 - A Route write succeeds only when its ordered first/last Location IDs match the Shipment endpoints.
@@ -122,24 +124,24 @@ Current completed local evidence:
 | Gate | Result |
 |---|---|
 | Route path facade tests | Pass — 2 tests |
-| Shipment owner backend suites | Pass — 13 tests |
+| Shipment owner backend suites | Pass — 14 tests, including denied private/team Party-ID redaction |
 | Planning -> Shipment integration | Pass — 1 test |
 | Shipment foreign-data boundary | Pass — 24 tests |
 | Focused frozen architecture/model/migration gates | Pass |
 | Python compilation | Pass |
 | Generated OpenAPI and module catalogs | Pass — drift-free |
 | Container verifier assets | Pass — 10 runtime-proven verifier assets |
-| Module-owned and full frontend tests | Pass — 116 files / 433 tests |
+| Module-owned and full frontend tests | Pass — 116 files / 434 tests |
 | Production TypeScript/Vite client build | Pass |
 | TechnologyAudit | Pass — zero hard violations; pre-existing Calendar/Contacts soft review warnings only |
 | EngineeringEvidence | Pass — local ignored artifact `var/evidence/engineering/uok_engineering_20260717T150455Z.json` |
-| Full Audit | Pass — 136/136 Python test files; Python/frontend dependency audits clean; contract/release/source/size/folder gates green |
-| Local candidate Rebuild | Pass — exact-source image `8db30097e8fc...`; API health and offline/live database capacity green |
-| Local candidate Verify and Shipment verifier | Pass — full Verify green; all 10 owner verifiers green; candidate verifier replayed twice more against the same persistent database |
+| Full Audit | Pass — 137/137 Python test files; Python/frontend dependency audits clean; contract/release/source/size/folder gates green |
+| Local candidate Rebuild | Pass — exact-source image `181f71137db8e339278557169c65075516c9b80d8d758bbfb356bf6c6e8a1d77`; API health and offline/live database capacity green |
+| Local candidate Verify and Shipment verifier | Pass — 137/137 Python files, 116 frontend files / 434 tests, production build, Playwright 19 pass + 1 environment-gated skip, and all 10 owner verifiers green on the rebuilt image; verifier repeatability was also proven twice against the persistent database |
 | Browser Shipment proof | Pass — created `UI-PROOF-SHIPMENT-20260717`, resolved owner DTOs, changed governed Route/endpoints, advanced Draft -> Planned with reason/history/version, no console warnings/errors, and no horizontal overflow at 375px |
-| Draft PR / hosted CI | Pending publication |
+| Draft PR / hosted CI | Pass — stacked draft PR [#65](https://github.com/Soyuz-Tec/UOK/pull/65); code-bearing head `11aafab` passed [Unified Operating Kernel CI #543](https://github.com/Soyuz-Tec/UOK/actions/runs/29599618566) |
 
-The module release contract totals are 11 modules, 95 commands, and 105 events. Final GitHub and hosted-CI evidence will replace the remaining publication row before delivery handoff.
+The module release contract totals are 11 modules, 95 commands, and 105 events. The only warning retained by final local qualification is the existing recommendation to use a least-privileged local PostgreSQL application role instead of the current development superuser.
 
 ## Manual Demo
 
