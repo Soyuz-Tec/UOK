@@ -1,6 +1,6 @@
 # Route/Corridor Master Slice Delivery – 2026-07-16
 
-**Status:** Implementation and local candidate qualification complete; draft pull-request publication and hosted CI in progress.
+**Status:** Implementation, local candidate qualification, draft pull-request publication, and code-bearing hosted CI complete.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -147,9 +147,9 @@ Current completed results:
 | Local candidate `Rebuild` | Pass — image rebuilt; `/health` returned `ok`; offline and live database-capacity policies passed |
 | Local candidate `Verify` | Pass — 130/130 Python files; 114 Vitest files / 423 tests; production TypeScript/Vite build; 19 Playwright passes + 1 environment-gated skip; all 9 module verifiers passed |
 | Browser/runtime Route proof | Pass — created a three-stop sea corridor through Location choices, renamed it with history, archived/restored it, proved a 390 px layout without page overflow, and observed zero browser warnings/errors |
-| Draft pull request and hosted CI | Pending local qualification |
+| Draft pull request and hosted CI | Pass — draft PR [#64](https://github.com/Soyuz-Tec/UOK/pull/64), stacked on `feature/location-master-slice`; code-bearing SHA `62eac25`; [push run 29553322654](https://github.com/Soyuz-Tec/UOK/actions/runs/29553322654) and [PR run 29553352506](https://github.com/Soyuz-Tec/UOK/actions/runs/29553352506) both passed `candidate-checks` |
 
-The local engineering-evidence artifact remains ignored under `var/`. The browser proof used `UI-PROOF-CORRIDOR-20260716`, resolving origin, waypoint, and destination from Location Master; the record finished restored and active at version 4. The pull-request row will be updated with exact final-head evidence before handoff.
+The local engineering-evidence artifact remains ignored under `var/`. The browser proof used `UI-PROOF-CORRIDOR-20260716`, resolving origin, waypoint, and destination from Location Master; the record finished restored and active at version 4. PR #64 remains intentionally draft; its final-head check rollup is the authoritative merge-time status after this evidence-only documentation update.
 
 ## Manual Demo
 
