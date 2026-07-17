@@ -300,6 +300,147 @@
         "title": "CommandRequest",
         "type": "object"
       },
+      "ComplianceDocumentTypeNameHistoryResponse": {
+        "properties": {
+          "changed_at": {
+            "format": "date-time",
+            "title": "Changed At",
+            "type": "string"
+          },
+          "changed_by_user_id": {
+            "title": "Changed By User Id",
+            "type": "string"
+          },
+          "compliance_document_type_id": {
+            "title": "Compliance Document Type Id",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "new_name": {
+            "title": "New Name",
+            "type": "string"
+          },
+          "previous_name": {
+            "title": "Previous Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "compliance_document_type_id",
+          "previous_name",
+          "new_name",
+          "reason",
+          "changed_by_user_id",
+          "changed_at"
+        ],
+        "title": "ComplianceDocumentTypeNameHistoryResponse",
+        "type": "object"
+      },
+      "ComplianceDocumentTypeResponse": {
+        "properties": {
+          "archived_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Archived At"
+          },
+          "canonical_name": {
+            "title": "Canonical Name",
+            "type": "string"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by_user_id": {
+            "title": "Created By User Id",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "inactive",
+              "archived"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "updated_by_user_id": {
+            "title": "Updated By User Id",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "canonical_name",
+          "description",
+          "category",
+          "status",
+          "version",
+          "created_by_user_id",
+          "updated_by_user_id",
+          "created_at",
+          "updated_at",
+          "archived_at"
+        ],
+        "title": "ComplianceDocumentTypeResponse",
+        "type": "object"
+      },
       "ContactBulkActionRequest": {
         "properties": {
           "action": {
@@ -7472,6 +7613,242 @@
         "summary": "Thread Detail",
         "tags": [
           "communications"
+        ]
+      }
+    },
+    "/api/compliance/document-types": {
+      "get": {
+        "operationId": "document_types_api_compliance_document_types_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Archived",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "active",
+                    "inactive",
+                    "archived"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ComplianceDocumentTypeResponse"
+                  },
+                  "title": "Response Document Types Api Compliance Document Types Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Types",
+        "tags": [
+          "compliance"
+        ]
+      }
+    },
+    "/api/compliance/document-types/{compliance_document_type_id}": {
+      "get": {
+        "operationId": "document_type_api_compliance_document_types__compliance_document_type_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "compliance_document_type_id",
+            "required": true,
+            "schema": {
+              "title": "Compliance Document Type Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceDocumentTypeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Type",
+        "tags": [
+          "compliance"
+        ]
+      }
+    },
+    "/api/compliance/document-types/{compliance_document_type_id}/name-history": {
+      "get": {
+        "operationId": "name_history_api_compliance_document_types__compliance_document_type_id__name_history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "compliance_document_type_id",
+            "required": true,
+            "schema": {
+              "title": "Compliance Document Type Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ComplianceDocumentTypeNameHistoryResponse"
+                  },
+                  "title": "Response Name History Api Compliance Document Types  Compliance Document Type Id  Name History Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Name History",
+        "tags": [
+          "compliance"
         ]
       }
     },

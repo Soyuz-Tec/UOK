@@ -66,6 +66,54 @@ def assert_file_backed_module_manifests(baseline_modules: Sequence[str]) -> None
     assert "CreateCommunicationThread" in communications["commands"]
     assert "communications.read" in communications["permissions"]
 
+    compliance = manifests["compliance.core"]
+    assert compliance["required"] is False
+    assert compliance["kind"] == "capability_module"
+    assert compliance["dependencies"] == []
+    assert compliance["api_prefixes"] == ["/api/compliance"]
+    assert set(compliance["permissions"]) == {
+        "compliance.read",
+        "compliance.manage",
+    }
+    assert compliance["api_router"] == "uok_compliance_core.public_api:api_router"
+    assert (
+        compliance["command_handlers"]
+        == "uok_compliance_core.public_api:command_handlers"
+    )
+    assert (
+        compliance["command_permissions"]
+        == "uok_compliance_core.public_api:command_permissions"
+    )
+    assert compliance["role_grants"] == "uok_compliance_core.public_api:role_grants"
+    assert (
+        compliance["model_exports"]
+        == "uok_compliance_core._internal.persistence.models:owned_models"
+    )
+    assert (
+        compliance["candidate_verifier_script"]
+        == "modules/compliance.core/verify/UokCandidateComplianceDocumentType.ps1"
+    )
+    assert set(compliance["commands"]) == {
+        "CreateComplianceDocumentType",
+        "UpdateComplianceDocumentType",
+        "DeactivateComplianceDocumentType",
+        "ActivateComplianceDocumentType",
+        "ArchiveComplianceDocumentType",
+        "RestoreComplianceDocumentType",
+    }
+    assert set(compliance["events"]) == {
+        "ComplianceDocumentTypeCreated",
+        "ComplianceDocumentTypeUpdated",
+        "ComplianceDocumentTypeDeactivated",
+        "ComplianceDocumentTypeActivated",
+        "ComplianceDocumentTypeArchived",
+        "ComplianceDocumentTypeRestored",
+    }
+    assert {
+        "ComplianceDocumentType",
+        "ComplianceDocumentTypeNameHistory",
+    }.issubset(set(compliance["owned_tables"]))
+
     contacts = manifests["contacts.core"]
     assert contacts["required"] is False
     assert "CreateContact" in contacts["commands"]

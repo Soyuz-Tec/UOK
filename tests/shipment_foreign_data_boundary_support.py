@@ -32,6 +32,8 @@ ALLOWED_PLANNING_SHIPMENT_SYMBOLS = {
     "resolve_shipment_reference",
 }
 FOREIGN_MODEL_SYMBOLS = {
+    "ComplianceDocumentType",
+    "ComplianceDocumentTypeNameHistory",
     "LocationDefinition",
     "LocationNameHistory",
     "Party",
@@ -42,6 +44,8 @@ FOREIGN_MODEL_SYMBOLS = {
     "RouteStop",
 }
 FOREIGN_TABLE_NAMES = {
+    "compliance_document_types",
+    "compliance_document_type_name_history",
     "contact_activities",
     "contact_consent_records",
     "contact_custom_field_definitions",

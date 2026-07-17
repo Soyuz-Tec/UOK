@@ -113,7 +113,8 @@ head.
 ## Next Slice Boundary
 
 Shipment support should remain deliberately thin. The next product slice
-should use evidence from the Shipment workflow: a governed Compliance Document
-Type is safer than adding speculative carrier, tracking, cargo, or intelligence
-behavior. Any later cargo/Product line belongs to `cargo.transactions` after
+may add a tenant-scoped Shipment-to-Document-Type requirement link through the
+immutable `compliance.core` facade. That link must not add a file vault, block
+Shipment movement status, duplicate Compliance metadata, or read Compliance
+tables. Any later cargo/Product line belongs to `cargo.transactions` after
 Product Master publishes a real immutable reference contract.

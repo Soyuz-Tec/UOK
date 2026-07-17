@@ -33,6 +33,18 @@ MODULES = {
             "role_grants",
         },
     },
+    "compliance": {
+        "package": "uok_compliance_core",
+        "folder": "compliance.core",
+        "symbols": {
+            "ComplianceDocumentTypeReferenceDTO",
+            "api_router",
+            "command_handlers",
+            "command_permissions",
+            "resolve_compliance_document_type_references",
+            "role_grants",
+        },
+    },
     "product": {
         "package": "uok_product_master",
         "folder": "product.master",

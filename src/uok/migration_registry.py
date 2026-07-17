@@ -17,6 +17,8 @@ from .module_tables import declared_module_table_names, model_table_names
 
 MIGRATION_FILE = "001_initial_baseline.sql"
 FORBIDDEN_BUSINESS_TABLES = (
+    "compliance_document_types",
+    "compliance_document_type_name_history",
     "location_definitions",
     "location_name_history",
     "product_definitions",

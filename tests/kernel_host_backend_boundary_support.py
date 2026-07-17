@@ -36,6 +36,7 @@ MODULE_HTTP_ADAPTERS = {
     "modules/apps.manager/backend/uok_apps_manager/api.py",
     "modules/calendar.core/backend/uok_calendar_core/api.py",
     "modules/communications.core/backend/uok_communications_core/api.py",
+    "modules/compliance.core/backend/uok_compliance_core/_internal/delivery/api.py",
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api.py",
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_groups.py",
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_system.py",

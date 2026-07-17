@@ -1,0 +1,64 @@
+manifest_schema: uok.module.v1
+name: compliance.core
+kind: capability_module
+version: APP_VERSION
+description: "Tenant-scoped Compliance Document Type registry for governed trade-document vocabulary."
+maturity: runtime_proven
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - CreateComplianceDocumentType
+  - UpdateComplianceDocumentType
+  - DeactivateComplianceDocumentType
+  - ActivateComplianceDocumentType
+  - ArchiveComplianceDocumentType
+  - RestoreComplianceDocumentType
+events:
+  - ComplianceDocumentTypeCreated
+  - ComplianceDocumentTypeUpdated
+  - ComplianceDocumentTypeDeactivated
+  - ComplianceDocumentTypeActivated
+  - ComplianceDocumentTypeArchived
+  - ComplianceDocumentTypeRestored
+dependencies: []
+backend_path: modules/compliance.core/backend
+web_path: modules/compliance.core/web
+web_entry: modules/compliance.core/web/src/moduleSurface.tsx
+web_section: compliance
+migrations_path: modules/compliance.core/migrations
+tests_path: modules/compliance.core/tests
+api_prefixes:
+  - /api/compliance
+api_router: uok_compliance_core.public_api:api_router
+command_handlers: uok_compliance_core.public_api:command_handlers
+command_permissions: uok_compliance_core.public_api:command_permissions
+role_grants: uok_compliance_core.public_api:role_grants
+model_exports: uok_compliance_core._internal.persistence.models:owned_models
+candidate_verifier_script: modules/compliance.core/verify/UokCandidateComplianceDocumentType.ps1
+candidate_verifier_function: Invoke-UokComplianceDocumentTypeCandidateScenario
+permissions:
+  - compliance.read
+  - compliance.manage
+owned_tables:
+  - ComplianceDocumentType
+  - ComplianceDocumentTypeNameHistory
+  - CommandLog:compliance.core
+  - EventRecord:ComplianceDocumentType
+extension_points:
+  - api_router
+  - command_handlers
+  - command_permissions
+  - role_grants
+  - model_exports
+  - web_surface
+  - candidate_verifier
+data_retention_policy: "Archive preserves Compliance Document Types and immutable name history. Module uninstall disables access while retaining tenant-owned records for authorized recovery."

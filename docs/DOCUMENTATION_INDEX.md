@@ -92,6 +92,8 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/delivery/route-corridor-slice-delivery-2026-07-16.md` | Route/Corridor API, data, UI, Location-boundary proof, freeze compliance, verification, demo, and next-slice handoff | Route delivery evidence or residual-risk status changes |
 | `docs/delivery/shipment-support-slice-design-2026-07-17.md` | Evidence-first design for the tenant-scoped Shipment Support vertical slice | Shipment ownership, lifecycle, owner DTO calls, tenant model, non-goals, or test plan changes |
 | `docs/delivery/shipment-support-slice-delivery-2026-07-17.md` | Shipment API, data, UI, foreign-owner boundary proof, freeze compliance, verification, demo, and next-slice handoff | Shipment delivery evidence or residual-risk status changes |
+| `docs/delivery/compliance-document-type-slice-design-2026-07-17.md` | Evidence-first design for the tenant-scoped Compliance Document Type registry | Compliance type ownership, lifecycle, tenant model, facade, non-goals, or test plan changes |
+| `docs/delivery/compliance-document-type-slice-delivery-2026-07-17.md` | Compliance type API, data, UI, boundary proof, freeze compliance, verification, demo, and next-slice handoff | Compliance Document Type delivery evidence or residual-risk status changes |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
 | `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` | AI-operated business workflow architecture, governed agent tools, human approval gates, and compliance evidence model | Agent governance, Codex tool binding, AI workflow, approval, or evidence architecture changes |
 | `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md` | Global export artifact boundary for CSV, JSON, image/SVG, PDF, document, and future import/export helpers | Export format ownership, shared artifact primitives, module export behavior, or export UI patterns change |
@@ -115,6 +117,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/modules/locations.core/LOCATION_MASTER_MODULE_PLAN.md` | Location Master ownership, lifecycle, country linkage, contracts, and qualification | Location Definition ownership, lifecycle, public surface, data model, UI, or qualification changes |
 | `docs/modules/routes.core/ROUTE_CORRIDOR_MODULE_PLAN.md` | Route/Corridor ownership, ordered Location references, lifecycle, contracts, and qualification | Route Definition ownership, topology, public surface, data model, UI, or qualification changes |
 | `docs/modules/shipments.core/SHIPMENT_SUPPORT_MODULE_PLAN.md` | Shipment Support ownership, stable master-data references, lifecycle, contracts, and qualification | Shipment ownership, public surface, status model, data model, UI, or qualification changes |
+| `docs/modules/compliance.core/COMPLIANCE_DOCUMENT_TYPE_MODULE_PLAN.md` | Compliance Document Type ownership, lifecycle, immutable reference contract, data model, UI, and qualification | Compliance type ownership, public surface, lifecycle, data model, UI, or qualification changes |
 | `docs/modules/planning.core/PLANNING_GANTT_FEATURE_CATALOG.md` | Planning Gantt feature inventory and evidence maturity | Gantt grid, timeline, scheduling, dependency, resource, baseline, color, workspace feature, or maturity evidence changes |
 | `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md` | Gates A-E and architecture requirement-to-evidence map, closure status, and production-hardening boundary | A requirement, evidence link, verification result, maturity state, architecture closure, or residual hardening item changes |
 | `docs/modules/planning.core/PLANNING_GANTT_EXTERNAL_FEATURE_INTAKE.md` | DHTMLX/SVAR-inspired Gantt research and UOK intake disposition | External Gantt research or adopted/partial/deferred/global-boundary disposition changes; evidence maturity remains in the catalog and traceability map |
@@ -208,6 +211,7 @@ The current active module plans are:
 - `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md`
 - `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md`
 - `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md`
+- `docs/modules/compliance.core/COMPLIANCE_DOCUMENT_TYPE_MODULE_PLAN.md`
 - `docs/modules/contacts.core/CONTACTS_APP_PLAN.md`
 - `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
 - `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md`

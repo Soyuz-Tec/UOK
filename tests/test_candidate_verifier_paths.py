@@ -21,6 +21,7 @@ RUNTIME_PROVEN_MODULES = (
     "apps.manager",
     "calendar.core",
     "communications.core",
+    "compliance.core",
     "contacts.core",
     "locations.core",
     "planning.core",
@@ -57,6 +58,7 @@ def test_candidate_disabled_state_proofs_restore_installed_dependents() -> None:
     )
     verifier_paths = (
         "modules/communications.core/verify/UokCandidateCommunications.ps1",
+        "modules/compliance.core/verify/UokCandidateComplianceDocumentType.ps1",
         "modules/contacts.core/verify/UokCandidateContacts.Evidence.ps1",
         "modules/locations.core/verify/UokCandidateLocationMaster.ps1",
         "modules/planning.core/verify/UokCandidatePlanningLinks.ps1",
@@ -104,7 +106,7 @@ def test_container_asset_validator_discovers_repository_verifiers_from_manifests
     )
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "Validated 10 runtime-proven module verifier assets."
+    assert result.stdout.strip() == "Validated 11 runtime-proven module verifier assets."
 
 
 def test_ci_builds_the_oci_image_without_publishing() -> None:

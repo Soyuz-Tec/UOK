@@ -10,6 +10,16 @@ from tests.helpers import auth
 
 
 OWNER_TABLE_CASES = (
+    (
+        "compliance.core",
+        "ComplianceDocumentType",
+        "compliance_document_types",
+    ),
+    (
+        "compliance.core",
+        "ComplianceDocumentTypeNameHistory",
+        "compliance_document_type_name_history",
+    ),
     ("locations.core", "LocationDefinition", "location_definitions"),
     ("locations.core", "LocationNameHistory", "location_name_history"),
     ("product.master", "ProductDefinition", "product_definitions"),
@@ -54,11 +64,14 @@ def test_uok_migration_discipline_uses_single_active_baseline(client: TestClient
     }
     assert "004_contacts_core_merge_privacy.sql" in contacts_migrations
     assert any(item["module"] == "planning.core" for item in body["module_migration_files"])
+    assert any(item["module"] == "compliance.core" for item in body["module_migration_files"])
     assert any(item["module"] == "product.master" for item in body["module_migration_files"])
     assert any(item["module"] == "locations.core" for item in body["module_migration_files"])
     assert any(item["module"] == "routes.core" for item in body["module_migration_files"])
     assert any(item["module"] == "shipments.core" for item in body["module_migration_files"])
     assert {
+        "compliance_document_types",
+        "compliance_document_type_name_history",
         "location_definitions",
         "location_name_history",
         "product_definitions",

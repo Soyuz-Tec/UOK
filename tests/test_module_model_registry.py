@@ -28,6 +28,7 @@ METADATA_FIXTURE = Path(__file__).parent / "fixtures" / "module_model_metadata.j
 EXPECTED_PROVIDER_ORDER = (
     "calendar.core",
     "communications.core",
+    "compliance.core",
     "contacts.core",
     "locations.core",
     "planning.core",
@@ -36,7 +37,7 @@ EXPECTED_PROVIDER_ORDER = (
     "routes.core",
     "shipments.core",
 )
-EXPECTED_MODEL_COUNT = 58
+EXPECTED_MODEL_COUNT = 60
 
 
 def _expected_registry() -> dict[str, dict[str, str]]:
@@ -148,6 +149,10 @@ def test_complete_registry_can_create_all_tables_in_sqlite() -> None:
         (
             "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); import uok_communications_core.models"
+        ),
+        (
+            "from uok.host.module_paths import ensure_module_backend_paths; "
+            "ensure_module_backend_paths(); import uok_compliance_core.public_api"
         ),
         (
             "from uok.host.module_paths import ensure_module_backend_paths; "

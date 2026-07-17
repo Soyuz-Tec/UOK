@@ -20,6 +20,7 @@ BASELINE_MODULES = [
     "apps.manager",
     "calendar.core",
     "communications.core",
+    "compliance.core",
     "contacts.core",
     "locations.core",
     "planning.core",
@@ -74,7 +75,7 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["checks"]["owned_table_claims_valid"] is True
     assert extension_contract["checks"]["owned_tables_resolve_to_models"] is True
     assert contracts["model_registry"]["ok"] is True
-    assert contracts["model_registry"]["model_count"] == 58
+    assert contracts["model_registry"]["model_count"] == 60
     assert extension_contract["violations"] == []
 
 
@@ -120,6 +121,14 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "CreateContact" in handlers
     assert "CreateCalendarEvent" in handlers
     assert "CreateCommunicationThread" in handlers
+    assert {
+        "CreateComplianceDocumentType",
+        "UpdateComplianceDocumentType",
+        "DeactivateComplianceDocumentType",
+        "ActivateComplianceDocumentType",
+        "ArchiveComplianceDocumentType",
+        "RestoreComplianceDocumentType",
+    }.issubset(handlers)
     for entity in ("Product", "Location", "Route"):
         for action in ("Create", "Update", "Archive", "Restore"):
             assert f"{action}{entity}Definition" in handlers
@@ -132,6 +141,15 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert permissions["CreateContact"] == "contacts.manage"
     assert permissions["CreateCalendarEvent"] == "calendar.event.create"
     assert permissions["CreateCommunicationThread"] == "communications.edit"
+    for command_name in (
+        "CreateComplianceDocumentType",
+        "UpdateComplianceDocumentType",
+        "DeactivateComplianceDocumentType",
+        "ActivateComplianceDocumentType",
+        "ArchiveComplianceDocumentType",
+        "RestoreComplianceDocumentType",
+    ):
+        assert permissions[command_name] == "compliance.manage"
     assert permissions["CreatePlanningProject"] == "planning.edit"
     assert permissions["CreatePlanningBaseline"] == "planning.baseline.create"
     assert permissions["LevelPlanningResources"] == "planning.level"
@@ -157,6 +175,8 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "planning.analyze" in grants["ops_manager"]
     assert "planning.analysis.approve" in grants["ops_manager"]
     assert "communications.edit" in grants["ops_manager"]
+    assert "compliance.manage" in grants["ops_manager"]
+    assert "compliance.read" in grants["viewer"]
     assert grants["trader"] >= {"planning.read", "planning.edit"}
     assert "reports.manage" in grants["ops_manager"]
     assert "products.manage" in grants["ops_manager"]
@@ -174,6 +194,8 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
         "calendar_event_participants",
         "calendar_reminders",
         "communication_threads",
+        "compliance_document_types",
+        "compliance_document_type_name_history",
         "parties",
         "party_notes",
         "party_relationships",
@@ -202,6 +224,7 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
     assert "/api/planning/projects" in app_paths
     assert "/api/planning/projects/{project_id}/resources/{resource_id}/calendar" in app_paths
     assert "/api/products/definitions" in app_paths
+    assert "/api/compliance/document-types" in app_paths
     assert "/api/locations/definitions" in app_paths
     assert (
         "/api/products/definitions/{product_definition_id}/name-history"

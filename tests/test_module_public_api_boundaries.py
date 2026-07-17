@@ -88,6 +88,12 @@ def test_supported_python_surfaces_are_exact_and_boundary_dtos_are_immutable() -
     contacts_api = apis["contacts"]
     assert is_dataclass(contacts_api.PartyReferenceResolution)
     assert contacts_api.PartyReferenceResolution.__dataclass_params__.frozen is True
+    compliance_api = apis["compliance"]
+    assert is_dataclass(compliance_api.ComplianceDocumentTypeReferenceDTO)
+    assert (
+        compliance_api.ComplianceDocumentTypeReferenceDTO.__dataclass_params__.frozen
+        is True
+    )
     locations_api = apis["locations"]
     assert is_dataclass(locations_api.LocationReferenceResolution)
     assert locations_api.LocationReferenceResolution.__dataclass_params__.frozen is True
@@ -164,6 +170,7 @@ def test_frontend_rule_rejects_deep_imports_and_accepts_module_surface() -> None
     ) == []
     for folder, private_symbol in (
         ("product.master", "ProductMasterWorkspace"),
+        ("compliance.core", "ComplianceDocumentTypeWorkspace"),
         ("locations.core", "LocationMasterWorkspace"),
         ("routes.core", "RouteMasterWorkspace"),
         ("shipments.core", "ShipmentSupportWorkspace"),

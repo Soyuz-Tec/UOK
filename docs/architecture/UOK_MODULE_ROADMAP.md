@@ -24,6 +24,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `agents.core` | capability module | `planned` | inert scaffold for governed agent operations | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | `calendar.core` | capability module | `runtime_proven` | global calendar API and workspace capability | `UOK-3.1.0-alpha.3` | `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md` |
 | `communications.core` | capability module | `runtime_proven` | K Connect thread provider and Planning deep-link adapter | `UOK-3.1.0-alpha.3` | `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` |
+| `compliance.core` | capability module | `runtime_proven` | tenant-scoped Compliance Document Type registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/compliance.core/COMPLIANCE_DOCUMENT_TYPE_MODULE_PLAN.md` |
 | `contacts.core` | capability module | `runtime_proven` | Contacts capability with module-owned candidate evidence | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
 | `locations.core` | capability module | `runtime_proven` | tenant-scoped Location Definition registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/locations.core/LOCATION_MASTER_MODULE_PLAN.md` |
 | `planning.core` | capability module | `runtime_proven` | Gates A-E locally proven, including portfolio and production-like readiness evidence | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
@@ -120,6 +121,16 @@ It also introduces `planning.core` as the integrated planning and Gantt capabili
 - a module-owned Shipment Support workbench and candidate verifier;
 - no Product/Cargo lines, booking, rates, tracking, documents, inventory, customs, Planning table access, or intelligence scoring.
 
+`compliance.core` adds the next post-freeze master-data slice:
+
+- tenant-scoped Compliance Document Types with organization-unique immutable codes;
+- optional description and descriptive category without hard-coded legal truth;
+- governed active, inactive, archived, and restored lifecycle with optimistic versions;
+- append-only canonical-name history plus normal UOK command/event evidence;
+- actor-authorized list, detail, history, and immutable reference APIs;
+- a module-owned Compliance Document Types workbench and candidate verifier;
+- no document instances, binary vault, Shipment rule, Party/Shipment read, customs integration, or intelligence scoring.
+
 ## Governance Rule
 
 New modules must not add product-specific behavior to the UOK core. They must expose their contracts through module manifests, typed APIs, command handlers, command permissions, role grants, owned table declarations, migrations, tests, dashboard/evidence providers where applicable, and candidate verification.
@@ -130,4 +141,4 @@ New modules must not add product-specific behavior to the UOK core. They must ex
   shell/module backedges as modules are added.
 - Keep future module React/CSS source and frontend tests in canonical module roots from the first increment.
 - Keep future schema changes in module-owned migrations instead of expanding the shared initial baseline.
-- Select the next Compliance Document Type, thin Intelligence Signal, or Shipment Document slice from real workflow evidence; keep full cargo/commercial transactions, carrier integrations, tracking, inventory, and customs outside Shipment Support.
+- Add a thin Shipment-to-Document-Type requirement link through the immutable Compliance facade, or select a thin Intelligence Signal from real workflow evidence. Keep file vaults, full cargo/commercial transactions, carrier integrations, tracking, inventory, and customs outside Shipment Support.

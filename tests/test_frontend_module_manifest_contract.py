@@ -25,6 +25,10 @@ def test_repository_frontend_surfaces_are_manifest_owned() -> None:
             "communications",
             "modules/communications.core/web/src/moduleSurface.tsx",
         ),
+        "compliance.core": (
+            "compliance",
+            "modules/compliance.core/web/src/moduleSurface.tsx",
+        ),
         "contacts.core": ("contacts", "modules/contacts.core/web/src/moduleSurface.tsx"),
         "locations.core": ("locations", "modules/locations.core/web/src/moduleSurface.tsx"),
         "planning.core": ("planning", "modules/planning.core/web/src/moduleSurface.tsx"),
