@@ -31,8 +31,8 @@ export type RoutePathReference = {
 export type Shipment = {
   id: string;
   code: string;
-  shipper_party_id: string;
-  consignee_party_id: string;
+  shipper_party_id: string | null;
+  consignee_party_id: string | null;
   origin_location_id: string;
   destination_location_id: string;
   route_definition_id: string | null;
@@ -90,8 +90,8 @@ export const emptyShipmentDraft: ShipmentDraft = {
 export function draftFromShipment(shipment: Shipment): ShipmentDraft {
   return {
     code: shipment.code,
-    shipperPartyId: shipment.shipper_party_id,
-    consigneePartyId: shipment.consignee_party_id,
+    shipperPartyId: shipment.shipper_party_id || "",
+    consigneePartyId: shipment.consignee_party_id || "",
     originLocationId: shipment.origin_location_id,
     destinationLocationId: shipment.destination_location_id,
     routeDefinitionId: shipment.route_definition_id || "",

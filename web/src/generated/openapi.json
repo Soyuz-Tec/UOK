@@ -5451,8 +5451,15 @@
             "$ref": "#/components/schemas/PartyReferenceResponse"
           },
           "consignee_party_id": {
-            "title": "Consignee Party Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consignee Party Id"
           },
           "created_at": {
             "format": "date-time",
@@ -5530,8 +5537,15 @@
             "$ref": "#/components/schemas/PartyReferenceResponse"
           },
           "shipper_party_id": {
-            "title": "Shipper Party Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shipper Party Id"
           },
           "status": {
             "enum": [

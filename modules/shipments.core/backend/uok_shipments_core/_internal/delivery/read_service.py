@@ -108,8 +108,8 @@ def _serialize_shipment(
     response = ShipmentResponse(
         id=row.id,
         code=row.code,
-        shipper_party_id=row.shipper_party_id,
-        consignee_party_id=row.consignee_party_id,
+        shipper_party_id=_visible_party_id(row.shipper_party_id, shipper),
+        consignee_party_id=_visible_party_id(row.consignee_party_id, consignee),
         origin_location_id=row.origin_location_id,
         destination_location_id=row.destination_location_id,
         route_definition_id=row.route_definition_id,
@@ -128,6 +128,10 @@ def _serialize_shipment(
         route=route,
     )
     return response.model_dump(mode="json")
+
+
+def _visible_party_id(party_id: str, resolution: dict[str, object]) -> str | None:
+    return None if resolution.get("status") == "denied" else party_id
 
 
 __all__ = [

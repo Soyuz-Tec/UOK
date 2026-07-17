@@ -5,6 +5,7 @@ import { WorkspaceActionButton } from "@uok/shared/actions";
 import { DetailItem, EmptyState, StatusPill } from "@uok/shared/data-display";
 import { FieldMessage } from "@uok/shared/forms";
 import { CommandButton } from "@uok/shared/primitives";
+import { partyReferenceLabel } from "./partyReferenceDisplay";
 import type { PartyReference, Shipment, ShipmentStatus, ShipmentStatusHistory } from "./types";
 import { shipmentTransitions } from "./types";
 
@@ -120,10 +121,10 @@ export function ShipmentDetail({
   );
 }
 
-function ReferenceCard({ label, id, reference }: { label: string; id: string; reference: PartyReference }) {
+function ReferenceCard({ label, id, reference }: { label: string; id: string | null; reference: PartyReference }) {
   const body = (
     <>
-      <strong>{reference.display_label || id}</strong>
+      <strong>{partyReferenceLabel(reference, id)}</strong>
       <small>{reference.status_summary}</small>
     </>
   );

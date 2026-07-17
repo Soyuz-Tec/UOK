@@ -2,12 +2,13 @@ import type { KeyboardEvent } from "react";
 
 import { EmptyState, StatusPill } from "@uok/shared/data-display";
 import { ResizableDataTable, type DataTableColumn } from "@uok/shared/tables";
+import { partyReferenceLabel } from "./partyReferenceDisplay";
 import type { Shipment } from "./types";
 
 const columns: DataTableColumn<Shipment>[] = [
   { id: "code", header: "Shipment", defaultWidth: 165, minWidth: 125, renderCell: (shipment) => <strong>{shipment.code}</strong> },
-  { id: "shipper", header: "Shipper", defaultWidth: 190, minWidth: 140, renderCell: (shipment) => partyLabel(shipment.shipper.display_label, shipment.shipper_party_id) },
-  { id: "consignee", header: "Consignee", defaultWidth: 190, minWidth: 140, renderCell: (shipment) => partyLabel(shipment.consignee.display_label, shipment.consignee_party_id) },
+  { id: "shipper", header: "Shipper", defaultWidth: 190, minWidth: 140, renderCell: (shipment) => partyReferenceLabel(shipment.shipper, shipment.shipper_party_id) },
+  { id: "consignee", header: "Consignee", defaultWidth: 190, minWidth: 140, renderCell: (shipment) => partyReferenceLabel(shipment.consignee, shipment.consignee_party_id) },
   { id: "origin", header: "Origin", defaultWidth: 165, minWidth: 125, renderCell: (shipment) => locationLabel(shipment.origin, shipment.origin_location_id) },
   { id: "destination", header: "Destination", defaultWidth: 165, minWidth: 125, renderCell: (shipment) => locationLabel(shipment.destination, shipment.destination_location_id) },
   { id: "departure", header: "Planned departure", defaultWidth: 155, minWidth: 130, renderCell: (shipment) => formatDate(shipment.planned_departure_on) },
@@ -35,10 +36,6 @@ export function ShipmentTable({ shipments, selectedId, onSelect }: {
       onRowKeyDown={(event, shipment) => selectFromKeyboard(event, shipment.id, onSelect)}
     />
   );
-}
-
-function partyLabel(label: string | null | undefined, id: string) {
-  return label || id;
 }
 
 function locationLabel(location: Shipment["origin"], fallbackId: string) {

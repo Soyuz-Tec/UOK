@@ -1,3 +1,4 @@
+import { partyReferenceLabel } from "./partyReferenceDisplay";
 import type { Shipment, ShipmentSort, ShipmentSortDirection, ShipmentStatus } from "./types";
 
 export function filterAndSortShipments(shipments: Shipment[], options: {
@@ -18,8 +19,8 @@ export function filterAndSortShipments(shipments: Shipment[], options: {
 function searchableValues(shipment: Shipment) {
   return [
     shipment.code,
-    shipment.shipper.display_label || shipment.shipper_party_id,
-    shipment.consignee.display_label || shipment.consignee_party_id,
+    partyReferenceLabel(shipment.shipper, shipment.shipper_party_id),
+    partyReferenceLabel(shipment.consignee, shipment.consignee_party_id),
     shipment.origin.code || shipment.origin.canonical_name || shipment.origin_location_id,
     shipment.destination.code || shipment.destination.canonical_name || shipment.destination_location_id,
     shipment.route?.code || "",

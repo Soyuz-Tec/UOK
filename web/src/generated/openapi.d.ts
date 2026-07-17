@@ -4082,7 +4082,7 @@ export interface components {
             code: string;
             consignee: components["schemas"]["PartyReferenceResponse"];
             /** Consignee Party Id */
-            consignee_party_id: string;
+            consignee_party_id: string | null;
             /**
              * Created At
              * Format: date-time
@@ -4107,7 +4107,7 @@ export interface components {
             route_definition_id: string | null;
             shipper: components["schemas"]["PartyReferenceResponse"];
             /** Shipper Party Id */
-            shipper_party_id: string;
+            shipper_party_id: string | null;
             /**
              * Status
              * @enum {string}

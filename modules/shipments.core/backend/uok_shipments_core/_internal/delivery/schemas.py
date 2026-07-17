@@ -172,8 +172,8 @@ class ShipmentResponse(BaseModel):
 
     id: str
     code: str
-    shipper_party_id: str
-    consignee_party_id: str
+    shipper_party_id: str | None
+    consignee_party_id: str | None
     origin_location_id: str
     destination_location_id: str
     route_definition_id: str | None

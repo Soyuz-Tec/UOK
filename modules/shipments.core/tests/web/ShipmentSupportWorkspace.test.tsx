@@ -87,6 +87,42 @@ describe("Shipment Support workspace", () => {
     expect(screen.queryByRole("form", { name: "Change shipment status" })).not.toBeInTheDocument();
   });
 
+  it("never renders or searches denied Party IDs as fallback labels", async () => {
+    const privatePartyId = "party-private-hidden";
+    const teamPartyId = "party-team-hidden";
+    const deniedShipment: Shipment = {
+      ...activeShipment,
+      id: "shipment-restricted-parties",
+      code: "RCN-RESTRICTED-PARTIES",
+      shipper_party_id: privatePartyId,
+      consignee_party_id: teamPartyId,
+      shipper: {
+        status: "denied",
+        display_label: null,
+        status_summary: "The linked target is not visible to this actor.",
+      },
+      consignee: {
+        status: "denied",
+        display_label: null,
+        status_summary: "The linked target is not visible to this actor.",
+      },
+    };
+    vi.stubGlobal("fetch", shipmentFetchMock({ current: () => deniedShipment }));
+    render(<ShipmentSupportWorkspace host={shipmentHost({ currentUserRole: "viewer" })} />);
+
+    await screen.findByRole("heading", { name: deniedShipment.code });
+    expect(screen.getAllByText("Restricted Party").length).toBeGreaterThanOrEqual(4);
+    expect(document.body).not.toHaveTextContent(privatePartyId);
+    expect(document.body).not.toHaveTextContent(teamPartyId);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Search Shipments" }), {
+      target: { value: privatePartyId },
+    });
+    expect(within(screen.getByRole("grid", { name: "Shipment records" })).queryByText(
+      deniedShipment.code,
+    )).not.toBeInTheDocument();
+  });
+
   it("creates a Shipment after resolving both Party IDs through its owner-backed endpoint", async () => {
     const created: Shipment = {
       ...activeShipment,
