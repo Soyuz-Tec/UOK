@@ -39,6 +39,7 @@ MODULE_HTTP_ADAPTERS = {
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api.py",
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_groups.py",
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_system.py",
+    "modules/locations.core/backend/uok_locations_core/_internal/delivery/api.py",
     "modules/planning.core/backend/uok_planning_core/_internal/analysis/analysis_api.py",
     "modules/planning.core/backend/uok_planning_core/_internal/delivery/api.py",
     "modules/planning.core/backend/uok_planning_core/_internal/portfolio_audit/portfolio_api.py",

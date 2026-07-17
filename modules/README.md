@@ -32,6 +32,7 @@ Production React source and CSS for a declared workbench surface live under `mod
 | `calendar.core` | Optional calendar, availability, free-busy, recurrence, and workspace capability. |
 | `communications.core` | Optional K Connect thread provider and exact authorized deep-link capability. |
 | `contacts.core` | Optional Party, Contacts workflow, grouping, relationship, and quality capability. |
+| `locations.core` | Optional tenant-scoped Location Definition, lifecycle, country-linkage, and name-history capability. |
 | `planning.core` | Optional project planning, Python-authoritative scheduling, Gantt, analysis, and portfolio capability. |
 | `product.master` | Optional tenant-scoped Product/Material definition, lifecycle, and name-history capability. |
 | `reports.core` | Optional secure report artifact and typed report-client capability. |

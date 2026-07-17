@@ -5,8 +5,9 @@ import moduleSurface0 from "../../../modules/apps.manager/web/src/moduleSurface"
 import moduleSurface1 from "../../../modules/calendar.core/web/src/moduleSurface";
 import moduleSurface2 from "../../../modules/communications.core/web/src/moduleSurface";
 import moduleSurface3 from "../../../modules/contacts.core/web/src/moduleSurface";
-import moduleSurface4 from "../../../modules/planning.core/web/src/moduleSurface";
-import moduleSurface5 from "../../../modules/product.master/web/src/moduleSurface";
+import moduleSurface4 from "../../../modules/locations.core/web/src/moduleSurface";
+import moduleSurface5 from "../../../modules/planning.core/web/src/moduleSurface";
+import moduleSurface6 from "../../../modules/product.master/web/src/moduleSurface";
 
 export const generatedModuleSurfaceCatalog = [
   {
@@ -47,12 +48,21 @@ export const generatedModuleSurfaceCatalog = [
   },
   {
     manifest: {
+      moduleName: "locations.core",
+      sectionId: "locations",
+      webEntry: "modules/locations.core/web/src/moduleSurface.tsx",
+      dependencies: []
+    },
+    surface: moduleSurface4
+  },
+  {
+    manifest: {
       moduleName: "planning.core",
       sectionId: "planning",
       webEntry: "modules/planning.core/web/src/moduleSurface.tsx",
       dependencies: ["calendar.core"]
     },
-    surface: moduleSurface4
+    surface: moduleSurface5
   },
   {
     manifest: {
@@ -61,6 +71,6 @@ export const generatedModuleSurfaceCatalog = [
       webEntry: "modules/product.master/web/src/moduleSurface.tsx",
       dependencies: []
     },
-    surface: moduleSurface5
+    surface: moduleSurface6
   },
 ] as const satisfies readonly GeneratedModuleSurfaceRegistration[];

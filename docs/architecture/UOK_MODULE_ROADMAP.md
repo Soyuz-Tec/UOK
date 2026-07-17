@@ -25,6 +25,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `calendar.core` | capability module | `runtime_proven` | global calendar API and workspace capability | `UOK-3.1.0-alpha.3` | `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md` |
 | `communications.core` | capability module | `runtime_proven` | K Connect thread provider and Planning deep-link adapter | `UOK-3.1.0-alpha.3` | `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` |
 | `contacts.core` | capability module | `runtime_proven` | Contacts capability with module-owned candidate evidence | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
+| `locations.core` | capability module | `runtime_proven` | tenant-scoped Location Definition registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/locations.core/LOCATION_MASTER_MODULE_PLAN.md` |
 | `planning.core` | capability module | `runtime_proven` | Gates A-E locally proven, including portfolio and production-like readiness evidence | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
 | `product.master` | capability module | `runtime_proven` | tenant-scoped Product Definition registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md` |
 | `reports.core` | capability module | `runtime_proven` | secure global report artifact foundation | `UOK-3.1.0-alpha.3` | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` |
@@ -84,6 +85,16 @@ It also introduces `planning.core` as the integrated planning and Gantt capabili
 - actor-authorized list, detail, and history APIs;
 - a module-owned Product Master workbench and candidate verifier;
 - no Cargo, Party, Planning, Location, Compliance, pricing, or inventory coupling.
+
+`locations.core` adds the next post-freeze Location MDM slice:
+
+- tenant-scoped canonical Location Definitions for ports, warehouses, cities, and regions;
+- normalized country-code linkage without a shared Country or GIS catalog;
+- governed create, update, archive, and restore commands with optimistic versions;
+- append-only canonical-name history plus normal UOK audit events;
+- actor-authorized list, detail, and history APIs;
+- a module-owned Location Master workbench and candidate verifier;
+- no Party-address migration, Product/Planning coupling, Route topology, shipment engine, or intelligence scoring.
 
 ## Governance Rule
 

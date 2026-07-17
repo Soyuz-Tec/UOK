@@ -16,7 +16,14 @@ from .module_manifest_loader import load_module_manifests
 from .module_tables import declared_module_table_names, model_table_names
 
 MIGRATION_FILE = "001_initial_baseline.sql"
-FORBIDDEN_BUSINESS_TABLES = ("product_definitions", "cargo_transactions", "agreements")
+FORBIDDEN_BUSINESS_TABLES = (
+    "location_definitions",
+    "location_name_history",
+    "product_definitions",
+    "product_name_history",
+    "cargo_transactions",
+    "agreements",
+)
 CREATE_TABLE_PATTERN = re.compile(r"\bCREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?([A-Za-z_][A-Za-z0-9_]*)", re.IGNORECASE)
 INDEX_ON_PATTERN = re.compile(r"\bON\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", re.IGNORECASE)
 

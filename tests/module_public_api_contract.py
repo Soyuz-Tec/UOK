@@ -43,6 +43,16 @@ MODULES = {
             "role_grants",
         },
     },
+    "locations": {
+        "package": "uok_locations_core",
+        "folder": "locations.core",
+        "symbols": {
+            "api_router",
+            "command_handlers",
+            "command_permissions",
+            "role_grants",
+        },
+    },
 }
 
 PYTHON_SCAN_ROOTS = ("src", "scripts", "modules", "tests")

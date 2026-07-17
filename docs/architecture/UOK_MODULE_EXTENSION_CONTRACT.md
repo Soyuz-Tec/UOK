@@ -127,7 +127,7 @@ New extension points require an architecture update and a failing validation tes
   implementations. Lifecycle mutations are restricted to the Apps Manager
   adapter; other capabilities receive read-only runtime operations.
 - Module → Host production exceptions are path-and-symbol exact:
-  `uok.host.database.get_db` and `uok.host.security.current_actor` in the 13
+  `uok.host.database.get_db` and `uok.host.security.current_actor` in the 14
   documented HTTP adapters, plus `uok.host.commands.execute_command` in the
   Calendar, Contacts, and Planning command adapters. Engine, `SessionLocal`,
   pool, application, host registries, and every unlisted host import are
@@ -142,11 +142,11 @@ New extension points require an architecture update and a failing validation tes
 
 - `apps.manager` is the required `runtime_proven` control module and its API router is mounted only from its manifest.
 - `agents.core` is an inert `planned` capability scaffold: it is not installable, updatable, maintainable, permission-bearing, or runtime-proven.
-- `calendar.core`, `communications.core`, `contacts.core`, `planning.core`, `product.master`, and `reports.core` are optional `runtime_proven` capability modules with manifest-declared backend hooks and module-owned verifiers.
+- `calendar.core`, `communications.core`, `contacts.core`, `locations.core`, `planning.core`, `product.master`, and `reports.core` are optional `runtime_proven` capability modules with manifest-declared backend hooks and module-owned verifiers.
 - Their capability ORM mappings live in the owning backend packages and
   register beside nine product-neutral kernel mappings on one SQLAlchemy
   metadata graph. The former global ORM compatibility imports are retired.
-- Apps Manager, Calendar, Communications, Contacts, Planning, and Product Master declare `web_surface`; their React source, module-local CSS, entrypoints, and frontend tests live below the owning module roots and are composed through the generated compile-time catalog.
+- Apps Manager, Calendar, Communications, Contacts, Location Master, Planning, and Product Master declare `web_surface`; their React source, module-local CSS, entrypoints, and frontend tests live below the owning module roots and are composed through the generated compile-time catalog.
 - Contacts owns its frontend DTOs, state, reads, preferences, storage keys, and
   commands. The shell passes only the neutral host port, and architecture tests
   reject every cross-owner shell/module source cycle.

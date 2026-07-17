@@ -22,6 +22,7 @@ RUNTIME_PROVEN_MODULES = (
     "calendar.core",
     "communications.core",
     "contacts.core",
+    "locations.core",
     "planning.core",
     "product.master",
     "reports.core",
@@ -72,7 +73,7 @@ def test_container_asset_validator_discovers_repository_verifiers_from_manifests
     )
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "Validated 7 runtime-proven module verifier assets."
+    assert result.stdout.strip() == "Validated 8 runtime-proven module verifier assets."
 
 
 def test_ci_builds_the_oci_image_without_publishing() -> None:

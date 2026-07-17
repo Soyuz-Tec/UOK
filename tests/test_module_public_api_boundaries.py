@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import ast
+import importlib
 import re
-import sys
 from dataclasses import is_dataclass
 from pathlib import Path
 
@@ -200,62 +200,51 @@ def test_manifests_compose_through_public_facades_and_keep_models_private() -> N
 
 def test_supported_python_surfaces_are_exact_and_contacts_dto_is_immutable() -> None:
     ensure_module_backend_paths()
-    from uok_contacts_core.public_api import PartyReferenceResolution
-    from uok_planning_core.public_api import command_handlers as planning_command_handlers
-    from uok_product_master.public_api import command_handlers as product_command_handlers
+    apis = {
+        owner: importlib.import_module(f"{contract['package']}.public_api")
+        for owner, contract in MODULES.items()
+    }
+    for owner, api in apis.items():
+        assert set(api.__all__) == MODULES[owner]["symbols"]
+        assert {name for name in dir(api) if not name.startswith("_")} == MODULES[owner]["symbols"]
+        assert all("model" not in name.casefold() for name in api.__all__)
 
-    contacts_api = sys.modules[PartyReferenceResolution.__module__]
-    planning_api = sys.modules[planning_command_handlers.__module__]
-    product_api = sys.modules[product_command_handlers.__module__]
-
-    assert set(planning_api.__all__) == MODULES["planning"]["symbols"]
-    assert set(contacts_api.__all__) == MODULES["contacts"]["symbols"]
-    assert set(product_api.__all__) == MODULES["product"]["symbols"]
-    assert {name for name in dir(planning_api) if not name.startswith("_")} == MODULES["planning"]["symbols"]
-    assert {name for name in dir(contacts_api) if not name.startswith("_")} == MODULES["contacts"]["symbols"]
-    assert {name for name in dir(product_api) if not name.startswith("_")} == MODULES["product"]["symbols"]
+    contacts_api = apis["contacts"]
     assert is_dataclass(contacts_api.PartyReferenceResolution)
     assert contacts_api.PartyReferenceResolution.__dataclass_params__.frozen is True
-    assert all("model" not in name.casefold() for name in planning_api.__all__)
-    assert all("model" not in name.casefold() for name in contacts_api.__all__)
-    assert all("model" not in name.casefold() for name in product_api.__all__)
 
 
 def test_python_rule_rejects_private_root_deep_star_and_unknown_public_imports() -> None:
     path = Path("scripts/example.py")
-    forbidden = (
+    forbidden = [
         "import uok_planning_core",
         "from uok_planning_core._internal.scheduling import scheduler",
-        "from uok_contacts_core import public_api",
-        "from uok_contacts_core.public_api import *",
-        "from uok_contacts_core.public_api import Party",
-        "import uok_contacts_core.public_api as contacts_api",
-        "from importlib import import_module\nimport_module('uok_contacts_core._internal.persistence.models')",
         "from importlib import import_module as load\nload('uok_contacts_core._internal.persistence.models')",
         "import importlib as loader\nloader.import_module('uok_contacts_core._internal.persistence.models')",
         "import importlib.util\nimportlib.import_module('uok_contacts_core._internal.persistence.models')",
-        "import uok_product_master",
-        "from uok_product_master import public_api",
-        "from uok_product_master.public_api import *",
-        "from uok_product_master.public_api import ProductDefinition",
-        "import uok_product_master.public_api as product_api",
-        "from importlib import import_module\nimport_module('uok_product_master._internal.persistence.models')",
         "from uok.models import Party",
         "from uok.models import PlanningTask",
         "import uok.models as models",
         "from uok import models",
-    )
+    ]
+    for contract in MODULES.values():
+        package = str(contract["package"])
+        forbidden.extend((
+            f"import {package}",
+            f"from {package} import public_api",
+            f"from {package}.public_api import *",
+            f"from {package}.public_api import UnsupportedModel",
+            f"import {package}.public_api as module_api",
+            f"from importlib import import_module\nimport_module('{package}._internal.persistence.models')",
+        ))
     for source in forbidden:
         assert _python_violations(source, path), source
 
-    assert _python_violations(
-        "from uok_contacts_core.public_api import resolve_party_reference",
-        path,
-    ) == []
-    assert _python_violations(
-        "from uok_product_master.public_api import command_handlers",
-        path,
-    ) == []
+    for contract in MODULES.values():
+        assert _python_violations(
+            f"from {contract['package']}.public_api import command_handlers",
+            path,
+        ) == []
 
     planning_owner = Path("modules/planning.core/tests/example.py")
     assert _python_violations("from uok.models import PlanningTask", planning_owner)
@@ -286,11 +275,15 @@ def test_frontend_rule_rejects_deep_imports_and_accepts_module_surface() -> None
         'import surface from "../../../modules/contacts.core/web/src/moduleSurface";',
         generated_path,
     ) == []
-    assert _frontend_violations(
-        'import { ProductMasterWorkspace } from "@uok-modules/product.master/web/src/ProductMasterWorkspace";',
-        path,
-    )
-    assert _frontend_violations(
-        'import surface from "@uok-modules/product.master/web/src/moduleSurface";',
-        path,
-    ) == []
+    for folder, private_symbol in (
+        ("product.master", "ProductMasterWorkspace"),
+        ("locations.core", "LocationMasterWorkspace"),
+    ):
+        assert _frontend_violations(
+            f'import {{ {private_symbol} }} from "@uok-modules/{folder}/web/src/{private_symbol}";',
+            path,
+        )
+        assert _frontend_violations(
+            f'import surface from "@uok-modules/{folder}/web/src/moduleSurface";',
+            path,
+        ) == []

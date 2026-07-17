@@ -54,7 +54,7 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
    runtime queries and operational checks.
 4. Module → Host exceptions are explicit path-and-symbol adapter seams:
    - `from uok.host.database import get_db` and
-     `from uok.host.security import current_actor` in the 13 documented module
+     `from uok.host.security import current_actor` in the 14 documented module
      HTTP adapters;
    - `from uok.host.commands import execute_command` in the exact Calendar,
      Contacts, and Planning command adapters.
@@ -102,6 +102,12 @@ The first post-freeze Product Master slice adds one compliant HTTP adapter at
 Only `get_db` and `current_actor` are allowlisted there, increasing the exact
 in-process Host adapter surface from 27 to 29 imports without changing this
 decision or adding a Kernel/shell dependency.
+
+The subsequent Location Master slice adds the same bounded adapter shape at
+`modules/locations.core/backend/uok_locations_core/_internal/delivery/api.py`.
+Its exact `get_db` and `current_actor` imports increase the adapter surface from
+29 to 31 without widening Host responsibilities, Kernel contracts, existing
+module facades, or the neutral shell surface.
 
 ## Consequences
 

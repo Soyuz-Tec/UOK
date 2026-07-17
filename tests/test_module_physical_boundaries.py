@@ -18,6 +18,7 @@ BASELINE_MODULES = [
     "calendar.core",
     "communications.core",
     "contacts.core",
+    "locations.core",
     "planning.core",
     "product.master",
     "reports.core",
@@ -81,6 +82,13 @@ def test_file_backed_module_manifests_define_baseline_catalog() -> None:
     assert manifests["contacts.core"]["candidate_verifier_script"] == "modules/contacts.core/verify/UokCandidateContacts.ps1"
     assert "contacts.manage" in manifests["contacts.core"]["permissions"]
     assert (root / "contacts.core" / "migrations" / "001_contacts_core_operational_indexes.sql").is_file()
+    locations = manifests["locations.core"]
+    assert locations["required"] is False
+    assert locations["dependencies"] == []
+    assert locations["api_prefixes"] == ["/api/locations"]
+    assert set(locations["permissions"]) == {"locations.read", "locations.manage"}
+    assert set(locations["commands"]) == {f"{action}LocationDefinition" for action in ("Create", "Update", "Archive", "Restore")}
+    assert set(locations["events"]) == {f"LocationDefinition{action}" for action in ("Created", "Updated", "Archived", "Restored")}
     assert manifests["planning.core"]["required"] is False
     assert manifests["planning.core"]["backend_path"] == "modules/planning.core/backend"
     assert manifests["planning.core"]["dependencies"] == ["calendar.core"]
@@ -158,7 +166,7 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["checks"]["owned_table_claims_valid"] is True
     assert extension_contract["checks"]["owned_tables_resolve_to_models"] is True
     assert contracts["model_registry"]["ok"] is True
-    assert contracts["model_registry"]["model_count"] == 51
+    assert contracts["model_registry"]["model_count"] == 53
     assert extension_contract["violations"] == []
 
 
@@ -168,13 +176,10 @@ def test_kernel_does_not_statically_import_module_backends() -> None:
         for child in sorted(backend_dir.iterdir()):
             if child.is_dir() and (child / "__init__.py").is_file():
                 package_names.add(child.name)
-    assert "uok_contacts_core" in package_names
-    assert "uok_apps_manager" in package_names
-    assert "uok_calendar_core" in package_names
-    assert "uok_communications_core" in package_names
-    assert "uok_planning_core" in package_names
-    assert "uok_product_master" in package_names
-    assert "uok_reports_core" in package_names
+    expected_packages = {
+        f"uok_{name.replace('.', '_')}" for name in BASELINE_MODULES if name != "agents.core"
+    }
+    assert expected_packages.issubset(package_names)
 
     import_pattern = re.compile(rf"^\s*(?:from|import)\s+(?:{'|'.join(sorted(package_names))})\b", re.MULTILINE)
     offenders = sorted(
@@ -190,13 +195,7 @@ def test_module_routers_mount_from_manifest_declarations() -> None:
     routers = load_module_routers()
 
     assert [module_name for module_name, _ in routers] == [
-        "apps.manager",
-        "calendar.core",
-        "communications.core",
-        "contacts.core",
-        "planning.core",
-        "product.master",
-        "reports.core",
+        name for name in BASELINE_MODULES if manifests[name].get("api_router")
     ]
     for module_name, router in routers:
         prefixes = manifests[module_name]["api_prefixes"]
@@ -213,10 +212,9 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "CreateContact" in handlers
     assert "CreateCalendarEvent" in handlers
     assert "CreateCommunicationThread" in handlers
-    assert "CreateProductDefinition" in handlers
-    assert "UpdateProductDefinition" in handlers
-    assert "ArchiveProductDefinition" in handlers
-    assert "RestoreProductDefinition" in handlers
+    for entity in ("Product", "Location"):
+        for action in ("Create", "Update", "Archive", "Restore"):
+            assert f"{action}{entity}Definition" in handlers
     assert "ImportContactsCsv" in handlers
     assert "GenerateReport" in handlers
     assert "DeleteReportArtifact" in handlers
@@ -230,10 +228,9 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert permissions["RunPlanningRiskAnalysis"] == "planning.analyze"
     assert permissions["RunPlanningOptimization"] == "planning.analyze"
     assert permissions["DecidePlanningRecommendation"] == "planning.analysis.approve"
-    assert permissions["CreateProductDefinition"] == "products.manage"
-    assert permissions["UpdateProductDefinition"] == "products.manage"
-    assert permissions["ArchiveProductDefinition"] == "products.manage"
-    assert permissions["RestoreProductDefinition"] == "products.manage"
+    for entity, permission in (("Product", "products.manage"), ("Location", "locations.manage")):
+        for action in ("Create", "Update", "Archive", "Restore"):
+            assert permissions[f"{action}{entity}Definition"] == permission
     assert permissions["RestoreContact"] == "contacts.restore"
     assert permissions["GenerateReport"] == "reports.render"
     assert permissions["DeleteReportArtifact"] == "reports.delete"
@@ -251,6 +248,8 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "reports.manage" in grants["ops_manager"]
     assert "products.manage" in grants["ops_manager"]
     assert "products.read" in grants["viewer"]
+    assert "locations.manage" in grants["ops_manager"]
+    assert "locations.read" in grants["viewer"]
     assert "contacts.read" in grants["viewer"]
     assert "calendar.read" in grants["viewer"]
     assert "reports.read" in grants["viewer"]
@@ -268,6 +267,8 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
         "planning_tasks",
         "planning_task_dependencies",
         "planning_resource_calendars",
+        "location_definitions",
+        "location_name_history",
         "product_definitions",
         "product_name_history",
         "report_artifacts",
@@ -284,10 +285,12 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
     assert "/api/planning/projects" in app_paths
     assert "/api/planning/projects/{project_id}/resources/{resource_id}/calendar" in app_paths
     assert "/api/products/definitions" in app_paths
+    assert "/api/locations/definitions" in app_paths
     assert (
         "/api/products/definitions/{product_definition_id}/name-history"
         in app_paths
     )
+    assert "/api/locations/definitions/{location_definition_id}/name-history" in app_paths
     assert "/api/reports/formats" in app_paths
 
     main_source = (repo_root() / "src" / "uok" / "host" / "application.py").read_text(encoding="utf-8")

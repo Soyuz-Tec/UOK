@@ -73,7 +73,7 @@ def test_feature_backends_have_no_transitive_host_dependency() -> None:
 
 
 def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
-    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 29
+    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 31
     allowed = python_imports(
         "from uok.host.database import get_db",
         "feature.api",
@@ -95,21 +95,22 @@ def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
         allowed,
     )
 
-    product_path = (
-        "modules/product.master/backend/"
-        "uok_product_master/_internal/delivery/api.py"
+    read_only_adapter_paths = (
+        "modules/product.master/backend/uok_product_master/_internal/delivery/api.py",
+        "modules/locations.core/backend/uok_locations_core/_internal/delivery/api.py",
     )
-    product_actor = python_imports(
+    current_actor = python_imports(
         "from uok.host.security import current_actor",
         "feature.api",
     )[0]
-    product_command = python_imports(
+    execute_command = python_imports(
         "from uok.host.commands import execute_command",
         "feature.api",
     )[0]
-    assert allowlisted_host_import(product_path, allowed)
-    assert allowlisted_host_import(product_path, product_actor)
-    assert not allowlisted_host_import(product_path, product_command)
+    for adapter_path in read_only_adapter_paths:
+        assert allowlisted_host_import(adapter_path, allowed)
+        assert allowlisted_host_import(adapter_path, current_actor)
+        assert not allowlisted_host_import(adapter_path, execute_command)
     assert not allowlisted_host_import(
         "modules/product.master/backend/uok_product_master/_internal/delivery/service.py",
         allowed,

@@ -71,6 +71,7 @@ describe("module surface registry", () => {
       ["apps.manager", "apps"],
       ["contacts.core", "contacts"],
       ["product.master", "products"],
+      ["locations.core", "locations"],
       ["calendar.core", "calendar"],
       ["communications.core", "communications"],
       ["planning.core", "planning"],

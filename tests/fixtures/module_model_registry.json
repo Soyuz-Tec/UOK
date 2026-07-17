@@ -38,6 +38,10 @@
     "PartyNote": "party_notes",
     "PartyRelationship": "party_relationships"
   },
+  "locations.core": {
+    "LocationDefinition": "location_definitions",
+    "LocationNameHistory": "location_name_history"
+  },
   "planning.core": {
     "PlanningAnalysisRecommendation": "planning_analysis_recommendations",
     "PlanningAnalysisRun": "planning_analysis_runs",
