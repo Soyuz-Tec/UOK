@@ -1,7 +1,16 @@
 from __future__ import annotations
 
+import json
+import re
+
 import pytest
 
+from tests.shipment_document_instance_boundary_support import (
+    SHIPMENT_WEB,
+    backend_file_pipeline_violations,
+    document_storage_schema_violations,
+    frontend_file_pipeline_violations,
+)
 from tests.shipment_foreign_data_boundary_support import (
     PLANNING_BACKEND,
     ROOT,
@@ -11,6 +20,7 @@ from tests.shipment_foreign_data_boundary_support import (
     planning_shipment_import_violations,
     python_violations,
 )
+from uok.host.model_registry import ensure_module_models_registered
 from uok.module_manifest_loader import load_module_manifests
 
 
@@ -48,15 +58,21 @@ def test_shipment_manifest_declares_only_approved_feature_dependencies() -> None
     assert set(manifest["permissions"]) == {"shipments.read", "shipments.manage"}
     assert set(manifest["commands"]) == {
         "CreateShipment",
+        "CreateShipmentDocumentInstance",
         "AddShipmentDocumentRequirement",
         "RemoveShipmentDocumentRequirement",
+        "SetShipmentDocumentInstanceStatus",
         "SetShipmentDocumentRequirementStatus",
         "TransitionShipmentStatus",
+        "UpdateShipmentDocumentInstance",
         "UpdateShipmentDocumentRequirement",
         "UpdateShipment",
     }
     assert set(manifest["events"]) == {
         "ShipmentCreated",
+        "ShipmentDocumentInstanceCreated",
+        "ShipmentDocumentInstanceStatusChanged",
+        "ShipmentDocumentInstanceUpdated",
         "ShipmentDocumentRequirementAdded",
         "ShipmentDocumentRequirementRemoved",
         "ShipmentDocumentRequirementStatusChanged",
@@ -66,6 +82,8 @@ def test_shipment_manifest_declares_only_approved_feature_dependencies() -> None
     }
     assert {
         "Shipment",
+        "ShipmentDocumentInstance",
+        "ShipmentDocumentInstanceHistory",
         "ShipmentDocumentRequirement",
         "ShipmentDocumentRequirementHistory",
         "ShipmentStatusHistory",
@@ -87,6 +105,119 @@ def test_planning_consumes_shipment_only_through_the_public_reference_contract()
     ]
     assert violations == []
     assert any("uok_shipments_core.public_api" in source for source in sources)
+
+
+def test_shipment_document_instance_models_have_no_binary_or_foreign_storage() -> None:
+    models = ensure_module_models_registered()
+    instance = models["ShipmentDocumentInstance"].__table__
+    history = models["ShipmentDocumentInstanceHistory"].__table__
+
+    for table in (instance, history):
+        assert document_storage_schema_violations(
+            "\n".join(
+                f"{column.name} {type(column.type).__name__} {column.type}"
+                for column in table.columns
+            )
+        ) == []
+        assert all(
+            not foreign_key.target_fullname.startswith(
+                "compliance_document_types."
+            )
+            for column in table.columns
+            for foreign_key in column.foreign_keys
+        )
+
+    assert list(instance.c.compliance_document_type_id.foreign_keys) == []
+    assert {
+        foreign_key.target_fullname
+        for foreign_key in instance.c.requirement_id.foreign_keys
+    } == {"shipment_document_requirements.id"}
+    assert list(history.c.compliance_document_type_id.foreign_keys) == []
+    assert list(history.c.requirement_id.foreign_keys) == []
+
+
+def test_shipment_document_instance_migration_has_no_binary_or_storage_contract() -> None:
+    instance_migrations = sorted(SHIPMENT_MIGRATIONS.glob("*document_instance*.sql"))
+    assert instance_migrations
+    violations = [
+        f"{path.relative_to(ROOT).as_posix()}: {reason}"
+        for path in instance_migrations
+        for reason in document_storage_schema_violations(
+            path.read_text(encoding="utf-8")
+        )
+    ]
+    assert violations == []
+
+
+def test_shipment_document_instance_backend_has_no_file_pipeline() -> None:
+    instance_sources = sorted(SHIPMENT_BACKEND.rglob("*document_instance*.py"))
+    assert instance_sources
+    violations = [
+        f"{path.relative_to(ROOT).as_posix()}: {reason}"
+        for path in instance_sources
+        for reason in backend_file_pipeline_violations(
+            path.read_text(encoding="utf-8")
+        )
+    ]
+    assert violations == []
+
+
+def test_shipment_document_instance_openapi_has_no_binary_or_multipart_contract() -> None:
+    from uok.host.application import app
+
+    openapi = app.openapi()
+    instance_paths = {
+        path: definition
+        for path, definition in openapi["paths"].items()
+        if path.startswith("/api/shipments/")
+        and "/document-instances" in path
+    }
+    instance_schemas = {
+        name: definition
+        for name, definition in openapi["components"]["schemas"].items()
+        if "documentinstance" in name.casefold()
+    }
+
+    assert instance_paths
+    assert instance_schemas
+    contract = json.dumps(
+        {"paths": instance_paths, "schemas": instance_schemas},
+        sort_keys=True,
+    ).casefold()
+    assert "multipart/form-data" not in contract
+    assert '"format": "binary"' not in contract
+    assert document_storage_schema_violations(contract) == []
+
+
+def test_shipment_document_instance_frontend_has_no_file_pipeline_or_foreign_api() -> None:
+    assert SHIPMENT_WEB.is_dir()
+    instance_sources = [
+        path
+        for path in sorted(SHIPMENT_WEB.rglob("*"))
+        if path.is_file()
+        and path.suffix in {".ts", ".tsx"}
+        and "instance" in path.name.casefold()
+    ]
+    assert instance_sources
+    violations = [
+        f"{path.relative_to(ROOT).as_posix()}: {reason}"
+        for path in instance_sources
+        for reason in frontend_file_pipeline_violations(
+            path.read_text(encoding="utf-8")
+        )
+    ]
+    assert violations == []
+    combined = "\n".join(
+        path.read_text(encoding="utf-8") for path in instance_sources
+    )
+    assert "/api/compliance" not in combined
+    assert "uok_compliance_core" not in combined
+    api_paths = re.findall(r"""["'`](/api/[^"'`]+)""", combined)
+    assert api_paths
+    assert all(
+        path.startswith("/api/shipments/") or path == "/api/commands"
+        for path in api_paths
+    )
 
 
 @pytest.mark.parametrize(

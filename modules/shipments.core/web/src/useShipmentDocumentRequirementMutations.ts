@@ -10,6 +10,10 @@ import type {
   ShipmentDocumentRequirementDraft,
   ShipmentDocumentRequirementEditorMode,
 } from "./shipmentDocumentRequirementTypes";
+import {
+  requirementMutationError,
+  requirementMutationSuccess,
+} from "./shipmentDocumentRequirementMutationSupport";
 
 export function useShipmentDocumentRequirementMutations({
   token,
@@ -19,6 +23,7 @@ export function useShipmentDocumentRequirementMutations({
   invalidate,
   reload,
   onStatus,
+  onChanged,
 }: {
   token: string;
   shipmentId: string;
@@ -27,6 +32,7 @@ export function useShipmentDocumentRequirementMutations({
   invalidate: () => void;
   reload: () => Promise<boolean>;
   onStatus: (message: string) => void;
+  onChanged?: () => void;
 }) {
   const sessionKey = `${token}:${shipmentId}:${canManage}`;
   const mountedRef = useRef(true);
@@ -34,12 +40,14 @@ export function useShipmentDocumentRequirementMutations({
   const mutationRef = useRef(0);
   const activeOperation = useRef("");
   const unauthorizedRef = useRef(onUnauthorized);
+  const changedRef = useRef(onChanged);
   const [stateSession, setStateSession] = useState(sessionKey);
   const [mode, setMode] = useState<ShipmentDocumentRequirementEditorMode | null>(null);
   const [target, setTarget] = useState<ShipmentDocumentRequirement | null>(null);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   unauthorizedRef.current = onUnauthorized;
+  changedRef.current = onChanged;
   if (sessionRef.current !== sessionKey) {
     sessionRef.current = sessionKey;
     mutationRef.current += 1;
@@ -114,10 +122,11 @@ export function useShipmentDocumentRequirementMutations({
       }
       setMode(null);
       setTarget(null);
-      onStatus(successMessage(mode));
+      changedRef.current?.();
+      onStatus(requirementMutationSuccess(mode));
     } catch (cause) {
       if (!isCurrent(mountedRef, sessionRef, mutationRef, key, request)) return;
-      const message = errorMessage(cause);
+      const message = requirementMutationError(cause);
       setError(message);
       onStatus(message);
     } finally {
@@ -181,19 +190,4 @@ function isCurrent(
   return mountedRef.current
     && sessionRef.current === key
     && requestRef.current === request;
-}
-
-function successMessage(mode: ShipmentDocumentRequirementEditorMode) {
-  return ({
-    add: "Added shipment document requirement.",
-    edit: "Updated shipment document requirement.",
-    status: "Updated shipment document requirement status.",
-    remove: "Removed shipment document requirement.",
-  })[mode];
-}
-
-function errorMessage(error: unknown) {
-  return error instanceof Error
-    ? error.message
-    : "Shipment document requirement command failed.";
 }

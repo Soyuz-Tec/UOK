@@ -24,7 +24,17 @@ function New-UokShipmentRequirementDocumentTypes {
         }
         idempotency_key = "uok-shipment-document-type-origin-$Stamp"
     }
-    foreach ($created in @($billOfLading, $certificateOfOrigin)) {
+    $commercialInvoice = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
+        command_type = "CreateComplianceDocumentType"
+        payload = @{
+            code = "COMMERCIAL-INVOICE-$Stamp"
+            canonical_name = "Candidate Commercial Invoice $Stamp"
+            description = "Shipment-owned document-instance metadata verification type."
+            category = "Commercial"
+        }
+        idempotency_key = "uok-shipment-document-type-invoice-$Stamp"
+    }
+    foreach ($created in @($billOfLading, $certificateOfOrigin, $commercialInvoice)) {
         if (
             -not $created.result.id -or
             $created.result.status -ne "active" -or
@@ -37,5 +47,6 @@ function New-UokShipmentRequirementDocumentTypes {
     return [pscustomobject]@{
         bill_of_lading_id = $billOfLading.result.id
         certificate_of_origin_id = $certificateOfOrigin.result.id
+        commercial_invoice_id = $commercialInvoice.result.id
     }
 }

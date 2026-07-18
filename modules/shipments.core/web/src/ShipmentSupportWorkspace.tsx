@@ -6,7 +6,7 @@ import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkflowSplitView, WorkspaceCommandBar } from "@uok/shared/layout";
 import { WorkspaceEditorPopup } from "@uok/shared/overlays";
 import { ShipmentDetail } from "./ShipmentDetail";
-import { ShipmentDocumentRequirementsPanel } from "./ShipmentDocumentRequirementsPanel";
+import { ShipmentDocumentEvidencePanels } from "./ShipmentDocumentEvidencePanels";
 import { ShipmentEditor } from "./ShipmentEditor";
 import { ShipmentModuleState } from "./ShipmentModuleState";
 import { ShipmentTable } from "./ShipmentTable";
@@ -184,8 +184,8 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
             historyLoading={historyLoading}
             busyAction={busyAction}
             canManage={canManage}
-            documentRequirements={selected ? (
-              <ShipmentDocumentRequirementsPanel
+            documentEvidence={selected ? (
+              <ShipmentDocumentEvidencePanels
                 key={`${host.token}:${host.currentUserRole}:${selected.id}`}
                 token={host.token}
                 shipmentId={selected.id}

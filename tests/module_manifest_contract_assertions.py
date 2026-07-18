@@ -197,14 +197,20 @@ def assert_file_backed_module_manifests(baseline_modules: Sequence[str]) -> None
     assert set(shipments["commands"]) == {
         "AddShipmentDocumentRequirement",
         "CreateShipment",
+        "CreateShipmentDocumentInstance",
         "RemoveShipmentDocumentRequirement",
+        "SetShipmentDocumentInstanceStatus",
         "SetShipmentDocumentRequirementStatus",
         "TransitionShipmentStatus",
+        "UpdateShipmentDocumentInstance",
         "UpdateShipmentDocumentRequirement",
         "UpdateShipment",
     }
     assert set(shipments["events"]) == {
         "ShipmentCreated",
+        "ShipmentDocumentInstanceCreated",
+        "ShipmentDocumentInstanceStatusChanged",
+        "ShipmentDocumentInstanceUpdated",
         "ShipmentDocumentRequirementAdded",
         "ShipmentDocumentRequirementRemoved",
         "ShipmentDocumentRequirementStatusChanged",
@@ -214,6 +220,8 @@ def assert_file_backed_module_manifests(baseline_modules: Sequence[str]) -> None
     }
     assert {
         "Shipment",
+        "ShipmentDocumentInstance",
+        "ShipmentDocumentInstanceHistory",
         "ShipmentDocumentRequirement",
         "ShipmentDocumentRequirementHistory",
         "ShipmentStatusHistory",

@@ -68,9 +68,11 @@ deep imports, and external frontend imports other than `moduleSurface`.
 Shipment keeps its exact six-symbol facade while consuming only
 `ComplianceDocumentTypeReferenceDTO` and
 `resolve_compliance_document_type_references` from the Compliance facade for
-Shipment-owned requirement metadata. The Shipment foreign-data boundary test
+Shipment-owned requirement and document-instance metadata. The Shipment
+foreign-data boundary test
 rejects Compliance ORM, repository, schema, table, raw-SQL, reflection, join,
-and broad-facade bypasses.
+and broad-facade bypasses. It also rejects document-instance binary/storage
+columns, multipart or browser file pipelines, and foreign frontend APIs.
 
 ## Source-boundary scan
 
@@ -90,8 +92,8 @@ The source-boundary scan must remain a strict candidate gate before any product 
 
 The ORM ownership and compatibility bridges are closed: capability mappings are
 physically owned by Calendar, Communications, Compliance, Contacts, Location Master, Planning, Product Master, Reports, Route/Corridor Master, and Shipment Support
-backends. The current graph has 53 feature mappings plus nine product-neutral
-mappings in `uok.kernel_models` (62 total).
+backends. The current graph has 55 feature mappings plus nine product-neutral
+mappings in `uok.kernel_models` (64 total).
 `uok.host.model_registry` alone resolves manifest model providers, and the
 former `uok.models`, `uok.calendar_models`, and `uok.communication_models`
 imports are retired.

@@ -163,6 +163,19 @@ def get_document_requirements(
     return response.json()
 
 
+def get_document_instances(
+    client: TestClient,
+    headers: dict[str, str],
+    shipment_id: str,
+) -> list[dict[str, object]]:
+    response = client.get(
+        f"/api/shipments/records/{shipment_id}/document-instances",
+        headers=headers,
+    )
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
 def other_shipment_tenant_headers(suffix: str) -> dict[str, str]:
     with SessionLocal() as db:
         organization = Organization(name=f"Shipment requirement tenant {suffix}")
@@ -214,6 +227,7 @@ __all__ = [
     "create_party",
     "create_requirement_shipment",
     "create_route",
+    "get_document_instances",
     "get_document_requirements",
     "install_shipment_stack",
     "other_shipment_tenant_headers",

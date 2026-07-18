@@ -5666,6 +5666,344 @@
         "title": "RouteStopResponse",
         "type": "object"
       },
+      "ShipmentDocumentInstanceHistoryResponse": {
+        "properties": {
+          "action": {
+            "enum": [
+              "created",
+              "updated",
+              "status_changed"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "changed_at": {
+            "format": "date-time",
+            "title": "Changed At",
+            "type": "string"
+          },
+          "changed_by_user_id": {
+            "title": "Changed By User Id",
+            "type": "string"
+          },
+          "compliance_document_type_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compliance Document Type Id"
+          },
+          "document_number": {
+            "title": "Document Number",
+            "type": "string"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/ComplianceDocumentTypeReferenceResponse"
+          },
+          "expires_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires On"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "issued_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued On"
+          },
+          "issuing_party_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issuing Party Name"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "requirement_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement Id"
+          },
+          "shipment_id": {
+            "title": "Shipment Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "recorded",
+              "verified",
+              "rejected",
+              "superseded"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "shipment_id",
+          "instance_id",
+          "compliance_document_type_id",
+          "requirement_id",
+          "document_number",
+          "issuing_party_name",
+          "issued_on",
+          "expires_on",
+          "status",
+          "notes",
+          "action",
+          "version",
+          "reason",
+          "changed_by_user_id",
+          "changed_at",
+          "document_type"
+        ],
+        "title": "ShipmentDocumentInstanceHistoryResponse",
+        "type": "object"
+      },
+      "ShipmentDocumentInstanceRequirementResponse": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "requirement_level": {
+            "enum": [
+              "required",
+              "optional"
+            ],
+            "title": "Requirement Level",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "missing",
+              "received",
+              "waived",
+              "not_applicable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "requirement_level",
+          "status",
+          "version"
+        ],
+        "title": "ShipmentDocumentInstanceRequirementResponse",
+        "type": "object"
+      },
+      "ShipmentDocumentInstanceResponse": {
+        "properties": {
+          "compliance_document_type_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compliance Document Type Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by_user_id": {
+            "title": "Created By User Id",
+            "type": "string"
+          },
+          "document_number": {
+            "title": "Document Number",
+            "type": "string"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/ComplianceDocumentTypeReferenceResponse"
+          },
+          "expires_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires On"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "issued_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued On"
+          },
+          "issuing_party_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issuing Party Name"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "requirement": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShipmentDocumentInstanceRequirementResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requirement_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement Id"
+          },
+          "shipment_id": {
+            "title": "Shipment Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "draft",
+              "recorded",
+              "verified",
+              "rejected",
+              "superseded"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "updated_by_user_id": {
+            "title": "Updated By User Id",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "shipment_id",
+          "compliance_document_type_id",
+          "requirement_id",
+          "document_number",
+          "issuing_party_name",
+          "issued_on",
+          "expires_on",
+          "status",
+          "notes",
+          "version",
+          "created_by_user_id",
+          "updated_by_user_id",
+          "created_at",
+          "updated_at",
+          "document_type",
+          "requirement"
+        ],
+        "title": "ShipmentDocumentInstanceResponse",
+        "type": "object"
+      },
       "ShipmentDocumentRequirementHistoryResponse": {
         "properties": {
           "action": {
@@ -19651,6 +19989,206 @@
           }
         },
         "summary": "Record",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/shipments/records/{shipment_id}/document-instances": {
+      "get": {
+        "operationId": "document_instances_api_shipments_records__shipment_id__document_instances_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ShipmentDocumentInstanceResponse"
+                  },
+                  "title": "Response Document Instances Api Shipments Records  Shipment Id  Document Instances Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Instances",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/shipments/records/{shipment_id}/document-instances/{instance_id}": {
+      "get": {
+        "operationId": "document_instance_api_shipments_records__shipment_id__document_instances__instance_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "title": "Instance Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDocumentInstanceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Instance",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/shipments/records/{shipment_id}/document-instances/{instance_id}/history": {
+      "get": {
+        "operationId": "document_instance_history_api_shipments_records__shipment_id__document_instances__instance_id__history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "instance_id",
+            "required": true,
+            "schema": {
+              "title": "Instance Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ShipmentDocumentInstanceHistoryResponse"
+                  },
+                  "title": "Response Document Instance History Api Shipments Records  Shipment Id  Document Instances  Instance Id  History Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Instance History",
         "tags": [
           "shipments"
         ]

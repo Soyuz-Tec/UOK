@@ -11,6 +11,7 @@ from uok.models_base import utcnow
 
 from uok_shipments_core._internal.persistence.models import (
     Shipment,
+    ShipmentDocumentInstance,
     ShipmentDocumentRequirement,
 )
 
@@ -176,6 +177,14 @@ def remove_document_requirement(
         request.requirement_id,
     )
     assert_requirement_expected_version(row, request.expected_version)
+    if db.scalar(select(ShipmentDocumentInstance.id).where(
+        ShipmentDocumentInstance.organization_id == actor.organization_id,
+        ShipmentDocumentInstance.shipment_id == request.shipment_id,
+        ShipmentDocumentInstance.requirement_id == request.requirement_id,
+    )) is not None:
+        raise ValueError(
+            "shipment document requirement is linked to retained document metadata"
+        )
     touch_requirement(row, actor)
     append_requirement_history(db, actor, row, "removed", request.reason)
     db.flush()

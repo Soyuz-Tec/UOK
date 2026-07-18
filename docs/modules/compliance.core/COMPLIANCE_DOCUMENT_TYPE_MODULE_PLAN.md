@@ -12,18 +12,20 @@
 
 `compliance.core` is the optional Compliance Document Type master-data owner.
 It governs tenant-specific document-type vocabulary and lifecycle without
-owning document instances, binary files, Shipment requirements, customs rules,
-or legal decisions.
+owning document-instance rows, binary files, Shipment requirements, customs
+rules, or legal decisions.
 
 Detailed design and delivery evidence:
 
 - `docs/delivery/compliance-document-type-slice-design-2026-07-17.md`
 - `docs/delivery/compliance-document-type-slice-delivery-2026-07-17.md`
 
-The approved downstream Shipment requirement-metadata design is:
+The approved downstream Shipment evidence-metadata designs are:
 
 - `docs/delivery/shipment-document-requirements-slice-design-2026-07-17.md`
 - `docs/delivery/shipment-document-requirements-slice-delivery-2026-07-17.md`
+- `docs/delivery/shipment-document-instance-metadata-slice-design-2026-07-17.md`
+- `docs/delivery/shipment-document-instance-metadata-slice-delivery-2026-07-17.md`
 
 ## First Slice
 
@@ -74,7 +76,7 @@ remain private.
 - `shipments.core` may consume only
   `ComplianceDocumentTypeReferenceDTO` and
   `resolve_compliance_document_type_references`; Compliance never imports or
-  writes Shipment behavior, mappings, or tables.
+  writes Shipment requirement/instance behavior, mappings, or tables.
 - All reads and writes enforce actor organization, permission, module
   operational state, and optimistic version.
 - The module declares no feature dependency and stores no Party, Shipment,
@@ -106,7 +108,8 @@ complete statement of regulatory requirements.
 
 ## Non-Goals
 
-Document instances, file upload/storage, binary versioning, e-signature, OCR,
+Compliance-owned document instances, file upload/storage, binary versioning,
+e-signature, OCR,
 Shipment requirement enforcement, jurisdiction rules, multiplicity rules,
 expiry, customs integrations, Intelligence scoring, Party/Shipment reads,
 hard-coded legal truth, automatic tenant seeds, hard delete, module splits,
@@ -134,8 +137,8 @@ final PR head.
 
 ## Next Slice Boundary
 
-The approved downstream boundary is a tenant-scoped
-Shipment-to-Document-Type requirement link owned entirely by
+The approved downstream boundaries are tenant-scoped Shipment-to-Document-Type
+requirements and non-binary document-instance metadata, both owned entirely by
 `shipments.core`. Shipment consumes only the immutable Compliance resolver;
 Compliance continues to own type vocabulary and gains no Shipment dependency,
-file vault, document instance, or Shipment lifecycle rule.
+file vault, document-instance row, or Shipment lifecycle rule.

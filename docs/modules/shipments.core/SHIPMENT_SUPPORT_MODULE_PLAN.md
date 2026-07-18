@@ -13,10 +13,11 @@
 `shipments.core` is the optional operational Shipment owner. It governs a
 tenant-scoped Shipment header and movement lifecycle over stable Party,
 Location, and Route IDs, plus Shipment-specific Document Type applicability
-and satisfaction metadata. It does not own master identity, route topology,
-Compliance Document Type vocabulary, document instances/files, Planning
-schedules, Product/material definitions, cargo trading facts, booking,
-tracking, inventory, or intelligence.
+and satisfaction metadata and non-binary compliance document-instance
+metadata. It does not own master identity, route topology, Compliance Document
+Type vocabulary, document files/binaries, Planning schedules, Product/material
+definitions, cargo trading facts, booking, tracking, inventory, or
+intelligence.
 
 Detailed design and delivery evidence:
 
@@ -24,6 +25,8 @@ Detailed design and delivery evidence:
 - `docs/delivery/shipment-support-slice-delivery-2026-07-17.md`
 - `docs/delivery/shipment-document-requirements-slice-design-2026-07-17.md`
 - `docs/delivery/shipment-document-requirements-slice-delivery-2026-07-17.md`
+- `docs/delivery/shipment-document-instance-metadata-slice-design-2026-07-17.md`
+- `docs/delivery/shipment-document-instance-metadata-slice-delivery-2026-07-17.md`
 
 ## First Slice
 
@@ -61,6 +64,29 @@ through `ComplianceDocumentTypeReferenceDTO` and
 `resolve_compliance_document_type_references`. Shipment stores no copied type
 metadata and never reads a Compliance mapping, repository, table, or schema.
 
+## Document Instance Metadata Slice
+
+The document-instance slice also remains inside the Shipment capability and
+owns:
+
+- tenant-scoped document-instance metadata linked to one Shipment and one
+  stable Compliance Document Type ID;
+- an optional owner-local Requirement link, validated for the same tenant,
+  Shipment, and Document Type;
+- bounded document number, issuer text, issue/expiry dates, notes, optimistic
+  version, and `draft`, `recorded`, `verified`, `rejected`, or `superseded`
+  status;
+- append-only create, update, and status-change history;
+- an explicit verified-instance option that may change a still-missing linked
+  requirement to `received` in the same Shipment-owned transaction; and
+- list, detail, history, create, update, and status contracts plus Shipment
+  detail UI without a file input or upload path.
+
+The current and history mappings contain no blob/binary column, file path,
+file name, URL, bucket, object-store key, or content bytes. The HTTP contract
+contains no multipart or binary schema, and the UI contains no `FormData`,
+`FileReader`, object-URL preview, or file control.
+
 ## Ownership
 
 | Surface | Owner |
@@ -95,9 +121,16 @@ services, owner gateways, request schemas, and HTTP adapters remain private.
 - Closed and cancelled Shipments remain valid historical public references.
 - Each active requirement link stores only one stable Compliance Document Type
   ID and has no Compliance foreign key or cross-owner join.
+- Each document instance stores only a stable Compliance Document Type ID and
+  has no Compliance foreign key or cross-owner join. Its optional Requirement
+  foreign key is owner-local to `shipment_document_requirements`.
 - Adding a link requires an active same-tenant type resolved through the exact
   Compliance immutable public facade. Existing links remain auditable if that
   owner later deactivates or archives the type.
+- Creating an instance also requires an active same-tenant type through the
+  exact Compliance immutable facade. Requirement/type association is immutable
+  after creation; a referenced Requirement cannot be removed, and mutable
+  instance metadata is limited to nonterminal states.
 - Requirement status is informational only. Missing requirements do not block
   any otherwise-valid Shipment movement transition.
 - All reads and writes enforce actor organization, permission, module
@@ -116,19 +149,28 @@ services, owner gateways, request schemas, and HTTP adapters remain private.
   `/api/shipments/records/{shipment_id}/document-requirements`
 - Requirement history:
   `/api/shipments/records/{shipment_id}/document-requirements/{requirement_id}/history`
+- Document instance list:
+  `/api/shipments/records/{shipment_id}/document-instances`
+- Document instance detail:
+  `/api/shipments/records/{shipment_id}/document-instances/{instance_id}`
+- Document instance history:
+  `/api/shipments/records/{shipment_id}/document-instances/{instance_id}/history`
 - Commands: `CreateShipment`, `UpdateShipment`,
   `TransitionShipmentStatus`, `AddShipmentDocumentRequirement`,
   `UpdateShipmentDocumentRequirement`,
   `SetShipmentDocumentRequirementStatus`, and
-  `RemoveShipmentDocumentRequirement`
+  `RemoveShipmentDocumentRequirement`,
+  `CreateShipmentDocumentInstance`, `UpdateShipmentDocumentInstance`, and
+  `SetShipmentDocumentInstanceStatus`
 - Permissions: `shipments.read`, `shipments.manage`
 - Workbench section: `shipments`
 
 ## Non-Goals
 
 Carrier/booking/rate/tracking integrations, Compliance type ownership,
-document instances/files/uploads/blobs, requirement policy or workflow
-blocking, cargo or Product lines, quantities, title/pricing/payment,
+document files/uploads/blobs/object-store keys/previews, commercial document
+content, requirement policy or workflow blocking, cargo or Product lines,
+quantities, title/pricing/payment,
 inventory/WMS, customs, persisted legs, route optimization, Planning redesign,
 intelligence scoring, module splits, Kernel growth, and shell-contract changes.
 
@@ -154,9 +196,9 @@ hosted CI at the final PR head.
 
 ## Next Slice Boundary
 
-Shipment support should remain deliberately thin. After the approved
-requirement-metadata slice is qualified, evidence may justify either a thin
-Intelligence readiness signal consuming a real future Shipment immutable
-summary contract, or document-instance metadata without binary storage. Any
-later cargo/Product line belongs to `cargo.transactions` after Product Master
-publishes a real immutable reference contract.
+Shipment support should remain deliberately thin. After the document-instance
+metadata slice is qualified, evidence may justify a thin Intelligence
+readiness signal consuming a real future Shipment immutable summary contract,
+or bounded operational polish. Any later cargo/Product line belongs to
+`cargo.transactions` after Product Master publishes a real immutable reference
+contract.

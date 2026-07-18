@@ -37,7 +37,7 @@ EXPECTED_PROVIDER_ORDER = (
     "routes.core",
     "shipments.core",
 )
-EXPECTED_MODEL_COUNT = 62
+EXPECTED_MODEL_COUNT = 64
 
 
 def _expected_registry() -> dict[str, dict[str, str]]:

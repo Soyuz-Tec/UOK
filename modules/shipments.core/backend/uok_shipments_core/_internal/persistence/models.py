@@ -8,6 +8,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 from uok.kernel.persistence import Base
 from uok.models_base import new_id, utcnow
 
+from .document_instance_models import (
+    ShipmentDocumentInstance,
+    ShipmentDocumentInstanceHistory,
+)
+
 
 class Shipment(Base):
     __tablename__ = "shipments"
@@ -178,6 +183,8 @@ class ShipmentDocumentRequirementHistory(Base):
 def owned_models() -> dict[str, type]:
     return {
         "Shipment": Shipment,
+        "ShipmentDocumentInstance": ShipmentDocumentInstance,
+        "ShipmentDocumentInstanceHistory": ShipmentDocumentInstanceHistory,
         "ShipmentDocumentRequirement": ShipmentDocumentRequirement,
         "ShipmentDocumentRequirementHistory": ShipmentDocumentRequirementHistory,
         "ShipmentStatusHistory": ShipmentStatusHistory,
@@ -186,6 +193,8 @@ def owned_models() -> dict[str, type]:
 
 __all__ = [
     "Shipment",
+    "ShipmentDocumentInstance",
+    "ShipmentDocumentInstanceHistory",
     "ShipmentDocumentRequirement",
     "ShipmentDocumentRequirementHistory",
     "ShipmentStatusHistory",

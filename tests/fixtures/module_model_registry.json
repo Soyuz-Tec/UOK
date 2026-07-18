@@ -79,6 +79,8 @@
   },
   "shipments.core": {
     "Shipment": "shipments",
+    "ShipmentDocumentInstance": "shipment_document_instances",
+    "ShipmentDocumentInstanceHistory": "shipment_document_instance_history",
     "ShipmentDocumentRequirement": "shipment_document_requirements",
     "ShipmentDocumentRequirementHistory": "shipment_document_requirement_history",
     "ShipmentStatusHistory": "shipment_status_history"

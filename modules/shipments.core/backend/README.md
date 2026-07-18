@@ -8,4 +8,6 @@ Shipment requirement behavior consumes only
 `ComplianceDocumentTypeReferenceDTO` and
 `resolve_compliance_document_type_references` from
 `uok_compliance_core.public_api`. Shipment owns the link/history mappings and
-stores no copied Compliance type metadata.
+stores no copied Compliance type metadata. Document-instance behavior reuses
+that exact immutable DTO resolver, stores only bounded metadata, and exposes no
+ORM object or file/binary contract.

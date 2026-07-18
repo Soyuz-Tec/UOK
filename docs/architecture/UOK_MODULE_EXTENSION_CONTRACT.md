@@ -144,13 +144,15 @@ New extension points require an architecture update and a failing validation tes
 - `agents.core` is an inert `planned` capability scaffold: it is not installable, updatable, maintainable, permission-bearing, or runtime-proven.
 - `calendar.core`, `communications.core`, `compliance.core`, `contacts.core`, `locations.core`, `planning.core`, `product.master`, `reports.core`, and `routes.core` are optional `runtime_proven` capability modules, and `shipments.core` is an optional `runtime_proven` business module. All have manifest-declared backend hooks and module-owned verifiers.
 - Their capability ORM mappings live in the owning backend packages and
-  register as 53 feature mappings beside nine product-neutral kernel mappings
-  (62 total) on one SQLAlchemy metadata graph. The former global ORM
+  register as 55 feature mappings beside nine product-neutral kernel mappings
+  (64 total) on one SQLAlchemy metadata graph. The former global ORM
   compatibility imports are retired.
-- Current manifests declare 105 commands, 115 events, 11 candidate verifiers,
+- Current manifests declare 108 commands, 118 events, 11 candidate verifiers,
   and 10 workbench surfaces. Host adapter scope remains 17 documented HTTP
   adapters and 37 exact allowed imports.
-- Shipment requirement metadata stays owned by `shipments.core`.
+- Shipment requirement and document-instance metadata stays owned by
+  `shipments.core`; the instance schema contains no blob, binary, file,
+  storage-key, upload, or preview contract.
   `compliance.core` owns Document Type vocabulary, has no feature dependency,
   and is consumed only through
   `ComplianceDocumentTypeReferenceDTO` and

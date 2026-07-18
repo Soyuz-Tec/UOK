@@ -30,6 +30,16 @@ OWNER_TABLE_CASES = (
     ("shipments.core", "Shipment", "shipments"),
     (
         "shipments.core",
+        "ShipmentDocumentInstance",
+        "shipment_document_instances",
+    ),
+    (
+        "shipments.core",
+        "ShipmentDocumentInstanceHistory",
+        "shipment_document_instance_history",
+    ),
+    (
+        "shipments.core",
         "ShipmentDocumentRequirement",
         "shipment_document_requirements",
     ),
@@ -90,6 +100,8 @@ def test_uok_migration_discipline_uses_single_active_baseline(client: TestClient
         "route_stops",
         "route_name_history",
         "shipments",
+        "shipment_document_instances",
+        "shipment_document_instance_history",
         "shipment_document_requirements",
         "shipment_document_requirement_history",
         "shipment_status_history",

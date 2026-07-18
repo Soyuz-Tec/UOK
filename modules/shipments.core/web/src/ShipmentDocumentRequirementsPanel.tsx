@@ -16,12 +16,14 @@ export function ShipmentDocumentRequirementsPanel({
   canManage,
   onUnauthorized,
   onStatus,
+  onChanged,
 }: {
   token: string;
   shipmentId: string;
   canManage: boolean;
   onUnauthorized: () => void;
   onStatus: (message: string) => void;
+  onChanged?: () => void;
 }) {
   const [message, setMessage] = useState("");
   const reportStatus = (value: string) => {
@@ -42,6 +44,7 @@ export function ShipmentDocumentRequirementsPanel({
     invalidate: reads.invalidate,
     reload: reads.reload,
     onStatus: reportStatus,
+    onChanged,
   });
   const busy = Boolean(mutations.busy);
 

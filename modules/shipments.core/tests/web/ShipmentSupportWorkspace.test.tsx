@@ -267,6 +267,7 @@ function shipmentFetchMock(options: {
         },
       });
     }
+    if (path.endsWith("/document-instances")) return jsonResponse([]);
     if (path.endsWith("/status-history")) return jsonResponse(shipmentHistory);
     if (path === "/api/shipments/records") return jsonResponse([current(), closedShipment]);
     if (path.startsWith("/api/shipments/records/")) {

@@ -15,7 +15,7 @@ export function ShipmentDetail({
   historyLoading,
   busyAction,
   canManage,
-  documentRequirements,
+  documentEvidence,
   onEdit,
   onTransition,
 }: {
@@ -24,7 +24,7 @@ export function ShipmentDetail({
   historyLoading: boolean;
   busyAction: string;
   canManage: boolean;
-  documentRequirements?: ReactNode;
+  documentEvidence?: ReactNode;
   onEdit: () => void;
   onTransition: (newStatus: ShipmentStatus, reason: string) => void;
 }) {
@@ -105,7 +105,7 @@ export function ShipmentDetail({
           {nextStatus === "cancelled" ? <FieldMessage id="shipment-cancel-warning">Cancellation is terminal and cannot be reversed.</FieldMessage> : null}
         </form>
       ) : null}
-      {documentRequirements}
+      {documentEvidence}
       <section className="shipment-status-history" aria-label="Shipment status history">
         <h3>Status history</h3>
         {historyLoading ? <p role="status">Loading status history.</p> : history.length ? (

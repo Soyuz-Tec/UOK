@@ -9,6 +9,15 @@ from uok.kernel.module_runtime import ensure_module_operational
 from uok.kernel.security import Actor, require_permission
 
 from .compliance_gateway import active_document_type_options
+from .document_instance_read_service import (
+    get_document_instance,
+    list_document_instance_history,
+    list_document_instances,
+)
+from .document_instance_schemas import (
+    ShipmentDocumentInstanceHistoryResponse,
+    ShipmentDocumentInstanceResponse,
+)
 from .document_requirement_read_service import (
     list_document_requirement_history,
     list_document_requirements,
@@ -161,6 +170,61 @@ def document_requirement_history(
             actor,
             shipment_id,
             requirement_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail={"error": str(exc)}) from exc
+
+
+@router.get(
+    "/records/{shipment_id}/document-instances",
+    response_model=list[ShipmentDocumentInstanceResponse],
+)
+def document_instances(
+    shipment_id: str,
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> list[dict[str, object]]:
+    _require_read_access(db, actor)
+    try:
+        return list_document_instances(db, actor, shipment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail={"error": str(exc)}) from exc
+
+
+@router.get(
+    "/records/{shipment_id}/document-instances/{instance_id}",
+    response_model=ShipmentDocumentInstanceResponse,
+)
+def document_instance(
+    shipment_id: str,
+    instance_id: str,
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    _require_read_access(db, actor)
+    try:
+        return get_document_instance(db, actor, shipment_id, instance_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail={"error": str(exc)}) from exc
+
+
+@router.get(
+    "/records/{shipment_id}/document-instances/{instance_id}/history",
+    response_model=list[ShipmentDocumentInstanceHistoryResponse],
+)
+def document_instance_history(
+    shipment_id: str,
+    instance_id: str,
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> list[dict[str, object]]:
+    _require_read_access(db, actor)
+    try:
+        return list_document_instance_history(
+            db,
+            actor,
+            shipment_id,
+            instance_id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail={"error": str(exc)}) from exc

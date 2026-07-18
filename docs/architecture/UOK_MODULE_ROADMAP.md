@@ -31,7 +31,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `product.master` | capability module | `runtime_proven` | tenant-scoped Product Definition registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md` |
 | `reports.core` | capability module | `runtime_proven` | secure global report artifact foundation | `UOK-3.1.0-alpha.3` | `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md` |
 | `routes.core` | capability module | `runtime_proven` | tenant-scoped ordered Route/Corridor definitions over Location owner DTOs | `UOK-3.1.0-alpha.3` | `docs/modules/routes.core/ROUTE_CORRIDOR_MODULE_PLAN.md` |
-| `shipments.core` | business module | `runtime_proven` | tenant-scoped Shipment headers, movement lifecycle, and Document Type requirement metadata over owner DTOs | `UOK-3.1.0-alpha.3` | `docs/modules/shipments.core/SHIPMENT_SUPPORT_MODULE_PLAN.md` |
+| `shipments.core` | business module | `runtime_proven` | tenant-scoped Shipment lifecycle, Document Type requirements, and non-binary document-instance metadata over owner DTOs | `UOK-3.1.0-alpha.3` | `docs/modules/shipments.core/SHIPMENT_SUPPORT_MODULE_PLAN.md` |
 
 ## Current Target
 
@@ -122,11 +122,16 @@ It also introduces `planning.core` as the integrated planning and Gantt capabili
   `missing`, `received`, `waived`, and `not_applicable` metadata;
 - append-only requirement history and informational readiness counts that do
   not block the movement lifecycle;
+- Shipment-owned document-instance metadata with document number, issuer text,
+  issue/expiry dates, lifecycle, notes, optimistic version, and append-only
+  history;
+- optional owner-local requirement linkage, with an explicit verified-instance
+  action that may advance a still-missing linked requirement to `received`;
 - Compliance type value data resolved only through the exact immutable
   `compliance.core` facade, with no foreign key, table read, or cross-owner
   join;
 - a module-owned Shipment Support workbench and candidate verifier;
-- no Product/Cargo lines, booking, rates, tracking, document instance/file
+- no Product/Cargo lines, booking, rates, tracking, binary/file/object-store
   storage, inventory, customs, Planning table access, workflow-blocking
   compliance engine, or intelligence scoring.
 
@@ -140,7 +145,8 @@ It also introduces `planning.core` as the integrated planning and Gantt capabili
 - immutable value resolution consumed by `shipments.core` without a reverse
   dependency or Shipment-table access;
 - a module-owned Compliance Document Types workbench and candidate verifier;
-- no document instances, binary vault, Shipment rule, Party/Shipment read, customs integration, or intelligence scoring.
+- no Compliance-owned document instances, binary vault, Shipment rule,
+  Party/Shipment read, customs integration, or intelligence scoring.
 
 ## Governance Rule
 
@@ -152,8 +158,9 @@ New modules must not add product-specific behavior to the UOK core. They must ex
   shell/module backedges as modules are added.
 - Keep future module React/CSS source and frontend tests in canonical module roots from the first increment.
 - Keep future schema changes in module-owned migrations instead of expanding the shared initial baseline.
-- Qualify the approved Shipment-owned Document Type requirement metadata slice,
-  then select a thin Intelligence readiness signal or document-instance
-  metadata only from real workflow evidence. Keep file vaults, full
+- Qualify the Shipment-owned document-instance metadata slice, then select a
+  thin Intelligence readiness signal that consumes only a justified immutable
+  Shipment summary contract, or apply bounded operational polish. Keep file
+  vaults, full
   cargo/commercial transactions, carrier integrations, tracking, inventory,
   workflow blocking, and customs outside Shipment Support.

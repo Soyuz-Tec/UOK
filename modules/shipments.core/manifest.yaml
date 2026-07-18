@@ -2,7 +2,7 @@ manifest_schema: uok.module.v1
 name: shipments.core
 kind: business_module
 version: APP_VERSION
-description: "Tenant-scoped operational Shipment headers and document requirements over governed Party, Location, Route, and Compliance references."
+description: "Tenant-scoped operational Shipment headers, document requirements, and document-instance metadata over governed Party, Location, Route, and Compliance references."
 maturity: runtime_proven
 installable: true
 uninstallable: true
@@ -18,12 +18,18 @@ lifecycle:
 commands:
   - AddShipmentDocumentRequirement
   - CreateShipment
+  - CreateShipmentDocumentInstance
   - RemoveShipmentDocumentRequirement
+  - SetShipmentDocumentInstanceStatus
   - SetShipmentDocumentRequirementStatus
   - UpdateShipment
+  - UpdateShipmentDocumentInstance
   - UpdateShipmentDocumentRequirement
   - TransitionShipmentStatus
 events:
+  - ShipmentDocumentInstanceCreated
+  - ShipmentDocumentInstanceStatusChanged
+  - ShipmentDocumentInstanceUpdated
   - ShipmentDocumentRequirementAdded
   - ShipmentDocumentRequirementRemoved
   - ShipmentDocumentRequirementStatusChanged
@@ -56,11 +62,14 @@ permissions:
   - shipments.manage
 owned_tables:
   - Shipment
+  - ShipmentDocumentInstance
+  - ShipmentDocumentInstanceHistory
   - ShipmentDocumentRequirement
   - ShipmentDocumentRequirementHistory
   - ShipmentStatusHistory
   - CommandLog:shipments.core
   - EventRecord:Shipment
+  - EventRecord:ShipmentDocumentInstance
   - EventRecord:ShipmentDocumentRequirement
 extension_points:
   - api_router
@@ -70,4 +79,4 @@ extension_points:
   - model_exports
   - web_surface
   - candidate_verifier
-data_retention_policy: "Terminal and active Shipment headers, current document requirements, stable owner IDs, append-only status and requirement history, and command/event evidence are retained. Module uninstall disables access while preserving tenant-owned records for authorized recovery."
+data_retention_policy: "Terminal and active Shipment headers, current document requirements, document-instance metadata without binaries, stable owner IDs, append-only status/requirement/instance history, and command/event evidence are retained. Module uninstall disables access while preserving tenant-owned records for authorized recovery."

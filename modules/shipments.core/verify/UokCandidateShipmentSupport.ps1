@@ -1,5 +1,6 @@
 . (Join-Path $PSScriptRoot "UokCandidateShipmentRequirementTypes.ps1")
 . (Join-Path $PSScriptRoot "UokCandidateShipmentRequirements.ps1")
+. (Join-Path $PSScriptRoot "UokCandidateShipmentDocumentInstances.ps1")
 
 function Invoke-UokShipmentSupportCandidateScenario {
     param(
@@ -145,6 +146,12 @@ function Invoke-UokShipmentSupportCandidateScenario {
         -ShipmentId $shipmentId `
         -DocumentTypes $documentTypes `
         -Stamp $Stamp
+    $instanceProof = Assert-UokShipmentDocumentInstances `
+        -OpsHeaders $OpsHeaders `
+        -ViewerHeaders $ViewerHeaders `
+        -ShipmentId $shipmentId `
+        -DocumentTypes $documentTypes `
+        -Stamp $Stamp
 
     $updated = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
         command_type = "UpdateShipment"
@@ -196,6 +203,11 @@ function Invoke-UokShipmentSupportCandidateScenario {
         Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled Shipment module served records" -Action {
             Invoke-UokJson -Path "/api/shipments/records" -Headers $ViewerHeaders
         }
+        Assert-UokHttpFailure -StatusCode 400 -UnexpectedSuccessMessage "Disabled Shipment module served document instances" -Action {
+            Invoke-UokJson `
+                -Path "/api/shipments/records/$shipmentId/document-instances" `
+                -Headers $ViewerHeaders
+        }
     }
     return @{
         shipment_id = $shipmentId
@@ -205,6 +217,9 @@ function Invoke-UokShipmentSupportCandidateScenario {
         destination_location_id = $destination.result.id
         route_definition_id = $route.result.id
         bill_of_lading_document_type_id = $documentTypes.bill_of_lading_id
+        commercial_invoice_document_type_id = $documentTypes.commercial_invoice_id
         required_document_requirement_id = $requirementProof.required_requirement_id
+        document_instance_requirement_id = $instanceProof.requirement_id
+        document_instance_id = $instanceProof.instance_id
     }
 }

@@ -11,4 +11,11 @@ The literal module-local helpers
 document-requirement proof: active Compliance DTO options, required/optional
 link management, informational readiness, authorization,
 inactive/unknown-type rejection, retained history, and disabled-module
-fail-closed reads. They never exercise file or binary storage.
+fail-closed reads.
+
+`UokCandidateShipmentDocumentInstances.ps1` and its literal guard helper add
+metadata-only Commercial Invoice evidence: draft/edit/record/verify lifecycle,
+explicit linked requirement receipt, idempotent histories, DTO-resolved
+Compliance types, authorization and reference rejection, and disabled-module
+reads. The proof rejects `storage_key` and never exercises file, binary,
+multipart, preview, or object-store behavior.

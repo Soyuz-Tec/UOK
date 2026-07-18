@@ -16,6 +16,8 @@ from uok_shipments_core._internal.delivery.schemas import (
 )
 from uok_shipments_core._internal.persistence.models import (
     Shipment,
+    ShipmentDocumentInstance,
+    ShipmentDocumentInstanceHistory,
     ShipmentDocumentRequirement,
     ShipmentDocumentRequirementHistory,
     ShipmentStatusHistory,
@@ -146,6 +148,8 @@ def test_response_and_public_reference_dtos_are_frozen_and_exclude_tenant_identi
 def test_shipment_owner_contract_manifest_and_migration_are_exact() -> None:
     assert owned_models() == {
         "Shipment": Shipment,
+        "ShipmentDocumentInstance": ShipmentDocumentInstance,
+        "ShipmentDocumentInstanceHistory": ShipmentDocumentInstanceHistory,
         "ShipmentDocumentRequirement": ShipmentDocumentRequirement,
         "ShipmentDocumentRequirementHistory": ShipmentDocumentRequirementHistory,
         "ShipmentStatusHistory": ShipmentStatusHistory,
@@ -173,6 +177,17 @@ def test_shipment_owner_contract_manifest_and_migration_are_exact() -> None:
     assert "CREATE TABLE IF NOT EXISTS shipment_document_requirement_history" in requirement_migration
     assert "REFERENCES shipments(id)" in requirement_migration
     assert "REFERENCES compliance_document_types" not in requirement_migration
+    instance_migration = (
+        root / "migrations" / "003_shipment_document_instances.sql"
+    ).read_text(encoding="utf-8")
+    assert "CREATE TABLE IF NOT EXISTS shipment_document_instances" in instance_migration
+    assert "CREATE TABLE IF NOT EXISTS shipment_document_instance_history" in instance_migration
+    assert "REFERENCES shipments(id)" in instance_migration
+    assert "REFERENCES shipment_document_requirements(id)" in instance_migration
+    assert "REFERENCES compliance_document_types" not in instance_migration
+    assert "storage_key" not in instance_migration
+    assert " BLOB" not in instance_migration.upper()
+    assert " BYTEA" not in instance_migration.upper()
 
     manifest = load_module_manifests()["shipments.core"]
     assert manifest["kind"] == "business_module"
@@ -187,14 +202,20 @@ def test_shipment_owner_contract_manifest_and_migration_are_exact() -> None:
     assert set(manifest["commands"]) == {
         "AddShipmentDocumentRequirement",
         "CreateShipment",
+        "CreateShipmentDocumentInstance",
         "RemoveShipmentDocumentRequirement",
+        "SetShipmentDocumentInstanceStatus",
         "SetShipmentDocumentRequirementStatus",
         "TransitionShipmentStatus",
         "UpdateShipment",
+        "UpdateShipmentDocumentInstance",
         "UpdateShipmentDocumentRequirement",
     }
     assert set(manifest["events"]) == {
         "ShipmentCreated",
+        "ShipmentDocumentInstanceCreated",
+        "ShipmentDocumentInstanceStatusChanged",
+        "ShipmentDocumentInstanceUpdated",
         "ShipmentDocumentRequirementAdded",
         "ShipmentDocumentRequirementRemoved",
         "ShipmentDocumentRequirementStatusChanged",
@@ -204,11 +225,14 @@ def test_shipment_owner_contract_manifest_and_migration_are_exact() -> None:
     }
     assert manifest["owned_tables"] == [
         "Shipment",
+        "ShipmentDocumentInstance",
+        "ShipmentDocumentInstanceHistory",
         "ShipmentDocumentRequirement",
         "ShipmentDocumentRequirementHistory",
         "ShipmentStatusHistory",
         "CommandLog:shipments.core",
         "EventRecord:Shipment",
+        "EventRecord:ShipmentDocumentInstance",
         "EventRecord:ShipmentDocumentRequirement",
     ]
     assert set(manifest["permissions"]) == {"shipments.read", "shipments.manage"}

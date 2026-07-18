@@ -78,6 +78,8 @@ def test_compliance_manifest_declares_no_feature_dependencies() -> None:
         "import uok_contacts_core.public_api as contacts_api",
         "from uok_locations_core.public_api import resolve_location_references",
         "from uok_shipments_core._internal.persistence.models import Shipment",
+        "from uok_shipments_core._internal.persistence.document_instance_models "
+        "import ShipmentDocumentInstance",
         "from importlib import import_module\nimport_module('uok_routes_core.public_api')",
         "from uok.models import Party",
         "from sqlalchemy import text\nsession.execute(text('SELECT 1'))",
@@ -87,6 +89,8 @@ def test_compliance_manifest_declares_no_feature_dependencies() -> None:
         "table = Base.metadata.tables['shipments']",
         "session.exec_driver_sql('SELECT 1')",
         "from sqlalchemy import ForeignKey\nForeignKey('location_definitions.id')",
+        "from sqlalchemy import ForeignKey\n"
+        "ForeignKey('shipment_document_instances.id')",
     ],
 )
 def test_compliance_boundary_scanner_rejects_foreign_data_bypasses(

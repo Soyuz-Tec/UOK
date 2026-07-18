@@ -5,6 +5,7 @@ import { ShipmentSupportWorkspace } from "./ShipmentSupportWorkspace";
 import { SHIPMENT_MODULE_ID, SHIPMENT_SECTION_ID } from "./shipmentModule";
 import "./styles/index.css";
 import "./styles/documentRequirements.css";
+import "./styles/documentInstances.css";
 
 export const shipmentSupportModuleSurface: ModuleSurface = {
   id: SHIPMENT_SECTION_ID,

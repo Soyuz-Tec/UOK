@@ -2375,6 +2375,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/shipments/records/{shipment_id}/document-instances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Instances */
+        get: operations["document_instances_api_shipments_records__shipment_id__document_instances_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/document-instances/{instance_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Instance */
+        get: operations["document_instance_api_shipments_records__shipment_id__document_instances__instance_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/document-instances/{instance_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Instance History */
+        get: operations["document_instance_history_api_shipments_records__shipment_id__document_instances__instance_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/shipments/records/{shipment_id}/document-requirements": {
         parameters: {
             query?: never;
@@ -4253,6 +4304,112 @@ export interface components {
              * @enum {string}
              */
             stop_role: "origin" | "waypoint" | "destination";
+        };
+        /** ShipmentDocumentInstanceHistoryResponse */
+        ShipmentDocumentInstanceHistoryResponse: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "created" | "updated" | "status_changed";
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            /** Document Number */
+            document_number: string;
+            document_type: components["schemas"]["ComplianceDocumentTypeReferenceResponse"];
+            /** Expires On */
+            expires_on: string | null;
+            /** Id */
+            id: string;
+            /** Instance Id */
+            instance_id: string;
+            /** Issued On */
+            issued_on: string | null;
+            /** Issuing Party Name */
+            issuing_party_name: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Reason */
+            reason: string;
+            /** Requirement Id */
+            requirement_id: string | null;
+            /** Shipment Id */
+            shipment_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "recorded" | "verified" | "rejected" | "superseded";
+            /** Version */
+            version: number;
+        };
+        /** ShipmentDocumentInstanceRequirementResponse */
+        ShipmentDocumentInstanceRequirementResponse: {
+            /** Id */
+            id: string;
+            /**
+             * Requirement Level
+             * @enum {string}
+             */
+            requirement_level: "required" | "optional";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "missing" | "received" | "waived" | "not_applicable";
+            /** Version */
+            version: number;
+        };
+        /** ShipmentDocumentInstanceResponse */
+        ShipmentDocumentInstanceResponse: {
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            /** Document Number */
+            document_number: string;
+            document_type: components["schemas"]["ComplianceDocumentTypeReferenceResponse"];
+            /** Expires On */
+            expires_on: string | null;
+            /** Id */
+            id: string;
+            /** Issued On */
+            issued_on: string | null;
+            /** Issuing Party Name */
+            issuing_party_name: string | null;
+            /** Notes */
+            notes: string | null;
+            requirement: components["schemas"]["ShipmentDocumentInstanceRequirementResponse"] | null;
+            /** Requirement Id */
+            requirement_id: string | null;
+            /** Shipment Id */
+            shipment_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "recorded" | "verified" | "rejected" | "superseded";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
         };
         /** ShipmentDocumentRequirementHistoryResponse */
         ShipmentDocumentRequirementHistoryResponse: {
@@ -11790,6 +11947,107 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ShipmentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_instances_api_shipments_records__shipment_id__document_instances_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentInstanceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_instance_api_shipments_records__shipment_id__document_instances__instance_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+                instance_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentInstanceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_instance_history_api_shipments_records__shipment_id__document_instances__instance_id__history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+                instance_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentInstanceHistoryResponse"][];
                 };
             };
             /** @description Validation Error */
