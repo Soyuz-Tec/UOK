@@ -1,6 +1,6 @@
 # Shipment Document Instance Metadata Slice Delivery – 2026-07-17
 
-**Status:** Implementation and rebuilt-candidate qualification complete; draft PR publication and hosted CI are in progress.
+**Status:** Implementation and rebuilt-candidate qualification complete; draft PR `#68` is open with code-bearing hosted CI green.
 
 **Candidate:** `UOK-3.1.0-alpha.3`
 
@@ -181,7 +181,7 @@ ORM metadata, migration source, strict Pydantic requests, generated OpenAPI, fro
 | Verify Python / frontend / Playwright | Passed; 153 Python files, 130 Vitest files / 469 tests, production build, 19 Playwright passes plus one expected environment-gated skip |
 | Authenticated candidate verifier | Passed; all 11 module verifiers, including Shipment create/update/record/verify, linked Requirement `received`, coherent 2/2 readiness, replay, redaction, and no-binary guards |
 | Manual desktop and 375-pixel browser | Passed on the rebuilt runtime; verified metadata/readiness and the create editor reflow cleanly, with zero file inputs, multipart forms, upload/preview controls, or console errors |
-| Draft PR / hosted CI | Pending publication |
+| Draft PR / hosted CI | Draft PR [#68](https://github.com/Soyuz-Tec/UOK/pull/68) is clean and stacked on the Requirement slice; code-bearing commit `534f4734dddfb8aee0768aede6f08742c19da596` passed both [pull-request run 29631335772](https://github.com/Soyuz-Tec/UOK/actions/runs/29631335772) and [push run 29631319403](https://github.com/Soyuz-Tec/UOK/actions/runs/29631319403) with zero failed steps |
 
 The first end-to-end verifier attempt exposed a verifier-only replay assertion:
 the stable Host contract deliberately omits top-level `command_id` on replay and
