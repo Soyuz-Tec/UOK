@@ -4,17 +4,29 @@
 
 UOK must not treat product and cargo as the same concept.
 
-**Current implementation:** `product.master` owns the tenant-scoped `ProductDefinition` registry, `shipments.core` owns only the operational Shipment header and movement-status lifecycle, and `compliance.core` owns only Compliance Document Type vocabulary. `cargo.transactions` and `crm.basic` remain future modules.
+**Current implementation:** `product.master` owns the tenant-scoped
+`ProductDefinition` registry, `shipments.core` owns the operational Shipment
+header, movement-status lifecycle, and Shipment-specific Document Type
+requirement metadata/history, and `compliance.core` owns only Compliance
+Document Type vocabulary. `cargo.transactions` and `crm.basic` remain future
+modules.
 
 ## Definitions
 
 - **Product** is a master-data definition: canonical name, code, category, grade/specification, unit conventions, and product governance.
 - **Cargo** is a transactional/physical lot or movement of a product: nomination, seller, buyer, quantity, loading state, documents, payment state, exceptions, and closeout evidence.
 - **Cargo transaction** references a Product. It does not become the Product.
-- **Shipment** is the operational movement header: shipper, consignee, origin, destination, optional governed corridor, planned dates, and auditable movement status. It does not become a Product or Cargo transaction.
+- **Shipment** is the operational movement header: shipper, consignee, origin,
+  destination, optional governed corridor, planned dates, auditable movement
+  status, and Shipment-specific document-requirement applicability/satisfaction
+  metadata. It does not become a Product, Cargo transaction, Compliance
+  vocabulary owner, document instance, or file vault.
 - **Compliance Document Type** is tenant-governed master vocabulary for a kind of evidence. It is not a document instance, file, Shipment requirement, Cargo transaction, or legal determination.
 - **Product modules** define reusable product master metadata and product-specific rules.
-- **Shipment modules** define movement identity and operational status without owning Product facts, commercial cargo lots, documents, payments, rates, tracking, or inventory.
+- **Shipment modules** define movement identity, operational status, and
+  Shipment-owned requirement metadata without owning Product facts, commercial
+  cargo lots, Compliance type vocabulary, document instances/files, payments,
+  rates, tracking, or inventory.
 - **Cargo modules** define physical/commercial lot lifecycle, Product/quantity facts, commercial documents, payment, and transaction evidence. They may reference a Shipment through a future immutable contract; they do not absorb Shipment movement state.
 - **CRM modules** define sales/account/opportunity workflows and may reference Contacts, Products, or Cargo records through explicit relationships; they must not own Product Master or Cargo lifecycle state.
 
@@ -24,7 +36,9 @@ UOK must not treat product and cargo as the same concept.
 - UI labels must not combine product and cargo wording into one label.
 - A product record may exist in Product Master.
 - A shipment may reference Parties, Locations, and a Route through their immutable owner APIs while storing only stable IDs.
-- A future Shipment document requirement may reference a Compliance Document Type through its immutable owner API; it must not duplicate type metadata or read Compliance tables.
+- A Shipment document requirement references a Compliance Document Type through
+  its immutable owner API; it must not duplicate type metadata, read Compliance
+  tables, store a document file, or block the Shipment movement lifecycle.
 - A cargo transaction may reference a Product Master record.
 - CRM opportunities may reference products or intended cargo transactions, but must not duplicate Contacts or Product Master records.
 - Products, Cargo Transactions, and CRM must be installable and separately updatable modules with explicit dependencies.
@@ -41,7 +55,10 @@ The product/cargo expansion path must model these as separate module-owned conce
 ## Initial Module Boundaries
 
 - `product.master`: installable capability module; owns product definitions and product metadata.
-- `shipments.core`: installable business module; depends on `contacts.core`, `locations.core`, and `routes.core`; owns only the operational Shipment header and movement-status history.
+- `shipments.core`: installable business module; depends on `contacts.core`,
+  `locations.core`, `routes.core`, and `compliance.core`; owns the operational
+  Shipment header, movement-status history, and Shipment-specific Document Type
+  requirement links/history.
 - `compliance.core`: installable capability module with no feature dependency; owns Compliance Document Type identity, lifecycle, and canonical-name history only.
 - `cargo.transactions`: installable business module; depends on `product.master` and `contacts.core`; owns cargo lifecycle.
 - `crm.basic`: installable business module; depends on `contacts.core`; owns CRM opportunity workflow.
@@ -59,15 +76,27 @@ Implementation and validation:
 
 ## Current Shipment Support Slice
 
-The first Shipment slice is intentionally limited to tenant-scoped Shipment identity, required shipper/consignee and origin/destination references, an optional governed Route, planned dates, optimistic updates, a controlled movement-status machine, and append-only status history. It stores only stable foreign IDs and resolves them through immutable owner DTO APIs.
+The first Shipment slice is intentionally limited to tenant-scoped Shipment
+identity, required shipper/consignee and origin/destination references, an
+optional governed Route, planned dates, optimistic updates, a controlled
+movement-status machine, and append-only status history. The approved
+requirement-metadata increment adds only required/optional links, simple
+satisfaction state, notes, an informational summary, and append-only history
+owned by Shipment. It stores only stable foreign IDs and resolves them through
+immutable owner DTO APIs.
 
-It does not own Product/material lines, cargo lots, quantity/grade, pricing, inventory, bookings, carriers, rates, tracking, documents, compliance packs, customs filings, invoices, payments, or closeout evidence. Those omissions preserve the future `cargo.transactions`, compliance, inventory, and integration boundaries.
+It does not own Product/material lines, cargo lots, quantity/grade, pricing,
+inventory, bookings, carriers, rates, tracking, document instances/files,
+compliance packs, workflow-blocking rules, customs filings, invoices, payments,
+or closeout evidence. Those omissions preserve the future
+`cargo.transactions`, compliance, inventory, and integration boundaries.
 
 Implementation and validation:
 
 - `docs/modules/shipments.core/SHIPMENT_SUPPORT_MODULE_PLAN.md`
 - `docs/delivery/shipment-support-slice-design-2026-07-17.md`
 - `docs/delivery/shipment-support-slice-delivery-2026-07-17.md`
+- `docs/delivery/shipment-document-requirements-slice-design-2026-07-17.md`
 - `modules/shipments.core`
 
 ## Current Compliance Document Type Slice
@@ -75,8 +104,10 @@ Implementation and validation:
 The first Compliance slice is intentionally limited to tenant-scoped Document
 Type identity, descriptive metadata, active/inactive/archive lifecycle,
 optimistic versions, append-only canonical-name history, and an immutable
-reference facade. It owns no document instance or binary, Shipment requirement,
-customs rule, legal decision, Product/Cargo fact, or cross-module read.
+reference facade. Shipment may consume that facade for its own requirement
+metadata, but Compliance owns no document instance or binary, Shipment
+requirement, customs rule, legal decision, Product/Cargo fact, or cross-module
+read.
 
 Implementation and validation:
 

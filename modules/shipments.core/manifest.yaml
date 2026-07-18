@@ -2,7 +2,7 @@ manifest_schema: uok.module.v1
 name: shipments.core
 kind: business_module
 version: APP_VERSION
-description: "Tenant-scoped operational Shipment headers over governed Party, Location, and Route references."
+description: "Tenant-scoped operational Shipment headers and document requirements over governed Party, Location, Route, and Compliance references."
 maturity: runtime_proven
 installable: true
 uninstallable: true
@@ -16,14 +16,23 @@ lifecycle:
   - upgraded
   - uninstalled
 commands:
+  - AddShipmentDocumentRequirement
   - CreateShipment
+  - RemoveShipmentDocumentRequirement
+  - SetShipmentDocumentRequirementStatus
   - UpdateShipment
+  - UpdateShipmentDocumentRequirement
   - TransitionShipmentStatus
 events:
+  - ShipmentDocumentRequirementAdded
+  - ShipmentDocumentRequirementRemoved
+  - ShipmentDocumentRequirementStatusChanged
+  - ShipmentDocumentRequirementUpdated
   - ShipmentCreated
   - ShipmentUpdated
   - ShipmentStatusTransitioned
 dependencies:
+  - compliance.core
   - contacts.core
   - locations.core
   - routes.core
@@ -47,9 +56,12 @@ permissions:
   - shipments.manage
 owned_tables:
   - Shipment
+  - ShipmentDocumentRequirement
+  - ShipmentDocumentRequirementHistory
   - ShipmentStatusHistory
   - CommandLog:shipments.core
   - EventRecord:Shipment
+  - EventRecord:ShipmentDocumentRequirement
 extension_points:
   - api_router
   - command_handlers
@@ -58,4 +70,4 @@ extension_points:
   - model_exports
   - web_surface
   - candidate_verifier
-data_retention_policy: "Terminal and active Shipment headers, stable owner IDs, append-only status history, and command/event evidence are retained. Module uninstall disables access while preserving tenant-owned records for authorized recovery."
+data_retention_policy: "Terminal and active Shipment headers, current document requirements, stable owner IDs, append-only status and requirement history, and command/event evidence are retained. Module uninstall disables access while preserving tenant-owned records for authorized recovery."

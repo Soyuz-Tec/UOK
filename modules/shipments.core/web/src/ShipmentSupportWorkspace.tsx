@@ -6,6 +6,7 @@ import { SearchWorkspace } from "@uok/shared/forms";
 import { WorkflowSplitView, WorkspaceCommandBar } from "@uok/shared/layout";
 import { WorkspaceEditorPopup } from "@uok/shared/overlays";
 import { ShipmentDetail } from "./ShipmentDetail";
+import { ShipmentDocumentRequirementsPanel } from "./ShipmentDocumentRequirementsPanel";
 import { ShipmentEditor } from "./ShipmentEditor";
 import { ShipmentModuleState } from "./ShipmentModuleState";
 import { ShipmentTable } from "./ShipmentTable";
@@ -20,7 +21,7 @@ import {
   transitionShipmentStatus,
   updateShipment,
 } from "./shipmentApi";
-import { filterAndSortShipments } from "./shipmentFilters";
+import { filterAndSortShipments, shipmentStatusOptions } from "./shipmentFilters";
 import { SHIPMENT_MODULE_ID } from "./shipmentModule";
 import type {
   LocationReference,
@@ -138,7 +139,7 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
               label: "Status",
               value: statusFilter,
               defaultValue: "all",
-              options: statusOptions,
+              options: shipmentStatusOptions,
               onChange: (value) => setStatusFilter(value as "all" | ShipmentStatus),
             }]}
             sort={{
@@ -183,6 +184,16 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
             historyLoading={historyLoading}
             busyAction={busyAction}
             canManage={canManage}
+            documentRequirements={selected ? (
+              <ShipmentDocumentRequirementsPanel
+                key={`${host.token}:${host.currentUserRole}:${selected.id}`}
+                token={host.token}
+                shipmentId={selected.id}
+                canManage={canManage}
+                onUnauthorized={host.onUnauthorized}
+                onStatus={setStatus}
+              />
+            ) : null}
             onEdit={() => {
               setEditorError("");
               setEditorMode("edit");
@@ -277,16 +288,6 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
     void host.refreshHost().catch(() => undefined);
   }
 }
-
-const statusOptions = [
-  { value: "all", label: "All shipments" },
-  { value: "draft", label: "Draft" },
-  { value: "planned", label: "Planned" },
-  { value: "in_transit", label: "In transit" },
-  { value: "arrived", label: "Arrived" },
-  { value: "closed", label: "Closed" },
-  { value: "cancelled", label: "Cancelled" },
-];
 
 function actionLabel(action: string) {
   return ({ create: "Created", update: "Updated", transition: "Changed status for" } as Record<string, string>)[action] || "Changed";

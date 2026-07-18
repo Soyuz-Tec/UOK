@@ -14,6 +14,10 @@ PLANNING_BACKEND = (
     ROOT / "modules" / "planning.core" / "backend" / "uok_planning_core"
 )
 ALLOWED_OWNER_PUBLIC_API_SYMBOLS = {
+    "uok_compliance_core.public_api": {
+        "ComplianceDocumentTypeReferenceDTO",
+        "resolve_compliance_document_type_references",
+    },
     "uok_contacts_core.public_api": {
         "PartyReferenceResolution",
         "resolve_party_reference",

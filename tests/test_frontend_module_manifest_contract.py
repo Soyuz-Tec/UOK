@@ -42,6 +42,7 @@ def test_repository_frontend_surfaces_are_manifest_owned() -> None:
     assert manifests["planning.core"]["dependencies"] == ["calendar.core"]
     assert manifests["routes.core"]["dependencies"] == ["locations.core"]
     assert manifests["shipments.core"]["dependencies"] == [
+        "compliance.core",
         "contacts.core",
         "locations.core",
         "routes.core",

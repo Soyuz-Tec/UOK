@@ -20,6 +20,11 @@ Detailed design and delivery evidence:
 - `docs/delivery/compliance-document-type-slice-design-2026-07-17.md`
 - `docs/delivery/compliance-document-type-slice-delivery-2026-07-17.md`
 
+The approved downstream Shipment requirement-metadata design is:
+
+- `docs/delivery/shipment-document-requirements-slice-design-2026-07-17.md`
+- `docs/delivery/shipment-document-requirements-slice-delivery-2026-07-17.md`
+
 ## First Slice
 
 The first slice owns:
@@ -66,6 +71,10 @@ remain private.
 - Lists hide archived rows unless explicitly requested. Public reference
   choices return active rows; explicit inactive or archived IDs resolve as
   unavailable value data.
+- `shipments.core` may consume only
+  `ComplianceDocumentTypeReferenceDTO` and
+  `resolve_compliance_document_type_references`; Compliance never imports or
+  writes Shipment behavior, mappings, or tables.
 - All reads and writes enforce actor organization, permission, module
   operational state, and optimistic version.
 - The module declares no feature dependency and stores no Party, Shipment,
@@ -125,7 +134,8 @@ final PR head.
 
 ## Next Slice Boundary
 
-The next evidence-backed slice is a tenant-scoped Shipment-to-Document-Type
-requirement link. Shipment must consume only the immutable Compliance facade,
-while Compliance continues to own type vocabulary and no file vault or
-Shipment lifecycle rule is introduced.
+The approved downstream boundary is a tenant-scoped
+Shipment-to-Document-Type requirement link owned entirely by
+`shipments.core`. Shipment consumes only the immutable Compliance resolver;
+Compliance continues to own type vocabulary and gains no Shipment dependency,
+file vault, document instance, or Shipment lifecycle rule.

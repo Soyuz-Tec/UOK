@@ -118,7 +118,7 @@ export const shipmentModuleRow = {
   uninstallable: true, updatable: true, maintainable: true, required: false,
   lifecycle: ["available", "installed", "disabled", "upgraded", "uninstalled"],
   lifecycle_state_declared: true,
-  dependencies: ["contacts.core", "locations.core", "routes.core"],
+  dependencies: ["compliance.core", "contacts.core", "locations.core", "routes.core"],
   dependents: [],
 };
 

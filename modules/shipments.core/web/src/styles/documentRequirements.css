@@ -1,0 +1,121 @@
+.shipment-requirements {
+  display: grid;
+  gap: var(--uok-space-3);
+  padding-top: var(--uok-space-3);
+  border-top: var(--uok-line);
+}
+
+.shipment-requirements-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--uok-space-3);
+}
+
+.shipment-requirements-header h3,
+.shipment-requirements-header p,
+.shipment-requirement-summary-detail,
+.shipment-requirement-guidance,
+.shipment-requirement-warning,
+.shipment-requirement-notes,
+.shipment-requirement-remove-warning,
+.shipment-requirement-editor-target {
+  margin: 0;
+}
+
+.shipment-requirements-header > div {
+  display: grid;
+  gap: var(--uok-space-1);
+}
+
+.shipment-requirements-header p,
+.shipment-requirement-summary-detail,
+.shipment-requirement-meta,
+.shipment-requirement-editor-target span {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.shipment-requirement-list {
+  display: grid;
+  gap: var(--uok-space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.shipment-requirement-list > li {
+  display: grid;
+  gap: var(--uok-space-2);
+  min-width: 0;
+  padding: var(--uok-space-3);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-muted);
+}
+
+.shipment-requirement-row-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--uok-space-2);
+}
+
+.shipment-requirement-row-header > div,
+.shipment-requirement-editor-target {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-width: 0;
+}
+
+.shipment-requirement-row-header strong,
+.shipment-requirement-row-header small,
+.shipment-requirement-notes,
+.shipment-requirement-warning {
+  overflow-wrap: anywhere;
+}
+
+.shipment-requirement-row-header small,
+.shipment-requirement-notes {
+  color: var(--uok-text-secondary);
+}
+
+.shipment-requirement-warning,
+.shipment-requirement-remove-warning {
+  color: var(--uok-status-warning);
+  font-weight: 700;
+}
+
+.shipment-requirement-actions,
+.shipment-requirement-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--uok-space-2);
+}
+
+.shipment-requirement-editor {
+  display: grid;
+  gap: var(--uok-space-3);
+}
+
+.shipment-requirement-editor textarea {
+  resize: vertical;
+  min-height: calc(var(--uok-control-height) * 2);
+}
+
+@media (max-width: 520px) {
+  .shipment-requirements-header,
+  .shipment-requirement-row-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .shipment-requirements-header .command-button,
+  .shipment-requirement-actions,
+  .shipment-requirement-actions .command-button,
+  .shipment-requirement-editor-actions,
+  .shipment-requirement-editor-actions .command-button {
+    width: 100%;
+  }
+}

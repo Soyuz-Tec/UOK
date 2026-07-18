@@ -169,6 +169,7 @@ def assert_file_backed_module_manifests(baseline_modules: Sequence[str]) -> None
     assert shipments["required"] is False
     assert shipments["kind"] == "business_module"
     assert shipments["dependencies"] == [
+        "compliance.core",
         "contacts.core",
         "locations.core",
         "routes.core",
@@ -194,16 +195,29 @@ def assert_file_backed_module_manifests(baseline_modules: Sequence[str]) -> None
         == "modules/shipments.core/verify/UokCandidateShipmentSupport.ps1"
     )
     assert set(shipments["commands"]) == {
+        "AddShipmentDocumentRequirement",
         "CreateShipment",
+        "RemoveShipmentDocumentRequirement",
+        "SetShipmentDocumentRequirementStatus",
         "TransitionShipmentStatus",
+        "UpdateShipmentDocumentRequirement",
         "UpdateShipment",
     }
     assert set(shipments["events"]) == {
         "ShipmentCreated",
+        "ShipmentDocumentRequirementAdded",
+        "ShipmentDocumentRequirementRemoved",
+        "ShipmentDocumentRequirementStatusChanged",
+        "ShipmentDocumentRequirementUpdated",
         "ShipmentStatusTransitioned",
         "ShipmentUpdated",
     }
-    assert {"Shipment", "ShipmentStatusHistory"}.issubset(
+    assert {
+        "Shipment",
+        "ShipmentDocumentRequirement",
+        "ShipmentDocumentRequirementHistory",
+        "ShipmentStatusHistory",
+    }.issubset(
         set(shipments["owned_tables"])
     )
 

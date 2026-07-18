@@ -28,6 +28,16 @@ OWNER_TABLE_CASES = (
     ("routes.core", "RouteStop", "route_stops"),
     ("routes.core", "RouteNameHistory", "route_name_history"),
     ("shipments.core", "Shipment", "shipments"),
+    (
+        "shipments.core",
+        "ShipmentDocumentRequirement",
+        "shipment_document_requirements",
+    ),
+    (
+        "shipments.core",
+        "ShipmentDocumentRequirementHistory",
+        "shipment_document_requirement_history",
+    ),
     ("shipments.core", "ShipmentStatusHistory", "shipment_status_history"),
 )
 
@@ -80,6 +90,8 @@ def test_uok_migration_discipline_uses_single_active_baseline(client: TestClient
         "route_stops",
         "route_name_history",
         "shipments",
+        "shipment_document_requirements",
+        "shipment_document_requirement_history",
         "shipment_status_history",
     }.issubset(set(body["declared_module_tables"]))
     assert body["checks"]["baseline_has_no_business_module_tables"] is True
@@ -216,5 +228,48 @@ def test_route_migration_cannot_foreign_key_location_table(
 
     assert any(
         "foreign business module table references: location_definitions" in violation["reason"]
+        for violation in violations
+    )
+
+
+def test_shipment_migration_cannot_foreign_key_compliance_table(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    migration_path = tmp_path / "modules" / "shipments.core" / "migrations"
+    migration_path.mkdir(parents=True)
+    (migration_path / "002_shipment_document_requirements.sql").write_text(
+        "CREATE TABLE shipment_document_requirements ("
+        "id VARCHAR(36) PRIMARY KEY, "
+        "compliance_document_type_id VARCHAR(36) "
+        "REFERENCES compliance_document_types(id)"
+        ");\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(migration_registry, "repo_root", lambda: tmp_path)
+    monkeypatch.setattr(
+        migration_registry,
+        "load_module_manifests",
+        lambda: {
+            "shipments.core": {
+                "migrations_path": "modules/shipments.core/migrations",
+                "owned_tables": ["ShipmentDocumentRequirement"],
+            }
+        },
+    )
+    monkeypatch.setattr(
+        migration_registry,
+        "model_table_names",
+        lambda: {
+            "ComplianceDocumentType": "compliance_document_types",
+            "ShipmentDocumentRequirement": "shipment_document_requirements",
+        },
+    )
+
+    violations = migration_registry._module_migration_scope_violations()
+
+    assert any(
+        "foreign business module table references: compliance_document_types"
+        in violation["reason"]
         for violation in violations
     )

@@ -8,6 +8,16 @@ from uok.host.security import current_actor
 from uok.kernel.module_runtime import ensure_module_operational
 from uok.kernel.security import Actor, require_permission
 
+from .compliance_gateway import active_document_type_options
+from .document_requirement_read_service import (
+    list_document_requirement_history,
+    list_document_requirements,
+)
+from .document_requirement_schemas import (
+    ComplianceDocumentTypeReferenceResponse,
+    ShipmentDocumentRequirementHistoryResponse,
+    ShipmentDocumentRequirementListResponse,
+)
 from .location_gateway import active_location_options
 from .party_gateway import party_resolution_response, resolve_party
 from .read_service import get_shipment, list_shipments, list_status_history, shipment_response
@@ -99,6 +109,61 @@ def route_options(
         raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+
+
+@router.get(
+    "/document-type-options",
+    response_model=list[ComplianceDocumentTypeReferenceResponse],
+)
+def document_type_options(
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> list[dict[str, object]]:
+    _require_read_access(db, actor)
+    try:
+        return active_document_type_options(db, actor)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+
+
+@router.get(
+    "/records/{shipment_id}/document-requirements",
+    response_model=ShipmentDocumentRequirementListResponse,
+)
+def document_requirements(
+    shipment_id: str,
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> dict[str, object]:
+    _require_read_access(db, actor)
+    try:
+        return list_document_requirements(db, actor, shipment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail={"error": str(exc)}) from exc
+
+
+@router.get(
+    "/records/{shipment_id}/document-requirements/{requirement_id}/history",
+    response_model=list[ShipmentDocumentRequirementHistoryResponse],
+)
+def document_requirement_history(
+    shipment_id: str,
+    requirement_id: str,
+    actor: Actor = Depends(current_actor),
+    db: Session = Depends(get_db),
+) -> list[dict[str, object]]:
+    _require_read_access(db, actor)
+    try:
+        return list_document_requirement_history(
+            db,
+            actor,
+            shipment_id,
+            requirement_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail={"error": str(exc)}) from exc
 
 
 def _require_read_access(db: Session, actor: Actor) -> None:

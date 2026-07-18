@@ -8,6 +8,18 @@ from sqlalchemy.orm import Session
 from uok.kernel.command_contracts import COMMAND_IF_MATCH_CONTEXT_KEY
 from uok.kernel.security import Actor
 
+from .document_requirement_schemas import (
+    ShipmentDocumentRequirementAddRequest,
+    ShipmentDocumentRequirementRemoveRequest,
+    ShipmentDocumentRequirementStatusRequest,
+    ShipmentDocumentRequirementUpdateRequest,
+)
+from .document_requirement_write_service import (
+    add_document_requirement,
+    remove_document_requirement,
+    set_document_requirement_status,
+    update_document_requirement,
+)
 from .schemas import ShipmentCreateRequest, ShipmentTransitionRequest, ShipmentUpdateRequest
 from .write_service import create_shipment, transition_shipment_status, update_shipment
 
@@ -32,10 +44,70 @@ def cmd_transition_shipment_status(
     return transition_shipment_status(db, actor, _validate(ShipmentTransitionRequest, payload), command_id)
 
 
+def cmd_add_shipment_document_requirement(
+    db: Session,
+    actor: Actor,
+    payload: dict[str, Any],
+    command_id: str,
+) -> dict[str, Any]:
+    return add_document_requirement(
+        db,
+        actor,
+        _validate(ShipmentDocumentRequirementAddRequest, payload),
+        command_id,
+    )
+
+
+def cmd_update_shipment_document_requirement(
+    db: Session,
+    actor: Actor,
+    payload: dict[str, Any],
+    command_id: str,
+) -> dict[str, Any]:
+    return update_document_requirement(
+        db,
+        actor,
+        _validate(ShipmentDocumentRequirementUpdateRequest, payload),
+        command_id,
+    )
+
+
+def cmd_set_shipment_document_requirement_status(
+    db: Session,
+    actor: Actor,
+    payload: dict[str, Any],
+    command_id: str,
+) -> dict[str, Any]:
+    return set_document_requirement_status(
+        db,
+        actor,
+        _validate(ShipmentDocumentRequirementStatusRequest, payload),
+        command_id,
+    )
+
+
+def cmd_remove_shipment_document_requirement(
+    db: Session,
+    actor: Actor,
+    payload: dict[str, Any],
+    command_id: str,
+) -> dict[str, Any]:
+    return remove_document_requirement(
+        db,
+        actor,
+        _validate(ShipmentDocumentRequirementRemoveRequest, payload),
+        command_id,
+    )
+
+
 def command_handlers() -> dict[str, CommandHandler]:
     return {
+        "AddShipmentDocumentRequirement": cmd_add_shipment_document_requirement,
         "CreateShipment": cmd_create_shipment,
+        "RemoveShipmentDocumentRequirement": cmd_remove_shipment_document_requirement,
+        "SetShipmentDocumentRequirementStatus": cmd_set_shipment_document_requirement_status,
         "UpdateShipment": cmd_update_shipment,
+        "UpdateShipmentDocumentRequirement": cmd_update_shipment_document_requirement,
         "TransitionShipmentStatus": cmd_transition_shipment_status,
     }
 

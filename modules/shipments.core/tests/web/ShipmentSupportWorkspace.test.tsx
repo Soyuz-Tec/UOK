@@ -252,6 +252,21 @@ function shipmentFetchMock(options: {
       const partyId = decodeURIComponent(path.split("/").at(-1)!);
       return jsonResponse(options.party?.(partyId) || (partyId === activeShipment.shipper_party_id ? shipperParty : consigneeParty));
     }
+    if (path === "/api/shipments/document-type-options") return jsonResponse([]);
+    if (path.endsWith("/document-requirements")) {
+      return jsonResponse({
+        items: [],
+        summary: {
+          required_total: 0,
+          required_satisfied: 0,
+          required_missing: 0,
+          required_received: 0,
+          required_waived: 0,
+          required_not_applicable: 0,
+          optional_total: 0,
+        },
+      });
+    }
     if (path.endsWith("/status-history")) return jsonResponse(shipmentHistory);
     if (path === "/api/shipments/records") return jsonResponse([current(), closedShipment]);
     if (path.startsWith("/api/shipments/records/")) {

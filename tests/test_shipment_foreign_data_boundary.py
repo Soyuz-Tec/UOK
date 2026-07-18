@@ -39,6 +39,7 @@ def test_shipment_manifest_declares_only_approved_feature_dependencies() -> None
     assert manifest["required"] is False
     assert manifest["kind"] == "business_module"
     assert manifest["dependencies"] == [
+        "compliance.core",
         "contacts.core",
         "locations.core",
         "routes.core",
@@ -47,15 +48,28 @@ def test_shipment_manifest_declares_only_approved_feature_dependencies() -> None
     assert set(manifest["permissions"]) == {"shipments.read", "shipments.manage"}
     assert set(manifest["commands"]) == {
         "CreateShipment",
+        "AddShipmentDocumentRequirement",
+        "RemoveShipmentDocumentRequirement",
+        "SetShipmentDocumentRequirementStatus",
         "TransitionShipmentStatus",
+        "UpdateShipmentDocumentRequirement",
         "UpdateShipment",
     }
     assert set(manifest["events"]) == {
         "ShipmentCreated",
+        "ShipmentDocumentRequirementAdded",
+        "ShipmentDocumentRequirementRemoved",
+        "ShipmentDocumentRequirementStatusChanged",
+        "ShipmentDocumentRequirementUpdated",
         "ShipmentStatusTransitioned",
         "ShipmentUpdated",
     }
-    assert {"Shipment", "ShipmentStatusHistory"}.issubset(
+    assert {
+        "Shipment",
+        "ShipmentDocumentRequirement",
+        "ShipmentDocumentRequirementHistory",
+        "ShipmentStatusHistory",
+    }.issubset(
         set(manifest["owned_tables"])
     )
 
@@ -78,6 +92,9 @@ def test_planning_consumes_shipment_only_through_the_public_reference_contract()
 @pytest.mark.parametrize(
     "source",
     [
+        "import uok_compliance_core.public_api as compliance_api",
+        "from uok_compliance_core.public_api import api_router",
+        "from uok_compliance_core._internal.persistence.models import ComplianceDocumentType",
         "import uok_contacts_core.public_api as contacts_api",
         "from uok_contacts_core.public_api import api_router",
         "from uok_contacts_core._internal.persistence.models import Party",
@@ -85,6 +102,8 @@ def test_planning_consumes_shipment_only_through_the_public_reference_contract()
         "from uok_locations_core._internal.persistence.models import LocationDefinition",
         "from uok_routes_core._internal.persistence.models import RouteDefinition",
         "from importlib import import_module\nimport_module('uok_routes_core._internal')",
+        "from importlib import import_module\n"
+        "import_module('uok_compliance_core.public_api')",
         "from sqlalchemy import text\nsession.execute(text('SELECT 1'))",
         "import sqlalchemy as sa\nsession.execute(sa.text('SELECT 1'))",
         "from sqlalchemy import MetaData\nmetadata = MetaData()\nmetadata.reflect(bind=engine)",
@@ -92,6 +111,8 @@ def test_planning_consumes_shipment_only_through_the_public_reference_contract()
         "table = Base.metadata.tables['route_definitions']",
         "session.exec_driver_sql('SELECT 1')",
         "from sqlalchemy import ForeignKey\nForeignKey('location_definitions.id')",
+        "from sqlalchemy import ForeignKey\n"
+        "ForeignKey('compliance_document_types.id')",
     ],
 )
 def test_shipment_boundary_scanner_rejects_owner_bypasses(source: str) -> None:
@@ -101,6 +122,9 @@ def test_shipment_boundary_scanner_rejects_owner_bypasses(source: str) -> None:
 def test_shipment_boundary_scanner_allows_exact_owner_public_symbols() -> None:
     source = "\n".join(
         (
+            "from uok_compliance_core.public_api import "
+            "ComplianceDocumentTypeReferenceDTO, "
+            "resolve_compliance_document_type_references",
             "from uok_contacts_core.public_api import "
             "PartyReferenceResolution, resolve_party_reference",
             "from uok_locations_core.public_api import "

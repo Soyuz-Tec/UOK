@@ -1,3 +1,6 @@
+. (Join-Path $PSScriptRoot "UokCandidateShipmentRequirementTypes.ps1")
+. (Join-Path $PSScriptRoot "UokCandidateShipmentRequirements.ps1")
+
 function Invoke-UokShipmentSupportCandidateScenario {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Headers,
@@ -6,12 +9,22 @@ function Invoke-UokShipmentSupportCandidateScenario {
         [Parameter(Mandatory = $true)][long]$Stamp
     )
 
-    foreach ($moduleName in @("contacts.core", "locations.core", "routes.core", "shipments.core")) {
+    foreach ($moduleName in @(
+        "compliance.core",
+        "contacts.core",
+        "locations.core",
+        "routes.core",
+        "shipments.core"
+    )) {
         $installed = Invoke-UokJson -Method "POST" -Path "/api/modules/$moduleName/install" -Headers $Headers
         if ($installed.status -notin @("installed", "upgraded")) {
             throw "Shipment dependency install failed for ${moduleName}: $($installed | ConvertTo-Json -Depth 20)"
         }
     }
+
+    $documentTypes = New-UokShipmentRequirementDocumentTypes `
+        -OpsHeaders $OpsHeaders `
+        -Stamp $Stamp
 
     $shipper = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
         command_type = "CreateContact"
@@ -125,23 +138,30 @@ function Invoke-UokShipmentSupportCandidateScenario {
     }
     $shipmentId = $created.result.id
 
+    $requirementProof = Assert-UokShipmentDocumentRequirements `
+        -Headers $Headers `
+        -OpsHeaders $OpsHeaders `
+        -ViewerHeaders $ViewerHeaders `
+        -ShipmentId $shipmentId `
+        -DocumentTypes $documentTypes `
+        -Stamp $Stamp
+
     $updated = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
         command_type = "UpdateShipment"
         payload = @{
             shipment_id = $shipmentId
-            expected_version = 1
+            expected_version = $requirementProof.shipment_version
             planned_departure_on = "2026-08-02"
             planned_arrival_on = "2026-08-22"
         }
         idempotency_key = "uok-shipment-update-$Stamp"
     }
-    if ($updated.result.version -ne 2 -or $updated.result.planned_departure_on -ne "2026-08-02") {
+    if ($updated.result.version -ne 3 -or $updated.result.planned_departure_on -ne "2026-08-02") {
         throw "Shipment update is invalid: $($updated | ConvertTo-Json -Depth 20)"
     }
 
-    $version = 2
+    $version = 3
     foreach ($transition in @(
-        @{ status = "planned"; reason = "Candidate plan approved" },
         @{ status = "in_transit"; reason = "Candidate departed origin" },
         @{ status = "arrived"; reason = "Candidate arrived at V.O.C." },
         @{ status = "closed"; reason = "Candidate movement complete" }
@@ -184,5 +204,7 @@ function Invoke-UokShipmentSupportCandidateScenario {
         origin_location_id = $origin.result.id
         destination_location_id = $destination.result.id
         route_definition_id = $route.result.id
+        bill_of_lading_document_type_id = $documentTypes.bill_of_lading_id
+        required_document_requirement_id = $requirementProof.required_requirement_id
     }
 }

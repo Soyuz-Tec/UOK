@@ -75,7 +75,7 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["checks"]["owned_table_claims_valid"] is True
     assert extension_contract["checks"]["owned_tables_resolve_to_models"] is True
     assert contracts["model_registry"]["ok"] is True
-    assert contracts["model_registry"]["model_count"] == 60
+    assert contracts["model_registry"]["model_count"] == 62
     assert extension_contract["violations"] == []
 
 
@@ -132,9 +132,16 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     for entity in ("Product", "Location", "Route"):
         for action in ("Create", "Update", "Archive", "Restore"):
             assert f"{action}{entity}Definition" in handlers
-    assert {"CreateShipment", "UpdateShipment", "TransitionShipmentStatus"}.issubset(
-        handlers
-    )
+    shipment_commands = {
+        "AddShipmentDocumentRequirement",
+        "CreateShipment",
+        "RemoveShipmentDocumentRequirement",
+        "SetShipmentDocumentRequirementStatus",
+        "TransitionShipmentStatus",
+        "UpdateShipment",
+        "UpdateShipmentDocumentRequirement",
+    }
+    assert shipment_commands.issubset(handlers)
     assert "ImportContactsCsv" in handlers
     assert "GenerateReport" in handlers
     assert "DeleteReportArtifact" in handlers
@@ -160,7 +167,7 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     for entity, permission in (("Product", "products.manage"), ("Location", "locations.manage"), ("Route", "routes.manage")):
         for action in ("Create", "Update", "Archive", "Restore"):
             assert permissions[f"{action}{entity}Definition"] == permission
-    for command_name in ("CreateShipment", "UpdateShipment", "TransitionShipmentStatus"):
+    for command_name in shipment_commands:
         assert permissions[command_name] == "shipments.manage"
     assert permissions["RestoreContact"] == "contacts.restore"
     assert permissions["GenerateReport"] == "reports.render"
@@ -210,6 +217,8 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
         "product_name_history",
         "report_artifacts",
         "shipments",
+        "shipment_document_requirements",
+        "shipment_document_requirement_history",
         "shipment_status_history",
     }.issubset(declared_module_table_names())
 
@@ -232,6 +241,16 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
     )
     assert "/api/locations/definitions/{location_definition_id}/name-history" in app_paths
     assert "/api/shipments/records" in app_paths
+    assert "/api/shipments/document-type-options" in app_paths
+    assert (
+        "/api/shipments/records/{shipment_id}/document-requirements"
+        in app_paths
+    )
+    assert (
+        "/api/shipments/records/{shipment_id}/document-requirements/"
+        "{requirement_id}/history"
+        in app_paths
+    )
     assert "/api/reports/formats" in app_paths
 
     main_source = (repo_root() / "src" / "uok" / "host" / "application.py").read_text(encoding="utf-8")

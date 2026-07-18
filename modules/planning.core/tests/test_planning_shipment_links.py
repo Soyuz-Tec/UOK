@@ -11,6 +11,7 @@ def test_planning_shipment_link_resolves_only_through_owner_facade(client: TestC
     admin = auth(client, "admin", "admin")
     ops = auth(client, "ops", "ops123")
     for module_name in (
+        "compliance.core",
         "contacts.core",
         "locations.core",
         "routes.core",

@@ -37,7 +37,7 @@ EXPECTED_PROVIDER_ORDER = (
     "routes.core",
     "shipments.core",
 )
-EXPECTED_MODEL_COUNT = 60
+EXPECTED_MODEL_COUNT = 62
 
 
 def _expected_registry() -> dict[str, dict[str, str]]:
@@ -131,6 +131,23 @@ def test_complete_registry_can_create_all_tables_in_sqlite() -> None:
             ).scalars()
         )
     assert set(Base.metadata.tables).issubset(table_names)
+
+
+def test_schema_identifiers_fit_postgresql_limit() -> None:
+    ensure_module_models_registered()
+    identifiers = {
+        table.name
+        for table in Base.metadata.tables.values()
+    }
+    for table in Base.metadata.tables.values():
+        identifiers.update(column.name for column in table.columns)
+        identifiers.update(
+            item.name
+            for item in (*table.constraints, *table.indexes)
+            if item.name is not None
+        )
+
+    assert sorted(name for name in identifiers if len(name) > 63) == []
 
 
 @pytest.mark.parametrize(

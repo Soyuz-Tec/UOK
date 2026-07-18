@@ -99,7 +99,7 @@ export const generatedModuleSurfaceCatalog = [
       moduleName: "shipments.core",
       sectionId: "shipments",
       webEntry: "modules/shipments.core/web/src/moduleSurface.tsx",
-      dependencies: ["contacts.core", "locations.core", "routes.core"]
+      dependencies: ["compliance.core", "contacts.core", "locations.core", "routes.core"]
     },
     surface: moduleSurface9
   },

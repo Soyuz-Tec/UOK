@@ -77,11 +77,117 @@ class ShipmentStatusHistory(Base):
     )
 
 
+class ShipmentDocumentRequirement(Base):
+    __tablename__ = "shipment_document_requirements"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    shipment_id: Mapped[str] = mapped_column(ForeignKey("shipments.id"), index=True)
+    compliance_document_type_id: Mapped[str] = mapped_column(String(36))
+    requirement_level: Mapped[str] = mapped_column(String(40))
+    status: Mapped[str] = mapped_column(String(40), default="missing", server_default="missing")
+    notes: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    version: Mapped[int] = mapped_column(BigInteger, default=1, server_default="1")
+    created_by_user_id: Mapped[str] = mapped_column(ForeignKey("users.id"))
+    updated_by_user_id: Mapped[str] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "organization_id",
+            "shipment_id",
+            "compliance_document_type_id",
+            name="uq_shipment_document_requirements_org_shipment_type",
+        ),
+        CheckConstraint(
+            "requirement_level IN ('required', 'optional')",
+            name="ck_shipment_document_requirements_level",
+        ),
+        CheckConstraint(
+            "status IN ('missing', 'received', 'waived', 'not_applicable')",
+            name="ck_shipment_document_requirements_status",
+        ),
+        CheckConstraint(
+            "version >= 1",
+            name="ck_shipment_document_requirements_version_positive",
+        ),
+        Index(
+            "ix_shipment_document_requirements_org_shipment_status",
+            "organization_id",
+            "shipment_id",
+            "status",
+        ),
+        Index(
+            "ix_shipment_document_requirements_org_type",
+            "organization_id",
+            "compliance_document_type_id",
+        ),
+    )
+
+
+class ShipmentDocumentRequirementHistory(Base):
+    __tablename__ = "shipment_document_requirement_history"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    shipment_id: Mapped[str] = mapped_column(ForeignKey("shipments.id"), index=True)
+    requirement_id: Mapped[str] = mapped_column(String(36), index=True)
+    compliance_document_type_id: Mapped[str] = mapped_column(String(36))
+    action: Mapped[str] = mapped_column(String(40))
+    requirement_level: Mapped[str] = mapped_column(String(40))
+    status: Mapped[str] = mapped_column(String(40))
+    notes: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    version: Mapped[int] = mapped_column(BigInteger)
+    reason: Mapped[str] = mapped_column(String(500))
+    changed_by_user_id: Mapped[str] = mapped_column(ForeignKey("users.id"))
+    changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    __table_args__ = (
+        CheckConstraint(
+            "action IN ('added', 'updated', 'status_changed', 'removed')",
+            name="ck_shipment_document_requirement_history_action",
+        ),
+        CheckConstraint(
+            "requirement_level IN ('required', 'optional')",
+            name="ck_shipment_document_requirement_history_level",
+        ),
+        CheckConstraint(
+            "status IN ('missing', 'received', 'waived', 'not_applicable')",
+            name="ck_shipment_document_requirement_history_status",
+        ),
+        CheckConstraint(
+            "version >= 1",
+            name="ck_shipment_document_requirement_history_version_positive",
+        ),
+        Index(
+            "ix_shipment_document_requirement_history_org_shipment_changed",
+            "organization_id",
+            "shipment_id",
+            "changed_at",
+        ),
+        Index(
+            "ix_shipment_document_requirement_history_org_req_changed",
+            "organization_id",
+            "requirement_id",
+            "changed_at",
+        ),
+    )
+
+
 def owned_models() -> dict[str, type]:
     return {
         "Shipment": Shipment,
+        "ShipmentDocumentRequirement": ShipmentDocumentRequirement,
+        "ShipmentDocumentRequirementHistory": ShipmentDocumentRequirementHistory,
         "ShipmentStatusHistory": ShipmentStatusHistory,
     }
 
 
-__all__ = ["Shipment", "ShipmentStatusHistory", "owned_models"]
+__all__ = [
+    "Shipment",
+    "ShipmentDocumentRequirement",
+    "ShipmentDocumentRequirementHistory",
+    "ShipmentStatusHistory",
+    "owned_models",
+]

@@ -344,6 +344,90 @@
         "title": "ComplianceDocumentTypeNameHistoryResponse",
         "type": "object"
       },
+      "ComplianceDocumentTypeReferenceResponse": {
+        "properties": {
+          "canonical_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canonical Name"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "compliance_document_type_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compliance Document Type Id"
+          },
+          "lifecycle_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lifecycle Status"
+          },
+          "status": {
+            "enum": [
+              "ready",
+              "unavailable",
+              "denied",
+              "missing"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "status_summary": {
+            "title": "Status Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "compliance_document_type_id",
+          "status",
+          "code",
+          "canonical_name",
+          "category",
+          "lifecycle_status",
+          "status_summary"
+        ],
+        "title": "ComplianceDocumentTypeReferenceResponse",
+        "type": "object"
+      },
       "ComplianceDocumentTypeResponse": {
         "properties": {
           "archived_at": {
@@ -5580,6 +5664,265 @@
           "location"
         ],
         "title": "RouteStopResponse",
+        "type": "object"
+      },
+      "ShipmentDocumentRequirementHistoryResponse": {
+        "properties": {
+          "action": {
+            "enum": [
+              "added",
+              "updated",
+              "status_changed",
+              "removed"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "changed_at": {
+            "format": "date-time",
+            "title": "Changed At",
+            "type": "string"
+          },
+          "changed_by_user_id": {
+            "title": "Changed By User Id",
+            "type": "string"
+          },
+          "compliance_document_type_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compliance Document Type Id"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/ComplianceDocumentTypeReferenceResponse"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "requirement_id": {
+            "title": "Requirement Id",
+            "type": "string"
+          },
+          "requirement_level": {
+            "enum": [
+              "required",
+              "optional"
+            ],
+            "title": "Requirement Level",
+            "type": "string"
+          },
+          "shipment_id": {
+            "title": "Shipment Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "missing",
+              "received",
+              "waived",
+              "not_applicable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "shipment_id",
+          "requirement_id",
+          "compliance_document_type_id",
+          "action",
+          "requirement_level",
+          "status",
+          "notes",
+          "version",
+          "reason",
+          "changed_by_user_id",
+          "changed_at",
+          "document_type"
+        ],
+        "title": "ShipmentDocumentRequirementHistoryResponse",
+        "type": "object"
+      },
+      "ShipmentDocumentRequirementListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ShipmentDocumentRequirementResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ShipmentDocumentRequirementSummaryResponse"
+          }
+        },
+        "required": [
+          "items",
+          "summary"
+        ],
+        "title": "ShipmentDocumentRequirementListResponse",
+        "type": "object"
+      },
+      "ShipmentDocumentRequirementResponse": {
+        "properties": {
+          "compliance_document_type_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Compliance Document Type Id"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by_user_id": {
+            "title": "Created By User Id",
+            "type": "string"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/ComplianceDocumentTypeReferenceResponse"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "requirement_level": {
+            "enum": [
+              "required",
+              "optional"
+            ],
+            "title": "Requirement Level",
+            "type": "string"
+          },
+          "shipment_id": {
+            "title": "Shipment Id",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "missing",
+              "received",
+              "waived",
+              "not_applicable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "updated_by_user_id": {
+            "title": "Updated By User Id",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "shipment_id",
+          "compliance_document_type_id",
+          "requirement_level",
+          "status",
+          "notes",
+          "version",
+          "created_by_user_id",
+          "updated_by_user_id",
+          "created_at",
+          "updated_at",
+          "document_type"
+        ],
+        "title": "ShipmentDocumentRequirementResponse",
+        "type": "object"
+      },
+      "ShipmentDocumentRequirementSummaryResponse": {
+        "properties": {
+          "optional_total": {
+            "title": "Optional Total",
+            "type": "integer"
+          },
+          "required_missing": {
+            "title": "Required Missing",
+            "type": "integer"
+          },
+          "required_not_applicable": {
+            "title": "Required Not Applicable",
+            "type": "integer"
+          },
+          "required_received": {
+            "title": "Required Received",
+            "type": "integer"
+          },
+          "required_satisfied": {
+            "title": "Required Satisfied",
+            "type": "integer"
+          },
+          "required_total": {
+            "title": "Required Total",
+            "type": "integer"
+          },
+          "required_waived": {
+            "title": "Required Waived",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "required_total",
+          "required_satisfied",
+          "required_missing",
+          "required_received",
+          "required_waived",
+          "required_not_applicable",
+          "optional_total"
+        ],
+        "title": "ShipmentDocumentRequirementSummaryResponse",
         "type": "object"
       },
       "ShipmentResponse": {
@@ -19006,6 +19349,59 @@
         ]
       }
     },
+    "/api/shipments/document-type-options": {
+      "get": {
+        "operationId": "document_type_options_api_shipments_document_type_options_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ComplianceDocumentTypeReferenceResponse"
+                  },
+                  "title": "Response Document Type Options Api Shipments Document Type Options Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Type Options",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
     "/api/shipments/location-options": {
       "get": {
         "operationId": "location_options_api_shipments_location_options_get",
@@ -19255,6 +19651,135 @@
           }
         },
         "summary": "Record",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/shipments/records/{shipment_id}/document-requirements": {
+      "get": {
+        "operationId": "document_requirements_api_shipments_records__shipment_id__document_requirements_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentDocumentRequirementListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Requirements",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/shipments/records/{shipment_id}/document-requirements/{requirement_id}/history": {
+      "get": {
+        "operationId": "document_requirement_history_api_shipments_records__shipment_id__document_requirements__requirement_id__history_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "requirement_id",
+            "required": true,
+            "schema": {
+              "title": "Requirement Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ShipmentDocumentRequirementHistoryResponse"
+                  },
+                  "title": "Response Document Requirement History Api Shipments Records  Shipment Id  Document Requirements  Requirement Id  History Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Document Requirement History",
         "tags": [
           "shipments"
         ]

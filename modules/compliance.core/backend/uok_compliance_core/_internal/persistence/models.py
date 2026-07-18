@@ -61,7 +61,6 @@ class ComplianceDocumentTypeNameHistory(Base):
     organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
     compliance_document_type_id: Mapped[str] = mapped_column(
         ForeignKey("compliance_document_types.id"),
-        index=True,
     )
     previous_name: Mapped[str] = mapped_column(String(180))
     new_name: Mapped[str] = mapped_column(String(180))
@@ -70,6 +69,10 @@ class ComplianceDocumentTypeNameHistory(Base):
     changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     __table_args__ = (
+        Index(
+            "ix_compliance_document_type_name_history_type_id",
+            "compliance_document_type_id",
+        ),
         Index(
             "ix_compliance_document_type_name_history_org_type_changed",
             "organization_id",

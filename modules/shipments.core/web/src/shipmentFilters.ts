@@ -1,6 +1,16 @@
 import { partyReferenceLabel } from "./partyReferenceDisplay";
 import type { Shipment, ShipmentSort, ShipmentSortDirection, ShipmentStatus } from "./types";
 
+export const shipmentStatusOptions = [
+  { value: "all", label: "All shipments" },
+  { value: "draft", label: "Draft" },
+  { value: "planned", label: "Planned" },
+  { value: "in_transit", label: "In transit" },
+  { value: "arrived", label: "Arrived" },
+  { value: "closed", label: "Closed" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
 export function filterAndSortShipments(shipments: Shipment[], options: {
   query: string;
   status: "all" | ShipmentStatus;

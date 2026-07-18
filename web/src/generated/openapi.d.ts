@@ -2290,6 +2290,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/shipments/document-type-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Type Options */
+        get: operations["document_type_options_api_shipments_document_type_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/shipments/location-options": {
         parameters: {
             query?: never;
@@ -2350,6 +2367,40 @@ export interface paths {
         };
         /** Record */
         get: operations["record_api_shipments_records__shipment_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/document-requirements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Requirements */
+        get: operations["document_requirements_api_shipments_records__shipment_id__document_requirements_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/document-requirements/{requirement_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Requirement History */
+        get: operations["document_requirement_history_api_shipments_records__shipment_id__document_requirements__requirement_id__history_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2531,6 +2582,26 @@ export interface components {
             previous_name: string;
             /** Reason */
             reason: string;
+        };
+        /** ComplianceDocumentTypeReferenceResponse */
+        ComplianceDocumentTypeReferenceResponse: {
+            /** Canonical Name */
+            canonical_name: string | null;
+            /** Category */
+            category: string | null;
+            /** Code */
+            code: string | null;
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            /** Lifecycle Status */
+            lifecycle_status: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "unavailable" | "denied" | "missing";
+            /** Status Summary */
+            status_summary: string;
         };
         /** ComplianceDocumentTypeResponse */
         ComplianceDocumentTypeResponse: {
@@ -4182,6 +4253,107 @@ export interface components {
              * @enum {string}
              */
             stop_role: "origin" | "waypoint" | "destination";
+        };
+        /** ShipmentDocumentRequirementHistoryResponse */
+        ShipmentDocumentRequirementHistoryResponse: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "added" | "updated" | "status_changed" | "removed";
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            document_type: components["schemas"]["ComplianceDocumentTypeReferenceResponse"];
+            /** Id */
+            id: string;
+            /** Notes */
+            notes: string | null;
+            /** Reason */
+            reason: string;
+            /** Requirement Id */
+            requirement_id: string;
+            /**
+             * Requirement Level
+             * @enum {string}
+             */
+            requirement_level: "required" | "optional";
+            /** Shipment Id */
+            shipment_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "missing" | "received" | "waived" | "not_applicable";
+            /** Version */
+            version: number;
+        };
+        /** ShipmentDocumentRequirementListResponse */
+        ShipmentDocumentRequirementListResponse: {
+            /** Items */
+            items: components["schemas"]["ShipmentDocumentRequirementResponse"][];
+            summary: components["schemas"]["ShipmentDocumentRequirementSummaryResponse"];
+        };
+        /** ShipmentDocumentRequirementResponse */
+        ShipmentDocumentRequirementResponse: {
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            document_type: components["schemas"]["ComplianceDocumentTypeReferenceResponse"];
+            /** Id */
+            id: string;
+            /** Notes */
+            notes: string | null;
+            /**
+             * Requirement Level
+             * @enum {string}
+             */
+            requirement_level: "required" | "optional";
+            /** Shipment Id */
+            shipment_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "missing" | "received" | "waived" | "not_applicable";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
+        };
+        /** ShipmentDocumentRequirementSummaryResponse */
+        ShipmentDocumentRequirementSummaryResponse: {
+            /** Optional Total */
+            optional_total: number;
+            /** Required Missing */
+            required_missing: number;
+            /** Required Not Applicable */
+            required_not_applicable: number;
+            /** Required Received */
+            required_received: number;
+            /** Required Satisfied */
+            required_satisfied: number;
+            /** Required Total */
+            required_total: number;
+            /** Required Waived */
+            required_waived: number;
         };
         /** ShipmentResponse */
         ShipmentResponse: {
@@ -11469,6 +11641,37 @@ export interface operations {
             };
         };
     };
+    document_type_options_api_shipments_document_type_options_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceDocumentTypeReferenceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     location_options_api_shipments_location_options_get: {
         parameters: {
             query?: never;
@@ -11587,6 +11790,73 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ShipmentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_requirements_api_shipments_records__shipment_id__document_requirements_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentRequirementListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_requirement_history_api_shipments_records__shipment_id__document_requirements__requirement_id__history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+                requirement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentRequirementHistoryResponse"][];
                 };
             };
             /** @description Validation Error */

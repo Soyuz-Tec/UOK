@@ -79,6 +79,8 @@
   },
   "shipments.core": {
     "Shipment": "shipments",
+    "ShipmentDocumentRequirement": "shipment_document_requirements",
+    "ShipmentDocumentRequirementHistory": "shipment_document_requirement_history",
     "ShipmentStatusHistory": "shipment_status_history"
   }
 }

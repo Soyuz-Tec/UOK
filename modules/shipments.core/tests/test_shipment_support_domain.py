@@ -14,7 +14,13 @@ from uok_shipments_core._internal.delivery.schemas import (
     ShipmentTransitionRequest,
     ShipmentUpdateRequest,
 )
-from uok_shipments_core._internal.persistence.models import Shipment, ShipmentStatusHistory, owned_models
+from uok_shipments_core._internal.persistence.models import (
+    Shipment,
+    ShipmentDocumentRequirement,
+    ShipmentDocumentRequirementHistory,
+    ShipmentStatusHistory,
+    owned_models,
+)
 from uok_shipments_core.public_api import ShipmentReferenceDTO
 from uok_shipments_core.public_api import __all__ as public_symbols
 
@@ -140,6 +146,8 @@ def test_response_and_public_reference_dtos_are_frozen_and_exclude_tenant_identi
 def test_shipment_owner_contract_manifest_and_migration_are_exact() -> None:
     assert owned_models() == {
         "Shipment": Shipment,
+        "ShipmentDocumentRequirement": ShipmentDocumentRequirement,
+        "ShipmentDocumentRequirementHistory": ShipmentDocumentRequirementHistory,
         "ShipmentStatusHistory": ShipmentStatusHistory,
     }
     assert public_symbols == [
@@ -158,12 +166,49 @@ def test_shipment_owner_contract_manifest_and_migration_are_exact() -> None:
     assert "REFERENCES parties" not in migration
     assert "REFERENCES location_definitions" not in migration
     assert "REFERENCES route_definitions" not in migration
+    requirement_migration = (
+        root / "migrations" / "002_shipment_document_requirements.sql"
+    ).read_text(encoding="utf-8")
+    assert "CREATE TABLE IF NOT EXISTS shipment_document_requirements" in requirement_migration
+    assert "CREATE TABLE IF NOT EXISTS shipment_document_requirement_history" in requirement_migration
+    assert "REFERENCES shipments(id)" in requirement_migration
+    assert "REFERENCES compliance_document_types" not in requirement_migration
 
     manifest = load_module_manifests()["shipments.core"]
     assert manifest["kind"] == "business_module"
-    assert manifest["dependencies"] == ["contacts.core", "locations.core", "routes.core"]
+    assert manifest["dependencies"] == [
+        "compliance.core",
+        "contacts.core",
+        "locations.core",
+        "routes.core",
+    ]
     assert manifest["api_prefixes"] == ["/api/shipments"]
     assert manifest["model_exports"] == "uok_shipments_core._internal.persistence.models:owned_models"
-    assert set(manifest["commands"]) == {"CreateShipment", "UpdateShipment", "TransitionShipmentStatus"}
-    assert set(manifest["events"]) == {"ShipmentCreated", "ShipmentUpdated", "ShipmentStatusTransitioned"}
+    assert set(manifest["commands"]) == {
+        "AddShipmentDocumentRequirement",
+        "CreateShipment",
+        "RemoveShipmentDocumentRequirement",
+        "SetShipmentDocumentRequirementStatus",
+        "TransitionShipmentStatus",
+        "UpdateShipment",
+        "UpdateShipmentDocumentRequirement",
+    }
+    assert set(manifest["events"]) == {
+        "ShipmentCreated",
+        "ShipmentDocumentRequirementAdded",
+        "ShipmentDocumentRequirementRemoved",
+        "ShipmentDocumentRequirementStatusChanged",
+        "ShipmentDocumentRequirementUpdated",
+        "ShipmentStatusTransitioned",
+        "ShipmentUpdated",
+    }
+    assert manifest["owned_tables"] == [
+        "Shipment",
+        "ShipmentDocumentRequirement",
+        "ShipmentDocumentRequirementHistory",
+        "ShipmentStatusHistory",
+        "CommandLog:shipments.core",
+        "EventRecord:Shipment",
+        "EventRecord:ShipmentDocumentRequirement",
+    ]
     assert set(manifest["permissions"]) == {"shipments.read", "shipments.manage"}

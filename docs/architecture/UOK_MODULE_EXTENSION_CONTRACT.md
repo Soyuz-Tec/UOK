@@ -129,9 +129,9 @@ New extension points require an architecture update and a failing validation tes
 - Module → Host production exceptions are path-and-symbol exact:
   `uok.host.database.get_db` and `uok.host.security.current_actor` in the 17
   documented HTTP adapters, plus `uok.host.commands.execute_command` in the
-  Calendar, Contacts, and Planning command adapters. Engine, `SessionLocal`,
-  pool, application, host registries, and every unlisted host import are
-  forbidden.
+  Calendar, Contacts, and Planning command adapters, for 37 exact allowed
+  imports in total. Engine, `SessionLocal`, pool, application, host registries,
+  and every unlisted host import are forbidden.
 - Product, cargo, CRM, accounting, inventory, document, and industry-specific logic must not be embedded in the kernel.
 - A module may use shared UOK database tables only when its manifest declares the table or shared-table scope it owns.
 - A module must not require manual edits to unrelated modules for normal install, upgrade, disable, uninstall, or maintenance workflows.
@@ -144,8 +144,18 @@ New extension points require an architecture update and a failing validation tes
 - `agents.core` is an inert `planned` capability scaffold: it is not installable, updatable, maintainable, permission-bearing, or runtime-proven.
 - `calendar.core`, `communications.core`, `compliance.core`, `contacts.core`, `locations.core`, `planning.core`, `product.master`, `reports.core`, and `routes.core` are optional `runtime_proven` capability modules, and `shipments.core` is an optional `runtime_proven` business module. All have manifest-declared backend hooks and module-owned verifiers.
 - Their capability ORM mappings live in the owning backend packages and
-  register beside nine product-neutral kernel mappings on one SQLAlchemy
-  metadata graph. The former global ORM compatibility imports are retired.
+  register as 53 feature mappings beside nine product-neutral kernel mappings
+  (62 total) on one SQLAlchemy metadata graph. The former global ORM
+  compatibility imports are retired.
+- Current manifests declare 105 commands, 115 events, 11 candidate verifiers,
+  and 10 workbench surfaces. Host adapter scope remains 17 documented HTTP
+  adapters and 37 exact allowed imports.
+- Shipment requirement metadata stays owned by `shipments.core`.
+  `compliance.core` owns Document Type vocabulary, has no feature dependency,
+  and is consumed only through
+  `ComplianceDocumentTypeReferenceDTO` and
+  `resolve_compliance_document_type_references`; no foreign ORM/table access or
+  reverse dependency is allowed.
 - Apps Manager, Calendar, Communications, Compliance Document Types, Contacts, Location Master, Planning, Product Master, Route/Corridor Master, and Shipment Support declare `web_surface`; their React source, module-local CSS, entrypoints, and frontend tests live below the owning module roots and are composed through the generated compile-time catalog.
 - Contacts owns its frontend DTOs, state, reads, preferences, storage keys, and
   commands. The shell passes only the neutral host port, and architecture tests
