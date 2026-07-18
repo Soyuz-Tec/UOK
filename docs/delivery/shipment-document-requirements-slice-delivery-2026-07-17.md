@@ -1,6 +1,8 @@
 # Shipment Document Requirements Slice Delivery – 2026-07-17
 
-**Status:** Delivered and locally qualified on the rebuilt PostgreSQL candidate.
+**Status:** Delivered, locally qualified on the rebuilt PostgreSQL candidate,
+and published as draft PR
+[#67](https://github.com/Soyuz-Tec/UOK/pull/67) with green code-bearing CI.
 
 **Candidate:** `UOK-3.1.0-alpha.3`
 
@@ -219,7 +221,7 @@ now mirrors the validated manifest order.
 | Candidate verifier | All 11 module verifiers passed in dependency order |
 | Manual desktop browser | Added required type, observed missing summary, set Received, observed version 2 and zero missing |
 | Manual 375px browser | No horizontal or interactive overflow, no file input, no console error |
-| Draft PR / hosted CI | Pending publication |
+| Draft PR / hosted CI | [PR #67](https://github.com/Soyuz-Tec/UOK/pull/67), stacked on `feature/compliance-document-type-slice`; code-bearing SHA `5cf62f329dd7dc0a335bb84a99e6c0ab0f8966d8`; [push run 29623760164](https://github.com/Soyuz-Tec/UOK/actions/runs/29623760164) and [PR run 29623784824](https://github.com/Soyuz-Tec/UOK/actions/runs/29623784824) passed |
 
 The first Rebuild attempt correctly failed closed on an overlong PostgreSQL
 index name. The identifier was shortened in both owner model and migration,
