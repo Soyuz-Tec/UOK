@@ -4,7 +4,7 @@ version = "3.1.0a3"
 description = "UOK baseline for real development."
 requires-python = ">=3.14"
 dependencies = [
-  "fastapi==0.139.0",
+  "fastapi==0.139.2",
   "uvicorn[standard]==0.50.0",
   "sqlalchemy==2.0.51",
   "pydantic==2.13.4",
