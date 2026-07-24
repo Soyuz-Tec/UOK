@@ -1,6 +1,6 @@
 # Shipment Document Expiry Readiness Slice Delivery – 2026-07-23
 
-**Status:** Implementation and qualification in progress.
+**Status:** Qualified and delivery evidence recorded.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -55,10 +55,17 @@ when no current or future eligible expiry remains.
 
 Implementation evidence:
 
-- Exact owner files: **Pending final diff**
-- Exact facade compatibility result: **Pending verification**
-- Tenant/authorization proof: **Pending verification**
-- No foreign ORM/table/raw-SQL proof: **Pending verification**
+- Exact owner files:
+  `readiness_snapshot_read_service.py`, `readiness_snapshot_service.py`,
+  `public_api.py`, and focused Shipment owner tests/README updates.
+- Facade compatibility: passed. Intelligence still imports only
+  `ShipmentReadinessSnapshotDTO` and
+  `resolve_shipment_readiness_snapshots`.
+- Tenant/authorization: passed focused integration and tenant-isolation tests,
+  including fail-closed owner-list behavior.
+- Foreign data boundary: passed
+  `tests/test_intelligence_shipment_data_boundary.py`; Intelligence adds no
+  Shipment ORM, table, raw SQL, file, or binary access.
 
 ## Expected Intelligence Contract
 
@@ -83,16 +90,24 @@ The existing three readiness bands remain. The new fixed reasons are:
 
 Implementation evidence:
 
-- Exact Intelligence files: **Pending final diff**
-- Required-date validation: **Pending verification**
-- Boundary-date derivation: **Pending verification**
-- Immutability and determinism: **Pending verification**
+- Exact Intelligence files: delivery API, expiry policy, readiness derivation,
+  schemas, Shipment gateway, candidate verifier, focused tests, and
+  module-local READMEs.
+- Required-date validation: passed exact date-only API coverage; timestamps,
+  numbers, missing values, invalid dates, and overflow values fail closed.
+- Boundary-date derivation: passed outside-horizon, inclusive day 30,
+  same-day, expired day +1, null expiry, ineligible lifecycle, and
+  `date.max` coverage.
+- Immutability/determinism: passed repeated-read tests and exact-source
+  candidate proof; no persistence, cache, command, event, or mutation path was
+  added.
 
 ## Expected Workbench Contract
 
-The module-owned workbench must show and send a visible **As of (UTC)** date,
-identify the inclusive 30-day horizon, expose the owner aggregate counts, and
-render fixed reasons with localized, accessible, non-color-only meaning.
+The module-owned workbench shows and sends a visible **As-of date** with the
+adjacent **Evaluation timezone: UTC** policy, identifies the inclusive 30-day
+horizon, exposes the owner aggregate counts, and renders fixed reasons with
+localized, accessible, non-color-only meaning.
 
 Existing read-only search, readiness filters, list/detail selection, safe owner
 link, Refresh, keyboard behavior, responsive layout, tenant-session safety, and
@@ -100,10 +115,16 @@ module lifecycle behavior must remain.
 
 Implementation evidence:
 
-- Exact frontend files: **Pending final diff**
-- Every request includes explicit `as_of`: **Pending verification**
-- No mutation controls or foreign API calls: **Pending verification**
-- Localization, RTL, keyboard, and responsive proof: **Pending verification**
+- Exact frontend files: Shipment Readiness workspace, evaluation control,
+  list/detail/table, hook/API/types/display helpers, module CSS, localization,
+  and focused read/session/expiry tests.
+- Explicit request date: passed API mock assertions and live browser boundary
+  changes; an empty control does not issue a readiness request.
+- Read-only boundary: no mutation control or foreign endpoint is exposed; the
+  only owner navigation is the same-origin Shipment detail link.
+- Localization/RTL/keyboard/responsive: passed focused tests, Enter row
+  selection, filtered-row proof, and desktop plus 375-by-812 CSS-pixel live
+  proof without horizontal overflow.
 
 ## Architecture And Data Disposition
 
@@ -116,38 +137,40 @@ The fixed UTC v1 product rule is explicit because UOK currently has no
 organization or tenant time-zone setting. Configurable tenant time zones are
 deferred to a separate decision and migration as applicable.
 
-Expected unchanged totals and surfaces:
+Validated unchanged totals and surfaces:
 
-- No new module: **Pending final contract validation**
-- No new table or ORM mapping: **Pending final contract validation**
-- No SQL migration: **Pending final contract validation**
-- No command or event: **Pending final contract validation**
-- No Host/Kernel or shell-contract expansion: **Pending architecture tests**
+- No new module: passed manifest/catalog/module-folder gates.
+- No new table or ORM mapping: passed model-claim and data-boundary gates.
+- No SQL migration: passed migration-discipline and generated-contract gates.
+- No command or event: passed source review and focused regression coverage.
+- No Host/Kernel or shell-contract expansion: passed public-facade,
+  Host/Kernel backend, shell, physical-boundary, and startup-boundary tests.
 
 ## Verification Record
 
 | Gate | Result |
 |---|---|
-| Focused Shipment owner expiry tests | Pending |
-| Focused Intelligence domain/API/tenant tests | Pending |
-| Existing Shipment Readiness regression tests | Pending |
-| Intelligence-Shipment boundary tests | Pending |
-| Public facade, Host/Kernel, shell, manifest, physical, and catalog gates | Pending |
-| Python compile and Ruff | Pending |
-| Documentation naming and quality audit | Pending |
-| Generated OpenAPI/TypeScript/catalog contracts | Pending |
-| Full Python suite | Pending |
-| Full frontend suite and type check | Pending |
-| Static production build | Pending |
-| TechnologyAudit | Pending |
-| EngineeringEvidence | Pending |
-| Exact-source PostgreSQL Rebuild and `/health` | Pending |
-| All candidate verifiers | Pending |
-| Live desktop and 375-CSS-pixel browser proof | Pending |
-| Zero browser console errors | Pending |
-| GitHub preflight/readiness | Pending |
-| Stacked draft pull request | Pending |
-| Exact-final-head hosted CI | Pending |
+| Focused Shipment owner expiry tests | Passed within 66 focused backend tests |
+| Focused Intelligence domain/API/tenant tests | Passed within 66 focused backend tests |
+| Existing Shipment Readiness regression tests | Passed |
+| Intelligence-Shipment boundary tests | Passed |
+| Public facade, Host/Kernel, shell, manifest, physical, and catalog gates | Passed |
+| Python compile and Ruff | Passed |
+| Documentation naming and quality audit | Passed |
+| Generated OpenAPI/TypeScript/catalog contracts | Passed |
+| Full Python suite | Passed: 160 unique test files |
+| Full frontend suite and type check | Passed: 134 files / 494 tests |
+| Static production build | Passed |
+| Playwright UI proof | Passed: 19 tests / 1 expected skip |
+| TechnologyAudit | Passed |
+| EngineeringEvidence | Passed: score 98 / grade A |
+| Exact-source PostgreSQL Rebuild and `/health` | Passed |
+| All candidate verifiers | Passed: 12 of 12 |
+| Live desktop and 375-CSS-pixel browser proof | Passed |
+| Zero browser console warnings/errors | Passed |
+| GitHub preflight/readiness | Passed |
+| Stacked draft pull request | Open: PR #74 |
+| Implementation-head hosted CI | Passed: push and pull-request candidate checks |
 
 ### Focused commands
 
@@ -177,13 +200,30 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 - Branch: `feature/shipment-document-expiry-readiness-slice`
 - Base branch: `feature/shipment-readiness-signals-slice`
-- Exact commit: **Pending**
-- Engineering evidence: **Pending**
-- OCI API image digest: **Pending**
-- Database image digest: **Pending**
-- `/health` result: **Pending**
-- Capacity gate: **Pending**
-- Candidate-verifier result: **Pending**
+- Exact implementation commit:
+  `53dc65ff4abbfdb270b899804a51dfbb6e79ea07`
+- Exact base commit:
+  `5800105a79ef5e8b9420b07c92f192746081d03f`
+- Engineering evidence:
+  `var/evidence/engineering/uok_engineering_20260724T045549Z.json`
+  (local-only, clean head, score 98 / grade A).
+- OCI API image digest:
+  `8499cea58048e450cea588f55a579e3ec603fbfb4ab158f364e8dd0fab9514cf`
+- Database image digest:
+  `99d320a6265d9f49e7166e21518b664b9291dc203b9d63416c5875c8e3db7150`
+- `/health`: HTTP 200, `status=ok`, `name=UOK`,
+  `version=3.1.0-alpha.3`.
+- Capacity gate: offline and live policy passed with demand 50, usable
+  connections 97, and 47 remaining after declared demand.
+- Candidate verifier: all 12 module verifiers passed in catalog order.
+
+The first consolidated `Verify` candidate stage observed an older live API
+because a concurrent Codex task rebuilt the shared `uok` Compose project from
+the main worktree. The exact source/static stages had already passed. The
+conflicting task was identified and serialized; the exact image above was then
+rebuilt from this worktree, its source/OpenAPI markers were confirmed, and all
+12 candidate verifiers plus the live browser proof passed again. This was an
+environment ownership race, not a product-code failure.
 
 ## Browser Evidence
 
@@ -209,21 +249,47 @@ candidate rows solely to repeat those cases.
 
 Evidence:
 
-- Demo Shipment/code: **Pending**
-- Evaluation date: **Pending**
-- Exact counts and reasons: **Pending**
-- Header lifecycle/version before and after: **Pending**
-- Desktop/narrow proof: **Pending**
-- Console result: **Pending**
+- Demo Shipment/code:
+  `fef5c3b5-6591-40e8-baec-c3d20feadb8a` /
+  `RCN-AFRICA-VOC-1784872998047`; eligible verified instance expires
+  `2026-10-21`.
+- `2026-09-20`: Ready, 0 expired, 0 expiring soon; through
+  `2026-10-20`.
+- `2026-09-21`: Attention required, 0 expired, 1 expiring soon; inclusive
+  through `2026-10-21`; reason `expiring_document_present`.
+- `2026-10-21`: Attention required, 0 expired, 1 expiring soon.
+- `2026-10-22`: Attention required, 1 expired, 0 expiring soon; reason
+  `expired_document_present`.
+- Header/instance stability: Shipment stayed `closed`, header version 6;
+  document instance stayed version 4. The verifier returned to Ready after
+  its controlled boundary checks.
+- Desktop/narrow: 1498-CSS-pixel desktop and 375-by-812 narrow view passed;
+  narrow document/body width was 360 with no horizontal overflow.
+- Keyboard/filter/navigation: exact-code filtering produced one row, Enter
+  selected it, and the only owner link remained same-origin at
+  `/?view=shipments&shipment_id=fef5c3b5-6591-40e8-baec-c3d20feadb8a`.
+- Browser console: zero warnings/errors.
 
 ## GitHub Delivery
 
-- Prerequisite Shipment Readiness PR: **Pending final link/head**
+- Prerequisite Shipment Readiness PR:
+  [#73](https://github.com/Soyuz-Tec/UOK/pull/73), final evidence head
+  `5800105a79ef5e8b9420b07c92f192746081d03f`
 - Stacked document-expiry branch: `feature/shipment-document-expiry-readiness-slice`
-- Draft pull request: **Pending**
-- Exact final head: **Pending**
-- Hosted candidate-check run/job: **Pending**
-- Review disposition: **Pending**
+- Draft pull request: [#74](https://github.com/Soyuz-Tec/UOK/pull/74)
+- Exact implementation head:
+  `53dc65ff4abbfdb270b899804a51dfbb6e79ea07`
+- Implementation-head candidate checks:
+  - [push run 30071059157](https://github.com/Soyuz-Tec/UOK/actions/runs/30071059157)
+    / [job 89411838830](https://github.com/Soyuz-Tec/UOK/actions/runs/30071059157/job/89411838830):
+    passed.
+  - [pull-request run 30071076339](https://github.com/Soyuz-Tec/UOK/actions/runs/30071076339)
+    / [job 89411892092](https://github.com/Soyuz-Tec/UOK/actions/runs/30071076339/job/89411892092):
+    passed.
+- Exact evidence head and its hosted CI will be recorded in PR #74 after this
+  delivery record is committed.
+- Review disposition: independent final review found no remaining P0/P1
+  findings after exact date-only validation and the visible UTC-policy fix.
 
 ## Residual Risk
 
@@ -238,7 +304,9 @@ Shipment facade. Large future tenant volumes may require pagination or an
 owner-owned read model, but no persistence or cache is justified by this
 bounded slice.
 
-Final residual-risk disposition: **Pending qualification and review**
+Final residual-risk disposition: accepted for this bounded read-only slice.
+UTC remains an explicit visible v1 policy, and measured scale—not prediction—
+will determine whether a future owner-owned read model is justified.
 
 ## Rollback
 
@@ -247,4 +315,5 @@ owns no data and performs no write, so there is no data migration, backfill,
 cache purge, or data rollback. Shipment expiry dates and histories remain
 untouched.
 
-Rollback proof: **Pending final delivery review**
+Rollback proof: final delivery review confirmed there is no owned state,
+migration, cache, command, event, or backfill to reverse.
