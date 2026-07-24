@@ -17,6 +17,8 @@ def test_group_candidate_proves_etag_guarded_recoverable_lifecycle() -> None:
     assert 'Invoke-UokJson -Method "POST" -Path "/api/contacts/groups/$groupId/restore" -Headers $restoreHeaders' in script
     assert '$cleanupHeaders["If-Match"] = $restoredGroup.etag' in script
     assert 'Invoke-UokJson -Method "DELETE" -Path "/api/contacts/groups/$groupId" -Headers $cleanupHeaders' in script
+    assert "uok-contact-group-readd-$Stamp" in script
+    assert "uok-contact-group-membership-cleanup" not in script
 
     readme = (MODULE_ROOT / "verify" / "README.md").read_text(encoding="utf-8")
     assert "lifecycle evidence, not data-neutral cleanup" in readme

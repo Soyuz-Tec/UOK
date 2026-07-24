@@ -52,15 +52,6 @@ function Invoke-UokContactsCandidateGroupScenario {
         throw "Contact group membership re-add failed: $($regrouped | ConvertTo-Json -Depth 20)"
     }
 
-    $cleanupMembership = Invoke-UokJson -Method "POST" -Path "/api/commands" -Headers $OpsHeaders -Body @{
-        command_type = "RemoveContactFromGroup"
-        payload = @{ group_id = $groupId; party_id = $ContactId }
-        idempotency_key = "uok-contact-group-membership-cleanup-$Stamp"
-    }
-    if ($cleanupMembership.result.removed_count -lt 1) {
-        throw "Contact group membership cleanup failed: $($cleanupMembership | ConvertTo-Json -Depth 20)"
-    }
-
     $currentGroupResponse = Invoke-UokJson -Method "GET" -Path "/api/contacts/groups?include_empty=true&include_archived=true" -Headers $OpsHeaders
     # Windows PowerShell 5.1 can retain a top-level JSON array as one pipeline
     # object. Re-pipe it before selecting the exact candidate-created group.
