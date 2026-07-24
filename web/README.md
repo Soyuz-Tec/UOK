@@ -6,6 +6,12 @@
 
 The root `web` package owns the product-neutral React + TypeScript + Vite workbench shell. It is one dependency and build graph that compiles both shell source and validated module-owned frontend entries.
 
+`npm ci` runs a version-guarded compatibility patch for
+`@redocly/openapi-core@1.34.17` so the development-only OpenAPI generator can
+use patched `js-yaml@5.2.2`. The install fails closed if the Redocly package
+changes. Remove the override and patch together when `openapi-typescript`
+supports a non-vulnerable Redocly release directly.
+
 ## Shell Ownership
 
 - `web/src/app` owns product-neutral shell orchestration and navigation.

@@ -1,0 +1,66 @@
+const fs = require("node:fs");
+const path = require("node:path");
+
+const redoclyRoot = path.join(
+  path.dirname(__dirname),
+  "node_modules",
+  "openapi-typescript",
+  "node_modules",
+  "@redocly",
+  "openapi-core",
+);
+const packageJson = JSON.parse(
+  fs.readFileSync(path.join(redoclyRoot, "package.json"), "utf8"),
+);
+if (packageJson.version !== "1.34.17") {
+  throw new Error(
+    `Unsupported @redocly/openapi-core version ${packageJson.version}; ` +
+      "review and remove or update the js-yaml compatibility patch.",
+  );
+}
+
+const adapterPath = path.join(redoclyRoot, "lib", "js-yaml", "index.js");
+const source = fs.readFileSync(adapterPath, "utf8");
+const vulnerableAdapter = `const js_yaml_1 = require("js-yaml");
+const DEFAULT_SCHEMA_WITHOUT_TIMESTAMP = js_yaml_1.JSON_SCHEMA.extend({
+    implicit: [js_yaml_1.types.merge],
+    explicit: [js_yaml_1.types.binary, js_yaml_1.types.omap, js_yaml_1.types.pairs, js_yaml_1.types.set],
+});
+const parseYaml = (str, opts) => (0, js_yaml_1.load)(str, { schema: DEFAULT_SCHEMA_WITHOUT_TIMESTAMP, ...opts });`;
+const patchedAdapter = `const js_yaml_1 = require("js-yaml");
+const DEFAULT_SCHEMA_WITHOUT_TIMESTAMP = js_yaml_1.CORE_SCHEMA.withTags(
+    js_yaml_1.mergeTag,
+    js_yaml_1.binaryTag,
+    js_yaml_1.omapTag,
+    js_yaml_1.pairsTag,
+    js_yaml_1.setTag,
+);
+const parseYaml = (str, opts) => {
+    const documents = (0, js_yaml_1.loadAll)(str, {
+        schema: DEFAULT_SCHEMA_WITHOUT_TIMESTAMP,
+        ...opts,
+    });
+    if (documents.length === 0) {
+        return str.trim() === "" ? undefined : null;
+    }
+    if (documents.length > 1) {
+        throw new js_yaml_1.YAMLException(
+            "expected a single document in the stream, but found more",
+        );
+    }
+    return documents[0];
+};`;
+
+if (source.includes(patchedAdapter)) {
+  process.exit(0);
+}
+if (!source.includes(vulnerableAdapter)) {
+  throw new Error(
+    "The Redocly js-yaml adapter no longer matches the reviewed source.",
+  );
+}
+fs.writeFileSync(
+  adapterPath,
+  source.replace(vulnerableAdapter, patchedAdapter),
+  "utf8",
+);
