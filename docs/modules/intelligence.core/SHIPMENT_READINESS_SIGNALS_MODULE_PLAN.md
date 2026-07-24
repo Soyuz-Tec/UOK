@@ -4,8 +4,8 @@
 
 **Target candidate:** `UOK-3.1.0-alpha.3`
 
-**Status:** Active base-slice and bounded document-expiry implementation and
-qualification plan.
+**Status:** Base slice and bounded document-expiry readiness are runtime and
+hosted qualified; further Intelligence product work is not selected.
 
 **Source root:** `modules/intelligence.core`
 
@@ -197,7 +197,7 @@ python scripts/run_python_tests.py
 npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build:static
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 
 Runtime acceptance additionally requires:
@@ -210,11 +210,23 @@ Runtime acceptance additionally requires:
 - a stacked draft pull request; and
 - green hosted CI at the exact final head.
 
-## Next Slice Boundary
+## Selected Next Increment
 
-After bounded document-expiry readiness is qualified, choose the next product
-work from actual operator evidence. Configurable tenant time zones are not an
-incremental UI option; they require an owned setting, authorization and
+Bounded document-expiry readiness is qualified. The selected next bounded
+increment is UOK-wide `Candidate Data Neutrality v1`, not an Intelligence
+feature expansion.
+
+The Intelligence candidate scenario and its Shipment-owner setup must leave no
+user-visible or recoverable Shipment, requirement, document-instance, or
+readiness proof fixture after success or failure. Cleanup must preserve the
+primary verification error and report cleanup failures separately. Ordinary
+recoverable lifecycle transitions do not satisfy zero retention. Historical
+cleanup requires an exact reviewed ID list, a SHA-256 digest of the sorted IDs,
+explicit exclusions, and post-cleanup proof.
+
+Further Intelligence work will be chosen from clean operator evidence after
+the repeated-run zero-delta gate passes. Configurable tenant time zones are not
+an incremental UI option; they require an owned setting, authorization and
 compatibility rules, a separate decision, and migration as applicable. Large
 tenant volumes may justify pagination or an owner-owned read model after
 measurement. Do not add a score, model, prediction, persistence layer,

@@ -159,7 +159,6 @@ describe("Route/Corridor Master workspace", () => {
   it("archives and restores with optimistic versions", async () => {
     let current: RouteDefinition = activeRoute;
     const commands: Record<string, unknown>[] = [];
-    vi.spyOn(globalThis, "confirm").mockReturnValue(true);
     vi.stubGlobal("crypto", { randomUUID: () => "33333333-3333-4333-8333-333333333333" });
     vi.stubGlobal("fetch", routeFetchMock({
       current: () => current,
@@ -173,7 +172,7 @@ describe("Route/Corridor Master workspace", () => {
     }));
     render(<RouteMasterWorkspace host={routeHost()} />);
     await screen.findByRole("button", { name: "Archive route" });
-    fireEvent.click(screen.getByRole("button", { name: "Archive route" }));
+    await confirmLifecycleAction("Archive route");
     await screen.findByRole("button", { name: "Restore route" });
     fireEvent.click(screen.getByRole("button", { name: "Restore route" }));
     await screen.findByRole("button", { name: "Archive route" });
@@ -204,6 +203,12 @@ describe("Route/Corridor Master workspace", () => {
     await waitFor(() => expect(successfulFetch.mock.calls.filter(([input]) => String(input).includes("include_archived=true")).length).toBeGreaterThan(before));
   });
 });
+
+async function confirmLifecycleAction(name: string) {
+  fireEvent.click(screen.getByRole("button", { name }));
+  const confirmation = await screen.findByRole("dialog", { name: "Confirm action" });
+  fireEvent.click(within(confirmation).getByRole("button", { name }));
+}
 
 function routeFetchMock(options: {
   current?: () => RouteDefinition;

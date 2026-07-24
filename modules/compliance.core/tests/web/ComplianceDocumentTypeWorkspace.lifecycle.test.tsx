@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -66,7 +66,19 @@ async function runLifecycle(buttonName: string, reason: string) {
     target: { value: reason },
   });
   const button = screen.getByRole("button", { name: buttonName });
-  expect(button).toBeEnabled();
+  await waitFor(() => expect(button).toBeEnabled(), { timeout: 4_000 });
+  if (buttonName === "Archive document type") {
+    fireEvent.click(button);
+    const confirmation = await screen.findByRole(
+      "dialog",
+      { name: "Confirm action" },
+      { timeout: 4_000 },
+    );
+    await act(async () => {
+      fireEvent.click(within(confirmation).getByRole("button", { name: buttonName }));
+    });
+    return;
+  }
   await act(async () => {
     fireEvent.click(button);
   });

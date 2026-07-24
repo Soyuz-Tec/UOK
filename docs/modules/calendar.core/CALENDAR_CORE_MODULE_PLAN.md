@@ -122,11 +122,29 @@ under ADR-0026.
    slots, and a shared draggable confirmation for record-qualified Calendar
    deletion, manager-only retained Calendar restoration, stale-state reload,
    and stable post-lifecycle focus.
-3. Candidate hygiene: Planning's Calendar-availability proof retires its
-   temporary Calendar and archives its temporary Contact even when the proof
-   fails, preventing verification runs from becoming visible business data.
+3. Transitional candidate hygiene: Planning's Calendar-availability proof
+   retires its temporary Calendar and archives its temporary Contact even when
+   the proof fails, removing them from ordinary active reads. Because those
+   records remain recoverable, this does not yet satisfy Candidate Data
+   Neutrality v1.
 
-## Next Increments
+## Selected Next Increment: Candidate Data Neutrality v1
+
+The Calendar verifier and Planning's Calendar-availability proof must leave no
+user-visible or recoverable Calendar, event, participant, reminder, or
+temporary Contact fixture after success or failure. A normal retained Calendar
+Delete or Contact Archive is insufficient for this gate.
+
+Cleanup must use rollback, disposable isolated state, or a governed
+verifier-only purge; it must preserve the primary proof error and report any
+cleanup error separately. Historical cleanup must use an exact reviewed ID
+list, a SHA-256 digest of the sorted IDs, explicit exclusions, and post-cleanup
+proof. Repeated candidate runs must produce a zero fixture delta.
+
+## Later Product Increments
+
+These product candidates remain unselected until data-neutral verification
+produces clean operator evidence:
 
 1. Workspace interaction: arbitrary Calendar subsets, drag-to-create,
    drag/drop, resize, current-time line, and continuous multi-day bands.

@@ -40,6 +40,7 @@ MODULE_HTTP_ADAPTERS = {
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api.py",
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_groups.py",
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_system.py",
+    "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_system_lifecycle_routes.py",
     "modules/intelligence.core/backend/uok_intelligence_core/_internal/delivery/api.py",
     "modules/locations.core/backend/uok_locations_core/_internal/delivery/api.py",
     "modules/planning.core/backend/uok_planning_core/_internal/analysis/analysis_api.py",
@@ -54,6 +55,7 @@ MODULE_HTTP_ADAPTERS = {
 }
 MODULE_COMMAND_ADAPTERS = {
     "modules/calendar.core/backend/uok_calendar_core/api.py",
+    "modules/communications.core/backend/uok_communications_core/api.py",
     "modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_support.py",
     "modules/planning.core/backend/uok_planning_core/_internal/delivery/api_support.py",
 }

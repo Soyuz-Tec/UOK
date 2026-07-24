@@ -96,16 +96,19 @@ def test_planning_availability_verifier_retires_ephemeral_fixtures() -> None:
 
     assert "function Remove-UokPlanningAvailabilityFixture" in source
     assert "catch {" in source
-    assert (
-        'Invoke-UokJson -Method "DELETE" '
-        '-Path "/api/calendar/calendars/$CalendarId"'
-    ) in source
+    assert '"/api/calendar/calendars?include_deleted=true"' in source
+    assert '$deleteHeaders["If-Match"] = $calendarRow.etag' in source
+    assert '-Method "DELETE"' in source
+    assert '-Path "/api/calendar/calendars/$CalendarId"' in source
     assert 'command_type = "ArchiveContact"' in source
     assert '$cleanupErrors += "calendar:' in source
     assert '$cleanupErrors += "party:' in source
+    assert "function Invoke-UokPlanningAvailabilityFixtureScope" in source
+    assert "$scenarioError = $_" in source
+    assert "$cleanupError = $_" in source
+    assert "Cleanup also failed" in source
     assert "$availabilityFixture = Assert-UokPlanningResourceAvailability" in orchestrator
-    assert "finally {" in orchestrator
-    assert "Remove-UokPlanningAvailabilityFixture" in orchestrator
+    assert "Invoke-UokPlanningAvailabilityFixtureScope" in orchestrator
 
 
 def test_container_excludes_tests_and_requires_module_verifiers() -> None:

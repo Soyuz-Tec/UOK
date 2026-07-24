@@ -254,7 +254,7 @@ python -m compileall -q src modules tests conftest.py
 $env:PYTHONPATH='src'; python scripts/run_python_tests.py
 npm --prefix web test
 npm --prefix web run build:static
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 
 ## Policy Change Process

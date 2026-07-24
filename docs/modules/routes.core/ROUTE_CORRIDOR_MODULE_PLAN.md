@@ -91,7 +91,7 @@ python scripts/run_python_tests.py
 npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build:static
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 
 Runtime changes additionally require a rebuilt local PostgreSQL candidate, authenticated Route verifier evidence, browser proof for the complete ordered-path workflow, a healthy `/health` response, GitHub preflight/readiness, and green hosted CI.

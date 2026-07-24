@@ -1,6 +1,8 @@
 # Planning Gantt Implementation Traceability
 
-**Status:** Gates A-E locally runtime-proven; hosted CI, review, and merge pending.
+**Status:** Gates A-E locally runtime-proven. Later stacked heads have
+exact-head hosted CI, while earlier draft bases require reconciliation and
+requalification; human review and merge remain pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -88,7 +90,7 @@ is required for this implementation slice.
 - Live PostgreSQL exact-replay/purge two-order project-lock verifier: `modules/planning.core/verify/runtime/verify_planning_replay_purge_concurrency.py`
 - Typed frontend stale-write recovery and fail-closed multi-write proof: `modules/planning.core/tests/web/planningApi.test.ts` and `modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx`
 - Candidate PostgreSQL proof: two simultaneous writes returned exactly one `200` and one `412`; repeated concurrent reads never observed a mixed revision/schedule snapshot.
-- Candidate/UI gates: `scripts/verify_uok_candidate.ps1` and `web/e2e/uok-proof.spec.ts` pass with atomic bulk controls enabled only through the batch endpoint.
+- Candidate/UI gates: `scripts/verify_uok_candidate_isolated.ps1` (which invokes the ephemeral-target module verifier) and `web/e2e/uok-proof.spec.ts` pass with atomic bulk controls enabled only through the batch endpoint.
 - Canonical CPM and hand-worked oracle cases: `modules/planning.core/tests/test_canonical_cpm.py`
 - Independent result validation with injected dependency, calendar, constraint, and manual-date faults: `modules/planning.core/tests/test_cpm_validation.py`
 - Independent resource-capacity calculation/validation with valid overload and injected load/flag/coverage faults: `modules/planning.core/tests/test_resource_capacity_validation.py`
@@ -525,9 +527,11 @@ suite (70 files and 204 tests),
 the static production build, ten runtime-independent Chromium scenarios, the
 live Planning Chromium scenario, TechnologyAudit, EngineeringEvidence
 generation, Rebuild, persistent CPM-v2 and both replay/purge lock-order
-verifiers, the full candidate verifier, and the repository Verify action. The
-feature stack remains in draft review: hosted CI is externally blocked by the
-GitHub account billing state, and no merge or production deployment was
+verifiers, the full candidate verifier, and the repository Verify action. At
+that date, hosted CI was blocked by the GitHub account billing state. That is
+historical, not current: hosted CI is now available, later stacked heads have
+exact-head green checks, and earlier Planning draft bases require
+reconciliation and requalification. No merge or production deployment was
 performed.
 
 ## Remaining production hardening
@@ -540,13 +544,14 @@ performed.
   remain required.
 - Persisted actor/application idempotency scoping and original-actor attribution
   remain outside the current command-log schema.
-- Operation, shipment, asset, location, and agreement providers are not live.
-  Their typed resolver states fail safely as unavailable; that is accepted for
-  current Gate B closure but is not a claim that the package's full optional
+- Operation, asset, location, and agreement providers are not live. Their typed
+  resolver states fail safely as unavailable; Shipment is live through the
+  immutable `shipments.core` owner facade. That is accepted for current Gate B
+  closure but is not a claim that the package's full optional
   reference-provider scenario is deployed.
-- Hosted CI, human review, merge, production deployment, and production
-  operations evidence remain outstanding. The current state is not
-  `production_ready`.
+- Exact-head hosted CI after final stack reconciliation, human review, merge,
+  production deployment, and production operations evidence remain
+  outstanding. The current state is not `production_ready`.
 
 ## Durable routing
 

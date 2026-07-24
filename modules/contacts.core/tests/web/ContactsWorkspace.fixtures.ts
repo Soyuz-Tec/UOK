@@ -28,6 +28,9 @@ export const importedContact: ContactRecord = {
   visibility_scope: "tenant",
   source: "csv_import",
   sync_state: "ready",
+  can_delete: true,
+  can_restore: false,
+  can_purge: true,
   attrs: {},
   email: "imported.person@example.test"
 };
@@ -41,6 +44,9 @@ export const businessContactWithoutCompany: ContactRecord = {
   visibility_scope: "tenant",
   source: "gmail",
   sync_state: "ready",
+  can_delete: true,
+  can_restore: false,
+  can_purge: true,
   attrs: {},
   email: "mina@supplier.example",
   phone: "+1 555 0160"
@@ -55,6 +61,9 @@ export const duplicateContact: ContactRecord = {
   visibility_scope: "tenant",
   source: "contacts",
   sync_state: "ready",
+  can_delete: true,
+  can_restore: false,
+  can_purge: true,
   attrs: {},
   email: "example@uok.test",
   phone: "+1 555 0111",
@@ -70,6 +79,9 @@ export const organizationContact: ContactRecord = {
   visibility_scope: "tenant",
   source: "contacts",
   sync_state: "ready",
+  can_delete: true,
+  can_restore: false,
+  can_purge: true,
   attrs: {},
   email: "ops@avalon.example"
 };

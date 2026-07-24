@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from fastapi import APIRouter, Depends
@@ -26,6 +27,7 @@ def health(db: Session = Depends(get_db)) -> dict[str, Any]:
         "name": "UOK",
         "version": APP_VERSION,
         "target_version": TARGET_VERSION,
+        "candidate_state": os.getenv("UOK_CANDIDATE_STATE", "persistent"),
         "events": db.scalar(select(func.count(EventRecord.id))) or 0,
         "failed_commands": db.scalar(select(func.count(CommandLog.id)).where(CommandLog.status.in_(("denied", "validation_error")))) or 0,
     }

@@ -1,6 +1,9 @@
 # Planning Gantt Feature Catalog
 
-**Status:** Active evidence catalog; Gates A-E are locally runtime-proven, with hosted CI, review, and merge pending.
+**Status:** Active evidence catalog; Gates A-E are locally runtime-proven.
+Later stacked heads have exact-head hosted CI, while earlier draft bases
+require reconciliation and requalification; human review and merge remain
+pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -260,5 +263,5 @@ For user-facing runtime changes, rebuild and smoke the local candidate:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Rebuild
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```

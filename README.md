@@ -106,7 +106,7 @@ python scripts/run_python_tests.py
 npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build:static
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 
 Focused technology and code-quality audit:

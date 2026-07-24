@@ -101,6 +101,9 @@ export type ContactRecord = {
   display_name: string;
   status: string;
   review_state: string;
+  can_delete: boolean;
+  can_restore: boolean;
+  can_purge: boolean;
   owner_user_id?: string | null;
   team_id?: string | null;
   visibility_scope: string;

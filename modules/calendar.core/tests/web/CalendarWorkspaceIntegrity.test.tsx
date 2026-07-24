@@ -46,7 +46,11 @@ describe("CalendarWorkspace integrity", () => {
     });
     renderWorkspace();
 
-    fireEvent.click(await screen.findByRole("button", { name: /First event/ }));
+    fireEvent.click(await screen.findByRole(
+      "button",
+      { name: /First event/ },
+      { timeout: 4_000 },
+    ));
     fireEvent.click(screen.getByRole("button", { name: /Second event/ }));
     await act(async () => {
       secondDetail.resolve(detailResponse(second));
@@ -68,7 +72,11 @@ describe("CalendarWorkspace integrity", () => {
     stubCalendarFetch([existing], (path) => path === "/api/calendar/events/event-1" ? pendingDetail.promise : undefined);
     renderWorkspace();
 
-    fireEvent.click(await screen.findByRole("button", { name: /Existing event/ }));
+    fireEvent.click(await screen.findByRole(
+      "button",
+      { name: /Existing event/ },
+      { timeout: 4_000 },
+    ));
     fireEvent.click(screen.getByRole("button", { name: "New event" }));
     const dialog = screen.getByRole("dialog", { name: "New event" });
     expect(within(dialog).getByLabelText("Title")).toHaveValue("");
@@ -92,7 +100,11 @@ describe("CalendarWorkspace integrity", () => {
     });
     renderWorkspace();
 
-    fireEvent.click(await screen.findByRole("button", { name: /Lifecycle event/ }));
+    fireEvent.click(await screen.findByRole(
+      "button",
+      { name: /Lifecycle event/ },
+      { timeout: 4_000 },
+    ));
     const dialog = await screen.findByRole("dialog", { name: "Edit event" });
     fireEvent.click(within(dialog).getByRole("button", { name: label }));
     expect(await within(dialog).findByRole("alert")).toHaveTextContent(errorText);
@@ -110,7 +122,11 @@ describe("CalendarWorkspace integrity", () => {
     });
     renderWorkspace();
 
-    fireEvent.click(await screen.findByRole("button", { name: /Stale lifecycle event/ }));
+    fireEvent.click(await screen.findByRole(
+      "button",
+      { name: /Stale lifecycle event/ },
+      { timeout: 4_000 },
+    ));
     const dialog = await screen.findByRole("dialog", { name: "Edit event" });
     fireEvent.click(within(dialog).getByRole("button", { name: "Cancel event" }));
     expect(await within(dialog).findByRole("alert")).toHaveTextContent("The Calendar event changed after it was loaded.");
@@ -124,10 +140,14 @@ describe("CalendarWorkspace integrity", () => {
       : undefined);
     renderWorkspace();
 
-    await screen.findByRole("button", { name: /Export event/ });
+    await screen.findByRole(
+      "button",
+      { name: /Export event/ },
+      { timeout: 4_000 },
+    );
     fireEvent.click(screen.getByRole("button", { name: "More actions" }));
     fireEvent.click(within(screen.getByRole("dialog", { name: "More actions" })).getByRole("button", { name: "Export ICS" }));
-    const alert = await screen.findByRole("alert");
+    const alert = await screen.findByRole("alert", undefined, { timeout: 4_000 });
     expect(alert).toHaveTextContent("Export denied");
     expect(alert).not.toHaveClass("visually-hidden");
     const status = screen.getByRole("status");
@@ -145,7 +165,11 @@ describe("CalendarWorkspace integrity", () => {
     const fetchMock = stubCalendarFetch([]);
     renderWorkspace();
 
-    fireEvent.click(await screen.findByRole("button", { name: "New event" }));
+    fireEvent.click(await screen.findByRole(
+      "button",
+      { name: "New event" },
+      { timeout: 4_000 },
+    ));
     const dialog = screen.getByRole("dialog", { name: "New event" });
     fireEvent.change(within(dialog).getByLabelText("Title"), { target: { value: "DST review" } });
     fireEvent.change(within(dialog).getByLabelText("Time zone"), { target: { value: timezone } });

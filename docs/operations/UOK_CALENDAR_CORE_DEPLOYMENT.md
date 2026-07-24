@@ -69,6 +69,25 @@
 
 These are later adapters or capability increments and must not be described as current deployment behavior.
 
+## Candidate Verification Data Neutrality
+
+`calendar.core` participates in Candidate Data Neutrality v1. Its own verifier
+and any consumer proof that creates Calendar or Contact data must leave no
+user-visible or recoverable Calendar aggregate, event, participant, reminder,
+or temporary Contact after success or failure.
+
+The normal retained Calendar Delete and Contact Archive paths preserve
+recoverability and therefore do not satisfy this verification invariant.
+Qualification must use rollback, disposable isolated state, or a governed
+verifier-only purge. Cleanup errors are reported separately without replacing
+the primary proof error. Historical cleanup requires a reviewed exact ID list,
+the SHA-256 digest of the sorted IDs, explicit exclusions, and post-cleanup
+evidence.
+
 ## Developer Verification
 
-From the repository root, run the standard `Verify` operation. Then install `calendar.core` through Apps Manager before using its API or workspace. The active local candidate is served through the repository's Podman compose profile; production deployment is outside this note's claim.
+From the repository root, run the standard `Verify` operation twice against the
+same candidate and confirm a zero retained Calendar/Contact fixture delta.
+Then install `calendar.core` through Apps Manager before using its API or
+workspace. The active local candidate is served through the repository's
+Podman compose profile; production deployment is outside this note's claim.

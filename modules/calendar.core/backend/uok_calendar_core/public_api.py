@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 
 from uok.kernel.security import Actor, has_permission
 
-from .models import CalendarEvent as _CalendarEvent
+from .access import can_read_calendar
+from .models import Calendar as _Calendar, CalendarEvent as _CalendarEvent
 from .read_model import freebusy_rows_for_participants, occurrence_rows_for_participants
 
 ReferenceStatus = Literal["ready", "unavailable", "denied", "missing"]
@@ -30,16 +31,25 @@ def resolve_calendar_event_reference(
     """Resolve an event reference without exposing the Calendar ORM mapping."""
     if not has_permission(actor, "calendar.read"):
         return CalendarEventReferenceResolution("denied", None, "The linked target is not visible to this actor.")
-    row = db.scalar(select(_CalendarEvent).where(
-        _CalendarEvent.id == event_id,
-        _CalendarEvent.organization_id == actor.organization_id,
-    ))
-    if row is None:
+    result = db.execute(
+        select(_CalendarEvent, _Calendar).join(
+            _Calendar,
+            _Calendar.id == _CalendarEvent.calendar_id,
+        ).where(
+            _CalendarEvent.id == event_id,
+            _CalendarEvent.organization_id == actor.organization_id,
+            _Calendar.organization_id == actor.organization_id,
+        ),
+    ).one_or_none()
+    if result is None:
         return CalendarEventReferenceResolution(
             "missing",
             None,
             "The calendar event target does not exist in this organization.",
         )
+    row, calendar = result
+    if not can_read_calendar(actor, calendar):
+        return CalendarEventReferenceResolution("denied", None, "The linked target is not visible to this actor.")
     if row.canceled_at is not None or row.status == "canceled":
         return CalendarEventReferenceResolution("unavailable", row.title, "Calendar event is canceled.")
     return CalendarEventReferenceResolution(

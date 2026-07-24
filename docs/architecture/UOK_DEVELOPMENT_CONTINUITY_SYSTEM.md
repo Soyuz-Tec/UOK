@@ -69,6 +69,7 @@ Every non-trivial UOK task follows this loop:
 
 6. Verify
    - Run the relevant compile, test, build, audit, naming, boundary, module contract, and candidate checks.
+   - For candidate scenarios, prove Candidate Data Neutrality v1 with repeated-run zero-delta evidence for exact Calendar, Contact, Planning, and Shipment fixture inventories.
    - Generate `EngineeringEvidence` when the task changes code quality, release readiness, or durable workflow rules.
    - For UI work, verify the local runtime and light/dark/system behavior when possible.
 
@@ -102,7 +103,8 @@ These accepted lessons must guide future implementation:
 | Planning authority remains server-side | Python module service first, with React UI receiving validated schedule read models. | `docs/architecture/ADR-0023-module-local-frontend-composition.md` |
 | Contacts BI is derived | Business intelligence profiles summarize existing contact signals and must not become a hidden source of truth | `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` |
 | Naming is a boundary | Use only `UOK` and `Unified Operating Kernel`, with lowercase `uok` only where technical surfaces require it | `docs/architecture/UOK_NAMING_CONVENTIONS.md` |
-| Local runtime evidence matters | HTTP checks and candidate verifier output are stronger than visual assumptions | `scripts/verify_uok_candidate.ps1` |
+| Local runtime evidence matters | HTTP checks and isolated exact-image candidate verifier output are stronger than visual assumptions | `scripts/verify_uok_candidate_isolated.ps1` |
+| Candidate verification is data-neutral | Successful and failed verification must retain no user-visible or recoverable Calendar, Contact, Planning, or Shipment fixtures; cleanup preserves the primary error, and historical cleanup uses exact reviewed IDs plus a sorted-ID SHA-256 digest | `docs/ARCHITECTURE.md` and `docs/operations/UOK_STANDARD_OPERATIONS.md` |
 | Repeatable operations matter | Verification, audit, backup, restore, rebuild, GitHub preflight, and ASUH drills use standardized commands | `docs/operations/UOK_STANDARD_OPERATIONS.md` |
 | GitHub is the shared source of truth | Completed verified work is synchronized through GitHub unless explicitly local-only or blocked by verification, upstream divergence, or unsafe artifacts | `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md` |
 | GitHub checks are automated | Readiness, security setup, and PR check watching use wrapper actions instead of ad hoc `gh` command sequences | `scripts/uok_github_ops.ps1` |
@@ -126,7 +128,7 @@ These accepted lessons must guide future implementation:
 | Code quality, line-of-code, efficiency, or technology audit change | Update `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`, `scripts/quality_audit.py`, and operations docs |
 | Quality scorecard, evidence schema, or dashboard metric change | Update `scripts/engineering_evidence.py`, `scripts/quality_scorecard.py`, quality docs, operations docs, and tests |
 | Naming, product, or cargo modeling change | Update naming and separation policy docs before implementation is accepted |
-| Candidate verification gate change | Update `docs/ARCHITECTURE.md`, this guide, verifier scripts, and tests |
+| Candidate verification gate change | Update `docs/ARCHITECTURE.md`, this guide, `docs/operations/UOK_STANDARD_OPERATIONS.md`, affected module plans, verifier scripts, and tests |
 | Local operation, backup, restore, rebuild, GitHub, or ASUH procedure change | Update `docs/operations/UOK_STANDARD_OPERATIONS.md`, `docs/operations/UOK_ASUH_TEST_EVENTS.md`, and related scripts |
 | New durable Markdown artifact | Link it from `docs/DOCUMENTATION_INDEX.md`; link it from `docs/ARCHITECTURE.md` if it affects architecture or mandatory workflow |
 
@@ -164,7 +166,7 @@ python scripts/run_python_tests.py
 npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build:static
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 
 Run the focused quality and technology audit before expanding a feature area:
@@ -223,6 +225,12 @@ When a pattern repeats:
 - do not let repeated code become a later splitting project;
 - document the promoted pattern in the correct artifact.
 
+Historical fixture cleanup is never inferred from naming resemblance alone.
+Prepare the exact candidate IDs, review the exclusions, record the SHA-256
+digest of the sorted ID list, preserve backup or rollback evidence appropriate
+to the data owner, and fail closed if the live set differs from the reviewed
+set.
+
 ## Do Not Do
 
 - Do not treat chat history as stronger than repository evidence.
@@ -232,6 +240,7 @@ When a pattern repeats:
 - Do not add one-off CSS that bypasses design tokens.
 - Do not let a historical target document define current behavior accidentally.
 - Do not leave new docs unlinked from the documentation index.
+- Do not accept a candidate verifier that leaves a user-visible or recoverable Calendar, Contact, Planning, or Shipment fixture.
 - Do not mark work complete when code passes but the owning policy or module plan is stale.
 
 ## Completion Definition
@@ -241,6 +250,7 @@ A UOK development task is complete only when:
 - code is in the correct owner boundary;
 - docs reflect current behavior and accepted policy;
 - tests and candidate gates relevant to the change pass;
+- candidate verification retains no user-visible or recoverable Calendar, Contact, Planning, or Shipment fixtures;
 - source size and naming checks do not reveal avoidable drift;
 - local runtime evidence is collected when runtime behavior changes;
 - remaining limitations are stated plainly.

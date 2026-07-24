@@ -30,7 +30,7 @@ Operator browser
 | Module packages | `modules/<module_name>` | Module manifest, backend package, module-owned ORM mappings, module-local React source and CSS, module tests, migrations, candidate verifier scenarios, and behavior. |
 | Frontend shell | `web/src` | React + TypeScript + Vite workbench shell, navigation, shared controls and tokens, typed module surface contract, and generated API/module catalogs. |
 | Database baseline | `migrations/001_initial_baseline.sql` | Initial shared candidate schema plus schema-version evidence. Future schema changes must be migration-gated and module-owned where applicable. |
-| Candidate verification | `scripts/verify_uok_candidate.ps1`, `modules/*/verify`, `web/e2e` | Release smoke, module-declared candidate scenarios, and Playwright UI proof automation. |
+| Candidate verification | `scripts/verify_uok_candidate_isolated.ps1`, `scripts/verify_uok_candidate.ps1`, `modules/*/verify`, `web/e2e` | Exact-image disposable release smoke, module-declared candidate scenarios, Playwright UI proof automation, and Candidate Data Neutrality v1 zero-retention evidence. |
 
 ## Current Module Model
 
@@ -42,7 +42,7 @@ Operator browser
 - `planning.core` is an optional capability module for project planning, Python-authoritative schedule validation, dependencies, audit events, and an integrated React Gantt workspace.
 - `communications.core` is an optional K Connect capability module for organization-scoped thread identity, access, lifecycle state, audit evidence, and exact authorized deep links.
 - User-created K Connect threads use strong-ETag, row-locked recoverable Delete/Restore. Communications preserves exact prior open/closed state and audit identity; Planning retains the same typed link and never receives a lifecycle cascade.
-- Planning Gates A-E are locally runtime-proven; scheduling, write-safety, evidence governance, integrations, analysis, measured scale, shared reach/accessibility, bounded portfolio reads, and production-like closure evidence are recorded in the Planning Gantt traceability map. The stacked draft PRs still require hosted CI, review, and merge, and no local alpha result implies production readiness.
+- Planning Gates A-E are locally runtime-proven; scheduling, write-safety, evidence governance, integrations, analysis, measured scale, shared reach/accessibility, bounded portfolio reads, and production-like closure evidence are recorded in the Planning Gantt traceability map. Later stacked heads have exact-head hosted CI, while earlier draft bases require reconciliation and requalification; human review and merge remain pending, and no local alpha result implies production readiness.
 - `agents.core` is a planned optional capability module scaffold for governed agent runbooks, Codex tool binding, human approval gates, and compliance evidence.
 - `reports.core` is an optional global capability module for secure report artifact generation, storage, audit, verification, download, and deletion.
 - `product.master` is an optional Product/Material master-data capability for tenant-scoped canonical Product Definitions, governed lifecycle, and append-only canonical-name history. Cargo, pricing, inventory, routes, documents, and Party relationships remain outside this owner.
@@ -66,7 +66,7 @@ Operator browser
 - Manifests use closed schema `uok.module.v1`, declare evidence-bounded maturity, reserve canonical non-overlapping API prefixes, and pass runtime validation before extension imports or router composition; release validation separately proves tests and verifier assets.
 - The Apps Manager HTTP adapter is owned by `modules/apps.manager` and mounted through the same manifest router mechanism as capability modules; shared lifecycle services provide locked, audited, idempotent reconciliation when persisted control-plane state drifts from current manifest truth.
 - Current declared backend extension surfaces include API routers, command handlers, command permissions, command replay guards, role grants, dashboard providers, evidence providers, model exports, and candidate verifier scripts.
-- Static runtime validation completes before extension imports. The host-owned deterministic model registry then composes 55 module-owned mappings with nine kernel mappings (64 total) on the single `uok.kernel.persistence.Base` before migration inspection, schema creation, or router composition. Current closed manifests declare 108 commands, 118 events, 18 exact Host HTTP adapters with 39 exact allowed imports, 12 candidate verifiers, and 11 workbench surfaces.
+- Static runtime validation completes before extension imports. The host-owned deterministic model registry then composes 55 module-owned mappings with nine kernel mappings (64 total) on the single `uok.kernel.persistence.Base` before migration inspection, schema creation, or router composition. Current closed manifests declare 108 commands, 118 events, 19 exact Host HTTP adapters with 42 exact allowed imports, 12 candidate verifiers, and 11 workbench surfaces.
 - Apps Manager, Calendar, Communications, Compliance, Contacts, Planning, Product Master, Location Master, Route/Corridor Master, Shipment Support, and Shipment Readiness own executable React source and local CSS under `modules/<module_name>/web/src`; their frontend tests live under `modules/<module_name>/tests/web`.
 - Workbench surfaces declare the release/build extension `web_surface` plus canonical `web_entry` and unique `web_section` metadata in the closed manifest. A deterministic generator validates those manifests and emits literal TypeScript imports in `web/src/generated/moduleSurfaceCatalog.ts` for the typed registry under `web/src/features/modules`.
 - Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and all declared entries into the normal static application bundle.
@@ -74,6 +74,32 @@ Operator browser
 - Durable module workspaces compose one minimal shared command surface with optional query, context, and actions groups plus the common localized action vocabulary accepted in ADR-0025. Shared code owns layout and accessibility; modules retain domain nouns, state, permissions, options, and handlers.
 - Compliance Document Types, Product Master, Location Master, Route/Corridor Master, Shipment Support, and Shipment Readiness own their complete DTO, HTTP, state, and workbench surfaces under their module web roots; Intelligence is read-only and declares no command surface. Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
 - Docker copies module production source into the frontend build stage, TypeScript/Vitest discover the module-owned source and test roots, and final-image validation keeps module tests out of the runtime image.
+
+## Candidate Data Neutrality
+
+`Candidate Data Neutrality v1` is the selected next bounded increment after the
+qualified Shipment document-expiry readiness slice. Candidate verification
+must leave zero retained user-visible or recoverable Calendar, Contact,
+Planning, or Shipment fixtures after both successful and failed runs.
+
+- Each affected scenario must clean up in a guaranteed success-and-failure
+  path. Cleanup failure must be reported separately and must not replace or
+  obscure the primary verification error.
+- A normal recoverable Delete or Archive does not satisfy the invariant,
+  because the fixture remains discoverable or restorable. Passing designs use
+  transaction rollback, disposable isolated qualification state, or an
+  explicitly governed verifier-only purge.
+- The standard implementation resolves immutable image IDs from the qualified
+  API and PostgreSQL containers, executes two fresh project-scoped disposable
+  stacks, and requires zero remaining containers, volumes, and networks after
+  each pass. The mutation-heavy module verifier refuses persistent targets.
+- Repeated verification against the same candidate must prove a zero delta for
+  exact fixture inventories, including aggregate children.
+- Historical cleanup is fail-closed. It requires a reviewed exact ID list, a
+  recorded SHA-256 digest of the sorted IDs, and post-cleanup proof. Prefix,
+  substring, age, or other fuzzy matching alone cannot authorize mutation.
+- Further product-feature selection must use clean operator evidence rather
+  than counts inflated by qualification fixtures.
 
 ## Boundaries
 
@@ -210,10 +236,15 @@ npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run test:ui-proof
 npm --prefix web run build:static
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 
 Also review source size, module contract validation, source-boundary checks, naming checks, dependency audits, and the Podman compose local candidate smoke before promoting a baseline.
+
+Candidate promotion additionally requires the Candidate Data Neutrality v1
+repeated-run zero-delta proof. A verifier that passes its behavior assertions
+but retains a user-visible or recoverable Calendar, Contact, Planning, or
+Shipment fixture has failed the candidate gate.
 
 For standardized local operations, run:
 

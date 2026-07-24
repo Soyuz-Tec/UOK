@@ -100,7 +100,23 @@ function Remove-UokPlanningAvailabilityFixture {
     $cleanupErrors = @()
     if ($CalendarId) {
         try {
-            $deletedCalendar = Invoke-UokJson -Method "DELETE" -Path "/api/calendar/calendars/$CalendarId" -Headers $OpsHeaders
+            $calendarRows = @(
+                Invoke-UokJson `
+                    -Path "/api/calendar/calendars?include_deleted=true" `
+                    -Headers $OpsHeaders
+            )
+            $calendarRow = $calendarRows |
+                Where-Object { $_.id -eq $CalendarId } |
+                Select-Object -First 1
+            if (-not $calendarRow -or -not $calendarRow.etag) {
+                throw "calendar $CalendarId did not expose a lifecycle ETag"
+            }
+            $deleteHeaders = $OpsHeaders.Clone()
+            $deleteHeaders["If-Match"] = $calendarRow.etag
+            $deletedCalendar = Invoke-UokJson `
+                -Method "DELETE" `
+                -Path "/api/calendar/calendars/$CalendarId" `
+                -Headers $deleteHeaders
             if ($deletedCalendar.status -ne "deleted") {
                 throw "unexpected calendar status $($deletedCalendar.status)"
             }
@@ -125,4 +141,41 @@ function Remove-UokPlanningAvailabilityFixture {
     if ($cleanupErrors.Count) {
         throw "Planning availability fixture cleanup failed: $($cleanupErrors -join '; ')"
     }
+}
+
+function Invoke-UokPlanningAvailabilityFixtureScope {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Fixture,
+        [Parameter(Mandatory = $true)][hashtable]$OpsHeaders,
+        [Parameter(Mandatory = $true)][long]$Stamp,
+        [Parameter(Mandatory = $true)][scriptblock]$Action
+    )
+
+    $scenarioResult = $null
+    $scenarioError = $null
+    try {
+        $scenarioResult = & $Action
+    } catch {
+        $scenarioError = $_
+    }
+    $cleanupError = $null
+    try {
+        Remove-UokPlanningAvailabilityFixture `
+            -CalendarId $Fixture.calendar_id `
+            -PartyId $Fixture.party_id `
+            -OpsHeaders $OpsHeaders `
+            -Stamp $Stamp
+    } catch {
+        $cleanupError = $_
+    }
+    if ($scenarioError) {
+        if ($cleanupError) {
+            throw "Planning candidate failed: $($scenarioError.Exception.Message). Cleanup also failed: $($cleanupError.Exception.Message)"
+        }
+        throw $scenarioError
+    }
+    if ($cleanupError) {
+        throw $cleanupError
+    }
+    return $scenarioResult
 }

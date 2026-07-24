@@ -1,6 +1,8 @@
 # Planning Core Module Plan
 
-**Status:** Active module plan; Gates A-E are locally runtime-proven, with hosted CI, review, and merge pending.
+**Status:** Active module plan; Gates A-E are locally runtime-proven. Later
+stacked heads have exact-head hosted CI, while earlier draft bases require
+reconciliation and requalification; human review and merge remain pending.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -289,6 +291,18 @@ npm --prefix web run build
 npm --prefix web run test:ui-proof
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```
+
+## Selected Next Increment: Candidate Data Neutrality v1
+
+Planning candidate and production-like proofs must leave no user-visible or
+recoverable project, task, dependency, resource, Calendar, Contact, or Shipment
+fixture after success or failure. Cleanup must preserve the primary verifier
+error and report cleanup failures separately. Recoverable archive/delete alone
+does not satisfy the invariant.
+
+Repeated runs must prove a zero fixture delta. Historical cleanup must use a
+reviewed exact ID list, a SHA-256 digest of the sorted IDs, explicit exclusions,
+and post-cleanup evidence.
 
 ## Deferred Work
 

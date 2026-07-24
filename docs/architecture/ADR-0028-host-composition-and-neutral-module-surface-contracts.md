@@ -57,7 +57,7 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
     `from uok.host.security import current_actor` in the 18 documented module
      HTTP adapters;
    - `from uok.host.commands import execute_command` in the exact Calendar,
-     Contacts, and Planning command adapters.
+     Communications, Contacts, and Planning command adapters.
    Feature code may not import `engine`, `SessionLocal`, pool configuration,
    application composition, host registries, or any other host symbol.
 5. Module-owned mappings continue to expose their privileged manifest
@@ -142,6 +142,20 @@ Host business logic, shell field, or reverse Shipment dependency. Its
 module-owned workbench is composed through the existing neutral surface
 contract. This is a bounded capability addition under the active architecture
 freeze, not an architecture unfreeze.
+
+The Communications retained-lifecycle slice adds one exact
+`execute_command` import in its existing HTTP adapter, increasing the
+allowlisted Host adapter surface from 39 to 40 imports across 18 HTTP adapters
+and four command adapters. It adds no Host database/session/configuration
+access and does not widen Communications domain ownership.
+
+The Contacts retained-lifecycle slice keeps lifecycle payload/header mapping
+host-free and splits four thin routes into the exact
+`api_system_lifecycle_routes.py` HTTP adapter so the existing system adapter
+stays below the hard source-size limit. Its exact `get_db` and `current_actor`
+imports increase the allowlisted surface from 40 to 42 imports across 19 HTTP
+adapters and four command adapters. Command dispatch remains behind the
+existing Contacts command adapter.
 
 ## Consequences
 

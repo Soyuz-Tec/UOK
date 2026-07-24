@@ -1,7 +1,7 @@
 function Invoke-UokPlanningReleaseReadiness {
     Invoke-UokHealth
-    Invoke-UokStep "Planning candidate contracts" {
-        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate.ps1", "-BaseUrl", $BaseUrl)
+    Invoke-UokStep "Planning isolated candidate contracts" {
+        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate_isolated.ps1", "-ProjectName", $ProjectName)
     }
     Invoke-UokStep "Planning PostgreSQL scale budgets" {
         Invoke-Native "podman" @("exec", "uok-api-1", "python", "/app/modules/planning.core/verify/runtime/planning_scale_benchmark.py", "--samples", "6")

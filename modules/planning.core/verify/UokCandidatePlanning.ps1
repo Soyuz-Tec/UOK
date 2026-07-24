@@ -233,7 +233,7 @@ function Invoke-UokPlanningCandidateScenario {
     $resourceEvidence = Assert-UokPlanningTypedResourceContract -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -Stamp $Stamp
     $resourceId = $resourceEvidence.resource_id
     $availabilityFixture = Assert-UokPlanningResourceAvailability -ProjectId $projectId -TaskId $first.result.id -OpsHeaders $OpsHeaders -Stamp $Stamp
-    try {
+    return Invoke-UokPlanningAvailabilityFixtureScope -Fixture $availabilityFixture -OpsHeaders $OpsHeaders -Stamp $Stamp -Action {
     Assert-UokPlanningMixedBatchContract -ProjectId $projectId -FirstTaskId $first.result.id -SecondTaskId $second.result.id -ResourceId $resourceId -OpsHeaders $OpsHeaders -Stamp $Stamp
 
     $schedule = Invoke-UokJson -Path "/api/planning/projects/$projectId/schedule" -Headers $ViewerHeaders
@@ -290,7 +290,5 @@ function Invoke-UokPlanningCandidateScenario {
     Assert-UokPlanningProjectLifecycle -ProjectId $projectId -TaskId $first.result.id -Schedule $schedule -OpsHeaders $OpsHeaders -ViewerHeaders $ViewerHeaders -Stamp $Stamp
 
     return @{ project_id = $projectId }
-    } finally {
-        Remove-UokPlanningAvailabilityFixture -CalendarId $availabilityFixture.calendar_id -PartyId $availabilityFixture.party_id -OpsHeaders $OpsHeaders -Stamp $Stamp
     }
 }

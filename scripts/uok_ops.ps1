@@ -162,8 +162,8 @@ function Invoke-UokVerify {
         Pop-Location
     }
     Invoke-UokUiProof
-    Invoke-UokStep "Candidate verifier" {
-        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate.ps1", "-BaseUrl", $BaseUrl)
+    Invoke-UokStep "Isolated candidate verifier" {
+        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate_isolated.ps1", "-ProjectName", $ProjectName)
     }
 }
 
@@ -220,8 +220,8 @@ function Invoke-UokAsuhTest {
     $event | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 -Path $eventPath
     Write-Host "ASUH incident event written to $eventPath"
     Invoke-UokHealth
-    Invoke-UokStep "ASUH candidate verifier" {
-        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate.ps1", "-BaseUrl", $BaseUrl)
+    Invoke-UokStep "ASUH isolated candidate verifier" {
+        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate_isolated.ps1", "-ProjectName", $ProjectName)
     }
 }
 

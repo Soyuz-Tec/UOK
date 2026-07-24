@@ -79,6 +79,50 @@ loading a module script. Helper imports must be literal `$PSScriptRoot` paths in
 module `verify/` directory or the shared `scripts/verify` directory; dynamic paths, links,
 junctions, cycles, duplicate declared functions, and syntax errors fail the run before execution.
 
+## Candidate Data Neutrality v1
+
+Candidate verification is not allowed to become business data. Every affected
+scenario must leave zero retained user-visible or recoverable Calendar,
+Contact, Planning, or Shipment fixtures after both success and failure.
+
+The standard gate enforces this with
+`scripts/verify_uok_candidate_isolated.ps1`. It resolves immutable API and
+PostgreSQL image IDs from the running `uok` stack, runs the full verifier twice
+in two fresh project-scoped stacks, and removes each stack, network, and both
+volumes before the pass is accepted. The underlying
+`scripts/verify_uok_candidate.ps1` fails closed unless the target health
+response identifies an explicitly ephemeral candidate runtime.
+Every disposable resource carries an exact GUID run label. Teardown inventories
+that label, attempts normal Compose removal, checks exact absence, and limits
+any best-effort remediation to the same label. Use
+`verify_uok_candidate_isolated.ps1 -Runs 1 -FailAfterVerification` only as the
+controlled post-mutation failure-path proof; it must fail while still leaving
+zero labelled resources.
+
+Operational acceptance requires:
+
+1. Capture a bounded before-run inventory of the exact fixture identities and
+   aggregate children that the scenario can create.
+2. Execute cleanup from a guaranteed success-and-failure path. Preserve the
+   primary verifier error and report cleanup errors separately; cleanup failure
+   fails the candidate gate.
+3. Use transaction rollback, disposable isolated qualification state, or an
+   explicitly governed verifier-only purge. Ordinary recoverable Delete or
+   Archive is not cleanup for this gate.
+4. Run the candidate verifier twice against the same immutable API/PostgreSQL
+   candidate images. For disposable-state verification, prove after each pass
+   that the exact project has zero remaining containers, volumes, and networks;
+   this whole-state teardown is the zero-retention proof.
+5. Keep module lifecycle state and legitimate operator records outside the
+   cleanup scope.
+
+Historical cleanup is a separate reviewed operation. Start with a dry-run
+inventory, sort the exact IDs, record the SHA-256 digest of that list, review
+all exclusions, and mutate only when the live IDs and digest still match the
+approved set. Prefix-only, substring, age-based, or other fuzzy selection must
+fail closed. Record post-cleanup counts and rollback or backup evidence
+appropriate to the owning module.
+
 When Apps Manager reports `reconciliation_required`, an authorized platform administrator uses the
 Apps Manager **Reconcile** action (`POST /api/modules/{module_name}/reconcile`). The operation locks
 the organization and module record, preserves module data, refreshes control-plane manifest truth,
@@ -104,6 +148,11 @@ Use before local candidate handoff or GitHub publication:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```
+
+`Verify` is not successful when its behavior assertions pass but it retains a
+user-visible or recoverable Calendar, Contact, Planning, or Shipment fixture.
+Candidate Data Neutrality v1 requires the repeated-run zero-delta proof defined
+above.
 
 Use this focused gate when the frontend shell or module workspace changes:
 

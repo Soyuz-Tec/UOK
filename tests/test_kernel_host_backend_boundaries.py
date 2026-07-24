@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests.kernel_host_backend_boundary_support import (
+    MODULE_COMMAND_ADAPTERS,
     MODULE_HTTP_ADAPTERS,
     MODULE_HOST_IMPORT_ALLOWLIST,
     allowlisted_host_import,
@@ -74,8 +75,9 @@ def test_feature_backends_have_no_transitive_host_dependency() -> None:
 
 
 def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
-    assert len(MODULE_HTTP_ADAPTERS) == 18
-    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 39
+    assert len(MODULE_HTTP_ADAPTERS) == 19
+    assert len(MODULE_COMMAND_ADAPTERS) == 4
+    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 42
     allowed = python_imports(
         "from uok.host.database import get_db",
         "feature.api",
@@ -117,6 +119,14 @@ def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
         assert allowlisted_host_import(adapter_path, allowed)
         assert allowlisted_host_import(adapter_path, current_actor)
         assert not allowlisted_host_import(adapter_path, execute_command)
+    communications_adapter = (
+        "modules/communications.core/backend/uok_communications_core/api.py"
+    )
+    assert allowlisted_host_import(communications_adapter, execute_command)
+    assert not allowlisted_host_import(
+        "modules/communications.core/backend/uok_communications_core/service.py",
+        execute_command,
+    )
     assert not allowlisted_host_import(
         "modules/product.master/backend/uok_product_master/_internal/delivery/service.py",
         allowed,

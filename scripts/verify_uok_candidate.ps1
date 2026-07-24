@@ -1,10 +1,16 @@
 param(
     [string]$BaseUrl = "http://127.0.0.1:18088",
     [string]$Username = "admin",
-    [string]$Password = "admin"
+    [string]$Password = "admin",
+    [switch]$EphemeralTarget
 )
 
 $ErrorActionPreference = "Stop"
+
+$persistentTargetError = "Candidate verification is mutation-heavy and may only run against a disposable target."
+if (-not $EphemeralTarget) {
+    throw "$persistentTargetError Use scripts\verify_uok_candidate_isolated.ps1."
+}
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $catalogCommand = Join-Path $PSScriptRoot "candidate_verifier_catalog.py"
@@ -30,6 +36,9 @@ if ($candidateVerifiers.Count -lt 1) {
 $health = Invoke-UokJson -Path "/health"
 if ($health.status -ne "ok" -or $health.version -ne "3.1.0-alpha.3") {
     throw "Unexpected health response: $($health | ConvertTo-Json -Depth 5)"
+}
+if ($health.candidate_state -ne "ephemeral") {
+    throw "$persistentTargetError The target did not identify itself as ephemeral."
 }
 
 $headers = New-UokAuthHeaders -Username $Username -Password $Password

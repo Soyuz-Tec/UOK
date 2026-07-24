@@ -142,7 +142,6 @@ describe("Product Master workspace", () => {
   it("archives and restores with optimistic versions", async () => {
     let current = activeProduct;
     const commandTypes: string[] = [];
-    vi.spyOn(globalThis, "confirm").mockReturnValue(true);
     vi.stubGlobal("crypto", { randomUUID: () => "33333333-3333-4333-8333-333333333333" });
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
       const path = String(input);
@@ -160,7 +159,7 @@ describe("Product Master workspace", () => {
     render(<ProductMasterWorkspace host={productHost()} />);
     await screen.findAllByText("RICE-001");
 
-    fireEvent.click(screen.getByRole("button", { name: "Archive product" }));
+    await confirmLifecycleAction("Archive product");
     await screen.findByRole("button", { name: "Restore product" });
     fireEvent.click(screen.getByRole("button", { name: "Restore product" }));
     await screen.findByRole("button", { name: "Archive product" });
@@ -189,3 +188,9 @@ describe("Product Master workspace", () => {
     await waitFor(() => expect(listCalls()).toBeGreaterThan(before));
   });
 });
+
+async function confirmLifecycleAction(name: string) {
+  fireEvent.click(screen.getByRole("button", { name }));
+  const confirmation = await screen.findByRole("dialog", { name: "Confirm action" });
+  fireEvent.click(within(confirmation).getByRole("button", { name }));
+}

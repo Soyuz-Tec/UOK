@@ -39,5 +39,9 @@ and never changes its metadata or lifecycle.
 Run through the repository verifier catalog:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1 -BaseUrl http://127.0.0.1:18088
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1 -ProjectName uok
 ```
+
+The isolated runner reuses the exact local runtime images in fresh disposable
+state and destroys that state after the complete dependency-ordered catalog.
+The raw catalog runner rejects persistent targets.

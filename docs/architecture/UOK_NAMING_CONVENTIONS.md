@@ -43,7 +43,7 @@ Run:
 
 ```powershell
 python scripts/run_python_tests.py
-powershell -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 
 The test suite and candidate verifier check that active source/runtime naming stays within the accepted UOK forms and that product-specific labels do not leak into the baseline UI.

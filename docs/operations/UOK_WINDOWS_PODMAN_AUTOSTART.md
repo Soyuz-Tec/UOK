@@ -169,6 +169,35 @@ The final cold-path acceptance check is:
 5. Require the Podman machine running, PostgreSQL healthy, API running on
    `127.0.0.1:18088`, and `/health` returning the configured UOK identity.
 
+### Qualified Cold-Reboot Evidence
+
+The governed local candidate completed the Windows restart and interactive
+sign-in acceptance on 2026-07-24. The installed frozen payload predated the
+restart, the first post-boot recovery started the configured Podman machine,
+recovered the existing image-pinned database and API containers, and reached
+the expected UOK health identity.
+
+| Evidence | Qualified value |
+|---|---|
+| Frozen payload installed | `2026-07-24T07:44:55Z` |
+| Windows boot | `2026-07-24T14:56:11.500Z` |
+| Recovery run ID | `190d2177-9be4-46be-af8a-d66b22bad01c` |
+| Recovery started | `2026-07-24T14:57:06.692Z` |
+| Recovery completed | `2026-07-24T14:57:31.344Z` |
+| Boot-to-recovery completion | `79.844` seconds |
+| Post-boot `recovery_failed` events | `0` |
+| Acceptance checks | `20/20` passed |
+| Evidence JSON SHA-256 | `ea11618143de7d2ed8507722ecd528dfef7292e3eb54566ca6ed8c74ff260e14` |
+| Structured recovery log | `%LOCALAPPDATA%\UOK\logs\podman-autostart.jsonl` |
+
+The acceptance checks covered installed-user and pre-boot payload identity,
+managed-task definition and payload integrity, maintenance state, task result,
+post-sign-in recovery timing and event sequence, absence of post-boot failures,
+Podman machine state, database and API container state and pinned image
+identity, PostgreSQL health, and the configured UOK name and version returned by
+`/health`. This qualifies the supported interactive-user watchdog only; it does
+not change the pre-login service or production-boot boundary.
+
 After this cold-path check, a controlled API-container stop may be used to prove
 the periodic path recovers UOK within the configured interval plus the bounded
 worker duration. If the task fails, keep the JSONL log, correct the nearest

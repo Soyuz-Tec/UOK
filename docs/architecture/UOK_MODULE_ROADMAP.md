@@ -53,7 +53,9 @@ Architecture documents only track UOK-level governance, release targets, and mod
 - module-owned operational index and contact group migrations under `modules/contacts.core/migrations`
 - module-owned Contacts React/CSS source and tests composed from its validated manifest through the generated frontend catalog
 
-It also introduces the `agents.core` scaffold as the next capability boundary for AI-powered business operations:
+It also introduces the `agents.core` scaffold as a strategic planned capability
+boundary for AI-powered business operations. It is not the selected next
+increment:
 
 - governed agent runbooks
 - Codex and future tool bindings under UOK approval and audit control
@@ -184,9 +186,15 @@ New modules must not add product-specific behavior to the UOK core. They must ex
   shell/module backedges as modules are added.
 - Keep future module React/CSS source and frontend tests in canonical module roots from the first increment.
 - Keep future schema changes in module-owned migrations instead of expanding the shared initial baseline.
-- Qualify bounded document-expiry readiness under its approved explicit-as-of,
-  fixed-UTC v1 policy and inclusive 30-calendar-day horizon, then select the
-  next product increment from operator evidence.
+- Bounded document-expiry readiness is qualified under its approved
+  explicit-as-of, fixed-UTC v1 policy and inclusive 30-calendar-day horizon.
+- Complete `Candidate Data Neutrality v1` as the selected next bounded
+  increment. Successful and failed candidate runs must retain no user-visible
+  or recoverable Calendar, Contact, Planning, or Shipment fixtures; ordinary
+  soft Delete or Archive is not sufficient.
+- Use repeated-run zero-delta evidence and exact reviewed historical-cleanup
+  ID lists with sorted-ID SHA-256 digests before selecting another product
+  feature from operator evidence.
 - Defer configurable organization/tenant time zones until UOK has an owned
   setting, authorization and compatibility rules, a separate decision, and a
   migration as applicable.

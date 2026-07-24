@@ -117,7 +117,16 @@ vCard is the implemented exchange format. External identities, cursors, and conf
 
 ## Operations And Hygiene
 
-New candidate verifier runs remove temporary membership and archive their temporary group. Historical empty verifier groups can be identified only through the dry-run-first `ContactsVerifierGroupCleanup` operation. It requires exact name/description, command-log, event, API visibility, and zero-member evidence; execution requires a reviewed plan, an existing backup, and two explicit switches. It archives and never deletes.
+New candidate verifier runs remove temporary membership and archive their
+temporary group to prove lifecycle behavior, but that recoverable Archive is
+not data-neutral cleanup. Full qualification uses
+`scripts/verify_uok_candidate_isolated.ps1` and requires exact labelled
+container, volume, and network absence after each pass. Historical empty
+verifier groups can be identified only through the dry-run-first
+`ContactsVerifierGroupCleanup` operation. It requires exact name/description,
+command-log, event, API visibility, and zero-member evidence; execution
+requires a reviewed plan, an existing backup, and two explicit switches. It
+archives and never deletes.
 
 See `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`.
 
@@ -136,7 +145,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```
 
-For runtime/UI changes, rebuild the PostgreSQL candidate and verify authenticated browser/API behavior, console cleanliness, keyboard/focus, 320 px, 200% text, light/dark/system appearance, RTL, touch targets, module lifecycle, candidate cleanup, backup, and rollback. Source presence alone is not production proof.
+For runtime/UI changes, rebuild the PostgreSQL candidate and verify authenticated browser/API behavior, console cleanliness, keyboard/focus, 320 px, 200% text, light/dark/system appearance, RTL, touch targets, module lifecycle, isolated candidate-state destruction, backup, and rollback. Source presence alone is not production proof.
 
 ## Residual Backlog
 
