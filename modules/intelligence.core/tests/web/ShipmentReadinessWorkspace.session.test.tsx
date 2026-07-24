@@ -22,8 +22,8 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-  localStorage.clear();
-  sessionStorage.clear();
+  window.localStorage.clear();
+  window.sessionStorage.clear();
 });
 
 describe("Shipment Readiness session-safe reads", () => {
@@ -154,7 +154,7 @@ describe("Shipment Readiness session-safe reads", () => {
 
     const firstKey = savedViewKeys()[0];
     expect(firstKey).toContain("uok_intelligence_shipment_readiness_session_views:");
-    sessionStorage.setItem(firstKey!, JSON.stringify([{
+    window.sessionStorage.setItem(firstKey!, JSON.stringify([{
       id: "tenant-a-view",
       name: "Tenant A shipment",
       query: attentionSignal.code,
@@ -167,38 +167,38 @@ describe("Shipment Readiness session-safe reads", () => {
     })} />);
     await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2));
 
-    expect(sessionStorage.getItem(firstKey!)).toBeNull();
+    expect(window.sessionStorage.getItem(firstKey!)).toBeNull();
     const currentKeys = savedViewKeys();
     expect(currentKeys).toHaveLength(1);
     expect(currentKeys[0]).not.toBe(firstKey);
-    expect(sessionStorage.getItem(currentKeys[0]!)).toBe("[]");
+    expect(window.sessionStorage.getItem(currentKeys[0]!)).toBe("[]");
   });
 
   it("removes saved-view remnants left by an interrupted prior mount", async () => {
     const staleKey = "uok_intelligence_shipment_readiness_session_views:stale";
-    sessionStorage.setItem(staleKey, JSON.stringify([{
+    window.sessionStorage.setItem(staleKey, JSON.stringify([{
       id: "stale-view",
       name: "Prior tenant shipment",
       query: attentionSignal.code,
       filters: {},
       groupBy: "none",
     }]));
-    localStorage.setItem(`${staleKey}-legacy`, "legacy");
+    window.localStorage.setItem(`${staleKey}-legacy`, "legacy");
     vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(readinessResponse)));
 
     render(<ShipmentReadinessWorkspace host={intelligenceHost()} />);
     await screen.findByRole("heading", { name: attentionSignal.code });
 
-    expect(sessionStorage.getItem(staleKey)).toBeNull();
-    expect(localStorage.getItem(`${staleKey}-legacy`)).toBeNull();
+    expect(window.sessionStorage.getItem(staleKey)).toBeNull();
+    expect(window.localStorage.getItem(`${staleKey}-legacy`)).toBeNull();
     expect(savedViewKeys()).toHaveLength(1);
   });
 });
 
 function savedViewKeys() {
   return Array.from(
-    { length: sessionStorage.length },
-    (_, index) => sessionStorage.key(index),
+    { length: window.sessionStorage.length },
+    (_, index) => window.sessionStorage.key(index),
   ).filter((key): key is string => (
     key?.startsWith("uok_intelligence_shipment_readiness_session_views:")
     ?? false
