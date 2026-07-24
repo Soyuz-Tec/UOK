@@ -7,10 +7,11 @@ import moduleSurface2 from "../../../modules/communications.core/web/src/moduleS
 import moduleSurface3 from "../../../modules/compliance.core/web/src/moduleSurface";
 import moduleSurface4 from "../../../modules/contacts.core/web/src/moduleSurface";
 import moduleSurface5 from "../../../modules/locations.core/web/src/moduleSurface";
-import moduleSurface6 from "../../../modules/planning.core/web/src/moduleSurface";
-import moduleSurface7 from "../../../modules/product.master/web/src/moduleSurface";
-import moduleSurface8 from "../../../modules/routes.core/web/src/moduleSurface";
-import moduleSurface9 from "../../../modules/shipments.core/web/src/moduleSurface";
+import moduleSurface6 from "../../../modules/routes.core/web/src/moduleSurface";
+import moduleSurface7 from "../../../modules/shipments.core/web/src/moduleSurface";
+import moduleSurface8 from "../../../modules/intelligence.core/web/src/moduleSurface";
+import moduleSurface9 from "../../../modules/planning.core/web/src/moduleSurface";
+import moduleSurface10 from "../../../modules/product.master/web/src/moduleSurface";
 
 export const generatedModuleSurfaceCatalog = [
   {
@@ -69,30 +70,12 @@ export const generatedModuleSurfaceCatalog = [
   },
   {
     manifest: {
-      moduleName: "planning.core",
-      sectionId: "planning",
-      webEntry: "modules/planning.core/web/src/moduleSurface.tsx",
-      dependencies: ["calendar.core"]
-    },
-    surface: moduleSurface6
-  },
-  {
-    manifest: {
-      moduleName: "product.master",
-      sectionId: "products",
-      webEntry: "modules/product.master/web/src/moduleSurface.tsx",
-      dependencies: []
-    },
-    surface: moduleSurface7
-  },
-  {
-    manifest: {
       moduleName: "routes.core",
       sectionId: "routes",
       webEntry: "modules/routes.core/web/src/moduleSurface.tsx",
       dependencies: ["locations.core"]
     },
-    surface: moduleSurface8
+    surface: moduleSurface6
   },
   {
     manifest: {
@@ -101,6 +84,33 @@ export const generatedModuleSurfaceCatalog = [
       webEntry: "modules/shipments.core/web/src/moduleSurface.tsx",
       dependencies: ["compliance.core", "contacts.core", "locations.core", "routes.core"]
     },
+    surface: moduleSurface7
+  },
+  {
+    manifest: {
+      moduleName: "intelligence.core",
+      sectionId: "intelligence",
+      webEntry: "modules/intelligence.core/web/src/moduleSurface.tsx",
+      dependencies: ["shipments.core"]
+    },
+    surface: moduleSurface8
+  },
+  {
+    manifest: {
+      moduleName: "planning.core",
+      sectionId: "planning",
+      webEntry: "modules/planning.core/web/src/moduleSurface.tsx",
+      dependencies: ["calendar.core"]
+    },
     surface: moduleSurface9
+  },
+  {
+    manifest: {
+      moduleName: "product.master",
+      sectionId: "products",
+      webEntry: "modules/product.master/web/src/moduleSurface.tsx",
+      dependencies: []
+    },
+    surface: moduleSurface10
   },
 ] as const satisfies readonly GeneratedModuleSurfaceRegistration[];

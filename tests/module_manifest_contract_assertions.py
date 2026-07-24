@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from tests.intelligence_manifest_contract_assertions import (
+    assert_intelligence_manifest,
+)
 from uok.host.module_paths import modules_root
 from uok.module_manifest_loader import load_module_manifests
 
@@ -113,6 +116,8 @@ def assert_file_backed_module_manifests(baseline_modules: Sequence[str]) -> None
         "ComplianceDocumentType",
         "ComplianceDocumentTypeNameHistory",
     }.issubset(set(compliance["owned_tables"]))
+
+    assert_intelligence_manifest(manifests)
 
     contacts = manifests["contacts.core"]
     assert contacts["required"] is False

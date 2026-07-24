@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from tests.kernel_host_backend_boundary_support import (
+    MODULE_HTTP_ADAPTERS,
     MODULE_HOST_IMPORT_ALLOWLIST,
     allowlisted_host_import,
     dependency_path_to_host,
@@ -73,7 +74,8 @@ def test_feature_backends_have_no_transitive_host_dependency() -> None:
 
 
 def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
-    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 37
+    assert len(MODULE_HTTP_ADAPTERS) == 18
+    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 39
     allowed = python_imports(
         "from uok.host.database import get_db",
         "feature.api",
@@ -97,6 +99,7 @@ def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
 
     read_only_adapter_paths = (
         "modules/compliance.core/backend/uok_compliance_core/_internal/delivery/api.py",
+        "modules/intelligence.core/backend/uok_intelligence_core/_internal/delivery/api.py",
         "modules/product.master/backend/uok_product_master/_internal/delivery/api.py",
         "modules/locations.core/backend/uok_locations_core/_internal/delivery/api.py",
         "modules/routes.core/backend/uok_routes_core/_internal/delivery/api.py",

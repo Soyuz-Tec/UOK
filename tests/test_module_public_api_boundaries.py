@@ -58,6 +58,10 @@ def test_manifests_compose_through_public_facades_and_keep_models_private() -> N
     for owner, contract in MODULES.items():
         manifest = manifests[str(contract["folder"])]
         public_module = str(contract["package"]) + ".public_api"
+        assert "api_router" in manifest["extension_points"]
+        api_module, _, api_symbol = str(manifest["api_router"]).partition(":")
+        assert api_module == public_module
+        assert api_symbol == "api_router"
         for field in public_fields:
             if field not in manifest["extension_points"]:
                 assert field not in manifest
@@ -69,9 +73,13 @@ def test_manifests_compose_through_public_facades_and_keep_models_private() -> N
             target_module, _, target_symbol = str(manifest["command_replay_guard"]).partition(":")
             assert target_module == public_module
             assert target_symbol in contract["symbols"]
-        assert manifest["model_exports"] == (
-            str(contract["package"]) + "._internal.persistence.models:owned_models"
-        )
+        if "model_exports" in manifest["extension_points"]:
+            assert manifest["model_exports"] == (
+                str(contract["package"])
+                + "._internal.persistence.models:owned_models"
+            )
+        else:
+            assert "model_exports" not in manifest
 
 
 def test_supported_python_surfaces_are_exact_and_boundary_dtos_are_immutable() -> None:
@@ -105,6 +113,11 @@ def test_supported_python_surfaces_are_exact_and_boundary_dtos_are_immutable() -
     shipments_api = apis["shipments"]
     assert is_dataclass(shipments_api.ShipmentReferenceDTO)
     assert shipments_api.ShipmentReferenceDTO.__dataclass_params__.frozen is True
+    assert is_dataclass(shipments_api.ShipmentReadinessSnapshotDTO)
+    assert (
+        shipments_api.ShipmentReadinessSnapshotDTO.__dataclass_params__.frozen
+        is True
+    )
 
 
 def test_python_rule_rejects_private_root_deep_star_and_unknown_public_imports() -> None:
@@ -135,7 +148,7 @@ def test_python_rule_rejects_private_root_deep_star_and_unknown_public_imports()
 
     for contract in MODULES.values():
         assert _python_violations(
-            f"from {contract['package']}.public_api import command_handlers",
+            f"from {contract['package']}.public_api import api_router",
             path,
         ) == []
 
@@ -174,6 +187,7 @@ def test_frontend_rule_rejects_deep_imports_and_accepts_module_surface() -> None
         ("locations.core", "LocationMasterWorkspace"),
         ("routes.core", "RouteMasterWorkspace"),
         ("shipments.core", "ShipmentSupportWorkspace"),
+        ("intelligence.core", "ShipmentReadinessWorkspace"),
     ):
         assert _frontend_violations(
             f'import {{ {private_symbol} }} from "@uok-modules/{folder}/web/src/{private_symbol}";',

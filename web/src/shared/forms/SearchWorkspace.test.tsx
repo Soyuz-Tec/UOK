@@ -9,6 +9,7 @@ import { SearchWorkspace } from "./SearchWorkspace";
 afterEach(() => {
   cleanup();
   window.localStorage.clear();
+  window.sessionStorage.clear();
 });
 
 describe("SearchWorkspace", () => {
@@ -51,6 +52,28 @@ describe("SearchWorkspace", () => {
     expect(screen.getByRole("textbox", { name: "Search records" })).toHaveValue("dispatch");
   });
 
+  it("can scope saved searches to session storage without changing the local default", () => {
+    const view = render(<SearchHarness storageKind="session" />);
+    fireEvent.click(screen.getByRole("button", { name: "Search options: All records" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Search records" }), {
+      target: { value: "dispatch" },
+    });
+    fireEvent.change(screen.getByLabelText("Saved search name"), {
+      target: { value: "Session dispatch" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save search" }));
+
+    expect(window.sessionStorage.getItem("search-workspace-test"))
+      .toContain("Session dispatch");
+    expect(window.localStorage.getItem("search-workspace-test")).toBeNull();
+    view.unmount();
+    render(<SearchHarness storageKind="session" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Search options: All records" }));
+    expect(screen.getByRole("button", { name: "Apply Session dispatch" }))
+      .toBeInTheDocument();
+  });
+
   it("prevents user searches from duplicating locked preset names", () => {
     render(<SearchHarness withPreset />);
     fireEvent.click(screen.getByRole("button", { name: "Search options: All records" }));
@@ -89,7 +112,15 @@ describe("SearchWorkspace", () => {
   });
 });
 
-function SearchHarness({ withPreset = false, withSupplementalSection = false }: { withPreset?: boolean; withSupplementalSection?: boolean }) {
+function SearchHarness({
+  storageKind,
+  withPreset = false,
+  withSupplementalSection = false,
+}: {
+  storageKind?: "local" | "session";
+  withPreset?: boolean;
+  withSupplementalSection?: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [groupBy, setGroupBy] = useState("none");
@@ -110,6 +141,7 @@ function SearchHarness({ withPreset = false, withSupplementalSection = false }: 
       groupBy={groupBy}
       groupOptions={[{ value: "none", label: "No grouping" }, { value: "category", label: "Category" }]}
       savedViewsStorageKey="search-workspace-test"
+      savedViewsStorageKind={storageKind}
       presetViews={withPreset ? [{ id: "all-records", name: "All records", query: "", filters: {}, groupBy: "none", locked: true }] : []}
       supplementalSections={withSupplementalSection ? ({ close }) => (
         <section className="search-workspace-section" aria-label="Record actions">

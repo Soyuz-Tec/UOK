@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable as _Iterable
 from dataclasses import dataclass as _dataclass
 from importlib import import_module as _import_module
 from typing import Any as _Any
@@ -18,6 +19,29 @@ _EXPORTS = {
 }
 
 api_router: _Any
+
+
+@_dataclass(frozen=True)
+class ShipmentReadinessSnapshotDTO:
+    shipment_id: str
+    status: _ReferenceStatus
+    code: str | None
+    lifecycle_status: str | None
+    required_total: int | None
+    required_satisfied: int | None
+    required_missing: int | None
+    required_received: int | None
+    required_waived: int | None
+    required_not_applicable: int | None
+    optional_total: int | None
+    document_instance_total: int | None
+    document_instance_draft: int | None
+    document_instance_recorded: int | None
+    document_instance_verified: int | None
+    document_instance_rejected: int | None
+    document_instance_superseded: int | None
+    status_summary: str
+    open_path: str | None = None
 
 
 @_dataclass(frozen=True)
@@ -64,6 +88,19 @@ def resolve_shipment_reference(
     )
 
 
+def resolve_shipment_readiness_snapshots(
+    db: _Session,
+    actor: _Actor,
+    shipment_ids: _Iterable[str] | None = None,
+) -> tuple[ShipmentReadinessSnapshotDTO, ...]:
+    """Resolve tenant-visible Shipment-owned readiness facts as immutable values."""
+    from uok_shipments_core._internal.delivery.readiness_snapshot_service import (
+        resolve_shipment_readiness_snapshots as _resolve,
+    )
+
+    return _resolve(db, actor, shipment_ids, ShipmentReadinessSnapshotDTO)
+
+
 def _unresolved_shipment(shipment_id: str, status: _ReferenceStatus) -> ShipmentReferenceDTO:
     summaries = {
         "denied": "The Shipment target is not visible to this actor.",
@@ -106,10 +143,12 @@ def __dir__() -> list[str]:
 
 
 __all__ = [
+    "ShipmentReadinessSnapshotDTO",
     "ShipmentReferenceDTO",
     "api_router",
     "command_handlers",
     "command_permissions",
+    "resolve_shipment_readiness_snapshots",
     "resolve_shipment_reference",
     "role_grants",
 ]

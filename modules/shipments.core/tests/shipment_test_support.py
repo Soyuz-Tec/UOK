@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
+from collections.abc import Iterator
+
 from starlette.testclient import TestClient
 
 from tests.helpers import command
@@ -19,6 +22,54 @@ def install_shipment_stack(client: TestClient, admin_headers: dict[str, str]) ->
     ):
         response = client.post(f"/api/modules/{module_name}/install", headers=admin_headers)
         assert response.status_code == 200, response.text
+
+
+@contextmanager
+def temporarily_uninstall_module(
+    client: TestClient,
+    admin_headers: dict[str, str],
+    module_name: str,
+) -> Iterator[None]:
+    status_response = client.get(
+        f"/api/modules/{module_name}/status",
+        headers=admin_headers,
+    )
+    assert status_response.status_code == 200, status_response.text
+    original_status = status_response.json()["status"]
+    was_installed = original_status in {"installed", "upgraded", "disabled"}
+    if original_status in {"installed", "upgraded"}:
+        response = client.post(
+            f"/api/modules/{module_name}/disable",
+            headers=admin_headers,
+        )
+        assert response.status_code == 200, response.text
+    if was_installed:
+        response = client.post(
+            f"/api/modules/{module_name}/uninstall",
+            headers=admin_headers,
+        )
+        assert response.status_code == 200, response.text
+    try:
+        yield
+    finally:
+        if was_installed:
+            response = client.post(
+                f"/api/modules/{module_name}/install",
+                headers=admin_headers,
+            )
+            assert response.status_code == 200, response.text
+            if original_status == "disabled":
+                response = client.post(
+                    f"/api/modules/{module_name}/disable",
+                    headers=admin_headers,
+                )
+                assert response.status_code == 200, response.text
+            elif original_status == "upgraded":
+                response = client.post(
+                    f"/api/modules/{module_name}/upgrade",
+                    headers=admin_headers,
+                )
+                assert response.status_code == 200, response.text
 
 
 def create_compliance_document_type(
@@ -232,4 +283,5 @@ __all__ = [
     "install_shipment_stack",
     "other_shipment_tenant_headers",
     "shipment_payload",
+    "temporarily_uninstall_module",
 ]

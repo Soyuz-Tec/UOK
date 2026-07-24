@@ -54,7 +54,7 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
    runtime queries and operational checks.
 4. Module → Host exceptions are explicit path-and-symbol adapter seams:
    - `from uok.host.database import get_db` and
-    `from uok.host.security import current_actor` in the 17 documented module
+    `from uok.host.security import current_actor` in the 18 documented module
      HTTP adapters;
    - `from uok.host.commands import execute_command` in the exact Calendar,
      Contacts, and Planning command adapters.
@@ -130,6 +130,18 @@ Its exact `get_db` and `current_actor` imports increase the adapter surface from
 35 to 37. Compliance behavior, mappings, lifecycle, UI, and verification remain
 owner-local; the module has no feature dependency and exposes only immutable
 value data through its public facade.
+
+The Shipment Readiness slice adds the same bounded adapter shape at
+`modules/intelligence.core/backend/uok_intelligence_core/_internal/delivery/api.py`.
+Its exact `get_db` and `current_actor` imports increase the adapter surface from
+37 to 39 across 18 HTTP adapters. `intelligence.core` is stateless and depends
+only on the frozen `ShipmentReadinessSnapshotDTO` and
+`resolve_shipment_readiness_snapshots` symbols in the Shipment public facade.
+It adds no ORM mapping, table, SQL migration, command, event, Kernel contract,
+Host business logic, shell field, or reverse Shipment dependency. Its
+module-owned workbench is composed through the existing neutral surface
+contract. This is a bounded capability addition under the active architecture
+freeze, not an architecture unfreeze.
 
 ## Consequences
 

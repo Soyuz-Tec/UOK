@@ -29,6 +29,7 @@ RUNTIME_PROVEN_MODULES = (
     "reports.core",
     "routes.core",
     "shipments.core",
+    "intelligence.core",
 )
 
 
@@ -66,6 +67,7 @@ def test_candidate_disabled_state_proofs_restore_installed_dependents() -> None:
         "modules/product.master/verify/UokCandidateProductMaster.ps1",
         "modules/routes.core/verify/UokCandidateRouteCorridor.ps1",
         "modules/shipments.core/verify/UokCandidateShipmentSupport.ps1",
+        "modules/intelligence.core/verify/UokCandidateShipmentReadiness.ps1",
     )
 
     assert "Get-UokDependentUninstallOrder" in helper
@@ -106,7 +108,7 @@ def test_container_asset_validator_discovers_repository_verifiers_from_manifests
     )
 
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "Validated 11 runtime-proven module verifier assets."
+    assert result.stdout.strip() == "Validated 12 runtime-proven module verifier assets."
 
 
 def test_ci_builds_the_oci_image_without_publishing() -> None:

@@ -11,3 +11,12 @@ Shipment requirement behavior consumes only
 stores no copied Compliance type metadata. Document-instance behavior reuses
 that exact immutable DTO resolver, stores only bounded metadata, and exposes no
 ORM object or file/binary contract.
+
+The supported facade also exposes frozen `ShipmentReadinessSnapshotDTO` values
+through `resolve_shipment_readiness_snapshots` for the real
+`intelligence.core` caller. The owner resolver enforces Shipment permission,
+operational state, and organization scope, then returns only actor-visible
+Shipment identity/navigation and aggregate requirement/document-instance
+counts. It exposes no owner row, child identifier, document metadata,
+foreign-owner value, SQL expression, or Intelligence signal. Intelligence
+derives its advisory bands separately and cannot mutate Shipment state.

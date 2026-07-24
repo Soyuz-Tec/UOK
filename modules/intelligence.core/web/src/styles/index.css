@@ -1,0 +1,189 @@
+.shipment-readiness-workspace {
+  display: grid;
+  gap: var(--uok-space-3);
+  min-width: 0;
+}
+
+.shipment-readiness-status-region {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--uok-space-2) var(--uok-space-4);
+}
+
+.shipment-readiness-source,
+.shipment-readiness-status {
+  margin: 0;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.shipment-readiness-status[role="alert"] {
+  color: var(--uok-danger);
+  font-weight: 700;
+}
+
+.shipment-readiness-workspace .workflow-primary-region,
+.shipment-readiness-workspace .workflow-secondary-region {
+  min-width: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+}
+
+.shipment-readiness-workspace .workflow-primary-region {
+  overflow: auto;
+}
+
+.shipment-readiness-workspace .resizable-data-table tr.selected td {
+  background: color-mix(in srgb, var(--uok-accent) 10%, var(--uok-bg-elevated));
+}
+
+.shipment-readiness-workspace .resizable-data-table tr[data-clickable="true"] {
+  cursor: pointer;
+}
+
+.shipment-readiness-workspace .resizable-data-table tr[data-clickable="true"]:focus-visible {
+  outline: 3px solid var(--uok-focus-ring);
+  outline-offset: -3px;
+}
+
+.shipment-readiness-detail {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-4);
+  min-width: 0;
+  padding: var(--uok-space-4);
+}
+
+.shipment-readiness-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--uok-space-3);
+  padding-block-end: var(--uok-space-3);
+  border-block-end: var(--uok-line);
+}
+
+.shipment-readiness-detail-header h2,
+.shipment-readiness-detail-header p,
+.shipment-readiness-reasons h3,
+.shipment-readiness-instance-state h3 {
+  margin: 0;
+}
+
+.shipment-readiness-detail-header h2,
+.shipment-readiness-summary {
+  overflow-wrap: anywhere;
+}
+
+.shipment-readiness-summary {
+  margin: 0;
+  color: var(--uok-text-secondary);
+}
+
+.shipment-readiness-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--uok-space-3);
+}
+
+.shipment-readiness-detail-grid .detail-item {
+  min-width: 0;
+}
+
+.shipment-readiness-reasons,
+.shipment-readiness-instance-state {
+  display: grid;
+  gap: var(--uok-space-3);
+  padding-block-start: var(--uok-space-3);
+  border-block-start: var(--uok-line);
+}
+
+.shipment-readiness-reasons ul {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.shipment-readiness-reasons li {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-height: var(--uok-row-height);
+  padding-block: var(--uok-space-2);
+  box-shadow: inset 0 -1px 0 var(--uok-row-separator-color);
+}
+
+.shipment-readiness-reasons code {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  overflow-wrap: anywhere;
+}
+
+.shipment-readiness-instance-state dl {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--uok-space-2);
+  margin: 0;
+}
+
+.shipment-readiness-instance-state dl div {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-width: 0;
+  padding: var(--uok-space-2);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-muted);
+  text-align: center;
+}
+
+.shipment-readiness-instance-state dt {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.shipment-readiness-instance-state dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.shipment-readiness-detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-block-start: var(--uok-space-3);
+  border-block-start: var(--uok-line);
+}
+
+.shipment-readiness-detail-actions a.command-button {
+  text-decoration: none;
+}
+
+@media (max-width: 760px) {
+  .shipment-readiness-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shipment-readiness-instance-state dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .shipment-readiness-status-region,
+  .shipment-readiness-detail-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .shipment-readiness-instance-state dl {
+    grid-template-columns: 1fr;
+  }
+
+  .shipment-readiness-detail-actions,
+  .shipment-readiness-detail-actions .command-button {
+    width: 100%;
+  }
+}

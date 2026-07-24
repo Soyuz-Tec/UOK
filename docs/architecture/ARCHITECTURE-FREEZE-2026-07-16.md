@@ -82,7 +82,7 @@ Every split requires an ADR, data/migration ownership plan, compatibility plan, 
 At minimum:
 
 ```powershell
-python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
+python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_intelligence_shipment_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
 python scripts/quality_audit.py
 python scripts/run_python_tests.py
 npm --prefix web run check:contracts
@@ -95,12 +95,31 @@ Also run the affected module tests, release-contract validation, container asset
 
 Any new module, public symbol, Kernel contract, Host adapter path, shell port field, manifest extension, table claim, or cross-module integration must add or update an architecture test. GitHub CI must be green before merge.
 
+## Freeze-Preserving Capability Record
+
+The post-freeze `intelligence.core` Shipment Readiness slice is accepted under
+the existing new-module and public-API rules; it does not unfreeze the
+architecture:
+
+- Intelligence depends only on immutable
+  `ShipmentReadinessSnapshotDTO` values returned by
+  `resolve_shipment_readiness_snapshots` from the Shipment facade;
+- it owns no ORM mapping, table, SQL migration, cache, command, event, or
+  workflow mutation;
+- its GET API, `intelligence.read` policy, read-only workbench, tests, and
+  verifier remain module-owned;
+- the Kernel, Host responsibilities, neutral shell contract, Planning and
+  Contacts facades, and 64-mapping graph remain unchanged; and
+- the bounded request adapter and surface additions bring the current totals
+  to 18 HTTP adapters / 39 exact Host imports, 12 candidate verifiers, and 11
+  workbench surfaces; commands and events remain 108 and 118.
+
 ## Accepted Residuals During The Freeze
 
-- The 37 exact in-process Host request/command adapter imports, including the
+- The 39 exact in-process Host request/command adapter imports, including the
   Product Master, Location Master, Route/Corridor Master, Shipment Support, and
-  Compliance Document Type HTTP adapters' `get_db` and `current_actor`
-  seams.
+  Compliance Document Type and Shipment Readiness HTTP adapters' `get_db` and
+  `current_actor` seams.
 - The six-file product-neutral Host/platform validation SCC, provided it does not grow.
 - Contacts' three-file internal guided-import SCC.
 - Planning's two-file backend SCC and two-file frontend type-level SCC.

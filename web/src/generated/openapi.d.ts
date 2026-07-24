@@ -1178,6 +1178,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/intelligence/shipment-readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Shipment Readiness */
+        get: operations["shipment_readiness_api_intelligence_shipment_readiness_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/locations/definitions": {
         parameters: {
             query?: never;
@@ -4512,6 +4529,64 @@ export interface components {
             /** Required Waived */
             required_waived: number;
         };
+        /** ShipmentReadinessListResponse */
+        ShipmentReadinessListResponse: {
+            /** Items */
+            items: components["schemas"]["ShipmentReadinessSignalResponse"][];
+            /**
+             * Source Status
+             * @constant
+             */
+            source_status: "ready";
+            /** Source Summary */
+            source_summary: string;
+        };
+        /** ShipmentReadinessSignalResponse */
+        ShipmentReadinessSignalResponse: {
+            /**
+             * Band
+             * @enum {string}
+             */
+            band: "attention_required" | "not_assessed" | "ready";
+            /** Code */
+            code: string;
+            /** Document Instance Draft */
+            document_instance_draft: number;
+            /** Document Instance Recorded */
+            document_instance_recorded: number;
+            /** Document Instance Rejected */
+            document_instance_rejected: number;
+            /** Document Instance Superseded */
+            document_instance_superseded: number;
+            /** Document Instance Total */
+            document_instance_total: number;
+            /** Document Instance Verified */
+            document_instance_verified: number;
+            /** Lifecycle Status */
+            lifecycle_status: string;
+            /** Open Path */
+            open_path: string | null;
+            /** Optional Total */
+            optional_total: number;
+            /** Reason Codes */
+            reason_codes: ("required_documents_missing" | "rejected_document_present" | "requirements_not_defined" | "required_documents_satisfied" | "document_metadata_pending_review" | "verified_document_present")[];
+            /** Required Missing */
+            required_missing: number;
+            /** Required Not Applicable */
+            required_not_applicable: number;
+            /** Required Received */
+            required_received: number;
+            /** Required Satisfied */
+            required_satisfied: number;
+            /** Required Total */
+            required_total: number;
+            /** Required Waived */
+            required_waived: number;
+            /** Shipment Id */
+            shipment_id: string;
+            /** Status Summary */
+            status_summary: string;
+        };
         /** ShipmentResponse */
         ShipmentResponse: {
             /** Code */
@@ -7823,6 +7898,37 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    shipment_readiness_api_intelligence_shipment_readiness_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentReadinessListResponse"];
                 };
             };
             /** @description Validation Error */

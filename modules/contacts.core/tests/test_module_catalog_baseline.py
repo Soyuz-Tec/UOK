@@ -24,6 +24,7 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
         "communications.core",
         "compliance.core",
         "contacts.core",
+        "intelligence.core",
         "locations.core",
         "planning.core",
         "product.master",
@@ -43,6 +44,10 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
     assert modules["compliance.core"]["required"] is False
     assert modules["compliance.core"]["installable"] is True
     assert modules["contacts.core"]["required"] is False
+    assert modules["intelligence.core"]["kind"] == "capability_module"
+    assert modules["intelligence.core"]["required"] is False
+    assert modules["intelligence.core"]["installable"] is True
+    assert modules["intelligence.core"]["dependencies"] == ["shipments.core"]
     assert modules["locations.core"]["kind"] == "capability_module"
     assert modules["locations.core"]["required"] is False
     assert modules["locations.core"]["installable"] is True

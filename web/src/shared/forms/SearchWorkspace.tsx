@@ -7,7 +7,10 @@ import { SearchField } from "./SearchField";
 import { SearchOptionsPanel } from "./SearchOptionsPanel";
 import { SearchRefinementChips } from "./SearchRefinementChips";
 import type { SavedSearchView, SearchWorkspaceFilter, SearchWorkspaceOption, SearchWorkspaceSort, SearchWorkspaceSortDirection } from "./SearchWorkspace.types";
-import { useSavedSearchViews } from "./useSavedSearchViews";
+import {
+  useSavedSearchViews,
+  type SavedSearchStorageKind,
+} from "./useSavedSearchViews";
 import { useSearchRefinements } from "./useSearchRefinements";
 
 type SupplementalSections = ReactNode | ((controls: { close: () => void }) => ReactNode);
@@ -23,6 +26,7 @@ export function SearchWorkspace({
   groupDefaultValue = "none",
   defaultSummaryLabel = "All records",
   savedViewsStorageKey,
+  savedViewsStorageKind = "local",
   savedViews: externalSavedViews,
   savedViewsStatus,
   presetViews = [],
@@ -43,6 +47,7 @@ export function SearchWorkspace({
   groupDefaultValue?: string;
   defaultSummaryLabel?: string;
   savedViewsStorageKey: string;
+  savedViewsStorageKind?: SavedSearchStorageKind;
   savedViews?: SavedSearchView[];
   savedViewsStatus?: ReactNode;
   presetViews?: SavedSearchView[];
@@ -58,7 +63,10 @@ export function SearchWorkspace({
   const [viewName, setViewName] = useState("");
   const groupingEnabled = groupOptions.length > 0;
   const sortingEnabled = Boolean(sort);
-  const localViews = useSavedSearchViews(savedViewsStorageKey);
+  const localViews = useSavedSearchViews(
+    savedViewsStorageKey,
+    savedViewsStorageKind,
+  );
   const savedViews = externalSavedViews ?? localViews.savedViews;
   const presetNames = new Set(presetViews.map((view) => view.name.trim().toLocaleLowerCase()));
   const availableSavedViews = [...presetViews, ...savedViews.filter((view) => !presetNames.has(view.name.trim().toLocaleLowerCase()))];

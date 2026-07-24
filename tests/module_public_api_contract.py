@@ -85,11 +85,21 @@ MODULES = {
         "package": "uok_shipments_core",
         "folder": "shipments.core",
         "symbols": {
+            "ShipmentReadinessSnapshotDTO",
             "ShipmentReferenceDTO",
             "api_router",
             "command_handlers",
             "command_permissions",
+            "resolve_shipment_readiness_snapshots",
             "resolve_shipment_reference",
+            "role_grants",
+        },
+    },
+    "intelligence": {
+        "package": "uok_intelligence_core",
+        "folder": "intelligence.core",
+        "symbols": {
+            "api_router",
             "role_grants",
         },
     },

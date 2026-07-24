@@ -27,6 +27,8 @@ Detailed design and delivery evidence:
 - `docs/delivery/shipment-document-requirements-slice-delivery-2026-07-17.md`
 - `docs/delivery/shipment-document-instance-metadata-slice-design-2026-07-17.md`
 - `docs/delivery/shipment-document-instance-metadata-slice-delivery-2026-07-17.md`
+- `docs/delivery/shipment-readiness-signals-slice-design-2026-07-18.md`
+- `docs/delivery/shipment-readiness-signals-slice-delivery-2026-07-18.md`
 
 ## First Slice
 
@@ -87,6 +89,31 @@ file name, URL, bucket, object-store key, or content bytes. The HTTP contract
 contains no multipart or binary schema, and the UI contains no `FormData`,
 `FileReader`, object-URL preview, or file control.
 
+## Readiness Snapshot Public Contract
+
+The real `intelligence.core` caller justifies one narrow, read-only Shipment
+facade addition:
+
+- frozen `ShipmentReadinessSnapshotDTO`; and
+- `resolve_shipment_readiness_snapshots(db, actor, shipment_ids=None)`.
+
+The snapshot contains actor-visible Shipment identity, lifecycle, safe
+navigation, and aggregate Shipment-owned requirement/document-instance counts.
+It exposes no ORM object, repository, SQL expression, requirement or instance
+ID, Compliance Type ID, Party/Location/Route ID, document number, issuer, note,
+or Intelligence interpretation.
+
+List mode returns only tenant-visible Shipments in deterministic order.
+Explicit-ID mode preserves request order and duplicates while redacting
+denied, missing, or unavailable results: identity, navigation, and count fields
+are `None`. Shipment independently enforces `shipments.read`, module
+operational state, and `actor.organization_id`.
+
+`intelligence.core` may consume only these two new symbols. Planning's existing
+Shipment allowlist remains `ShipmentReferenceDTO` and
+`resolve_shipment_reference`, and no reverse Shipment-to-Intelligence
+dependency exists.
+
 ## Ownership
 
 | Surface | Owner |
@@ -99,11 +126,12 @@ contains no multipart or binary schema, and the UI contains no `FormData`,
 | Production React and CSS | `modules/shipments.core/web/src` |
 | Compile-time shell composition | Validated manifest and generated module-surface catalog |
 
-The facade remains exactly six symbols: the frozen `ShipmentReferenceDTO`,
-`resolve_shipment_reference`, and four runtime-composition hooks. Requirement
-reads and commands use the existing HTTP/router and command-provider hooks;
-there is no speculative cross-module Shipment readiness DTO. All ORM mappings,
-services, owner gateways, request schemas, and HTTP adapters remain private.
+The facade is exactly eight symbols: frozen `ShipmentReferenceDTO`,
+`resolve_shipment_reference`, frozen `ShipmentReadinessSnapshotDTO`,
+`resolve_shipment_readiness_snapshots`, and four runtime-composition hooks.
+Requirement and instance reads/commands continue using the existing
+HTTP/router and command-provider hooks. All ORM mappings, services, owner
+gateways, request schemas, and HTTP adapters remain private.
 
 ## Data And Integrity Rules
 
@@ -133,6 +161,9 @@ services, owner gateways, request schemas, and HTTP adapters remain private.
   instance metadata is limited to nonterminal states.
 - Requirement status is informational only. Missing requirements do not block
   any otherwise-valid Shipment movement transition.
+- Readiness snapshots aggregate only Shipment-owned current rows. They add no
+  score, band, recommendation, workflow rule, persistence, or foreign-owner
+  lookup; Intelligence owns the advisory interpretation.
 - All reads and writes enforce actor organization, permission, module
   operational state, and optimistic version.
 
@@ -155,6 +186,9 @@ services, owner gateways, request schemas, and HTTP adapters remain private.
   `/api/shipments/records/{shipment_id}/document-instances/{instance_id}`
 - Document instance history:
   `/api/shipments/records/{shipment_id}/document-instances/{instance_id}/history`
+- Cross-module readiness values:
+  `ShipmentReadinessSnapshotDTO` and
+  `resolve_shipment_readiness_snapshots`
 - Commands: `CreateShipment`, `UpdateShipment`,
   `TransitionShipmentStatus`, `AddShipmentDocumentRequirement`,
   `UpdateShipmentDocumentRequirement`,
@@ -180,6 +214,7 @@ Before promotion:
 
 ```powershell
 python -m pytest -q -p no:cacheprovider modules/shipments.core/tests --ignore=modules/shipments.core/tests/web
+python -m pytest -q -p no:cacheprovider modules/shipments.core/tests/test_shipment_readiness_snapshot_api.py tests/test_intelligence_shipment_data_boundary.py
 python -m pytest -q -p no:cacheprovider tests/test_shipment_foreign_data_boundary.py tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py
 python scripts/quality_audit.py
 python scripts/run_python_tests.py
@@ -196,9 +231,10 @@ hosted CI at the final PR head.
 
 ## Next Slice Boundary
 
-Shipment support should remain deliberately thin. After the document-instance
-metadata slice is qualified, evidence may justify a thin Intelligence
-readiness signal consuming a real future Shipment immutable summary contract,
-or bounded operational polish. Any later cargo/Product line belongs to
-`cargo.transactions` after Product Master publishes a real immutable reference
-contract.
+Shipment support remains deliberately thin. The stateless Intelligence
+consumer now uses the bounded immutable readiness snapshot contract; it does
+not move signal interpretation, persistence, or workflow authority into
+Shipment. Any later cargo/Product line belongs to `cargo.transactions` after
+Product Master publishes a real immutable reference contract. Further
+readiness facts require an evidenced owner need and must preserve this
+aggregate-only, tenant-redacted boundary.

@@ -20,8 +20,15 @@ from tests.module_manifest_contract_support import write_module  # noqa: E402
 
 
 def test_checked_frontend_catalog_matches_validated_manifests() -> None:
-    assert OUTPUT_PATH.read_text(encoding="utf-8") == render_frontend_module_catalog()
+    catalog = OUTPUT_PATH.read_text(encoding="utf-8")
+    assert catalog == render_frontend_module_catalog()
     assert SECTIONS_OUTPUT_PATH.read_text(encoding="utf-8") == render_frontend_module_sections()
+    assert "../../../modules/intelligence.core/web/src/moduleSurface" in catalog
+    assert catalog.index(
+        "../../../modules/shipments.core/web/src/moduleSurface"
+    ) < catalog.index(
+        "../../../modules/intelligence.core/web/src/moduleSurface"
+    )
 
 
 def test_frontend_catalog_is_manifest_driven_and_dependency_ordered(tmp_path: Path) -> None:

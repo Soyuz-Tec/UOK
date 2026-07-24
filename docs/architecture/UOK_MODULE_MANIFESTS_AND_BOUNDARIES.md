@@ -56,8 +56,8 @@ UOK verifies:
 Runtime validation runs before manifest router mounting and does not require development test folders. Release validation adds every source ownership folder, maturity-appropriate module tests, and candidate verifier assets. Local/CI release gates call `validate_module_release_contracts`; runtime and container startup call `validate_module_runtime_contracts`.
 
 Planning, Contacts, Compliance Document Types, Product Master, Location Master,
-Route/Corridor Master, and Shipment Support additionally enforce one supported
-Python facade per module.
+Route/Corridor Master, Shipment Support, and Shipment Readiness additionally
+enforce one supported Python facade per module.
 Runtime router, command, policy, dashboard, evidence, and Planning replay
 hooks resolve through `public_api`; implementation packages live below
 `_internal`. The sole exception is the privileged `model_exports` bootstrap
@@ -65,7 +65,10 @@ hook, which stays manifest-resolved under `_internal.persistence` and is never a
 business API. `tests/test_module_public_api_boundaries.py` rejects external
 Python implementation imports, unsupported facade symbols, dynamic literal
 deep imports, and external frontend imports other than `moduleSurface`.
-Shipment keeps its exact six-symbol facade while consuming only
+Shipment exposes an exact eight-symbol facade. Its original reference DTO and
+resolver remain unchanged, while the real Intelligence caller adds only the
+frozen `ShipmentReadinessSnapshotDTO` and
+`resolve_shipment_readiness_snapshots`. Shipment continues consuming only
 `ComplianceDocumentTypeReferenceDTO` and
 `resolve_compliance_document_type_references` from the Compliance facade for
 Shipment-owned requirement and document-instance metadata. The Shipment
@@ -73,6 +76,12 @@ foreign-data boundary test
 rejects Compliance ORM, repository, schema, table, raw-SQL, reflection, join,
 and broad-facade bypasses. It also rejects document-instance binary/storage
 columns, multipart or browser file pipelines, and foreign frontend APIs.
+Stateless Intelligence imports only the two Shipment readiness symbols. Its
+dedicated boundary test rejects Shipment implementation, ORM, schema,
+repository, service, migration, table-token, SQL, join, reflection, broad
+facade, or frontend access; rejects every other feature dependency and reverse
+Shipment import; and asserts that Intelligence declares no table, mapping,
+migration SQL, command, event, or cache.
 
 ## Source-boundary scan
 
@@ -94,12 +103,14 @@ The ORM ownership and compatibility bridges are closed: capability mappings are
 physically owned by Calendar, Communications, Compliance, Contacts, Location Master, Planning, Product Master, Reports, Route/Corridor Master, and Shipment Support
 backends. The current graph has 55 feature mappings plus nine product-neutral
 mappings in `uok.kernel_models` (64 total).
+`intelligence.core` is intentionally absent from this mapping list because it
+derives request-time values and declares no ORM provider.
 `uok.host.model_registry` alone resolves manifest model providers, and the
 former `uok.models`, `uok.calendar_models`, and `uok.communication_models`
 imports are retired.
 
 The former frontend-location bridge is also closed. Apps Manager, Calendar,
-Communications, Compliance, Contacts, Location Master, Planning, Product Master, Route/Corridor Master, and Shipment Support own production React source and CSS under
+Communications, Compliance, Contacts, Intelligence, Location Master, Planning, Product Master, Route/Corridor Master, and Shipment Support own production React source and CSS under
 their canonical module web roots; their frontend tests live under
 `modules/<module_name>/tests/web`. Reports owns its typed report client and tests without
 declaring a workbench surface. Closed manifest metadata generates literal
@@ -113,5 +124,7 @@ state, HTTP reads, preferences, storage keys, DTOs, options, and commands.
 Architecture tests reject shell/module cycles, kernel feature imports, direct
 or transitive feature-to-host dependencies, and host imports outside the exact
 path-and-symbol adapter allowlist for `get_db`, `current_actor`, and
-`execute_command`. Module-owned ORM definitions, migrations, production UI,
+`execute_command`. The current allowlist covers 18 HTTP adapters and 39 exact
+imports. Module-owned ORM definitions where data is owned, explicit empty
+migration declarations for stateless capabilities, production UI,
 behavior tests, and verifier assets remain active baseline requirements.

@@ -6263,6 +6263,177 @@
         "title": "ShipmentDocumentRequirementSummaryResponse",
         "type": "object"
       },
+      "ShipmentReadinessListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ShipmentReadinessSignalResponse"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "source_status": {
+            "const": "ready",
+            "title": "Source Status",
+            "type": "string"
+          },
+          "source_summary": {
+            "title": "Source Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_status",
+          "source_summary",
+          "items"
+        ],
+        "title": "ShipmentReadinessListResponse",
+        "type": "object"
+      },
+      "ShipmentReadinessSignalResponse": {
+        "properties": {
+          "band": {
+            "enum": [
+              "attention_required",
+              "not_assessed",
+              "ready"
+            ],
+            "title": "Band",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "document_instance_draft": {
+            "minimum": 0.0,
+            "title": "Document Instance Draft",
+            "type": "integer"
+          },
+          "document_instance_recorded": {
+            "minimum": 0.0,
+            "title": "Document Instance Recorded",
+            "type": "integer"
+          },
+          "document_instance_rejected": {
+            "minimum": 0.0,
+            "title": "Document Instance Rejected",
+            "type": "integer"
+          },
+          "document_instance_superseded": {
+            "minimum": 0.0,
+            "title": "Document Instance Superseded",
+            "type": "integer"
+          },
+          "document_instance_total": {
+            "minimum": 0.0,
+            "title": "Document Instance Total",
+            "type": "integer"
+          },
+          "document_instance_verified": {
+            "minimum": 0.0,
+            "title": "Document Instance Verified",
+            "type": "integer"
+          },
+          "lifecycle_status": {
+            "title": "Lifecycle Status",
+            "type": "string"
+          },
+          "open_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Path"
+          },
+          "optional_total": {
+            "minimum": 0.0,
+            "title": "Optional Total",
+            "type": "integer"
+          },
+          "reason_codes": {
+            "items": {
+              "enum": [
+                "required_documents_missing",
+                "rejected_document_present",
+                "requirements_not_defined",
+                "required_documents_satisfied",
+                "document_metadata_pending_review",
+                "verified_document_present"
+              ],
+              "type": "string"
+            },
+            "title": "Reason Codes",
+            "type": "array"
+          },
+          "required_missing": {
+            "minimum": 0.0,
+            "title": "Required Missing",
+            "type": "integer"
+          },
+          "required_not_applicable": {
+            "minimum": 0.0,
+            "title": "Required Not Applicable",
+            "type": "integer"
+          },
+          "required_received": {
+            "minimum": 0.0,
+            "title": "Required Received",
+            "type": "integer"
+          },
+          "required_satisfied": {
+            "minimum": 0.0,
+            "title": "Required Satisfied",
+            "type": "integer"
+          },
+          "required_total": {
+            "minimum": 0.0,
+            "title": "Required Total",
+            "type": "integer"
+          },
+          "required_waived": {
+            "minimum": 0.0,
+            "title": "Required Waived",
+            "type": "integer"
+          },
+          "shipment_id": {
+            "title": "Shipment Id",
+            "type": "string"
+          },
+          "status_summary": {
+            "title": "Status Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "shipment_id",
+          "code",
+          "lifecycle_status",
+          "open_path",
+          "band",
+          "reason_codes",
+          "status_summary",
+          "required_total",
+          "required_satisfied",
+          "required_missing",
+          "required_received",
+          "required_waived",
+          "required_not_applicable",
+          "optional_total",
+          "document_instance_total",
+          "document_instance_draft",
+          "document_instance_recorded",
+          "document_instance_verified",
+          "document_instance_rejected",
+          "document_instance_superseded"
+        ],
+        "title": "ShipmentReadinessSignalResponse",
+        "type": "object"
+      },
       "ShipmentResponse": {
         "properties": {
           "code": {
@@ -12407,6 +12578,55 @@
         "summary": "Dashboard",
         "tags": [
           "system"
+        ]
+      }
+    },
+    "/api/intelligence/shipment-readiness": {
+      "get": {
+        "operationId": "shipment_readiness_api_intelligence_shipment_readiness_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "authorization",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShipmentReadinessListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Shipment Readiness",
+        "tags": [
+          "intelligence"
         ]
       }
     },

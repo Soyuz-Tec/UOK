@@ -155,10 +155,12 @@ def test_shipment_owner_contract_manifest_and_migration_are_exact() -> None:
         "ShipmentStatusHistory": ShipmentStatusHistory,
     }
     assert public_symbols == [
+        "ShipmentReadinessSnapshotDTO",
         "ShipmentReferenceDTO",
         "api_router",
         "command_handlers",
         "command_permissions",
+        "resolve_shipment_readiness_snapshots",
         "resolve_shipment_reference",
         "role_grants",
     ]

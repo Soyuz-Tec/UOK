@@ -22,6 +22,7 @@ BASELINE_MODULES = [
     "communications.core",
     "compliance.core",
     "contacts.core",
+    "intelligence.core",
     "locations.core",
     "planning.core",
     "product.master",
@@ -195,6 +196,8 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert grants["viewer"] >= {"locations.read", "routes.read"}
     assert "shipments.manage" in grants["ops_manager"]
     assert "shipments.read" in grants["viewer"]
+    assert "intelligence.read" in grants["viewer"]
+    assert "intelligence.read" in grants["finance_manager"]
     assert "contacts.read" in grants["viewer"]
     assert "calendar.read" in grants["viewer"]
     assert "reports.read" in grants["viewer"]
@@ -270,6 +273,7 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
         "{instance_id}/history"
         in app_paths
     )
+    assert "/api/intelligence/shipment-readiness" in app_paths
     assert "/api/reports/formats" in app_paths
 
     main_source = (repo_root() / "src" / "uok" / "host" / "application.py").read_text(encoding="utf-8")

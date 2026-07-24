@@ -3,12 +3,19 @@ import { useEffect, useState } from "react";
 import { readStorageJson, writeStorageJson } from "../storage";
 import type { SavedSearchView } from "./SearchWorkspace.types";
 
-export function useSavedSearchViews(storageKey: string) {
-  const [savedViews, setSavedViews] = useState<SavedSearchView[]>(() => readSavedViews(storageKey));
+export type SavedSearchStorageKind = "local" | "session";
+
+export function useSavedSearchViews(
+  storageKey: string,
+  storageKind: SavedSearchStorageKind = "local",
+) {
+  const [savedViews, setSavedViews] = useState<SavedSearchView[]>(
+    () => readSavedViews(storageKind, storageKey),
+  );
 
   useEffect(() => {
-    writeSavedViews(storageKey, savedViews);
-  }, [savedViews, storageKey]);
+    writeSavedViews(storageKind, storageKey, savedViews);
+  }, [savedViews, storageKey, storageKind]);
 
   const upsertSavedView = (view: SavedSearchView) => {
     const normalizedName = view.name.trim().toLocaleLowerCase();
@@ -22,13 +29,25 @@ export function useSavedSearchViews(storageKey: string) {
   return { savedViews, upsertSavedView, deleteSavedView };
 }
 
-function readSavedViews(storageKey: string): SavedSearchView[] {
-  const views = readStorageJson<SavedSearchView[]>("local", storageKey, [], isSavedSearchViewArray);
+function readSavedViews(
+  storageKind: SavedSearchStorageKind,
+  storageKey: string,
+): SavedSearchView[] {
+  const views = readStorageJson<SavedSearchView[]>(
+    storageKind,
+    storageKey,
+    [],
+    isSavedSearchViewArray,
+  );
   return views.filter((view) => view.name.trim() && view.name !== "Working view");
 }
 
-function writeSavedViews(storageKey: string, views: SavedSearchView[]) {
-  writeStorageJson("local", storageKey, views);
+function writeSavedViews(
+  storageKind: SavedSearchStorageKind,
+  storageKey: string,
+  views: SavedSearchView[],
+) {
+  writeStorageJson(storageKind, storageKey, views);
 }
 
 function isSavedSearchViewArray(value: unknown): value is SavedSearchView[] {
