@@ -20,10 +20,10 @@ import {
 
 afterEach(() => {
   cleanup();
-  vi.restoreAllMocks();
-  vi.unstubAllGlobals();
   window.localStorage.clear();
   window.sessionStorage.clear();
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("Shipment Readiness session-safe reads", () => {
