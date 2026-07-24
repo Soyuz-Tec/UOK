@@ -118,7 +118,14 @@ function Copy-UokAutoStartPayload {
 }
 
 function New-UokAutoStartConfig {
-    param($Release, $PayloadHashes, [int]$ConfiguredDelaySeconds, [string]$UserId)
+    param(
+        $Release,
+        $PayloadHashes,
+        [int]$ConfiguredDelaySeconds,
+        [int]$ConfiguredCheckIntervalMinutes,
+        [datetime]$ConfiguredPeriodicStart,
+        [string]$UserId
+    )
     $podmanPath = (Get-Command "podman.exe" -CommandType Application -ErrorAction Stop).Source
     $parsedConnections = Invoke-UokAutoStartTextCommand -FilePath $podmanPath -Arguments @("system", "connection", "list", "--format", "json") | ConvertFrom-Json
     $connections = @($parsedConnections | ForEach-Object { $_ })
@@ -137,6 +144,8 @@ function New-UokAutoStartConfig {
         source_tree_state = if ($sourceStatus) { "dirty" } else { "clean" }
         installed_user_id = $UserId
         delay_seconds = $ConfiguredDelaySeconds
+        check_interval_minutes = $ConfiguredCheckIntervalMinutes
+        periodic_start_boundary_utc = $ConfiguredPeriodicStart.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss'Z'")
         project_name = "uok"
         machine_name = $MachineName
         connection_name = $connection.Name
@@ -184,21 +193,49 @@ function Test-UokAutoStartPayload {
     } catch { return $false }
 }
 
+function Get-UokConfiguredCheckIntervalMinutes {
+    param($Config)
+    if (-not $Config -or -not $Config.psobject.Properties["check_interval_minutes"]) { return $null }
+    $interval = 0
+    if (-not [int]::TryParse([string]$Config.check_interval_minutes, [ref]$interval)) { return $null }
+    if ($interval -lt 1 -or $interval -gt 1440) { return $null }
+    return $interval
+}
+
 function Test-UokAutoStartTaskDefinition {
     param($Task, $Config, [string]$ConfigPath)
     try {
-    if (-not $Task -or -not $Config -or -not (Test-UokManagedTask -Task $Task)) { return $false }
-    if (@($Task.Actions).Count -ne 1 -or @($Task.Triggers).Count -ne 1 -or -not $Task.Settings.Enabled) { return $false }
-    $action = @($Task.Actions) | Select-Object -First 1
-    $trigger = @($Task.Triggers) | Select-Object -First 1
-    $powerShellPath = Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe"
-    $expectedArguments = Get-UokTaskArguments -WorkerPath $Config.payload_paths.worker -ConfigPath $ConfigPath
-    $expectedPrincipal = ([string]$Config.installed_user_id -split '\\')[-1]
-    return $action.Execute -eq $powerShellPath -and $action.Arguments -eq $expectedArguments -and $action.WorkingDirectory -eq (Split-Path -Parent $ConfigPath) -and
-        $Task.Principal.RunLevel -eq "Limited" -and $Task.Principal.LogonType -eq "Interactive" -and $Task.Principal.UserId -eq $expectedPrincipal -and
-        $trigger.UserId -eq $Config.installed_user_id -and $trigger.Delay -eq "PT$($Config.delay_seconds)S" -and
-        $Task.Settings.MultipleInstances -eq "IgnoreNew" -and $Task.Settings.RestartCount -eq 3 -and $Task.Settings.RestartInterval -eq "PT1M" -and
-        $Task.Settings.ExecutionTimeLimit -eq "PT15M" -and $Task.Settings.StartWhenAvailable -and
-        -not $Task.Settings.DisallowStartIfOnBatteries -and -not $Task.Settings.StopIfGoingOnBatteries
+        if (-not $Task -or -not $Config -or -not (Test-UokManagedTask -Task $Task)) { return $false }
+        $triggers = @($Task.Triggers)
+        if (@($Task.Actions).Count -ne 1 -or $triggers.Count -ne 2 -or -not $Task.Settings.Enabled) { return $false }
+        $logonTriggers = @($triggers | Where-Object { $_.Id -eq "UOKLogonRecovery" })
+        $periodicTriggers = @($triggers | Where-Object { $_.Id -eq "UOKPeriodicRecovery" })
+        if ($logonTriggers.Count -ne 1 -or $periodicTriggers.Count -ne 1) { return $false }
+        $action = @($Task.Actions) | Select-Object -First 1
+        $logonTrigger = $logonTriggers[0]
+        $periodicTrigger = $periodicTriggers[0]
+        $powerShellPath = Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe"
+        $expectedArguments = Get-UokTaskArguments -WorkerPath $Config.payload_paths.worker -ConfigPath $ConfigPath
+        $expectedPrincipal = ([string]$Config.installed_user_id -split '\\')[-1]
+        $intervalMinutes = Get-UokConfiguredCheckIntervalMinutes -Config $Config
+        if ($null -eq $intervalMinutes) { return $false }
+        $expectedInterval = "PT${intervalMinutes}M"
+        $dateStyles = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+        $expectedStart = [datetimeoffset]::Parse([string]$Config.periodic_start_boundary_utc, [System.Globalization.CultureInfo]::InvariantCulture, $dateStyles)
+        $actualStart = [datetimeoffset]::Parse([string]$periodicTrigger.StartBoundary, [System.Globalization.CultureInfo]::InvariantCulture, $dateStyles)
+        $periodicStartMatches = $actualStart.UtcDateTime.Ticks -eq $expectedStart.UtcDateTime.Ticks
+        return $action.Execute -eq $powerShellPath -and $action.Arguments -eq $expectedArguments -and $action.WorkingDirectory -eq (Split-Path -Parent $ConfigPath) -and
+            $Task.Principal.RunLevel -eq "Limited" -and $Task.Principal.LogonType -eq "Interactive" -and $Task.Principal.UserId -eq $expectedPrincipal -and
+            $logonTrigger.CimClass.CimClassName -eq "MSFT_TaskLogonTrigger" -and $logonTrigger.Enabled -and
+            $logonTrigger.UserId -eq $Config.installed_user_id -and $logonTrigger.Delay -eq "PT$($Config.delay_seconds)S" -and
+            $periodicTrigger.CimClass.CimClassName -eq "MSFT_TaskTimeTrigger" -and $periodicTrigger.Enabled -and
+            -not [string]::IsNullOrWhiteSpace([string]$periodicTrigger.StartBoundary) -and
+            $periodicStartMatches -and
+            [string]::IsNullOrWhiteSpace([string]$periodicTrigger.EndBoundary) -and
+            $periodicTrigger.Repetition.Interval -eq $expectedInterval -and
+            [string]::IsNullOrWhiteSpace([string]$periodicTrigger.Repetition.Duration) -and
+            $Task.Settings.MultipleInstances -eq "IgnoreNew" -and $Task.Settings.RestartCount -eq 3 -and $Task.Settings.RestartInterval -eq "PT1M" -and
+            $Task.Settings.ExecutionTimeLimit -eq "PT15M" -and $Task.Settings.StartWhenAvailable -and
+            -not $Task.Settings.DisallowStartIfOnBatteries -and -not $Task.Settings.StopIfGoingOnBatteries
     } catch { return $false }
 }

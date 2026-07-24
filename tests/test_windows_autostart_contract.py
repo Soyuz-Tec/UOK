@@ -61,7 +61,16 @@ def test_task_installation_is_user_scoped_owned_and_reversible() -> None:
     assert "A foreign scheduled task already uses the name" in contract
     assert "Export-ScheduledTask" in contract
     assert "-LogonType Interactive -RunLevel Limited" in operations
-    assert 'trigger.Delay = "PT${DelaySeconds}S"' in contract
+    assert "[ValidateRange(1, 1440)]" in operations
+    assert "[int]$CheckIntervalMinutes = 1" in operations
+    assert "check_interval_minutes = $ConfiguredCheckIntervalMinutes" in support
+    assert "periodic_start_boundary_utc = $ConfiguredPeriodicStart.ToUniversalTime()" in support
+    assert '$logonTrigger.Id = "UOKLogonRecovery"' in operations
+    assert '$logonTrigger.Delay = "PT${DelaySeconds}S"' in operations
+    assert "New-ScheduledTaskTrigger -Once" in operations
+    assert "-RepetitionInterval (New-TimeSpan -Minutes $CheckIntervalMinutes)" in operations
+    assert '$periodicTrigger.Id = "UOKPeriodicRecovery"' in operations
+    assert "-Trigger @($logonTrigger, $periodicTrigger)" in operations
     assert "-RestartCount 3" in operations
     assert "-MultipleInstances IgnoreNew" in operations
     assert "ConfirmUninstall" in operations
@@ -70,7 +79,19 @@ def test_task_installation_is_user_scoped_owned_and_reversible() -> None:
     assert "Test-UokAutoStartTaskDefinition" in contract
     assert "Register-ScheduledTask -TaskName $TaskName -TaskPath $previousTaskPath -Xml $previousXml" in contract
     assert "@($Task.Actions).Count -ne 1" in contract
-    assert "@($Task.Triggers).Count -ne 1" in contract
+    assert "$triggers.Count -ne 2" in support
+    assert "MSFT_TaskLogonTrigger" in support
+    assert "MSFT_TaskTimeTrigger" in support
+    assert "Get-UokConfiguredCheckIntervalMinutes" in support
+    assert "[int]::TryParse" in support
+    assert "$interval -lt 1 -or $interval -gt 1440" in support
+    assert '$expectedInterval = "PT${intervalMinutes}M"' in support
+    assert "$periodicStartMatches" in support
+    assert "$actualStart.UtcDateTime.Ticks -eq $expectedStart.UtcDateTime.Ticks" in support
+    assert "$periodicTrigger.Repetition.Interval -eq $expectedInterval" in support
+    assert "$periodicTrigger.Repetition.Duration" in support
+    assert '$PSBoundParameters.ContainsKey("CheckIntervalMinutes")' in operations
+    assert "$status.CheckIntervalMinutes" in operations
     assert "Task.Settings.Enabled" in contract
     assert "source_tree_state" in contract
     assert "Remove-ItemProperty" not in contract
@@ -89,6 +110,7 @@ def test_status_is_read_only_and_payload_aware() -> None:
     assert "Get-FileHash" in support
     assert "PayloadIntegrity" in body
     assert "TaskDefinitionValid" in body
+    assert "Get-UokConfiguredCheckIntervalMinutes" in body
     assert "Start-ScheduledTask" not in body
     assert "Register-ScheduledTask" not in body
     assert "podman" not in body.lower()
@@ -107,6 +129,7 @@ def test_standard_operations_routes_the_full_lifecycle() -> None:
     ):
         assert action in operations
     assert "uok_autostart_ops.ps1" in operations
+    assert 'arguments += @("-CheckIntervalMinutes", "$CheckIntervalMinutes")' in operations
     assert '"-Action", "Refresh"' in operations
     assert len(operations.splitlines()) <= 300
     assert len(_read("scripts/uok_autostart_support.ps1").splitlines()) <= 300

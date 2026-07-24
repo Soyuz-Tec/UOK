@@ -12,6 +12,8 @@ param(
     [switch]$ConfirmContactsCleanup,
     [int]$PullRequestNumber = 0,
     [switch]$WatchChecks,
+    [ValidateRange(1, 1440)]
+    [int]$CheckIntervalMinutes = 1,
     [string]$IncidentReason = "manual ASUH test",
     [ValidateSet("info", "warning", "critical")]
     [string]$IncidentSeverity = "warning"
@@ -251,7 +253,6 @@ function Invoke-UokGithubPreflight {
         Invoke-Native "git" @("ls-files", "--others", "--exclude-standard")
     }
 }
-
 function Invoke-UokGithubOperation {
     param([string]$GithubAction)
     $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_github_ops.ps1", "-Action", $GithubAction)
@@ -266,12 +267,12 @@ function Invoke-UokGithubOperation {
 function Invoke-UokAutoStartOperation {
     param([string]$AutoStartAction)
     $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_autostart_ops.ps1", "-Action", $AutoStartAction)
+    if ($AutoStartAction -eq "Install") { $arguments += @("-CheckIntervalMinutes", "$CheckIntervalMinutes") }
     if ($AutoStartAction -eq "Uninstall") {
         $arguments += "-ConfirmUninstall"
     }
     Invoke-PowerShellScript $arguments
 }
-
 switch ($Action) {
     "Audit" { Invoke-UokAudit }
     "TechnologyAudit" { Invoke-UokTechnologyAudit }
