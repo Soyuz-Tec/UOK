@@ -24,6 +24,7 @@ FROM node:26-alpine AS web-build
 
 WORKDIR /app/web
 COPY web/package.json web/package-lock.json ./
+COPY web/scripts/patch-redocly-js-yaml.cjs ./scripts/patch-redocly-js-yaml.cjs
 RUN npm ci
 COPY web ./
 COPY modules /app/modules
