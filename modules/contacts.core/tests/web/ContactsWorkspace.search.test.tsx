@@ -92,7 +92,7 @@ describe("ContactsWorkspace search and paging", () => {
     expect(within(searchOptions).getByRole("button", { name: "Sort descending" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Clear all" })).toBeDisabled();
     expect(screen.getByLabelText("Contact paging")).toBeInTheDocument();
-    expect(screen.getByLabelText("Contacts page size")).toHaveValue("25");
+    expect(screen.getByRole("button", { name: "Contacts page size" })).toHaveTextContent("25");
     expect(screen.getByText("1-3 / 3")).toBeInTheDocument();
     expect(screen.getByLabelText("Showing records 1 through 3 of 3")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled();

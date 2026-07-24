@@ -42,6 +42,8 @@ under ADR-0026.
 - Event, free/busy, and successful-load counts are announced through the
   polite workspace status region without occupying permanent visual chrome;
   workspace-level failures remain visible alerts.
+- Month cells show three compact event rows and an accessible overflow command
+  that opens the selected day instead of stretching the month grid.
 
 ## Backend Scope
 
@@ -98,7 +100,11 @@ under ADR-0026.
 2. Workspace foundation: shared draggable event editor, scroll-bounded
    searchable all-or-one Calendar scope, on-demand keyboard date navigation,
    full-width content, multi-calendar colors, complete 24-hour geometry,
-   overlap lanes, inline errors, and keyboard-roving slots.
+   overlap lanes, bounded month-cell density, inline errors, and
+   keyboard-roving slots.
+3. Candidate hygiene: Planning's Calendar-availability proof retires its
+   temporary Calendar and archives its temporary Contact even when the proof
+   fails, preventing verification runs from becoming visible business data.
 
 ## Next Increments
 

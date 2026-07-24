@@ -102,6 +102,11 @@ export function eventTimeLabel(event: CalendarEventRecord) {
   return `${start.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })} - ${end.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`;
 }
 
+export function eventStartTimeLabel(event: CalendarEventRecord) {
+  if (event.all_day) return "All day";
+  return eventStart(event).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
 export function durationDays(from: Date, to: Date) {
   return Math.max(1, Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / DAY_MS));
 }

@@ -33,13 +33,18 @@ export function CalendarTimeGrid({
 }) {
   const { t } = useUokLocalization();
   const gridRef = useRef<HTMLDivElement>(null);
+  const previousViewRef = useRef<typeof view | null>(null);
   const [activeSlot, setActiveSlot] = useState({ dayIndex: 0, hour: INITIAL_HOUR });
   const days = view === "day" ? [startOfDay(cursorDate)] : Array.from({ length: 7 }, (_, index) => addDays(startOfWeek(cursorDate), index));
   const dayLayouts = days.map((day) => ({ day, layout: layoutCalendarDay(events, day) }));
   const gridStyle: TimeGridStyle = { "--calendar-day-count": days.length };
 
   useEffect(() => {
-    if (gridRef.current) gridRef.current.scrollTop = INITIAL_HOUR * HOUR_HEIGHT;
+    if (gridRef.current) {
+      gridRef.current.scrollTop = INITIAL_HOUR * HOUR_HEIGHT;
+      if (view === "day" && previousViewRef.current !== "day") gridRef.current.focus();
+    }
+    previousViewRef.current = view;
     setActiveSlot({ dayIndex: 0, hour: INITIAL_HOUR });
   }, [view, cursorDate]);
 
@@ -63,7 +68,7 @@ export function CalendarTimeGrid({
   }
 
   return (
-    <div ref={gridRef} className={view === "day" ? "calendar-time-grid day" : "calendar-time-grid"} aria-label={`${view} calendar`} style={gridStyle}>
+    <div ref={gridRef} className={view === "day" ? "calendar-time-grid day" : "calendar-time-grid"} aria-label={`${view} calendar`} tabIndex={view === "day" ? -1 : undefined} style={gridStyle}>
       <div className="calendar-time-grid-canvas">
         <div className="calendar-time-header-row">
           <div className="calendar-time-corner" />

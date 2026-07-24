@@ -22,7 +22,7 @@ describe("Calendar event semantic status", () => {
     render(
       <UokLocalizationProvider locale="ar">
         {view === "month" ? (
-          <CalendarMonthView cursorDate={cursorDate} events={events} calendarColors={colors} onSelectDay={vi.fn()} onSelectEvent={vi.fn()} />
+          <CalendarMonthView cursorDate={cursorDate} events={events} calendarColors={colors} onSelectDay={vi.fn()} onOpenDay={vi.fn()} onSelectEvent={vi.fn()} />
         ) : view === "agenda" ? (
           <CalendarAgendaView events={events} calendarColors={colors} onSelectEvent={vi.fn()} />
         ) : (

@@ -13,6 +13,7 @@
 @import "./styles/shared/data-display.css";
 @import "./styles/shared/record-detail.css";
 @import "./styles/shared/tables.css";
+@import "./styles/shared/pagination.css";
 @import "./styles/shared/module-state.css";
 @import "./styles/accessibility.css";
 @import "./styles/responsive.css";

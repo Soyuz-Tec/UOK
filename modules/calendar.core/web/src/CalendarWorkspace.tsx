@@ -2,10 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { EmptyState } from "@uok/shared/data-display";
 import type { ModuleStatus } from "@uok/shared/types";
-import { CalendarAgendaView } from "./CalendarAgendaView";
+import { CalendarActiveView } from "./CalendarActiveView";
 import { CalendarEventEditor } from "./CalendarEventEditor";
-import { CalendarMonthView } from "./CalendarMonthView";
-import { CalendarTimeGrid } from "./CalendarTimeGrid";
 import { CalendarToolbar } from "./CalendarToolbar";
 import { CalendarModuleState, calendarErrorMessage } from "./CalendarWorkspaceSupport";
 import { CalendarWorkspaceStatus } from "./CalendarWorkspaceStatus";
@@ -273,10 +271,10 @@ export function CalendarWorkspace({ token, moduleRows, busyAction, onInstall }: 
       />
       <main className="calendar-main" aria-label="Calendar events">
         <CalendarWorkspaceStatus eventCount={eventRows.length} busyCount={busyCount} message={statusMessage} error={workspaceError} />
-        {view === "month" && <CalendarMonthView cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
-        {view === "week" && <CalendarTimeGrid view="week" cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
-        {view === "day" && <CalendarTimeGrid view="day" cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectDay={newEvent} onSelectEvent={(event) => void selectEvent(event)} />}
-        {view === "agenda" && <CalendarAgendaView events={eventRows} calendarColors={calendarColors} selectedEventId={selectedEvent?.id} onSelectEvent={(event) => void selectEvent(event)} />}
+        <CalendarActiveView view={view} cursorDate={cursorDate} events={eventRows} calendarColors={calendarColors}
+          selectedEventId={selectedEvent?.id} onSelectDay={newEvent}
+          onOpenDay={(date) => { setCursorDate(startOfDay(date)); setView("day"); }}
+          onSelectEvent={(event) => void selectEvent(event)} />
       </main>
       <CalendarEventEditor
         open={editorOpen}

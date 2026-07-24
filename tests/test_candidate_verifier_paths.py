@@ -84,6 +84,30 @@ def test_candidate_disabled_state_proofs_restore_installed_dependents() -> None:
         assert "/uninstall" not in source
 
 
+def test_planning_availability_verifier_retires_ephemeral_fixtures() -> None:
+    source = (
+        ROOT
+        / "modules/planning.core/verify/UokCandidatePlanningAvailability.ps1"
+    ).read_text(encoding="utf-8")
+
+    orchestrator = (
+        ROOT / "modules/planning.core/verify/UokCandidatePlanning.ps1"
+    ).read_text(encoding="utf-8")
+
+    assert "function Remove-UokPlanningAvailabilityFixture" in source
+    assert "catch {" in source
+    assert (
+        'Invoke-UokJson -Method "DELETE" '
+        '-Path "/api/calendar/calendars/$CalendarId"'
+    ) in source
+    assert 'command_type = "ArchiveContact"' in source
+    assert '$cleanupErrors += "calendar:' in source
+    assert '$cleanupErrors += "party:' in source
+    assert "$availabilityFixture = Assert-UokPlanningResourceAvailability" in orchestrator
+    assert "finally {" in orchestrator
+    assert "Remove-UokPlanningAvailabilityFixture" in orchestrator
+
+
 def test_container_excludes_tests_and_requires_module_verifiers() -> None:
     dockerignore = (ROOT / ".dockerignore").read_text(encoding="utf-8")
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")

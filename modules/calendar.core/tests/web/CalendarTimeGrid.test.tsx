@@ -45,6 +45,7 @@ describe("CalendarTimeGrid", () => {
     expect(screen.getAllByRole("button", { name: /Design review/ })).toHaveLength(1);
     expect(screen.getByRole("button", { name: "Release day" })).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /Create event on/ })).toHaveLength(24);
+    expect(screen.getByLabelText("day calendar")).toHaveFocus();
     const seven = container.querySelector<HTMLButtonElement>('[data-calendar-day="0"][data-calendar-hour="7"]');
     const eight = container.querySelector<HTMLButtonElement>('[data-calendar-day="0"][data-calendar-hour="8"]');
     expect(seven).toHaveAttribute("tabindex", "0");
@@ -53,5 +54,28 @@ describe("CalendarTimeGrid", () => {
     expect(seven).toHaveAttribute("tabindex", "-1");
     expect(eight).toHaveAttribute("tabindex", "0");
     expect(container.querySelectorAll('.calendar-hour-target[tabindex="0"]')).toHaveLength(1);
+  });
+
+  it("preserves toolbar focus while navigating between days", () => {
+    const renderGrid = (cursorDate: Date) => (
+      <>
+        <button type="button">Previous day</button>
+        <CalendarTimeGrid
+          view="day"
+          cursorDate={cursorDate}
+          events={[]}
+          calendarColors={{}}
+          onSelectDay={vi.fn()}
+          onSelectEvent={vi.fn()}
+        />
+      </>
+    );
+    const { rerender } = render(renderGrid(new Date(2026, 6, 10)));
+    const previousDay = screen.getByRole("button", { name: "Previous day" });
+    previousDay.focus();
+
+    rerender(renderGrid(new Date(2026, 6, 11)));
+
+    expect(previousDay).toHaveFocus();
   });
 });
