@@ -1,0 +1,33 @@
+.planning-owned-grid-row:focus-visible {
+  outline: 3px solid var(--uok-focus-ring);
+  outline-offset: -3px;
+}
+
+.planning-owned-row-menu-trigger {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: var(--uok-space-2);
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-1);
+  color: var(--uok-text-tertiary);
+  background: var(--uok-bg-elevated);
+  opacity: 0;
+  transform: translateY(-50%);
+}
+
+.planning-owned-grid-row:hover .planning-owned-row-menu-trigger,
+.planning-owned-grid-row:focus-within .planning-owned-row-menu-trigger,
+.planning-owned-grid-row.selected .planning-owned-row-menu-trigger {
+  opacity: 1;
+}
+
+.planning-owned-row-menu-trigger:hover,
+.planning-owned-row-menu-trigger:focus-visible {
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+  outline: none;
+}

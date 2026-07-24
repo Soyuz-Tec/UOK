@@ -129,6 +129,7 @@ Component constraints:
 - Context-menu commands must also exist in the main UI.
 - Segmented controls are only for closely related choices. Do not mix action segments with selection-state segments.
 - Toolbars hold frequent commands, navigation, search, and one trailing primary action.
+- UOK workspace command grouping and visible labels follow `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`; this technical reference does not define a competing vocabulary.
 - Tab bars are top-level navigation only, not actions.
 - Sidebars are for top-level areas or collections. Keep hierarchy shallow.
 - Popovers are transient and small, not warnings.

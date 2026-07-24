@@ -4,7 +4,9 @@ from copy import deepcopy
 from typing import Any
 
 from .module_contract_validation import validate_module_extension_contracts
+from .module_lifecycle_policy import lifecycle_policy_checks
 from .module_manifest_loader import load_module_manifests
+from .host.model_registry import module_model_registry_report
 
 
 def module_catalog() -> dict[str, dict[str, Any]]:
@@ -14,59 +16,38 @@ def module_catalog() -> dict[str, dict[str, Any]]:
 def module_contracts() -> dict[str, Any]:
     modules = module_catalog()
     extension_contract = validate_module_extension_contracts()
+    model_registry = module_model_registry_report()
+    extension_contract["checks"]["owned_tables_resolve_to_models"] = model_registry["ok"]
+    lifecycle = module_lifecycle_report()
     return {
-        "ok": all(
-            module["kind"] in {"control_module", "capability_module", "business_module"}
-            and module.get("installable") is True
-            and (module.get("uninstallable") is True or module.get("required") is True)
-            and module.get("updatable") is True
-            and module.get("maintainable") is True
-            and isinstance(module["commands"], list)
-            and isinstance(module["events"], list)
-            and isinstance(module["dependencies"], list)
-            for module in modules.values()
-        ) and extension_contract["ok"],
+        "ok": lifecycle["ok"] and extension_contract["ok"] and model_registry["ok"],
         "module_count": len(modules),
         "modules": modules,
         "architecture": "modular monolith",
-        "module_lifecycle": "required Apps Manager plus optional installable modules",
+        "module_lifecycle": "manifest-declared maturity, flags, dependencies, and lifecycle states",
+        "lifecycle_policy": {"checks": lifecycle["checks"], "module_checks": lifecycle["module_checks"]},
         "source_boundary": "baseline contains no hard-coded domain business modules",
         "extension_contract": extension_contract,
+        "model_registry": model_registry,
     }
 
 
 def module_lifecycle_report() -> dict[str, Any]:
     modules = module_catalog()
-    checks = {
-        "apps_manager_declared": "apps.manager" in modules,
-        "agents_declared_as_available_module": "agents.core" in modules,
-        "contacts_declared_as_available_module": "contacts.core" in modules,
-        "planning_declared_as_available_module": "planning.core" in modules,
-        "only_apps_manager_required": sorted(name for name, module in modules.items() if module.get("required")) == ["apps.manager"],
-        "no_business_modules_declared": all(module["kind"] != "business_module" for module in modules.values()),
-        "apps_manager_installable": modules["apps.manager"]["installable"] is True,
-        "apps_manager_bootstrap_required": modules["apps.manager"].get("required") is True,
-        "apps_manager_not_uninstallable_while_required": modules["apps.manager"]["uninstallable"] is False,
-        "apps_manager_separately_updatable": modules["apps.manager"]["updatable"] is True,
-        "apps_manager_maintainable": modules["apps.manager"]["maintainable"] is True,
-        "apps_manager_has_no_dependencies": modules["apps.manager"]["dependencies"] == [],
-        "agents_installable": modules["agents.core"]["installable"] is True,
-        "agents_optional": modules["agents.core"].get("required") is False,
-        "agents_uninstallable": modules["agents.core"]["uninstallable"] is True,
-        "agents_separately_updatable": modules["agents.core"]["updatable"] is True,
-        "agents_maintainable": modules["agents.core"]["maintainable"] is True,
-        "agents_has_no_dependencies": modules["agents.core"]["dependencies"] == [],
-        "contacts_installable": modules["contacts.core"]["installable"] is True,
-        "contacts_optional": modules["contacts.core"].get("required") is False,
-        "contacts_uninstallable": modules["contacts.core"]["uninstallable"] is True,
-        "contacts_separately_updatable": modules["contacts.core"]["updatable"] is True,
-        "contacts_maintainable": modules["contacts.core"]["maintainable"] is True,
-        "contacts_has_no_dependencies": modules["contacts.core"]["dependencies"] == [],
-        "planning_installable": modules["planning.core"]["installable"] is True,
-        "planning_optional": modules["planning.core"].get("required") is False,
-        "planning_uninstallable": modules["planning.core"]["uninstallable"] is True,
-        "planning_separately_updatable": modules["planning.core"]["updatable"] is True,
-        "planning_maintainable": modules["planning.core"]["maintainable"] is True,
-        "planning_depends_on_calendar": modules["planning.core"]["dependencies"] == ["calendar.core"],
+    catalog_names = set(modules)
+    module_checks = {
+        name: lifecycle_policy_checks(name, manifest, catalog_names)
+        for name, manifest in modules.items()
     }
-    return {"ok": all(checks.values()), "checks": checks, "modules": modules}
+    check_names = tuple(next(iter(module_checks.values()))) if module_checks else ()
+    checks = {"catalog_declared": bool(modules)}
+    checks.update({
+        check_name: all(values[check_name] for values in module_checks.values())
+        for check_name in check_names
+    })
+    return {
+        "ok": all(checks.values()),
+        "checks": checks,
+        "module_checks": module_checks,
+        "modules": modules,
+    }

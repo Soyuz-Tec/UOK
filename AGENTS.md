@@ -31,7 +31,7 @@ Before non-trivial edits:
 - Keep `src/uok` product-neutral.
 - Put module behavior under `modules/<module_name>`.
 - Put module-neutral reusable frontend primitives under `web/src/shared`.
-- Keep durable frontend code in React + TypeScript under `web/src`.
+- Keep product-neutral shell/shared frontend code in React + TypeScript under `web/src`, and module-specific production frontend code under `modules/<module_name>/web/src`.
 - Keep backend and module backend code in Python.
 - Keep generated files out of manual edits.
 - Split files before they become mixed-responsibility.

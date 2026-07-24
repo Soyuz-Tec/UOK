@@ -14,6 +14,7 @@ ASUH is not a production monitoring platform. It is the local testing discipline
 |---|---|---|
 | `asuh.manual` | Developer or tester explicitly requests a health drill | Run `AsuhTest` |
 | `asuh.post-rebuild` | Podman stack is rebuilt or restarted for candidate testing | Run `Health`; run `Verify` if code or database changed |
+| `asuh.post-login-recovery` | The Windows sign-in auto-start task restored the local candidate | Run `AutoStartStatus` and `Health`; run `Verify` only if code or database changed |
 | `asuh.pre-push` | Changes are about to be committed or pushed to GitHub | Run `GithubPreflight` and `Verify` |
 | `asuh.pre-restore` | A database restore will be tested | Run `BackupDb` first |
 | `asuh.post-restore` | A database restore completed | Run `Health`, candidate verifier, and module-specific workflow check |
@@ -44,6 +45,7 @@ Use Windows Task Scheduler or a manual checklist. Do not schedule destructive re
 | Every active development day | `Audit` |
 | Before GitHub push or PR | `GithubPreflight` then `Verify` |
 | After any Podman rebuild | `Health` |
+| After Windows sign-in recovery | `AutoStartStatus` then `Health` |
 | After database migration work | `BackupDb`, `Rebuild`, `Verify` |
 | Weekly during active candidate hardening | `BackupDb`, `Verify`, `AsuhTest` |
 | Monthly or before major module expansion | Manual restore drill from a recent backup, then `Verify` |
@@ -61,6 +63,11 @@ schtasks /Create /TN "UOK Weekly ASUH" /SC WEEKLY /D SUN /ST 18:30 /TR "powershe
 ```
 
 Review scheduled tasks before enabling them on a machine with limited CPU, memory, or battery constraints.
+The supported sign-in recovery task is managed through the `AutoStartInstall`,
+`AutoStartStatus`, `AutoStartVerify`, `AutoStartDisable`, `AutoStartEnable`, and
+`AutoStartUninstall` actions. Coordinate a real reboot before cold-path proof so
+unrelated local containers and interactive work are not interrupted. See
+`docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`.
 
 ## Incident Record Fields
 

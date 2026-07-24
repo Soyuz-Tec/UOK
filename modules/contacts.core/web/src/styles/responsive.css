@@ -1,0 +1,78 @@
+@media (max-width: 980px) {
+  .contact-quality-workspace,
+  .duplicate-comparison-grid,
+  .contacts-view-split .workflow-split-view,
+  .form-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contacts-view-split .workflow-primary-region {
+    border-right: 0;
+    border-bottom: var(--uok-line);
+  }
+
+  .contacts-view-split .contact-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .field-prominent,
+  .field-wide {
+    grid-column: auto;
+  }
+
+  .relationship-composer {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .contacts-actions,
+  .contact-inspector-actions,
+  .note-composer,
+  .relationship-composer {
+    width: 100%;
+  }
+
+  .contacts-actions {
+    justify-content: center;
+  }
+
+  .contact-inspector-actions {
+    justify-content: flex-start;
+  }
+
+  .contact-manage-disclosure,
+  .contact-manage-disclosure summary {
+    width: 100%;
+  }
+
+  .contact-manage-actions {
+    position: static;
+    margin-top: var(--uok-space-2);
+    box-shadow: none;
+  }
+
+  .contact-card {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .contacts-view-split .contact-list-row {
+    grid-template-columns: 1fr;
+  }
+
+  .contacts-view-split .contact-list-header {
+    display: none;
+  }
+
+  .contact-card-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 36px;
+  }
+
+  .note-composer,
+  .quality-note-composer {
+    grid-template-columns: 1fr;
+  }
+}

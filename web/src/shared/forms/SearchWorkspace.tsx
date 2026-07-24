@@ -1,12 +1,19 @@
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { SlidersHorizontal } from "lucide-react";
 
+import { useUokLocalization } from "../localization";
+import { ExpandableControlPanel } from "./ExpandableControlPanel";
 import { SearchField } from "./SearchField";
 import { SearchOptionsPanel } from "./SearchOptionsPanel";
 import { SearchRefinementChips } from "./SearchRefinementChips";
 import type { SavedSearchView, SearchWorkspaceFilter, SearchWorkspaceOption, SearchWorkspaceSort, SearchWorkspaceSortDirection } from "./SearchWorkspace.types";
-import { useSavedSearchViews } from "./useSavedSearchViews";
+import {
+  useSavedSearchViews,
+  type SavedSearchStorageKind,
+} from "./useSavedSearchViews";
 import { useSearchRefinements } from "./useSearchRefinements";
+
+type SupplementalSections = ReactNode | ((controls: { close: () => void }) => ReactNode);
 
 export function SearchWorkspace({
   label,
@@ -19,9 +26,15 @@ export function SearchWorkspace({
   groupDefaultValue = "none",
   defaultSummaryLabel = "All records",
   savedViewsStorageKey,
+  savedViewsStorageKind = "local",
+  savedViews: externalSavedViews,
+  savedViewsStatus,
   presetViews = [],
+  supplementalSections,
   onChange,
   onGroupByChange,
+  onDeleteSavedView,
+  onSaveSavedView,
   onClear
 }: {
   label: string;
@@ -34,17 +47,30 @@ export function SearchWorkspace({
   groupDefaultValue?: string;
   defaultSummaryLabel?: string;
   savedViewsStorageKey: string;
+  savedViewsStorageKind?: SavedSearchStorageKind;
+  savedViews?: SavedSearchView[];
+  savedViewsStatus?: ReactNode;
   presetViews?: SavedSearchView[];
+  supplementalSections?: SupplementalSections;
   onChange: (value: string) => void;
   onGroupByChange: (value: string) => void;
+  onDeleteSavedView?: (id: string) => void | Promise<void>;
+  onSaveSavedView?: (view: SavedSearchView) => void | Promise<void>;
   onClear: () => void;
 }) {
-  const menuRef = useRef<HTMLDetailsElement>(null);
+  const { t } = useUokLocalization();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [viewName, setViewName] = useState("");
   const groupingEnabled = groupOptions.length > 0;
   const sortingEnabled = Boolean(sort);
-  const { savedViews, upsertSavedView, deleteSavedView } = useSavedSearchViews(savedViewsStorageKey);
-  const availableSavedViews = [...presetViews, ...savedViews];
+  const localViews = useSavedSearchViews(
+    savedViewsStorageKey,
+    savedViewsStorageKind,
+  );
+  const savedViews = externalSavedViews ?? localViews.savedViews;
+  const presetNames = new Set(presetViews.map((view) => view.name.trim().toLocaleLowerCase()));
+  const availableSavedViews = [...presetViews, ...savedViews.filter((view) => !presetNames.has(view.name.trim().toLocaleLowerCase()))];
+  const canSaveView = Boolean(viewName.trim()) && !presetNames.has(viewName.trim().toLocaleLowerCase());
   const { activeChips, effectiveGroupBy, filterValues, summary, summaryLabel } = useSearchRefinements({
     value,
     filters,
@@ -58,31 +84,6 @@ export function SearchWorkspace({
     onGroupByChange
   });
 
-  useEffect(() => {
-    const closeFromOutside = (event: MouseEvent) => {
-      const menu = menuRef.current;
-      if (menu?.open && event.target instanceof Node && !menu.contains(event.target)) {
-        menu.open = false;
-      }
-    };
-    const closeFromEscape = (event: KeyboardEvent) => {
-      const menu = menuRef.current;
-      if (event.key === "Escape" && menu?.open) {
-        menu.open = false;
-      }
-    };
-    document.addEventListener("mousedown", closeFromOutside);
-    document.addEventListener("keydown", closeFromEscape);
-    return () => {
-      document.removeEventListener("mousedown", closeFromOutside);
-      document.removeEventListener("keydown", closeFromEscape);
-    };
-  }, []);
-
-  const closeMenu = () => {
-    if (menuRef.current) menuRef.current.open = false;
-  };
-
   const clearAll = () => {
     onClear();
     onGroupByChange(groupDefaultValue);
@@ -90,13 +91,12 @@ export function SearchWorkspace({
       sort.onChange(sort.defaultValue);
       sort.onDirectionChange(sort.defaultDirection);
     }
-    closeMenu();
   };
 
   const saveCurrentView = () => {
     const trimmedName = viewName.trim();
-    if (!trimmedName) return;
-    upsertSavedView({
+    if (!trimmedName || presetNames.has(trimmedName.toLocaleLowerCase())) return;
+    const nextView = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       name: trimmedName,
       query: value,
@@ -104,7 +104,9 @@ export function SearchWorkspace({
       groupBy: effectiveGroupBy,
       sortBy: sort?.value,
       sortDir: sort?.direction
-    });
+    };
+    if (onSaveSavedView) void onSaveSavedView(nextView);
+    else localViews.upsertSavedView(nextView);
     setViewName("");
   };
 
@@ -119,47 +121,56 @@ export function SearchWorkspace({
       sort.onChange(validOptionValue(sort.options, view.sortBy, sort.defaultValue));
       sort.onDirectionChange(validSortDirection(view.sortDir, sort.defaultDirection));
     }
-    closeMenu();
   };
 
   const panelClass = [
     "search-workspace-panel",
     groupingEnabled ? "" : "without-grouping",
-    sortingEnabled ? "with-sorting" : ""
+    sortingEnabled ? "with-sorting" : "",
+    supplementalSections ? "with-supplemental-sections" : ""
   ].filter(Boolean).join(" ");
 
   return (
     <div className="search-workspace" aria-label={label}>
       <SearchField label={label} value={value} onChange={onChange} placeholder={placeholder} />
-      <details ref={menuRef} className="search-workspace-menu">
-        <summary aria-label={summaryLabel}>
-          <SlidersHorizontal size={16} aria-hidden="true" />
-          <span>{summary}</span>
-          <ChevronDown size={16} aria-hidden="true" />
-        </summary>
-        <SearchOptionsPanel
+      <ExpandableControlPanel
+        className="search-workspace-menu"
+        label={t("command.searchOptions", "Search options")}
+        open={menuOpen}
+        panelClassName={panelClass}
+        triggerIcon={SlidersHorizontal}
+        triggerLabel={summaryLabel}
+        triggerSummary={summary}
+        onOpenChange={setMenuOpen}
+      >
+        {({ close }) => <SearchOptionsPanel
           activeChipCount={activeChips.length}
-          canSaveView={Boolean(viewName.trim())}
-          className={panelClass}
+          canSaveView={canSaveView}
+          className="search-workspace-panel-content"
           effectiveGroupBy={effectiveGroupBy}
           filters={filters}
           groupOptions={groupOptions}
           groupingEnabled={groupingEnabled}
           savedViews={availableSavedViews}
+          savedViewsStatus={savedViewsStatus}
           sort={sort}
+          supplementalSections={typeof supplementalSections === "function" ? supplementalSections({ close }) : supplementalSections}
           viewName={viewName}
-          onApplyView={applyView}
-          onClearAll={clearAll}
-          onClose={closeMenu}
-          onDeleteView={deleteSavedView}
-          onGroupByChange={(nextGroup) => {
-            onGroupByChange(nextGroup);
-            closeMenu();
+          onApplyView={(view) => {
+            applyView(view);
+            close();
           }}
+          onClearAll={clearAll}
+          onClose={close}
+          onDeleteView={(id) => {
+            if (onDeleteSavedView) void onDeleteSavedView(id);
+            else localViews.deleteSavedView(id);
+          }}
+          onGroupByChange={onGroupByChange}
           onSaveCurrentView={saveCurrentView}
           onViewNameChange={setViewName}
-        />
-      </details>
+        />}
+      </ExpandableControlPanel>
       <SearchRefinementChips chips={activeChips} />
     </div>
   );

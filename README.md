@@ -24,18 +24,47 @@ GitHub is the shared source of truth for UOK code, documentation, tests, workflo
 - Apps Manager lists and operates optional modules for system setup with minimal baseline load.
 - `contacts.core` is the first optional module and is installed only when the user chooses it.
 - Module runtime extension surfaces are manifest-declared. API routers, command handlers, command permissions, role grants, dashboard counts, baseline evidence providers, model exports, and candidate verifier scenarios now resolve from module-owned declarations.
-- The React shell composes module UI through `web/src/features/modules/moduleSurfaceRegistry.tsx`; this is a compile-time registry, not runtime code loading from YAML.
+- The React shell composes manifest-declared module UI through the generated catalog and `web/src/features/modules/moduleSurfaceRegistry.tsx`; this is compile-time composition, not runtime code loading from YAML.
 - Domain and business capabilities are future separately installable modules, not hard-coded baseline features.
 - One active initial migration baseline: `migrations/001_initial_baseline.sql`.
 - Durable UI stack: React + TypeScript + Vite.
 - Backend stack: Python + FastAPI + Pydantic + SQLAlchemy + PostgreSQL 18.
 
+## Repository Map
+
+| Path | Ownership |
+|---|---|
+| `src/uok` | Product-neutral FastAPI kernel, security, module composition, shared database primitives, and static serving. |
+| `modules` | Installable module packages. Each module owns its manifest, backend, migrations, production UI, tests, and verifier assets where declared. |
+| `web/src` | React workbench shell, navigation, shared controls and tokens, generated contracts, and compile-time module composition. Module-specific UI does not live here. |
+| `tests` | Kernel, repository-policy, and cross-module contract tests. Module behavior and frontend tests stay in the owning module. |
+| `migrations` | Shared initial baseline only; later capability schema changes belong to module-owned migrations. |
+| `scripts` | Repeatable audits, generation, candidate verification, evidence, and operations tooling. |
+| `deploy` | Local candidate deployment definitions. |
+| `docs` | Architecture, ADRs, policies, module plans, design standards, and operations runbooks. |
+| `.github` | CI, dependency automation, ownership, PR, and contributor guardrails. |
+
+Start with `modules/README.md` for the module catalog and `web/README.md` for the shell-versus-module frontend boundary. The exact scheduling boundary remains: Python module service first, with React UI receiving validated schedule read models.
+
 ## Run Locally
 
 ```powershell
-cd C:\Users\vasan\OneDrive\Documents\UOK
+cd .\UOK
 podman compose -p uok -f deploy\compose-local-18088.yaml up -d --build
 ```
+
+On Windows, install and verify the supported user-scoped sign-in recovery after
+the first successful build:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartInstall
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartVerify
+```
+
+Use `AutoStartStatus`, `AutoStartDisable`, `AutoStartEnable`, or
+`AutoStartUninstall` for the managed lifecycle. The task starts after user
+sign-in, never before login, and restores only the frozen no-build local
+candidate. See `docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`.
 
 Open:
 
@@ -62,12 +91,22 @@ These credentials are only enabled by the local compose profile. The container i
 
 ## Verify
 
+Install the pinned developer tool layer before running repository checks. The container image
+installs only `requirements.txt`; tests, HTTP verification clients, and dependency-audit tooling
+stay in `requirements-dev.txt` and the aligned `pyproject.toml` `dev` extra.
+
+```powershell
+python -m pip install -r requirements-dev.txt
+npm --prefix web ci
+```
+
 ```powershell
 python -m compileall -q src modules tests conftest.py
-python -m pytest -q
+python scripts/run_python_tests.py
+npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build:static
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 
 Focused technology and code-quality audit:
@@ -85,7 +124,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 Dependency checks expected before GitHub publication:
 
 ```powershell
-python -m pip_audit -r requirements.txt
+python -m pip_audit -r requirements-dev.txt
 cd web
 npm audit
 ```

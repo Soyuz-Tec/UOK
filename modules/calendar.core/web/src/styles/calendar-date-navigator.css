@@ -1,0 +1,160 @@
+.calendar-date-navigator {
+  min-width: 0;
+}
+
+.calendar-date-navigator .expandable-control-trigger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--uok-space-1);
+  width: 100%;
+  min-height: var(--uok-control-height);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  font-weight: 740;
+  text-align: center;
+  cursor: pointer;
+}
+
+.calendar-date-navigator .expandable-control-trigger:hover {
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.calendar-date-navigator .expandable-control-trigger:focus-visible,
+.calendar-date-navigator-panel button:focus-visible,
+.calendar-date-navigator-panel input:focus-visible {
+  outline: 3px solid var(--uok-focus-ring);
+  outline-offset: 2px;
+}
+
+.calendar-date-navigator .expandable-control-trigger > span,
+.calendar-date-navigator .expandable-control-trigger > span > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-date-navigator-panel {
+  position: absolute;
+  z-index: 12;
+  inset-block-start: calc(100% + var(--uok-space-2));
+  inset-inline-start: 0;
+  width: min(320px, calc(100vw - var(--uok-space-6)));
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+  overflow: hidden;
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-2);
+}
+
+.calendar-date-navigator-content {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.calendar-date-navigator-header {
+  display: grid;
+  grid-template-columns: var(--uok-control-height) minmax(0, 1fr) var(--uok-control-height);
+  align-items: center;
+  gap: var(--uok-space-2);
+}
+
+.calendar-date-navigator-period {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--uok-space-2);
+  min-width: 0;
+}
+
+.calendar-date-navigator-period h3 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--uok-text-primary);
+  font-size: var(--uok-callout);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[dir="rtl"] .calendar-date-navigator-header .icon-button svg {
+  transform: scaleX(-1);
+}
+
+.calendar-date-grid {
+  display: grid;
+  gap: var(--uok-space-1);
+}
+
+.calendar-date-weekdays,
+.calendar-date-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--uok-space-1);
+}
+
+.calendar-date-weekdays span,
+.calendar-date-week button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 36px;
+  border-radius: var(--uok-radius-1);
+  font-size: var(--uok-caption-1);
+}
+
+.calendar-date-weekdays span {
+  min-height: 24px;
+  color: var(--uok-text-tertiary);
+  font-weight: 700;
+}
+
+.calendar-date-week button {
+  border: 0;
+  color: var(--uok-text-primary);
+  background: transparent;
+  cursor: pointer;
+}
+
+.calendar-date-week button.outside {
+  color: var(--uok-text-tertiary);
+}
+
+.calendar-date-week button:disabled {
+  color: var(--uok-text-placeholder);
+  cursor: not-allowed;
+}
+
+.calendar-date-week button:not(:disabled):hover {
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.calendar-date-week button.selected {
+  color: var(--uok-bg-elevated);
+  background: var(--uok-accent);
+}
+
+.calendar-date-week button.today:not(.selected) {
+  box-shadow: inset 0 0 0 2px var(--uok-accent);
+  color: var(--uok-accent);
+  font-weight: 800;
+}
+
+@media (max-width: 680px) {
+  .calendar-date-navigator-panel {
+    position: fixed;
+    inset-block-start: var(--uok-space-3);
+    inset-inline: var(--uok-space-3);
+    z-index: 40;
+    width: auto;
+    max-block-size: calc(100vh - (var(--uok-space-3) * 2));
+    overflow: auto;
+  }
+}

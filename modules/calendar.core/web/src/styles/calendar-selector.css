@@ -1,0 +1,161 @@
+.calendar-selector,
+.calendar-selector-menu {
+  min-width: 0;
+}
+
+.calendar-selector-menu .expandable-control-trigger {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--uok-space-2);
+  width: 100%;
+  min-height: var(--uok-control-height);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
+}
+
+.calendar-selector-menu .expandable-control-trigger:hover {
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.calendar-selector-menu .expandable-control-trigger:focus-visible {
+  outline: 3px solid var(--uok-focus-ring);
+  outline-offset: 2px;
+}
+
+.calendar-selector-menu .expandable-control-trigger > span {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.calendar-selector-current {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: var(--uok-space-2);
+  overflow: hidden;
+}
+
+.calendar-selector-current > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-selector-current .calendar-color-dot {
+  flex: 0 0 auto;
+  margin-block-start: 0;
+}
+
+.calendar-selector-panel {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% + var(--uok-space-2));
+  inset-inline-start: 0;
+  width: min(360px, calc(100vw - var(--uok-space-6)));
+  max-block-size: min(70vh, 620px);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+  overflow: hidden;
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-2);
+}
+
+.calendar-selector-panel-content {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+  gap: var(--uok-space-2);
+  max-block-size: inherit;
+}
+
+.calendar-deleted-list {
+  display: grid;
+  gap: var(--uok-space-2);
+  max-block-size: min(24vh, 220px);
+  overflow: auto;
+  border-block: var(--uok-line);
+  padding-block: var(--uok-space-2);
+  overscroll-behavior: contain;
+}
+
+.calendar-deleted-heading,
+.calendar-deleted-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--uok-space-2);
+  align-items: center;
+}
+
+.calendar-deleted-heading h4,
+.calendar-selector-governance {
+  margin: 0;
+}
+
+.calendar-deleted-heading span,
+.calendar-deleted-row small,
+.calendar-selector-governance {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption-1);
+}
+
+.calendar-deleted-row > span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.calendar-deleted-row strong,
+.calendar-deleted-row small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-deleted-row .command-button {
+  min-height: 36px;
+}
+
+.calendar-selector-panel .calendar-list {
+  min-block-size: 0;
+  margin-block: 0;
+}
+
+.calendar-selector-panel-content > .command-button,
+.calendar-selector-actions .command-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.calendar-selector-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--uok-space-2);
+}
+
+.calendar-selector-actions > :only-child {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 680px) {
+  .calendar-selector-panel {
+    position: fixed;
+    inset: var(--uok-space-3);
+    z-index: 40;
+    width: auto;
+    max-block-size: calc(100vh - (var(--uok-space-3) * 2));
+  }
+
+  .calendar-selector-panel .calendar-list {
+    max-block-size: none;
+  }
+
+  .calendar-selector-actions {
+    grid-template-columns: 1fr;
+  }
+}

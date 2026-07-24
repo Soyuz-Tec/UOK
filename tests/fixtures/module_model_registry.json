@@ -1,0 +1,88 @@
+{
+  "kernel": {
+    "CommandLog": "command_logs",
+    "EventRecord": "events",
+    "GovernanceRule": "governance_rules",
+    "Membership": "memberships",
+    "ModuleRecord": "modules",
+    "Organization": "organizations",
+    "SchemaVersion": "schema_versions",
+    "User": "users",
+    "WorkflowInstance": "workflow_instances"
+  },
+  "calendar.core": {
+    "Calendar": "calendars",
+    "CalendarEvent": "calendar_events",
+    "CalendarEventParticipant": "calendar_event_participants",
+    "CalendarReminder": "calendar_reminders"
+  },
+  "communications.core": {
+    "CommunicationThread": "communication_threads"
+  },
+  "compliance.core": {
+    "ComplianceDocumentType": "compliance_document_types",
+    "ComplianceDocumentTypeNameHistory": "compliance_document_type_name_history"
+  },
+  "contacts.core": {
+    "ContactActivity": "contact_activities",
+    "ContactConsentRecord": "contact_consent_records",
+    "ContactCustomFieldDefinition": "contact_custom_field_definitions",
+    "ContactDuplicateCandidate": "contact_duplicate_candidates",
+    "ContactExternalIdentity": "contact_external_identities",
+    "ContactGroup": "contact_groups",
+    "ContactGroupMember": "contact_group_members",
+    "ContactImportBatch": "contact_import_batches",
+    "ContactImportRow": "contact_import_rows",
+    "ContactSavedView": "contact_saved_views",
+    "ContactTeam": "contact_teams",
+    "ContactTeamMember": "contact_team_members",
+    "Party": "parties",
+    "PartyCustomFieldValue": "party_custom_field_values",
+    "PartyFact": "party_facts",
+    "PartyNote": "party_notes",
+    "PartyRelationship": "party_relationships"
+  },
+  "locations.core": {
+    "LocationDefinition": "location_definitions",
+    "LocationNameHistory": "location_name_history"
+  },
+  "planning.core": {
+    "PlanningAnalysisRecommendation": "planning_analysis_recommendations",
+    "PlanningAnalysisRun": "planning_analysis_runs",
+    "PlanningAssignment": "planning_assignments",
+    "PlanningBaseline": "planning_baselines",
+    "PlanningCalendar": "planning_calendars",
+    "PlanningLink": "planning_links",
+    "PlanningOutboxEvent": "planning_outbox_events",
+    "PlanningProject": "planning_projects",
+    "PlanningResource": "planning_resources",
+    "PlanningResourceCalendar": "planning_resource_calendars",
+    "PlanningScheduleEvent": "planning_schedule_events",
+    "PlanningScheduleRevision": "planning_schedule_revisions",
+    "PlanningTask": "planning_tasks",
+    "PlanningTaskDependency": "planning_task_dependencies",
+    "PlanningTaskParticipant": "planning_task_participants",
+    "PlanningTaskRequirement": "planning_task_requirements",
+    "PlanningWhatIfSnapshot": "planning_what_if_snapshots"
+  },
+  "product.master": {
+    "ProductDefinition": "product_definitions",
+    "ProductNameHistory": "product_name_history"
+  },
+  "reports.core": {
+    "ReportArtifact": "report_artifacts"
+  },
+  "routes.core": {
+    "RouteDefinition": "route_definitions",
+    "RouteNameHistory": "route_name_history",
+    "RouteStop": "route_stops"
+  },
+  "shipments.core": {
+    "Shipment": "shipments",
+    "ShipmentDocumentInstance": "shipment_document_instances",
+    "ShipmentDocumentInstanceHistory": "shipment_document_instance_history",
+    "ShipmentDocumentRequirement": "shipment_document_requirements",
+    "ShipmentDocumentRequirementHistory": "shipment_document_requirement_history",
+    "ShipmentStatusHistory": "shipment_status_history"
+  }
+}

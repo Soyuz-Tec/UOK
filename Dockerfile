@@ -14,16 +14,20 @@ COPY migrations ./migrations
 COPY modules ./modules
 COPY scripts ./scripts
 COPY src ./src
+RUN python scripts/validate_container_module_assets.py --require-tests-excluded
 COPY web/package.json web/package-lock.json web/tsconfig.json ./web/
 COPY web/src ./web/src
 RUN python scripts/export_openapi_schema.py
+RUN python scripts/generate_frontend_module_catalog.py --check
 
 FROM node:26-alpine AS web-build
 
 WORKDIR /app/web
 COPY web/package.json web/package-lock.json ./
+COPY web/scripts/patch-redocly-js-yaml.cjs ./scripts/patch-redocly-js-yaml.cjs
 RUN npm ci
 COPY web ./
+COPY modules /app/modules
 COPY --from=openapi-generate /app/web/src/generated ./src/generated
 RUN npm run generate:client && npm run build:client -- --outDir /app/web-dist
 
@@ -49,8 +53,10 @@ COPY web/src ./web/src
 COPY src ./src
 COPY --from=web-build /app/web-dist ./src/uok/static/app
 
+RUN python scripts/validate_container_module_assets.py --require-tests-excluded
+
 RUN useradd -r -u 10001 uok && mkdir -p /data && chown -R uok:uok /data /app
 USER uok
 
 EXPOSE 8080
-CMD ["python", "-m", "uvicorn", "uok.main:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["python", "-m", "uvicorn", "uok.host.application:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1"]

@@ -1,0 +1,82 @@
+manifest_schema: uok.module.v1
+name: shipments.core
+kind: business_module
+version: APP_VERSION
+description: "Tenant-scoped operational Shipment headers, document requirements, and document-instance metadata over governed Party, Location, Route, and Compliance references."
+maturity: runtime_proven
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - AddShipmentDocumentRequirement
+  - CreateShipment
+  - CreateShipmentDocumentInstance
+  - RemoveShipmentDocumentRequirement
+  - SetShipmentDocumentInstanceStatus
+  - SetShipmentDocumentRequirementStatus
+  - UpdateShipment
+  - UpdateShipmentDocumentInstance
+  - UpdateShipmentDocumentRequirement
+  - TransitionShipmentStatus
+events:
+  - ShipmentDocumentInstanceCreated
+  - ShipmentDocumentInstanceStatusChanged
+  - ShipmentDocumentInstanceUpdated
+  - ShipmentDocumentRequirementAdded
+  - ShipmentDocumentRequirementRemoved
+  - ShipmentDocumentRequirementStatusChanged
+  - ShipmentDocumentRequirementUpdated
+  - ShipmentCreated
+  - ShipmentUpdated
+  - ShipmentStatusTransitioned
+dependencies:
+  - compliance.core
+  - contacts.core
+  - locations.core
+  - routes.core
+backend_path: modules/shipments.core/backend
+web_path: modules/shipments.core/web
+web_entry: modules/shipments.core/web/src/moduleSurface.tsx
+web_section: shipments
+migrations_path: modules/shipments.core/migrations
+tests_path: modules/shipments.core/tests
+api_prefixes:
+  - /api/shipments
+api_router: uok_shipments_core.public_api:api_router
+command_handlers: uok_shipments_core.public_api:command_handlers
+command_permissions: uok_shipments_core.public_api:command_permissions
+role_grants: uok_shipments_core.public_api:role_grants
+model_exports: uok_shipments_core._internal.persistence.models:owned_models
+candidate_verifier_script: modules/shipments.core/verify/UokCandidateShipmentSupport.ps1
+candidate_verifier_function: Invoke-UokShipmentSupportCandidateScenario
+permissions:
+  - shipments.read
+  - shipments.manage
+owned_tables:
+  - Shipment
+  - ShipmentDocumentInstance
+  - ShipmentDocumentInstanceHistory
+  - ShipmentDocumentRequirement
+  - ShipmentDocumentRequirementHistory
+  - ShipmentStatusHistory
+  - CommandLog:shipments.core
+  - EventRecord:Shipment
+  - EventRecord:ShipmentDocumentInstance
+  - EventRecord:ShipmentDocumentRequirement
+extension_points:
+  - api_router
+  - command_handlers
+  - command_permissions
+  - role_grants
+  - model_exports
+  - web_surface
+  - candidate_verifier
+data_retention_policy: "Terminal and active Shipment headers, current document requirements, document-instance metadata without binaries, stable owner IDs, append-only status/requirement/instance history, and command/event evidence are retained. Module uninstall disables access while preserving tenant-owned records for authorized recovery."

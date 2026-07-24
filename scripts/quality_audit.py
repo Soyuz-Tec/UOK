@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import json
-import sys
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
+import database_capacity_audit
+import dependency_policy
+import documentation_reference_policy
+import frontend_quality_policy
 import source_size_policy
-
+import windows_autostart_policy
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-
 
 @dataclass
 class CheckResult:
@@ -24,28 +24,47 @@ def read_text(path: str) -> str:
     return (REPO_ROOT / path).read_text(encoding="utf-8", errors="ignore")
 
 
-def read_json(path: str) -> dict[str, Any]:
-    return json.loads(read_text(path))
-
-
 def check_required_artifacts() -> CheckResult:
     required = [
         "README.md",
         "AGENTS.md",
+        "modules/README.md",
+        "web/README.md",
         "docs/ARCHITECTURE.md",
         "docs/DOCUMENTATION_INDEX.md",
         "docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md",
         "docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md",
         "docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md",
         "docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md",
+        "docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md",
+        "docs/architecture/ADR-0023-module-local-frontend-composition.md",
+        "docs/architecture/ADR-0024-database-connection-pooling.md",
         "docs/design/UOK_UI_DESIGN_POLICY.md",
         "docs/operations/UOK_STANDARD_OPERATIONS.md",
         "docs/operations/UOK_ASUH_TEST_EVENTS.md",
+        "docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md",
         "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
+        "docs/operations/UOK_DATABASE_CONNECTION_POOLING.md",
+        "deploy/database-capacity.env",
         "scripts/engineering_evidence.py",
+        "scripts/check_generated_contracts.py",
+        "scripts/generate_frontend_module_catalog.py",
+        "scripts/frontend_quality_policy.py",
+        "scripts/frontend_source_policy.py",
+        "scripts/candidate_verifier_catalog.py",
+        "scripts/dependency_policy.py",
+        "scripts/documentation_reference_policy.py",
         "scripts/quality_scorecard.py",
+        "scripts/run_python_tests.py",
         "scripts/source_size_policy.py",
+        "scripts/validate_container_module_assets.py",
+        "scripts/verify_database_capacity.py",
+        "scripts/database_capacity_live.py",
+        "scripts/database_capacity_audit.py",
         "scripts/uok_github_ops.ps1",
+        "src/uok/module_release_contract.py",
+        "src/uok/host/db_pool.py",
+        "requirements-dev.txt",
         ".github/CODEOWNERS",
         ".github/copilot-instructions.md",
         ".github/dependabot.yml",
@@ -58,69 +77,18 @@ def check_required_artifacts() -> CheckResult:
 
 
 def check_python_stack() -> CheckResult:
-    pyproject = tomllib.loads(read_text("pyproject.toml"))
-    requirements = [
-        line.strip()
-        for line in read_text("requirements.txt").splitlines()
-        if line.strip() and not line.strip().startswith("#")
-    ]
-    problems: list[str] = []
-    if pyproject["project"].get("requires-python") != ">=3.14":
-        problems.append("pyproject requires-python must be >=3.14")
-    for dependency in pyproject["project"].get("dependencies", []):
-        if "==" not in dependency:
-            problems.append(f"unpinned pyproject dependency: {dependency}")
-    for dependency in pyproject["project"].get("optional-dependencies", {}).get("dev", []):
-        if "==" not in dependency:
-            problems.append(f"unpinned pyproject dev dependency: {dependency}")
-    for dependency in requirements:
-        if "==" not in dependency:
-            problems.append(f"unpinned requirements dependency: {dependency}")
-    required_pins = {
-        "fastapi==0.139.0",
-        "sqlalchemy==2.0.51",
-        "pydantic==2.13.4",
-        "psycopg[binary]==3.3.4",
-    }
-    missing = sorted(required_pins - set(requirements))
-    problems.extend(f"missing required pin: {pin}" for pin in missing)
+    problems = dependency_policy.validate_dependency_policy(REPO_ROOT)
     return CheckResult("python_stack", not problems, "; ".join(problems) or "pinned")
 
 
 def check_frontend_stack() -> CheckResult:
-    package = read_json("web/package.json")
-    tsconfig = read_json("web/tsconfig.json")
-    compiler_options = tsconfig.get("compilerOptions", {})
-    problems: list[str] = []
-    if package.get("type") != "module":
-        problems.append("web/package.json must use type=module")
-    if package.get("engines", {}).get("node") != ">=26 <27":
-        problems.append("Node engine must be >=26 <27")
-    if package.get("scripts", {}).get("test") is None:
-        problems.append("frontend test script missing")
-    if package.get("scripts", {}).get("build:static") is None:
-        problems.append("frontend static build script missing")
-    if package.get("scripts", {}).get("test:ui-proof") is None:
-        problems.append("frontend UI proof script missing")
-    if compiler_options.get("strict") is not True:
-        problems.append("TypeScript strict mode must stay enabled")
-    if compiler_options.get("allowJs") is not False:
-        problems.append("TypeScript allowJs must stay false")
-    if not (REPO_ROOT / "web/package-lock.json").exists():
-        problems.append("web/package-lock.json missing")
-    if not (REPO_ROOT / "web/playwright.config.ts").exists():
-        problems.append("Playwright UI proof config missing")
-    durable_js = [
-        path.as_posix()
-        for path in (REPO_ROOT / "web/src").rglob("*.js")
-        if "generated" not in path.parts
-    ]
-    problems.extend(f"durable JavaScript source is not allowed: {path}" for path in durable_js)
+    problems = frontend_quality_policy.frontend_stack_problems(REPO_ROOT)
     return CheckResult("frontend_stack", not problems, "; ".join(problems) or "typed")
 
 
 def check_runtime_stack() -> CheckResult:
     dockerfile = read_text("Dockerfile")
+    dockerignore = read_text(".dockerignore")
     compose = read_text("deploy/compose-local-18088.yaml")
     ci = read_text(".github/workflows/uok-ci.yml")
     problems: list[str] = []
@@ -132,8 +100,15 @@ def check_runtime_stack() -> CheckResult:
         "CI Python 3.14": 'python-version: "3.14"' in ci,
         "CI Node 26": 'node-version: "26"' in ci,
         "CI quality audit": "scripts/quality_audit.py" in ci,
+        "Docker runtime-only Python requirements": "requirements-dev.txt" not in dockerfile,
+        "Docker excludes module tests": "modules/*/tests" in dockerignore,
+        "Docker validates manifest-declared module assets": dockerfile.count(
+            "python scripts/validate_container_module_assets.py --require-tests-excluded"
+        ) == 2,
+        "Docker explicit single API worker": '"--workers", "1"' in dockerfile,
     }
     problems.extend(name for name, ok in expected.items() if not ok)
+    problems.extend(database_capacity_audit.database_capacity_policy_problems(REPO_ROOT))
     return CheckResult("runtime_stack", not problems, "; ".join(problems) or "aligned")
 
 
@@ -141,10 +116,21 @@ def check_module_shape() -> CheckResult:
     problems: list[str] = []
     for manifest in sorted((REPO_ROOT / "modules").glob("*/manifest.yaml")):
         module_root = manifest.parent
+        if not (module_root / "README.md").is_file():
+            problems.append(f"{module_root.relative_to(REPO_ROOT).as_posix()} missing README.md")
         for folder in ("backend", "web", "migrations", "tests"):
             if not (module_root / folder).is_dir():
                 problems.append(f"{module_root.relative_to(REPO_ROOT).as_posix()} missing {folder}/")
     return CheckResult("module_shape", not problems, "; ".join(problems) or "valid")
+
+
+def check_documentation_references() -> CheckResult:
+    problems = documentation_reference_policy.documentation_reference_problems(REPO_ROOT)
+    return CheckResult(
+        "documentation_references",
+        not problems,
+        "; ".join(problems) or "resolved",
+    )
 
 
 def check_source_size() -> CheckResult:
@@ -157,6 +143,8 @@ def check_operations_hygiene() -> CheckResult:
     gitignore = read_text(".gitignore") if (REPO_ROOT / ".gitignore").exists() else ""
     runbook = read_text("docs/operations/UOK_STANDARD_OPERATIONS.md")
     continuity = read_text("docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md")
+    operations_script = read_text("scripts/uok_ops.ps1")
+    ci = read_text(".github/workflows/uok-ci.yml")
     problems: list[str] = []
     if "var/" not in gitignore:
         problems.append("var/ must stay ignored for local evidence")
@@ -166,6 +154,8 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("standard operations runbook must document EngineeringEvidence")
     if "UiProof" not in runbook:
         problems.append("standard operations runbook must document UiProof")
+    if "DatabaseCapacity" not in runbook:
+        problems.append("standard operations runbook must document DatabaseCapacity")
     for action in ("GithubReadiness", "GithubSecuritySetup", "GithubPrChecks"):
         if action not in runbook:
             problems.append(f"standard operations runbook must document {action}")
@@ -173,6 +163,18 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("standard operations runbook must define GitHub source-of-truth policy")
     if "GitHub Synchronization Policy" not in continuity:
         problems.append("development continuity guide must define GitHub synchronization policy")
+    test_runner_command = "python scripts/run_python_tests.py"
+    if test_runner_command not in ci:
+        problems.append("CI must use the repository Python test runner")
+    if '"scripts/run_python_tests.py"' not in operations_script:
+        problems.append("local Audit must use the repository Python test runner")
+    if '"--environment-file"' not in operations_script or '"deploy/database-capacity.env"' not in operations_script:
+        problems.append("standard operations must use the canonical database capacity environment")
+    release_validator = "validate_module_release_contracts"
+    if release_validator not in ci:
+        problems.append("CI must enforce the module release contract")
+    if release_validator not in operations_script:
+        problems.append("local Audit must enforce the module release contract")
     index = read_text("docs/DOCUMENTATION_INDEX.md")
     if "AGENTS.md" not in index:
         problems.append("documentation index must route AGENTS.md")
@@ -180,6 +182,13 @@ def check_operations_hygiene() -> CheckResult:
         problems.append("documentation index must route quality standard")
     if "UOK_GITHUB_ENGINEERING_GUARDRAILS.md" not in index:
         problems.append("documentation index must route GitHub guardrails")
+    if "ADR-0021-module-manifest-runtime-and-release-truth.md" not in index:
+        problems.append("documentation index must route the manifest runtime/release ADR")
+    if "ADR-0024-database-connection-pooling.md" not in index:
+        problems.append("documentation index must route the database pooling ADR")
+    if "UOK_DATABASE_CONNECTION_POOLING.md" not in index:
+        problems.append("documentation index must route the database pooling runbook")
+    problems.extend(windows_autostart_policy.windows_autostart_policy_problems(REPO_ROOT))
     return CheckResult("operations_hygiene", not problems, "; ".join(problems) or "documented")
 
 
@@ -223,6 +232,8 @@ def check_internal_engineering_system() -> CheckResult:
         problems.append("documentation index must route internal engineering system")
     if "UOK_INTERNAL_ENGINEERING_SYSTEM.md" not in architecture:
         problems.append("architecture must link internal engineering system")
+    if "ADR-0024-database-connection-pooling.md" not in architecture:
+        problems.append("architecture must link database connection-pooling decision")
     if "UOK Internal Engineering System" not in pr_template:
         problems.append("PR template must ask for internal engineering system impact")
     return CheckResult("internal_engineering_system", not problems, "; ".join(problems) or "mapped")
@@ -266,6 +277,7 @@ def run_checks() -> list[CheckResult]:
         check_frontend_stack(),
         check_runtime_stack(),
         check_module_shape(),
+        check_documentation_references(),
         check_source_size(),
         check_operations_hygiene(),
         check_internal_engineering_system(),

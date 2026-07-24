@@ -1,5 +1,9 @@
 # agents.core
 
+**Status:** Planned inert capability scaffold.
+
+**Current candidate:** `UOK-3.1.0-alpha.3`
+
 `agents.core` is the planned UOK capability module for programmable AI agent governance, human approvals, and compliance evidence.
 
 Codex is expected to be one of the primary governed tools used through this module. The module must treat Codex as an auditable tool binding, not as an uncontrolled authority.

@@ -1,6 +1,20 @@
+.expandable-control-panel {
+  position: relative;
+}
+
+.expandable-control-panel[data-open="true"] {
+  z-index: 35;
+}
+
+.expandable-control-panel:not([data-open="true"]) > .expandable-control-surface,
+.expandable-control-panel:not([data-open="true"]) > .expandable-control-scrim,
+.expandable-control-scrim {
+  display: none;
+}
+
 .search-workspace {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(260px, auto);
+  grid-template-columns: minmax(120px, 1fr) minmax(120px, 260px);
   gap: 0;
   align-items: stretch;
   min-width: 0;
@@ -21,7 +35,7 @@
   min-width: 0;
 }
 
-.search-workspace-menu summary {
+.search-workspace-menu .expandable-control-trigger {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -29,7 +43,7 @@
   height: 100%;
   min-height: var(--uok-control-height);
   border: 0;
-  border-left: var(--uok-line);
+  border-inline-start: var(--uok-line);
   border-radius: 0;
   padding: 0 var(--uok-space-3);
   color: var(--uok-text-secondary);
@@ -38,18 +52,14 @@
   list-style: none;
 }
 
-.search-workspace-menu summary::-webkit-details-marker {
-  display: none;
-}
-
-.search-workspace-menu summary span {
+.search-workspace-menu .expandable-control-trigger span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.search-workspace-menu summary:focus-visible,
+.search-workspace-menu .expandable-control-trigger:focus-visible,
 .search-workspace-option:focus-visible,
 .search-workspace-saved-row button:focus-visible,
 .search-workspace-chips button:focus-visible {
@@ -61,10 +71,7 @@
   position: absolute;
   z-index: 6;
   top: calc(100% + var(--uok-space-2));
-  right: 0;
-  display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr);
-  gap: var(--uok-space-4);
+  inset-inline-end: 0;
   width: min(900px, calc(100vw - var(--uok-space-6)));
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
@@ -73,23 +80,42 @@
   box-shadow: var(--uok-shadow-2);
 }
 
-.search-workspace-menu:not([open]) > .search-workspace-panel {
-  display: none;
+.search-workspace-panel-content {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr);
+  gap: var(--uok-space-4);
 }
 
 .search-workspace-panel.without-grouping {
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr);
   width: min(640px, calc(100vw - var(--uok-space-6)));
 }
 
+.search-workspace-panel.without-grouping .search-workspace-panel-content {
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr);
+}
+
 .search-workspace-panel.with-sorting {
-  grid-template-columns: repeat(4, minmax(160px, 1fr));
   width: min(1040px, calc(100vw - var(--uok-space-6)));
 }
 
+.search-workspace-panel.with-sorting .search-workspace-panel-content {
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+}
+
 .search-workspace-panel.with-sorting.without-grouping {
-  grid-template-columns: repeat(3, minmax(160px, 1fr));
   width: min(820px, calc(100vw - var(--uok-space-6)));
+}
+
+.search-workspace-panel.with-sorting.without-grouping .search-workspace-panel-content {
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+}
+
+.search-workspace-panel.with-supplemental-sections {
+  width: min(900px, calc(100vw - var(--uok-space-6)));
+}
+
+.search-workspace-panel.with-supplemental-sections .search-workspace-panel-content {
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
 }
 
 .search-workspace-section {
@@ -100,8 +126,8 @@
 }
 
 .search-workspace-section + .search-workspace-section {
-  border-left: var(--uok-line);
-  padding-left: var(--uok-space-4);
+  border-inline-start: var(--uok-line);
+  padding-inline-start: var(--uok-space-4);
 }
 
 .search-workspace-section h3 {
@@ -158,7 +184,7 @@
   padding: 0 var(--uok-space-3);
   color: var(--uok-text-secondary);
   background: var(--uok-bg-elevated);
-  text-align: left;
+  text-align: start;
 }
 
 .search-workspace-option.selected {
@@ -178,7 +204,7 @@
   padding: 0 var(--uok-space-3);
   color: var(--uok-text-secondary);
   background: transparent;
-  text-align: left;
+  text-align: start;
 }
 
 .search-workspace-saved-list p {
@@ -193,6 +219,7 @@
   justify-content: flex-end;
   border-top: var(--uok-line);
   padding-top: var(--uok-space-3);
+  background: var(--uok-bg-elevated);
 }
 
 .search-workspace-chips {

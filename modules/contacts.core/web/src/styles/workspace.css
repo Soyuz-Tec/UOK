@@ -1,0 +1,105 @@
+.contacts-workspace {
+  display: grid;
+  gap: var(--uok-space-4);
+}
+
+.contacts-saved-view-status,
+.contacts-saved-view-error p {
+  margin: 0;
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.contacts-saved-view-error {
+  display: grid;
+  gap: var(--uok-space-2);
+  border: 1px solid color-mix(in srgb, var(--uok-danger) 35%, var(--uok-border));
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-2);
+  background: color-mix(in srgb, var(--uok-danger) 8%, var(--uok-bg-elevated));
+}
+
+.contacts-saved-view-error .command-button {
+  justify-self: start;
+}
+
+.contacts-view-split .workflow-split-view {
+  grid-template-columns: minmax(280px, 0.78fr) minmax(420px, 1.22fr);
+  gap: 0;
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+}
+
+.contacts-view-split .workflow-primary-region {
+  border-right: var(--uok-line);
+}
+
+.contacts-view-split .contact-list,
+.contacts-view-split .contact-detail {
+  border: 0;
+  border-radius: 0;
+}
+
+.contacts-view-split .contact-list {
+  overflow: visible;
+}
+
+.contacts-view-split .contact-detail {
+  min-height: 100%;
+}
+
+.contacts-results-workspace {
+  min-width: 0;
+}
+
+.contacts-detail-popup .contact-detail {
+  border: 0;
+  border-radius: 0;
+  padding: var(--uok-space-5);
+}
+
+.contacts-detail-popup .contact-detail-header {
+  border: 0;
+  border-bottom: var(--uok-line);
+  border-radius: 0;
+}
+
+.contacts-view-split .contact-detail-header {
+  border: 0;
+  border-bottom: var(--uok-line);
+  border-radius: 0;
+  padding: var(--uok-space-5);
+}
+
+.contacts-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--uok-space-2);
+}
+
+.contact-group-section {
+  display: grid;
+  gap: var(--uok-space-2);
+  min-width: 0;
+}
+
+.contact-group-section + .contact-group-section {
+  margin-top: var(--uok-space-3);
+}
+
+.contact-group-heading {
+  margin: 0;
+  padding: var(--uok-space-2) var(--uok-space-3);
+  border-bottom: var(--uok-line);
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+  font-weight: 760;
+}
+
+.contact-card-groups {
+  display: grid;
+  gap: var(--uok-space-4);
+}

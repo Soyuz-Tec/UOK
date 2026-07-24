@@ -1,0 +1,60 @@
+manifest_schema: uok.module.v1
+name: locations.core
+kind: capability_module
+version: APP_VERSION
+description: "Tenant-scoped Location Master registry for canonical operational trade locations."
+maturity: runtime_proven
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - CreateLocationDefinition
+  - UpdateLocationDefinition
+  - ArchiveLocationDefinition
+  - RestoreLocationDefinition
+events:
+  - LocationDefinitionCreated
+  - LocationDefinitionUpdated
+  - LocationDefinitionArchived
+  - LocationDefinitionRestored
+dependencies: []
+backend_path: modules/locations.core/backend
+web_path: modules/locations.core/web
+web_entry: modules/locations.core/web/src/moduleSurface.tsx
+web_section: locations
+migrations_path: modules/locations.core/migrations
+tests_path: modules/locations.core/tests
+api_prefixes:
+  - /api/locations
+api_router: uok_locations_core.public_api:api_router
+command_handlers: uok_locations_core.public_api:command_handlers
+command_permissions: uok_locations_core.public_api:command_permissions
+role_grants: uok_locations_core.public_api:role_grants
+model_exports: uok_locations_core._internal.persistence.models:owned_models
+candidate_verifier_script: modules/locations.core/verify/UokCandidateLocationMaster.ps1
+candidate_verifier_function: Invoke-UokLocationMasterCandidateScenario
+permissions:
+  - locations.read
+  - locations.manage
+owned_tables:
+  - LocationDefinition
+  - LocationNameHistory
+  - CommandLog:locations.core
+  - EventRecord:LocationDefinition
+extension_points:
+  - api_router
+  - command_handlers
+  - command_permissions
+  - role_grants
+  - model_exports
+  - web_surface
+  - candidate_verifier
+data_retention_policy: "Archive preserves Location Definitions and immutable name history. Module uninstall disables access while retaining tenant-owned records for authorized recovery."

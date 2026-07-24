@@ -1,0 +1,35 @@
+.planning-owned-baseline-lane {
+  pointer-events: none;
+}
+
+.planning-owned-baseline-lane .baseline-bar {
+  fill: color-mix(in srgb, var(--uok-status-warning) 84%, var(--uok-bg-elevated));
+  stroke: color-mix(in srgb, var(--uok-status-warning) 70%, var(--uok-text-primary));
+  stroke-width: 1;
+}
+
+.planning-owned-baseline-lane .baseline-variance {
+  fill: var(--uok-text-tertiary);
+}
+
+.planning-owned-baseline-lane.late .baseline-variance {
+  fill: var(--uok-status-danger);
+}
+
+.planning-owned-baseline-lane.early .baseline-variance {
+  fill: var(--uok-status-success);
+}
+
+.planning-owned-baseline-lane .baseline-code {
+  fill: color-mix(in srgb, var(--uok-bg-elevated) 92%, transparent);
+  stroke: color-mix(in srgb, var(--uok-status-warning) 74%, var(--uok-text-primary));
+  stroke-width: 1;
+}
+
+.planning-owned-task .planning-owned-baseline-lane text {
+  fill: var(--uok-text-primary);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0;
+  pointer-events: none;
+}

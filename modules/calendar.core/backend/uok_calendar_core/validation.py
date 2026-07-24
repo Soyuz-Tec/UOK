@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime, timezone
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -13,6 +14,9 @@ VALID_VISIBILITY_SCOPES = {"private", "team", "organization"}
 VALID_EVENT_STATUSES = {"confirmed", "tentative", "canceled"}
 VALID_TRANSPARENCY = {"busy", "free"}
 VALID_REMINDER_TYPES = {"in_app", "email"}
+VALID_PARTICIPANT_TYPES = {"party", "person", "resource", "room"}
+VALID_PARTICIPANT_ROLES = {"chair", "non_participant", "optional", "required"}
+VALID_RESPONSE_STATUSES = {"accepted", "declined", "delegated", "needs_action", "tentative"}
 
 
 def clean_text(value: Any) -> str:
@@ -29,6 +33,12 @@ def bounded_text(value: Any, field: str, limit: int) -> str:
 def optional_text(value: Any, field: str, limit: int) -> str | None:
     text = bounded_text(value, field, limit)
     return text or None
+
+
+def object_payload(value: Any, field: str) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{field} must be an object")
+    return dict(value)
 
 
 def valid_timezone(value: Any) -> str:
@@ -81,4 +91,25 @@ def reminder_type(value: Any) -> str:
     item = bounded_text(value or "in_app", "reminder_type", 40)
     if item not in VALID_REMINDER_TYPES:
         raise ValueError(f"reminder_type must be one of {', '.join(sorted(VALID_REMINDER_TYPES))}")
+    return item
+
+
+def participant_type(value: Any) -> str:
+    item = bounded_text(value, "participant_type", 40)
+    if item not in VALID_PARTICIPANT_TYPES:
+        raise ValueError(f"participant_type must be one of {', '.join(sorted(VALID_PARTICIPANT_TYPES))}")
+    return item
+
+
+def participant_role(value: Any) -> str:
+    item = bounded_text(value or "required", "role", 40)
+    if item not in VALID_PARTICIPANT_ROLES:
+        raise ValueError(f"role must be one of {', '.join(sorted(VALID_PARTICIPANT_ROLES))}")
+    return item
+
+
+def response_status(value: Any) -> str:
+    item = bounded_text(value or "needs_action", "response_status", 40)
+    if item not in VALID_RESPONSE_STATUSES:
+        raise ValueError(f"response_status must be one of {', '.join(sorted(VALID_RESPONSE_STATUSES))}")
     return item

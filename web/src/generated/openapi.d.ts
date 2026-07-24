@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/architecture/database-pool": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Database Pool */
+        get: operations["database_pool_api_architecture_database_pool_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/architecture/source-boundary": {
         parameters: {
             query?: never;
@@ -157,6 +174,40 @@ export interface paths {
         head?: never;
         /** Update Calendar */
         patch: operations["update_calendar_api_calendar_calendars__calendar_id__patch"];
+        trace?: never;
+    };
+    "/api/calendar/calendars/{calendar_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Calendar */
+        post: operations["restore_calendar_api_calendar_calendars__calendar_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/calendar/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Calendar Capabilities */
+        get: operations["calendar_capabilities_api_calendar_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/calendar/events": {
@@ -314,6 +365,126 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/communications/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Communication Capabilities */
+        get: operations["communication_capabilities_api_communications_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/communications/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Threads */
+        get: operations["threads_api_communications_threads_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/communications/threads/{thread_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Thread Detail */
+        get: operations["thread_detail_api_communications_threads__thread_id__get"];
+        put?: never;
+        post?: never;
+        /** Archive Thread */
+        delete: operations["archive_thread_api_communications_threads__thread_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/communications/threads/{thread_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Thread */
+        post: operations["restore_thread_api_communications_threads__thread_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/compliance/document-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Types */
+        get: operations["document_types_api_compliance_document_types_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/compliance/document-types/{compliance_document_type_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Type */
+        get: operations["document_type_api_compliance_document_types__compliance_document_type_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/compliance/document-types/{compliance_document_type_id}/name-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Name History */
+        get: operations["name_history_api_compliance_document_types__compliance_document_type_id__name_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/contacts": {
         parameters: {
             query?: never;
@@ -326,6 +497,160 @@ export interface paths {
         put?: never;
         /** Create Contact */
         post: operations["create_contact_api_contacts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Contacts */
+        post: operations["bulk_contacts_api_contacts_bulk_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/custom-fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Custom Fields */
+        get: operations["custom_fields_api_contacts_custom_fields_get"];
+        put?: never;
+        /** Define Custom Field */
+        post: operations["define_custom_field_api_contacts_custom_fields_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/custom-fields/{field_definition_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Custom Field */
+        delete: operations["delete_custom_field_api_contacts_custom_fields__field_definition_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/custom-fields/{field_definition_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Custom Field */
+        post: operations["restore_custom_field_api_contacts_custom_fields__field_definition_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/duplicate-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Duplicate Candidates */
+        get: operations["duplicate_candidates_api_contacts_duplicate_candidates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/duplicate-candidates/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh Duplicate Candidates */
+        post: operations["refresh_duplicate_candidates_api_contacts_duplicate_candidates_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/duplicate-candidates/{candidate_id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve Duplicate Candidate */
+        post: operations["resolve_duplicate_candidate_api_contacts_duplicate_candidates__candidate_id__resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/export.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Contacts Csv */
+        get: operations["export_contacts_csv_api_contacts_export_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/export.vcf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Contacts Vcard */
+        get: operations["export_contacts_vcard_api_contacts_export_vcf_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -402,6 +727,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/contacts/groups/{group_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Contact Group */
+        post: operations["restore_contact_group_api_contacts_groups__group_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/contacts/import-batches": {
         parameters: {
             query?: never;
@@ -411,6 +753,40 @@ export interface paths {
         };
         /** Contacts Import Batches */
         get: operations["contacts_import_batches_api_contacts_import_batches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/import-batches/{batch_id}/rollback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rollback Import Batch */
+        post: operations["rollback_import_batch_api_contacts_import_batches__batch_id__rollback_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/import-batches/{batch_id}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Import Batch Rows */
+        get: operations["import_batch_rows_api_contacts_import_batches__batch_id__rows_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -430,6 +806,57 @@ export interface paths {
         put?: never;
         /** Import Contacts Csv */
         post: operations["import_contacts_csv_api_contacts_import_csv_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/import-vcard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Contacts Vcard */
+        post: operations["import_contacts_vcard_api_contacts_import_vcard_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/interoperability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Interoperability Status */
+        get: operations["interoperability_status_api_contacts_interoperability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/relationship-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Relationship Options */
+        get: operations["relationship_options_api_contacts_relationship_options_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -488,6 +915,129 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/contacts/saved-views": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Saved Views */
+        get: operations["saved_views_api_contacts_saved_views_get"];
+        put?: never;
+        /** Save View */
+        post: operations["save_view_api_contacts_saved_views_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/saved-views/{view_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete View */
+        delete: operations["delete_view_api_contacts_saved_views__view_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update View */
+        patch: operations["update_view_api_contacts_saved_views__view_id__patch"];
+        trace?: never;
+    };
+    "/api/contacts/teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Teams */
+        get: operations["teams_api_contacts_teams_get"];
+        put?: never;
+        /** Create Team */
+        post: operations["create_team_api_contacts_teams_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/teams/{team_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Team */
+        delete: operations["delete_team_api_contacts_teams__team_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Team */
+        patch: operations["update_team_api_contacts_teams__team_id__patch"];
+        trace?: never;
+    };
+    "/api/contacts/teams/{team_id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Team Member */
+        post: operations["add_team_member_api_contacts_teams__team_id__members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/teams/{team_id}/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Team Member */
+        delete: operations["remove_team_member_api_contacts_teams__team_id__members__user_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/teams/{team_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore Team */
+        post: operations["restore_team_api_contacts_teams__team_id__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/contacts/{party_id}": {
         parameters: {
             query?: never;
@@ -506,6 +1056,23 @@ export interface paths {
         patch: operations["update_contact_api_contacts__party_id__patch"];
         trace?: never;
     };
+    "/api/contacts/{party_id}/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Activity */
+        get: operations["activity_api_contacts__party_id__activity_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/contacts/{party_id}/archive": {
         parameters: {
             query?: never;
@@ -521,6 +1088,112 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Consents */
+        get: operations["consents_api_contacts__party_id__consents_get"];
+        put?: never;
+        /** Record Consent */
+        post: operations["record_consent_api_contacts__party_id__consents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/custom-fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Custom Values */
+        get: operations["custom_values_api_contacts__party_id__custom_fields_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/custom-fields/{field_definition_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Custom Value */
+        put: operations["set_custom_value_api_contacts__party_id__custom_fields__field_definition_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/external-identities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** External Identities */
+        get: operations["external_identities_api_contacts__party_id__external_identities_get"];
+        put?: never;
+        /** Link External Identity */
+        post: operations["link_external_identity_api_contacts__party_id__external_identities_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/facts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Facts */
+        get: operations["facts_api_contacts__party_id__facts_get"];
+        put?: never;
+        /** Save Fact */
+        post: operations["save_fact_api_contacts__party_id__facts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/contacts/{party_id}/facts/{fact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Fact */
+        delete: operations["remove_fact_api_contacts__party_id__facts__fact_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Fact */
+        patch: operations["update_fact_api_contacts__party_id__facts__fact_id__patch"];
         trace?: never;
     };
     "/api/contacts/{party_id}/notes": {
@@ -601,6 +1274,74 @@ export interface paths {
         };
         /** Dashboard */
         get: operations["dashboard_api_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/intelligence/shipment-readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Shipment Readiness */
+        get: operations["shipment_readiness_api_intelligence_shipment_readiness_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/locations/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Definitions */
+        get: operations["definitions_api_locations_definitions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/locations/definitions/{location_definition_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Definition */
+        get: operations["definition_api_locations_definitions__location_definition_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/locations/definitions/{location_definition_id}/name-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Name History */
+        get: operations["name_history_api_locations_definitions__location_definition_id__name_history_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -745,6 +1486,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/modules/{module_name}/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reconcile Module Endpoint */
+        post: operations["reconcile_module_endpoint_api_modules__module_name__reconcile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/modules/{module_name}/status": {
         parameters: {
             query?: never;
@@ -813,6 +1571,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Planning Capabilities */
+        get: operations["planning_capabilities_api_planning_capabilities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/dependencies/{dependency_id}": {
         parameters: {
             query?: never;
@@ -829,6 +1604,23 @@ export interface paths {
         head?: never;
         /** Update Dependency */
         patch: operations["update_dependency_api_planning_dependencies__dependency_id__patch"];
+        trace?: never;
+    };
+    "/api/planning/portfolio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Planning Portfolio */
+        get: operations["planning_portfolio_api_planning_portfolio_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/planning/projects": {
@@ -860,6 +1652,40 @@ export interface paths {
         put?: never;
         /** Create Baseline */
         post: operations["create_baseline_api_planning_projects__project_id__baselines_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/baselines/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Compare Project Baselines */
+        get: operations["compare_project_baselines_api_planning_projects__project_id__baselines_compare_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/baselines/{baseline_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Baseline */
+        get: operations["project_baseline_api_planning_projects__project_id__baselines__baseline_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -900,6 +1726,160 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/projects/{project_id}/links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Planning Link */
+        post: operations["create_planning_link_api_planning_projects__project_id__links_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/links/{link_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Planning Link */
+        delete: operations["remove_planning_link_api_planning_projects__project_id__links__link_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/mutations:batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Batch Mutations */
+        post: operations["batch_mutations_api_planning_projects__project_id__mutations_batch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/optimizations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Optimizations */
+        get: operations["project_optimizations_api_planning_projects__project_id__optimizations_get"];
+        put?: never;
+        /** Create Project Optimization */
+        post: operations["create_project_optimization_api_planning_projects__project_id__optimizations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/optimizations/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Optimization */
+        get: operations["project_optimization_api_planning_projects__project_id__optimizations__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Recommendations */
+        get: operations["project_recommendations_api_planning_projects__project_id__recommendations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/recommendations/{recommendation_id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Project Recommendation */
+        post: operations["apply_project_recommendation_api_planning_projects__project_id__recommendations__recommendation_id__apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/recommendations/{recommendation_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decide Project Recommendation */
+        post: operations["decide_project_recommendation_api_planning_projects__project_id__recommendations__recommendation_id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/recommendations/{recommendation_id}/rollback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rollback Project Recommendation */
+        post: operations["rollback_project_recommendation_api_planning_projects__project_id__recommendations__recommendation_id__rollback_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/projects/{project_id}/resources": {
         parameters: {
             query?: never;
@@ -911,6 +1891,92 @@ export interface paths {
         put?: never;
         /** Create Resource */
         post: operations["create_resource_api_planning_projects__project_id__resources_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/resources/{resource_id}/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Resource Calendar */
+        put: operations["set_resource_calendar_api_planning_projects__project_id__resources__resource_id__calendar_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Revisions */
+        get: operations["project_revisions_api_planning_projects__project_id__revisions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/revisions/{revision_number}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Revision */
+        get: operations["project_revision_api_planning_projects__project_id__revisions__revision_number__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/risk-analyses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Risk Analyses */
+        get: operations["project_risk_analyses_api_planning_projects__project_id__risk_analyses_get"];
+        put?: never;
+        /** Create Project Risk Analysis */
+        post: operations["create_project_risk_analysis_api_planning_projects__project_id__risk_analyses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/risk-analyses/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Risk Analysis */
+        get: operations["project_risk_analysis_api_planning_projects__project_id__risk_analyses__run_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -951,6 +2017,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/planning/projects/{project_id}/transitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transition Project */
+        post: operations["transition_project_api_planning_projects__project_id__transitions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/what-if-snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project What If Snapshots */
+        get: operations["project_what_if_snapshots_api_planning_projects__project_id__what_if_snapshots_get"];
+        put?: never;
+        /** Create Project What If Snapshot */
+        post: operations["create_project_what_if_snapshot_api_planning_projects__project_id__what_if_snapshots_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/projects/{project_id}/what-if-snapshots/{snapshot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project What If Snapshot */
+        get: operations["project_what_if_snapshot_api_planning_projects__project_id__what_if_snapshots__snapshot_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/planning/tasks/{task_id}": {
         parameters: {
             query?: never;
@@ -967,6 +2085,176 @@ export interface paths {
         head?: never;
         /** Update Task */
         patch: operations["update_task_api_planning_tasks__task_id__patch"];
+        trace?: never;
+    };
+    "/api/planning/tasks/{task_id}/dates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Task Dates */
+        patch: operations["update_task_dates_api_planning_tasks__task_id__dates_patch"];
+        trace?: never;
+    };
+    "/api/planning/tasks/{task_id}/participants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Task Participant */
+        post: operations["add_task_participant_api_planning_tasks__task_id__participants_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/tasks/{task_id}/participants/{participant_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Task Participant */
+        delete: operations["remove_task_participant_api_planning_tasks__task_id__participants__participant_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/tasks/{task_id}/requirements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Task Requirement */
+        post: operations["create_task_requirement_api_planning_tasks__task_id__requirements_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/tasks/{task_id}/requirements/{requirement_id}/advance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Advance Task Requirement */
+        post: operations["advance_task_requirement_api_planning_tasks__task_id__requirements__requirement_id__advance_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/tasks/{task_id}/requirements/{requirement_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decide Task Requirement */
+        post: operations["decide_task_requirement_api_planning_tasks__task_id__requirements__requirement_id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/planning/tasks/{task_id}/requirements/{requirement_id}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Task Requirement Link */
+        put: operations["set_task_requirement_link_api_planning_tasks__task_id__requirements__requirement_id__link_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Definitions */
+        get: operations["definitions_api_products_definitions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/definitions/{product_definition_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Definition */
+        get: operations["definition_api_products_definitions__product_definition_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/definitions/{product_definition_id}/name-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Name History */
+        get: operations["name_history_api_products_definitions__product_definition_id__name_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/reports/artifacts/{artifact_id}": {
@@ -1055,6 +2343,278 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/routes/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Definitions */
+        get: operations["definitions_api_routes_definitions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/routes/definitions/{route_definition_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Definition */
+        get: operations["definition_api_routes_definitions__route_definition_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/routes/definitions/{route_definition_id}/name-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Name History */
+        get: operations["name_history_api_routes_definitions__route_definition_id__name_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/routes/location-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Location Options */
+        get: operations["location_options_api_routes_location_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/document-type-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Type Options */
+        get: operations["document_type_options_api_shipments_document_type_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/location-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Location Options */
+        get: operations["location_options_api_shipments_location_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/party-references/{party_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Party Reference */
+        get: operations["party_reference_api_shipments_party_references__party_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Records */
+        get: operations["records_api_shipments_records_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Record */
+        get: operations["record_api_shipments_records__shipment_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/document-instances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Instances */
+        get: operations["document_instances_api_shipments_records__shipment_id__document_instances_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/document-instances/{instance_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Instance */
+        get: operations["document_instance_api_shipments_records__shipment_id__document_instances__instance_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/document-instances/{instance_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Instance History */
+        get: operations["document_instance_history_api_shipments_records__shipment_id__document_instances__instance_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/document-requirements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Requirements */
+        get: operations["document_requirements_api_shipments_records__shipment_id__document_requirements_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/document-requirements/{requirement_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Document Requirement History */
+        get: operations["document_requirement_history_api_shipments_records__shipment_id__document_requirements__requirement_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/records/{shipment_id}/status-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status History */
+        get: operations["status_history_api_shipments_records__shipment_id__status_history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/shipments/route-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Route Options */
+        get: operations["route_options_api_shipments_route_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -1112,6 +2672,52 @@ export interface components {
              */
             visibility_scope: string;
         };
+        /** CommandDomainErrorDetail */
+        CommandDomainErrorDetail: {
+            /** Code */
+            code: string;
+            /** Correlation Id */
+            correlation_id?: string | null;
+            /** Current Revision */
+            current_revision?: number | null;
+            /** Field */
+            field?: string | null;
+            /** Message */
+            message: string;
+            /** Object Ids */
+            object_ids: string[];
+            /** Repair */
+            repair: string;
+        };
+        /** CommandDomainErrorResponse */
+        CommandDomainErrorResponse: {
+            error: components["schemas"]["CommandDomainErrorDetail"];
+        };
+        /** CommandPreconditionDetail */
+        CommandPreconditionDetail: {
+            /** Code */
+            code: string;
+            /** Correlation Id */
+            correlation_id?: string | null;
+            /** Current Etag */
+            current_etag: string;
+            /** Current Revision */
+            current_revision: number;
+            /** Field */
+            field?: string | null;
+            /** Message */
+            message: string;
+            /** Object Ids */
+            object_ids: string[];
+            /** Reload Url */
+            reload_url: string;
+            /** Repair */
+            repair: string;
+        };
+        /** CommandPreconditionResponse */
+        CommandPreconditionResponse: {
+            error: components["schemas"]["CommandPreconditionDetail"];
+        };
         /** CommandRequest */
         CommandRequest: {
             /**
@@ -1119,19 +2725,240 @@ export interface components {
              * @example CreateContact
              */
             command_type: string;
-            /** Idempotency Key */
-            idempotency_key?: string | null;
+            /**
+             * Idempotency Key
+             * @description Required and reused unchanged for retries of one user intent.
+             */
+            idempotency_key: string;
             /** Payload */
             payload?: {
                 [key: string]: unknown;
             };
         };
+        /** ComplianceDocumentTypeNameHistoryResponse */
+        ComplianceDocumentTypeNameHistoryResponse: {
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string;
+            /** Id */
+            id: string;
+            /** New Name */
+            new_name: string;
+            /** Previous Name */
+            previous_name: string;
+            /** Reason */
+            reason: string;
+        };
+        /** ComplianceDocumentTypeReferenceResponse */
+        ComplianceDocumentTypeReferenceResponse: {
+            /** Canonical Name */
+            canonical_name: string | null;
+            /** Category */
+            category: string | null;
+            /** Code */
+            code: string | null;
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            /** Lifecycle Status */
+            lifecycle_status: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "unavailable" | "denied" | "missing";
+            /** Status Summary */
+            status_summary: string;
+        };
+        /** ComplianceDocumentTypeResponse */
+        ComplianceDocumentTypeResponse: {
+            /** Archived At */
+            archived_at: string | null;
+            /** Canonical Name */
+            canonical_name: string;
+            /** Category */
+            category: string | null;
+            /** Code */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            /** Description */
+            description: string | null;
+            /** Id */
+            id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "inactive" | "archived";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
+        };
+        /** ContactBulkActionRequest */
+        ContactBulkActionRequest: {
+            /** Action */
+            action: string;
+            /** Party Ids */
+            party_ids: string[];
+            /** Value */
+            value?: string | null;
+        };
+        /** ContactConsentWriteRequest */
+        ContactConsentWriteRequest: {
+            /**
+             * Allowed Use
+             * @default
+             */
+            allowed_use: string;
+            /** Channel */
+            channel: string;
+            /** Effective At */
+            effective_at?: string | null;
+            /** Evidence */
+            evidence?: {
+                [key: string]: unknown;
+            };
+            /** Expires At */
+            expires_at?: string | null;
+            /**
+             * Legal Basis
+             * @default unspecified
+             */
+            legal_basis: string;
+            /** Purpose */
+            purpose: string;
+            /**
+             * Source
+             * @default manual
+             */
+            source: string;
+            /** Status */
+            status: string;
+        };
         /** ContactCsvImportRequest */
         ContactCsvImportRequest: {
             /** Csv Text */
             csv_text: string;
+            /**
+             * Dry Run
+             * @default false
+             */
+            dry_run: boolean;
             /** Filename */
             filename?: string | null;
+            /** Mapping */
+            mapping?: {
+                [key: string]: string;
+            };
+            /**
+             * Mode
+             * @default create
+             */
+            mode: string;
+        };
+        /** ContactCustomFieldDefinitionRequest */
+        ContactCustomFieldDefinitionRequest: {
+            /**
+             * Applies To
+             * @default all
+             */
+            applies_to: string;
+            /** Field Key */
+            field_key: string;
+            /** Field Type */
+            field_type: string;
+            /** Label */
+            label: string;
+            /** Options */
+            options?: string[];
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+        };
+        /** ContactCustomFieldValueRequest */
+        ContactCustomFieldValueRequest: {
+            /** Value */
+            value: unknown;
+        };
+        /** ContactDuplicateResolutionRequest */
+        ContactDuplicateResolutionRequest: {
+            /** Expected Updated At */
+            expected_updated_at?: string | null;
+            /** Status */
+            status: string;
+        };
+        /** ContactExternalIdentityWriteRequest */
+        ContactExternalIdentityWriteRequest: {
+            /** Attributes */
+            attributes?: {
+                [key: string]: unknown;
+            };
+            /** Etag */
+            etag?: string | null;
+            /** External Id */
+            external_id: string;
+            /** Provider */
+            provider: string;
+            /**
+             * Sync State
+             * @default linked
+             */
+            sync_state: string;
+        };
+        /** ContactFactWriteRequest */
+        ContactFactWriteRequest: {
+            /**
+             * Confidence
+             * @default unknown
+             */
+            confidence: string;
+            /** Details */
+            details?: {
+                [key: string]: unknown;
+            };
+            /** Fact Type */
+            fact_type: string;
+            /**
+             * Is Primary
+             * @default false
+             */
+            is_primary: boolean;
+            /**
+             * Is Verified
+             * @default false
+             */
+            is_verified: boolean;
+            /**
+             * Label
+             * @default work
+             */
+            label: string;
+            /**
+             * Source
+             * @default manual
+             */
+            source: string;
+            /** Value */
+            value: string;
         };
         /** ContactGroupMembersRequest */
         ContactGroupMembersRequest: {
@@ -1159,6 +2986,11 @@ export interface components {
             team_id?: string | null;
             /** Visibility Scope */
             visibility_scope?: string | null;
+        };
+        /** ContactLifecycleReasonRequest */
+        ContactLifecycleReasonRequest: {
+            /** Reason */
+            reason: string;
         };
         /** ContactNoteRequest */
         ContactNoteRequest: {
@@ -1188,6 +3020,55 @@ export interface components {
             relationship_type?: string | null;
             /** To Party Id */
             to_party_id?: string | null;
+        };
+        /** ContactSavedViewWriteRequest */
+        ContactSavedViewWriteRequest: {
+            /**
+             * Is Pinned
+             * @default false
+             */
+            is_pinned: boolean;
+            /** Name */
+            name: string;
+            /** Query */
+            query?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Visibility Scope
+             * @default personal
+             */
+            visibility_scope: string;
+        };
+        /** ContactTeamMemberRequest */
+        ContactTeamMemberRequest: {
+            /**
+             * Role
+             * @default member
+             */
+            role: string;
+            /** User Id */
+            user_id: string;
+        };
+        /** ContactTeamWriteRequest */
+        ContactTeamWriteRequest: {
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /** Name */
+            name: string;
+        };
+        /** ContactVCardImportRequest */
+        ContactVCardImportRequest: {
+            /**
+             * Dry Run
+             * @default false
+             */
+            dry_run: boolean;
+            /** Vcard Text */
+            vcard_text: string;
         };
         /** ContactWriteRequest */
         ContactWriteRequest: {
@@ -1260,14 +3141,16 @@ export interface components {
             ends_at?: string | null;
             /** Location */
             location?: string | null;
+            /** Participants */
+            participants?: components["schemas"]["ParticipantRequest"][] | null;
             /** Recurrence Rule */
             recurrence_rule?: string | null;
             /** Recurrence Until */
             recurrence_until?: string | null;
+            /** Reminders */
+            reminders?: components["schemas"]["ReminderWriteRequest"][] | null;
             /** Starts At */
             starts_at?: string | null;
-            /** Status */
-            status?: string | null;
             /** Timezone */
             timezone?: string | null;
             /** Title */
@@ -1308,6 +3191,8 @@ export interface components {
             recurrence_rule?: string | null;
             /** Recurrence Until */
             recurrence_until?: string | null;
+            /** Reminders */
+            reminders?: components["schemas"]["ReminderWriteRequest"][];
             /** Source Module */
             source_module?: string | null;
             /** Source Object Id */
@@ -1369,6 +3254,82 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** LocationDefinitionResponse */
+        LocationDefinitionResponse: {
+            /** Archived At */
+            archived_at: string | null;
+            /** Canonical Name */
+            canonical_name: string;
+            /** Code */
+            code: string;
+            /** Country Code */
+            country_code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            /** Id */
+            id: string;
+            /**
+             * Location Type
+             * @enum {string}
+             */
+            location_type: "port" | "warehouse" | "city" | "region";
+            /** Status */
+            status: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
+        };
+        /** LocationNameHistoryResponse */
+        LocationNameHistoryResponse: {
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Id */
+            id: string;
+            /** Location Definition Id */
+            location_definition_id: string;
+            /** New Name */
+            new_name: string;
+            /** Previous Name */
+            previous_name: string;
+            /** Reason */
+            reason: string;
+        };
+        /** LocationReferenceResponse */
+        LocationReferenceResponse: {
+            /** Canonical Name */
+            canonical_name: string | null;
+            /** Code */
+            code: string | null;
+            /** Country Code */
+            country_code: string | null;
+            /** Location Definition Id */
+            location_definition_id: string;
+            /** Location Type */
+            location_type: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "unavailable" | "denied" | "missing";
+            /** Status Summary */
+            status_summary: string;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Password */
@@ -1397,8 +3358,57 @@ export interface components {
              */
             role: string;
         };
+        /** PartyReferenceResponse */
+        PartyReferenceResponse: {
+            /** Display Label */
+            display_label: string | null;
+            /** Open Path */
+            open_path?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "unavailable" | "denied" | "missing";
+            /** Status Summary */
+            status_summary: string;
+        };
         /** PlanningAssignmentRequest */
         PlanningAssignmentRequest: {
+            /**
+             * Allocation Percent
+             * @default 100
+             */
+            allocation_percent: number;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Resource Id */
+            resource_id: string;
+            /** Task Id */
+            task_id: string;
+        };
+        /** PlanningBaselineRequest */
+        PlanningBaselineRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /**
+             * Name
+             * @default Baseline
+             */
+            name: string;
+        };
+        /** PlanningBatchAssignResourceOperation */
+        PlanningBatchAssignResourceOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "assign_resource";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchAssignResourcePayload"];
+        };
+        /** PlanningBatchAssignResourcePayload */
+        PlanningBatchAssignResourcePayload: {
             /**
              * Allocation Percent
              * @default 100
@@ -1409,16 +3419,244 @@ export interface components {
             /** Task Id */
             task_id: string;
         };
-        /** PlanningBaselineRequest */
-        PlanningBaselineRequest: {
+        /** PlanningBatchCreateDependencyOperation */
+        PlanningBatchCreateDependencyOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "create_dependency";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchCreateDependencyPayload"];
+        };
+        /** PlanningBatchCreateDependencyPayload */
+        PlanningBatchCreateDependencyPayload: {
+            /**
+             * Dependency Type
+             * @default finish_to_start
+             * @enum {string}
+             */
+            dependency_type: "finish_to_start" | "start_to_start" | "finish_to_finish" | "start_to_finish";
+            /**
+             * Lag Days
+             * @default 0
+             */
+            lag_days: number;
+            /** Predecessor Task Id */
+            predecessor_task_id: string;
+            /** Successor Task Id */
+            successor_task_id: string;
+        };
+        /** PlanningBatchCreateLinkOperation */
+        PlanningBatchCreateLinkOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "create_link";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchCreateLinkPayload"];
+        };
+        /** PlanningBatchCreateLinkPayload */
+        PlanningBatchCreateLinkPayload: {
+            /**
+             * Blocking
+             * @default false
+             */
+            blocking: boolean;
+            /**
+             * Relationship
+             * @enum {string}
+             */
+            relationship: "implements" | "blocks_on" | "requires" | "proves" | "owned_by" | "moves" | "occurs_at" | "discussed_in" | "publishes_to";
+            /**
+             * Scope Type
+             * @enum {string}
+             */
+            scope_type: "project" | "task";
+            target: components["schemas"]["PlanningLinkTargetRequest"];
+            /** Task Id */
+            task_id?: string | null;
+        };
+        /** PlanningBatchDependencyIdPayload */
+        PlanningBatchDependencyIdPayload: {
+            /** Dependency Id */
+            dependency_id: string;
+        };
+        /** PlanningBatchRemoveDependencyOperation */
+        PlanningBatchRemoveDependencyOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "remove_dependency";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchDependencyIdPayload"];
+        };
+        /** PlanningBatchRemoveLinkOperation */
+        PlanningBatchRemoveLinkOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "remove_link";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchRemoveLinkPayload"];
+        };
+        /** PlanningBatchRemoveLinkPayload */
+        PlanningBatchRemoveLinkPayload: {
+            /** Link Id */
+            link_id: string;
+        };
+        /** PlanningBatchRequest */
+        PlanningBatchRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Operations */
+            operations: (components["schemas"]["PlanningBatchUpdateTaskOperation"] | components["schemas"]["PlanningBatchCreateDependencyOperation"] | components["schemas"]["PlanningBatchUpdateDependencyOperation"] | components["schemas"]["PlanningBatchRemoveDependencyOperation"] | components["schemas"]["PlanningBatchAssignResourceOperation"] | components["schemas"]["PlanningBatchUnassignResourceOperation"] | components["schemas"]["PlanningBatchSetCalendarOperation"] | components["schemas"]["PlanningBatchCreateLinkOperation"] | components["schemas"]["PlanningBatchRemoveLinkOperation"] | components["schemas"]["PlanningBatchTransitionGateOperation"])[];
+            /** Reason */
+            reason?: string | null;
+            /** Source Command Id */
+            source_command_id?: string | null;
+        };
+        /** PlanningBatchSetCalendarOperation */
+        PlanningBatchSetCalendarOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "set_calendar";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningCalendarFields"];
+        };
+        /** PlanningBatchTransitionGateOperation */
+        PlanningBatchTransitionGateOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "transition_gate";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchTransitionGatePayload"];
+        };
+        /** PlanningBatchTransitionGatePayload */
+        PlanningBatchTransitionGatePayload: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "submit" | "start_review" | "satisfy" | "reject" | "waive";
+            /** Reason */
+            reason?: string | null;
+            /** Requirement Id */
+            requirement_id: string;
+            /** Task Id */
+            task_id: string;
+        };
+        /** PlanningBatchUnassignResourceOperation */
+        PlanningBatchUnassignResourceOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "unassign_resource";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchUnassignResourcePayload"];
+        };
+        /** PlanningBatchUnassignResourcePayload */
+        PlanningBatchUnassignResourcePayload: {
+            /** Assignment Id */
+            assignment_id?: string | null;
+            /** Resource Id */
+            resource_id?: string | null;
+            /** Task Id */
+            task_id?: string | null;
+        };
+        /** PlanningBatchUpdateDependencyOperation */
+        PlanningBatchUpdateDependencyOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "update_dependency";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchUpdateDependencyPayload"];
+        };
+        /** PlanningBatchUpdateDependencyPayload */
+        PlanningBatchUpdateDependencyPayload: {
+            /** Dependency Id */
+            dependency_id: string;
+            /** Dependency Type */
+            dependency_type?: ("finish_to_start" | "start_to_start" | "finish_to_finish" | "start_to_finish") | null;
+            /** Lag Days */
+            lag_days?: number | null;
+        };
+        /** PlanningBatchUpdateTaskOperation */
+        PlanningBatchUpdateTaskOperation: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "update_task";
+            /** Operation Id */
+            operation_id: string;
+            payload: components["schemas"]["PlanningBatchUpdateTaskPayload"];
+        };
+        /** PlanningBatchUpdateTaskPayload */
+        PlanningBatchUpdateTaskPayload: {
+            /** Cascade */
+            cascade?: boolean | null;
+            /** Constraint Date */
+            constraint_date?: string | null;
+            /** Constraint Type */
+            constraint_type?: string | null;
+            /** End */
+            end?: string | null;
+            /** Parent Task Id */
+            parent_task_id?: string | null;
+            /** Progress */
+            progress?: number | null;
+            /** Scheduling Mode */
+            scheduling_mode?: ("auto" | "manual") | null;
+            /** Sort Order */
+            sort_order?: number | null;
+            /** Start */
+            start?: string | null;
+            /** Status */
+            status?: ("planned" | "in_progress" | "blocked" | "complete") | null;
+            /** Task Id */
+            task_id: string;
+            /** Task Type */
+            task_type?: ("task" | "summary" | "milestone") | null;
+            /** Title */
+            title?: string | null;
+        };
+        /** PlanningCalendarFields */
+        PlanningCalendarFields: {
+            /** Holidays */
+            holidays?: string[];
+            /** Ignored Periods */
+            ignored_periods?: string[];
             /**
              * Name
-             * @default Baseline
+             * @default Standard
              */
             name: string;
+            /** Working Days */
+            working_days?: number[];
         };
         /** PlanningCalendarRequest */
         PlanningCalendarRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Holidays */
             holidays?: string[];
             /** Ignored Periods */
@@ -1438,6 +3676,8 @@ export interface components {
              * @default finish_to_start
              */
             dependency_type: string;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /**
              * Lag Days
              * @default 0
@@ -1452,8 +3692,203 @@ export interface components {
         PlanningDependencyUpdateRequest: {
             /** Dependency Type */
             dependency_type?: string | null;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Lag Days */
             lag_days?: number | null;
+        };
+        /** PlanningLinkRequest */
+        PlanningLinkRequest: {
+            /**
+             * Blocking
+             * @default false
+             */
+            blocking: boolean;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Relationship */
+            relationship: string;
+            /** Scope Type */
+            scope_type: string;
+            target: components["schemas"]["PlanningLinkTargetRequest"];
+            /** Task Id */
+            task_id?: string | null;
+        };
+        /** PlanningLinkTargetRequest */
+        PlanningLinkTargetRequest: {
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "operation" | "gate" | "evidence" | "party" | "shipment" | "document" | "location" | "asset" | "agreement" | "communication_thread" | "calendar_event";
+        };
+        /** PlanningOptimizationRequest */
+        PlanningOptimizationRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /**
+             * Max Candidates
+             * @default 50
+             */
+            max_candidates: number;
+            /**
+             * Objective
+             * @default minimize_project_finish
+             */
+            objective: string;
+            /** Snapshot Id */
+            snapshot_id: string;
+            /**
+             * Timeout Ms
+             * @default 500
+             */
+            timeout_ms: number;
+        };
+        /** PlanningOutboxMetadata */
+        PlanningOutboxMetadata: {
+            /** Checksum */
+            checksum: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Event Type */
+            event_type: string;
+            /** Id */
+            id: string;
+            /** Schema Version */
+            schema_version: number;
+        };
+        /** PlanningPortfolioAttention */
+        PlanningPortfolioAttention: {
+            /** Gate Blocker Count */
+            gate_blocker_count: number;
+            /**
+             * Health
+             * @enum {string}
+             */
+            health: "on_track" | "attention" | "blocked";
+            /** Issue Count */
+            issue_count: number;
+            /** Overdue Task Count */
+            overdue_task_count: number;
+            /** Project Late */
+            project_late: boolean;
+            /** Project Overdue */
+            project_overdue: boolean;
+            /** Unavailable Blocking Link Count */
+            unavailable_blocking_link_count: number;
+        };
+        /** PlanningPortfolioDiagnostics */
+        PlanningPortfolioDiagnostics: {
+            /** Elapsed Ms */
+            elapsed_ms: number;
+            /** Query Count */
+            query_count: number;
+            /**
+             * Strategy
+             * @constant
+             */
+            strategy: "bounded_aggregate_v1";
+        };
+        /** PlanningPortfolioMetrics */
+        PlanningPortfolioMetrics: {
+            /** Blocked Task Count */
+            blocked_task_count: number;
+            /** Completed Task Count */
+            completed_task_count: number;
+            /** Completion Percent */
+            completion_percent: number;
+            /** Dependency Count */
+            dependency_count: number;
+            /** In Progress Task Count */
+            in_progress_task_count: number;
+            /** Milestone Count */
+            milestone_count: number;
+            /** Task Count */
+            task_count: number;
+        };
+        /** PlanningPortfolioProject */
+        PlanningPortfolioProject: {
+            attention: components["schemas"]["PlanningPortfolioAttention"];
+            /** Calculated Finish */
+            calculated_finish: string;
+            /** End */
+            end: string;
+            /** Id */
+            id: string;
+            /** Latest Task Finish */
+            latest_task_finish: string | null;
+            metrics: components["schemas"]["PlanningPortfolioMetrics"];
+            /** Name */
+            name: string;
+            /** Revision */
+            revision: number;
+            /** Schedule Horizon */
+            schedule_horizon: string;
+            /** Start */
+            start: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "active" | "on_hold" | "completed" | "archived";
+            /** Target Finish */
+            target_finish: string;
+            /** Timezone */
+            timezone: string;
+            /** Updated At */
+            updated_at: string | null;
+        };
+        /** PlanningPortfolioResponse */
+        PlanningPortfolioResponse: {
+            diagnostics: components["schemas"]["PlanningPortfolioDiagnostics"];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Projects */
+            projects: components["schemas"]["PlanningPortfolioProject"][];
+            /** Query */
+            query: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "" | "draft" | "active" | "on_hold" | "completed" | "archived";
+            summary: components["schemas"]["PlanningPortfolioSummary"];
+            /** Total */
+            total: number;
+        };
+        /** PlanningPortfolioSummary */
+        PlanningPortfolioSummary: {
+            /** At Risk Project Count */
+            at_risk_project_count: number;
+            /** Blocked Task Count */
+            blocked_task_count: number;
+            /** Completed Task Count */
+            completed_task_count: number;
+            /** Gate Blocker Count */
+            gate_blocker_count: number;
+            /** Overdue Task Count */
+            overdue_task_count: number;
+            /** Range End */
+            range_end: string | null;
+            /** Range Start */
+            range_start: string | null;
+            /** Status Counts */
+            status_counts: {
+                [key: string]: number;
+            };
+            /** Task Count */
+            task_count: number;
+            /** Total Project Count */
+            total_project_count: number;
+            /** Visible Project Count */
+            visible_project_count: number;
         };
         /** PlanningProjectRequest */
         PlanningProjectRequest: {
@@ -1463,15 +3898,242 @@ export interface components {
             name: string;
             /** Start */
             start: string;
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timezone: string;
+        };
+        /** PlanningProjectTransitionRequest */
+        PlanningProjectTransitionRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Reason */
+            reason: string;
+            /**
+             * Target Status
+             * @enum {string}
+             */
+            target_status: "draft" | "active" | "on_hold" | "completed" | "archived";
+        };
+        /** PlanningRecommendationDecisionRequest */
+        PlanningRecommendationDecisionRequest: {
+            /** Decision */
+            decision: string;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Reason */
+            reason: string;
+        };
+        /** PlanningRecommendationMutationRequest */
+        PlanningRecommendationMutationRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+        };
+        /** PlanningResourceCalendarRequest */
+        PlanningResourceCalendarRequest: {
+            /** Capacity Exceptions */
+            capacity_exceptions?: components["schemas"]["PlanningResourceCapacityExceptionRequest"][];
+            /**
+             * Default Capacity Percent
+             * @default 100
+             */
+            default_capacity_percent: number;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Holidays */
+            holidays?: string[];
+            /**
+             * Name
+             * @default Resource capacity
+             */
+            name: string;
+            /** Working Days */
+            working_days?: number[];
+        };
+        /** PlanningResourceCapacityExceptionRequest */
+        PlanningResourceCapacityExceptionRequest: {
+            /** Capacity Percent */
+            capacity_percent: number;
+            /** End */
+            end: string;
+            /**
+             * Reason
+             * @default
+             */
+            reason: string;
+            /** Start */
+            start: string;
         };
         /** PlanningResourceRequest */
         PlanningResourceRequest: {
+            /** Canonical Target Id */
+            canonical_target_id?: string | null;
+            /** Canonical Target Kind */
+            canonical_target_kind?: string | null;
+            /** Capacity Unit */
+            capacity_unit?: string | null;
+            /**
+             * Capacity Value
+             * @default 1
+             */
+            capacity_value: number | string;
+            /** Effective End */
+            effective_end?: string | null;
+            /** Effective Start */
+            effective_start?: string | null;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Name */
             name: string;
+            /**
+             * Resource Type
+             * @default human
+             */
+            resource_type: string;
             /**
              * Role
              * @default
              */
+            role: string;
+        };
+        /** PlanningRevisionMetadata */
+        PlanningRevisionMetadata: {
+            /** Changed Task Ids */
+            changed_task_ids: string[];
+            /** Command Type */
+            command_type: string;
+            /** Correlation Id */
+            correlation_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: string;
+            outbox: components["schemas"]["PlanningOutboxMetadata"];
+            /** Previous Revision */
+            previous_revision: number;
+            /** Project Id */
+            project_id: string;
+            /** Revision */
+            revision: number;
+            /** Revision Checksum */
+            revision_checksum: string;
+            /** Source Command Id */
+            source_command_id: string | null;
+            /** Task Versions */
+            task_versions: {
+                [key: string]: number;
+            };
+        };
+        /** PlanningRevisionPage */
+        PlanningRevisionPage: {
+            /** Items */
+            items: components["schemas"]["PlanningRevisionMetadata"][];
+            /** Limit */
+            limit: number;
+            /** Offset */
+            offset: number;
+            /** Project Id */
+            project_id: string;
+        };
+        /** PlanningRiskAnalysisRequest */
+        PlanningRiskAnalysisRequest: {
+            /** Correlations */
+            correlations?: components["schemas"]["PlanningRiskCorrelationRequest"][];
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /**
+             * Iterations
+             * @default 1000
+             */
+            iterations: number;
+            /** Seed */
+            seed: number;
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Task Risks */
+            task_risks: components["schemas"]["PlanningRiskTaskRequest"][];
+        };
+        /** PlanningRiskCorrelationRequest */
+        PlanningRiskCorrelationRequest: {
+            /** Coefficient */
+            coefficient: number;
+            /** Group */
+            group: string;
+        };
+        /** PlanningRiskTaskRequest */
+        PlanningRiskTaskRequest: {
+            /** Correlation Group */
+            correlation_group?: string | null;
+            /**
+             * Distribution
+             * @default triangular
+             */
+            distribution: string;
+            /** Maximum Days */
+            maximum_days: number;
+            /** Minimum Days */
+            minimum_days: number;
+            /** Most Likely Days */
+            most_likely_days: number;
+            /** Task Id */
+            task_id: string;
+        };
+        /** PlanningScheduleReadModel */
+        PlanningScheduleReadModel: {
+            task_flow: components["schemas"]["PlanningTaskFlowContract"];
+        } & {
+            [key: string]: unknown;
+        };
+        /** PlanningTaskDateUpdateRequest */
+        PlanningTaskDateUpdateRequest: {
+            /** Actual End */
+            actual_end?: string | null;
+            /** Actual Start */
+            actual_start?: string | null;
+            /** Deadline */
+            deadline?: string | null;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Forecast End */
+            forecast_end?: string | null;
+            /** Forecast Start */
+            forecast_start?: string | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** PlanningTaskFlowContract */
+        PlanningTaskFlowContract: {
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: 1;
+            /** Statuses */
+            statuses: components["schemas"]["PlanningTaskFlowStatus"][];
+        };
+        /** PlanningTaskFlowStatus */
+        PlanningTaskFlowStatus: {
+            /** Allowed Transitions */
+            allowed_transitions: ("planned" | "in_progress" | "blocked" | "complete")[];
+            /** Display Label */
+            display_label: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "planned" | "in_progress" | "blocked" | "complete";
+        };
+        /** PlanningTaskParticipantRequest */
+        PlanningTaskParticipantRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Party Id */
+            party_id: string;
+            /** Role */
             role: string;
         };
         /** PlanningTaskRequest */
@@ -1482,6 +4144,8 @@ export interface components {
             constraint_type?: string | null;
             /** End */
             end: string;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Parent Task Id */
             parent_task_id?: string | null;
             /**
@@ -1514,6 +4178,47 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** PlanningTaskRequirementAdvanceRequest */
+        PlanningTaskRequirementAdvanceRequest: {
+            /** Action */
+            action: string;
+            /** Expected Revision */
+            expected_revision?: number | null;
+        };
+        /** PlanningTaskRequirementDecisionRequest */
+        PlanningTaskRequirementDecisionRequest: {
+            /** Decision */
+            decision: string;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Reason */
+            reason: string;
+        };
+        /** PlanningTaskRequirementLinkRequest */
+        PlanningTaskRequirementLinkRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /** Target Link Id */
+            target_link_id: string | null;
+        };
+        /** PlanningTaskRequirementRequest */
+        PlanningTaskRequirementRequest: {
+            /** Due */
+            due?: string | null;
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /**
+             * Required
+             * @default true
+             */
+            required: boolean;
+            /** Requirement Type */
+            requirement_type: string;
+            /** Target Link Id */
+            target_link_id?: string | null;
+            /** Title */
+            title: string;
+        };
         /** PlanningTaskUpdateRequest */
         PlanningTaskUpdateRequest: {
             /** Cascade */
@@ -1524,6 +4229,8 @@ export interface components {
             constraint_type?: string | null;
             /** End */
             end?: string | null;
+            /** Expected Revision */
+            expected_revision?: number | null;
             /** Parent Task Id */
             parent_task_id?: string | null;
             /** Progress */
@@ -1540,6 +4247,86 @@ export interface components {
             task_type?: string | null;
             /** Title */
             title?: string | null;
+        };
+        /** PlanningWhatIfSnapshotRequest */
+        PlanningWhatIfSnapshotRequest: {
+            /** Expected Revision */
+            expected_revision?: number | null;
+            /**
+             * Name
+             * @default What-if snapshot
+             */
+            name: string;
+            /** Task Changes */
+            task_changes: components["schemas"]["PlanningWhatIfTaskChangeRequest"][];
+        };
+        /** PlanningWhatIfTaskChangeRequest */
+        PlanningWhatIfTaskChangeRequest: {
+            /** End */
+            end?: string | null;
+            /** Progress */
+            progress?: number | null;
+            /** Start */
+            start?: string | null;
+            /** Task Id */
+            task_id: string;
+        };
+        /** ProductDefinitionResponse */
+        ProductDefinitionResponse: {
+            /** Archived At */
+            archived_at: string | null;
+            /** Base Unit Code */
+            base_unit_code: string | null;
+            /** Canonical Name */
+            canonical_name: string;
+            /** Category */
+            category: string | null;
+            /** Code */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            /** Grade */
+            grade: string | null;
+            /** Id */
+            id: string;
+            /** Specification */
+            specification: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
+        };
+        /** ProductNameHistoryResponse */
+        ProductNameHistoryResponse: {
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Id */
+            id: string;
+            /** New Name */
+            new_name: string;
+            /** Previous Name */
+            previous_name: string;
+            /** Product Definition Id */
+            product_definition_id: string;
+            /** Reason */
+            reason: string;
         };
         /** RegisterRequest */
         RegisterRequest: {
@@ -1559,6 +4346,460 @@ export interface components {
             reminder_type: string;
             /** Trigger Minutes Before */
             trigger_minutes_before: number;
+        };
+        /** RouteDefinitionResponse */
+        RouteDefinitionResponse: {
+            /** Archived At */
+            archived_at: string | null;
+            /** Canonical Name */
+            canonical_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            /** Id */
+            id: string;
+            /** Mode Hint */
+            mode_hint: ("sea" | "road" | "rail" | "air" | "multimodal") | null;
+            /** Status */
+            status: string;
+            /** Stops */
+            stops: components["schemas"]["RouteStopResponse"][];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
+        };
+        /** RouteNameHistoryResponse */
+        RouteNameHistoryResponse: {
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Id */
+            id: string;
+            /** New Name */
+            new_name: string;
+            /** Previous Name */
+            previous_name: string;
+            /** Reason */
+            reason: string;
+            /** Route Definition Id */
+            route_definition_id: string;
+        };
+        /** RoutePathReferenceResponse */
+        RoutePathReferenceResponse: {
+            /** Canonical Name */
+            canonical_name: string | null;
+            /** Code */
+            code: string | null;
+            /** Mode Hint */
+            mode_hint: string | null;
+            /** Ordered Location Ids */
+            ordered_location_ids: string[];
+            /** Route Definition Id */
+            route_definition_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "unavailable" | "denied" | "missing";
+            /** Status Summary */
+            status_summary: string;
+        };
+        /** RouteStopResponse */
+        RouteStopResponse: {
+            location: components["schemas"]["LocationReferenceResponse"];
+            /** Sequence */
+            sequence: number;
+            /**
+             * Stop Role
+             * @enum {string}
+             */
+            stop_role: "origin" | "waypoint" | "destination";
+        };
+        /** ShipmentDocumentInstanceHistoryResponse */
+        ShipmentDocumentInstanceHistoryResponse: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "created" | "updated" | "status_changed";
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            /** Document Number */
+            document_number: string;
+            document_type: components["schemas"]["ComplianceDocumentTypeReferenceResponse"];
+            /** Expires On */
+            expires_on: string | null;
+            /** Id */
+            id: string;
+            /** Instance Id */
+            instance_id: string;
+            /** Issued On */
+            issued_on: string | null;
+            /** Issuing Party Name */
+            issuing_party_name: string | null;
+            /** Notes */
+            notes: string | null;
+            /** Reason */
+            reason: string;
+            /** Requirement Id */
+            requirement_id: string | null;
+            /** Shipment Id */
+            shipment_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "recorded" | "verified" | "rejected" | "superseded";
+            /** Version */
+            version: number;
+        };
+        /** ShipmentDocumentInstanceRequirementResponse */
+        ShipmentDocumentInstanceRequirementResponse: {
+            /** Id */
+            id: string;
+            /**
+             * Requirement Level
+             * @enum {string}
+             */
+            requirement_level: "required" | "optional";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "missing" | "received" | "waived" | "not_applicable";
+            /** Version */
+            version: number;
+        };
+        /** ShipmentDocumentInstanceResponse */
+        ShipmentDocumentInstanceResponse: {
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            /** Document Number */
+            document_number: string;
+            document_type: components["schemas"]["ComplianceDocumentTypeReferenceResponse"];
+            /** Expires On */
+            expires_on: string | null;
+            /** Id */
+            id: string;
+            /** Issued On */
+            issued_on: string | null;
+            /** Issuing Party Name */
+            issuing_party_name: string | null;
+            /** Notes */
+            notes: string | null;
+            requirement: components["schemas"]["ShipmentDocumentInstanceRequirementResponse"] | null;
+            /** Requirement Id */
+            requirement_id: string | null;
+            /** Shipment Id */
+            shipment_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "recorded" | "verified" | "rejected" | "superseded";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
+        };
+        /** ShipmentDocumentRequirementHistoryResponse */
+        ShipmentDocumentRequirementHistoryResponse: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "added" | "updated" | "status_changed" | "removed";
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            document_type: components["schemas"]["ComplianceDocumentTypeReferenceResponse"];
+            /** Id */
+            id: string;
+            /** Notes */
+            notes: string | null;
+            /** Reason */
+            reason: string;
+            /** Requirement Id */
+            requirement_id: string;
+            /**
+             * Requirement Level
+             * @enum {string}
+             */
+            requirement_level: "required" | "optional";
+            /** Shipment Id */
+            shipment_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "missing" | "received" | "waived" | "not_applicable";
+            /** Version */
+            version: number;
+        };
+        /** ShipmentDocumentRequirementListResponse */
+        ShipmentDocumentRequirementListResponse: {
+            /** Items */
+            items: components["schemas"]["ShipmentDocumentRequirementResponse"][];
+            summary: components["schemas"]["ShipmentDocumentRequirementSummaryResponse"];
+        };
+        /** ShipmentDocumentRequirementResponse */
+        ShipmentDocumentRequirementResponse: {
+            /** Compliance Document Type Id */
+            compliance_document_type_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            document_type: components["schemas"]["ComplianceDocumentTypeReferenceResponse"];
+            /** Id */
+            id: string;
+            /** Notes */
+            notes: string | null;
+            /**
+             * Requirement Level
+             * @enum {string}
+             */
+            requirement_level: "required" | "optional";
+            /** Shipment Id */
+            shipment_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "missing" | "received" | "waived" | "not_applicable";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
+        };
+        /** ShipmentDocumentRequirementSummaryResponse */
+        ShipmentDocumentRequirementSummaryResponse: {
+            /** Optional Total */
+            optional_total: number;
+            /** Required Missing */
+            required_missing: number;
+            /** Required Not Applicable */
+            required_not_applicable: number;
+            /** Required Received */
+            required_received: number;
+            /** Required Satisfied */
+            required_satisfied: number;
+            /** Required Total */
+            required_total: number;
+            /** Required Waived */
+            required_waived: number;
+        };
+        /** ShipmentReadinessListResponse */
+        ShipmentReadinessListResponse: {
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /**
+             * Evaluation Timezone
+             * @constant
+             */
+            evaluation_timezone: "UTC";
+            /**
+             * Expiring Soon Horizon Days
+             * @constant
+             */
+            expiring_soon_horizon_days: 30;
+            /**
+             * Expiring Soon Through
+             * Format: date
+             */
+            expiring_soon_through: string;
+            /** Items */
+            items: components["schemas"]["ShipmentReadinessSignalResponse"][];
+            /**
+             * Source Status
+             * @constant
+             */
+            source_status: "ready";
+            /** Source Summary */
+            source_summary: string;
+        };
+        /** ShipmentReadinessSignalResponse */
+        ShipmentReadinessSignalResponse: {
+            /**
+             * Band
+             * @enum {string}
+             */
+            band: "attention_required" | "not_assessed" | "ready";
+            /** Code */
+            code: string;
+            /** Document Instance Draft */
+            document_instance_draft: number;
+            /** Document Instance Expired */
+            document_instance_expired: number;
+            /** Document Instance Expiring Soon */
+            document_instance_expiring_soon: number;
+            /** Document Instance Expiry Evaluated */
+            document_instance_expiry_evaluated: number;
+            /** Document Instance Expiry Not Recorded */
+            document_instance_expiry_not_recorded: number;
+            /** Document Instance Recorded */
+            document_instance_recorded: number;
+            /** Document Instance Rejected */
+            document_instance_rejected: number;
+            /** Document Instance Superseded */
+            document_instance_superseded: number;
+            /** Document Instance Total */
+            document_instance_total: number;
+            /** Document Instance Verified */
+            document_instance_verified: number;
+            /** Lifecycle Status */
+            lifecycle_status: string;
+            /** Next Document Expiry On */
+            next_document_expiry_on: string | null;
+            /** Open Path */
+            open_path: string | null;
+            /** Optional Total */
+            optional_total: number;
+            /** Reason Codes */
+            reason_codes: ("required_documents_missing" | "rejected_document_present" | "expired_document_present" | "expiring_document_present" | "requirements_not_defined" | "required_documents_satisfied" | "document_metadata_pending_review" | "verified_document_present" | "document_expiry_not_recorded")[];
+            /** Required Missing */
+            required_missing: number;
+            /** Required Not Applicable */
+            required_not_applicable: number;
+            /** Required Received */
+            required_received: number;
+            /** Required Satisfied */
+            required_satisfied: number;
+            /** Required Total */
+            required_total: number;
+            /** Required Waived */
+            required_waived: number;
+            /** Shipment Id */
+            shipment_id: string;
+            /** Status Summary */
+            status_summary: string;
+        };
+        /** ShipmentResponse */
+        ShipmentResponse: {
+            /** Code */
+            code: string;
+            consignee: components["schemas"]["PartyReferenceResponse"];
+            /** Consignee Party Id */
+            consignee_party_id: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By User Id */
+            created_by_user_id: string;
+            destination: components["schemas"]["LocationReferenceResponse"];
+            /** Destination Location Id */
+            destination_location_id: string;
+            /** Id */
+            id: string;
+            origin: components["schemas"]["LocationReferenceResponse"];
+            /** Origin Location Id */
+            origin_location_id: string;
+            /** Planned Arrival On */
+            planned_arrival_on: string | null;
+            /** Planned Departure On */
+            planned_departure_on: string | null;
+            route: components["schemas"]["RoutePathReferenceResponse"] | null;
+            /** Route Definition Id */
+            route_definition_id: string | null;
+            shipper: components["schemas"]["PartyReferenceResponse"];
+            /** Shipper Party Id */
+            shipper_party_id: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "planned" | "in_transit" | "arrived" | "closed" | "cancelled";
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Updated By User Id */
+            updated_by_user_id: string;
+            /** Version */
+            version: number;
+        };
+        /** ShipmentStatusHistoryResponse */
+        ShipmentStatusHistoryResponse: {
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Changed By User Id */
+            changed_by_user_id: string;
+            /** Id */
+            id: string;
+            /**
+             * New Status
+             * @enum {string}
+             */
+            new_status: "draft" | "planned" | "in_transit" | "arrived" | "closed" | "cancelled";
+            /**
+             * Previous Status
+             * @enum {string}
+             */
+            previous_status: "draft" | "planned" | "in_transit" | "arrived" | "closed" | "cancelled";
+            /** Reason */
+            reason: string;
+            /** Shipment Id */
+            shipment_id: string;
+            /** Version */
+            version: number;
         };
         /** ValidationError */
         ValidationError: {
@@ -1603,6 +4844,39 @@ export interface operations {
         };
     };
     architecture_alignment_api_architecture_alignment_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    database_pool_api_architecture_database_pool_get: {
         parameters: {
             query?: never;
             header?: {
@@ -1806,7 +5080,9 @@ export interface operations {
     };
     calendars_api_calendar_calendars_get: {
         parameters: {
-            query?: never;
+            query?: {
+                include_deleted?: boolean;
+            };
             header?: {
                 authorization?: string | null;
             };
@@ -1878,6 +5154,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -1887,15 +5164,24 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Calendar lifecycle updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied Calendar ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1905,6 +5191,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current Calendar ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -1934,6 +5229,93 @@ export interface operations {
                 content: {
                     "application/json": {
                         [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_calendar_api_calendar_calendars__calendar_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                calendar_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Calendar lifecycle updated with a new strong ETag. */
+            200: {
+                headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied Calendar ETag is stale. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current Calendar ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    calendar_capabilities_api_calendar_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
                     };
                 };
             };
@@ -2007,9 +5389,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -2036,9 +5416,11 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Actor-visible event detail. */
             200: {
                 headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
                     [name: string]: unknown;
                 };
                 content: {
@@ -2062,6 +5444,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -2075,15 +5458,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Event updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2095,12 +5487,22 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     cancel_event_api_calendar_events__event_id__cancel_post: {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -2110,15 +5512,24 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Event updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2130,12 +5541,22 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     create_reminder_api_calendar_events__event_id__reminders_post: {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -2149,15 +5570,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful Response */
+            /** @description Event updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2169,12 +5599,22 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
         };
     };
     restore_event_api_calendar_events__event_id__restore_post: {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -2184,15 +5624,24 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Event updated with a new strong ETag. */
             200: {
+                headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2202,6 +5651,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -2282,10 +5740,217 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
                 reminder_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Event updated with a new strong ETag. */
+            200: {
+                headers: {
+                    /** @description Strong validator for the returned Calendar aggregate or event detail. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The supplied event ETag is stale. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description A current event ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    command_api_commands_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommandRequest"];
+            };
+        };
+        responses: {
+            /** @description Command accepted or idempotently replayed. */
+            200: {
+                headers: {
+                    /** @description Strong Planning schedule validator when the command mutates Planning. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The command precondition is malformed or inconsistent. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The actor lacks the command capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another command request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The command precondition is stale. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The command request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The command requires a current precondition. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    communication_capabilities_api_communications_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    threads_api_communications_threads_get: {
+        parameters: {
+            query?: {
+                lifecycle?: "active" | "archived" | "all";
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    thread_detail_api_communications_threads__thread_id__get: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                thread_id: string;
             };
             cookie?: never;
         };
@@ -2313,20 +5978,19 @@ export interface operations {
             };
         };
     };
-    command_api_commands_post: {
+    archive_thread_api_communications_threads__thread_id__delete: {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
-            path?: never;
+            path: {
+                thread_id: string;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CommandRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -2334,9 +5998,143 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_thread_api_communications_threads__thread_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_types_api_compliance_document_types_get: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+                status?: ("active" | "inactive" | "archived") | null;
+                search?: string | null;
+                category?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceDocumentTypeResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_type_api_compliance_document_types__compliance_document_type_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                compliance_document_type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceDocumentTypeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    name_history_api_compliance_document_types__compliance_document_type_id__name_history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                compliance_document_type_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceDocumentTypeNameHistoryResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -2432,9 +6230,373 @@ export interface operations {
             };
         };
     };
-    contact_groups_api_contacts_groups_get: {
+    bulk_contacts_api_contacts_bulk_post: {
         parameters: {
             query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactBulkActionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    custom_fields_api_contacts_custom_fields_get: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    define_custom_field_api_contacts_custom_fields_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactCustomFieldDefinitionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_custom_field_api_contacts_custom_fields__field_definition_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                field_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactLifecycleReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_custom_field_api_contacts_custom_fields__field_definition_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                field_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    duplicate_candidates_api_contacts_duplicate_candidates_get: {
+        parameters: {
+            query?: {
+                status?: string;
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_duplicate_candidates_api_contacts_duplicate_candidates_refresh_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resolve_duplicate_candidate_api_contacts_duplicate_candidates__candidate_id__resolve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                candidate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactDuplicateResolutionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_contacts_csv_api_contacts_export_csv_get: {
+        parameters: {
+            query?: {
+                party_id?: string[];
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_contacts_vcard_api_contacts_export_vcf_get: {
+        parameters: {
+            query?: {
+                party_id?: string[];
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contact_groups_api_contacts_groups_get: {
+        parameters: {
+            query?: {
+                kind?: string | null;
+                include_empty?: boolean;
+                include_archived?: boolean;
+            };
             header?: {
                 authorization?: string | null;
             };
@@ -2506,6 +6668,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -2651,6 +6814,42 @@ export interface operations {
             };
         };
     };
+    restore_contact_group_api_contacts_groups__group_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     contacts_import_batches_api_contacts_import_batches_get: {
         parameters: {
             query?: never;
@@ -2658,6 +6857,76 @@ export interface operations {
                 authorization?: string | null;
             };
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rollback_import_batch_api_contacts_import_batches__batch_id__rollback_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_batch_rows_api_contacts_import_batches__batch_id__rows_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -2708,6 +6977,113 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_contacts_vcard_api_contacts_import_vcard_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactVCardImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    interoperability_status_api_contacts_interoperability_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    relationship_options_api_contacts_relationship_options_get: {
+        parameters: {
+            query: {
+                query: string;
+                exclude_party_id?: string;
+                limit?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
                 };
             };
             /** @description Validation Error */
@@ -2834,6 +7210,42 @@ export interface operations {
     };
     contacts_review_queue_api_contacts_review_queue_get: {
         parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    saved_views_api_contacts_saved_views_get: {
+        parameters: {
             query?: never;
             header?: {
                 authorization?: string | null;
@@ -2852,6 +7264,379 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_view_api_contacts_saved_views_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactSavedViewWriteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_view_api_contacts_saved_views__view_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                view_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_view_api_contacts_saved_views__view_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                view_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactSavedViewWriteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    teams_api_contacts_teams_get: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_team_api_contacts_teams_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactTeamWriteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_team_api_contacts_teams__team_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactLifecycleReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_team_api_contacts_teams__team_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactTeamWriteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_team_member_api_contacts_teams__team_id__members_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactTeamMemberRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_team_member_api_contacts_teams__team_id__members__user_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                team_id: string;
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_team_api_contacts_teams__team_id__restore_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */
@@ -2939,6 +7724,44 @@ export interface operations {
             };
         };
     };
+    activity_api_contacts__party_id__activity_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     archive_contact_api_contacts__party_id__archive_post: {
         parameters: {
             query?: never;
@@ -2951,6 +7774,379 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    consents_api_contacts__party_id__consents_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_consent_api_contacts__party_id__consents_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactConsentWriteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    custom_values_api_contacts__party_id__custom_fields_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_custom_value_api_contacts__party_id__custom_fields__field_definition_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+                field_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactCustomFieldValueRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    external_identities_api_contacts__party_id__external_identities_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    link_external_identity_api_contacts__party_id__external_identities_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactExternalIdentityWriteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    facts_api_contacts__party_id__facts_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_fact_api_contacts__party_id__facts_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactFactWriteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_fact_api_contacts__party_id__facts__fact_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+                fact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_fact_api_contacts__party_id__facts__fact_id__patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+                fact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactFactWriteRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -3173,6 +8369,138 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    shipment_readiness_api_intelligence_shipment_readiness_get: {
+        parameters: {
+            query: {
+                as_of: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentReadinessListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    definitions_api_locations_definitions_get: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationDefinitionResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    definition_api_locations_definitions__location_definition_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                location_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationDefinitionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    name_history_api_locations_definitions__location_definition_id__name_history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                location_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationNameHistoryResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -3458,6 +8786,41 @@ export interface operations {
             };
         };
     };
+    reconcile_module_endpoint_api_modules__module_name__reconcile_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                module_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_module_status_api_modules__module_name__status_get: {
         parameters: {
             query?: never;
@@ -3566,7 +8929,10 @@ export interface operations {
     assign_resource_api_planning_assignments_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path?: never;
@@ -3578,6 +8944,84 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    planning_capabilities_api_planning_capabilities_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
             /** @description Successful Response */
             200: {
                 headers: {
@@ -3585,7 +9029,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        [key: string]: unknown;
+                        [key: string]: boolean;
                     };
                 };
             };
@@ -3603,7 +9047,10 @@ export interface operations {
     remove_dependency_api_planning_dependencies__dependency_id__delete: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3613,24 +9060,69 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Mutation accepted and committed once. */
             200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
                 };
             };
-            /** @description Validation Error */
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
                 };
             };
         };
@@ -3638,7 +9130,10 @@ export interface operations {
     update_dependency_api_planning_dependencies__dependency_id__patch: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3652,15 +9147,96 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    planning_portfolio_api_planning_portfolio_get: {
+        parameters: {
+            query?: {
+                query?: string;
+                status?: "" | "draft" | "active" | "on_hold" | "completed" | "archived";
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
             /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PlanningPortfolioResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3710,7 +9286,8 @@ export interface operations {
     create_project_api_planning_projects_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
                 authorization?: string | null;
             };
             path?: never;
@@ -3721,6 +9298,158 @@ export interface operations {
                 "application/json": components["schemas"]["PlanningProjectRequest"];
             };
         };
+        responses: {
+            /** @description Project created at revision 1. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning project proposal is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+        };
+    };
+    create_baseline_api_planning_projects__project_id__baselines_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningBaselineRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    compare_project_baselines_api_planning_projects__project_id__baselines_compare_get: {
+        parameters: {
+            query: {
+                left_baseline_id: string;
+                right_baseline_id: string;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -3744,7 +9473,7 @@ export interface operations {
             };
         };
     };
-    create_baseline_api_planning_projects__project_id__baselines_post: {
+    project_baseline_api_planning_projects__project_id__baselines__baseline_id__get: {
         parameters: {
             query?: never;
             header?: {
@@ -3752,14 +9481,11 @@ export interface operations {
             };
             path: {
                 project_id: string;
+                baseline_id: string;
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PlanningBaselineRequest"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -3786,7 +9512,10 @@ export interface operations {
     set_calendar_api_planning_projects__project_id__calendar_put: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3800,6 +9529,431 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    link_tasks_api_planning_projects__project_id__dependencies_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningDependencyRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    create_planning_link_api_planning_projects__project_id__links_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    remove_planning_link_api_planning_projects__project_id__links__link_id__delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                link_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    batch_mutations_api_planning_projects__project_id__mutations_batch_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description A batch operation or the final proposed schedule is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_optimizations_api_planning_projects__project_id__optimizations_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
             /** @description Successful Response */
             200: {
                 headers: {
@@ -3808,7 +9962,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         [key: string]: unknown;
-                    };
+                    }[];
                 };
             };
             /** @description Validation Error */
@@ -3822,10 +9976,12 @@ export interface operations {
             };
         };
     };
-    link_tasks_api_planning_projects__project_id__dependencies_post: {
+    create_project_optimization_api_planning_projects__project_id__optimizations_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3835,9 +9991,90 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PlanningDependencyRequest"];
+                "application/json": components["schemas"]["PlanningOptimizationRequest"];
             };
         };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_optimization_api_planning_projects__project_id__optimizations__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -3861,10 +10098,309 @@ export interface operations {
             };
         };
     };
-    create_resource_api_planning_projects__project_id__resources_post: {
+    project_recommendations_api_planning_projects__project_id__recommendations_get: {
         parameters: {
             query?: never;
             header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_project_recommendation_api_planning_projects__project_id__recommendations__recommendation_id__apply_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                recommendation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningRecommendationMutationRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    decide_project_recommendation_api_planning_projects__project_id__recommendations__recommendation_id__decision_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                recommendation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningRecommendationDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    rollback_project_recommendation_api_planning_projects__project_id__recommendations__recommendation_id__rollback_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                recommendation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningRecommendationMutationRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    create_resource_api_planning_projects__project_id__resources_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3877,6 +10413,365 @@ export interface operations {
                 "application/json": components["schemas"]["PlanningResourceRequest"];
             };
         };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    set_resource_calendar_api_planning_projects__project_id__resources__resource_id__calendar_put: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                resource_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningResourceCalendarRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_revisions_api_planning_projects__project_id__revisions_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningRevisionPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_revision_api_planning_projects__project_id__revisions__revision_number__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                revision_number: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanningRevisionMetadata"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_risk_analyses_api_planning_projects__project_id__risk_analyses_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_project_risk_analysis_api_planning_projects__project_id__risk_analyses_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningRiskAnalysisRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_risk_analysis_api_planning_projects__project_id__risk_analyses__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -3913,15 +10808,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Successful Response */
+            /** @description Actor-visible schedule snapshot. */
             200: {
                 headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PlanningScheduleReadModel"];
                 };
             };
             /** @description Validation Error */
@@ -3938,7 +10833,10 @@ export interface operations {
     create_task_api_planning_projects__project_id__tasks_post: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -3952,6 +10850,173 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    transition_project_api_planning_projects__project_id__transitions_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningProjectTransitionRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_what_if_snapshots_api_planning_projects__project_id__what_if_snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
             /** @description Successful Response */
             200: {
                 headers: {
@@ -3960,7 +11025,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         [key: string]: unknown;
-                    };
+                    }[];
                 };
             };
             /** @description Validation Error */
@@ -3974,14 +11039,101 @@ export interface operations {
             };
         };
     };
-    delete_task_api_planning_tasks__task_id__delete: {
+    create_project_what_if_snapshot_api_planning_projects__project_id__what_if_snapshots_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningWhatIfSnapshotRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    project_what_if_snapshot_api_planning_projects__project_id__what_if_snapshots__snapshot_id__get: {
         parameters: {
             query?: never;
             header?: {
                 authorization?: string | null;
             };
             path: {
-                task_id: string;
+                project_id: string;
+                snapshot_id: string;
             };
             cookie?: never;
         };
@@ -4009,10 +11161,96 @@ export interface operations {
             };
         };
     };
+    delete_task_api_planning_tasks__task_id__delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
     update_task_api_planning_tasks__task_id__patch: {
         parameters: {
             query?: never;
-            header?: {
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
                 authorization?: string | null;
             };
             path: {
@@ -4026,15 +11264,768 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    update_task_dates_api_planning_tasks__task_id__dates_patch: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningTaskDateUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    add_task_participant_api_planning_tasks__task_id__participants_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningTaskParticipantRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    remove_task_participant_api_planning_tasks__task_id__participants__participant_id__delete: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+                participant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    create_task_requirement_api_planning_tasks__task_id__requirements_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningTaskRequirementRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    advance_task_requirement_api_planning_tasks__task_id__requirements__requirement_id__advance_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+                requirement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningTaskRequirementAdvanceRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    decide_task_requirement_api_planning_tasks__task_id__requirements__requirement_id__decision_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+                requirement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningTaskRequirementDecisionRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    set_task_requirement_link_api_planning_tasks__task_id__requirements__requirement_id__link_put: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Exactly one quoted strong ETag returned by the latest actor-visible schedule read. */
+                "If-Match"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                task_id: string;
+                requirement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlanningTaskRequirementLinkRequest"];
+            };
+        };
+        responses: {
+            /** @description Mutation accepted and committed once. */
+            200: {
+                headers: {
+                    /** @description Quoted strong SHA-256 validator for the actor-visible Planning schedule. */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description The Planning proposal or If-Match validator is invalid. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"] | components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The actor lacks the required Planning capability. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description Idempotency key conflicts with another Planning request. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description The supplied strong ETag is stale; reload and explicitly reapply or keep the current schedule. */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+            /** @description The Planning request does not match the generated contract. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandDomainErrorResponse"];
+                };
+            };
+            /** @description A current strong Planning ETag is required. */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CommandPreconditionResponse"];
+                };
+            };
+        };
+    };
+    definitions_api_products_definitions_get: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
             /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ProductDefinitionResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    definition_api_products_definitions__product_definition_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                product_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductDefinitionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    name_history_api_products_definitions__product_definition_id__name_history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                product_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductNameHistoryResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -4243,6 +12234,530 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    definitions_api_routes_definitions_get: {
+        parameters: {
+            query?: {
+                include_archived?: boolean;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouteDefinitionResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    definition_api_routes_definitions__route_definition_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                route_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouteDefinitionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    name_history_api_routes_definitions__route_definition_id__name_history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                route_definition_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouteNameHistoryResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    location_options_api_routes_location_options_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationReferenceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_type_options_api_shipments_document_type_options_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceDocumentTypeReferenceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    location_options_api_shipments_location_options_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocationReferenceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    party_reference_api_shipments_party_references__party_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                party_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartyReferenceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    records_api_shipments_records_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                search?: string | null;
+            };
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    record_api_shipments_records__shipment_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_instances_api_shipments_records__shipment_id__document_instances_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentInstanceResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_instance_api_shipments_records__shipment_id__document_instances__instance_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+                instance_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentInstanceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_instance_history_api_shipments_records__shipment_id__document_instances__instance_id__history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+                instance_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentInstanceHistoryResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_requirements_api_shipments_records__shipment_id__document_requirements_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentRequirementListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    document_requirement_history_api_shipments_records__shipment_id__document_requirements__requirement_id__history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+                requirement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentDocumentRequirementHistoryResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_history_api_shipments_records__shipment_id__status_history_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path: {
+                shipment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShipmentStatusHistoryResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    route_options_api_shipments_route_options_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoutePathReferenceResponse"][];
                 };
             };
             /** @description Validation Error */

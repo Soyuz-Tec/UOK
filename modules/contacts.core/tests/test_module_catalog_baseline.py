@@ -17,14 +17,46 @@ def test_apps_manager_installs_contacts_and_baseline_stays_module_neutral(client
     catalog = client.get("/api/modules/catalog", headers=admin)
     assert catalog.status_code == 200, catalog.text
     modules = catalog.json()["modules"]
-    assert sorted(modules) == ["agents.core", "apps.manager", "calendar.core", "contacts.core", "planning.core", "reports.core"]
+    assert sorted(modules) == [
+        "agents.core",
+        "apps.manager",
+        "calendar.core",
+        "communications.core",
+        "compliance.core",
+        "contacts.core",
+        "intelligence.core",
+        "locations.core",
+        "planning.core",
+        "product.master",
+        "reports.core",
+        "routes.core",
+        "shipments.core",
+    ]
     assert modules["apps.manager"]["status"] == "installed"
     assert modules["apps.manager"]["required"] is True
     assert modules["agents.core"]["required"] is False
     assert modules["calendar.core"]["kind"] == "capability_module"
     assert modules["calendar.core"]["required"] is False
     assert modules["calendar.core"]["installable"] is True
+    assert modules["communications.core"]["kind"] == "capability_module"
+    assert modules["communications.core"]["required"] is False
+    assert modules["compliance.core"]["kind"] == "capability_module"
+    assert modules["compliance.core"]["required"] is False
+    assert modules["compliance.core"]["installable"] is True
     assert modules["contacts.core"]["required"] is False
+    assert modules["intelligence.core"]["kind"] == "capability_module"
+    assert modules["intelligence.core"]["required"] is False
+    assert modules["intelligence.core"]["installable"] is True
+    assert modules["intelligence.core"]["dependencies"] == ["shipments.core"]
+    assert modules["locations.core"]["kind"] == "capability_module"
+    assert modules["locations.core"]["required"] is False
+    assert modules["locations.core"]["installable"] is True
+    assert modules["routes.core"]["kind"] == "capability_module"
+    assert modules["routes.core"]["required"] is False
+    assert modules["routes.core"]["installable"] is True
+    assert modules["shipments.core"]["kind"] == "business_module"
+    assert modules["shipments.core"]["required"] is False
+    assert modules["shipments.core"]["installable"] is True
     assert modules["planning.core"]["required"] is False
     assert modules["reports.core"]["kind"] == "capability_module"
     assert modules["reports.core"]["required"] is False

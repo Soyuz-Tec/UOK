@@ -1,0 +1,1 @@
+"""Product Master delivery adapters."""

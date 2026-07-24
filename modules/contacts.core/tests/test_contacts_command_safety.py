@@ -5,7 +5,7 @@ from uuid import uuid4
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.contacts import MAX_CONTACT_NOTE_LENGTH, MAX_CSV_IMPORT_BYTES
+from uok_contacts_core._internal.registry.validation import MAX_CONTACT_NOTE_LENGTH, MAX_CSV_IMPORT_BYTES
 
 
 def test_idempotency_replay_requires_permission_and_matching_payload(client: TestClient) -> None:
@@ -28,12 +28,12 @@ def test_idempotency_replay_requires_permission_and_matching_payload(client: Tes
     denied_replay = command(client, viewer, "CreateContact", payload, key)
     assert denied_replay.status_code == 403, denied_replay.text
     mismatched_payload = command(client, ops, "CreateContact", {"display_name": f"Replay Contact Changed {suffix}"}, key)
-    assert mismatched_payload.status_code == 400, mismatched_payload.text
+    assert mismatched_payload.status_code == 409, mismatched_payload.text
     assert "different command request" in mismatched_payload.text
 
     note_payload = {"party_id": created.json()["result"]["contact_id"], "body": "Note"}
     mismatched_command = command(client, ops, "AddContactNote", note_payload, key)
-    assert mismatched_command.status_code == 400, mismatched_command.text
+    assert mismatched_command.status_code == 409, mismatched_command.text
     assert "different command request" in mismatched_command.text
 
 

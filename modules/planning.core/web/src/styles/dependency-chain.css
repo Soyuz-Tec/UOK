@@ -1,0 +1,79 @@
+.planning-owned-grid-row.chain-predecessor,
+.planning-owned-grid-row.chain-successor,
+.planning-owned-grid-row.chain-related {
+  box-shadow: inset 0 -1px 0 var(--uok-row-separator-color), inset 3px 0 0 var(--uok-status-info);
+}
+
+.planning-owned-grid-row.chain-predecessor,
+.planning-owned-grid-row.chain-predecessor > .planning-owned-pinned-column {
+  background: color-mix(in srgb, var(--uok-status-info) 9%, var(--uok-bg-elevated));
+}
+
+.planning-owned-grid-row.chain-successor,
+.planning-owned-grid-row.chain-successor > .planning-owned-pinned-column {
+  background: color-mix(in srgb, var(--uok-status-success) 9%, var(--uok-bg-elevated));
+}
+
+.planning-owned-grid-row.chain-related,
+.planning-owned-grid-row.chain-related > .planning-owned-pinned-column {
+  background: color-mix(in srgb, var(--uok-status-warning) 10%, var(--uok-bg-elevated));
+}
+
+.planning-owned-dependencies path.chain-highlight {
+  stroke: var(--uok-status-info);
+  stroke-width: 2.5;
+}
+
+.planning-owned-dependencies path.planning-owned-dependency-arrow {
+  fill: color-mix(in srgb, var(--uok-text-tertiary) 82%, var(--uok-bg-elevated));
+  stroke: none;
+}
+
+.planning-owned-dependencies path.planning-owned-dependency-arrow.chain-highlight {
+  fill: var(--uok-status-info);
+}
+
+.planning-owned-dependency-label rect {
+  fill: color-mix(in srgb, var(--uok-bg-elevated) 92%, transparent);
+  stroke: var(--uok-row-separator-color);
+  stroke-width: 1;
+}
+
+.planning-owned-dependency-label text {
+  fill: var(--uok-text-secondary);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.planning-owned-dependency.quiet-default:not(.chain-highlight) .planning-owned-dependency-label {
+  opacity: 0;
+}
+
+.planning-owned-dependency.quiet-default:hover .planning-owned-dependency-label {
+  opacity: 1;
+}
+
+.planning-owned-dependency.chain-highlight .planning-owned-dependency-label rect {
+  fill: color-mix(in srgb, var(--uok-status-info) 14%, var(--uok-bg-elevated));
+  stroke: var(--uok-status-info);
+}
+
+.planning-owned-dependency.chain-highlight .planning-owned-dependency-label text {
+  fill: var(--uok-text-primary);
+}
+
+.planning-owned-task.chain-predecessor > .planning-owned-task-bar {
+  stroke: var(--uok-status-info);
+  stroke-width: 2;
+}
+
+.planning-owned-task.chain-successor > .planning-owned-task-bar {
+  stroke: var(--uok-status-success);
+  stroke-width: 2;
+}
+
+.planning-owned-task.chain-related > .planning-owned-task-bar {
+  stroke: var(--uok-status-warning);
+  stroke-width: 2;
+}

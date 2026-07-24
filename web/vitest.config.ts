@@ -1,9 +1,16 @@
-import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
+import { defineConfig, mergeConfig } from "vitest/config";
 
-export default defineConfig({
+import viteConfig from "./vite.config";
+
+export default mergeConfig(viteConfig, defineConfig({
   test: {
     environment: "jsdom",
-    exclude: ["e2e/**", "node_modules/**", "dist/**"],
-    setupFiles: ["src/test/setup.ts"]
+    include: [
+      "src/**/*.{test,spec}.{ts,tsx}",
+      "../modules/*/tests/web/**/*.{test,spec}.{ts,tsx}",
+    ],
+    exclude: ["e2e/**", "../modules/*/tests/web/e2e/**", "node_modules/**", "dist/**"],
+    setupFiles: [fileURLToPath(new URL("./src/test/setup.ts", import.meta.url))]
   }
-});
+}));

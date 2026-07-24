@@ -21,53 +21,32 @@
   }
 
   .workflow-header,
-  .contacts-toolbar,
-  .search-workspace-panel,
   .search-group,
-  .contact-quality-workspace,
-  .duplicate-comparison-grid,
   .workflow-split-view,
-  .contacts-view-split .workflow-split-view,
-  .inline-edit-form,
-  .form-field-grid {
+  .inline-edit-form {
     grid-template-columns: 1fr;
   }
 
-  .contacts-toolbar {
-    grid-template-areas:
-      "search"
-      "page"
-      "view"
-      "fields"
-      "primary";
+  .search-workspace-panel-content,
+  .search-workspace-panel.without-grouping .search-workspace-panel-content,
+  .search-workspace-panel.with-sorting .search-workspace-panel-content,
+  .search-workspace-panel.with-sorting.without-grouping .search-workspace-panel-content,
+  .search-workspace-panel.with-supplemental-sections .search-workspace-panel-content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .contacts-view-split .workflow-primary-region {
-    border-right: 0;
-    border-bottom: var(--uok-line);
-  }
-
-  .contacts-view-split .contact-list {
-    max-height: none;
-    overflow: visible;
-  }
-
-  .field-prominent,
-  .field-wide {
-    grid-column: auto;
-  }
-
-  .contacts-toolbar .segmented-control,
-  .contact-page-controls,
-  .contact-page-stepper,
   .search-workspace-menu,
   .toolbar-group,
   .search-field {
     width: 100%;
   }
 
-  .relationship-composer {
-    grid-template-columns: 1fr;
+  .search-workspace-panel.with-supplemental-sections .search-workspace-saved-searches {
+    grid-column: 1 / -1;
+    border-inline-start: 0;
+    border-top: var(--uok-line);
+    padding-top: var(--uok-space-3);
+    padding-inline-start: 0;
   }
 
   .account-menu-root {
@@ -102,8 +81,6 @@
   .field input,
   .field select,
   .field textarea,
-  .contact-page-control,
-  .contact-page-control select,
   .search-workspace-select,
   .search-workspace-select select,
   .search-workspace-save-field,
@@ -112,40 +89,18 @@
   .command-button,
   .account-chip,
   .module-actions,
-  .contacts-actions,
-  .contact-inspector-actions,
-  .note-composer,
-  .relationship-composer,
   .inline-edit-actions {
     width: 100%;
   }
 
   .command-button,
-  .module-actions,
-  .contacts-actions {
+  .module-actions {
     justify-content: center;
   }
 
   .workflow-header-actions,
-  .contact-page-controls,
-  .contact-page-stepper,
-  .view-group,
-  .fields-group,
-  .primary-group,
-  .contact-inspector-actions,
   .inline-edit-actions {
     justify-content: flex-start;
-  }
-
-  .contact-manage-disclosure,
-  .contact-manage-disclosure summary {
-    width: 100%;
-  }
-
-  .contact-manage-actions {
-    position: static;
-    margin-top: var(--uok-space-2);
-    box-shadow: none;
   }
 
   .session-popover {
@@ -167,32 +122,6 @@
     flex-direction: column-reverse;
   }
 
-  .contact-card {
-    grid-template-columns: 72px minmax(0, 1fr);
-  }
-
-  .contacts-view-split .contact-list-row {
-    grid-template-columns: 1fr;
-  }
-
-  .contacts-view-split .contact-list-header {
-    display: none;
-  }
-
-  .contact-card-avatar {
-    width: 72px;
-    height: 72px;
-    font-size: 36px;
-  }
-
-  .note-composer {
-    grid-template-columns: 1fr;
-  }
-
-  .quality-note-composer {
-    grid-template-columns: 1fr;
-  }
-
   .form-section,
   .pane-section {
     padding: var(--uok-space-3);
@@ -202,23 +131,61 @@
     grid-template-columns: 1fr;
   }
 
-  .search-workspace-menu summary {
+  .search-workspace-menu .expandable-control-trigger {
     border-top: var(--uok-line);
-    border-left: 0;
+    border-inline-start: 0;
   }
 
-  .search-workspace-panel {
-    position: static;
-    width: 100%;
-    margin-top: var(--uok-space-2);
-    box-shadow: none;
+  .search-workspace-panel,
+  .search-workspace-panel.without-grouping,
+  .search-workspace-panel.with-sorting,
+  .search-workspace-panel.with-sorting.without-grouping,
+  .search-workspace-panel.with-supplemental-sections {
+    position: fixed;
+    inset: var(--uok-space-3);
+    z-index: 40;
+    width: auto;
+    max-height: calc(100vh - (var(--uok-space-3) * 2));
+    overflow: auto;
+    margin: 0;
+    box-shadow: var(--uok-shadow-2);
+  }
+
+  .expandable-control-panel[data-open="true"] > .expandable-control-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    display: block;
+    inline-size: 100vw;
+    block-size: 100vh;
+    border: 0;
+    padding: 0;
+    background: color-mix(in srgb, var(--uok-text-primary) 28%, transparent);
+  }
+
+  .expandable-control-panel[data-open="true"] > .expandable-control-surface {
+    z-index: 40;
+  }
+
+  .search-workspace-panel-content,
+  .search-workspace-panel.without-grouping .search-workspace-panel-content,
+  .search-workspace-panel.with-sorting .search-workspace-panel-content,
+  .search-workspace-panel.with-sorting.without-grouping .search-workspace-panel-content,
+  .search-workspace-panel.with-supplemental-sections .search-workspace-panel-content {
+    grid-template-columns: 1fr;
   }
 
   .search-workspace-section + .search-workspace-section {
-    border-left: 0;
+    border-inline-start: 0;
     border-top: var(--uok-line);
     padding-top: var(--uok-space-3);
-    padding-left: 0;
+    padding-inline-start: 0;
+  }
+
+  .search-workspace-actions {
+    position: sticky;
+    inset-block-end: 0;
+    padding-block-end: var(--uok-space-2);
   }
 }
 

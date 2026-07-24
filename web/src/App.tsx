@@ -1,20 +1,25 @@
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
-import { useWorkbench } from "./app/useWorkbench";
-import { AppsManagerPanel } from "./features/apps/AppsManagerPanel";
+import { useWorkbench, type Workbench } from "./app/useWorkbench";
 import { AuthScreen } from "./features/auth/AuthScreen";
 import { AccountMenu } from "./features/layout/AccountMenu";
-import { moduleSections, renderModuleSurface } from "./features/modules/moduleSurfaceRegistry";
+import { ModuleSurfaceOutlet, moduleSections } from "./features/modules/moduleSurfaceRegistry";
 import { coreSections } from "./shared/options";
 import { JsonBlock, MetricGrid, StatusRow } from "./shared/data-display";
 import { Pane } from "./shared/layout";
+import { UokLocalizationProvider, useUokLocalization } from "./shared/localization";
 
 export function App() {
   const workbench = useWorkbench();
+  return <UokLocalizationProvider locale={workbench.locale}><AppView workbench={workbench} /></UokLocalizationProvider>;
+}
+
+function AppView({ workbench }: { workbench: Workbench }) {
+  const { t } = useUokLocalization();
   const sections = [
-    ...coreSections.slice(0, 2),
+    coreSections[0],
     ...moduleSections,
-    ...coreSections.slice(2)
+    ...coreSections.slice(1)
   ];
 
   if (!workbench.token) {
@@ -42,13 +47,13 @@ export function App() {
   }
 
   const SidebarToggleIcon = workbench.sidebarCollapsed ? PanelLeftOpen : PanelLeftClose;
-  const sidebarToggleLabel = workbench.sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar";
+  const sidebarToggleLabel = workbench.sidebarCollapsed ? t("nav.expand") : t("nav.collapse");
 
   return (
     <div className={workbench.sidebarCollapsed ? "shell sidebar-collapsed" : "shell"}>
-      <aside className="sidebar" aria-label="Primary navigation">
+      <aside className="sidebar" aria-label={t("nav.primary")}>
         <div className="sidebar-top">
-          <button type="button" className="brand" aria-label="Home" title="Home" onClick={() => workbench.setActive("overview")}>
+          <button type="button" className="brand" aria-label={t("nav.home")} title={t("nav.home")} onClick={() => workbench.setActive("overview")}>
             <span className="brand-mark" aria-hidden="true">K</span>
             <span className="brand-label" aria-hidden="true">
               <strong>UOK</strong>
@@ -68,18 +73,19 @@ export function App() {
         <nav className="nav-list">
           {sections.map((section) => {
             const Icon = section.icon;
+            const label = t(`nav.${section.id}`, section.label);
             return (
               <button
                 key={section.id}
                 type="button"
                 className={workbench.active === section.id ? "nav-item active" : "nav-item"}
-                aria-label={section.label}
+                aria-label={label}
                 aria-current={workbench.active === section.id ? "page" : undefined}
-                title={workbench.sidebarCollapsed ? section.label : undefined}
+                title={workbench.sidebarCollapsed ? label : undefined}
                 onClick={() => workbench.setActive(section.id)}
               >
                 <Icon size={18} aria-hidden="true" />
-                <span className="nav-label" aria-hidden="true">{section.label}</span>
+                <span className="nav-label" aria-hidden="true">{label}</span>
               </button>
             );
           })}
@@ -87,8 +93,10 @@ export function App() {
         <AccountMenu
           user={workbench.currentUser}
           appearance={workbench.appearance}
+          locale={workbench.locale}
           busy={workbench.busyAction === "refresh"}
           onAppearanceChange={workbench.setAppearance}
+          onLocaleChange={workbench.setLocale}
           onRefresh={() => workbench.refresh()}
           onSignOut={() => workbench.clearSession()}
         />
@@ -108,11 +116,7 @@ export function App() {
           </section>
         )}
 
-        {workbench.active === "apps" && (
-          <AppsManagerPanel modules={workbench.moduleRows} busyAction={workbench.busyAction} onAction={workbench.moduleAction} />
-        )}
-
-        {renderModuleSurface(workbench.active, workbench)}
+        <ModuleSurfaceOutlet section={workbench.active} host={workbench.moduleHost} />
 
         {workbench.active === "evidence" && (
           <section aria-label="Evidence">

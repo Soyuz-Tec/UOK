@@ -69,7 +69,7 @@ Every non-trivial UOK change follows this flow:
    - Confirm repo root, branch, runtime target, Git state, `AGENTS.md`, architecture docs, affected module docs, and active policies.
 
 2. Classify ownership.
-   - Decide whether the work belongs in `src/uok`, `modules/<module_name>`, `web/src/shared`, `web/src/features`, migrations, tests, docs, or operations.
+   - Decide whether the work belongs in `src/uok`, module production source under `modules/<module_name>`, the product-neutral shell/shared layer under `web/src`, module tests under `modules/<module_name>/tests`, repository tests, migrations, docs, or operations.
 
 3. Draft the change against the standards.
    - Use Microsoft SDL and NIST SP 800-218 SSDF for security-sensitive work.

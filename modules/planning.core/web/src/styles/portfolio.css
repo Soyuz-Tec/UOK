@@ -1,0 +1,185 @@
+.planning-scope-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--uok-space-1);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-1);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-scope-switch button {
+  min-height: 36px;
+  border: 0;
+  border-radius: var(--uok-radius-1);
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.planning-scope-switch button[aria-current="page"] {
+  color: var(--uok-text-primary);
+  background: color-mix(in srgb, var(--uok-accent) 16%, var(--uok-bg-elevated));
+}
+
+.planning-portfolio {
+  display: grid;
+  gap: var(--uok-space-4);
+  min-width: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-4);
+  background: var(--uok-bg-elevated);
+}
+
+.planning-portfolio-filters,
+.planning-portfolio-open {
+  display: flex;
+  align-items: center;
+  gap: var(--uok-space-2);
+}
+
+.planning-portfolio-table th span,
+.planning-portfolio-diagnostics {
+  color: var(--uok-text-secondary);
+}
+
+.planning-portfolio-filters {
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+.planning-portfolio-filters label {
+  display: grid;
+  flex: 1 1 220px;
+  gap: var(--uok-space-1);
+  min-width: 0;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.planning-portfolio-filters input,
+.planning-portfolio-filters select {
+  min-height: 40px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-1);
+  padding: 0 var(--uok-space-2);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+  font: inherit;
+}
+
+.planning-portfolio-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: var(--uok-space-2);
+}
+
+.planning-portfolio-metric {
+  display: grid;
+  gap: var(--uok-space-1);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-portfolio-metric span {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.planning-portfolio-metric strong {
+  font-size: var(--uok-title-2);
+}
+
+.planning-portfolio-table-wrap {
+  overflow-x: auto;
+}
+
+.planning-portfolio-table {
+  width: 100%;
+  min-width: 880px;
+  border-collapse: collapse;
+}
+
+.planning-portfolio-table th,
+.planning-portfolio-table td {
+  border-block-end: var(--uok-line);
+  padding: var(--uok-space-3);
+  text-align: start;
+}
+
+.planning-portfolio-table th[scope="row"] {
+  display: grid;
+  gap: var(--uok-space-1);
+}
+
+.planning-portfolio-table th span,
+.planning-portfolio-diagnostics {
+  font-size: var(--uok-caption);
+  font-weight: 400;
+}
+
+.planning-portfolio-health {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: var(--uok-space-1) var(--uok-space-2);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 700;
+}
+
+.planning-portfolio-health.on_track { border: 1px solid var(--uok-success); }
+.planning-portfolio-health.attention { border: 1px solid var(--uok-warning); }
+.planning-portfolio-health.blocked { border: 1px solid var(--uok-danger); }
+
+.planning-portfolio-timeline {
+  position: relative;
+  inline-size: 220px;
+  block-size: 16px;
+  border-radius: 999px;
+  background: var(--uok-bg-grouped-secondary);
+  direction: ltr;
+}
+
+.planning-portfolio-timeline span {
+  position: absolute;
+  inset-block: 3px;
+  border-radius: 999px;
+  background: var(--uok-accent);
+}
+
+.planning-portfolio-open {
+  min-height: 36px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-1);
+  padding: 0 var(--uok-space-2);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-grouped-secondary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.planning-portfolio-error { color: var(--uok-danger); }
+
+@media (max-width: 900px) {
+  .planning-portfolio-metrics { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+}
+
+@media (max-width: 680px) {
+  .planning-scope-switch,
+  .planning-scope-switch button,
+  .planning-portfolio-filters .command-button { width: 100%; }
+  .planning-portfolio-metrics { grid-template-columns: 1fr; }
+}
+
+@media (pointer: coarse) {
+  .planning-scope-switch button,
+  .planning-portfolio-open { min-width: 44px; min-height: 44px; }
+}

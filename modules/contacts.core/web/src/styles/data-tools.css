@@ -1,0 +1,257 @@
+.contact-data-tools-popup {
+  width: min(1180px, calc(100vw - var(--uok-space-4) - var(--uok-space-4)));
+}
+
+.contact-data-tools-shell {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.3fr) minmax(0, 1fr);
+  min-height: min(680px, 72vh);
+  max-height: min(780px, 78vh);
+  overflow: hidden;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  background: var(--uok-bg-elevated);
+}
+
+.contact-data-tools-nav {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-1);
+  overflow-y: auto;
+  padding: var(--uok-space-3);
+  border-inline-end: var(--uok-line);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.contact-data-tools-nav button {
+  display: flex;
+  align-items: center;
+  gap: var(--uok-space-2);
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2) var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: transparent;
+  text-align: start;
+  font: inherit;
+  font-weight: 680;
+}
+
+.contact-data-tools-nav button:hover,
+.contact-data-tools-nav button.selected {
+  color: var(--uok-text-primary);
+  background: color-mix(in srgb, var(--uok-accent) 12%, var(--uok-bg-elevated));
+}
+
+.contact-data-tools-main {
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--uok-space-4);
+}
+
+.contact-data-tool-panel,
+.contact-data-tools-column-stack,
+.contact-data-tools-detail,
+.contact-data-tools-subsection,
+.contact-data-tools-record-list,
+.contact-data-tools-custom-values {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-3);
+}
+
+.contact-data-tool-panel > header,
+.contact-data-tools-subsection-heading,
+.contact-data-tools-duplicate-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--uok-space-3);
+}
+
+.contact-data-tool-panel > header {
+  padding-block-end: var(--uok-space-3);
+  border-block-end: var(--uok-line);
+}
+
+.contact-data-tool-panel h3,
+.contact-data-tool-panel h4,
+.contact-data-tool-panel p,
+.contact-data-tool-panel .eyebrow {
+  margin-block: 0;
+}
+
+.contact-data-tool-panel > header > strong,
+.contact-data-tools-hint,
+.contact-data-tools-subsection > p,
+.contact-data-tools-record span,
+.contact-data-tools-record small,
+.contact-data-tools-selector span,
+.contact-data-tools-duplicate-heading span {
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.contact-data-tools-permission,
+.contact-data-tools-error,
+.contact-data-tools-notice,
+.contact-data-tools-claim,
+.contact-data-tools-import-summary {
+  margin: 0 0 var(--uok-space-3);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.contact-data-tools-error {
+  color: var(--uok-danger);
+  border-color: color-mix(in srgb, var(--uok-danger) 45%, transparent);
+  background: color-mix(in srgb, var(--uok-danger) 8%, var(--uok-bg-elevated));
+}
+
+.contact-data-tools-notice {
+  color: var(--uok-success);
+  border-color: color-mix(in srgb, var(--uok-success) 45%, transparent);
+}
+
+.contact-data-tools-columns,
+.contact-data-tools-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--uok-space-3);
+  margin-block-start: var(--uok-space-3);
+}
+
+.contact-data-tools-split {
+  grid-template-columns: minmax(210px, 0.45fr) minmax(0, 1fr);
+}
+
+.contact-data-tools-subsection {
+  min-width: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-elevated);
+}
+
+.contact-data-tools-selector {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-1);
+  padding-inline-end: var(--uok-space-3);
+  border-inline-end: var(--uok-line);
+}
+
+.contact-data-tools-selector > button:not(.command-button) {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-height: 44px;
+  border: 0;
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2) var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: transparent;
+  text-align: start;
+}
+
+.contact-data-tools-selector > button:hover,
+.contact-data-tools-selector > button.selected {
+  background: color-mix(in srgb, var(--uok-accent) 12%, var(--uok-bg-grouped-secondary));
+}
+
+.contact-data-tools-record,
+.contact-data-tools-duplicate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--uok-space-3);
+  min-width: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2) var(--uok-space-3);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.contact-data-tools-record > div,
+.contact-data-tools-duplicate-heading > div,
+.contact-data-tools-import-summary {
+  display: grid;
+  min-width: 0;
+  gap: var(--uok-space-1);
+}
+
+.contact-data-tools-duplicate {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.contact-data-tools-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--uok-space-3);
+  margin: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+}
+
+.contact-data-tools-form legend {
+  padding-inline: var(--uok-space-1);
+  font-weight: 760;
+}
+
+.contact-data-tools-form label,
+.contact-data-tools-inline-form label,
+.contact-data-tools-custom-value label,
+.contact-data-tools-file,
+.contact-data-tools-subsection > label,
+.contact-data-tools-compact-field,
+.contact-data-tools-mapping label {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-1);
+  min-width: 0;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 650;
+}
+
+.contact-data-tools-form label.wide,
+.contact-data-tools-form-actions.wide {
+  grid-column: 1 / -1;
+}
+
+.contact-data-tools-form label.check,
+.contact-data-tools-custom-value label.check,
+.contact-data-tools-check-grid label {
+  display: flex;
+  align-items: center;
+  gap: var(--uok-space-2);
+  min-height: 44px;
+}
+
+.contact-data-tools-form input,
+.contact-data-tools-form select,
+.contact-data-tools-form textarea,
+.contact-data-tools-inline-form input,
+.contact-data-tools-inline-form select,
+.contact-data-tools-custom-value input,
+.contact-data-tools-custom-value select,
+.contact-data-tools-file input,
+.contact-data-tools-subsection > label input,
+.contact-data-tools-subsection > label select,
+.contact-data-tools-subsection > label textarea,
+.contact-data-tools-compact-field select,
+.contact-data-tools-mapping select {
+  min-width: 0;
+  width: 100%;
+  min-height: 40px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  color: var(--uok-text-primary);
+  background: var(--uok-bg-elevated);
+  font: inherit;
+}

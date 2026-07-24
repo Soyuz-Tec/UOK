@@ -30,29 +30,32 @@ jobs:
           python-version: "3.14"
           cache: pip
 
-      - name: Install Python dependencies
-        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+      - name: Validate repository policy before dependency installation
+        run: python scripts/quality_audit.py
 
-      - name: Audit Python dependencies
-        run: python -m pip install pip-audit==2.10.0 && python -m pip_audit -r requirements.txt
+      - name: Install Python dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt
+
+      - name: Audit Python runtime dependencies
+        run: python -m pip_audit -r requirements.txt
+
+      - name: Audit Python development dependencies
+        run: python -m pip_audit -r requirements-dev.txt
 
       - name: Compile Python
         run: python -m compileall -q src modules tests conftest.py
 
-      - name: Run technology and code-quality audit
-        run: python scripts/quality_audit.py
-
       - name: Generate engineering evidence
         run: python scripts/engineering_evidence.py --stdout
 
-      - name: Validate module extension contract
+      - name: Validate module release contract
         env:
           PYTHONPATH: src
         run: |
           python - <<'PY'
-          from uok.module_contract_validation import validate_module_extension_contracts
+          from uok.module_release_contract import validate_module_release_contracts
 
-          report = validate_module_extension_contracts()
+          report = validate_module_release_contracts()
           assert report["ok"], report
           PY
 
@@ -79,23 +82,13 @@ jobs:
           assert not violations, "\n".join(violations)
           PY
 
-      - name: Run Python tests file by file
+      - name: Run Python tests with repository runner
         env:
           PYTHONPATH: src
-        run: |
-          python - <<'PY'
-          import subprocess
-          import sys
-          from pathlib import Path
+        run: python scripts/run_python_tests.py
 
-          test_files = sorted(Path("tests").glob("test_*.py")) + sorted(Path("modules").glob("*/tests/test_*.py"))
-          if not test_files:
-              raise SystemExit("No Python test files found.")
-          for test_file in test_files:
-              print(f"::group::{test_file.as_posix()}")
-              subprocess.run([sys.executable, "-m", "pytest", "-q", str(test_file)], check=True)
-              print("::endgroup::")
-          PY
+      - name: Verify database connection-capacity policy
+        run: python scripts/verify_database_capacity.py --environment-file deploy/database-capacity.env
 
       - name: Verify PostgreSQL 18 initial baseline
         env:
@@ -110,17 +103,17 @@ jobs:
           DATA_DIR: ./data
         run: |
           python - <<'PY'
-          from uok.main import bootstrap
-          from uok.db import SessionLocal
+          from uok.host.application import bootstrap
+          from uok.host.database import SessionLocal
           from uok.migration_registry import verify_migration_discipline
-          from uok.module_contract_validation import validate_module_extension_contracts
+          from uok.module_contract_validation import validate_module_runtime_contracts
           from uok.quality import source_boundary_report
 
           org_id = bootstrap()
           with SessionLocal() as db:
               migration = verify_migration_discipline(db)
               assert migration["ok"], migration
-          module_contract = validate_module_extension_contracts()
+          module_contract = validate_module_runtime_contracts()
           assert module_contract["ok"], module_contract
           source = source_boundary_report()
           assert source["ok"], source
@@ -136,6 +129,13 @@ jobs:
         working-directory: web
         run: npm ci
 
+      - name: Validate manifest-declared module assets
+        run: python scripts/validate_container_module_assets.py
+
+      - name: Check generated API contract drift
+        working-directory: web
+        run: npm run check:contracts
+
       - name: Audit frontend dependencies
         working-directory: web
         run: npm audit
@@ -149,3 +149,6 @@ jobs:
         env:
           PYTHONPATH: ../src
         run: npm run build:static
+
+      - name: Build OCI image without publishing
+        run: docker build --tag "uok-ci:${GITHUB_SHA}" .

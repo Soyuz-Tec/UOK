@@ -1,0 +1,17 @@
+@media (pointer: coarse) {
+  .nav-item,
+  .session-user-trigger,
+  .session-menu-button,
+  .session-appearance-options button,
+  .session-locale-options button,
+  .command-button {
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+
+:root[dir="rtl"] input[type="date"],
+:root[dir="rtl"] input[type="datetime-local"] {
+  direction: ltr;
+}

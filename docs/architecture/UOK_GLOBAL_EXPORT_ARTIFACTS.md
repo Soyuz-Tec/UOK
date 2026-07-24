@@ -26,7 +26,8 @@ UOK export formats such as CSV, JSON, SVG/image, HTML documents, PDF, office doc
 | XML text escaping | `web/src/shared/exporting` | Planning timeline SVG image export |
 | HTML document serialization | `web/src/shared/exporting` | Planning schedule document export |
 | Browser text download | `web/src/shared/exporting` | Planning toolbar export commands |
-| Server report artifact generation | `reports.core` and `web/src/shared/exporting/serverReports.ts` | Planning CSV, JSON, and Markdown report export commands |
+| Planning payload construction | `modules/planning.core/web/src/planningExportModel.ts` | Schedule CSV, JSON, Timeline SVG, and document payloads from validated read models |
+| Server report artifact generation | `reports.core` and `modules/reports.core/web/src/serverReports.ts` | Availability-gated Planning CSV, JSON, and Markdown report commands |
 
 ## Validation
 

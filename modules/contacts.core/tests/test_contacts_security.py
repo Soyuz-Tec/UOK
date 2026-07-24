@@ -34,6 +34,16 @@ def test_contact_visibility_metadata_is_enforced_on_reads(client: TestClient) ->
     assert private_contact.status_code == 200, private_contact.text
     private_contact_id = private_contact.json()["result"]["contact_id"]
 
+    team = command(
+        client,
+        ops,
+        "CreateContactTeam",
+        {"name": f"Security Team {suffix}"},
+        f"uok-contact-team-{suffix}",
+    )
+    assert team.status_code == 200, team.text
+    team_id = team.json()["result"]["id"]
+
     team_contact = command(
         client,
         ops,
@@ -41,7 +51,7 @@ def test_contact_visibility_metadata_is_enforced_on_reads(client: TestClient) ->
         {
             "display_name": f"Team Contact {suffix}",
             "owner_user_id": trader_user_id,
-            "team_id": f"team-{suffix}",
+            "team_id": team_id,
             "visibility_scope": "team",
         },
         f"uok-team-contact-{suffix}",
@@ -69,10 +79,17 @@ def test_contact_visibility_metadata_is_enforced_on_reads(client: TestClient) ->
     assert owner_private.status_code == 200, owner_private.text
     assert owner_private.json()["id"] == private_contact_id
     assert owner_private.json()["notes"] == []
+    assert owner_private.json()["can_delete"] is False
+    assert owner_private.json()["can_restore"] is False
+    assert owner_private.json()["can_purge"] is False
 
     admin_private = client.get(f"/api/contacts/{private_contact_id}", headers=admin)
     assert admin_private.status_code == 200, admin_private.text
     assert admin_private.json()["notes"]
+    assert admin_private.json()["can_delete"] is True
+    assert admin_private.json()["can_purge"] is True
+    assert admin_private.headers["cache-control"] == "private, no-store"
+    assert admin_private.headers["vary"] == "Authorization"
 
     viewer_list = client.get("/api/contacts?status=all", headers=viewer)
     assert viewer_list.status_code == 200, viewer_list.text
@@ -80,6 +97,9 @@ def test_contact_visibility_metadata_is_enforced_on_reads(client: TestClient) ->
     assert organization_contact_id in viewer_ids
     assert private_contact_id not in viewer_ids
     assert team_contact_id not in viewer_ids
+    viewer_organization = next(row for row in viewer_list.json() if row["id"] == organization_contact_id)
+    assert viewer_organization["can_delete"] is False
+    assert viewer_list.headers["cache-control"] == "private, no-store"
 
     public_notes = client.get(f"/api/contacts/{organization_contact_id}/notes", headers=viewer)
     assert public_notes.status_code == 200, public_notes.text

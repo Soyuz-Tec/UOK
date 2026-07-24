@@ -1,0 +1,57 @@
+manifest_schema: uok.module.v1
+name: communications.core
+kind: capability_module
+version: APP_VERSION
+description: "Organization-scoped K Connect communication thread provider for authorized cross-module jumps."
+maturity: runtime_proven
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
+required: false
+lifecycle:
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - CreateCommunicationThread
+  - ArchiveCommunicationThread
+  - RestoreCommunicationThread
+events:
+  - CommunicationThreadCreated
+  - CommunicationThreadArchived
+  - CommunicationThreadRestored
+dependencies: []
+backend_path: modules/communications.core/backend
+web_path: modules/communications.core/web
+web_entry: modules/communications.core/web/src/moduleSurface.tsx
+web_section: communications
+migrations_path: modules/communications.core/migrations
+tests_path: modules/communications.core/tests
+api_prefixes:
+  - /api/communications
+api_router: uok_communications_core.api:router
+command_handlers: uok_communications_core.commands:command_handlers
+command_permissions: uok_communications_core.commands:command_permissions
+role_grants: uok_communications_core.policy:role_grants
+model_exports: uok_communications_core.models:owned_models
+candidate_verifier_script: modules/communications.core/verify/UokCandidateCommunications.ps1
+candidate_verifier_function: Invoke-UokCommunicationsCandidateScenario
+permissions:
+  - communications.read
+  - communications.edit
+owned_tables:
+  - CommunicationThread
+  - CommandLog:communications.core
+  - EventRecord:Communication
+extension_points:
+  - api_router
+  - command_handlers
+  - command_permissions
+  - role_grants
+  - model_exports
+  - web_surface
+  - candidate_verifier
+data_retention_policy: "User-facing Delete archives organization-scoped communication threads and preserves their prior open or closed state for authorized Restore. Thread identity and audit evidence remain; Planning links are not deleted or cascaded and resolve unavailable only while the thread is archived."

@@ -4,7 +4,7 @@
 
 **Status:** Mandatory for current and durable UOK UI work.
 
-**Applies to:** The current `web/` React + TypeScript + Vite UI, UOK module-testing screens, and module surface registry entries.
+**Applies to:** The `web/` React + TypeScript + Vite shell, executable module UI under `modules/*/web/src`, module frontend tests under `modules/*/tests/web`, and module surface registry entries.
 
 This is a policy, not a recommendation. Current UI implementation and new durable UI code must follow this document unless an architecture decision record explicitly replaces it.
 
@@ -78,6 +78,11 @@ For execution discipline, developers and coding agents must use `docs/design/UOK
 
 8. Familiar controls
    - Use familiar controls for familiar jobs: tabs for views, segmented controls for modes, toggles for binary state, inputs for data entry, buttons for commands, and tables/lists for records.
+   - Durable workspaces must follow the minimal shared command surface and common action vocabulary accepted in `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`.
+   - Use one trailing primary action per active surface, keep frequent commands directly reachable, place low-frequency actions in labelled supplemental panels, and do not duplicate one command across competing visible regions.
+   - Use the standard `Search`, `Open`, `Close`, `New`, `Delete`, `Export`, `Print`, `Refresh`, refinement, completion, edit, and detachment labels from ADR-0025; domain-specific nouns may vary, but modules must not invent synonyms for shared actions.
+   - `Delete` is shown only when the server-owned record contract says the actor may remove a user-managed record from active use. A module may implement that command as retained soft-delete or recoverable archive, but the confirmation must state the real retention and restore behavior. Generated, system-owned, referenced, or permission-denied records fail closed; the browser must not infer eligibility from a name or visual convention.
+   - Confirmed destructive commands use the shared draggable confirmation popup, expose pending and failure states, restore focus to the trigger, and require a fresh confirmation after stale-state recovery. Permanent purge remains a separately named, explicitly governed action.
    - Icons must clarify actions, not replace required business meaning.
    - Interface icons must express one clear concept, use a consistent stroke/size system, inherit semantic color through `currentColor`, and remain paired with visible text for business-critical actions.
    - UOK must not copy Apple-owned symbols or branding. Use project-owned icons or a licensed open-source React icon library while applying Apple-informed icon discipline.
@@ -104,20 +109,48 @@ All durable UI work must use:
 - Shared design tokens
 - Reusable UI components
 - A consistent icon component system
-- The frontend module surface registry for module-owned workbench composition
+- The generated compile-time frontend module catalog and typed surface registry for module-owned workbench composition
+- Module-specific React source and CSS under `modules/<module>/web/src`, with module frontend tests under `modules/<module>/tests/web`
 - Layout tokens for spacing, control target size, content max width, and safe-area-aware shell padding
 - No executable durable UI outside the React + TypeScript source tree
 - `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md` for component state, interaction, accessibility, and verification decisions
+- `docs/design/UOK_LOCALIZATION_AND_BIDIRECTIONAL_POLICY.md` for shared locale ownership, translation fallback, RTL/logical layout, formatting, touch targets, and localized verification
+
+### Frontend Ownership And Composition
+
+- A module with a workbench surface declares `web_surface`, canonical
+  `web_entry`, and unique `web_section` metadata in its closed manifest. The
+  canonical entry is `modules/<module>/web/src/moduleSurface.tsx`.
+- `scripts/generate_frontend_module_catalog.py` validates the manifests and
+  emits checked-in literal TypeScript imports. The browser never reads manifest
+  YAML, interprets a module path, or discovers executable module code at
+  runtime.
+- Each module surface imports its own CSS entry. Global design tokens, shell
+  layout, accessibility foundations, and truly reusable module-neutral controls
+  remain under `web/src`; module-specific selectors stay with the owning
+  module.
+- Module renderers receive only the shell- and feature-independent host port in
+  `web/src/contracts/moduleSurface.ts`. The generated runtime catalog is the
+  shell's sole importer of exact module surface entries. Modules must not import
+  shell app/features or the concrete `Workbench`, and the shell must not own
+  module-specific DTOs, routes, preferences, state, or commands.
+- Reports owns its report transport client below
+  `modules/reports.core/web/src` even though it has no workbench surface.
+  `agents.core` remains planned and inert, so it has no executable surface.
+- Vite and TypeScript compile module production roots, Vitest discovers module
+  tests, and the Docker frontend stage copies module source before the static
+  build. Final-image validation keeps module frontend tests out of production.
 
 The next UI iteration must introduce or preserve:
 
 - `web/src/design-tokens.css` or equivalent token module
 - Shared shell components: app shell, sidebar, toolbar, panel, table/list, status pill, workflow stepper, command button, icon-bearing navigation/control patterns
+- Shared `WorkspaceCommandBar` composition with optional query, context, and actions groups plus shared localized action vocabulary; modules retain domain state, permissions, options, and handlers
 - Shared compact section headings for sidebars, panels, filter areas, and module workspace sections. These headings must use the shared heading primitive and tokenized shaded heading style for eyebrow text, title font, icon/action alignment, separator, radius, and light/dark surface treatment.
 - Shared row rhythm for side-by-side work surfaces. Comparable list rails, table rows, card-list rows, and grouped sidebar rows must use the shared row-height and separator tokens (`--uok-row-height`, `--uok-header-row-height`, and `--uok-row-separator-color`) or the reusable row-rhythm classes instead of one-off pixel heights. Separators must not change measured row height, so adjacent lists and tables remain visually aligned in light and dark modes.
 - Master-detail result lists must avoid repeating full detail facts. Use the list for selection identity, the detail panel for full record facts, tables for column comparison, and cards for rich preview.
-- Shared module-neutral workflow primitives for repeated module behavior, including workflow headers, search fields, inline field messages, confirmed destructive commands, inline text editing, reusable in-workspace pop-ups for record detail/edit workflows, and reusable data tables with accessible resizable columns. Current homes: `web/src/shared/*`.
-- Module surface registry entries that keep module navigation and rendering out of the generic shell component
+- Shared module-neutral workflow primitives for repeated module behavior, including workflow headers, search fields, inline field messages, confirmed destructive commands, inline text editing, reusable in-workspace pop-ups for record detail/edit workflows, and reusable data tables with accessible resizable columns. Modal workspace pop-ups inherit bounded pointer, touch, and keyboard movement from the shared overlay primitive; modules must not recreate drag behavior locally. Current homes: `web/src/shared/*`.
+- Module-local surface entries, composed through the generated catalog, that keep module navigation and rendering out of the generic shell component
 - Shared component states: default, hover, focus-visible, pressed, selected/on, expanded/open, disabled, loading, invalid, destructive, and primary
 - Light and dark mode foundations
 - Consistent layout grid behavior for wide desktop, desktop, tablet, and narrow browser widths
@@ -132,22 +165,30 @@ A UI change is not acceptable if it:
 - Hides workflow state, verification state, or errors behind decoration.
 - Depends on color alone to communicate status.
 - Breaks keyboard navigation or visible focus.
+- Makes drag or another gesture the only way to move, recover, or reset a modal workspace pop-up.
 - Causes text overlap at narrow widths or common browser zoom levels.
 - Adds durable UI behavior outside the React + TypeScript source tree.
 - Uses Apple-owned assets, SF Symbols exports, or Apple branding without an explicit legal/design decision.
 - Adds unlabeled critical command icons.
+- Adds a competing module-local command surface, more than one primary action to an active surface, a duplicate visible command, or a nonstandard synonym for an ADR-0025 common action without a documented exception.
 - Adds an icon that does not adapt to light/dark mode through semantic color.
 - Breaks system/default appearance behavior or removes light/dark verification.
 - Adds one-off spacing or layout rules outside the token system.
 - Allows text, controls, rows, panels, or workflow steps to overlap at supported widths.
 - Places unrelated workflow regions inconsistently across modules.
+- Lets a modal workspace pop-up move beyond the safe viewport or implements its movement outside the shared overlay primitive.
 - Hardcodes module-specific rendering directly in the shell when it belongs in the module surface registry.
+- Adds a module surface without closed-manifest `web_surface`, `web_entry`, and `web_section` ownership or bypasses generated-catalog drift checking.
+- Loads manifest YAML or manifest-provided executable paths in the browser.
+- Stores module-specific production CSS or frontend tests in the shell/shared tree when the module owns them.
 - Uses media, chart, or image sizing that distorts aspect ratio.
 - Bypasses the mandatory technical reference for UI state, layout, accessibility, interaction, appearance, or verification decisions.
 
 Before packaging a candidate, developers must verify:
 
 - The React build succeeds.
+- Generated API and module-catalog contracts match current backend and manifest truth.
+- Module-owned Vitest suites under `modules/*/tests/web` are discovered, and container packaging includes module production source while excluding module tests.
 - The local browser shows the expected screen without console errors.
 - Critical UI text fits at desktop and narrow widths.
 - Status labels remain readable without color.

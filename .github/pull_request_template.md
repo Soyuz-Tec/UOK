@@ -9,6 +9,7 @@
 - Data/migration impact:
 - API/command/event impact:
 - UI policy impact:
+- Documentation/discoverability impact:
 - UOK Internal Engineering System impact:
 
 ## Verification
@@ -23,6 +24,7 @@
 ## Review Rules
 
 - [ ] Ownership and module boundaries are clear.
+- [ ] Moved or renamed paths are updated in active documentation and pass the documentation-reference audit.
 - [ ] Code is small enough for human review.
 - [ ] Tests or verifier evidence cover behavior changes.
 - [ ] Engineering evidence includes a quality scorecard with reviewed categories.

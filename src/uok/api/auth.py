@@ -10,9 +10,10 @@ from sqlalchemy.orm import Session
 
 from ..api.schemas import LoginRequest, RegisterRequest
 from ..config import env_flag
-from ..db import get_db
-from ..models import Membership, Organization, User
-from ..security import Actor, issue_token
+from ..host.database import get_db
+from ..host.security import issue_token
+from ..kernel.security import Actor
+from ..kernel_models import Membership, Organization, User
 from ..seed import ORG_NAME
 from ..util import hash_password, password_needs_rehash, verify_password
 

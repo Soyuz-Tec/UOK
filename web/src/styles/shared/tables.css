@@ -92,7 +92,7 @@
   display: inline-flex;
 }
 
-.field-visibility-trigger,
+.field-visibility-menu .expandable-control-trigger,
 .field-visibility-reset {
   display: inline-flex;
   align-items: center;
@@ -106,7 +106,7 @@
   cursor: pointer;
 }
 
-.field-visibility-trigger {
+.field-visibility-menu .expandable-control-trigger {
   padding: 0 var(--uok-space-3);
 }
 
@@ -115,12 +115,12 @@
   padding: 0 var(--uok-space-2);
 }
 
-.field-visibility-trigger:hover,
+.field-visibility-menu .expandable-control-trigger:hover,
 .field-visibility-reset:hover {
   border-color: var(--uok-accent);
 }
 
-.field-visibility-trigger:focus-visible,
+.field-visibility-menu .expandable-control-trigger:focus-visible,
 .field-visibility-reset:focus-visible,
 .field-visibility-option input:focus-visible {
   outline: 3px solid var(--uok-focus-ring);
@@ -130,7 +130,7 @@
 .field-visibility-panel {
   position: absolute;
   top: calc(100% + var(--uok-space-2));
-  right: 0;
+  inset-inline-end: 0;
   z-index: 20;
   display: grid;
   gap: var(--uok-space-3);

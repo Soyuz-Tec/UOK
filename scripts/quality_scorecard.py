@@ -66,7 +66,12 @@ CATEGORY_DEFINITIONS: tuple[CategoryDefinition, ...] = (
     ),
     (
         "documentation",
-        ["required_artifacts", "operations_hygiene", "internal_engineering_system"],
+        [
+            "required_artifacts",
+            "documentation_references",
+            "operations_hygiene",
+            "internal_engineering_system",
+        ],
         "Update owning Markdown artifacts with behavior and policy changes.",
     ),
     (

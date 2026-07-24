@@ -7,7 +7,7 @@
 
 .session-popover {
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   bottom: calc(100% + var(--uok-space-2));
   display: grid;
   gap: var(--uok-space-1);
@@ -41,7 +41,7 @@
   color: var(--uok-text-primary);
   font-family: inherit;
   font-size: var(--uok-footnote);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
@@ -79,13 +79,26 @@
   padding: var(--uok-space-2);
 }
 
+.session-menu-locale {
+  display: grid;
+  gap: var(--uok-space-2);
+  padding: 0 var(--uok-space-2) var(--uok-space-2);
+}
+
 .session-appearance-options {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 3px;
 }
 
-.session-appearance-options button {
+.session-locale-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.session-appearance-options button,
+.session-locale-options button {
   display: inline-flex;
   place-items: center;
   justify-content: center;
@@ -101,13 +114,15 @@
   cursor: pointer;
 }
 
-.session-appearance-options button.selected {
+.session-appearance-options button.selected,
+.session-locale-options button.selected {
   border-color: color-mix(in srgb, var(--uok-accent) 45%, var(--uok-border));
   background: color-mix(in srgb, var(--uok-accent) 12%, var(--uok-bg-grouped-secondary));
   color: var(--uok-text-primary);
 }
 
-.session-appearance-options button:focus-visible {
+.session-appearance-options button:focus-visible,
+.session-locale-options button:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--uok-accent) 35%, transparent);
   outline-offset: 2px;
 }

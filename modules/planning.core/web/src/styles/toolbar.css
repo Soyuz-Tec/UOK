@@ -1,0 +1,244 @@
+.planning-command-bar [aria-label="Timeline utilities"] {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+}
+
+.planning-controls-menu {
+  position: relative;
+}
+
+.planning-controls-menu .expandable-control-trigger {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--uok-space-2);
+  min-width: 176px;
+  min-height: 34px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: 0 var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
+  list-style: none;
+}
+
+.planning-controls-menu .expandable-control-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planning-controls-panel {
+  position: fixed;
+  z-index: 12;
+  top: 76px;
+  inset-inline-end: var(--uok-space-4);
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1fr) minmax(220px, 1fr) minmax(220px, 1fr);
+  gap: var(--uok-space-3);
+  width: min(1080px, calc(100vw - var(--uok-space-6)));
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-2);
+}
+
+.planning-controls-menu:not([data-open="true"]) > .planning-controls-panel {
+  display: none;
+}
+
+.planning-controls-actions {
+  grid-column: 1 / -1;
+  order: 8;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--uok-space-2);
+  border-top: var(--uok-line);
+  padding-top: var(--uok-space-2);
+}
+
+.planning-command-bar {
+  row-gap: 4px;
+  padding: var(--uok-space-1);
+}
+
+.planning-bulk-unavailable {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  border: 1px solid color-mix(in srgb, var(--uok-warning) 44%, var(--uok-border));
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-1) var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: color-mix(in srgb, var(--uok-warning) 10%, var(--uok-bg-elevated));
+  font-size: var(--uok-caption);
+}
+
+.planning-command-bar .command-button,
+.planning-command-bar .planning-toolbar-toggle,
+.planning-command-bar .planning-selection-toggle,
+.planning-command-bar .planning-toolbar-select,
+.planning-command-bar .planning-zoom-control {
+  min-height: 32px;
+}
+
+.planning-toolbar-select input[type="date"] {
+  min-width: 132px;
+  min-height: 28px;
+  border: 0;
+  color: var(--uok-text-primary);
+  background: transparent;
+  font: inherit;
+}
+
+.planning-search-plan-actions {
+  min-width: 0;
+}
+
+.planning-search-plan-action-list {
+  display: grid;
+  gap: var(--uok-space-2);
+}
+
+.planning-search-plan-action-list .command-button {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.planning-utility-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--uok-space-1);
+  align-content: start;
+  min-width: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-1);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-utility-group .saved-view-controls {
+  align-items: center;
+  gap: var(--uok-space-1);
+  min-width: max-content;
+}
+
+.planning-utility-group .saved-view-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--uok-space-1);
+}
+
+.planning-utility-group .saved-view-controls input {
+  width: 112px;
+}
+
+.planning-utility-group .saved-view-controls select {
+  min-width: 124px;
+}
+
+.planning-saved-field-controls {
+  grid-column: span 2;
+  order: 1;
+}
+
+.planning-mode-controls,
+.planning-display-controls {
+  grid-column: span 1;
+}
+
+.planning-mode-controls {
+  order: 6;
+}
+
+.planning-display-controls {
+  order: 7;
+}
+
+.planning-scale-controls {
+  grid-column: span 2;
+  order: 3;
+}
+
+.planning-navigation-controls {
+  grid-column: span 2;
+  order: 4;
+}
+
+.planning-export-controls {
+  grid-column: span 2;
+  order: 5;
+}
+
+.planning-scale-controls .segmented-control {
+  width: max-content;
+  grid-template-columns: repeat(8, minmax(72px, 1fr));
+}
+
+@media (max-width: 1260px) {
+  .planning-command-bar [aria-label="Timeline utilities"] {
+    align-items: center;
+  }
+
+  .planning-controls-panel {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .planning-controls-menu,
+  .planning-controls-menu .expandable-control-trigger {
+    width: 100%;
+  }
+
+  .planning-controls-panel {
+    top: var(--uok-space-4);
+    inset-inline: var(--uok-space-2);
+    grid-template-columns: 1fr;
+    width: auto;
+    max-height: calc(100vh - (var(--uok-space-4) * 2));
+    z-index: 40;
+  }
+
+  .planning-utility-group {
+    order: initial;
+    grid-column: auto;
+  }
+
+  .planning-utility-group .saved-view-controls {
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .planning-utility-group .saved-view-controls > label {
+    display: grid;
+    flex: 1 1 calc(100% - 24px);
+    width: auto;
+    min-width: 0;
+  }
+
+  .planning-utility-group .saved-view-controls select,
+  .planning-utility-group .saved-view-controls input,
+  .planning-utility-group .saved-view-controls .command-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .planning-utility-group .saved-view-controls > input,
+  .planning-utility-group .saved-view-controls > .command-button {
+    flex: 1 1 100%;
+  }
+
+  .planning-scale-controls .segmented-control {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

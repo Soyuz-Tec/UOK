@@ -1,7 +1,8 @@
-import { useId, useState } from "react";
-import type { FormEvent } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent } from "react";
 import { Check, Pencil, X } from "lucide-react";
 
+import { useUokLocalization } from "../localization";
 import { CommandButton } from "../primitives";
 import { FieldMessage } from "./FieldMessage";
 
@@ -10,7 +11,7 @@ export function InlineTextEdit({
   value,
   onCommit,
   validate,
-  failureMessage = "Could not save. Try again.",
+  failureMessage,
   disabled = false
 }: {
   label: string;
@@ -20,12 +21,22 @@ export function InlineTextEdit({
   failureMessage?: string;
   disabled?: boolean;
 }) {
+  const { t } = useUokLocalization();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const displayRef = useRef<HTMLButtonElement>(null);
+  const restoreFocusRef = useRef(false);
   const inputId = useId();
   const errorId = `${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-inline-error`;
+
+  useEffect(() => {
+    if (!editing && restoreFocusRef.current) {
+      restoreFocusRef.current = false;
+      displayRef.current?.focus();
+    }
+  }, [editing]);
 
   const startEditing = () => {
     setDraft(value);
@@ -36,6 +47,11 @@ export function InlineTextEdit({
   const cancel = () => {
     setDraft(value);
     setError("");
+    finishEditing();
+  };
+
+  const finishEditing = () => {
+    restoreFocusRef.current = true;
     setEditing(false);
   };
 
@@ -48,15 +64,15 @@ export function InlineTextEdit({
       return;
     }
     if (nextValue === value.trim()) {
-      setEditing(false);
+      finishEditing();
       return;
     }
     setSaving(true);
     try {
       await onCommit(nextValue);
-      setEditing(false);
+      finishEditing();
     } catch {
-      setError(failureMessage);
+      setError(failureMessage ?? t("form.saveFailed", "Could not save. Try again."));
     } finally {
       setSaving(false);
     }
@@ -64,21 +80,23 @@ export function InlineTextEdit({
 
   if (!editing) {
     return (
-      <button type="button" className="inline-edit-display" onClick={startEditing} disabled={disabled} aria-label={`Edit ${label}`}>
-        <span>{value || "Not set"}</span>
+      <button ref={displayRef} type="button" className="inline-edit-display" onClick={startEditing} disabled={disabled} aria-label={`${t("command.edit", "Edit")} ${label}`}>
+        <span dir="auto">{value || t("form.notSet", "Not set")}</span>
         <Pencil size={15} aria-hidden="true" />
       </button>
     );
   }
 
   return (
-    <form className="inline-edit-form" onSubmit={save}>
+    <form className="inline-edit-form" aria-busy={saving ? "true" : undefined} onKeyDown={handleKeyDown} onSubmit={save}>
       <label className={error ? "field invalid" : "field"} htmlFor={inputId}>
         <span>{label}</span>
         <input
           id={inputId}
           value={draft}
+          dir="auto"
           aria-label={label}
+          disabled={saving || disabled}
           onChange={(event) => {
             setDraft(event.target.value);
             if (error) setError("");
@@ -90,9 +108,15 @@ export function InlineTextEdit({
         {error && <FieldMessage id={errorId}>{error}</FieldMessage>}
       </label>
       <div className="inline-edit-actions">
-        <CommandButton icon={Check} type="submit" loading={saving} primary>Save</CommandButton>
-        <CommandButton icon={X} onClick={cancel} disabled={saving}>Cancel</CommandButton>
+        <CommandButton icon={Check} type="submit" loading={saving} disabled={disabled} primary>{t("command.save", "Save")}</CommandButton>
+        <CommandButton icon={X} onClick={cancel} disabled={saving || disabled}>{t("command.cancel", "Cancel")}</CommandButton>
       </div>
     </form>
   );
+
+  function handleKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    if (event.key !== "Escape" || saving) return;
+    event.preventDefault();
+    cancel();
+  }
 }

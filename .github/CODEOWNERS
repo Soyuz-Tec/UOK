@@ -8,9 +8,15 @@
 /.github/ @Soyuz-Tec
 /docs/architecture/ @Soyuz-Tec
 /docs/design/ @Soyuz-Tec
+/docs/modules/ @Soyuz-Tec
 /docs/operations/ @Soyuz-Tec
+/docs/reports/ @Soyuz-Tec
 /src/uok/ @Soyuz-Tec
 /modules/ @Soyuz-Tec
+/web/src/features/modules/ @Soyuz-Tec
+/web/src/generated/ @Soyuz-Tec
 /web/src/shared/ @Soyuz-Tec
 /migrations/ @Soyuz-Tec
+/tests/ @Soyuz-Tec
 /scripts/ @Soyuz-Tec
+/deploy/ @Soyuz-Tec

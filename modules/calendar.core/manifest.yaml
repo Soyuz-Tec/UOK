@@ -1,7 +1,9 @@
+manifest_schema: uok.module.v1
 name: calendar.core
 kind: capability_module
 version: APP_VERSION
-description: "Global calendar, scheduling, recurrence, reminders, availability, and iCalendar export capability for UOK apps."
+description: "Global calendars, events, recurrence, persisted reminder rules, free-busy context, and iCalendar export for UOK apps."
+maturity: runtime_proven
 installable: true
 uninstallable: true
 updatable: true
@@ -17,6 +19,7 @@ commands:
   - CreateCalendar
   - UpdateCalendar
   - DeleteCalendar
+  - RestoreCalendar
   - CreateCalendarEvent
   - UpdateCalendarEvent
   - CancelCalendarEvent
@@ -27,6 +30,7 @@ events:
   - CalendarCreated
   - CalendarUpdated
   - CalendarDeleted
+  - CalendarRestored
   - CalendarEventCreated
   - CalendarEventUpdated
   - CalendarEventCanceled
@@ -36,6 +40,8 @@ events:
 dependencies: []
 backend_path: modules/calendar.core/backend
 web_path: modules/calendar.core/web
+web_entry: modules/calendar.core/web/src/moduleSurface.tsx
+web_section: calendar
 migrations_path: modules/calendar.core/migrations
 tests_path: modules/calendar.core/tests
 api_prefixes:
@@ -45,6 +51,8 @@ command_handlers: uok_calendar_core.commands:command_handlers
 command_permissions: uok_calendar_core.commands:command_permissions
 role_grants: uok_calendar_core.policy:role_grants
 model_exports: uok_calendar_core.models:owned_models
+candidate_verifier_script: modules/calendar.core/verify/UokCandidateCalendar.ps1
+candidate_verifier_function: Invoke-UokCalendarCandidateScenario
 permissions:
   - calendar.read
   - calendar.manage
@@ -63,14 +71,11 @@ owned_tables:
   - CommandLog:calendar.core
   - EventRecord:Calendar
 extension_points:
-  - manifest
-  - backend_package
-  - command_handlers
   - api_router
+  - command_handlers
+  - command_permissions
+  - role_grants
   - model_exports
-  - permissions
-  - events
-  - migrations
   - web_surface
-  - tests
-data_retention_policy: "Calendar records are organization-scoped. Deletion soft-deletes calendars and cancellation retains event history for audit; purge is intentionally deferred to a future governance workflow."
+  - candidate_verifier
+data_retention_policy: "Calendar records are organization-scoped. Governed Calendar deletion soft-deletes a user-managed parent and hides retained event, participant, and reminder history from active reads until an authorized restore; event cancellation also retains history for audit. Generated and system-owned Calendars are not user-deletable. Purge is intentionally deferred to a future governance workflow."

@@ -3,16 +3,20 @@ import { ChevronUp, LogOut, RefreshCw } from "lucide-react";
 
 import { appearanceOptions } from "../../shared/options";
 import { formatLabel } from "../../shared/format";
-import type { Appearance, SessionUser } from "../../shared/types";
+import { uokLocaleOptions, useUokLocalization } from "../../shared/localization";
+import type { Appearance, SessionUser, UokLocale } from "../../shared/types";
 
-export function AccountMenu({ user, appearance, busy, onAppearanceChange, onRefresh, onSignOut }: {
+export function AccountMenu({ user, appearance, locale, busy, onAppearanceChange, onLocaleChange, onRefresh, onSignOut }: {
   user: SessionUser | null;
   appearance: Appearance;
+  locale: UokLocale;
   busy: boolean;
   onAppearanceChange: (value: Appearance) => void;
+  onLocaleChange: (value: UokLocale) => void;
   onRefresh: () => void;
   onSignOut: () => void;
 }) {
+  const { t } = useUokLocalization();
   const [expanded, setExpanded] = useState(false);
   const [confirmingLogout, setConfirmingLogout] = useState(false);
   const rootRef = useRef<HTMLElement | null>(null);
@@ -81,11 +85,11 @@ export function AccountMenu({ user, appearance, busy, onAppearanceChange, onRefr
   }
 
   return (
-    <footer ref={rootRef} className={`account-menu-root${expanded ? " expanded" : ""}`} aria-label="Signed in user controls">
+    <footer ref={rootRef} className={`account-menu-root${expanded ? " expanded" : ""}`} aria-label={t("account.controls")}>
       {expanded && (
-        <div id={menuId} ref={menuRef} className="session-popover" role="menu" aria-label="Account menu" onKeyDown={onMenuKeyDown}>
-          <div className="session-menu-appearance" role="group" aria-label="Appearance">
-            <div className="session-appearance-options" role="group" aria-label="Appearance">
+        <div id={menuId} ref={menuRef} className="session-popover" role="menu" aria-label={t("account.menu")} onKeyDown={onMenuKeyDown}>
+          <div className="session-menu-appearance" role="group" aria-label={t("account.appearance")}>
+            <div className="session-appearance-options" role="group" aria-label={t("account.appearance")}>
               {appearanceOptions.map(({ id, label, icon: Icon }) => (
                 <button key={id} type="button" role="menuitemradio" className={appearance === id ? "selected" : ""} aria-checked={appearance === id} onClick={() => onAppearanceChange(id)}>
                   <Icon size={13} aria-hidden="true" />
@@ -94,19 +98,26 @@ export function AccountMenu({ user, appearance, busy, onAppearanceChange, onRefr
               ))}
             </div>
           </div>
+          <div className="session-menu-locale" role="group" aria-label={t("account.language")}>
+            <div className="session-locale-options">
+              {uokLocaleOptions.map((option) => (
+                <button key={option.id} type="button" role="menuitemradio" className={locale === option.id ? "selected" : ""} aria-checked={locale === option.id} lang={option.id} dir={option.direction} onClick={() => onLocaleChange(option.id)}>{option.label}</button>
+              ))}
+            </div>
+          </div>
           <div className="session-menu-divider" />
           <button type="button" role="menuitem" className="session-menu-button" onClick={onRefresh} disabled={busy} aria-busy={busy || undefined}>
             <RefreshCw size={16} aria-hidden="true" />
-            <span>Refresh</span>
+            <span>{t("account.refresh")}</span>
           </button>
           <div className="session-menu-divider" />
           <button type="button" role="menuitem" className="session-menu-button destructive" onClick={() => setConfirmingLogout(true)}>
             <LogOut size={16} aria-hidden="true" />
-            <span>Logout</span>
+            <span>{t("account.logout")}</span>
           </button>
         </div>
       )}
-      <button ref={triggerRef} type="button" className="session-user-trigger" aria-expanded={expanded} aria-controls={menuId} aria-label={`${expanded ? "Close" : "Open"} account menu for ${displayName}`} onClick={() => setExpanded((value) => !value)}>
+      <button ref={triggerRef} type="button" className="session-user-trigger" aria-expanded={expanded} aria-controls={menuId} aria-label={`${expanded ? t("account.close") : t("account.open")} ${displayName}`} onClick={() => setExpanded((value) => !value)}>
         <span className="account-avatar" aria-hidden="true">{initial}</span>
         <span className="account-meta" aria-hidden="true">
           <strong>{displayName}</strong>
@@ -121,15 +132,15 @@ export function AccountMenu({ user, appearance, busy, onAppearanceChange, onRefr
               <LogOut size={20} />
             </div>
             <div>
-              <h2 id="logout-dialog-title">Logout</h2>
-              <p id="logout-dialog-body">End this session and return to the login screen?</p>
+              <h2 id="logout-dialog-title">{t("account.logout")}</h2>
+              <p id="logout-dialog-body">{t("account.endSession")}</p>
             </div>
             <div className="logout-dialog-actions">
-              <button type="button" className="command-button" onClick={() => setConfirmingLogout(false)}>Cancel</button>
+              <button type="button" className="command-button" onClick={() => setConfirmingLogout(false)}>{t("account.cancel")}</button>
               <button ref={confirmButtonRef} type="button" className="command-button destructive" onClick={() => {
                 setConfirmingLogout(false);
                 onSignOut();
-              }}>Logout</button>
+              }}>{t("account.logout")}</button>
             </div>
           </section>
         </div>

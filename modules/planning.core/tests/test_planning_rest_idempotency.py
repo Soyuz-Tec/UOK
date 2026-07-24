@@ -1,0 +1,66 @@
+from __future__ import annotations
+
+from uuid import uuid4
+
+from starlette.testclient import TestClient
+
+from tests.helpers import auth
+
+
+def test_planning_rest_writes_require_and_replay_idempotency_key(client: TestClient) -> None:
+    suffix = str(uuid4())[:8]
+    admin = auth(client, "admin", "admin")
+    ops = auth(client, "ops", "ops123")
+
+    assert client.post("/api/modules/calendar.core/install", headers=admin).status_code == 200
+    assert client.post("/api/modules/planning.core/install", headers=admin).status_code == 200
+
+    payload = {"name": f"REST Idempotency {suffix}", "start": "2026-08-03", "end": "2026-08-28"}
+    missing = client.post("/api/planning/projects", headers=ops, json=payload)
+    assert missing.status_code == 422, missing.text
+
+    too_short = client.post(
+        "/api/planning/projects",
+        headers={**ops, "Idempotency-Key": "short"},
+        json=payload,
+    )
+    assert too_short.status_code == 422, too_short.text
+
+    whitespace = client.post(
+        "/api/planning/projects",
+        headers={**ops, "Idempotency-Key": " " * 16},
+        json=payload,
+    )
+    assert whitespace.status_code == 422, whitespace.text
+
+    too_long = client.post(
+        "/api/planning/projects",
+        headers={**ops, "Idempotency-Key": "a" * 129},
+        json=payload,
+    )
+    assert too_long.status_code == 422, too_long.text
+
+    key = f"planning-rest-project-{suffix}".ljust(128, "x")
+    headers = {**ops, "Idempotency-Key": key}
+    created = client.post("/api/planning/projects", headers=headers, json=payload)
+    assert created.status_code == 200, created.text
+
+    replay = client.post("/api/planning/projects", headers=headers, json=payload)
+    assert replay.status_code == 200, replay.text
+    assert replay.json() == created.json()
+
+    conflict = client.post(
+        "/api/planning/projects",
+        headers=headers,
+        json={**payload, "name": f"Different REST Idempotency {suffix}"},
+    )
+    assert conflict.status_code == 409, conflict.text
+    error = conflict.json()["error"]
+    assert error["code"] == "idempotency_conflict"
+    assert error["field"] == "idempotency_key"
+    assert error["correlation_id"] == created.json()["correlation_id"]
+    assert "different command request" in error["message"]
+
+    rows = client.get("/api/planning/projects", headers=ops)
+    assert rows.status_code == 200, rows.text
+    assert [row["id"] for row in rows.json()].count(created.json()["id"]) == 1

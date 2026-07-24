@@ -1,0 +1,1 @@
+"""Private registry capability implementation."""

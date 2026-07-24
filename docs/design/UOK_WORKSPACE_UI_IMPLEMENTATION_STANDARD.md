@@ -43,7 +43,7 @@ Use multiple live agents only when the task has parallelizable work with clear b
 2. Map reusable behavior before coding.
    - If a behavior can be used by more than one module, design it as module-neutral.
    - Shared UI belongs under `web/src/shared`.
-   - Feature-specific UI belongs under `web/src/features/<feature>` or the module-owned surface until it proves reusable.
+   - Module-specific production UI belongs under `modules/<module_name>/web/src`; only product-neutral shell, composition, generated contracts, and shared primitives belong under `web/src`.
 
 3. Keep the workspace calm.
    - Prefer one command surface, one selected-record surface, and one status/evidence surface.
@@ -68,6 +68,42 @@ Every durable module workspace should use this structure unless the module plan 
 2. Command and search surface
    - Search, filters, grouping, sort, saved views, view mode, pagination, and primary create action should be organized as one coherent command surface.
    - Do not show the same active filter in multiple competing places.
+   - Use the shared workspace command bar for module-neutral layout. It exposes optional query, context, pagination, view, fields, secondary-action, and primary-action slots while keeping module state and business commands inside the owning module.
+   - Keep the command bar to at most three labelled groups in stable order: query, context, and actions. Do not use the ARIA `toolbar` role unless the complete toolbar keyboard interaction pattern is implemented.
+   - Keep frequent view and field controls plus one trailing create command directly available. When a module has additional low-frequency actions, place them in a labelled supplemental section of the expandable search/options panel; clearing search refinements must not invoke those actions or reset their state.
+   - Expandable filter/control panels apply changes live without dismissing. Clear resets refinements while the panel remains available for inspection; Done, Escape, outside activation, and an explicitly applied saved view dismiss and return focus to the trigger. Narrow layouts keep the panel inside the viewport as a one-column surface.
+
+### Common action vocabulary
+
+ADR-0025 defines the shared labels. Modules provide the domain noun and command
+handler while reusing these visible terms and shared localization keys.
+
+| Intent | Label and placement |
+|---|---|
+| Search and default set | `Search <plural noun>` and `All <plural noun>` in query |
+| Open existing content | `Open` or `Open <singular noun>` on the owning row, card, result, or contextual action area |
+| Close a transient surface | `Close` in shared popup, editor, or transient-surface chrome or actions; do not add it as a duplicate workspace command |
+| Top-level creation | One trailing primary `New <singular noun>` action |
+| Nested association | `Add <noun>` inside the owning record workflow |
+| Refine and present | `Filters`, `Sort`, `Group by`, `Saved views`, `Fields`, and `View` |
+| Reload and history | `Refresh`, `Undo`, and `Redo`; low frequency may use a labelled supplemental section |
+| Output | `Export` or `Export <format>`, and `Print`; use labelled supplemental actions unless output is central to the workflow |
+| Reset and dismiss options | `Clear all` keeps the panel available; `Done` dismisses and restores focus |
+| Edit workflow | `Edit`, `Save`, `Discard`, and `Cancel` according to whether dirty work exists |
+| Destructive versus relational | `Delete` destroys the record and is contextual/destructive; `Remove` detaches a relationship |
+
+Keep unavailable commands visible but disabled when discoverability matters, use
+an inline loading state for committed work, and do not use a vocabulary change
+to hide a permission or validation failure. Record a justified exception in the
+owning module plan.
+
+For user-managed records, visible `Delete` may map to an owning module's
+retained soft-delete or recoverable archive lifecycle. The confirmation must
+name the selected record, explain retained children/history and restoration,
+and use the shared draggable confirmation primitive. Generated or system-owned
+records are never made deletable through client-side heuristics. A stale
+destructive request reloads authoritative state and requires a new explicit
+confirmation; it is not eligible for generic automatic reapply.
 
 3. Results surface
    - Supports list/detail, table, and cards only when each view has a clear user need.
@@ -76,6 +112,47 @@ Every durable module workspace should use this structure unless the module plan 
 4. Detail or editor surface
    - Selected records use an inspector, sheet, or workspace popup without forcing unnecessary navigation.
    - Create actions must open a blank creation form and must not reuse previously selected record data.
+
+### Shared modal overlay contract
+
+`WorkspacePopup` and `WorkspaceEditorPopup` under `web/src/shared/overlays` are the
+module-neutral modal boundary. They must contain keyboard focus while open,
+isolate background branches with `inert` and `aria-hidden`, and restore every
+pre-existing property and attribute value exactly when the modal closes. Focus
+returns to the opener when it still exists; when a successful workflow replaces
+that trigger, the owning module must focus a stable replacement control or
+workspace region.
+
+Committed asynchronous work must set `dismissible={false}` so Escape, backdrop
+activation, and the close control cannot dismiss the modal until the operation
+settles. The close control must provide at least a 44-by-44 CSS-pixel target for
+coarse pointers. Shared overlay labels and controls, plus module-owned title,
+description, fields, actions, validation, and status text, must use the shared
+UOK localization provider rather than hard-coded visible strings.
+
+Nested overlays participate in the shared overlay stack. Only the topmost open
+popup or context menu may process Escape or contain the active Tab cycle; a
+parent expandable panel must remain open while its child confirmation is
+active. Closing the child restores focus inside the parent, and only a later,
+separate dismissal may close the parent. Modules must not add document-level
+keyboard handlers that bypass this stack.
+
+Every `WorkspacePopup` and `WorkspaceEditorPopup` is draggable through the
+shared overlay implementation rather than module-local handlers. A dedicated
+localized move handle must support pointer and touch movement with pointer
+capture and provide an equivalent keyboard path: Arrow keys move by a small
+step, Shift+Arrow moves by a larger step, and Home returns the popup to its
+opening position. Moving the popup must not start from fields, links, editor
+actions, or the close control, and completing a drag must not activate backdrop
+dismissal.
+
+Popup movement is transient for the current opening. Each new opening starts
+at its standard opening position, and movement plus viewport changes must clamp the complete popup to
+the safe viewport so its move handle, close control, and content cannot become
+unreachable at desktop, tablet, narrow, zoomed, or coarse-pointer layouts. The
+draggable behavior must preserve the modal focus trap, background isolation,
+focus restoration, scrolling, `dismissible={false}` behavior, and localized
+accessible instructions.
 
 5. Status and evidence surface
    - Human-readable state comes before raw JSON.
@@ -97,6 +174,7 @@ Required shared primitives include:
 - app shell and navigation
 - account menu
 - command button and icon button
+- workspace command bar with responsive query, context, and action grouping
 - segmented control
 - search and filter workspace
 - saved views
@@ -172,6 +250,8 @@ A UI implementation is complete only when:
 
 - the workflow is understandable without developer explanation;
 - duplicated controls have been removed or justified;
+- the command surface uses stable query, context, and actions grouping, no more than one primary action, and the ADR-0025 common vocabulary;
+- cross-module UI proof covers command reachability, focus, narrow and enlarged-text reflow, localization, and appearance when the shared command boundary changes;
 - shared behavior is in shared primitives;
 - feature-specific behavior remains inside the owning feature or module;
 - source files remain reviewable under the line-of-code integrity policy;

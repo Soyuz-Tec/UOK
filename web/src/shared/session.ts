@@ -4,8 +4,7 @@ import { readStorageJson, readStorageString, removeStorageItem } from "./storage
 export const tokenKey = "uok_token";
 export const userKey = "uok_user";
 export const appearanceKey = "uok_appearance";
-export const contactsViewKey = "uok_contacts_view";
-export const contactsGroupByKey = "uok_contacts_group_by";
+export const localeKey = "uok_locale";
 export const sidebarCollapsedKey = "uok_sidebar_collapsed";
 
 export function storedUser() {

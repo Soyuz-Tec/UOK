@@ -1,0 +1,8 @@
+services:
+  db:
+    pull_policy: never
+    restart: unless-stopped
+  api:
+    image: docker.io/library/uok-api:latest
+    pull_policy: never
+    restart: unless-stopped

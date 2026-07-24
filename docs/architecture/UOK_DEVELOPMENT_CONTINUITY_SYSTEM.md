@@ -48,12 +48,13 @@ Every non-trivial UOK task follows this loop:
    - Read `docs/ARCHITECTURE.md`, this document, and affected policy or module docs.
 
 2. Locate ownership
-   - Decide whether the change belongs in `src/uok`, `modules/<module-name>`, `web/src/shared`, a feature surface, migrations, tests, or docs.
+   - Decide whether the change belongs in `src/uok`, `modules/<module-name>`, the product-neutral `web/src` shell/shared layer, module production UI under `modules/<module-name>/web/src`, module frontend tests under `modules/<module-name>/tests/web`, migrations, verification, or docs.
    - Product-specific or business-specific behavior must stay in installable modules.
 
 3. Implement within current stack
    - Backend: Python, FastAPI, Pydantic, SQLAlchemy, PostgreSQL.
    - Frontend: TypeScript, React, Vite, CSS design tokens.
+   - Module frontend composition: closed-manifest `web_surface`, `web_entry`, and `web_section` metadata generate literal compile-time imports; the browser never loads YAML or dynamic manifest paths.
    - Do not add a new durable language, framework, ORM, build tool, or UI system without an ADR and policy update.
 
 4. Keep the source reviewable
@@ -68,6 +69,7 @@ Every non-trivial UOK task follows this loop:
 
 6. Verify
    - Run the relevant compile, test, build, audit, naming, boundary, module contract, and candidate checks.
+   - For candidate scenarios, prove Candidate Data Neutrality v1 with repeated-run zero-delta evidence for exact Calendar, Contact, Planning, and Shipment fixture inventories.
    - Generate `EngineeringEvidence` when the task changes code quality, release readiness, or durable workflow rules.
    - For UI work, verify the local runtime and light/dark/system behavior when possible.
 
@@ -93,9 +95,16 @@ These accepted lessons must guide future implementation:
 | UI policy is mandatory now | Apply the Apple-informed UOK UI policy to current work, not only future redesigns | `docs/design/UOK_UI_DESIGN_POLICY.md` |
 | Workspace UI implementation is standardized | Use the UOK workspace UI implementation standard for specialist review roles, workspace anatomy, shared primitive promotion, and UI verification gates | `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md` |
 | Global reusable UI belongs in shared areas | Reusable pop-ups, inline editing, searchable filters, tables, and column resizing belong in module-neutral shared components | `web/src/shared` and `docs/design/UOK_UI_DESIGN_POLICY.md` |
+| Module frontend ownership is physical | Keep module production React source and local CSS under `modules/<module>/web/src`, module frontend tests under `modules/<module>/tests/web`, and compose declared surfaces through the checked-in generated catalog | `docs/architecture/ADR-0023-module-local-frontend-composition.md` |
+| Frontend manifests are compile-time truth | Generate literal imports from closed `web_surface`, `web_entry`, and `web_section` metadata; never load manifest YAML or dynamic module paths in the browser | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` |
+| Shell/module contracts are neutral and one-way | Pass only the explicit `web/src/contracts/moduleSurface.ts` host port; keep feature state/data/commands in the owner and reject cross-owner source cycles | `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md` |
+| Reports owns report transport | Keep the typed report client in `modules/reports.core/web/src`; module consumers may use that client without relocating it into shared shell utilities | `modules/reports.core/web/README.md` |
+| Planned Agents remains inert | Do not add an executable Agents surface, permission, or active extension until its manifest maturity and evidence change | `modules/agents.core/web/README.md` |
+| Planning authority remains server-side | Python module service first, with React UI receiving validated schedule read models. | `docs/architecture/ADR-0023-module-local-frontend-composition.md` |
 | Contacts BI is derived | Business intelligence profiles summarize existing contact signals and must not become a hidden source of truth | `docs/architecture/UOK_CONTACT_BUSINESS_INTELLIGENCE_PROFILES.md` |
 | Naming is a boundary | Use only `UOK` and `Unified Operating Kernel`, with lowercase `uok` only where technical surfaces require it | `docs/architecture/UOK_NAMING_CONVENTIONS.md` |
-| Local runtime evidence matters | HTTP checks and candidate verifier output are stronger than visual assumptions | `scripts/verify_uok_candidate.ps1` |
+| Local runtime evidence matters | HTTP checks and isolated exact-image candidate verifier output are stronger than visual assumptions | `scripts/verify_uok_candidate_isolated.ps1` |
+| Candidate verification is data-neutral | Successful and failed verification must retain no user-visible or recoverable Calendar, Contact, Planning, or Shipment fixtures; cleanup preserves the primary error, and historical cleanup uses exact reviewed IDs plus a sorted-ID SHA-256 digest | `docs/ARCHITECTURE.md` and `docs/operations/UOK_STANDARD_OPERATIONS.md` |
 | Repeatable operations matter | Verification, audit, backup, restore, rebuild, GitHub preflight, and ASUH drills use standardized commands | `docs/operations/UOK_STANDARD_OPERATIONS.md` |
 | GitHub is the shared source of truth | Completed verified work is synchronized through GitHub unless explicitly local-only or blocked by verification, upstream divergence, or unsafe artifacts | `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md` |
 | GitHub checks are automated | Readiness, security setup, and PR check watching use wrapper actions instead of ad hoc `gh` command sequences | `scripts/uok_github_ops.ps1` |
@@ -108,6 +117,7 @@ These accepted lessons must guide future implementation:
 | New module | Update `docs/architecture/UOK_MODULE_ROADMAP.md`, add `docs/modules/<module-name>/`, and ensure module-local `README.md` files exist |
 | Agent runbook, governed tool binding, AI approval gate, or agent evidence change | Update `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` and `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | New module extension surface | Update `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`, `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`, tests, and an ADR if material |
+| New or changed module frontend surface | Update the owning manifest `web_surface`/`web_entry`/`web_section`, `modules/<module_name>/web/README.md`, generated frontend catalog, module frontend tests, and ADR/policy docs when the boundary changes |
 | New command, event, permission, API, migration, or owned table | Update module manifest, tests, module plan, and verification evidence |
 | New global UI primitive | Update or confirm `docs/design/UOK_UI_DESIGN_POLICY.md` and use `web/src/shared` |
 | Workspace UI implementation method, specialist role, or shared primitive promotion rule | Update `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`; update `docs/design/UOK_UI_DESIGN_POLICY.md` only when the design policy itself changes |
@@ -118,7 +128,7 @@ These accepted lessons must guide future implementation:
 | Code quality, line-of-code, efficiency, or technology audit change | Update `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`, `scripts/quality_audit.py`, and operations docs |
 | Quality scorecard, evidence schema, or dashboard metric change | Update `scripts/engineering_evidence.py`, `scripts/quality_scorecard.py`, quality docs, operations docs, and tests |
 | Naming, product, or cargo modeling change | Update naming and separation policy docs before implementation is accepted |
-| Candidate verification gate change | Update `docs/ARCHITECTURE.md`, this guide, verifier scripts, and tests |
+| Candidate verification gate change | Update `docs/ARCHITECTURE.md`, this guide, `docs/operations/UOK_STANDARD_OPERATIONS.md`, affected module plans, verifier scripts, and tests |
 | Local operation, backup, restore, rebuild, GitHub, or ASUH procedure change | Update `docs/operations/UOK_STANDARD_OPERATIONS.md`, `docs/operations/UOK_ASUH_TEST_EVENTS.md`, and related scripts |
 | New durable Markdown artifact | Link it from `docs/DOCUMENTATION_INDEX.md`; link it from `docs/ARCHITECTURE.md` if it affects architecture or mandatory workflow |
 
@@ -132,7 +142,9 @@ Use these controls continuously, not only before release:
 - Keep read models separate from write commands.
 - Keep derived profile logic separate from editable source-of-truth records.
 - Keep UI components, hooks, shared controls, and CSS split by responsibility.
+- Keep module-specific UI and CSS in the owning module; keep only product-neutral shell, global tokens, generated contracts, and reusable controls under `web/src`.
 - Keep tests grouped by behavior area.
+- Keep module frontend tests under the canonical `modules/<module>/tests/web` path so Vitest can discover them and container validation can exclude them from production.
 - Keep generated files out of manual edits.
 
 The working target remains:
@@ -150,10 +162,11 @@ Run the full pack before candidate promotion:
 
 ```powershell
 python -m compileall -q src modules tests conftest.py
-python -m pytest -q
+python scripts/run_python_tests.py
+npm --prefix web run check:contracts
 npm --prefix web test
 npm --prefix web run build:static
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 
 Run the focused quality and technology audit before expanding a feature area:
@@ -177,15 +190,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 Run these supporting checks when relevant:
 
 ```powershell
-python -m pip_audit -r requirements.txt
-cd web
-npm audit --omit=dev
+python -m pip_audit -r requirements-dev.txt
+npm --prefix web run check:contracts
+npm --prefix web audit
 ```
 
 Run these architecture checks when boundaries, modules, docs, or naming are touched:
 
 ```powershell
-$env:PYTHONPATH='src'; python -c "from uok.module_contract_validation import validate_module_extension_contracts; import json; print(json.dumps(validate_module_extension_contracts(), indent=2))"
+$env:PYTHONPATH='src'; python -c "from uok.module_release_contract import validate_module_release_contracts; import json; r=validate_module_release_contracts(); assert r['ok'], r; print(json.dumps(r, indent=2))"
 python -m pytest tests/test_naming_policy.py -q
 ```
 
@@ -212,6 +225,12 @@ When a pattern repeats:
 - do not let repeated code become a later splitting project;
 - document the promoted pattern in the correct artifact.
 
+Historical fixture cleanup is never inferred from naming resemblance alone.
+Prepare the exact candidate IDs, review the exclusions, record the SHA-256
+digest of the sorted ID list, preserve backup or rollback evidence appropriate
+to the data owner, and fail closed if the live set differs from the reviewed
+set.
+
 ## Do Not Do
 
 - Do not treat chat history as stronger than repository evidence.
@@ -221,6 +240,7 @@ When a pattern repeats:
 - Do not add one-off CSS that bypasses design tokens.
 - Do not let a historical target document define current behavior accidentally.
 - Do not leave new docs unlinked from the documentation index.
+- Do not accept a candidate verifier that leaves a user-visible or recoverable Calendar, Contact, Planning, or Shipment fixture.
 - Do not mark work complete when code passes but the owning policy or module plan is stale.
 
 ## Completion Definition
@@ -230,6 +250,7 @@ A UOK development task is complete only when:
 - code is in the correct owner boundary;
 - docs reflect current behavior and accepted policy;
 - tests and candidate gates relevant to the change pass;
+- candidate verification retains no user-visible or recoverable Calendar, Contact, Planning, or Shipment fixtures;
 - source size and naming checks do not reveal avoidable drift;
 - local runtime evidence is collected when runtime behavior changes;
 - remaining limitations are stated plainly.

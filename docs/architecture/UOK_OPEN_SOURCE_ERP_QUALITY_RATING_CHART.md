@@ -1,10 +1,14 @@
-# UOK Open-Source ERP Kernel Quality Rating Chart
+# UOK Open-Source ERP Kernel Quality Rating Chart (Historical Snapshot)
 
 **Assessment date:** 2026-07-06
 **UOK build assessed:** `UOK-3.1.0-alpha.2` local candidate
 **Scope:** UOK compared with mature open-source ERP/application-kernel systems using public source repositories and local UOK source inspection.
 
-This chart is a code-level architecture comparison, not a feature checklist and not a market ranking. It compares maintainability posture, kernel design, folder structure, module model, verification posture, security/governance posture, and maturity.
+This chart is a code-level architecture comparison, not a feature checklist and not a market ranking. It compares maintainability posture, kernel design, folder structure, module model, verification posture, security/governance posture, and maturity. Its measurements and scores are frozen to the dated `UOK-3.1.0-alpha.2` snapshot and must not be read as current candidate evidence.
+
+## Current Structure Note
+
+The `UOK-3.1.0-alpha.3` candidate now has seven file-backed module packages. Runtime-proven modules own backend/ORM definitions, migrations, tests, and verifiers; declared workbench modules also own production React/CSS and frontend tests under their module roots. Closed manifests drive validated runtime extensions and a generated compile-time frontend catalog. Current architecture and verification claims are authoritative in `docs/ARCHITECTURE.md` and the module traceability records; this historical chart has not recomputed source metrics or peer scores for those changes.
 
 ## Method
 
@@ -18,9 +22,9 @@ The rating scale is `0-100`:
 - `60-69`: useful or promising, but incomplete as a production-grade platform kernel.
 - `<60`: not yet comparable as a stable kernel.
 
-## Current UOK Size Baseline
+## Snapshot UOK Size Baseline
 
-| Metric | Current UOK |
+| Metric | Snapshot UOK |
 |---|---:|
 | Non-generated source files scanned | `144` |
 | Non-generated source lines scanned | `8,847` |
@@ -115,7 +119,7 @@ UOK should continue as a **small, strict modular monolith kernel** and avoid bec
 
 ## Sources
 
-- UOK local source scan: `C:\Users\vasan\OneDrive\Documents\UOK`, measured 2026-07-06.
+- UOK local source scan at the repository root, measured 2026-07-06.
 - Odoo GitHub repository: https://github.com/odoo/odoo
 - Frappe Framework GitHub repository: https://github.com/frappe/frappe
 - ERPNext GitHub repository: https://github.com/frappe/erpnext

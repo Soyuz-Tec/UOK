@@ -31,6 +31,7 @@
   --uok-space-8: 32px;
   --uok-radius-2: 6px;
   --uok-radius-3: 8px;
+  --uok-radius-pill: 999px;
   --uok-control-height: 44px;
   --uok-row-height: 50px;
   --uok-header-row-height: 50px;
@@ -38,6 +39,7 @@
   --uok-sidebar-width: 272px;
   --uok-sidebar-collapsed-width: 88px;
   --uok-line: 1px solid var(--uok-separator);
+  --uok-shadow-1: 0 2px 8px color-mix(in srgb, #111827 12%, transparent);
   --uok-shadow-2: 0 18px 48px color-mix(in srgb, #111827 18%, transparent), 0 4px 12px color-mix(in srgb, #111827 10%, transparent);
 
   --uok-large-title: 1.75rem;

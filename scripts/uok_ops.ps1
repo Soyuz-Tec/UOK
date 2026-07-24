@@ -1,13 +1,19 @@
 param(
-    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "BackupDb", "RestoreDb", "AsuhTest", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
+    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "DatabaseCapacity", "PlanningReleaseReadiness", "ContactsVerifierGroupCleanup", "BackupDb", "RestoreDb", "AsuhTest", "AutoStartInstall", "AutoStartStatus", "AutoStartVerify", "AutoStartDisable", "AutoStartEnable", "AutoStartUninstall", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
     [string]$Action = "Audit",
     [string]$BaseUrl = "http://127.0.0.1:18088",
     [string]$ProjectName = "uok",
     [string]$ComposeFile = "deploy\compose-local-18088.yaml",
     [string]$BackupPath = "",
     [switch]$ConfirmRestore,
+    [string]$ContactsCleanupUsername = "ops",
+    [string]$ContactsCleanupPlanPath = "",
+    [switch]$ExecuteContactsCleanup,
+    [switch]$ConfirmContactsCleanup,
     [int]$PullRequestNumber = 0,
     [switch]$WatchChecks,
+    [ValidateRange(1, 1440)]
+    [int]$CheckIntervalMinutes = 1,
     [string]$IncidentReason = "manual ASUH test",
     [ValidateSet("info", "warning", "critical")]
     [string]$IncidentSeverity = "warning"
@@ -18,7 +24,6 @@ $RepoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $RepoRoot
 
 . (Join-Path $PSScriptRoot "uok_common_ops.ps1")
-
 function Invoke-PowerShellScript {
     param([string[]]$Arguments)
     Invoke-Native "powershell" $Arguments
@@ -43,6 +48,8 @@ function Invoke-UokHealth {
 }
 
 . (Join-Path $PSScriptRoot "uok_db_ops.ps1")
+. (Join-Path $PSScriptRoot "uok_contacts_cleanup_ops.ps1")
+. (Join-Path $PSScriptRoot "uok_planning_release_ops.ps1")
 
 function Test-UokSourceSize {
     Invoke-UokStep "Source-size guardrail" {
@@ -99,17 +106,21 @@ function Invoke-UokAudit {
     Invoke-UokStep "Git whitespace audit" { Invoke-Native "git" @("diff", "--check") }
     Invoke-UokTechnologyAudit
     Invoke-UokStep "Compile Python" { Invoke-Native "python" @("-m", "compileall", "-q", "src", "modules", "tests", "conftest.py") }
-    Invoke-UokStep "Python tests" { Invoke-Native "python" @("-m", "pytest", "-q") }
-    Invoke-UokStep "Python dependency audit" { Invoke-Native "python" @("-m", "pip_audit", "-r", "requirements.txt") }
+    Invoke-UokStep "Python tests" { Invoke-Native "python" @("scripts/run_python_tests.py") }
+    Invoke-UokStep "Python dependency audit" { Invoke-Native "python" @("-m", "pip_audit", "-r", "requirements-dev.txt") }
     Push-Location web
     try {
-        Invoke-UokStep "Frontend dependency audit" { Invoke-Native "npm" @("audit", "--omit=dev") }
+        Invoke-UokStep "Generated API contract drift" { Invoke-Native "npm" @("run", "check:contracts") }
+        Invoke-UokStep "Frontend dependency audit" { Invoke-Native "npm" @("audit") }
     } finally {
         Pop-Location
     }
     $env:PYTHONPATH = Join-Path $RepoRoot "src"
-    Invoke-UokStep "Module extension contract" {
-        Invoke-Native "python" @("-c", "from uok.module_contract_validation import validate_module_extension_contracts; r=validate_module_extension_contracts(); assert r['ok'], r; print(r)")
+    Invoke-UokStep "Container module asset catalog" {
+        Invoke-Native "python" @("scripts/validate_container_module_assets.py")
+    }
+    Invoke-UokStep "Module release contract" {
+        Invoke-Native "python" @("-c", "from uok.module_release_contract import validate_module_release_contracts; r=validate_module_release_contracts(); assert r['ok'], r; print(r)")
     }
     Invoke-UokStep "Source-boundary report" {
         Invoke-Native "python" @("-c", "from uok.quality import source_boundary_report; r=source_boundary_report(); assert r['ok'], r; print(r)")
@@ -150,16 +161,48 @@ function Invoke-UokVerify {
         Pop-Location
     }
     Invoke-UokUiProof
-    Invoke-UokStep "Candidate verifier" {
-        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate.ps1", "-BaseUrl", $BaseUrl)
+    Invoke-UokStep "Isolated candidate verifier" {
+        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate_isolated.ps1", "-ProjectName", $ProjectName)
     }
 }
 
 function Invoke-UokRebuild {
+    Invoke-UokDatabaseCapacityOffline
     Invoke-UokStep "Rebuild local Podman stack" {
         Invoke-Native "podman" @("compose", "-p", $ProjectName, "-f", $ComposeFile, "up", "-d", "--build")
     }
     Invoke-UokHealth
+    Invoke-UokDatabaseCapacityLive
+    Sync-UokApiRecoveryImageTag -RuntimeProject $ProjectName
+    if ($env:OS -eq "Windows_NT") { Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_autostart_ops.ps1", "-Action", "Refresh") }
+}
+
+function Invoke-UokDatabaseCapacityOffline {
+    Invoke-UokStep "Offline database connection-capacity policy" {
+        Invoke-Native "python" @(
+            "scripts/verify_database_capacity.py",
+            "--environment-file",
+            "deploy/database-capacity.env"
+        )
+    }
+}
+
+function Invoke-UokDatabaseCapacityLive {
+    Invoke-UokStep "Live database connection-capacity policy" {
+        $apiContainer = "$ProjectName-api-1"
+        Invoke-Native "podman" @(
+            "exec",
+            $apiContainer,
+            "python",
+            "scripts/verify_database_capacity.py",
+            "--live"
+        )
+    }
+}
+
+function Invoke-UokDatabaseCapacity {
+    Invoke-UokDatabaseCapacityOffline
+    Invoke-UokDatabaseCapacityLive
 }
 
 function Invoke-UokAsuhTest {
@@ -177,8 +220,8 @@ function Invoke-UokAsuhTest {
     $event | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 -Path $eventPath
     Write-Host "ASUH incident event written to $eventPath"
     Invoke-UokHealth
-    Invoke-UokStep "ASUH candidate verifier" {
-        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate.ps1", "-BaseUrl", $BaseUrl)
+    Invoke-UokStep "ASUH isolated candidate verifier" {
+        Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\verify_uok_candidate_isolated.ps1", "-ProjectName", $ProjectName)
     }
 }
 
@@ -210,7 +253,6 @@ function Invoke-UokGithubPreflight {
         Invoke-Native "git" @("ls-files", "--others", "--exclude-standard")
     }
 }
-
 function Invoke-UokGithubOperation {
     param([string]$GithubAction)
     $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_github_ops.ps1", "-Action", $GithubAction)
@@ -222,7 +264,15 @@ function Invoke-UokGithubOperation {
     }
     Invoke-PowerShellScript $arguments
 }
-
+function Invoke-UokAutoStartOperation {
+    param([string]$AutoStartAction)
+    $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_autostart_ops.ps1", "-Action", $AutoStartAction)
+    if ($AutoStartAction -eq "Install") { $arguments += @("-CheckIntervalMinutes", "$CheckIntervalMinutes") }
+    if ($AutoStartAction -eq "Uninstall") {
+        $arguments += "-ConfirmUninstall"
+    }
+    Invoke-PowerShellScript $arguments
+}
 switch ($Action) {
     "Audit" { Invoke-UokAudit }
     "TechnologyAudit" { Invoke-UokTechnologyAudit }
@@ -231,9 +281,18 @@ switch ($Action) {
     "Verify" { Invoke-UokVerify }
     "Rebuild" { Invoke-UokRebuild }
     "Health" { Invoke-UokHealth }
+    "DatabaseCapacity" { Invoke-UokDatabaseCapacity }
+    "PlanningReleaseReadiness" { Invoke-UokPlanningReleaseReadiness }
+    "ContactsVerifierGroupCleanup" { Invoke-UokContactsVerifierGroupCleanup }
     "BackupDb" { Invoke-UokBackupDb }
     "RestoreDb" { Invoke-UokRestoreDb }
     "AsuhTest" { Invoke-UokAsuhTest }
+    "AutoStartInstall" { Invoke-UokAutoStartOperation "Install" }
+    "AutoStartStatus" { Invoke-UokAutoStartOperation "Status" }
+    "AutoStartVerify" { Invoke-UokAutoStartOperation "Verify" }
+    "AutoStartDisable" { Invoke-UokAutoStartOperation "Disable" }
+    "AutoStartEnable" { Invoke-UokAutoStartOperation "Enable" }
+    "AutoStartUninstall" { Invoke-UokAutoStartOperation "Uninstall" }
     "GithubPreflight" { Invoke-UokGithubPreflight }
     "GithubReadiness" { Invoke-UokGithubOperation "Readiness" }
     "GithubSecuritySetup" { Invoke-UokGithubOperation "SecuritySetup" }

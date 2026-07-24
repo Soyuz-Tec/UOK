@@ -4,16 +4,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from ..commands import MAX_IDEMPOTENCY_KEY_LENGTH
-from ..contact_api_schemas import (  # noqa: F401
-    ContactCsvImportRequest,
-    ContactGroupMembersRequest,
-    ContactGroupUpdateRequest,
-    ContactGroupWriteRequest,
-    ContactNoteRequest,
-    ContactRelationshipRequest,
-    ContactRelationshipUpdateRequest,
-    ContactWriteRequest,
+from ..kernel.command_contracts import (
+    MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+    MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
 )
 
 
@@ -31,4 +24,40 @@ class RegisterRequest(BaseModel):
 class CommandRequest(BaseModel):
     command_type: str = Field(..., max_length=120, examples=["CreateContact"])
     payload: dict[str, Any] = Field(default_factory=dict)
-    idempotency_key: str | None = Field(default=None, max_length=MAX_IDEMPOTENCY_KEY_LENGTH)
+    idempotency_key: str = Field(
+        ...,
+        min_length=MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+        max_length=MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]*$",
+        description="Required and reused unchanged for retries of one user intent.",
+    )
+
+
+class CommandPreconditionDetail(BaseModel):
+    code: str
+    message: str
+    field: str | None = None
+    repair: str
+    current_revision: int = Field(..., ge=1)
+    current_etag: str
+    object_ids: list[str]
+    reload_url: str
+    correlation_id: str | None = None
+
+
+class CommandPreconditionResponse(BaseModel):
+    error: CommandPreconditionDetail
+
+
+class CommandDomainErrorDetail(BaseModel):
+    code: str
+    message: str
+    field: str | None = None
+    object_ids: list[str]
+    repair: str
+    current_revision: int | None = None
+    correlation_id: str | None = None
+
+
+class CommandDomainErrorResponse(BaseModel):
+    error: CommandDomainErrorDetail

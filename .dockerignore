@@ -9,6 +9,7 @@ web/node_modules
 web/dist
 web/tsconfig.tsbuildinfo
 src/uok/static/app
+modules/*/tests
 *.zip
 *.db
 *.sqlite

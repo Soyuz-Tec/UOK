@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from fastapi import APIRouter, Depends
@@ -7,13 +8,14 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .. import APP_VERSION, TARGET_VERSION
-from ..db import get_db
+from ..host.database import database_pool_snapshot, get_db
+from ..host.module_reports import module_dashboard_counts
+from ..host.security import current_actor
+from ..kernel.security import Actor, require_permission
+from ..kernel_models import CommandLog, EventRecord, ModuleRecord
 from ..evidence import baseline_evidence
 from ..migration_registry import verify_migration_discipline
-from ..models import CommandLog, EventRecord, ModuleRecord
-from ..module_reports import module_dashboard_counts
 from ..quality import baseline_report, source_boundary_report
-from ..security import Actor, current_actor, require_permission
 
 router = APIRouter(tags=["system"])
 
@@ -25,6 +27,7 @@ def health(db: Session = Depends(get_db)) -> dict[str, Any]:
         "name": "UOK",
         "version": APP_VERSION,
         "target_version": TARGET_VERSION,
+        "candidate_state": os.getenv("UOK_CANDIDATE_STATE", "persistent"),
         "events": db.scalar(select(func.count(EventRecord.id))) or 0,
         "failed_commands": db.scalar(select(func.count(CommandLog.id)).where(CommandLog.status.in_(("denied", "validation_error")))) or 0,
     }
@@ -58,6 +61,12 @@ def evidence(actor: Actor = Depends(current_actor), db: Session = Depends(get_db
 def source_boundary(actor: Actor = Depends(current_actor)) -> dict[str, Any]:
     require_permission(actor, "architecture.read")
     return source_boundary_report()
+
+
+@router.get("/api/architecture/database-pool")
+def database_pool(actor: Actor = Depends(current_actor)) -> dict[str, Any]:
+    require_permission(actor, "architecture.read")
+    return database_pool_snapshot()
 
 
 @router.get("/api/architecture/alignment")

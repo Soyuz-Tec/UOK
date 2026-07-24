@@ -1,0 +1,62 @@
+services:
+  db:
+    image: ${UOK_CANDIDATE_DB_IMAGE}
+    pull_policy: never
+    restart: "no"
+    labels:
+      uok.candidate.run: ${UOK_CANDIDATE_RUN_ID}
+    environment:
+      POSTGRES_DB: uok
+      POSTGRES_USER: uok
+      POSTGRES_PASSWORD: uok_local_password
+    volumes:
+      - candidate_pg18:/var/lib/postgresql:Z
+    networks:
+      - candidate
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uok -d uok"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  api:
+    image: ${UOK_CANDIDATE_API_IMAGE}
+    pull_policy: never
+    restart: "no"
+    labels:
+      uok.candidate.run: ${UOK_CANDIDATE_RUN_ID}
+    env_file:
+      - ./database-capacity.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://uok:uok_local_password@db:5432/uok
+      UOK_SECRET: isolated-candidate-only
+      UOK_ALLOW_INSECURE_LOCAL_DEFAULTS: "1"
+      UOK_AUTO_CREATE_SCHEMA: "1"
+      UOK_SEED_LOCAL_DATA: "1"
+      UOK_RESET_DEMO_PASSWORDS: "1"
+      UOK_SELF_REGISTRATION: "1"
+      UOK_TOKEN_TTL_SECONDS: "1800"
+      UOK_CANDIDATE_STATE: ephemeral
+      DATA_DIR: /data
+    ports:
+      - "127.0.0.1:${UOK_CANDIDATE_HOST_PORT}:8080"
+    volumes:
+      - candidate_files:/data:Z
+    networks:
+      - candidate
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  candidate_pg18:
+    labels:
+      uok.candidate.run: ${UOK_CANDIDATE_RUN_ID}
+  candidate_files:
+    labels:
+      uok.candidate.run: ${UOK_CANDIDATE_RUN_ID}
+
+networks:
+  candidate:
+    labels:
+      uok.candidate.run: ${UOK_CANDIDATE_RUN_ID}

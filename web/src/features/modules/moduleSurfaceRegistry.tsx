@@ -1,143 +1,85 @@
-import { CalendarDays, CalendarRange, ContactRound } from "lucide-react";
-import type { ReactNode } from "react";
+import { useRef } from "react";
 
-import type { Workbench } from "../../app/useWorkbench";
-import type { Option } from "../../shared/options";
-import type { Section } from "../../shared/types";
-import { CalendarWorkspace } from "../calendar/CalendarWorkspace";
-import { CALENDAR_MODULE_ID, CALENDAR_SECTION_ID } from "../calendar/calendarModule";
-import { CONTACTS_MODULE_ID, CONTACTS_SECTION_ID } from "../contacts/contactModule";
-import { ContactsWorkspace } from "../contacts/ContactsWorkspace";
-import { PLANNING_MODULE_ID, PLANNING_SECTION_ID } from "../planning/planningModule";
-import { PlanningWorkspace } from "../planning/PlanningWorkspace";
+import type {
+  GeneratedModuleSurfaceRegistration,
+  ModuleSurface,
+  ModuleSurfaceHostContext,
+} from "@uok/contracts/moduleSurface";
+import { generatedModuleSurfaceCatalog } from "@uok/generated/moduleSurfaceCatalog";
+import type { Option } from "@uok/shared/options";
+import type { Section } from "@uok/shared/types";
 
-type ModuleSection = Extract<Section, "contacts" | "calendar" | "planning">;
+type ValidatedModuleSurface = Omit<ModuleSurface, "id"> & { id: Section };
 
-type ModuleSurface = Option<ModuleSection> & {
-  moduleName: string;
-  render: (workbench: Workbench) => ReactNode;
-};
-
-export const moduleSurfaces: ModuleSurface[] = [
-  {
-    id: CONTACTS_SECTION_ID,
-    label: "Contacts",
-    icon: ContactRound,
-    moduleName: CONTACTS_MODULE_ID,
-    render: (workbench) => (
-      <ContactsWorkspace
-        token={workbench.token}
-        operational={workbench.contactsOperational}
-        module={workbench.contactsModule}
-        contacts={workbench.contacts}
-        contactGroups={workbench.contactGroups}
-        selectedContact={workbench.selectedContact}
-        selectedContactId={workbench.selectedContactId}
-        contactsView={workbench.contactsView}
-        contactGroupBy={workbench.contactGroupBy}
-        contactGroupId={workbench.contactGroupId}
-        newGroupName={workbench.newGroupName}
-        detailPane={workbench.contactDetailPane}
-        query={workbench.query}
-        statusFilter={workbench.statusFilter}
-        reviewFilter={workbench.reviewFilter}
-        typeFilter={workbench.typeFilter}
-        sourceFilter={workbench.sourceFilter}
-        qualityFilter={workbench.qualityFilter}
-        contactPage={workbench.contactPage}
-        contactPageSize={workbench.contactPageSize}
-        contactHasNext={workbench.contactHasNext}
-        contactTotalCount={workbench.contactTotalCount}
-        contactSortBy={workbench.contactSortBy}
-        contactSortDir={workbench.contactSortDir}
-        draft={workbench.draft}
-        editing={workbench.editing}
-        noteText={workbench.noteText}
-        relationshipTarget={workbench.relationshipTarget}
-        relationshipType={workbench.relationshipType}
-        busyAction={workbench.busyAction}
-        onActivate={() => workbench.moduleAction(CONTACTS_MODULE_ID, workbench.contactsModule?.status === "disabled" ? "enable" : "install")}
-        onViewChange={workbench.setContactsView}
-        onContactGroupByChange={workbench.setContactGroupBy}
-        onContactGroupChange={workbench.setContactGroupId}
-        onDetailPaneChange={workbench.setContactDetailPane}
-        onQueryChange={workbench.setQuery}
-        onStatusFilterChange={workbench.setStatusFilter}
-        onReviewFilterChange={workbench.setReviewFilter}
-        onTypeFilterChange={workbench.setTypeFilter}
-        onSourceFilterChange={workbench.setSourceFilter}
-        onQualityFilterChange={workbench.setQualityFilter}
-        onClearFilters={workbench.clearContactFilters}
-        onContactPageChange={workbench.setContactPage}
-        onContactPageSizeChange={workbench.setContactPageSize}
-        onContactSortByChange={workbench.setContactSortBy}
-        onContactSortDirChange={workbench.setContactSortDir}
-        onSelect={workbench.setSelectedContactId}
-        onCreate={workbench.startCreate}
-        onNewGroupNameChange={workbench.setNewGroupName}
-        onCreateGroup={workbench.createGroup}
-        onGroupContactsByBusinessDomain={workbench.groupContactsByBusinessDomain}
-        onGroupContactsBySmartRules={workbench.groupContactsBySmartRules}
-        onArchiveGroup={workbench.archiveGroup}
-        onAddSelectedContactToGroup={workbench.addSelectedContactToGroup}
-        onRemoveSelectedContactFromGroup={workbench.removeSelectedContactFromGroup}
-        onEdit={() => workbench.selectedContact && workbench.startEdit(workbench.selectedContact)}
-        onInlineUpdate={workbench.updateSelectedContactField}
-        onDraftChange={workbench.setDraft}
-        onSave={workbench.saveDraft}
-        onCancelEdit={workbench.cancelEdit}
-        onArchive={workbench.archiveSelected}
-        onRestore={workbench.restoreSelected}
-        onPurge={workbench.purgeSelected}
-        onMarkReady={workbench.markSelectedReady}
-        onNoteTextChange={workbench.setNoteText}
-        onAddNote={workbench.addNote}
-        onRelationshipTargetChange={workbench.setRelationshipTarget}
-        onRelationshipTypeChange={workbench.setRelationshipType}
-        onLinkRelationship={workbench.linkRelationship}
-        onUpdateRelationship={workbench.updateRelationship}
-        onRemoveRelationship={workbench.removeRelationship}
-        onMergeDuplicate={workbench.mergeDuplicate}
-      />
-    )
-  },
-  {
-    id: CALENDAR_SECTION_ID,
-    label: "Calendar",
-    icon: CalendarDays,
-    moduleName: CALENDAR_MODULE_ID,
-    render: (workbench) => (
-      <CalendarWorkspace
-        token={workbench.token}
-        moduleRows={workbench.moduleRows}
-        busyAction={workbench.busyAction}
-        onInstall={() => workbench.moduleAction(CALENDAR_MODULE_ID, "install")}
-      />
-    )
-  },
-  {
-    id: PLANNING_SECTION_ID,
-    label: "Planning",
-    icon: CalendarRange,
-    moduleName: PLANNING_MODULE_ID,
-    render: (workbench) => {
-      const planningModule = workbench.moduleRows.find((row) => row.name === PLANNING_MODULE_ID);
-      return (
-        <PlanningWorkspace
-          token={workbench.token}
-          appearance={workbench.appearance}
-          module={planningModule}
-          moduleRows={workbench.moduleRows}
-          busyAction={workbench.busyAction}
-          onActivate={(moduleName = PLANNING_MODULE_ID, action) => workbench.moduleAction(moduleName, action || (planningModule?.status === "disabled" ? "enable" : "install"))}
-        />
+export function validateModuleSurfaceCatalog(
+  registrations: readonly GeneratedModuleSurfaceRegistration[],
+): ValidatedModuleSurface[] {
+  const moduleNames = new Set<string>();
+  const sectionIds = new Set<string>();
+  const surfaces = registrations.map(({ manifest, surface }) => {
+    if (surface.moduleName !== manifest.moduleName) {
+      throw new Error(
+        `Frontend module surface ${surface.moduleName} does not match manifest ${manifest.moduleName}`,
       );
     }
-  }
-];
+    if (surface.id !== manifest.sectionId) {
+      throw new Error(
+        `Frontend section ${surface.id} does not match manifest section ${manifest.sectionId}`,
+      );
+    }
+    if (moduleNames.has(surface.moduleName)) {
+      throw new Error(`Duplicate frontend module surface: ${surface.moduleName}`);
+    }
+    if (sectionIds.has(surface.id)) {
+      throw new Error(`Duplicate frontend module section: ${surface.id}`);
+    }
+    moduleNames.add(surface.moduleName);
+    sectionIds.add(surface.id);
+    return surface as ValidatedModuleSurface;
+  });
+  return surfaces.sort(
+    (left, right) =>
+      (left.order ?? 100) - (right.order ?? 100)
+      || left.id.localeCompare(right.id),
+  );
+}
 
-export const moduleSections: Array<Option<ModuleSection>> = moduleSurfaces.map(({ id, label, icon }) => ({ id, label, icon }));
+export const moduleSurfaces = validateModuleSurfaceCatalog(generatedModuleSurfaceCatalog);
 
-export function renderModuleSurface(section: Section, workbench: Workbench): ReactNode {
-  return moduleSurfaces.find((surface) => surface.id === section)?.render(workbench) ?? null;
+export const moduleSections: Array<Option<Section>> = moduleSurfaces.map(
+  ({ id, label, icon }) => ({ id, label, icon }),
+);
+
+export function ModuleSurfaceOutlet({
+  section,
+  host,
+  surfaces = moduleSurfaces,
+}: {
+  section: Section;
+  host: ModuleSurfaceHostContext;
+  surfaces?: readonly ValidatedModuleSurface[];
+}) {
+  const visited = useRef(new Set<Section>());
+  const activeSurface = surfaces.find((surface) => surface.id === section);
+  if (activeSurface) visited.current.add(activeSurface.id);
+
+  return (
+    <>
+      {surfaces
+        .filter((surface) => visited.current.has(surface.id))
+        .map((surface) => {
+          const active = surface.id === section;
+          return (
+            <div
+              key={surface.id}
+              aria-hidden={!active}
+              data-module-surface={surface.id}
+              style={{ display: active ? "contents" : "none" }}
+            >
+              {surface.render(host)}
+            </div>
+          );
+        })}
+    </>
+  );
 }

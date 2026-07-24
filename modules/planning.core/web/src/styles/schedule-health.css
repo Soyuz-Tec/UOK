@@ -1,0 +1,161 @@
+.planning-schedule-health {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.planning-schedule-health .expandable-control-trigger {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--uok-space-1);
+  min-width: 196px;
+  min-height: 34px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding-inline: var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+  cursor: pointer;
+}
+
+.planning-schedule-health .expandable-control-trigger > span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--uok-space-1);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.planning-schedule-health .expandable-control-trigger > span > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.planning-schedule-health .expandable-control-trigger strong,
+.planning-health-state {
+  border-radius: var(--uok-radius-pill);
+  padding: 2px var(--uok-space-2);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-grouped-secondary);
+  font-size: var(--uok-caption);
+  line-height: 1.2;
+}
+
+.planning-schedule-health [data-tone="ready"] {
+  color: var(--uok-status-success);
+  background: color-mix(in srgb, var(--uok-status-success) 12%, var(--uok-bg-elevated));
+}
+
+.planning-schedule-health [data-tone="attention"] {
+  color: var(--uok-status-warning);
+  background: color-mix(in srgb, var(--uok-status-warning) 12%, var(--uok-bg-elevated));
+}
+
+.planning-schedule-health [data-tone="invalid"] {
+  color: var(--uok-status-danger);
+  background: color-mix(in srgb, var(--uok-status-danger) 12%, var(--uok-bg-elevated));
+}
+
+.planning-schedule-health-panel {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% + var(--uok-space-2));
+  inset-inline-end: 0;
+  display: grid;
+  gap: var(--uok-space-3);
+  width: min(560px, calc(100vw - var(--uok-space-6)));
+  max-height: calc(100vh - 104px);
+  overflow: auto;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-3);
+  background: var(--uok-bg-elevated);
+  box-shadow: var(--uok-shadow-2);
+}
+
+.planning-health-header,
+.planning-health-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--uok-space-2);
+}
+
+.planning-health-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.planning-health-header > div > span,
+.planning-health-actions > span {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.planning-health-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--uok-space-2);
+  margin: 0;
+}
+
+.planning-health-metrics > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.planning-health-metrics dt,
+.planning-health-metrics dd {
+  margin: 0;
+}
+
+.planning-health-metrics dt,
+.planning-health-metrics small {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.planning-health-metrics dd {
+  overflow-wrap: anywhere;
+  color: var(--uok-text-primary);
+  font-weight: 700;
+}
+
+.planning-health-actions {
+  border-block-start: var(--uok-line);
+  padding-block-start: var(--uok-space-2);
+}
+
+.planning-health-actions > span {
+  max-width: 420px;
+}
+
+@media (max-width: 680px) {
+  .planning-schedule-health,
+  .planning-schedule-health .expandable-control-trigger {
+    width: 100%;
+  }
+
+  .planning-schedule-health-panel {
+    position: fixed;
+    inset: var(--uok-space-3);
+    z-index: 40;
+    width: auto;
+    max-height: calc(100vh - (var(--uok-space-3) * 2));
+  }
+
+  .planning-health-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .planning-health-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

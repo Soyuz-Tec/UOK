@@ -1,4 +1,6 @@
-import { useEffect, useRef, type CSSProperties, type ElementType } from "react";
+import { useEffect, useId, useRef, type CSSProperties, type ElementType } from "react";
+
+import { isTopWorkspaceOverlay, registerWorkspaceOverlay } from "./overlayStack";
 
 export type WorkspaceContextMenuItem = {
   id: string;
@@ -24,13 +26,16 @@ export function WorkspaceContextMenu({
   position: { x: number; y: number };
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const overlayId = useId();
 
   useEffect(() => {
     if (!open) return undefined;
+    const unregisterOverlay = registerWorkspaceOverlay(overlayId);
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     menuRef.current?.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
 
     const closeFromDocument = (event: MouseEvent | KeyboardEvent) => {
+      if (!isTopWorkspaceOverlay(overlayId)) return;
       if (event instanceof KeyboardEvent && event.key !== "Escape") return;
       if (event instanceof MouseEvent && menuRef.current?.contains(event.target as Node)) return;
       onClose();
@@ -41,9 +46,10 @@ export function WorkspaceContextMenu({
     return () => {
       document.removeEventListener("mousedown", closeFromDocument);
       document.removeEventListener("keydown", closeFromDocument);
+      unregisterOverlay();
       if (previousFocus?.isConnected) previousFocus.focus();
     };
-  }, [onClose, open]);
+  }, [onClose, open, overlayId]);
 
   if (!open) return null;
 

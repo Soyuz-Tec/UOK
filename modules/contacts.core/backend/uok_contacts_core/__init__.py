@@ -1,3 +1,4 @@
-from __future__ import annotations
+"""Contacts Core backend.
 
-from .facade import *  # noqa: F401,F403
+External callers must use :mod:`uok_contacts_core.public_api`.
+"""

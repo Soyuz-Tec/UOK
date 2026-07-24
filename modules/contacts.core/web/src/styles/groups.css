@@ -1,0 +1,204 @@
+.contacts-workspace-body {
+  min-width: 0;
+}
+
+.contacts-workspace-main {
+  min-width: 0;
+}
+
+.contacts-tools-section > p {
+  margin: 0 0 var(--uok-space-3);
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.contact-groups-manager-popup {
+  width: min(1120px, calc(100vw - var(--uok-space-4) - var(--uok-space-4)));
+}
+
+.contact-groups-manager-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+  min-height: min(660px, 70vh);
+  max-height: min(760px, 76vh);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  overflow: hidden;
+  background: var(--uok-bg-elevated);
+}
+
+.contact-groups-manager-list,
+.contact-groups-manager-detail {
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--uok-space-4);
+}
+
+.contact-groups-manager-list {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-3);
+  border-inline-end: var(--uok-line);
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.contact-groups-manager-list-heading,
+.contact-groups-manager-detail-heading,
+.contact-groups-manager-members-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--uok-space-3);
+}
+
+.contact-groups-manager-list-heading h3,
+.contact-groups-manager-detail-heading h3,
+.contact-groups-manager-members-heading h4,
+.contact-groups-manager-generation h4 {
+  margin: 0;
+}
+
+.contact-groups-manager-list-heading p,
+.contact-groups-manager-detail-heading p,
+.contact-groups-manager-members-heading p,
+.contact-groups-manager-generation p,
+.contact-groups-manager-governance p {
+  margin: var(--uok-space-1) 0 0;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+}
+
+.contact-groups-manager-counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--uok-space-2);
+  margin: 0;
+}
+
+.contact-groups-manager-counts > div {
+  display: grid;
+  gap: var(--uok-space-1);
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  padding: var(--uok-space-2);
+  background: var(--uok-bg-elevated);
+}
+
+.contact-groups-manager-counts dt {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.contact-groups-manager-counts dd {
+  margin: 0;
+  color: var(--uok-text-primary);
+  font-weight: 760;
+}
+
+.contact-groups-manager-filters,
+.contact-groups-manager-form,
+.contact-groups-manager-members,
+.contact-groups-manager-detail {
+  display: grid;
+  align-content: start;
+  gap: var(--uok-space-3);
+}
+
+.contact-groups-manager-filters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.contact-groups-manager-filters .field:first-child,
+.contact-groups-manager-empty-filter {
+  grid-column: 1 / -1;
+}
+
+.contact-groups-manager-empty-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--uok-space-2);
+  min-height: 44px;
+  color: var(--uok-text-secondary);
+  font-size: var(--uok-caption);
+  font-weight: 650;
+}
+
+.contact-groups-manager-empty-filter input {
+  width: 20px;
+  height: 20px;
+}
+
+.contact-groups-manager-rows {
+  display: grid;
+  max-height: 300px;
+  overflow-y: auto;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-2);
+  background: var(--uok-bg-elevated);
+}
+
+.contact-groups-manager-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--uok-space-3);
+  min-height: var(--uok-row-height);
+  min-width: 0;
+  border: 0;
+  box-shadow: inset 0 -1px 0 var(--uok-row-separator-color);
+  padding: var(--uok-space-2) var(--uok-space-3);
+  color: var(--uok-text-primary);
+  background: transparent;
+  text-align: start;
+  width: 100%;
+}
+
+.contact-groups-manager-row:hover {
+  background: var(--uok-bg-grouped-secondary);
+}
+
+.contact-groups-manager-row.selected {
+  background: color-mix(in srgb, var(--uok-accent) 12%, var(--uok-bg-grouped-secondary));
+}
+
+.contact-groups-manager-row-main {
+  display: grid;
+  min-width: 0;
+}
+
+.contact-groups-manager-row-main strong,
+.contact-groups-manager-row-main small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-groups-manager-row-main small,
+.contact-groups-manager-member-count {
+  color: var(--uok-text-tertiary);
+  font-size: var(--uok-caption);
+}
+
+.contact-groups-manager-member-count {
+  flex: 0 0 auto;
+}
+
+.contact-groups-manager-generation {
+  display: grid;
+  gap: var(--uok-space-2);
+  border-top: var(--uok-line);
+  padding-top: var(--uok-space-3);
+}
+
+.contact-groups-manager-generation h4 {
+  display: flex;
+  align-items: center;
+  gap: var(--uok-space-2);
+}
+
+.contact-groups-manager-generation > div,
+.contact-groups-manager-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--uok-space-2);
+}

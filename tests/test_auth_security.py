@@ -6,8 +6,9 @@ from uuid import uuid4
 from starlette.testclient import TestClient
 
 from tests.helpers import auth
-from uok.main import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth
-from uok.security import Actor, issue_token
+from uok.host.application import AUTH_ATTEMPTS, AUTH_RATE_LIMIT_MAX_KEYS, auth_rate_key, rate_limit_auth
+from uok.host.security import issue_token
+from uok.kernel.security import Actor
 from uok.util import hash_password, password_needs_rehash, verify_password
 
 

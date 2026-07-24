@@ -4,7 +4,7 @@
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
-**Applies to:** local verification, audits, UI proof automation, folder organization checks, GitHub preparation, PostgreSQL backup and restore, Podman rebuilds, and repeatable incident drills.
+**Applies to:** local verification, audits, UI proof automation, folder organization checks, GitHub preparation, PostgreSQL connection capacity, backup and restore, Podman rebuilds, and repeatable incident drills.
 
 ## Purpose
 
@@ -25,19 +25,108 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `TechnologyAudit` | Focused code-quality, line-of-code, stack, dependency, module-shape, and operations hygiene audit | `.\scripts\uok_ops.ps1 -Action TechnologyAudit` |
 | `EngineeringEvidence` | Generate local engineering-system evidence and quality scorecard under `var/evidence/engineering` | `.\scripts\uok_ops.ps1 -Action EngineeringEvidence` |
 | `UiProof` | Run the Playwright UI proof gate against the Vite workspace, including Planning Gantt layout, keyboard, appearance, responsive, screenshot, and console checks | `.\scripts\uok_ops.ps1 -Action UiProof` |
-| `Audit` | Code, dependency, source-size, naming, module contract, and folder organization checks | `.\scripts\uok_ops.ps1 -Action Audit` |
+| `Audit` | Deterministic isolated Python tests plus code, dependency, source-size, naming, module contract, and folder organization checks | `.\scripts\uok_ops.ps1 -Action Audit` |
 | `Verify` | Full audit plus frontend tests, static build, UI proof, and candidate verifier | `.\scripts\uok_ops.ps1 -Action Verify` |
 | `Rebuild` | Rebuild and start local Podman stack on `127.0.0.1:18088` | `.\scripts\uok_ops.ps1 -Action Rebuild` |
 | `Health` | Check local candidate `/health` | `.\scripts\uok_ops.ps1 -Action Health` |
+| `DatabaseCapacity` | Load the committed capacity policy, enforce its offline budget, and verify cluster-wide live PostgreSQL capacity, role safety, and grouped sessions | `.\scripts\uok_ops.ps1 -Action DatabaseCapacity` |
+| `PlanningReleaseReadiness` | Run Gate E candidate, PostgreSQL scale, recovery, live Chromium, observability, compatibility, and engineering-evidence checks | `.\scripts\uok_ops.ps1 -Action PlanningReleaseReadiness` |
+| `ContactsVerifierGroupCleanup` | Dry-run and, only with a reviewed v2 plan, backup, and double confirmation, remove an exact legacy verifier membership and archive the now-empty audited group | `.\scripts\uok_ops.ps1 -Action ContactsVerifierGroupCleanup` |
 | `BackupDb` | Create local PostgreSQL 18 custom-format dump | `.\scripts\uok_ops.ps1 -Action BackupDb` |
 | `RestoreDb` | Restore a local dump into the local stack, guarded by explicit confirmation | `.\scripts\uok_ops.ps1 -Action RestoreDb -BackupPath <dump> -ConfirmRestore` |
 | `AsuhTest` | Create a local ASUH incident event and run health plus candidate verifier | `.\scripts\uok_ops.ps1 -Action AsuhTest -IncidentReason "reason"` |
+| `AutoStartInstall` | Install or refresh the owned, user-scoped Windows sign-in and periodic recovery task with its frozen no-build payload | `.\scripts\uok_ops.ps1 -Action AutoStartInstall` |
+| `AutoStartStatus` | Read task ownership, last result, maintenance state, and payload integrity without starting Podman | `.\scripts\uok_ops.ps1 -Action AutoStartStatus` |
+| `AutoStartVerify` | Run the managed task now and require task result zero plus the expected UOK health identity | `.\scripts\uok_ops.ps1 -Action AutoStartVerify` |
+| `AutoStartDisable` | Preserve an intentional maintenance stop across sign-in without uninstalling | `.\scripts\uok_ops.ps1 -Action AutoStartDisable` |
+| `AutoStartEnable` | Remove the maintenance-disable marker and allow the next managed recovery | `.\scripts\uok_ops.ps1 -Action AutoStartEnable` |
+| `AutoStartUninstall` | Remove only the owned task and installed payload while retaining runtime data and logs | `.\scripts\uok_ops.ps1 -Action AutoStartUninstall` |
 | `GithubPreflight` | Show branch, remote, latest commit, diff hygiene, and changed files before commit/push/PR | `.\scripts\uok_ops.ps1 -Action GithubPreflight` |
 | `GithubReadiness` | Check GitHub auth, repo metadata, upstream sync, latest branch runs, current PR status, Dependabot alerts, and enforcement availability | `.\scripts\uok_ops.ps1 -Action GithubReadiness` |
 | `GithubSecuritySetup` | Enable Dependabot alerts/security updates, configure merge hygiene, and report branch-protection/ruleset availability | `.\scripts\uok_ops.ps1 -Action GithubSecuritySetup` |
 | `GithubPrChecks` | Show or watch PR checks for the current branch or a supplied PR number | `.\scripts\uok_ops.ps1 -Action GithubPrChecks -PullRequestNumber <number> -WatchChecks` |
 
 The script is a convenience wrapper. Shared PowerShell operation helpers live in `scripts/uok_common_ops.ps1`; operation scripts should dot-source that helper instead of copying `Invoke-UokStep` or native-command handling. The underlying commands remain visible and may be run directly when debugging.
+
+Local `Audit` and GitHub CI both invoke `python scripts/run_python_tests.py`. The runner discovers the root suite and every module test path, rejects missing paths and duplicate resolved files, then runs each file sequentially in a fresh subprocess with ambient pytest options and plugin auto-loading disabled so shared SQLite state or machine-global pytest configuration cannot make aggregate discovery order-dependent. Independent modules may reuse ordinary test filenames. Use `--check` to validate discovery only or `--list` to inspect the exact ordered suite.
+
+Developer verification installs `requirements-dev.txt`; OCI build and runtime stages continue to
+install runtime-only `requirements.txt`. Verify both generated API artifacts without modifying the
+working tree:
+
+```powershell
+python -m pip install -r requirements-dev.txt
+python -m pip_audit -r requirements-dev.txt
+npm --prefix web run check:contracts
+$env:PYTHONPATH = "src"
+python -c "from uok.module_release_contract import validate_module_release_contracts; r=validate_module_release_contracts(); assert r['ok'], r; print(r)"
+```
+
+The contract check renders FastAPI OpenAPI and `openapi.d.ts` into a temporary directory, compares
+both with `web/src/generated`, and exits nonzero on drift. Regenerate intentionally with
+`npm --prefix web run generate:api`, review the diff, then rerun the check.
+
+The module release contract adds module-owned test and verifier evidence to the runtime manifest
+contract. Application startup uses the runtime scope so OCI images may omit `modules/*/tests`;
+local Audit, CI, and candidate catalog discovery use the release scope before publication.
+OCI stages run `python scripts/validate_container_module_assets.py --require-tests-excluded` after
+copying source. That gate discovers runtime-proven verifiers from validated manifests, checks their
+exact module-owned paths, enforces the canonical `modules/<module_name>/tests` declaration, and
+fails if module test directories entered the image.
+
+Candidate discovery recursively preflights every statically dot-sourced PowerShell helper before
+loading a module script. Helper imports must be literal `$PSScriptRoot` paths inside the owning
+module `verify/` directory or the shared `scripts/verify` directory; dynamic paths, links,
+junctions, cycles, duplicate declared functions, and syntax errors fail the run before execution.
+
+## Candidate Data Neutrality v1
+
+Candidate verification is not allowed to become business data. Every affected
+scenario must leave zero retained user-visible or recoverable Calendar,
+Contact, Planning, or Shipment fixtures after both success and failure.
+
+The standard gate enforces this with
+`scripts/verify_uok_candidate_isolated.ps1`. It resolves immutable API and
+PostgreSQL image IDs from the running `uok` stack, runs the full verifier twice
+in two fresh project-scoped stacks, and removes each stack, network, and both
+volumes before the pass is accepted. The underlying
+`scripts/verify_uok_candidate.ps1` fails closed unless the target health
+response identifies an explicitly ephemeral candidate runtime.
+Every disposable resource carries an exact GUID run label. Teardown inventories
+that label, attempts normal Compose removal, checks exact absence, and limits
+any best-effort remediation to the same label. Use
+`verify_uok_candidate_isolated.ps1 -Runs 1 -FailAfterVerification` only as the
+controlled post-mutation failure-path proof; it must fail while still leaving
+zero labelled resources.
+
+Operational acceptance requires:
+
+1. Capture a bounded before-run inventory of the exact fixture identities and
+   aggregate children that the scenario can create.
+2. Execute cleanup from a guaranteed success-and-failure path. Preserve the
+   primary verifier error and report cleanup errors separately; cleanup failure
+   fails the candidate gate.
+3. Use transaction rollback, disposable isolated qualification state, or an
+   explicitly governed verifier-only purge. Ordinary recoverable Delete or
+   Archive is not cleanup for this gate.
+4. Run the candidate verifier twice against the same immutable API/PostgreSQL
+   candidate images. For disposable-state verification, prove after each pass
+   that the exact project has zero remaining containers, volumes, and networks;
+   this whole-state teardown is the zero-retention proof.
+5. Keep module lifecycle state and legitimate operator records outside the
+   cleanup scope.
+
+Historical cleanup is a separate reviewed operation. Start with a dry-run
+inventory, sort the exact IDs, record the SHA-256 digest of that list, review
+all exclusions, and mutate only when the live IDs and digest still match the
+approved set. Prefix-only, substring, age-based, or other fuzzy selection must
+fail closed. Record post-cleanup counts and rollback or backup evidence
+appropriate to the owning module.
+
+When Apps Manager reports `reconciliation_required`, an authorized platform administrator uses the
+Apps Manager **Reconcile** action (`POST /api/modules/{module_name}/reconcile`). The operation locks
+the organization and module record, preserves module data, refreshes control-plane manifest truth,
+and emits one `ModuleLifecycleReconciled` audit event. Repeating the action is a no-op.
 
 ## Required Verification Levels
 
@@ -60,11 +149,35 @@ Use before local candidate handoff or GitHub publication:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```
 
+`Verify` is not successful when its behavior assertions pass but it retains a
+user-visible or recoverable Calendar, Contact, Planning, or Shipment fixture.
+Candidate Data Neutrality v1 requires the repeated-run zero-delta proof defined
+above.
+
 Use this focused gate when the frontend shell or module workspace changes:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action UiProof
 ```
+
+### Source Candidate Package
+
+Build a source package from one explicit Git commit after the candidate checks pass:
+
+```powershell
+python .\scripts\package_uok_candidate.py --version 3.1.0-alpha.3 --source-ref HEAD
+```
+
+The packager resolves the supplied revision to a commit before reading any source. It reads
+regular tracked blobs directly from that commit, never from dirty or untracked working-tree
+content. Packaging fails closed when the commit contains a non-regular Git entry, a
+case-colliding or extraction-unsafe path, a local/generated path, or a sensitive filename.
+
+Every archive contains `UOK_PACKAGE_MANIFEST.json` with the package version, resolved source
+commit, and deterministic SHA-256 plus size and Git mode for every packaged source file. Verify
+that manifest commit against the intended reviewed commit before distributing the archive. Use
+`--commit <revision>` as an alias for `--source-ref <revision>` when automation already uses
+commit terminology.
 
 ### Live Runtime Check
 
@@ -72,8 +185,23 @@ Use when the running app, container image, database, or UI bundle changed:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Rebuild
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action DatabaseCapacity
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Verify
 ```
+
+For the complete Planning Gate E production-like local profile after rebuild:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action PlanningReleaseReadiness
+```
+
+The owned evidence composition and its non-production boundary are defined in
+`docs/operations/UOK_PLANNING_RELEASE_READINESS.md`.
+
+The database pool settings, capacity formula, recovery checks, and future external-pooler boundary
+are defined in `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`.
+
+Contacts verifier-group hygiene, exact empty/legacy-one-member audit criteria, API membership removal, archive execution, and per-group/database rollback are defined in `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`. The cleanup action is a dry run unless a reviewed v2 plan, a non-empty backup, and both execution switches are supplied.
 
 ## Folder Organization Standard
 
@@ -160,6 +288,29 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 `GithubSecuritySetup` is intentionally idempotent for Dependabot alerts, Dependabot security updates, and merge hygiene. If GitHub blocks private-repo branch protection or repository rulesets on the current plan, the command reports the blocker and leaves issue tracking as the fallback.
 
+## PostgreSQL Connection Capacity
+
+Before building or deploying, run the credential-free offline gate from the
+canonical committed policy:
+
+```powershell
+python scripts/verify_database_capacity.py --environment-file deploy/database-capacity.env
+```
+
+After the stack is running, verify the same policy against cluster-wide live
+PostgreSQL state:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action DatabaseCapacity
+```
+
+`Rebuild` loads `deploy/database-capacity.env` and runs the offline gate before
+Compose starts. After health succeeds, it uses a one-shot, bounded-timeout,
+read-only live connection inside the API container. Live mode replaces offline
+database-limit assumptions and fails if UOK sessions exceed declared app
+demand, non-UOK client sessions exceed the direct-tool reserve, or actual
+remaining connections fall below operational headroom.
+
 ## PostgreSQL Backup
 
 Backups are local-only and ignored by Git under `var/`.
@@ -217,6 +368,40 @@ This uses PostgreSQL 18 and serves UOK at:
 ```text
 http://127.0.0.1:18088/
 ```
+
+Both local services use `restart: unless-stopped`. On Windows, `Rebuild` also
+refreshes an installed auto-start payload after the new API image, database
+capacity, and health checks pass. It does nothing to auto-start state when the
+managed task is not installed.
+
+## Windows Auto-Start And Recovery Watchdog
+
+Install and prove the supported user-scoped recovery path:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartInstall
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartVerify
+```
+
+The owned `\UOK\UOK Podman Auto Start` task runs 30 seconds after the installing
+user signs in and repeats every minute by default. Use
+`-CheckIntervalMinutes <1-1440>` with `AutoStartInstall` to set a different
+reviewed interval. It uses limited privilege, no stored password, bounded native
+command timeouts, a pinned Podman connection and Compose provider, an exclusive
+lock, and a frozen `%LOCALAPPDATA%` payload. Existing image-pinned UOK containers
+are started first; frozen Compose is a no-build/no-pull fallback only when a
+service container is missing.
+
+Use `AutoStartStatus` for a read-only ownership, task-result, maintenance, and
+payload-integrity report. Use `AutoStartDisable` before an intentional maintenance
+stop and `AutoStartEnable` to resume recovery. `AutoStartUninstall` removes only
+the owned task and payload; it never stops Podman, deletes containers or volumes,
+or removes local data or logs.
+
+This is an interactive-user watchdog for rootless Podman, not a pre-login
+service or a production boot claim. Full behavior, security boundaries,
+troubleshooting, logs, rollback, and reboot acceptance are defined in
+`docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`.
 
 ## Source Boundary And Naming
 

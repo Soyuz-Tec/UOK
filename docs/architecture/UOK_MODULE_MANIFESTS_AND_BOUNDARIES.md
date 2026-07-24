@@ -14,7 +14,11 @@ Each packaged application module can now carry a local manifest file:
 modules/<module>/manifest.yaml
 ```
 
-The `.yaml` file stores a strict dependency-light YAML subset. The runtime loader reads these files through `uok.module_manifest_loader`, and `uok.module_paths` exposes module backend packages to the local runtime.
+The `.yaml` file stores the closed `uok.module.v1` dependency-light YAML
+subset. Every manifest declares an evidence-bounded maturity value. The runtime
+loader reads these files through `uok.module_manifest_loader`; only
+`uok.host.module_paths` exposes validated module backend packages to the local
+runtime.
 
 `contacts.core` currently declares these runtime surfaces from its manifest:
 
@@ -27,14 +31,15 @@ The `.yaml` file stores a strict dependency-light YAML subset. The runtime loade
 - `model_exports`
 - `candidate_verifier_script`
 
-`agents.core` currently declares a scaffold boundary only. It has ownership folders, permissions, lifecycle metadata, and a data-retention policy, but no runtime API, command handlers, migrations, or candidate verifier until the first behavior increment is implemented.
+`agents.core` currently declares a scaffold boundary only. Its maturity is `planned`; its lifecycle is only `planned`; and its install, update, uninstall, maintenance, permission, API, command, event, model, and extension claims are intentionally empty until the first behavior increment is implemented.
 
 ## Loader checks
 
 UOK verifies:
 
-- manifest file exists;
-- required identity fields are present;
+- manifest file exists and uses `manifest_schema: uok.module.v1`;
+- required identity and maturity fields are present with exact scalar/list/boolean types;
+- duplicate/unknown keys, duplicate list values, unknown maturity values, and unknown extension hooks fail closed;
 - backend, web, migration, and test ownership paths are declared and module-scoped;
 - API prefixes, permissions, owned tables, extension points, and data-retention policy are declared;
 - optional `api_router` import targets resolve from the module backend package, require the `api_router` extension point, and stay inside declared API prefixes;
@@ -42,10 +47,41 @@ UOK verifies:
 - command handler and command permission providers cover every declared command and only use declared permissions;
 - role grants only use permissions declared by the module;
 - dashboard and evidence providers return validated mapping fragments;
-- model ownership declarations resolve against the baseline SQLAlchemy model registry;
-- module-declared PowerShell candidate verifier scripts stay under `modules/<module_name>`;
+- direct model ownership declarations are unique and require a `model_exports` provider, while kernel table use requires an explicit shared-table scope;
+- after static validation, the host model registry imports providers in deterministic dependency order; they must return the exact manifest-owned mapped classes from the owning backend on the single `uok.kernel.persistence.Base`;
+- module-declared PowerShell candidate verifier scripts stay under `modules/<module_name>/verify` and are release assets independent of `tests/`;
 - module names are discoverable from file-backed manifests;
 - every baseline module has `backend/`, `web/`, `migrations/`, and `tests/` ownership folders.
+
+Runtime validation runs before manifest router mounting and does not require development test folders. Release validation adds every source ownership folder, maturity-appropriate module tests, and candidate verifier assets. Local/CI release gates call `validate_module_release_contracts`; runtime and container startup call `validate_module_runtime_contracts`.
+
+Planning, Contacts, Compliance Document Types, Product Master, Location Master,
+Route/Corridor Master, Shipment Support, and Shipment Readiness additionally
+enforce one supported Python facade per module.
+Runtime router, command, policy, dashboard, evidence, and Planning replay
+hooks resolve through `public_api`; implementation packages live below
+`_internal`. The sole exception is the privileged `model_exports` bootstrap
+hook, which stays manifest-resolved under `_internal.persistence` and is never a
+business API. `tests/test_module_public_api_boundaries.py` rejects external
+Python implementation imports, unsupported facade symbols, dynamic literal
+deep imports, and external frontend imports other than `moduleSurface`.
+Shipment exposes an exact eight-symbol facade. Its original reference DTO and
+resolver remain unchanged, while the real Intelligence caller adds only the
+frozen `ShipmentReadinessSnapshotDTO` and
+`resolve_shipment_readiness_snapshots`. Shipment continues consuming only
+`ComplianceDocumentTypeReferenceDTO` and
+`resolve_compliance_document_type_references` from the Compliance facade for
+Shipment-owned requirement and document-instance metadata. The Shipment
+foreign-data boundary test
+rejects Compliance ORM, repository, schema, table, raw-SQL, reflection, join,
+and broad-facade bypasses. It also rejects document-instance binary/storage
+columns, multipart or browser file pipelines, and foreign frontend APIs.
+Stateless Intelligence imports only the two Shipment readiness symbols. Its
+dedicated boundary test rejects Shipment implementation, ORM, schema,
+repository, service, migration, table-token, SQL, join, reflection, broad
+facade, or frontend access; rejects every other feature dependency and reverse
+Shipment import; and asserts that Intelligence declares no table, mapping,
+migration SQL, command, event, or cache.
 
 ## Source-boundary scan
 
@@ -61,11 +97,34 @@ modules/<business_module>/
 
 The source-boundary scan must remain a strict candidate gate before any product module is promoted for local production-candidate testing.
 
-## Current bridge status
+## Current Bridge Status
 
-This candidate still has two intentional bridges:
+The ORM ownership and compatibility bridges are closed: capability mappings are
+physically owned by Calendar, Communications, Compliance, Contacts, Location Master, Planning, Product Master, Reports, Route/Corridor Master, and Shipment Support
+backends. The current graph has 55 feature mappings plus nine product-neutral
+mappings in `uok.kernel_models` (64 total).
+`intelligence.core` is intentionally absent from this mapping list because it
+derives request-time values and declares no ORM provider.
+`uok.host.model_registry` alone resolves manifest model providers, and the
+former `uok.models`, `uok.calendar_models`, and `uok.communication_models`
+imports are retired.
 
-- module-specific React source is composed through `web/src/features/modules/moduleSurfaceRegistry.tsx` and feature folders under `web/src/features`;
-- Contacts pytest behavior tests and the module candidate verifier scenario now live under `modules/contacts.core/tests`.
+The former frontend-location bridge is also closed. Apps Manager, Calendar,
+Communications, Compliance, Contacts, Intelligence, Location Master, Planning, Product Master, Route/Corridor Master, and Shipment Support own production React source and CSS under
+their canonical module web roots; their frontend tests live under
+`modules/<module_name>/tests/web`. Reports owns its typed report client and tests without
+declaring a workbench surface. Closed manifest metadata generates literal
+compile-time imports for the shell registry, and the browser never interprets
+YAML or dynamic module paths.
 
-Future module expansion should move more module-owned UI behind module roots without weakening the shared shell and runtime boundaries. Module-owned migrations and behavior tests are now active baseline requirements.
+The frontend shell compatibility bridge is closed. Module renderers receive the
+neutral contract in `web/src/contracts/moduleSurface.ts`; the generated runtime
+catalog is the shell's sole exact-module importer. Contacts owns its frontend
+state, HTTP reads, preferences, storage keys, DTOs, options, and commands.
+Architecture tests reject shell/module cycles, kernel feature imports, direct
+or transitive feature-to-host dependencies, and host imports outside the exact
+path-and-symbol adapter allowlist for `get_db`, `current_actor`, and
+`execute_command`. The current allowlist covers 18 HTTP adapters and 39 exact
+imports. Module-owned ORM definitions where data is owned, explicit empty
+migration declarations for stateless capabilities, production UI,
+behavior tests, and verifier assets remain active baseline requirements.

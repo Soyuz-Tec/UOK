@@ -25,7 +25,8 @@ RC9 is complete only when these gates pass:
 - `python -m pytest -q`
 - `npm run test`
 - `npm run build:static`
-- `scripts/verify_uok_candidate.ps1`
+- `scripts/verify_uok_candidate_isolated.ps1`
+- `scripts/verify_uok_candidate.ps1` (ephemeral-target implementation only)
 
 ## Comparison Record
 

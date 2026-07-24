@@ -5,6 +5,8 @@ __pycache__/
 data/
 node_modules/
 web/dist/
+web/test-results/
+web/playwright-report/
 web/tsconfig.tsbuildinfo
 src/uok/static/app/
 *.zip

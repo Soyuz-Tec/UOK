@@ -1,5 +1,14 @@
 # reports.core web surface
 
-The first reports.core release exposes backend APIs, command handlers, and a shared frontend client under `web/src/shared/exporting/serverReports.ts`.
+Reports owns its typed report HTTP client under
+`modules/reports.core/web/src/serverReports.ts` and its frontend client tests
+under `modules/reports.core/tests/web`. Generic local export-artifact helpers
+remain module-neutral under `web/src/shared/exporting`.
 
-Future UI components should provide a shared export button and artifact download panel that call `/api/reports` instead of embedding per-app export logic. Planning now uses this shared path for CSV, JSON, and Markdown schedule artifacts while keeping SVG local until an image renderer is declared.
+Reports currently has no workbench page, so its manifest does not declare
+`web_surface`, `web_entry`, or `web_section`, and it is absent from the generated
+surface catalog. Planning imports the Reports-owned typed client for CSV, JSON,
+and Markdown schedule artifacts while keeping SVG local until an image renderer
+is declared. Future Reports UI can add the canonical module surface only with
+the closed manifest fields, catalog generation, module-local CSS, and module
+frontend tests.

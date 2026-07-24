@@ -18,7 +18,7 @@ Implementation rules:
 
 - Keep `src/uok` product-neutral.
 - Put module behavior under `modules/<module_name>`.
-- Keep durable frontend code in React + TypeScript under `web/src`.
+- Keep product-neutral shell/shared frontend code in React + TypeScript under `web/src`, and module-specific production frontend code under `modules/<module_name>/web/src`.
 - Put reusable module-neutral frontend primitives under `web/src/shared`.
 - Keep generated files out of manual edits.
 - Keep source files reviewable and split mixed responsibilities early.
