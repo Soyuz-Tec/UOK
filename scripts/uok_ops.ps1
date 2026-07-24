@@ -24,7 +24,6 @@ $RepoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $RepoRoot
 
 . (Join-Path $PSScriptRoot "uok_common_ops.ps1")
-
 function Invoke-PowerShellScript {
     param([string[]]$Arguments)
     Invoke-Native "powershell" $Arguments
@@ -174,6 +173,7 @@ function Invoke-UokRebuild {
     }
     Invoke-UokHealth
     Invoke-UokDatabaseCapacityLive
+    Sync-UokApiRecoveryImageTag -RuntimeProject $ProjectName
     if ($env:OS -eq "Windows_NT") { Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_autostart_ops.ps1", "-Action", "Refresh") }
 }
 

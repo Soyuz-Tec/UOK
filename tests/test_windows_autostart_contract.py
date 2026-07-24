@@ -118,6 +118,7 @@ def test_status_is_read_only_and_payload_aware() -> None:
 
 def test_standard_operations_routes_the_full_lifecycle() -> None:
     operations = _read("scripts/uok_ops.ps1")
+    common = _read("scripts/uok_common_ops.ps1")
 
     for action in (
         "AutoStartInstall",
@@ -129,6 +130,12 @@ def test_standard_operations_routes_the_full_lifecycle() -> None:
     ):
         assert action in operations
     assert "uok_autostart_ops.ps1" in operations
+    assert operations.index("Sync-UokApiRecoveryImageTag") < operations.index(
+        '"-Action", "Refresh"'
+    )
+    assert '"docker.io/library/uok-api:latest"' in common
+    assert '"{{.Image}}"' in common
+    assert '"{{.Id}}"' in common
     assert 'arguments += @("-CheckIntervalMinutes", "$CheckIntervalMinutes")' in operations
     assert '"-Action", "Refresh"' in operations
     assert len(operations.splitlines()) <= 300
