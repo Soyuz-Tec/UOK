@@ -5,7 +5,7 @@ description = "UOK baseline for real development."
 requires-python = ">=3.14"
 dependencies = [
   "fastapi==0.139.0",
-  "uvicorn[standard]==0.50.0",
+  "uvicorn[standard]==0.51.0",
   "sqlalchemy==2.0.51",
   "pydantic==2.13.4",
   "psycopg[binary]==3.3.4",
