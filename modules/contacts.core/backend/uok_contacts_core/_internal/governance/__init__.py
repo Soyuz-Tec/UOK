@@ -1,0 +1,1 @@
+"""Private governance capability implementation."""

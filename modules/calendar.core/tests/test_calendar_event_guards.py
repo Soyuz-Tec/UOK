@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from starlette.testclient import TestClient
 
-from uok.db import SessionLocal
+from uok.host.database import SessionLocal
 from uok_calendar_core.models import CalendarEvent
 
 from tests.helpers import auth, command

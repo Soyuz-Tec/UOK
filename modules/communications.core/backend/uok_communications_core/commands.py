@@ -5,8 +5,8 @@ from typing import Any, Callable
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from uok.security import Actor
-from uok.command_context import COMMAND_IF_MATCH_CONTEXT_KEY
+from uok.kernel.security import Actor
+from uok.kernel.command_contracts import COMMAND_IF_MATCH_CONTEXT_KEY
 
 from .schemas import CommunicationThreadCreateRequest
 from .service import create_thread

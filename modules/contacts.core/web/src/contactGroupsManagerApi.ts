@@ -1,4 +1,4 @@
-import type { ContactGroupRecord, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupRecord, ContactRecord } from "./contracts";
 
 export type ManagedContactGroup = ContactGroupRecord & {
   kind: "manual" | "business_domain" | "smart_rule";

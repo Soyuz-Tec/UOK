@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from .db import Base
+from .host.model_registry import ensure_module_models_registered
+from .kernel.persistence import Base
 from .module_manifest_loader import load_module_manifests
-from .module_model_registry import ensure_module_models_registered
 
 
 def model_table_names() -> dict[str, str]:

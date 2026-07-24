@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from uok_planning_core.batch_schemas import PlanningBatchRequest
-from uok.main import app
+from uok_planning_core._internal.delivery.batch_schemas import PlanningBatchRequest
+from uok.host.application import app
 
 
 WRITE_METHODS = {"post", "put", "patch", "delete"}

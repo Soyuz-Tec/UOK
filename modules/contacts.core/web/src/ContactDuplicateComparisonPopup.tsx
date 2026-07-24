@@ -2,7 +2,7 @@ import { ArrowRight, GitMerge } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 
-import type { ContactMergeField, ContactMergeFieldChoices, ContactRecord } from "@uok/shared/types";
+import type { ContactMergeField, ContactMergeFieldChoices, ContactRecord } from "./contracts";
 import { WorkspaceEditorPopup } from "@uok/shared/overlays";
 import { CommandButton } from "@uok/shared/primitives";
 import { ContactFactRows } from "./ContactFactRows";

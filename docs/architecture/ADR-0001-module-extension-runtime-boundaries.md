@@ -22,10 +22,14 @@ The kernel keeps shared contracts, command dispatch, security checks, API compos
 
 ## Consequences
 
-- Adding a new command-owning module should not require changes to `src/uok/commands.py`.
-- Adding module permissions should not require hardcoding permission atoms in `src/uok/security.py`.
+- Adding a new command-owning module should not require changes to
+  `src/uok/host/commands.py`.
+- Adding module permissions should not require hardcoding permission atoms in
+  `src/uok/kernel/security.py`.
 - Dashboard and evidence endpoints keep stable response shapes while module-specific values come from providers.
-- The original shared-model bridge was closed by ADR-0022: capability mappings now live in their owning backends, while `src/uok/models.py` preserves exact compatibility aliases over one validated registry.
+- The original shared-model bridge was closed by ADR-0022 and ADR-0028:
+  capability mappings live in their owning backends, the host alone composes
+  the validated registry, and global model compatibility aliases are retired.
 - The candidate verifier stays top-level as a release gate, but module scenarios are discovered from manifests.
 
 ## Alternatives

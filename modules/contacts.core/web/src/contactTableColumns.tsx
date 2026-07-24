@@ -1,7 +1,7 @@
 import { PanelRightOpen } from "lucide-react";
 
 import { type ColumnVisibilityOption, type DataTableColumn } from "@uok/shared/tables";
-import type { ContactRecord } from "@uok/shared/types";
+import type { ContactRecord } from "./contracts";
 import { contactFieldTitle, contactFieldValue, contactVisibilityOptions, type ContactFieldId } from "./contactFieldRegistry";
 import { contactInitial } from "./contactPresentation";
 

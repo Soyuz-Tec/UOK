@@ -46,9 +46,10 @@ capacity. This slice persists and exposes effective dates but does not yet make
 them a daily capacity calendar; ACC-RES-002 owns that next behavior.
 
 ADR-0022 closed the accepted alpha ORM bridge. The canonical resource mappings
-now live in `modules/planning.core/backend/uok_planning_core`; the legacy
-`src/uok/planning_resource_models.py` path re-exports those exact classes.
-Behavior, validation, migration, tests, candidate proof, and UI remain owned by
+now live at
+`modules/planning.core/backend/uok_planning_core/_internal/persistence/planning_resource_models.py`.
+The later Gap 2 boundary hardening retired the kernel alias. Behavior,
+validation, migration, tests, candidate proof, and UI remain owned by
 `planning.core`.
 
 ## Consequences

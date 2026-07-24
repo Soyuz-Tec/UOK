@@ -14,7 +14,11 @@ Each packaged application module can now carry a local manifest file:
 modules/<module>/manifest.yaml
 ```
 
-The `.yaml` file stores the closed `uok.module.v1` dependency-light YAML subset. Every manifest declares an evidence-bounded maturity value. The runtime loader reads these files through `uok.module_manifest_loader`, and `uok.module_paths` exposes module backend packages to the local runtime.
+The `.yaml` file stores the closed `uok.module.v1` dependency-light YAML
+subset. Every manifest declares an evidence-bounded maturity value. The runtime
+loader reads these files through `uok.module_manifest_loader`; only
+`uok.host.module_paths` exposes validated module backend packages to the local
+runtime.
 
 `contacts.core` currently declares these runtime surfaces from its manifest:
 
@@ -44,12 +48,21 @@ UOK verifies:
 - role grants only use permissions declared by the module;
 - dashboard and evidence providers return validated mapping fragments;
 - direct model ownership declarations are unique and require a `model_exports` provider, while kernel table use requires an explicit shared-table scope;
-- after static validation, model providers register in deterministic dependency order and must return the exact manifest-owned mapped classes from the owning backend on the single kernel `Base`;
+- after static validation, the host model registry imports providers in deterministic dependency order; they must return the exact manifest-owned mapped classes from the owning backend on the single `uok.kernel.persistence.Base`;
 - module-declared PowerShell candidate verifier scripts stay under `modules/<module_name>/verify` and are release assets independent of `tests/`;
 - module names are discoverable from file-backed manifests;
 - every baseline module has `backend/`, `web/`, `migrations/`, and `tests/` ownership folders.
 
 Runtime validation runs before manifest router mounting and does not require development test folders. Release validation adds every source ownership folder, maturity-appropriate module tests, and candidate verifier assets. Local/CI release gates call `validate_module_release_contracts`; runtime and container startup call `validate_module_runtime_contracts`.
+
+Planning and Contacts additionally enforce one supported Python facade per
+module. Runtime router, command, policy, dashboard, evidence, and Planning replay
+hooks resolve through `public_api`; implementation packages live below
+`_internal`. The sole exception is the privileged `model_exports` bootstrap
+hook, which stays manifest-resolved under `_internal.persistence` and is never a
+business API. `tests/test_module_public_api_boundaries.py` rejects external
+Python implementation imports, unsupported facade symbols, dynamic literal
+deep imports, and external frontend imports other than `moduleSurface`.
 
 ## Source-boundary scan
 
@@ -67,10 +80,12 @@ The source-boundary scan must remain a strict candidate gate before any product 
 
 ## Current Bridge Status
 
-The former ORM bridge is closed: 29 capability mappings are physically owned by
-Calendar, Communications, Contacts, Planning, and Reports backends, while nine
-product-neutral mappings remain in `uok.kernel_models`. `uok.models` is an
-exact-class compatibility facade over the validated registry.
+The ORM ownership and compatibility bridges are closed: capability mappings are
+physically owned by Calendar, Communications, Contacts, Planning, and Reports
+backends, while nine product-neutral mappings remain in `uok.kernel_models`.
+`uok.host.model_registry` alone resolves manifest model providers, and the
+former `uok.models`, `uok.calendar_models`, and `uok.communication_models`
+imports are retired.
 
 The former frontend-location bridge is also closed. Apps Manager, Calendar,
 Communications, Contacts, and Planning own production React source and CSS under
@@ -80,8 +95,12 @@ declaring a workbench surface. Closed manifest metadata generates literal
 compile-time imports for the shell registry, and the browser never interprets
 YAML or dynamic module paths.
 
-One intentional compatibility bridge remains: the typed Workbench surface host
-passes existing shell state and commands into module renderers. It preserves
-current orchestration during relocation but is not a destination for new
-module-specific behavior. Module-owned ORM definitions, migrations, production
-UI, behavior tests, and verifier assets are active baseline requirements.
+The frontend shell compatibility bridge is closed. Module renderers receive the
+neutral contract in `web/src/contracts/moduleSurface.ts`; the generated runtime
+catalog is the shell's sole exact-module importer. Contacts owns its frontend
+state, HTTP reads, preferences, storage keys, DTOs, options, and commands.
+Architecture tests reject shell/module cycles, kernel feature imports, direct
+or transitive feature-to-host dependencies, and host imports outside the exact
+path-and-symbol adapter allowlist for `get_db`, `current_actor`, and
+`execute_command`. Module-owned ORM definitions, migrations, production UI,
+behavior tests, and verifier assets remain active baseline requirements.

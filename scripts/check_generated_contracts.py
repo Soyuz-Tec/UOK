@@ -11,7 +11,9 @@ from pathlib import Path
 
 from generate_frontend_module_catalog import (
     OUTPUT_PATH as MODULE_CATALOG_PATH,
+    SECTIONS_OUTPUT_PATH as MODULE_SECTIONS_PATH,
     render_frontend_module_catalog,
+    render_frontend_module_sections,
 )
 
 
@@ -30,7 +32,7 @@ def render_runtime_openapi() -> str:
     os.environ.setdefault("DATA_DIR", "./data")
     sys.path.insert(0, str(ROOT / "src"))
 
-    from uok.main import app
+    from uok.host.application import app
 
     return json.dumps(app.openapi(), indent=2, sort_keys=True)
 
@@ -88,6 +90,11 @@ def find_generated_contract_drift() -> list[str]:
     )
     if module_catalog_problem:
         problems.append(module_catalog_problem)
+    module_sections_problem = contract_drift(
+        render_frontend_module_sections(), MODULE_SECTIONS_PATH
+    )
+    if module_sections_problem:
+        problems.append(module_sections_problem)
 
     with tempfile.TemporaryDirectory(prefix="uok-generated-contracts-") as temporary:
         temp_root = Path(temporary)

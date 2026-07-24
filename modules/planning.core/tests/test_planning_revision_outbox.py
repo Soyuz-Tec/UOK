@@ -8,10 +8,9 @@ from sqlalchemy import func, select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import (
-    CommandLog,
-    EventRecord,
+from uok.host.database import SessionLocal
+from uok.kernel_models import CommandLog, EventRecord
+from uok_planning_core._internal.persistence.models import (
     PlanningOutboxEvent,
     PlanningScheduleEvent,
     PlanningScheduleRevision,
@@ -106,7 +105,7 @@ def test_failed_transaction_and_idempotent_replay_do_not_duplicate_history(
     project_id = project.json()["result"]["id"]
     before = _history_counts(project_id)
 
-    from uok_planning_core import revision_completion
+    from uok_planning_core._internal.portfolio_audit import revision_completion
 
     original = revision_completion.record_schedule_revision
 

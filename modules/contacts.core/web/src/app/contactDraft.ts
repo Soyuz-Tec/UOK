@@ -1,4 +1,4 @@
-import type { ContactDraft, ContactRecord } from "@uok/shared/types";
+import type { ContactDraft, ContactRecord } from "../contracts";
 
 export function draftFromContact(contact: ContactRecord): ContactDraft {
   return {

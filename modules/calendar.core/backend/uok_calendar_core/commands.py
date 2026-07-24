@@ -6,8 +6,8 @@ from uuid import uuid4
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from uok.models import EventRecord
-from uok.security import Actor
+from uok.kernel_models import EventRecord
+from uok.kernel.security import Actor
 from uok.util import dumps, loads
 
 from .command_contract import (

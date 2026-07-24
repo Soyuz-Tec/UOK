@@ -103,13 +103,13 @@ migrations_path: modules/contacts.core/migrations
 tests_path: modules/contacts.core/tests
 api_prefixes:
   - /api/contacts
-api_router: uok_contacts_core.api:router
-command_handlers: uok_contacts_core.commands:command_handlers
-command_permissions: uok_contacts_core.commands:command_permissions
-role_grants: uok_contacts_core.policy:role_grants
-dashboard_provider: uok_contacts_core.reports:dashboard_counts
-evidence_provider: uok_contacts_core.reports:evidence
-model_exports: uok_contacts_core.models:owned_models
+api_router: uok_contacts_core.public_api:api_router
+command_handlers: uok_contacts_core.public_api:command_handlers
+command_permissions: uok_contacts_core.public_api:command_permissions
+role_grants: uok_contacts_core.public_api:role_grants
+dashboard_provider: uok_contacts_core.public_api:dashboard_counts
+evidence_provider: uok_contacts_core.public_api:evidence
+model_exports: uok_contacts_core._internal.persistence.models:owned_models
 candidate_verifier_script: modules/contacts.core/verify/UokCandidateContacts.ps1
 candidate_verifier_function: Invoke-UokContactsCandidateScenario
 permissions:

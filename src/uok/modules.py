@@ -6,7 +6,7 @@ from typing import Any
 from .module_contract_validation import validate_module_extension_contracts
 from .module_lifecycle_policy import lifecycle_policy_checks
 from .module_manifest_loader import load_module_manifests
-from .module_model_registry import module_model_registry_report
+from .host.model_registry import module_model_registry_report
 
 
 def module_catalog() -> dict[str, dict[str, Any]]:

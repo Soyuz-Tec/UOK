@@ -1,6 +1,6 @@
 import { MessageCircleMore } from "lucide-react";
 
-import type { ModuleSurface } from "@uok/features/modules/moduleSurfaceContract";
+import type { ModuleSurface } from "@uok/contracts/moduleSurface";
 
 import { CommunicationsWorkspace } from "./CommunicationsWorkspace";
 import { COMMUNICATIONS_MODULE_ID, COMMUNICATIONS_SECTION_ID } from "./communicationsModule";
@@ -12,12 +12,12 @@ export const communicationsModuleSurface: ModuleSurface = {
   icon: MessageCircleMore,
   moduleName: COMMUNICATIONS_MODULE_ID,
   order: 50,
-  render: (workbench) => (
+  render: (host) => (
     <CommunicationsWorkspace
-      token={workbench.token}
-      moduleRows={workbench.moduleRows}
-      busyAction={workbench.busyAction}
-      onInstall={() => workbench.moduleAction(COMMUNICATIONS_MODULE_ID, "install")}
+      token={host.token}
+      moduleRows={[...host.moduleRows]}
+      busyAction={host.busyAction}
+      onInstall={() => void host.moduleAction(COMMUNICATIONS_MODULE_ID, "install")}
     />
   )
 };

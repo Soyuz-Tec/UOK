@@ -6,11 +6,11 @@ import pytest
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.command_context import CommandDomainError
-from uok.db import SessionLocal
-from uok.models import CommandLog
+from uok.kernel.command_contracts import CommandDomainError
+from uok.host.database import SessionLocal
+from uok.kernel_models import CommandLog
 from uok.util import loads
-from uok_planning_core.status_policy import (
+from uok_planning_core._internal.scheduling.status_policy import (
     TASK_STATUSES,
     TASK_STATUS_DISPLAY_LABELS,
     TASK_STATUS_TRANSITIONS,

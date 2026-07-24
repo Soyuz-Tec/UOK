@@ -74,8 +74,17 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md` | Minimal shared workspace command surface, common action vocabulary, and shared/module ownership split | Command grouping, shared labels, primary-action rules, low-frequency action placement, or exception policy changes |
 | `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md` | Calendar access, integrity, interoperability sequencing, and the separate appointments capability boundary | Calendar visibility, recurrence authority, free-busy disclosure, provider synchronization sequencing, or appointment ownership changes |
 | `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md` | Contacts system-of-record scope, first-class facts, consent, team access, purge, quality, and interoperability boundary | Contacts storage, privacy, authorization, import/export, dedupe, activity, custom fields, or provider adapter changes |
+| `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md` | Host-owned backend composition, minimal shared kernel ports, exact request-DI exception, neutral frontend surface contract, and shell/module cycle enforcement | Host/kernel ownership, ORM/bootstrap composition, module runtime port, shell/module surface contract, or dependency enforcement changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
+| `docs/architecture/planning-data-boundary-inventory-2026-07-15.md` | Pre-refactor evidence of Planning reads across capability-module data boundaries | A correction is needed to the dated leak inventory or its audit method |
+| `docs/architecture/planning-data-boundary-fix-2026-07-15.md` | Planning owner-API refactor mapping, enforcement command, verification, and residual risks | Planning's provider API boundary or enforcement evidence changes |
+| `docs/architecture/planning-contacts-size-inventory-2026-07-15.md` | Pre-refactor Planning and Contacts surface, capability-size, data-ownership, and split evidence | Planning or Contacts size evidence or the dated split assessment needs correction |
+| `docs/architecture/planning-contacts-size-fix-2026-07-15.md` | Planning and Contacts facade/internal-package refactor, enforcement, verification, and residual risks | Either module's supported surface, internal package boundary, or verification evidence changes |
+| `docs/architecture/kernel-host-shell-gap3-inventory-2026-07-16.md` | Pre-refactor backend composition ownership, frontend shell/Contacts edges, cycles, and target dependency direction | A correction is needed to the dated Gap 3 inventory or its audit method |
+| `docs/architecture/kernel-host-shell-gap3-fix-2026-07-16.md` | Host/kernel refactor, shell/Contacts cycle removal, architecture enforcement, verification, and score uplift | Host/kernel/shell boundary implementation, allowlist, proof, or residual risk changes |
+| `docs/architecture/modular-monolith-structure-re-audit-2026-07-16.md` | Post-Gap 1–3 modular-monolith verdict, module inventory, boundary evidence, scorecard, residuals, and next actions | Module boundaries, ownership evidence, SCC findings, enforcement status, or the dated verdict needs correction |
+| `docs/architecture/ARCHITECTURE-FREEZE-2026-07-16.md` | Active Host/Kernel/module/shell placement, public API, data ownership, module creation/split, dependency, and merge-test freeze rules | An approved unfreeze ADR changes a frozen boundary or required gate |
 | `docs/architecture/UOK_MODULE_ROADMAP.md` | UOK-level module status and next boundary work | Module status, target, ownership, or roadmap changes |
 | `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md` | AI-operated business workflow architecture, governed agent tools, human approval gates, and compliance evidence model | Agent governance, Codex tool binding, AI workflow, approval, or evidence architecture changes |
 | `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md` | Global export artifact boundary for CSV, JSON, image/SVG, PDF, document, and future import/export helpers | Export format ownership, shared artifact primitives, module export behavior, or export UI patterns change |
@@ -163,7 +172,14 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0025-uniform-workspace-command-surface-and-action-vocabulary.md`
 - `docs/architecture/ADR-0026-calendar-integrity-and-appointments-boundary.md`
 - `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
+- `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
+- `docs/architecture/planning-data-boundary-inventory-2026-07-15.md`
+- `docs/architecture/planning-data-boundary-fix-2026-07-15.md`
+- `docs/architecture/planning-contacts-size-inventory-2026-07-15.md`
+- `docs/architecture/planning-contacts-size-fix-2026-07-15.md`
+- `docs/architecture/kernel-host-shell-gap3-inventory-2026-07-16.md`
+- `docs/architecture/kernel-host-shell-gap3-fix-2026-07-16.md`
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
 - `docs/architecture/UOK_GLOBAL_SHARED_FEATURES.md`

@@ -6,9 +6,9 @@ from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
 from test_resource_capacity_validation import capacity_fixture
-from uok_planning_core.resource_capacity import calculate_resource_capacity
-from uok_planning_core.resource_leveling_validation import validate_leveling_result
-from uok_planning_core.schedule_math import default_calendar
+from uok_planning_core._internal.resources.resource_capacity import calculate_resource_capacity
+from uok_planning_core._internal.resources.resource_leveling_validation import validate_leveling_result
+from uok_planning_core._internal.scheduling.schedule_math import default_calendar
 
 
 def test_leveling_reports_partial_outcome_and_manual_reasons(client: TestClient) -> None:

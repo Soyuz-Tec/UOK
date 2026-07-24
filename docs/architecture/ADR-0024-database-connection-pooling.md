@@ -24,7 +24,7 @@ insufficient.
 
 1. PostgreSQL runtime access continues to use one process-local SQLAlchemy
    `QueuePool` per API process. PgBouncer is not part of the current candidate.
-2. `src/uok/db_pool.py` owns validated PostgreSQL pool configuration. Pool size,
+2. `src/uok/host/db_pool.py` owns validated PostgreSQL pool configuration. Pool size,
    overflow, checkout timeout, pre-ping, optional recycling, connect timeout,
    and application name are explicit and bounded. Unlimited pool or overflow
    settings fail closed.

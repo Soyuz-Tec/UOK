@@ -1,6 +1,6 @@
 import { CalendarDays } from "lucide-react";
 
-import type { ModuleSurface } from "@uok/features/modules/moduleSurfaceContract";
+import type { ModuleSurface } from "@uok/contracts/moduleSurface";
 
 import { CalendarWorkspace } from "./CalendarWorkspace";
 import { CALENDAR_MODULE_ID, CALENDAR_SECTION_ID } from "./calendarModule";
@@ -12,12 +12,12 @@ export const calendarModuleSurface: ModuleSurface = {
   icon: CalendarDays,
   moduleName: CALENDAR_MODULE_ID,
   order: 40,
-  render: (workbench) => (
+  render: (host) => (
     <CalendarWorkspace
-      token={workbench.token}
-      moduleRows={workbench.moduleRows}
-      busyAction={workbench.busyAction}
-      onInstall={() => workbench.moduleAction(CALENDAR_MODULE_ID, "install")}
+      token={host.token}
+      moduleRows={[...host.moduleRows]}
+      busyAction={host.busyAction}
+      onInstall={() => void host.moduleAction(CALENDAR_MODULE_ID, "install")}
     />
   )
 };

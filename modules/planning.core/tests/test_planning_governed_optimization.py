@@ -9,10 +9,10 @@ from sqlalchemy import select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import PlanningAnalysisRecommendation, PlanningScheduleEvent
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import PlanningAnalysisRecommendation, PlanningScheduleEvent
 from uok.util import loads
-from uok_planning_core.optimizer_engine import run_optimizer
+from uok_planning_core._internal.analysis.optimizer_engine import run_optimizer
 
 
 def test_bounded_optimizer_returns_explained_independently_validated_candidate(client: TestClient) -> None:
@@ -40,7 +40,7 @@ def test_bounded_optimizer_returns_explained_independently_validated_candidate(c
 def test_optimizer_reports_timeout_and_infeasible_without_false_success(client: TestClient) -> None:
     _, ops, _, project_id, _, snapshot_id, _ = _setup(client)
     snapshot = _snapshot(client, ops, project_id, snapshot_id)
-    with patch("uok_planning_core.optimizer_engine.monotonic", side_effect=[0.0, 0.002]):
+    with patch("uok_planning_core._internal.analysis.optimizer_engine.monotonic", side_effect=[0.0, 0.002]):
         _, limits, timed_out = run_optimizer(snapshot, {"timeout_ms": 1, "max_candidates": 10})
     assert timed_out["status"] == "timeout"
     assert limits["evaluated_candidates"] == 0

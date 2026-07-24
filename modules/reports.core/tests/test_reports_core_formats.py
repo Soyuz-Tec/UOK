@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from uok.module_paths import ensure_module_backend_paths
+from uok.host.module_paths import ensure_module_backend_paths
 
 ensure_module_backend_paths()
 

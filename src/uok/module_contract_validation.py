@@ -11,7 +11,7 @@ from .module_contract_rules import (
 )
 from .module_lifecycle_policy import lifecycle_policy_checks
 from .module_manifest_loader import load_module_manifests
-from .module_paths import modules_root
+from .host.module_paths import modules_root
 
 
 _LIFECYCLE_POLICY_FIELDS = {

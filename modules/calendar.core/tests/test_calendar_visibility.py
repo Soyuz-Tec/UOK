@@ -5,7 +5,7 @@ from uuid import uuid4
 from starlette.testclient import TestClient
 
 from tests.helpers import auth
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok_calendar_core.access import can_read_calendar
 from uok_calendar_core.models import Calendar
 

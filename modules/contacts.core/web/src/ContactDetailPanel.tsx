@@ -1,6 +1,6 @@
 import { FileCheck2 } from "lucide-react";
 
-import { contactDetailPaneOptions } from "@uok/shared/options";
+import { contactDetailPaneOptions } from "./contactWorkspaceOptions";
 import { formatLabel } from "@uok/shared/format";
 import { DetailItem, EmptyState } from "@uok/shared/data-display";
 import { CommandButton, IconButton, SegmentedControl } from "@uok/shared/primitives";

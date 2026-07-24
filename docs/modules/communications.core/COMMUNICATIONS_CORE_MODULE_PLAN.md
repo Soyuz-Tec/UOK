@@ -29,9 +29,9 @@ boundary and its integration with Planning typed links.
 ## Ownership
 
 Module-owned source and the canonical `CommunicationThread` SQLAlchemy mapping
-live under `modules/communications.core`. The legacy
-`src/uok/communication_models.py` path is an exact-class compatibility facade.
-The mapping is registered from the module manifest. The K Connect production
+live under `modules/communications.core`. The former root compatibility alias
+is retired; the host registers the mapping from the module manifest. The K
+Connect production
 surface and CSS live under `modules/communications.core/web/src`, its frontend
 tests live under `modules/communications.core/tests/web`, and the generated
 catalog composes its validated manifest entry through the shared surface registry.

@@ -127,10 +127,11 @@ All durable UI work must use:
   layout, accessibility foundations, and truly reusable module-neutral controls
   remain under `web/src`; module-specific selectors stay with the owning
   module.
-- The current typed host passes existing Workbench state to module renderers as
-  an intentionally transitional shared shell compatibility bridge. It may
-  preserve existing state orchestration during relocation, but new workflows
-  must not increase module-specific shell knowledge.
+- Module renderers receive only the shell- and feature-independent host port in
+  `web/src/contracts/moduleSurface.ts`. The generated runtime catalog is the
+  shell's sole importer of exact module surface entries. Modules must not import
+  shell app/features or the concrete `Workbench`, and the shell must not own
+  module-specific DTOs, routes, preferences, state, or commands.
 - Reports owns its report transport client below
   `modules/reports.core/web/src` even though it has no workbench surface.
   `agents.core` remains planned and inert, so it has no executable surface.

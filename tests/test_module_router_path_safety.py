@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from fastapi import APIRouter
 
-import uok.module_routers as module_routers
+import uok.host.module_routers as module_routers
 
 
 def _manifest() -> dict[str, Any]:

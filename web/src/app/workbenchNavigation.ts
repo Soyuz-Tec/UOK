@@ -1,12 +1,12 @@
 import type { Section } from "../shared/types";
 import {
   defaultModuleSection,
-  generatedModuleSurfaceCatalog,
-} from "../generated/moduleSurfaceCatalog";
+  generatedModuleSections,
+} from "../generated/moduleSections";
 
 const sections = new Set<Section>([
   "overview",
-  ...generatedModuleSurfaceCatalog.map(({ manifest }) => manifest.sectionId),
+  ...generatedModuleSections,
   "evidence",
   "architecture",
 ]);

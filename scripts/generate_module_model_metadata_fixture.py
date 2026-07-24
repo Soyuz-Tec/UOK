@@ -13,7 +13,7 @@ for path in (ROOT, SRC):
         sys.path.insert(0, value)
 
 from tests.model_metadata_contract import normalized_model_metadata  # noqa: E402
-from uok.module_model_registry import ensure_module_models_registered  # noqa: E402
+from uok.host.model_registry import ensure_module_models_registered  # noqa: E402
 
 
 OUTPUT = ROOT / "tests" / "fixtures" / "module_model_metadata.json"

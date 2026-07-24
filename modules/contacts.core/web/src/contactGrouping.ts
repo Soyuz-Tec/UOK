@@ -1,5 +1,5 @@
 import { formatLabel } from "@uok/shared/format";
-import type { ContactGroupBy, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupBy, ContactRecord } from "./contracts";
 
 export type ContactGroup = {
   id: string;

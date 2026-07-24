@@ -34,10 +34,10 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
 | Layer | Mandatory stack | Current UOK location | Role |
 |---|---|---|---|
 | UOK backend | Python `>=3.14`, current container runtime Python `3.14` | `src/uok/`, `modules/<module>/backend` | API, command bus, module registry, workflow contracts, governance, reports, verification, local runtime, module-owned backend providers |
-| API framework | FastAPI `0.139.0` | `src/uok/main.py` | REST, WebSocket, OpenAPI surface, dependency boundaries |
+| API framework | FastAPI `0.139.0` | `src/uok/host/application.py` | REST, WebSocket, OpenAPI surface, dependency boundaries |
 | API/data validation | Pydantic `2.13.4` and Python type hints | request/response schemas, command payload validation | Typed API contracts, JSON-compatible payload discipline |
 | Calendar interoperability | python-dateutil `2.9.0.post0` + icalendar `7.2.0` | `modules/calendar.core/backend/uok_calendar_core` | Bounded RRULE evaluation plus RFC 5545 TZID/VTIMEZONE generation and parsing; Calendar ownership remains module-local |
-| Persistence access | SQLAlchemy `2.0.51` | `src/uok/kernel_models.py`, `src/uok/module_model_registry.py`, `modules/*/backend/*/models.py`, persistence modules | Single-Base ORM mapping, validated module composition, transactional unit of work, SQL abstraction where appropriate |
+| Persistence access | SQLAlchemy `2.0.51` | `src/uok/kernel/persistence.py`, `src/uok/kernel_models.py`, `src/uok/host/model_registry.py`, `modules/*/backend/**/models.py` | Single-Base ORM mapping, host-owned validated module composition, transactional unit of work, SQL abstraction where appropriate |
 | System of record | PostgreSQL `18` | Podman compose and production-shaped runtime | Transactions, tenant scoping, RLS verification, restore drills, event/outbox durability |
 | Durable frontend | TypeScript `5.9.3` + React `19.2.7` | `web/src/`, `modules/*/web/src` | Product-neutral shell/shared controls plus module-owned operator workspaces and typed clients |
 | Frontend build | Vite `8.1.3` on Node `26` | `web/` | Local development build and compiled static assets |
@@ -82,7 +82,10 @@ Code quality, line-of-code integrity, source-size gates, and technology-audit ex
    - Module/product UI must be driven by closed manifests, the generated compile-time frontend module catalog, the typed module surface registry, workflow contracts, permissions, and product metadata.
    - A workbench module declares `web_surface`, canonical `web_entry`, and unique `web_section`; its production source and local CSS live below the declared module `web_path`.
    - The browser must never load manifest YAML or interpret dynamic module paths. The generator emits literal TypeScript imports that Vite compiles into the static application bundle.
-   - The existing broad Workbench surface host is an intentionally transitional shell compatibility bridge. New module behavior must not expand that coupling.
+   - Module surfaces use only the shell- and feature-independent
+     `web/src/contracts/moduleSurface.ts` host port. The runtime catalog is the
+     shell's sole exact-module importer; modules may not import shell
+     implementation types.
    - The core UI shell must not hardcode product-specific names; selected product labels come from product manifests.
 
 7. Vite owns frontend builds
@@ -201,7 +204,7 @@ This restriction applies to UOK production code. It does not prohibit one-off lo
 - Keep shell, shared controls, design tokens, generated contracts, and composition under `web/src`; keep module workspaces, module-specific app hooks, typed module clients, and local CSS under the owning `modules/<module>/web/src`.
 - Keep module frontend tests under `modules/<module>/tests/web` so test code cannot enter the production web root or final runtime image.
 - Represent API responses with interfaces or types at the use boundary.
-- UI state should be explicit, not inferred from untyped `any` except for temporary compatibility surfaces that must be narrowed later.
+- UI state should be explicit and owner-local, not inferred from untyped `any`.
 - Product/workflow labels must come from backend module/product metadata or the frontend module surface registry generated from closed manifests where the current Vite bundle requires compile-time composition.
 - `web_surface`, `web_entry`, and `web_section` are build/release metadata. They are not Python import targets or browser runtime loading instructions.
 - Use reusable components for shell, toolbar, navigation, command buttons, status pills, panels, tables/lists, forms, and workflow steppers.

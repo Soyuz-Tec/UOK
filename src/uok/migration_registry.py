@@ -10,9 +10,9 @@ from sqlalchemy.orm import Session
 
 from . import TARGET_VERSION
 from .kernel_models import SchemaVersion
-from .module_model_registry import ensure_module_models_registered
+from .host.model_registry import ensure_module_models_registered
+from .host.module_paths import repo_root
 from .module_manifest_loader import load_module_manifests
-from .module_paths import repo_root
 from .module_tables import declared_module_table_names, model_table_names
 
 MIGRATION_FILE = "001_initial_baseline.sql"

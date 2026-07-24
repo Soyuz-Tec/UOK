@@ -1,4 +1,4 @@
-import type { ContactGroupBy, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupBy, ContactRecord } from "./contracts";
 import type { ColumnVisibilityMap } from "@uok/shared/tables";
 import { ContactResultsEmptyState, ContactStateStack } from "./ContactResultState";
 import { groupContacts } from "./contactGrouping";

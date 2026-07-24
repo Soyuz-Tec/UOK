@@ -19,13 +19,13 @@ from sqlalchemy.orm import Session
 REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from uok.module_paths import ensure_module_backend_paths  # noqa: E402
+from uok.host.module_paths import ensure_module_backend_paths  # noqa: E402
 
 ensure_module_backend_paths()
 
-from uok.security import Actor  # noqa: E402
+from uok.kernel.security import Actor  # noqa: E402
 from uok.util import loads  # noqa: E402
-from uok_planning_core.replay_visibility import assert_planning_replay_visible  # noqa: E402
+from uok_planning_core._internal.portfolio_audit.replay_visibility import assert_planning_replay_visible  # noqa: E402
 
 
 def main() -> None:

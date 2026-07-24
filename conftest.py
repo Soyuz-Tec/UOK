@@ -19,7 +19,7 @@ os.environ["UOK_TOKEN_TTL_SECONDS"] = "3600"
 for suffix in ("", "-wal", "-shm"):
     Path(f"data/test_uok_baseline.db{suffix}").unlink(missing_ok=True)
 
-from uok.main import app  # noqa: E402
+from uok.host.application import app  # noqa: E402
 
 
 @pytest.fixture

@@ -4,16 +4,9 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from ..commands import MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH, MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH
-from ..contact_api_schemas import (  # noqa: F401
-    ContactCsvImportRequest,
-    ContactGroupMembersRequest,
-    ContactGroupUpdateRequest,
-    ContactGroupWriteRequest,
-    ContactNoteRequest,
-    ContactRelationshipRequest,
-    ContactRelationshipUpdateRequest,
-    ContactWriteRequest,
+from ..kernel.command_contracts import (
+    MAX_CLIENT_IDEMPOTENCY_KEY_LENGTH,
+    MIN_CLIENT_IDEMPOTENCY_KEY_LENGTH,
 )
 
 

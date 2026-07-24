@@ -1,10 +1,46 @@
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import { useState } from "react";
+import { describe, expect, it, vi } from "vitest";
 
-import type { GeneratedModuleSurfaceRegistration, ModuleSurface } from "./moduleSurfaceContract";
-import { moduleSurfaces, validateModuleSurfaceCatalog } from "./moduleSurfaceRegistry";
+import type {
+  GeneratedModuleSurfaceRegistration,
+  ModuleSurface,
+  ModuleSurfaceHostContext,
+} from "@uok/contracts/moduleSurface";
+import {
+  ModuleSurfaceOutlet,
+  moduleSurfaces,
+  validateModuleSurfaceCatalog,
+} from "./moduleSurfaceRegistry";
 
 
 const Icon = () => null;
+const host: ModuleSurfaceHostContext = {
+  token: "test-token",
+  currentUserRole: "platform_admin",
+  appearance: "system",
+  moduleRows: [],
+  busyAction: "",
+  moduleAction: vi.fn(),
+  refreshHost: vi.fn(),
+  moduleRefreshRevision: 0,
+  onUnauthorized: vi.fn(),
+};
+
+function StatefulSurface({ label }: { label: string }) {
+  const [value, setValue] = useState("");
+  return (
+    <label>
+      {label}
+      <input
+        aria-label={`${label} value`}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+      />
+    </label>
+  );
+}
 
 function registration(
   moduleName: string,
@@ -56,5 +92,29 @@ describe("module surface registry", () => {
       registration("apps.manager", "apps"),
       registration("calendar.core", "apps"),
     ])).toThrow("Duplicate frontend module section");
+  });
+
+  it("mounts module surfaces lazily and retains visited module state", () => {
+    const surfaces = validateModuleSurfaceCatalog([
+      registration("apps.manager", "apps", {
+        render: () => <StatefulSurface label="Apps" />,
+      }),
+      registration("calendar.core", "calendar", {
+        render: () => <StatefulSurface label="Calendar" />,
+      }),
+    ]);
+    const { rerender } = render(
+      <ModuleSurfaceOutlet section="apps" host={host} surfaces={surfaces} />,
+    );
+
+    expect(screen.queryByLabelText("Calendar value")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Apps value"), { target: { value: "unsaved" } });
+
+    rerender(<ModuleSurfaceOutlet section="calendar" host={host} surfaces={surfaces} />);
+    expect(screen.getByLabelText("Calendar value")).toBeVisible();
+    expect(screen.getByLabelText("Apps value")).not.toBeVisible();
+
+    rerender(<ModuleSurfaceOutlet section="apps" host={host} surfaces={surfaces} />);
+    expect(screen.getByLabelText("Apps value")).toHaveValue("unsaved");
   });
 });

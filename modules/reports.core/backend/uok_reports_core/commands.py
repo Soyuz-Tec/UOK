@@ -5,7 +5,7 @@ from typing import Any, Callable
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 from .schemas import GenerateReportRequest
 from .service import delete_report_artifact, generate_report, verify_report_artifact

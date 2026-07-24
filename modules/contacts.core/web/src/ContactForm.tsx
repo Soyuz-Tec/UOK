@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { WorkspaceActionButton } from "@uok/shared/actions";
-import type { ContactDraft } from "@uok/shared/types";
+import type { ContactDraft } from "./contracts";
 import { validEmail } from "@uok/shared/format";
 import { FieldMessage } from "@uok/shared/forms";
 import { ContactFormDisclosure } from "./ContactFormDisclosure";

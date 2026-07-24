@@ -5,8 +5,8 @@ from uuid import UUID, uuid4
 from starlette.testclient import TestClient
 
 from tests.helpers import auth
-from uok.db import SessionLocal
-from uok.models import CommandLog
+from uok.host.database import SessionLocal
+from uok.kernel_models import CommandLog
 from uok.util import loads
 
 

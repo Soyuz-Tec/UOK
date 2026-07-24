@@ -6,10 +6,9 @@ from sqlalchemy import func, select, text
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import (
-    CommandLog,
-    EventRecord,
+from uok.host.database import SessionLocal
+from uok.kernel_models import CommandLog, EventRecord
+from uok_planning_core._internal.persistence.models import (
     PlanningOutboxEvent,
     PlanningProject,
     PlanningScheduleEvent,
@@ -17,7 +16,7 @@ from uok.models import (
     PlanningTask,
 )
 from uok.util import loads
-from uok_planning_core.project_lifecycle import PROJECT_STATUS_TRANSITIONS
+from uok_planning_core._internal.scheduling.project_lifecycle import PROJECT_STATUS_TRANSITIONS
 
 
 def test_project_transition_graph_is_exact_and_purge_is_internal() -> None:

@@ -7,12 +7,12 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from uok.command_context import (
+from uok.kernel.command_contracts import (
     COMMAND_ETAG_RESULT_KEY,
     COMMAND_IF_MATCH_CONTEXT_KEY,
     CommandPreconditionError,
 )
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import dumps
 
 from .access import can_read_calendar

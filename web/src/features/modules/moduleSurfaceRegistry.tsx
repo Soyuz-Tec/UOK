@@ -1,14 +1,13 @@
-import type { ReactNode } from "react";
-
-import type { Workbench } from "@uok/app/useWorkbench";
-import { generatedModuleSurfaceCatalog } from "@uok/generated/moduleSurfaceCatalog";
-import type { Option } from "@uok/shared/options";
-import type { Section } from "@uok/shared/types";
+import { useRef } from "react";
 
 import type {
   GeneratedModuleSurfaceRegistration,
   ModuleSurface,
-} from "./moduleSurfaceContract";
+  ModuleSurfaceHostContext,
+} from "@uok/contracts/moduleSurface";
+import { generatedModuleSurfaceCatalog } from "@uok/generated/moduleSurfaceCatalog";
+import type { Option } from "@uok/shared/options";
+import type { Section } from "@uok/shared/types";
 
 type ValidatedModuleSurface = Omit<ModuleSurface, "id"> & { id: Section };
 
@@ -51,6 +50,36 @@ export const moduleSections: Array<Option<Section>> = moduleSurfaces.map(
   ({ id, label, icon }) => ({ id, label, icon }),
 );
 
-export function renderModuleSurface(section: Section, workbench: Workbench): ReactNode {
-  return moduleSurfaces.find((surface) => surface.id === section)?.render(workbench) ?? null;
+export function ModuleSurfaceOutlet({
+  section,
+  host,
+  surfaces = moduleSurfaces,
+}: {
+  section: Section;
+  host: ModuleSurfaceHostContext;
+  surfaces?: readonly ValidatedModuleSurface[];
+}) {
+  const visited = useRef(new Set<Section>());
+  const activeSurface = surfaces.find((surface) => surface.id === section);
+  if (activeSurface) visited.current.add(activeSurface.id);
+
+  return (
+    <>
+      {surfaces
+        .filter((surface) => visited.current.has(surface.id))
+        .map((surface) => {
+          const active = surface.id === section;
+          return (
+            <div
+              key={surface.id}
+              aria-hidden={!active}
+              data-module-surface={surface.id}
+              style={{ display: active ? "contents" : "none" }}
+            >
+              {surface.render(host)}
+            </div>
+          );
+        })}
+    </>
+  );
 }

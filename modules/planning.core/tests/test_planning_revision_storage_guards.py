@@ -9,10 +9,10 @@ from sqlalchemy import select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok_planning_core.revision_history import PlanningRevisionNotFound, list_project_revisions
-from uok.db import SessionLocal
-from uok.models import PlanningOutboxEvent, PlanningScheduleRevision
-from uok.security import Actor
+from uok_planning_core._internal.portfolio_audit.revision_history import PlanningRevisionNotFound, list_project_revisions
+from uok.host.database import SessionLocal
+from uok_planning_core._internal.persistence.models import PlanningOutboxEvent, PlanningScheduleRevision
+from uok.kernel.security import Actor
 
 
 def test_revision_and_outbox_orm_records_are_append_only(client: TestClient) -> None:

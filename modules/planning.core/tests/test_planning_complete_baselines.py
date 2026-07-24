@@ -9,8 +9,9 @@ from sqlalchemy import select, update
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok.models import EventRecord, PlanningBaseline, PlanningScheduleEvent
+from uok.host.database import SessionLocal
+from uok.kernel_models import EventRecord
+from uok_planning_core._internal.persistence.models import PlanningBaseline, PlanningScheduleEvent
 from uok.util import dumps, loads
 
 

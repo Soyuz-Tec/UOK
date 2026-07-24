@@ -80,6 +80,7 @@ New modules must not add product-specific behavior to the UOK core. They must ex
 
 ## Next Boundary Work
 
-- Narrow the transitional Workbench surface host into smaller stable shell contracts without moving module behavior back into the shell.
+- Keep the neutral module-surface host contract small and reject new
+  shell/module backedges as modules are added.
 - Keep future module React/CSS source and frontend tests in canonical module roots from the first increment.
 - Keep future schema changes in module-owned migrations instead of expanding the shared initial baseline.

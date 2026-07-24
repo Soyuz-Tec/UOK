@@ -6,7 +6,7 @@ from typing import Any
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
-from uok.security import Actor
+from uok.kernel.security import Actor
 from uok.util import loads
 
 from .access import can_read_calendar, readable_calendar_predicate

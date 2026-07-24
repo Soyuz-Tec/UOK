@@ -1,6 +1,6 @@
 import { formatLabel } from "@uok/shared/format";
 import { DetailItem, EmptyState, MetricGrid, StatusPill } from "@uok/shared/data-display";
-import type { ContactRecord } from "@uok/shared/types";
+import type { ContactRecord } from "./contracts";
 import { deriveContactBusinessIntelligenceProfile, profileRiskTone, profileTone } from "./contactBusinessIntelligenceProfileModel";
 
 export function ContactBusinessIntelligenceProfilePanel({ contact }: { contact: ContactRecord }) {

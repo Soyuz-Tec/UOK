@@ -3,8 +3,8 @@ from uuid import uuid4
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.db import SessionLocal
-from uok_contacts_core.models import Party
+from uok.host.database import SessionLocal
+from uok_contacts_core._internal.persistence.models import Party
 
 
 def _install(client: TestClient) -> tuple[dict[str, str], dict[str, str]]:

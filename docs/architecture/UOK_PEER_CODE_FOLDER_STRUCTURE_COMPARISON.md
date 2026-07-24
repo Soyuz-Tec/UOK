@@ -66,9 +66,12 @@ Important current qualities:
 - Runtime extension points, owned paths, frontend entries, sections, and verifier scenarios are manifest-declared and validated before composition.
 - The frontend shell now has a compile-time module surface registry under `web/src/features/modules`.
 
-Important current limitation:
+The Gap 3 follow-up closes the former frontend limitation:
 
-- The module frontend location boundary is physical, but the typed Workbench host still passes broad existing shell state and commands into module renderers. The next maturity step is narrowing that compatibility interface while keeping module behavior out of the shell.
+- Module renderers now receive the neutral
+  `web/src/contracts/moduleSurface.ts` host port. Contacts owns its data,
+  state, preferences, DTOs, and commands, and source-graph enforcement rejects
+  shell/module cycles.
 
 ## Peer Folder Patterns
 
@@ -135,7 +138,8 @@ The difference is important:
 
 - Odoo has a mature physical add-on boundary.
 - UOK now has a physical module boundary for backend, ORM, migrations, production UI/CSS, tests, and verifiers, plus closed manifests and a generated compile-time frontend registry.
-- UOK should deepen that boundary by narrowing the transitional Workbench host and keeping future modules canonical from their first increment.
+- UOK must preserve the neutral host port and keep future modules canonical
+  from their first increment.
 
 ## Recommended UOK Target Structure
 
@@ -243,7 +247,12 @@ The core idea:
 
 UOK's current folder structure is cleaner and easier to review than most mature ERP repositories because it is still small. The main structural improvement from this pass is complete physical ownership for module backend/ORM, migrations, production React/CSS, tests, and verifiers, with file-backed manifests driving validated runtime and compile-time composition.
 
-Before UOK adds CRM Basic, Products, Cargo Transactions, Accounting, Inventory, or Documents, the kernel should keep enforcing `modules/<module_name>` packaging, narrow the remaining shell-host compatibility bridge, and require new modules to begin with canonical ownership. That keeps UOK moving from a small modular monolith toward a mature ERP/application kernel without turning the core into a large mixed-responsibility monolith.
+Before UOK adds CRM Basic, Products, Cargo Transactions, Accounting, Inventory,
+or Documents, the architecture gates must keep enforcing
+`modules/<module_name>` packaging, host-owned composition, the neutral
+module-surface port, and canonical ownership from the first increment. That
+keeps UOK moving from a small modular monolith toward a mature ERP/application
+kernel without turning the core into a large mixed-responsibility monolith.
 
 ## Sources
 

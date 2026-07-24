@@ -6,8 +6,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from . import TARGET_VERSION
-from .models import CommandLog, EventRecord, GovernanceRule, ModuleRecord
-from .module_reports import module_evidence_fragments
+from .host.module_reports import module_evidence_fragments
+from .kernel_models import CommandLog, EventRecord, GovernanceRule, ModuleRecord
 from .modules import module_catalog
 
 

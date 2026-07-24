@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time, timezone
 import json
 
-from uok_planning_core.schedule_math import CalendarSpec, default_calendar, end_for_start
+from uok_planning_core._internal.scheduling.schedule_math import CalendarSpec, default_calendar, end_for_start
 
 
 @dataclass

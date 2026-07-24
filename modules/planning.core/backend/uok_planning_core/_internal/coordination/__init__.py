@@ -1,0 +1,1 @@
+"""Private coordination capability implementation."""

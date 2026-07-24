@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import delete, update
 from sqlalchemy.orm import Session
 
-from uok.security import Actor
+from uok.kernel.security import Actor
 
 from .models import CalendarEvent, CalendarEventParticipant, CalendarReminder
 from .recurrence import validate_recurrence_until_limit, validate_rrule

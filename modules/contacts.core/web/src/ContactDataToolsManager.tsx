@@ -3,7 +3,7 @@ import { DatabaseZap, FileUp, Fingerprint, GitCompareArrows, ListChecks, Puzzle,
 
 import { useUokLocalization } from "@uok/shared/localization";
 import { WorkspaceEditorPopup } from "@uok/shared/overlays";
-import type { ContactGroupRecord, ContactRecord } from "@uok/shared/types";
+import type { ContactGroupRecord, ContactRecord } from "./contracts";
 import { createContactDataToolsApi } from "./contactDataToolsApi";
 import { ContactConsentToolsPanel } from "./ContactConsentToolsPanel";
 import { ContactCustomFieldsToolsPanel } from "./ContactCustomFieldsToolsPanel";

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 
 import { EmptyState } from "@uok/shared/data-display";
 import { CommandButton } from "@uok/shared/primitives";
-import type { ContactMergeFieldChoices } from "@uok/shared/types";
+import type { ContactMergeFieldChoices } from "./contracts";
 import { ContactDuplicateComparisonPopup } from "./ContactDuplicateComparisonPopup";
 import { ContactReviewGuidance } from "./ContactReviewGuidance";
 import { contactQualityActions, contactQualityGroups, contactPrimaryQualityIssue, duplicateMatches } from "./contactQuality";

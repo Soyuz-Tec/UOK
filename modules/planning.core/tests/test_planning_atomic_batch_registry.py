@@ -8,8 +8,9 @@ from starlette.testclient import TestClient
 
 from planning_batch_test_support import BatchFixture, planning_fixture, planning_users, schedule
 from tests.helpers import auth
-from uok.db import SessionLocal
-from uok.models import CommandLog, EventRecord, PlanningScheduleEvent
+from uok.host.database import SessionLocal
+from uok.kernel_models import CommandLog, EventRecord
+from uok_planning_core._internal.persistence.models import PlanningScheduleEvent
 
 
 def test_mixed_batch_applies_all_ten_kinds_in_order_with_one_revision_and_correlation(client: TestClient) -> None:

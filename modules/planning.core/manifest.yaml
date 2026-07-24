@@ -87,14 +87,14 @@ migrations_path: modules/planning.core/migrations
 tests_path: modules/planning.core/tests
 api_prefixes:
   - /api/planning
-api_router: uok_planning_core.api:router
-command_handlers: uok_planning_core.commands:command_handlers
-command_permissions: uok_planning_core.commands:command_permissions
-command_replay_guard: uok_planning_core.replay_visibility:assert_planning_replay_visible
-role_grants: uok_planning_core.policy:role_grants
-dashboard_provider: uok_planning_core.reports:dashboard_counts
-evidence_provider: uok_planning_core.reports:evidence
-model_exports: uok_planning_core.models:owned_models
+api_router: uok_planning_core.public_api:api_router
+command_handlers: uok_planning_core.public_api:command_handlers
+command_permissions: uok_planning_core.public_api:command_permissions
+command_replay_guard: uok_planning_core.public_api:assert_planning_replay_visible
+role_grants: uok_planning_core.public_api:role_grants
+dashboard_provider: uok_planning_core.public_api:dashboard_counts
+evidence_provider: uok_planning_core.public_api:evidence
+model_exports: uok_planning_core._internal.persistence.models:owned_models
 candidate_verifier_script: modules/planning.core/verify/UokCandidatePlanning.ps1
 candidate_verifier_function: Invoke-UokPlanningCandidateScenario
 permissions:

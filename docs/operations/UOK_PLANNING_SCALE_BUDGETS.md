@@ -19,7 +19,7 @@
 Run the backend benchmark inside the rebuilt PostgreSQL-backed candidate:
 
 ```powershell
-podman exec uok-api-1 python /app/scripts/planning_scale_benchmark.py --samples 6
+podman exec uok-api-1 python /app/modules/planning.core/verify/runtime/planning_scale_benchmark.py --samples 6
 ```
 
 The script creates project/task/dependency fixtures inside one database

@@ -1,6 +1,6 @@
 import { formatLabel } from "@uok/shared/format";
 import { EmptyState } from "@uok/shared/data-display";
-import type { ContactRecord } from "@uok/shared/types";
+import type { ContactRecord } from "./contracts";
 import { contactReviewTone, contactStatusTone } from "./contactPresentation";
 
 export function ContactStateText({ label, tone }: { label: string; tone: "success" | "warning" | "danger" | "info" }) {

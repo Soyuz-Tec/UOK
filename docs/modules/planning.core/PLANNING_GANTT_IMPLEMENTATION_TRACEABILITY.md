@@ -134,8 +134,8 @@ is required for this implementation slice.
 Current Gate B link evidence:
 
 - ADR: `docs/architecture/ADR-0004-planning-typed-link-resolver.md`
-- Migration/model/manifest: `modules/planning.core/migrations/005_planning_operation_links.sql`, `modules/planning.core/backend/uok_planning_core/planning_models.py`, and `modules/planning.core/manifest.yaml`
-- Resolver/API/audit/baseline integration: `modules/planning.core/backend/uok_planning_core/link_resolver.py`, `link_commands.py`, `link_read_model.py`, and `baselines.py`
+- Migration/model/manifest: `modules/planning.core/migrations/005_planning_operation_links.sql`, `modules/planning.core/backend/uok_planning_core/_internal/persistence/planning_models.py`, and `modules/planning.core/manifest.yaml`
+- Resolver/API/audit/baseline integration: `modules/planning.core/backend/uok_planning_core/_internal/coordination/link_resolver.py`, `link_commands.py`, `link_read_model.py`, and `modules/planning.core/backend/uok_planning_core/_internal/scheduling/baselines.py`
 - Cross-organization, denied, disabled-provider, correlation, and baseline proof: `modules/planning.core/tests/test_planning_links.py`
 - Typed client and capability-gated inspector proof: `modules/planning.core/tests/web/planningApi.test.ts` and `modules/planning.core/tests/web/PlanningOperationLinksPanel.test.tsx`
 - Candidate runtime scenario: `modules/planning.core/verify/UokCandidatePlanningLinks.ps1`
@@ -191,7 +191,7 @@ Current Gate B communication-thread evidence:
 Current Gate C typed-resource evidence:
 
 - ADR: `docs/architecture/ADR-0009-planning-typed-resource-boundary.md`
-- Migration/model: `modules/planning.core/migrations/009_planning_typed_resources.sql` and `modules/planning.core/backend/uok_planning_core/planning_resource_models.py`
+- Migration/model: `modules/planning.core/migrations/009_planning_typed_resources.sql` and `modules/planning.core/backend/uok_planning_core/_internal/persistence/planning_resource_models.py`
 - Contract, resolver-safe read model, baseline, database, and invalid-combination proof: `modules/planning.core/tests/test_planning_typed_resources.py`
 - Typed inspector proof: `modules/planning.core/tests/web/PlanningResourcePanel.test.tsx`
 - Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningResources.ps1`
@@ -200,7 +200,7 @@ Current Gate C typed-resource evidence:
 Current Gate C resource-calendar evidence:
 
 - ADR: `docs/architecture/ADR-0010-planning-resource-capacity-calendars.md`
-- Migration/model: `modules/planning.core/migrations/010_planning_resource_calendars.sql` and `modules/planning.core/backend/uok_planning_core/planning_resource_models.py`
+- Migration/model: `modules/planning.core/migrations/010_planning_resource_calendars.sql` and `modules/planning.core/backend/uok_planning_core/_internal/persistence/planning_resource_models.py`
 - Capacity derivation, mutation, overlap/bounds, baseline, independent validation, and leveling proof: `modules/planning.core/tests/test_planning_resource_calendars.py`
 - Engine fault-injection regression: `modules/planning.core/tests/test_resource_capacity_validation.py`
 - Typed inspector/workload/API proof: `modules/planning.core/tests/web/PlanningResourcePanel.test.tsx`, `modules/planning.core/tests/web/planningWorkloadModel.test.ts`, and `modules/planning.core/tests/web/planningResourceCalendarApi.test.ts`
@@ -210,7 +210,7 @@ Current Gate C resource-calendar evidence:
 Current Gate C calendar-correlation evidence:
 
 - ADR: `docs/architecture/ADR-0011-planning-resource-calendar-correlation.md`
-- Provider filter and Planning correlation: `modules/calendar.core/backend/uok_calendar_core/read_model.py` and `modules/planning.core/backend/uok_planning_core/calendar_bridge.py`
+- Provider filter and Planning correlation: `modules/calendar.core/backend/uok_calendar_core/read_model.py` and `modules/planning.core/backend/uok_planning_core/_internal/coordination/calendar_bridge.py`
 - Two-resource correlation, unrelated-event exclusion, private Party denial, and empty-correlation proof: `modules/planning.core/tests/test_planning_calendar_core_integration.py`
 - Actor-visible context/ETag regression: `modules/planning.core/tests/test_planning_concurrency_guards.py`
 - Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningAvailability.ps1`
@@ -219,8 +219,8 @@ Current Gate C calendar-correlation evidence:
 Current Gate C explainable-leveling evidence:
 
 - ADR: `docs/architecture/ADR-0012-planning-explainable-resource-leveling.md`
-- Strategy and command orchestration: `modules/planning.core/backend/uok_planning_core/resource_leveling.py` and `leveling_command.py`
-- Independent post-level validator and injected hidden-overload fault: `modules/planning.core/backend/uok_planning_core/resource_leveling_validation.py` and `modules/planning.core/tests/test_planning_explainable_leveling.py`
+- Strategy and command orchestration: `modules/planning.core/backend/uok_planning_core/_internal/resources/resource_leveling.py` and `leveling_command.py`
+- Independent post-level validator and injected hidden-overload fault: `modules/planning.core/backend/uok_planning_core/_internal/resources/resource_leveling_validation.py` and `modules/planning.core/tests/test_planning_explainable_leveling.py`
 - Feasible, partial, infeasible, manual, capacity, horizon, and resource-calendar proofs: `modules/planning.core/tests/test_task_scheduling_modes.py`, `test_planning_explainable_leveling.py`, and `test_planning_resource_calendars.py`
 - Configured typed UI and accessible result-status proof: `modules/planning.core/tests/web/PlanningLevelingControl.test.tsx`
 - Candidate baseline-integrity and infeasibility scenario: `modules/planning.core/verify/UokCandidatePlanningLeveling.ps1`
@@ -238,8 +238,8 @@ Current Gate C explainable-leveling evidence:
 Current Gate D what-if evidence:
 
 - ADR: `docs/architecture/ADR-0013-planning-immutable-what-if-snapshots.md`
-- Model/migration: `modules/planning.core/backend/uok_planning_core/planning_analysis_models.py` and `modules/planning.core/migrations/011_planning_what_if_snapshots.sql`
-- Canonical capture, detached preview, integrity, and actor-scoped reads: `modules/planning.core/backend/uok_planning_core/what_if.py` and `analysis_api.py`
+- Model/migration: `modules/planning.core/backend/uok_planning_core/_internal/persistence/planning_analysis_models.py` and `modules/planning.core/migrations/011_planning_what_if_snapshots.sql`
+- Canonical capture, detached preview, integrity, and actor-scoped reads: `modules/planning.core/backend/uok_planning_core/_internal/analysis/what_if.py` and `analysis_api.py`
 - Immutability, idempotency, permissions, non-mutation, and preview proof: `modules/planning.core/tests/test_planning_what_if_snapshots.py`
 - Typed Analysis inspector proof: `modules/planning.core/tests/web/PlanningAnalysisPanel.test.tsx`
 - Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningWhatIf.ps1`
@@ -248,8 +248,8 @@ Current Gate D what-if evidence:
 Current Gate D risk evidence:
 
 - ADR: `docs/architecture/ADR-0014-planning-reproducible-risk-analysis.md`
-- Engine, normalized inputs, correlations, limits, percentiles, and independent checks: `modules/planning.core/backend/uok_planning_core/risk_engine.py`
-- Immutable persistence, checksum, actor-scoped reads, and audit: `modules/planning.core/backend/uok_planning_core/risk_analysis.py`, `analysis_api.py`, and `analysis_commands.py`
+- Engine, normalized inputs, correlations, limits, percentiles, and independent checks: `modules/planning.core/backend/uok_planning_core/_internal/analysis/risk_engine.py`
+- Immutable persistence, checksum, actor-scoped reads, and audit: `modules/planning.core/backend/uok_planning_core/_internal/analysis/risk_analysis.py`, `analysis_api.py`, and `analysis_commands.py`
 - Exact reproduction, contract rejection, non-mutation, and ORM immutability: `modules/planning.core/tests/test_planning_risk_analysis.py`
 - Typed fixed-seed Analysis inspector proof: `modules/planning.core/tests/web/PlanningAnalysisPanel.test.tsx`
 - Candidate scenario: `modules/planning.core/verify/UokCandidatePlanningRisk.ps1`
@@ -258,8 +258,8 @@ Current Gate D risk evidence:
 Current Gate D optimization/lifecycle evidence:
 
 - ADR/dependency review: `docs/architecture/ADR-0015-planning-governed-optimization-and-recommendations.md`
-- Bounded engine, objectives, limits, timeout/infeasible handling, ranking, and independent checks: `modules/planning.core/backend/uok_planning_core/optimizer_engine.py`
-- Immutable optimization run plus controlled recommendation lifecycle: `modules/planning.core/backend/uok_planning_core/optimization.py` and `analysis_commands.py`
+- Bounded engine, objectives, limits, timeout/infeasible handling, ranking, and independent checks: `modules/planning.core/backend/uok_planning_core/_internal/analysis/optimizer_engine.py`
+- Immutable optimization run plus controlled recommendation lifecycle: `modules/planning.core/backend/uok_planning_core/_internal/analysis/optimization.py` and `analysis_commands.py`
 - Representative, permission, early-apply, approval, apply, audit, rollback, stale, and direct-transition proofs: `modules/planning.core/tests/test_planning_governed_optimization.py`
 - Benchmark: `modules/planning.core/tests/test_planning_optimizer_benchmark.py` measured about 0.25 seconds for 50 candidates across a 50-task chain on the local candidate.
 - Typed approval workflow proof: `modules/planning.core/tests/web/PlanningAnalysisPanel.test.tsx`
@@ -280,7 +280,7 @@ Current Gate D optimization/lifecycle evidence:
 Current Gate E scale evidence:
 
 - Decision and dependency review: `docs/architecture/ADR-0016-planning-scale-budgets-and-virtualization.md`
-- Repeatable budgets/profile: `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md` and `scripts/planning_scale_benchmark.py`
+- Repeatable budgets/profile: `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md` and `modules/planning.core/verify/runtime/planning_scale_benchmark.py`
 - Backend executable proof: `modules/planning.core/tests/test_planning_scale_benchmark.py`
 - Shared virtual window and boundary tests: `modules/planning.core/web/src/planningGanttVirtualization.ts` and `modules/planning.core/tests/web/planningGanttVirtualization.test.ts`
 - Aligned renderer integration: `modules/planning.core/web/src/PlanningGantt.tsx`, `modules/planning.core/web/src/PlanningGanttGrid.tsx`, and `modules/planning.core/web/src/PlanningGanttGridRow.tsx`

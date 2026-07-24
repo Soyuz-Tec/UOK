@@ -5,17 +5,18 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from ..api.schemas import CommandDomainErrorResponse, CommandPreconditionResponse, CommandRequest
-from ..commands import (
+from ..host.commands import execute_command
+from ..host.database import get_db
+from ..host.security import current_actor
+from ..kernel.command_contracts import (
     COMMAND_ETAG_RESULT_KEY,
     CommandDomainError,
     CommandPermissionError,
     CommandPreconditionError,
     IdempotencyConflictError,
     clean_command_text,
-    execute_command,
 )
-from ..db import get_db
-from ..security import Actor, current_actor
+from ..kernel.security import Actor
 
 router = APIRouter(tags=["commands"])
 IDEMPOTENCY_CONFLICT_RESPONSE = {

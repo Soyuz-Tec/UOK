@@ -5,7 +5,7 @@ import ast
 from starlette.testclient import TestClient
 
 from tests.helpers import auth
-from uok.module_paths import repo_root
+from uok.host.module_paths import repo_root
 
 
 def test_catalog_exposes_runtime_status_and_manifest_maturity(client: TestClient) -> None:
@@ -89,7 +89,7 @@ def test_maintenance_negative_invariant_does_not_make_report_fail(client: TestCl
 
 
 def test_apps_manager_router_is_not_hardcoded_in_kernel_composition() -> None:
-    main_source = (repo_root() / "src" / "uok" / "main.py").read_text(encoding="utf-8")
+    main_source = (repo_root() / "src" / "uok" / "host" / "application.py").read_text(encoding="utf-8")
     legacy_router = repo_root() / "src" / "uok" / "api" / "modules.py"
 
     assert "modules_router" not in main_source

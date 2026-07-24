@@ -1,13 +1,11 @@
 import type { Dispatch, SetStateAction } from "react";
 
 import { nonEmptyDraftPayload } from "./contactDraft";
-import type { WorkbenchActions } from "@uok/app/useWorkbenchActions";
-import type { WorkbenchData } from "@uok/app/useWorkbenchData";
-import type { ContactDetailPane, ContactDraft, ContactMergeFieldChoices } from "@uok/shared/types";
-import { emptyDraft } from "@uok/shared/types";
+import type { ContactData } from "./useContactData";
+import type { ContactDetailPane, ContactDraft, ContactMergeFieldChoices, ContactCommandResponse } from "../contracts";
+import { emptyDraft } from "../contracts";
 
 export function useContactCommands({
-  command,
   creating,
   data,
   draft,
@@ -19,11 +17,11 @@ export function useContactCommands({
   setDraft,
   setEditing,
   setNoteText,
-  setRelationshipTarget
+  setRelationshipTarget,
+  refreshHost,
 }: {
-  command: WorkbenchActions["command"];
   creating: boolean;
-  data: WorkbenchData;
+  data: ContactData;
   draft: ContactDraft;
   noteText: string;
   relationshipTarget: string;
@@ -34,7 +32,30 @@ export function useContactCommands({
   setEditing: Dispatch<SetStateAction<boolean>>;
   setNoteText: Dispatch<SetStateAction<string>>;
   setRelationshipTarget: Dispatch<SetStateAction<string>>;
+  refreshHost: () => Promise<void>;
 }) {
+  async function command(commandType: string, payload: Record<string, unknown>, prefix: string) {
+    try {
+      data.setBusyAction(commandType);
+      const response = await data.api<ContactCommandResponse>("/api/commands", {
+        method: "POST",
+        body: JSON.stringify({
+          command_type: commandType,
+          payload,
+          idempotency_key: `${prefix}:${Date.now()}`,
+        }),
+      });
+      data.setOut(response);
+      await Promise.all([data.refresh(), refreshHost()]);
+      return response;
+    } catch (error) {
+      data.setOut(error);
+      return null;
+    } finally {
+      data.setBusyAction("");
+    }
+  }
+
   async function saveDraft() {
     const payload = nonEmptyDraftPayload(draft);
     const result = !creating && data.selectedContactId

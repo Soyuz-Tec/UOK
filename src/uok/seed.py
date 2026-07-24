@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from . import APP_VERSION, TARGET_VERSION
-from .models import GovernanceRule, Membership, ModuleRecord, Organization, SchemaVersion, User
+from .kernel_models import GovernanceRule, Membership, ModuleRecord, Organization, SchemaVersion, User
 from .modules import module_catalog
 from .util import dumps, hash_password
 

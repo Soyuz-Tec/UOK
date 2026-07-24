@@ -7,8 +7,9 @@ from sqlalchemy import delete, select
 from starlette.testclient import TestClient
 
 from tests.helpers import auth
-from uok.db import SessionLocal
-from uok.models import Membership, Organization, PlanningProject, PlanningTask
+from uok.host.database import SessionLocal
+from uok.kernel_models import Membership, Organization
+from uok_planning_core._internal.persistence.models import PlanningProject, PlanningTask
 
 
 def test_dashboard_excludes_tasks_with_hidden_or_cross_org_parent_projects(client: TestClient) -> None:

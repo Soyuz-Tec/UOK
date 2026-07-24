@@ -27,7 +27,9 @@ modules/<module_name>/
   verify/  # required when candidate_verifier is declared
 ```
 
-UOK may provide compatibility facades, shared services, shell composition, and shared database primitives. Business behavior belongs in the module package.
+UOK provides host composition, stable module-neutral ports, shell composition,
+and shared database contracts. Business behavior belongs in the module package;
+global capability compatibility facades are not an allowed ownership shortcut.
 
 The module `README.md` is the human entry point for scope and ownership. It is enforced by the repository quality audit rather than the runtime manifest validator.
 
@@ -70,7 +72,7 @@ Every module manifest must declare:
 | `command_handlers` | Import target for a provider returning this module's command handler mapping. Every returned command must be declared in `commands`, and every declared command must have one handler. |
 | `command_permissions` | Import target for a provider returning command-to-permission mappings. Every mapped command must be declared in `commands`, and every mapped permission must be declared in `permissions`. |
 | `command_replay_guard` | Optional product-neutral replay-visibility callable invoked only after command type and canonical request bytes exactly match the stored succeeded command. A mismatched reuse remains the kernel's stable `409`; an exact replay may be hidden when lifecycle or retention state makes its former result unavailable. |
-| `role_grants` | Import target for module-owned role permission grants. Grants extend kernel roles without hardcoding module permissions in `src/uok/security.py`. |
+| `role_grants` | Import target for module-owned role permission grants. Grants extend kernel roles without hardcoding module permissions in `src/uok/kernel/security.py`. |
 | `dashboard_provider` | Import target for module-owned dashboard count fragments merged into `/api/dashboard`. |
 | `evidence_provider` | Import target for module-owned baseline evidence checks and counts merged into `/api/baseline-evidence`. |
 | `model_exports` | Import target for a provider returning the module's exact `dict[str, mapped class]`. Registration validates direct manifest ownership, source origin, the single kernel `Base`, complete metadata, and hidden/extra mappings before schema or migration inspection. |
@@ -100,18 +102,36 @@ New extension points require an architecture update and a failing validation tes
 
 ## Runtime and Release Validation
 
-- Runtime validation statically checks schema and maturity truth, lifecycle semantics, dependencies, unique direct ownership, explicit kernel-table scopes, safe runtime paths, backend packages, import targets, canonical non-overlapping API prefixes, permissions, and model declarations. It completes before extension imports. The model registry then imports only validated `model_exports` providers in deterministic dependency order and completes the single metadata graph before migration inspection, schema creation, or other extension composition.
+- Runtime validation statically checks schema and maturity truth, lifecycle semantics, dependencies, unique direct ownership, explicit kernel-table scopes, safe runtime paths, backend packages, import targets, canonical non-overlapping API prefixes, permissions, and model declarations. It completes before extension imports. The host-owned model registry then imports only validated `model_exports` providers in deterministic dependency order and completes the single `uok.kernel.persistence.Base` metadata graph before migration inspection, schema creation, or other extension composition.
 - Frontend/build validation includes every runtime check, then requires module frontend ownership roots plus the exact POSIX canonical entry, safe resolved path, unique non-reserved section, and paired manifest fields before catalog generation. Release validation includes the runtime and frontend checks plus all module ownership folders, maturity-appropriate module tests, and safe module-owned candidate verifier files/functions. Python runtime validation does not require TypeScript source assets to exist.
 - Runtime validation deliberately does not require `tests_path` to exist, but it still enforces the canonical `modules/<module_name>/tests` declaration. Runtime container stages exclude `modules/*/tests`; a manifest-driven container asset validator requires every runtime-proven module's exact verifier script and rejects any noncanonical test path.
 - Candidate discovery consumes the canonical release validator and recursively parses each entry script's complete static dot-source closure before returning the catalog. Helpers must use a canonical literal `$PSScriptRoot` path, resolve inside the owning module `verify/` directory or the approved shared `scripts/verify` root, and remain free of links, junctions, cycles, and syntax errors. Dynamic or unresolved dot-sources fail closed, and the declared verifier must have exactly one ordinary top-level function definition across the closure before PowerShell loads any module script.
 - Frontend catalog generation consumes the same closed manifests, applies deterministic dependency ordering, and writes literal TypeScript imports to `web/src/generated/moduleSurfaceCatalog.ts`. The browser never reads YAML or interprets `web_entry`; Vite compiles the generated catalog and canonical entries at build time.
 
-## Kernel Boundary Rules
+## Host, Kernel, And Module Boundary Rules
 
-- `src/uok` owns the kernel, shared contracts, security, command bus, module registry, API composition, static asset serving, and compatibility facades.
+- `src/uok/host` owns the FastAPI application, engine/session/pool, request DI,
+  manifest provider resolution, ORM registration, global middleware/static
+  serving, and router/command/policy/report composition.
+- `src/uok/kernel` owns only stable module-neutral contracts: the single
+  declarative `Base` and the host-configured module runtime port. Product-neutral
+  shared mappings remain in `src/uok/kernel_models.py`.
 - `modules/<module>` owns module-specific backend implementation, ORM definitions, UI surface, migrations, tests, runtime/release verification assets, commands, events, permissions, and maintenance behavior.
 - Module production frontend source and CSS live under `modules/<module>/web/src`; module frontend tests live under `modules/<module>/tests/web`. Shared shell, reusable module-neutral controls, design tokens, generated contracts, and catalog composition remain under `web/src`.
-- The current typed surface host adapts the shell's existing Workbench state into module renderers as an intentionally transitional compatibility bridge. Modules must not use it to move new module behavior into the shell.
+- Module surfaces depend only on `web/src/contracts/moduleSurface.ts`. The
+  generated runtime catalog is the sole shell importer of exact
+  `moduleSurface.tsx` entries; modules must not import shell app/features or
+  concrete Workbench implementation types.
+- Feature backends may use `uok.kernel.module_runtime` wrapper operations. They
+  may not configure that port or import lifecycle/catalog composition
+  implementations. Lifecycle mutations are restricted to the Apps Manager
+  adapter; other capabilities receive read-only runtime operations.
+- Module → Host production exceptions are path-and-symbol exact:
+  `uok.host.database.get_db` and `uok.host.security.current_actor` in the 12
+  documented HTTP adapters, plus `uok.host.commands.execute_command` in the
+  Calendar, Contacts, and Planning command adapters. Engine, `SessionLocal`,
+  pool, application, host registries, and every unlisted host import are
+  forbidden.
 - Product, cargo, CRM, accounting, inventory, document, and industry-specific logic must not be embedded in the kernel.
 - A module may use shared UOK database tables only when its manifest declares the table or shared-table scope it owns.
 - A module must not require manual edits to unrelated modules for normal install, upgrade, disable, uninstall, or maintenance workflows.
@@ -123,8 +143,13 @@ New extension points require an architecture update and a failing validation tes
 - `apps.manager` is the required `runtime_proven` control module and its API router is mounted only from its manifest.
 - `agents.core` is an inert `planned` capability scaffold: it is not installable, updatable, maintainable, permission-bearing, or runtime-proven.
 - `calendar.core`, `communications.core`, `contacts.core`, `planning.core`, and `reports.core` are optional `runtime_proven` capability modules with manifest-declared backend hooks and module-owned verifiers.
-- Their 29 capability ORM mappings live in the owning backend packages and register beside nine product-neutral kernel mappings on one SQLAlchemy metadata graph. Compatibility imports return the exact owning classes.
+- Their capability ORM mappings live in the owning backend packages and
+  register beside nine product-neutral kernel mappings on one SQLAlchemy
+  metadata graph. The former global ORM compatibility imports are retired.
 - Apps Manager, Calendar, Communications, Contacts, and Planning declare `web_surface`; their React source, module-local CSS, entrypoints, and frontend tests live below the owning module roots and are composed through the generated compile-time catalog.
+- Contacts owns its frontend DTOs, state, reads, preferences, storage keys, and
+  commands. The shell passes only the neutral host port, and architecture tests
+  reject every cross-owner shell/module source cycle.
 - Reports owns its typed report client under `modules/reports.core/web/src` but has no workbench surface. Planning may consume that typed client without transferring Reports transport ownership into the shell.
 - `agents.core` remains an inert planned scaffold and declares no executable web surface.
 - The Docker frontend stage copies the module tree before Vite compilation. Vitest discovers `modules/*/tests/web`, and container validation rejects frontend tests below production `web_path` while the final image excludes canonical module test directories.
@@ -135,6 +160,7 @@ Before pushing a candidate to GitHub, run these gates one by one:
 
 ```powershell
 python -m compileall -q src modules tests
+python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
 python scripts/validate_container_module_assets.py
 python scripts/run_python_tests.py
 npm --prefix web run check:contracts

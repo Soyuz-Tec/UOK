@@ -63,7 +63,7 @@ def check_required_artifacts() -> CheckResult:
         "scripts/database_capacity_audit.py",
         "scripts/uok_github_ops.ps1",
         "src/uok/module_release_contract.py",
-        "src/uok/db_pool.py",
+        "src/uok/host/db_pool.py",
         "requirements-dev.txt",
         ".github/CODEOWNERS",
         ".github/copilot-instructions.md",

@@ -5,7 +5,7 @@ from uuid import uuid4
 from starlette.testclient import TestClient
 
 from tests.helpers import auth, command
-from uok.contacts import MAX_CONTACT_NOTE_LENGTH, MAX_CSV_IMPORT_BYTES
+from uok_contacts_core._internal.registry.validation import MAX_CONTACT_NOTE_LENGTH, MAX_CSV_IMPORT_BYTES
 
 
 def test_idempotency_replay_requires_permission_and_matching_payload(client: TestClient) -> None:
