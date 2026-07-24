@@ -41,6 +41,15 @@ def test_dependency_policy_rejects_non_exact_requirement_forms() -> None:
     ]
 
 
+def test_scorecard_publish_permission_is_job_scoped() -> None:
+    lines = (ROOT / ".github/workflows/uok-openssf-scorecard.yml").read_text(
+        encoding="utf-8",
+    ).splitlines()
+
+    assert "  id-token: write" not in lines
+    assert "      id-token: write" in lines
+
+
 def test_checked_openapi_json_matches_the_runtime_schema() -> None:
     expected = check_generated_contracts.render_runtime_openapi()
     assert check_generated_contracts.contract_drift(
