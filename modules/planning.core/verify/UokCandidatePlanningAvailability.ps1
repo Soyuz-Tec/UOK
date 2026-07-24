@@ -100,11 +100,13 @@ function Remove-UokPlanningAvailabilityFixture {
     $cleanupErrors = @()
     if ($CalendarId) {
         try {
-            $calendarRows = @(
-                Invoke-UokJson `
-                    -Path "/api/calendar/calendars?include_deleted=true" `
-                    -Headers $OpsHeaders
-            )
+            $calendarResponse = Invoke-UokJson `
+                -Path "/api/calendar/calendars?include_deleted=true" `
+                -Headers $OpsHeaders
+            # Windows PowerShell 5.1 may preserve a top-level JSON array as
+            # one pipeline object. Re-pipe it before selecting the exact row
+            # so the If-Match header receives one ETag, not an object array.
+            $calendarRows = @($calendarResponse | ForEach-Object { $_ })
             $calendarRow = $calendarRows |
                 Where-Object { $_.id -eq $CalendarId } |
                 Select-Object -First 1

@@ -97,6 +97,7 @@ def test_planning_availability_verifier_retires_ephemeral_fixtures() -> None:
     assert "function Remove-UokPlanningAvailabilityFixture" in source
     assert "catch {" in source
     assert '"/api/calendar/calendars?include_deleted=true"' in source
+    assert "$calendarResponse | ForEach-Object { $_ }" in source
     assert '$deleteHeaders["If-Match"] = $calendarRow.etag' in source
     assert '-Method "DELETE"' in source
     assert '-Path "/api/calendar/calendars/$CalendarId"' in source
