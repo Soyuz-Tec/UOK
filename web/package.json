@@ -8,6 +8,7 @@
     "npm": ">=11 <12"
   },
   "scripts": {
+    "postinstall": "node scripts/patch-redocly-js-yaml.cjs",
     "generate:client": "openapi-typescript src/generated/openapi.json -o src/generated/openapi.d.ts",
     "generate:api": "python ../scripts/export_openapi_schema.py && npm run generate:client",
     "generate:modules": "python ../scripts/generate_frontend_module_catalog.py",
@@ -37,5 +38,10 @@
     "typescript": "^5.9.3",
     "vite": "8.1.3",
     "vitest": "^4.1.9"
+  },
+  "overrides": {
+    "@redocly/openapi-core": {
+      "js-yaml": "5.2.2"
+    }
   }
 }
