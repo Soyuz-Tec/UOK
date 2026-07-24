@@ -62,17 +62,18 @@ describe("Compliance Document Type lifecycle", () => {
 });
 
 async function runLifecycle(buttonName: string, reason: string) {
-  fireEvent.change(screen.getByLabelText("Lifecycle reason"), {
+  const reasonInput = screen.getByLabelText("Lifecycle reason");
+  await waitFor(() => expect(reasonInput).toHaveValue(""));
+  fireEvent.change(reasonInput, {
     target: { value: reason },
   });
+  await waitFor(() => expect(screen.getByRole("button", { name: buttonName })).toBeEnabled());
   const button = screen.getByRole("button", { name: buttonName });
-  await waitFor(() => expect(button).toBeEnabled(), { timeout: 4_000 });
   if (buttonName === "Archive document type") {
     fireEvent.click(button);
     const confirmation = await screen.findByRole(
       "dialog",
       { name: "Confirm action" },
-      { timeout: 4_000 },
     );
     await act(async () => {
       fireEvent.click(within(confirmation).getByRole("button", { name: buttonName }));
@@ -85,7 +86,7 @@ async function runLifecycle(buttonName: string, reason: string) {
 }
 
 function findLifecycleButton(name: string) {
-  return screen.findByRole("button", { name }, { timeout: 4_000 });
+  return screen.findByRole("button", { name });
 }
 
 function command(commandType: string, version: number, reason: string) {

@@ -200,7 +200,7 @@ describe("CalendarWorkspace", () => {
       expect.objectContaining({ method: "DELETE", headers: expect.objectContaining({ "If-Match": '"calendar-sha256-operations"' }) }),
     ));
     await waitFor(() => expect(trigger).toHaveAccessibleName("Calendar display: Engineering"));
-    expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
     expect(screen.getByRole("status")).toHaveTextContent("Deleted Operations. Its events remain retained for audit.");
 
     fireEvent.click(trigger);
@@ -212,7 +212,7 @@ describe("CalendarWorkspace", () => {
       expect.objectContaining({ method: "POST", headers: expect.objectContaining({ "If-Match": '"calendar-sha256-operations-deleted"' }) }),
     ));
     await waitFor(() => expect(trigger).toHaveAccessibleName("Calendar display: Operations"));
-    expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
     expect(screen.getByRole("status")).toHaveTextContent("Restored Operations. Its retained events are active again.");
   });
 });

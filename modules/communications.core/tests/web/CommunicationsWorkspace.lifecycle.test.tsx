@@ -27,7 +27,9 @@ describe("K Connect recoverable thread deletion", () => {
 
     renderWorkspace();
     await screen.findByText("Closed control room", { selector: "h2" });
-    fireEvent.click(screen.getByRole("button", { name: "Delete thread" }));
+    const deleteButton = screen.getByRole("button", { name: "Delete thread" });
+    deleteButton.focus();
+    fireEvent.click(deleteButton);
     const dialog = screen.getByRole("dialog", { name: "Confirm thread deletion" });
     expect(dialog).toHaveTextContent("Delete “Closed control room”?");
     expect(dialog).toHaveTextContent("linked Planning records are not deleted");
@@ -93,7 +95,7 @@ describe("K Connect recoverable thread deletion", () => {
 
     await screen.findByText("Concurrent room renamed", { selector: "h2" });
     expect(screen.queryByRole("dialog", { name: "Confirm thread deletion" })).not.toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("explicitly open and confirm Delete or Restore again");
+    expect(await screen.findByRole("status")).toHaveTextContent("explicitly open and confirm Delete or Restore again");
     expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(fetchMock.mock.calls[3][0]).toBe("/api/communications/threads/thread-stale?include_archived=true");
     await waitFor(() => expect(screen.getByRole("button", { name: "Delete thread" })).toHaveFocus());
