@@ -4531,6 +4531,26 @@ export interface components {
         };
         /** ShipmentReadinessListResponse */
         ShipmentReadinessListResponse: {
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /**
+             * Evaluation Timezone
+             * @constant
+             */
+            evaluation_timezone: "UTC";
+            /**
+             * Expiring Soon Horizon Days
+             * @constant
+             */
+            expiring_soon_horizon_days: 30;
+            /**
+             * Expiring Soon Through
+             * Format: date
+             */
+            expiring_soon_through: string;
             /** Items */
             items: components["schemas"]["ShipmentReadinessSignalResponse"][];
             /**
@@ -4552,6 +4572,14 @@ export interface components {
             code: string;
             /** Document Instance Draft */
             document_instance_draft: number;
+            /** Document Instance Expired */
+            document_instance_expired: number;
+            /** Document Instance Expiring Soon */
+            document_instance_expiring_soon: number;
+            /** Document Instance Expiry Evaluated */
+            document_instance_expiry_evaluated: number;
+            /** Document Instance Expiry Not Recorded */
+            document_instance_expiry_not_recorded: number;
             /** Document Instance Recorded */
             document_instance_recorded: number;
             /** Document Instance Rejected */
@@ -4564,12 +4592,14 @@ export interface components {
             document_instance_verified: number;
             /** Lifecycle Status */
             lifecycle_status: string;
+            /** Next Document Expiry On */
+            next_document_expiry_on: string | null;
             /** Open Path */
             open_path: string | null;
             /** Optional Total */
             optional_total: number;
             /** Reason Codes */
-            reason_codes: ("required_documents_missing" | "rejected_document_present" | "requirements_not_defined" | "required_documents_satisfied" | "document_metadata_pending_review" | "verified_document_present")[];
+            reason_codes: ("required_documents_missing" | "rejected_document_present" | "expired_document_present" | "expiring_document_present" | "requirements_not_defined" | "required_documents_satisfied" | "document_metadata_pending_review" | "verified_document_present" | "document_expiry_not_recorded")[];
             /** Required Missing */
             required_missing: number;
             /** Required Not Applicable */
@@ -7913,7 +7943,9 @@ export interface operations {
     };
     shipment_readiness_api_intelligence_shipment_readiness_get: {
         parameters: {
-            query?: never;
+            query: {
+                as_of: string;
+            };
             header?: {
                 authorization?: string | null;
             };

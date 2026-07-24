@@ -4,21 +4,26 @@
 
 **Target candidate:** `UOK-3.1.0-alpha.3`
 
-**Status:** Active first-slice implementation and qualification plan.
+**Status:** Active base-slice and bounded document-expiry implementation and
+qualification plan.
 
 **Source root:** `modules/intelligence.core`
 
 ## Purpose And Authority
 
 `intelligence.core` is the optional read-only Intelligence capability for
-deterministic operational signals derived from immutable owner facts. Its first
+deterministic operational signals derived from immutable owner facts. Its base
 slice interprets Shipment-owned document readiness without becoming a second
-Shipment source of truth.
+Shipment source of truth. Its bounded expiry extension evaluates current
+document-instance expiry against an explicit date without introducing a clock,
+state, prediction, or workflow authority.
 
 Detailed design and delivery evidence:
 
 - `docs/delivery/shipment-readiness-signals-slice-design-2026-07-18.md`
 - `docs/delivery/shipment-readiness-signals-slice-delivery-2026-07-18.md`
+- `docs/delivery/shipment-document-expiry-readiness-slice-design-2026-07-23.md`
+- `docs/delivery/shipment-document-expiry-readiness-slice-delivery-2026-07-23.md`
 
 Architecture authority remains:
 
@@ -27,9 +32,9 @@ Architecture authority remains:
 - `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`; and
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`.
 
-## First Slice
+## Base Slice
 
-The first slice owns:
+The base slice owns:
 
 - one tenant-scoped Shipment Readiness HTTP read model;
 - deterministic `attention_required`, `not_assessed`, and `ready` bands;
@@ -42,6 +47,30 @@ The first slice owns:
 
 The slice contains no predictive model, score, probability, confidence,
 recommendation, or workflow action.
+
+## Bounded Document-Expiry Slice
+
+The expiry extension keeps the same API, bands, permission, workbench, owner
+facade, and stateless architecture. It adds:
+
+- a required explicit `as_of=YYYY-MM-DD` on every read;
+- a fixed `UTC` v1 evaluation-time-zone policy because UOK currently owns no
+  organization or tenant time-zone setting;
+- an inclusive 30-calendar-day warning horizon;
+- recorded/verified current-instance eligibility;
+- expired, expiring-soon, missing-expiry, and next-current/future expiry
+  owner aggregates;
+- fixed expired, expiring-soon, and informational missing-expiry reasons; and
+- a visible **As of (UTC)** workbench control that is sent on every request.
+
+Expired means `expires_on < as_of`. Expiring soon means
+`as_of <= expires_on <= as_of + 30 calendar days`. Null expiry on an eligible
+instance is informational and never changes a band by itself. Rejected
+instances retain the base attention rule; draft and superseded instances are
+excluded from expiry evaluation.
+
+Configurable tenant time zones remain deferred to a separate decision and
+migration as applicable.
 
 ## Ownership
 
@@ -69,10 +98,24 @@ table, cache, command, event, model export, or manage permission.
 from `uok_shipments_core.public_api`.
 
 The owner DTO contains only actor-visible Shipment identity/navigation plus
-aggregate requirement and document-instance counts. It does not expose
-requirement IDs, document-instance IDs, Compliance type IDs, Party IDs,
-Location IDs, Route IDs, document numbers, issuer values, notes, ORM objects,
-repositories, or SQL expressions.
+aggregate requirement and document-instance counts. For expiry evaluation, the
+resolver also receives the explicit `as_of` and inclusive
+`expiring_soon_through` dates and returns:
+
+- `document_instance_expiry_evaluated`;
+- `document_instance_expiry_not_recorded`;
+- `document_instance_expired`;
+- `document_instance_expiring_soon`; and
+- `next_document_expiry_on`.
+
+The evaluated count includes every current recorded/verified instance,
+including eligible rows with null expiry. The next expiry is the earliest
+eligible non-null date on or after `as_of`; expired dates are excluded, and it
+is null if no current/future eligible expiry remains.
+
+The DTO does not expose requirement IDs, document-instance IDs, Compliance
+type IDs, Party IDs, Location IDs, Route IDs, document numbers, issuer values,
+notes, ORM objects, repositories, or SQL expressions.
 
 Shipment independently enforces:
 
@@ -87,31 +130,39 @@ Planning's existing Shipment reference contract is unchanged.
 
 | Band | Rule |
 |---|---|
-| `attention_required` | One or more required documents are missing, or one or more current document instances are rejected |
-| `not_assessed` | No required Document Types are defined and no attention condition applies |
-| `ready` | Required Document Types are defined, none are missing, and no rejected instance is present |
+| `attention_required` | One or more required documents are missing; one or more current instances are rejected; or one or more eligible current instances are expired or expire within the inclusive 30-day horizon |
+| `not_assessed` | Otherwise, no required Document Types are defined |
+| `ready` | Otherwise: required Document Types are defined, none are missing, and no rejected, expired, or expiring-soon instance is present |
 
 Reason codes explain the calculation. Requirement satisfaction remains the
 Shipment-owned formula `received + waived + not_applicable`.
 
-Draft, recorded, verified, and superseded instance counts are explanatory.
-Shipment lifecycle is context only. Intelligence never changes Shipment,
-requirement, or instance state and never blocks a movement transition.
+Draft, recorded, verified, and superseded instance counts remain explanatory.
+The fixed expiry reasons are `expired_document_present`,
+`expiring_document_present`, and informational
+`document_expiry_not_recorded`. Shipment lifecycle is context only.
+Intelligence never changes Shipment, requirement, or instance state and never
+blocks a movement transition.
 
 ## Public And UI Contracts
 
-- List API: `/api/intelligence/shipment-readiness`
+- List API:
+  `/api/intelligence/shipment-readiness?as_of=YYYY-MM-DD` (`as_of` required)
 - Permission: `intelligence.read`
 - Workbench section: `intelligence`
 - Python facade: exact `api_router` and `role_grants` composition hooks
 
 The frontend calls only the Intelligence API and imports no Shipment frontend
 source. It uses only the neutral module-surface contract and shared UOK
-workspace primitives.
+workspace primitives. The visible as-of date is labeled UTC and included in
+every initial, manual-refresh, and host-refresh request.
 
 ## Data And Integrity Rules
 
-- Every result is derived at request time from one Shipment owner facade call.
+- Every result is derived at request time from one Shipment owner facade call
+  using the request's explicit `as_of` and inclusive through-date.
+- The server has no hidden current-date default and does not infer a tenant
+  time zone.
 - Intelligence stores no copy of an owner fact.
 - Denied, missing, and unavailable source records cannot become readiness
   bands.
@@ -126,12 +177,12 @@ workspace primitives.
 ## Non-Goals
 
 Shipment workflow blocking, status hints that mutate state, automated
-requirement updates, expiry policy, expiring-soon horizons, route risk, ETA,
-anomaly detection, optimization, forecasting, recommendations, confidence,
-probability, ML/LLM inference, Oracle runtime naming, notifications, scheduled
-evaluation, persisted signal history, data warehouse, file storage, customs
-integration, Planning/Contacts changes, Kernel growth, and shell-contract
-changes.
+requirement updates, configurable tenant time zones, per-Document-Type legal
+expiry requirements, route risk, ETA, anomaly detection, optimization,
+forecasting, recommendations, confidence, probability, ML/LLM inference,
+Oracle runtime naming, notifications, scheduled evaluation, persisted signal
+history, data warehouse, file storage, customs integration, Planning/Contacts
+changes, Kernel growth, and shell-contract changes.
 
 ## Qualification
 
@@ -161,9 +212,11 @@ Runtime acceptance additionally requires:
 
 ## Next Slice Boundary
 
-After this deterministic read-only slice is qualified, the next product work
-should be chosen from actual operator evidence. A likely follow-up is bounded
-expiry/expiring-soon readiness, but only after an explicit as-of date,
-tenant-time-zone rule, and reviewed horizon exist. Do not add a score, model,
-prediction, persistence layer, or workflow mutation merely to make the
-Intelligence module appear broader.
+After bounded document-expiry readiness is qualified, choose the next product
+work from actual operator evidence. Configurable tenant time zones are not an
+incremental UI option; they require an owned setting, authorization and
+compatibility rules, a separate decision, and migration as applicable. Large
+tenant volumes may justify pagination or an owner-owned read model after
+measurement. Do not add a score, model, prediction, persistence layer,
+notification scheduler, or workflow mutation merely to make the Intelligence
+module appear broader.

@@ -38,6 +38,11 @@ export function reasonLabel(
   const fallback = {
     required_documents_missing: "Required document types are still missing.",
     rejected_document_present: "Rejected document metadata needs review.",
+    expired_document_present: "Expired document metadata needs review.",
+    expiring_document_present:
+      "Document metadata expires within the reviewed horizon.",
+    document_expiry_not_recorded:
+      "Some evaluated document metadata has no expiry date recorded.",
     requirements_not_defined: "Required document types have not been defined.",
     required_documents_satisfied: "All required document types are satisfied.",
     document_metadata_pending_review: "Document metadata is awaiting verification.",
@@ -55,10 +60,16 @@ export function readinessSummary(
     return t(
       "intelligence.summary.attention",
       "Shipment needs attention: {missing} required document(s) missing and "
-        + "{rejected} rejected document record(s).",
+        + "{rejected} rejected, {expired} expired, and {expiring} "
+        + "expiring-soon document record(s).",
     )
       .replace("{missing}", formatNumber(signal.required_missing))
-      .replace("{rejected}", formatNumber(signal.document_instance_rejected));
+      .replace("{rejected}", formatNumber(signal.document_instance_rejected))
+      .replace("{expired}", formatNumber(signal.document_instance_expired))
+      .replace(
+        "{expiring}",
+        formatNumber(signal.document_instance_expiring_soon),
+      );
   }
   if (signal.band === "not_assessed") {
     return t(
@@ -70,6 +81,22 @@ export function readinessSummary(
     "intelligence.summary.ready",
     "Shipment required document metadata is satisfied.",
   );
+}
+
+export function expiryAttentionLabel(
+  signal: ShipmentReadinessSignal,
+  t: Translate,
+  formatNumber: (value: number) => string,
+) {
+  return t(
+    "intelligence.table.expiryCounts",
+    "{expired} expired, {soon} expiring soon",
+  )
+    .replace("{expired}", formatNumber(signal.document_instance_expired))
+    .replace(
+      "{soon}",
+      formatNumber(signal.document_instance_expiring_soon),
+    );
 }
 
 export function safeShipmentOpenPath(path: string | null) {

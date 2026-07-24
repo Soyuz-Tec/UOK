@@ -26,7 +26,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | `communications.core` | capability module | `runtime_proven` | K Connect thread provider and Planning deep-link adapter | `UOK-3.1.0-alpha.3` | `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` |
 | `compliance.core` | capability module | `runtime_proven` | tenant-scoped Compliance Document Type registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/compliance.core/COMPLIANCE_DOCUMENT_TYPE_MODULE_PLAN.md` |
 | `contacts.core` | capability module | `runtime_proven` | Contacts capability with module-owned candidate evidence | `UOK-3.1.0-alpha.3` | `docs/modules/contacts.core/CONTACTS_APP_PLAN.md` |
-| `intelligence.core` | capability module | `runtime_proven` | stateless, read-only tenant-scoped Shipment readiness signals over immutable Shipment owner facts | `UOK-3.1.0-alpha.3` | `docs/modules/intelligence.core/SHIPMENT_READINESS_SIGNALS_MODULE_PLAN.md` |
+| `intelligence.core` | capability module | `runtime_proven` | stateless, read-only tenant-scoped Shipment readiness and explicit-as-of document-expiry signals over immutable Shipment owner facts | `UOK-3.1.0-alpha.3` | `docs/modules/intelligence.core/SHIPMENT_READINESS_SIGNALS_MODULE_PLAN.md` |
 | `locations.core` | capability module | `runtime_proven` | tenant-scoped Location Definition registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/locations.core/LOCATION_MASTER_MODULE_PLAN.md` |
 | `planning.core` | capability module | `runtime_proven` | Gates A-E locally proven, including portfolio and production-like readiness evidence | `UOK-3.1.0-alpha.3` | `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md` |
 | `product.master` | capability module | `runtime_proven` | tenant-scoped Product Definition registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/product.master/PRODUCT_MASTER_MODULE_PLAN.md` |
@@ -162,6 +162,12 @@ slice:
   `intelligence.read`;
 - a module-owned Shipment Readiness workbench with search, band filters,
   list/detail, Refresh, and an owner-authorized Shipment deep link;
+- a required explicit as-of date, fixed UTC v1 evaluation policy, and inclusive
+  30-calendar-day warning horizon for current recorded/verified document
+  instances;
+- expired and expiring-soon attention reasons plus informational
+  missing-expiry context, with draft/superseded instances excluded and
+  rejected instances retaining the base attention rule;
 - a module-owned candidate verifier and backend/frontend boundary tests;
 - no table, ORM mapping, SQL migration, cache, command, event, score,
   prediction, or workflow mutation; and
@@ -178,10 +184,13 @@ New modules must not add product-specific behavior to the UOK core. They must ex
   shell/module backedges as modules are added.
 - Keep future module React/CSS source and frontend tests in canonical module roots from the first increment.
 - Keep future schema changes in module-owned migrations instead of expanding the shared initial baseline.
-- Qualify the stateless Shipment Readiness slice, then select the next product
-  increment from operator evidence. A bounded expiry/expiring-soon signal is a
-  candidate only after an explicit as-of date, tenant-time-zone rule, and
-  reviewed horizon exist. Keep scores, predictions, persisted Intelligence
-  state, workflow mutation, file vaults, full cargo/commercial transactions,
-  carrier integrations, tracking, inventory, workflow blocking, and customs
-  outside this first Intelligence increment.
+- Qualify bounded document-expiry readiness under its approved explicit-as-of,
+  fixed-UTC v1 policy and inclusive 30-calendar-day horizon, then select the
+  next product increment from operator evidence.
+- Defer configurable organization/tenant time zones until UOK has an owned
+  setting, authorization and compatibility rules, a separate decision, and a
+  migration as applicable.
+- Keep scores, predictions, persisted Intelligence state, workflow mutation,
+  file vaults, full cargo/commercial transactions, carrier integrations,
+  tracking, inventory, workflow blocking, and customs outside this bounded
+  Intelligence capability.

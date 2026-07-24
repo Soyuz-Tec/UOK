@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError, fields
+from datetime import date
+from inspect import Parameter, signature
 import pytest
 from starlette.testclient import TestClient
 
@@ -13,7 +15,7 @@ from uok_shipments_core.public_api import (
 )
 
 from shipment_readiness_test_support import (
-    FACT_FIELDS,
+    COUNT_FACT_FIELDS,
     actor_from_headers,
     add_shipment,
     assert_redacted,
@@ -26,6 +28,9 @@ from shipment_test_support import (
     other_shipment_tenant_headers,
     temporarily_uninstall_module,
 )
+
+AS_OF = date(2026, 7, 18)
+EXPIRING_SOON_THROUGH = date(2026, 8, 17)
 
 
 def test_readiness_snapshot_contract_counts_owner_facts_without_compliance(
@@ -76,12 +81,25 @@ def test_readiness_snapshot_contract_counts_owner_facts_without_compliance(
     assert has_permission(readiness_actor, "shipments.read")
     assert not has_permission(readiness_actor, "compliance.read")
     with SessionLocal() as db:
-        snapshot = resolve_shipment_readiness_snapshots(db, readiness_actor, [mixed_id])[0]
-        listed = resolve_shipment_readiness_snapshots(db, readiness_actor)
+        snapshot = resolve_shipment_readiness_snapshots(
+            db,
+            readiness_actor,
+            [mixed_id],
+            as_of=AS_OF,
+            expiring_soon_through=EXPIRING_SOON_THROUGH,
+        )[0]
+        listed = resolve_shipment_readiness_snapshots(
+            db,
+            readiness_actor,
+            as_of=AS_OF,
+            expiring_soon_through=EXPIRING_SOON_THROUGH,
+        )
         zero_snapshot = resolve_shipment_readiness_snapshots(
             db,
             readiness_actor,
             [zero_id],
+            as_of=AS_OF,
+            expiring_soon_through=EXPIRING_SOON_THROUGH,
         )[0]
 
     assert snapshot.status == "ready"
@@ -111,7 +129,8 @@ def test_readiness_snapshot_contract_counts_owner_facts_without_compliance(
         zero_id,
         mixed_id,
     ]
-    assert all(getattr(zero_snapshot, name) == 0 for name in FACT_FIELDS[2:-1])
+    assert all(getattr(zero_snapshot, name) == 0 for name in COUNT_FACT_FIELDS)
+    assert zero_snapshot.next_document_expiry_on is None
     with pytest.raises(FrozenInstanceError):
         snapshot.required_missing = 0  # type: ignore[misc]
 
@@ -134,11 +153,15 @@ def test_readiness_snapshot_resolution_is_ordered_tenant_safe_and_redacted(
             db,
             actor,
             [local.id, remote.id, "missing-shipment", local.id],
+            as_of=AS_OF,
+            expiring_soon_through=EXPIRING_SOON_THROUGH,
         )
         denied = resolve_shipment_readiness_snapshots(
             db,
             Actor(actor.user_id, actor.username, actor.organization_id, "registered_user"),
             [local.id, local.id],
+            as_of=AS_OF,
+            expiring_soon_through=EXPIRING_SOON_THROUGH,
         )
         with pytest.raises(PermissionError, match="shipments.read"):
             resolve_shipment_readiness_snapshots(
@@ -149,6 +172,8 @@ def test_readiness_snapshot_resolution_is_ordered_tenant_safe_and_redacted(
                     actor.organization_id,
                     "registered_user",
                 ),
+                as_of=AS_OF,
+                expiring_soon_through=EXPIRING_SOON_THROUGH,
             )
 
     assert [row.shipment_id for row in resolved] == [
@@ -177,12 +202,19 @@ def test_readiness_snapshot_resolution_is_ordered_tenant_safe_and_redacted(
                     db,
                     actor,
                     [local.id],
+                    as_of=AS_OF,
+                    expiring_soon_through=EXPIRING_SOON_THROUGH,
                 )
                 with pytest.raises(
                     ValueError,
                     match="shipments.core is not installed or enabled",
                 ):
-                    resolve_shipment_readiness_snapshots(db, actor)
+                    resolve_shipment_readiness_snapshots(
+                        db,
+                        actor,
+                        as_of=AS_OF,
+                        expiring_soon_through=EXPIRING_SOON_THROUGH,
+                    )
             assert_redacted(unavailable[0], "unavailable")
         finally:
             enabled_shipments = client.post(
@@ -200,7 +232,12 @@ def test_readiness_snapshot_list_distinguishes_an_authorized_empty_tenant(
     empty_actor = actor_from_headers(empty_headers)
 
     with SessionLocal() as db:
-        assert resolve_shipment_readiness_snapshots(db, empty_actor) == ()
+        assert resolve_shipment_readiness_snapshots(
+            db,
+            empty_actor,
+            as_of=AS_OF,
+            expiring_soon_through=EXPIRING_SOON_THROUGH,
+        ) == ()
 
 
 def test_temporary_module_uninstall_does_not_suppress_body_failures(
@@ -232,6 +269,22 @@ def test_readiness_snapshot_dto_has_only_the_exact_value_contract() -> None:
         "document_instance_verified",
         "document_instance_rejected",
         "document_instance_superseded",
+        "document_instance_expiry_evaluated",
+        "document_instance_expiry_not_recorded",
+        "document_instance_expired",
+        "document_instance_expiring_soon",
+        "next_document_expiry_on",
         "status_summary",
         "open_path",
     ]
+    parameters = signature(resolve_shipment_readiness_snapshots).parameters
+    assert list(parameters) == [
+        "db",
+        "actor",
+        "shipment_ids",
+        "as_of",
+        "expiring_soon_through",
+    ]
+    assert parameters["shipment_ids"].kind is Parameter.POSITIONAL_OR_KEYWORD
+    assert parameters["as_of"].kind is Parameter.KEYWORD_ONLY
+    assert parameters["expiring_soon_through"].kind is Parameter.KEYWORD_ONLY

@@ -19,6 +19,7 @@ import {
   notAssessedSignal,
   readinessFetchMock,
   readinessResponse,
+  readinessUrl,
   readySignal,
 } from "./ShipmentReadinessWorkspace.testUtils";
 
@@ -71,40 +72,6 @@ describe("Shipment Readiness read workspace", () => {
       .not.toBeInTheDocument();
     expect(screen.getByText("A platform administrator must install this module."))
       .toBeInTheDocument();
-  });
-
-  it("loads a read-only list and detail with accessible, non-color evidence", async () => {
-    const fetchMock = readinessFetchMock();
-    vi.stubGlobal("fetch", fetchMock);
-    render(<ShipmentReadinessWorkspace host={intelligenceHost()} />);
-
-    await screen.findByRole("heading", { name: attentionSignal.code });
-    expect(screen.getByText("Source:")).toBeInTheDocument();
-    expect(screen.getAllByText("Attention required").length).toBeGreaterThan(0);
-    expect(screen.getByText("Required document types are still missing."))
-      .toBeInTheDocument();
-    expect(screen.getByText("required_documents_missing")).toBeInTheDocument();
-    expect(screen.getByText("2 of 3")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Open Shipment" }))
-      .toHaveAttribute("href", attentionSignal.open_path);
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/api/intelligence/shipment-readiness",
-      expect.objectContaining({
-        method: "GET",
-        headers: expect.objectContaining({
-          Authorization: "Bearer test-token",
-        }),
-      }),
-    );
-    for (const command of [
-      "New shipment",
-      "Edit shipment",
-      "Change status",
-      "Add requirement",
-      "Add document metadata",
-    ]) {
-      expect(screen.queryByRole("button", { name: command })).not.toBeInTheDocument();
-    }
   });
 
   it("searches, filters bands, and supports keyboard row selection", async () => {
@@ -244,6 +211,7 @@ describe("Shipment Readiness read workspace", () => {
   });
 
   it("rejects unsafe owner navigation and never calls foreign or mutation endpoints", async () => {
+    const expectedUrl = readinessUrl();
     const fetchMock = readinessFetchMock(() => ({
       ...readinessResponse,
       items: [{
@@ -258,7 +226,7 @@ describe("Shipment Readiness read workspace", () => {
     expect(screen.queryByRole("link", { name: "Open Shipment" }))
       .not.toBeInTheDocument();
     expect(fetchMock.mock.calls.every(([input]) => (
-      String(input) === "/api/intelligence/shipment-readiness"
+      String(input) === expectedUrl
     ))).toBe(true);
     expect(fetchMock.mock.calls.every(([, options]) => options?.method === "GET"))
       .toBe(true);
@@ -282,6 +250,13 @@ describe("Shipment Readiness read workspace", () => {
     expect(screen.getByText("٢ من ٣")).toBeInTheDocument();
     expect(screen.getByText("مصدر جاهزية الشحنات متاح.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "فتح الشحنة" })).toBeInTheDocument();
+    expect(screen.getByText("١ منتهية، ١ قريبة الانتهاء"))
+      .toBeInTheDocument();
+    expect(screen.getByText("تاريخ الانتهاء المؤهل التالي"))
+      .toBeInTheDocument();
+    for (const timezone of screen.getAllByText("UTC", { selector: "bdi" })) {
+      expect(timezone).toHaveAttribute("dir", "ltr");
+    }
     expect(heading.querySelector("bdi")).toHaveAttribute("dir", "ltr");
     expect(screen.getByText("required_documents_missing"))
       .toHaveAttribute("dir", "ltr");

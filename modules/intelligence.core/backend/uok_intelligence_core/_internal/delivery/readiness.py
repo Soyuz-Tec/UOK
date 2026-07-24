@@ -34,11 +34,27 @@ def derive_shipment_readiness(
         document_instance_verified=facts.document_instance_verified,
         document_instance_rejected=facts.document_instance_rejected,
         document_instance_superseded=facts.document_instance_superseded,
+        document_instance_expiry_evaluated=(
+            facts.document_instance_expiry_evaluated
+        ),
+        document_instance_expiry_not_recorded=(
+            facts.document_instance_expiry_not_recorded
+        ),
+        document_instance_expired=facts.document_instance_expired,
+        document_instance_expiring_soon=(
+            facts.document_instance_expiring_soon
+        ),
+        next_document_expiry_on=facts.next_document_expiry_on,
     )
 
 
 def _readiness_band(facts: ShipmentReadinessFacts) -> ReadinessBand:
-    if facts.required_missing > 0 or facts.document_instance_rejected > 0:
+    if (
+        facts.required_missing > 0
+        or facts.document_instance_rejected > 0
+        or facts.document_instance_expired > 0
+        or facts.document_instance_expiring_soon > 0
+    ):
         return "attention_required"
     if facts.required_total == 0:
         return "not_assessed"
@@ -53,6 +69,10 @@ def _reason_codes(
         reasons.append("required_documents_missing")
     if facts.document_instance_rejected > 0:
         reasons.append("rejected_document_present")
+    if facts.document_instance_expired > 0:
+        reasons.append("expired_document_present")
+    if facts.document_instance_expiring_soon > 0:
+        reasons.append("expiring_document_present")
     if facts.required_total == 0:
         reasons.append("requirements_not_defined")
     elif facts.required_missing == 0:
@@ -61,6 +81,8 @@ def _reason_codes(
         reasons.append("document_metadata_pending_review")
     if facts.document_instance_verified > 0:
         reasons.append("verified_document_present")
+    if facts.document_instance_expiry_not_recorded > 0:
+        reasons.append("document_expiry_not_recorded")
     return tuple(reasons)
 
 
@@ -69,17 +91,37 @@ def _status_summary(
     band: ReadinessBand,
 ) -> str:
     if band == "attention_required":
-        return (
-            "Shipment needs attention: "
-            f"{facts.required_missing} required document(s) missing and "
-            f"{facts.document_instance_rejected} rejected document record(s)."
-        )
+        conditions: list[str] = []
+        if facts.required_missing > 0:
+            conditions.append(
+                f"{facts.required_missing} required document(s) missing"
+            )
+        if facts.document_instance_rejected > 0:
+            conditions.append(
+                f"{facts.document_instance_rejected} rejected document record(s)"
+            )
+        if facts.document_instance_expired > 0:
+            conditions.append(
+                f"{facts.document_instance_expired} expired document record(s)"
+            )
+        if facts.document_instance_expiring_soon > 0:
+            conditions.append(
+                f"{facts.document_instance_expiring_soon} document record(s) "
+                "expiring soon"
+            )
+        return f"Shipment needs attention: {_join_conditions(conditions)}."
     if band == "not_assessed":
         return (
             "Shipment readiness is not assessed because no required "
             "document types are defined."
         )
     return "Shipment required document metadata is satisfied."
+
+
+def _join_conditions(conditions: list[str]) -> str:
+    if len(conditions) == 1:
+        return conditions[0]
+    return f"{', '.join(conditions[:-1])} and {conditions[-1]}"
 
 
 __all__ = ["derive_shipment_readiness"]

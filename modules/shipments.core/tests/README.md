@@ -15,3 +15,8 @@ optimistic concurrency, append-only history, owner-local Requirement
 association, explicit verified-to-received synchronization, Compliance
 immutable-DTO validation, denied-ID redaction, cross-tenant isolation, and
 architecture proof that no binary/storage/upload contract exists.
+
+The readiness-owner suite additionally proves explicit evaluation dates,
+recorded/verified eligibility, draft/superseded exclusion, null-expiry
+aggregation, inclusive expiry-horizon boundaries, earliest current/future
+expiry selection, and unchanged tenant/permission redaction.

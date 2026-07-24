@@ -1,6 +1,7 @@
 import {
   act,
   cleanup,
+  fireEvent,
   render,
   screen,
   waitFor,
@@ -11,10 +12,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ShipmentReadinessWorkspace } from "../../web/src/ShipmentReadinessWorkspace";
 import {
   attentionSignal,
+  currentUtcDate,
   deferred,
   intelligenceHost,
   jsonResponse,
   readinessResponse,
+  readinessResponseAt,
+  readinessUrl,
   readySignal,
 } from "./ShipmentReadinessWorkspace.testUtils";
 
@@ -93,6 +97,49 @@ describe("Shipment Readiness session-safe reads", () => {
 
     expect(screen.getByRole("heading", { name: readySignal.code })).toBeInTheDocument();
     expect(screen.queryByText(attentionSignal.code)).not.toBeInTheDocument();
+  });
+
+  it("keeps the newest As-of result when an older date completes last", async () => {
+    const initial = deferred<Response>();
+    const latest = deferred<Response>();
+    const initialAsOf = currentUtcDate();
+    const latestAsOf = "2026-08-15";
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => initial.promise)
+      .mockImplementationOnce(() => latest.promise);
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ShipmentReadinessWorkspace host={intelligenceHost()} />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    fireEvent.change(screen.getByLabelText("As-of date"), {
+      target: { value: latestAsOf },
+    });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      readinessUrl(initialAsOf),
+      expect.objectContaining({ method: "GET" }),
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      readinessUrl(latestAsOf),
+      expect.objectContaining({ method: "GET" }),
+    );
+
+    await act(async () => latest.resolve(jsonResponse({
+      ...readinessResponseAt(latestAsOf),
+      items: [readySignal],
+    })));
+    await screen.findByRole("heading", { name: readySignal.code });
+    await act(async () => initial.resolve(jsonResponse({
+      ...readinessResponseAt(initialAsOf),
+      items: [attentionSignal],
+    })));
+
+    expect(screen.getByRole("heading", { name: readySignal.code }))
+      .toBeInTheDocument();
+    expect(screen.queryByText(attentionSignal.code)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("As-of date")).toHaveValue(latestAsOf);
   });
 
   it("reports loading and refreshing without claiming stale data is current", async () => {

@@ -6265,6 +6265,26 @@
       },
       "ShipmentReadinessListResponse": {
         "properties": {
+          "as_of": {
+            "format": "date",
+            "title": "As Of",
+            "type": "string"
+          },
+          "evaluation_timezone": {
+            "const": "UTC",
+            "title": "Evaluation Timezone",
+            "type": "string"
+          },
+          "expiring_soon_horizon_days": {
+            "const": 30,
+            "title": "Expiring Soon Horizon Days",
+            "type": "integer"
+          },
+          "expiring_soon_through": {
+            "format": "date",
+            "title": "Expiring Soon Through",
+            "type": "string"
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/ShipmentReadinessSignalResponse"
@@ -6285,6 +6305,10 @@
         "required": [
           "source_status",
           "source_summary",
+          "as_of",
+          "evaluation_timezone",
+          "expiring_soon_horizon_days",
+          "expiring_soon_through",
           "items"
         ],
         "title": "ShipmentReadinessListResponse",
@@ -6308,6 +6332,26 @@
           "document_instance_draft": {
             "minimum": 0.0,
             "title": "Document Instance Draft",
+            "type": "integer"
+          },
+          "document_instance_expired": {
+            "minimum": 0.0,
+            "title": "Document Instance Expired",
+            "type": "integer"
+          },
+          "document_instance_expiring_soon": {
+            "minimum": 0.0,
+            "title": "Document Instance Expiring Soon",
+            "type": "integer"
+          },
+          "document_instance_expiry_evaluated": {
+            "minimum": 0.0,
+            "title": "Document Instance Expiry Evaluated",
+            "type": "integer"
+          },
+          "document_instance_expiry_not_recorded": {
+            "minimum": 0.0,
+            "title": "Document Instance Expiry Not Recorded",
             "type": "integer"
           },
           "document_instance_recorded": {
@@ -6339,6 +6383,18 @@
             "title": "Lifecycle Status",
             "type": "string"
           },
+          "next_document_expiry_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Document Expiry On"
+          },
           "open_path": {
             "anyOf": [
               {
@@ -6360,10 +6416,13 @@
               "enum": [
                 "required_documents_missing",
                 "rejected_document_present",
+                "expired_document_present",
+                "expiring_document_present",
                 "requirements_not_defined",
                 "required_documents_satisfied",
                 "document_metadata_pending_review",
-                "verified_document_present"
+                "verified_document_present",
+                "document_expiry_not_recorded"
               ],
               "type": "string"
             },
@@ -6429,7 +6488,12 @@
           "document_instance_recorded",
           "document_instance_verified",
           "document_instance_rejected",
-          "document_instance_superseded"
+          "document_instance_superseded",
+          "document_instance_expiry_evaluated",
+          "document_instance_expiry_not_recorded",
+          "document_instance_expired",
+          "document_instance_expiring_soon",
+          "next_document_expiry_on"
         ],
         "title": "ShipmentReadinessSignalResponse",
         "type": "object"
@@ -12585,6 +12649,16 @@
       "get": {
         "operationId": "shipment_readiness_api_intelligence_shipment_readiness_get",
         "parameters": [
+          {
+            "in": "query",
+            "name": "as_of",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "As Of",
+              "type": "string"
+            }
+          },
           {
             "in": "header",
             "name": "authorization",

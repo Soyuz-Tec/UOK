@@ -4,6 +4,7 @@ import { EmptyState, StatusPill } from "@uok/shared/data-display";
 import { useUokLocalization } from "@uok/shared/localization";
 import { ResizableDataTable, type DataTableColumn } from "@uok/shared/tables";
 import {
+  expiryAttentionLabel,
   lifecycleLabel,
   readinessBandLabel,
   readinessBandTone,
@@ -55,6 +56,17 @@ export function ShipmentReadinessTable({
       defaultWidth: 155,
       minWidth: 130,
       renderCell: (signal) => formatNumber(signal.required_missing),
+    },
+    {
+      id: "expiry",
+      header: t("intelligence.table.expiryAttention", "Expiry attention"),
+      defaultWidth: 190,
+      minWidth: 155,
+      renderCell: (signal) => (
+        <bdi dir="auto">
+          {expiryAttentionLabel(signal, t, formatNumber)}
+        </bdi>
+      ),
     },
   ], [formatNumber, t]);
   const tabStopId = signals.some((signal) => signal.shipment_id === selectedId)

@@ -5,17 +5,36 @@
 }
 
 .shipment-readiness-status-region {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--uok-space-2) var(--uok-space-4);
 }
 
 .shipment-readiness-source,
-.shipment-readiness-status {
+.shipment-readiness-status,
+.shipment-readiness-evaluation,
+.shipment-readiness-timezone {
   margin: 0;
   color: var(--uok-text-secondary);
   font-size: var(--uok-caption);
+}
+
+.shipment-readiness-evaluation {
+  grid-column: 1 / -1;
+}
+
+.shipment-readiness-evaluation-control {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-inline-size: min(13rem, 100%);
+}
+
+.shipment-readiness-evaluation-control .field {
+  margin: 0;
+}
+
+.shipment-readiness-evaluation-control input {
+  min-height: var(--uok-control-height);
 }
 
 .shipment-readiness-status[role="alert"] {
@@ -68,7 +87,8 @@
 .shipment-readiness-detail-header h2,
 .shipment-readiness-detail-header p,
 .shipment-readiness-reasons h3,
-.shipment-readiness-instance-state h3 {
+.shipment-readiness-instance-state h3,
+.shipment-readiness-expiry-state h3 {
   margin: 0;
 }
 
@@ -93,7 +113,8 @@
 }
 
 .shipment-readiness-reasons,
-.shipment-readiness-instance-state {
+.shipment-readiness-instance-state,
+.shipment-readiness-expiry-state {
   display: grid;
   gap: var(--uok-space-3);
   padding-block-start: var(--uok-space-3);
@@ -122,14 +143,16 @@
   overflow-wrap: anywhere;
 }
 
-.shipment-readiness-instance-state dl {
+.shipment-readiness-instance-state dl,
+.shipment-readiness-expiry-state dl {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--uok-space-2);
   margin: 0;
 }
 
-.shipment-readiness-instance-state dl div {
+.shipment-readiness-instance-state dl div,
+.shipment-readiness-expiry-state dl div {
   display: grid;
   gap: var(--uok-space-1);
   min-width: 0;
@@ -140,12 +163,14 @@
   text-align: center;
 }
 
-.shipment-readiness-instance-state dt {
+.shipment-readiness-instance-state dt,
+.shipment-readiness-expiry-state dt {
   color: var(--uok-text-secondary);
   font-size: var(--uok-caption);
 }
 
-.shipment-readiness-instance-state dd {
+.shipment-readiness-instance-state dd,
+.shipment-readiness-expiry-state dd {
   margin: 0;
   font-weight: 700;
 }
@@ -169,16 +194,27 @@
   .shipment-readiness-instance-state dl {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .shipment-readiness-expiry-state dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 520px) {
-  .shipment-readiness-status-region,
+  .shipment-readiness-status-region {
+    grid-template-columns: 1fr;
+  }
+
   .shipment-readiness-detail-header {
     align-items: stretch;
     flex-direction: column;
   }
 
   .shipment-readiness-instance-state dl {
+    grid-template-columns: 1fr;
+  }
+
+  .shipment-readiness-expiry-state dl {
     grid-template-columns: 1fr;
   }
 

@@ -17,6 +17,10 @@ through `resolve_shipment_readiness_snapshots` for the real
 `intelligence.core` caller. The owner resolver enforces Shipment permission,
 operational state, and organization scope, then returns only actor-visible
 Shipment identity/navigation and aggregate requirement/document-instance
-counts. It exposes no owner row, child identifier, document metadata,
+counts. For bounded expiry evaluation, the caller supplies explicit `as_of`
+and inclusive through-dates; the owner counts current recorded/verified
+instances, excludes draft/superseded rows, and returns only aggregate expiry
+facts plus the earliest current/future eligible expiry date. It exposes no
+owner row, child identifier, document metadata,
 foreign-owner value, SQL expression, or Intelligence signal. Intelligence
 derives its advisory bands separately and cannot mutate Shipment state.

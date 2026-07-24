@@ -90,6 +90,13 @@ def test_intelligence_http_contract_has_no_write_operation() -> None:
     }
     assert set(operations) == {"/api/intelligence/shipment-readiness"}
     assert set(operations["/api/intelligence/shipment-readiness"]) == {"get"}
+    parameters = operations["/api/intelligence/shipment-readiness"]["get"][
+        "parameters"
+    ]
+    as_of = next(value for value in parameters if value["name"] == "as_of")
+    assert as_of["in"] == "query"
+    assert as_of["required"] is True
+    assert as_of["schema"]["format"] == "date"
     contract = json.dumps(operations, sort_keys=True).casefold()
     assert "/api/shipments" not in contract
 
@@ -165,5 +172,5 @@ def test_intelligence_frontend_scanner_rejects_shipment_bypasses(
 
 def test_intelligence_frontend_scanner_allows_owner_http_path() -> None:
     assert intelligence_frontend_violations(
-        'fetch("/api/intelligence/shipment-readiness")'
+        'fetch("/api/intelligence/shipment-readiness?as_of=2026-07-23")'
     ) == []

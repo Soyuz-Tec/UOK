@@ -8,6 +8,12 @@ from uok.host.security import current_actor
 from uok.kernel.module_runtime import ensure_module_operational
 from uok.kernel.security import Actor, require_permission
 
+from .expiry_policy import (
+    EVALUATION_TIMEZONE,
+    EXPIRING_SOON_HORIZON_DAYS,
+    ExactDateOnly,
+    expiring_soon_through,
+)
 from .readiness import derive_shipment_readiness
 from .schemas import ShipmentReadinessListResponse
 from .shipment_gateway import load_shipment_readiness_facts
@@ -20,12 +26,22 @@ router = APIRouter(prefix="/api/intelligence", tags=["intelligence"])
     response_model=ShipmentReadinessListResponse,
 )
 def shipment_readiness(
+    as_of: ExactDateOnly,
     actor: Actor = Depends(current_actor),
     db: Session = Depends(get_db),
 ) -> ShipmentReadinessListResponse:
     _require_read_access(db, actor)
     try:
-        facts = load_shipment_readiness_facts(db, actor)
+        review_through = expiring_soon_through(as_of)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    try:
+        facts = load_shipment_readiness_facts(
+            db,
+            actor,
+            as_of,
+            review_through,
+        )
     except PermissionError as exc:
         raise HTTPException(
             status_code=403,
@@ -39,6 +55,10 @@ def shipment_readiness(
     return ShipmentReadinessListResponse(
         source_status="ready",
         source_summary="Shipment readiness source is available.",
+        as_of=as_of,
+        evaluation_timezone=EVALUATION_TIMEZONE,
+        expiring_soon_horizon_days=EXPIRING_SOON_HORIZON_DAYS,
+        expiring_soon_through=review_through,
         items=tuple(derive_shipment_readiness(value) for value in facts),
     )
 

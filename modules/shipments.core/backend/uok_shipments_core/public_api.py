@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable as _Iterable
 from dataclasses import dataclass as _dataclass
+from datetime import date as _date
 from importlib import import_module as _import_module
 from typing import Any as _Any
 from typing import Literal as _Literal
@@ -40,6 +41,11 @@ class ShipmentReadinessSnapshotDTO:
     document_instance_verified: int | None
     document_instance_rejected: int | None
     document_instance_superseded: int | None
+    document_instance_expiry_evaluated: int | None
+    document_instance_expiry_not_recorded: int | None
+    document_instance_expired: int | None
+    document_instance_expiring_soon: int | None
+    next_document_expiry_on: _date | None
     status_summary: str
     open_path: str | None = None
 
@@ -92,13 +98,23 @@ def resolve_shipment_readiness_snapshots(
     db: _Session,
     actor: _Actor,
     shipment_ids: _Iterable[str] | None = None,
+    *,
+    as_of: _date,
+    expiring_soon_through: _date,
 ) -> tuple[ShipmentReadinessSnapshotDTO, ...]:
     """Resolve tenant-visible Shipment-owned readiness facts as immutable values."""
     from uok_shipments_core._internal.delivery.readiness_snapshot_service import (
         resolve_shipment_readiness_snapshots as _resolve,
     )
 
-    return _resolve(db, actor, shipment_ids, ShipmentReadinessSnapshotDTO)
+    return _resolve(
+        db,
+        actor,
+        as_of,
+        expiring_soon_through,
+        shipment_ids,
+        ShipmentReadinessSnapshotDTO,
+    )
 
 
 def _unresolved_shipment(shipment_id: str, status: _ReferenceStatus) -> ShipmentReferenceDTO:

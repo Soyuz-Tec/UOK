@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from uuid import uuid4
 
 from uok.host.security import parse_token
@@ -28,8 +29,15 @@ FACT_FIELDS = (
     "document_instance_verified",
     "document_instance_rejected",
     "document_instance_superseded",
+    "document_instance_expiry_evaluated",
+    "document_instance_expiry_not_recorded",
+    "document_instance_expired",
+    "document_instance_expiring_soon",
+    "next_document_expiry_on",
     "open_path",
 )
+
+COUNT_FACT_FIELDS = FACT_FIELDS[2:-2]
 
 
 def actor_from_headers(headers: dict[str, str]) -> Actor:
@@ -86,12 +94,15 @@ def document_instance(
     shipment_id: str,
     index: int,
     status: str,
+    *,
+    expires_on: date | None = None,
 ) -> ShipmentDocumentInstance:
     return ShipmentDocumentInstance(
         organization_id=actor.organization_id,
         shipment_id=shipment_id,
         compliance_document_type_id=f"type-{shipment_id}-{index}",
         document_number=f"DOC-{index}",
+        expires_on=expires_on,
         status=status,
         created_by_user_id=actor.user_id,
         updated_by_user_id=actor.user_id,
@@ -112,6 +123,7 @@ def unique_suffix() -> str:
 
 __all__ = [
     "FACT_FIELDS",
+    "COUNT_FACT_FIELDS",
     "actor_from_headers",
     "add_shipment",
     "assert_redacted",

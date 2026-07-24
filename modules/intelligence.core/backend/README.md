@@ -16,6 +16,13 @@ The private Shipment gateway is the sole feature dependency. It imports exactly
 `resolve_shipment_readiness_snapshots` from the Shipment public facade and
 converts those immutable owner values into local readiness facts.
 
+Every HTTP read requires an explicit `as_of` date. Intelligence applies the
+fixed UTC v1 policy, calculates the inclusive 30-calendar-day warning boundary,
+and passes both calendar dates to the owner resolver. The owner DTO returns
+only tenant-authorized aggregates for current recorded/verified instance
+expiry; Intelligence derives fixed reasons and the existing three bands
+without persistence or mutation.
+
 Validate with:
 
 ```powershell

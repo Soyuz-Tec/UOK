@@ -284,9 +284,11 @@ accepted extraction seam documented by ADR-0028. Large future tenant volumes
 may require explicit pagination or an owner-owned read model, but this slice
 must not add persistence speculatively.
 
-The recommended next product slice is **bounded document-expiry readiness**,
-but only after product owners define an explicit as-of date, tenant time-zone
-policy, and reviewed warning horizon. If those decisions are not ready, pause
-structural work and prioritize Shipment/corridor operational polish from
-operator evidence. Do not add a score, prediction, persisted Intelligence
-state, or workflow mutation as a cosmetic follow-up.
+The recommended next product slice, **bounded document-expiry readiness**, now
+has an approved explicit-as-of, fixed-UTC v1 policy and inclusive
+30-calendar-day warning horizon in
+`docs/delivery/shipment-document-expiry-readiness-slice-design-2026-07-23.md`.
+Its implementation and qualification record is
+`docs/delivery/shipment-document-expiry-readiness-slice-delivery-2026-07-23.md`.
+It remains read-only and must not add a score, prediction, persisted
+Intelligence state, workflow mutation, file access, or raw foreign data access.

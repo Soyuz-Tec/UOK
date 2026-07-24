@@ -8,6 +8,10 @@ import { WorkflowSplitView, WorkspaceCommandBar } from "@uok/shared/layout";
 import { useUokLocalization } from "@uok/shared/localization";
 import { IntelligenceModuleState } from "./IntelligenceModuleState";
 import { ShipmentReadinessDetail } from "./ShipmentReadinessDetail";
+import {
+  ShipmentReadinessEvaluationControl,
+  ShipmentReadinessEvaluationSummary,
+} from "./ShipmentReadinessEvaluation";
 import { ShipmentReadinessTable } from "./ShipmentReadinessTable";
 import { INTELLIGENCE_MODULE_ID } from "./intelligenceModule";
 import { filterShipmentReadiness } from "./readinessFilters";
@@ -23,7 +27,13 @@ export function ShipmentReadinessWorkspace({
   const { formatNumber, t } = useUokLocalization();
   const module = host.moduleRows.find((row) => row.name === INTELLIGENCE_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
-  const readiness = useShipmentReadiness(host, operational);
+  const [asOfDate, setAsOfDate] = useState(
+    () => new Date().toISOString().slice(0, 10),
+  );
+  const validAsOfDate = /^\d{4}-\d{2}-\d{2}$/.test(asOfDate)
+    ? asOfDate
+    : null;
+  const readiness = useShipmentReadiness(host, operational, validAsOfDate);
   const [query, setQuery] = useState("");
   const [bandFilter, setBandFilter] = useState<ShipmentReadinessBandFilter>("all");
   const [selectedId, setSelectedId] = useState("");
@@ -45,7 +55,10 @@ export function ShipmentReadinessWorkspace({
     [bandFilter, query, readiness.signals],
   );
   const selected = visibleSignals.find((row) => row.shipment_id === selectedId) || null;
-  const status = readiness.error || (
+  const requestError = validAsOfDate
+    ? readiness.error
+    : t("intelligence.asOf.required", "Choose an As-of date.");
+  const status = requestError || (
     readiness.loading
       ? t(
         readiness.signals.length
@@ -123,12 +136,18 @@ export function ShipmentReadinessWorkspace({
             }}
           />
         )}
+        context={(
+          <ShipmentReadinessEvaluationControl
+            asOfDate={asOfDate}
+            onChange={setAsOfDate}
+          />
+        )}
         secondaryActions={(
           <WorkspaceActionsMenu items={[{
             id: "refresh",
             action: "refresh",
             loading: readiness.loading,
-            disabled: readiness.loading,
+            disabled: readiness.loading || !validAsOfDate,
             onSelect: () => void readiness.refresh(),
           }]} />
         )}
@@ -145,10 +164,15 @@ export function ShipmentReadinessWorkspace({
         ) : null}
         <p
           className="shipment-readiness-status"
-          role={readiness.error ? "alert" : "status"}
+          role={requestError ? "alert" : "status"}
         >
           {status}
         </p>
+        {readiness.evaluation ? (
+          <ShipmentReadinessEvaluationSummary
+            evaluation={readiness.evaluation}
+          />
+        ) : null}
       </div>
       <WorkflowSplitView
         primaryLabel={t(
@@ -165,7 +189,8 @@ export function ShipmentReadinessWorkspace({
             selectedId={selectedId}
             emptyState={tableEmptyState(
               readiness.loading,
-              readiness.error,
+              requestError,
+              !validAsOfDate,
               query,
               bandFilter,
               t,
@@ -182,10 +207,25 @@ export function ShipmentReadinessWorkspace({
 function tableEmptyState(
   loading: boolean,
   error: string,
+  invalidAsOf: boolean,
   query: string,
   band: ShipmentReadinessBandFilter,
   t: (key: string, fallback?: string) => string,
 ) {
+  if (invalidAsOf) {
+    return (
+      <EmptyState
+        title={t(
+          "intelligence.empty.asOfTitle",
+          "As-of date required",
+        )}
+        text={t(
+          "intelligence.asOf.required",
+          "Choose an As-of date.",
+        )}
+      />
+    );
+  }
   if (loading) {
     return (
       <EmptyState

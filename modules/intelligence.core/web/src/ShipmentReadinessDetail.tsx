@@ -1,4 +1,5 @@
 import { FolderOpen } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { DetailItem, EmptyState, StatusPill } from "@uok/shared/data-display";
 import { useUokLocalization } from "@uok/shared/localization";
@@ -17,7 +18,7 @@ export function ShipmentReadinessDetail({
 }: {
   signal: ShipmentReadinessSignal | null;
 }) {
-  const { formatNumber, t } = useUokLocalization();
+  const { formatDate, formatNumber, t } = useUokLocalization();
   if (!signal) {
     return (
       <EmptyState
@@ -103,6 +104,65 @@ export function ShipmentReadinessDetail({
         />
       </div>
       <section
+        className="shipment-readiness-expiry-state"
+        aria-label={t(
+          "intelligence.detail.expiryEvidence",
+          "Document expiry evidence",
+        )}
+      >
+        <h3>
+          {t("intelligence.detail.expiry", "Document expiry")}
+        </h3>
+        <dl>
+          <MetadataCount
+            label={t(
+              "intelligence.detail.expiryEvaluated",
+              "Expiry evaluated",
+            )}
+            value={<bdi dir="auto">
+              {formatNumber(signal.document_instance_expiry_evaluated)}
+            </bdi>}
+          />
+          <MetadataCount
+            label={t(
+              "intelligence.detail.expiryNotRecorded",
+              "Expiry not recorded",
+            )}
+            value={<bdi dir="auto">
+              {formatNumber(signal.document_instance_expiry_not_recorded)}
+            </bdi>}
+          />
+          <MetadataCount
+            label={t("intelligence.detail.expired", "Expired")}
+            value={<bdi dir="auto">
+              {formatNumber(signal.document_instance_expired)}
+            </bdi>}
+          />
+          <MetadataCount
+            label={t(
+              "intelligence.detail.expiringSoon",
+              "Expiring soon",
+            )}
+            value={<bdi dir="auto">
+              {formatNumber(signal.document_instance_expiring_soon)}
+            </bdi>}
+          />
+          <MetadataCount
+            label={t(
+              "intelligence.detail.nextEligibleExpiry",
+              "Next eligible expiry",
+            )}
+            value={signal.next_document_expiry_on ? (
+              <bdi dir="auto">
+                {formatDate(signal.next_document_expiry_on)}
+              </bdi>
+            ) : (
+              t("form.notSet", "Not set")
+            )}
+          />
+        </dl>
+      </section>
+      <section
         className="shipment-readiness-reasons"
         aria-label={t("intelligence.detail.reasons", "Readiness reasons")}
       >
@@ -163,6 +223,12 @@ export function ShipmentReadinessDetail({
   );
 }
 
-function MetadataCount({ label, value }: { label: string; value: string }) {
+function MetadataCount({
+  label,
+  value,
+}: {
+  label: string;
+  value: ReactNode;
+}) {
   return <div><dt>{label}</dt><dd>{value}</dd></div>;
 }

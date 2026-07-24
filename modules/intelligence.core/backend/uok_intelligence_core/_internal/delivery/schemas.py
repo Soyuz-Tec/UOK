@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -8,10 +9,13 @@ ReadinessBand = Literal["attention_required", "not_assessed", "ready"]
 ReadinessReasonCode = Literal[
     "required_documents_missing",
     "rejected_document_present",
+    "expired_document_present",
+    "expiring_document_present",
     "requirements_not_defined",
     "required_documents_satisfied",
     "document_metadata_pending_review",
     "verified_document_present",
+    "document_expiry_not_recorded",
 ]
 
 
@@ -38,6 +42,11 @@ class ShipmentReadinessSignalResponse(BaseModel):
     document_instance_verified: int = Field(ge=0)
     document_instance_rejected: int = Field(ge=0)
     document_instance_superseded: int = Field(ge=0)
+    document_instance_expiry_evaluated: int = Field(ge=0)
+    document_instance_expiry_not_recorded: int = Field(ge=0)
+    document_instance_expired: int = Field(ge=0)
+    document_instance_expiring_soon: int = Field(ge=0)
+    next_document_expiry_on: date | None
 
 
 class ShipmentReadinessListResponse(BaseModel):
@@ -45,6 +54,10 @@ class ShipmentReadinessListResponse(BaseModel):
 
     source_status: Literal["ready"]
     source_summary: str
+    as_of: date
+    evaluation_timezone: Literal["UTC"]
+    expiring_soon_horizon_days: Literal[30]
+    expiring_soon_through: date
     items: tuple[ShipmentReadinessSignalResponse, ...]
 
 

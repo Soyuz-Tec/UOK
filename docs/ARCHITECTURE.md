@@ -47,7 +47,14 @@ Operator browser
 - `locations.core` is an optional Location Master capability for tenant-scoped canonical ports, warehouses, cities, and regions with normalized country linkage, governed lifecycle, and append-only canonical-name history. Route topology, GIS, Party addresses, Planning links, and global place catalogs remain outside this owner.
 - `routes.core` is an optional Route/Corridor Master capability for tenant-scoped ordered paths over stable Location IDs, governed lifecycle, and append-only canonical-name history. It resolves Location value data only through the `locations.core` immutable public facade and owns no shipment execution, Planning schedule, tracking, optimization, or GIS behavior.
 - `shipments.core` is an optional business module for tenant-scoped operational Shipment headers, optimistic updates, append-only movement-status history, and Shipment-owned Compliance requirement and document-instance metadata/history. It stores stable Party, Location, optional Route, and Compliance Document Type IDs, resolves them only through immutable owner facades, and owns no Product/Cargo lines, booking, rates, tracking, document files/binaries, object-store keys, inventory, customs, workflow-blocking compliance engine, or intelligence behavior.
-- `intelligence.core` is an optional stateless capability for deterministic, read-only Shipment readiness signals. It consumes only immutable, tenant-authorized aggregate facts from the `shipments.core` public facade, owns no table, ORM mapping, SQL, command, event, cache, score, prediction, or workflow mutation, and exposes a module-owned Shipment Readiness workbench.
+- `intelligence.core` is an optional stateless capability for deterministic,
+  read-only Shipment readiness signals, including bounded document-expiry
+  attention evaluated from a required explicit as-of date under the fixed UTC
+  v1 policy and an inclusive 30-calendar-day horizon. It consumes only
+  immutable, tenant-authorized aggregate facts from the `shipments.core`
+  public facade, owns no table, ORM mapping, SQL, command, event, cache, score,
+  prediction, or workflow mutation, and exposes a module-owned Shipment
+  Readiness workbench.
 - `compliance.core` is an optional Compliance Document Type master-data capability for tenant-scoped type codes, descriptive metadata, governed active/inactive/archive lifecycle, and append-only canonical-name history. It owns no document-instance row, binary file, Shipment rule, customs integration, or legal decision and has no feature dependency.
 - `planning.core` consumes `calendar.core` for read-only organization availability and free-busy context and uses `reports.core` as an availability-gated optional frontend integration for secure report artifact actions, while Planning-owned Gantt working calendars remain the scheduling authority for task normalization, dependency propagation, and resource leveling.
 - Module metadata is read from `modules/<module_name>/manifest.yaml`.
@@ -150,6 +157,8 @@ Operator browser
 - Shipment Readiness Signals module plan: `docs/modules/intelligence.core/SHIPMENT_READINESS_SIGNALS_MODULE_PLAN.md`
 - Shipment Readiness Signals slice design: `docs/delivery/shipment-readiness-signals-slice-design-2026-07-18.md`
 - Shipment Readiness Signals slice delivery: `docs/delivery/shipment-readiness-signals-slice-delivery-2026-07-18.md`
+- Shipment Document Expiry Readiness slice design: `docs/delivery/shipment-document-expiry-readiness-slice-design-2026-07-23.md`
+- Shipment Document Expiry Readiness slice delivery: `docs/delivery/shipment-document-expiry-readiness-slice-delivery-2026-07-23.md`
 - Planning Core module plan: `docs/modules/planning.core/PLANNING_CORE_MODULE_PLAN.md`
 - Communications Core module plan: `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md`
 - Planning Gantt Gate A traceability: `docs/modules/planning.core/PLANNING_GANTT_IMPLEMENTATION_TRACEABILITY.md`

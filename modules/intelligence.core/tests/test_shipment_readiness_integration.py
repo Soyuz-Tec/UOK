@@ -13,6 +13,8 @@ from intelligence_test_support import (
     install_intelligence_stack,
 )
 
+READINESS_PATH = "/api/intelligence/shipment-readiness?as_of=2026-07-18"
+
 
 def test_readiness_moves_from_not_assessed_to_attention_to_ready_without_mutation(
     client: TestClient,
@@ -82,8 +84,33 @@ def test_readiness_endpoint_enforces_auth_permission_and_lifecycle(
     admin = auth(client, "admin", "admin")
     viewer = auth(client, "viewer", "viewer123")
     install_intelligence_stack(client, admin)
-    assert (
-        client.get("/api/intelligence/shipment-readiness").status_code == 401
+    assert client.get(READINESS_PATH).status_code == 401
+    assert client.get(
+        "/api/intelligence/shipment-readiness",
+        headers=viewer,
+    ).status_code == 422
+    assert client.get(
+        "/api/intelligence/shipment-readiness?as_of=not-a-date",
+        headers=viewer,
+    ).status_code == 422
+    for non_date_only in (
+        "2026-07-18T00:00:00Z",
+        "2026-07-18T00:00:00+14:00",
+        "1784332800",
+    ):
+        response = client.get(
+            "/api/intelligence/shipment-readiness",
+            params={"as_of": non_date_only},
+            headers=viewer,
+        )
+        assert response.status_code == 422, non_date_only
+    overflow = client.get(
+        "/api/intelligence/shipment-readiness?as_of=9999-12-31",
+        headers=viewer,
+    )
+    assert overflow.status_code == 422
+    assert overflow.json()["detail"] == (
+        "as_of must leave room for the 30-day expiry review horizon"
     )
     suffix = uuid4().hex
     registered = client.post(
@@ -99,7 +126,7 @@ def test_readiness_endpoint_enforces_auth_permission_and_lifecycle(
         "Authorization": f"Bearer {registered.json()['access_token']}"
     }
     denied = client.get(
-        "/api/intelligence/shipment-readiness",
+        READINESS_PATH,
         headers=denied_headers,
     )
     assert denied.status_code == 403
@@ -112,7 +139,7 @@ def test_readiness_endpoint_enforces_auth_permission_and_lifecycle(
     assert disabled.status_code == 200, disabled.text
     try:
         unavailable = client.get(
-            "/api/intelligence/shipment-readiness",
+            READINESS_PATH,
             headers=viewer,
         )
         assert unavailable.status_code == 400
@@ -142,7 +169,7 @@ def test_shipment_source_denial_and_unavailability_fail_closed(
         denied_source,
     )
     denied = client.get(
-        "/api/intelligence/shipment-readiness",
+        READINESS_PATH,
         headers=viewer,
     )
     assert denied.status_code == 403
@@ -160,7 +187,7 @@ def test_shipment_source_denial_and_unavailability_fail_closed(
         unavailable_source,
     )
     unavailable = client.get(
-        "/api/intelligence/shipment-readiness",
+        READINESS_PATH,
         headers=viewer,
     )
     assert unavailable.status_code == 400
@@ -176,13 +203,17 @@ def _signal(
     shipment_id: str,
 ) -> dict[str, object]:
     response = client.get(
-        "/api/intelligence/shipment-readiness",
+        READINESS_PATH,
         headers=headers,
     )
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["source_status"] == "ready"
     assert body["source_summary"] == "Shipment readiness source is available."
+    assert body["as_of"] == "2026-07-18"
+    assert body["evaluation_timezone"] == "UTC"
+    assert body["expiring_soon_horizon_days"] == 30
+    assert body["expiring_soon_through"] == "2026-08-17"
     return next(
         item
         for item in body["items"]

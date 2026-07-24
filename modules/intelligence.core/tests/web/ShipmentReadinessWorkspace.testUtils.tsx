@@ -15,6 +15,8 @@ export const attentionSignal: ShipmentReadinessSignal = {
   reason_codes: [
     "required_documents_missing",
     "rejected_document_present",
+    "expired_document_present",
+    "expiring_document_present",
     "document_metadata_pending_review",
   ],
   status_summary: "Required evidence needs operator attention.",
@@ -25,12 +27,17 @@ export const attentionSignal: ShipmentReadinessSignal = {
   required_waived: 1,
   required_not_applicable: 0,
   optional_total: 1,
-  document_instance_total: 3,
+  document_instance_total: 4,
   document_instance_draft: 1,
-  document_instance_recorded: 0,
+  document_instance_recorded: 1,
   document_instance_verified: 1,
   document_instance_rejected: 1,
   document_instance_superseded: 0,
+  document_instance_expiry_evaluated: 2,
+  document_instance_expiry_not_recorded: 0,
+  document_instance_expired: 1,
+  document_instance_expiring_soon: 1,
+  next_document_expiry_on: "2026-08-01",
 };
 
 export const readySignal: ShipmentReadinessSignal = {
@@ -43,6 +50,7 @@ export const readySignal: ShipmentReadinessSignal = {
   reason_codes: [
     "required_documents_satisfied",
     "verified_document_present",
+    "document_expiry_not_recorded",
   ],
   status_summary: "All required document types are satisfied.",
   required_missing: 0,
@@ -51,6 +59,11 @@ export const readySignal: ShipmentReadinessSignal = {
   document_instance_draft: 0,
   document_instance_rejected: 0,
   document_instance_verified: 3,
+  document_instance_expiry_evaluated: 4,
+  document_instance_expiry_not_recorded: 1,
+  document_instance_expired: 0,
+  document_instance_expiring_soon: 0,
+  next_document_expiry_on: "2026-09-15",
 };
 
 export const notAssessedSignal: ShipmentReadinessSignal = {
@@ -70,15 +83,17 @@ export const notAssessedSignal: ShipmentReadinessSignal = {
   optional_total: 0,
   document_instance_total: 0,
   document_instance_draft: 0,
+  document_instance_recorded: 0,
   document_instance_verified: 0,
   document_instance_rejected: 0,
+  document_instance_expiry_evaluated: 0,
+  document_instance_expiry_not_recorded: 0,
+  document_instance_expired: 0,
+  document_instance_expiring_soon: 0,
+  next_document_expiry_on: null,
 };
 
-export const readinessResponse: ShipmentReadinessResponse = {
-  source_status: "ready",
-  source_summary: "Shipment readiness source is available.",
-  items: [attentionSignal, readySignal, notAssessedSignal],
-};
+export const readinessResponse = readinessResponseAt(currentUtcDate());
 
 export const intelligenceModuleRow = {
   name: "intelligence.core",
@@ -124,17 +139,47 @@ export function jsonResponse(value: unknown, status = 200) {
 }
 
 export function readinessFetchMock(
-  response: () => ShipmentReadinessResponse = () => readinessResponse,
+  response: (asOf: string) => ShipmentReadinessResponse = readinessResponseAt,
 ) {
   return vi.fn(async (input: RequestInfo | URL, options?: RequestInit) => {
+    const match = /^\/api\/intelligence\/shipment-readiness\?as_of=(\d{4}-\d{2}-\d{2})$/
+      .exec(String(input));
     if (
-      String(input) !== "/api/intelligence/shipment-readiness"
+      !match
+      || String(input) !== readinessUrl(match[1])
       || options?.method !== "GET"
     ) {
       return jsonResponse({ detail: "not found" }, 404);
     }
-    return jsonResponse(response());
+    return jsonResponse(response(match[1]));
   });
+}
+
+export function readinessUrl(asOf = currentUtcDate()) {
+  return `/api/intelligence/shipment-readiness?as_of=${asOf}`;
+}
+
+export function currentUtcDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function readinessResponseAt(asOf: string): ShipmentReadinessResponse {
+  return {
+    source_status: "ready",
+    source_summary: "Shipment readiness source is available.",
+    as_of: asOf,
+    evaluation_timezone: "UTC",
+    expiring_soon_horizon_days: 30,
+    expiring_soon_through: addUtcDays(asOf, 30),
+    items: [attentionSignal, readySignal, notAssessedSignal],
+  };
+}
+
+function addUtcDays(value: string, days: number) {
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 export function deferred<T>() {
