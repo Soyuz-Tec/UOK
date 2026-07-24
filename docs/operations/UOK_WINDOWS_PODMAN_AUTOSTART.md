@@ -4,20 +4,20 @@
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
-This runbook defines the user-scoped Windows sign-in recovery path for the local
-UOK Podman candidate. It prevents a Windows restart from leaving the Podman WSL
-machine and UOK containers stopped.
+This runbook defines the user-scoped Windows sign-in and periodic recovery path
+for the local UOK Podman candidate. It prevents a Windows restart or a later
+runtime stop from leaving the Podman WSL machine and UOK containers stopped.
 
-This is a sign-in task, not a pre-login Windows service or a production boot
-architecture. Rootless Podman machine identity, SSH keys, and connections belong
-to the interactive user. Do not run this task as `SYSTEM`, with a stored password,
-or at highest privilege.
+This is an interactive-user watchdog, not a pre-login Windows service or a
+production boot architecture. Rootless Podman machine identity, SSH keys, and
+connections belong to the interactive user. Do not run this task as `SYSTEM`,
+with a stored password, or at highest privilege.
 
 ## Recovery Flow
 
 ```text
-Windows sign-in
-  -> 30-second delayed, limited-privilege task
+Windows sign-in or repeating time trigger
+  -> 30-second delayed sign-in recovery or periodic recovery (one minute by default)
   -> maintenance-disable check and exclusive lock
   -> validated named Podman machine and pinned connection
   -> start the machine only when the connection is unavailable
@@ -56,11 +56,26 @@ Installation is idempotent. It creates one owned task under `\UOK\`, running as
 the current interactive user with:
 
 - a 30-second sign-in delay;
+- a repeating recovery trigger every minute by default;
 - limited privilege and no stored password;
 - `MultipleInstances=IgnoreNew`;
 - three one-minute failure retries;
 - a 15-minute execution limit;
 - battery execution and `StartWhenAvailable` enabled.
+
+Set a reviewed interval from 1 through 1440 minutes when installing:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartInstall -CheckIntervalMinutes 5
+```
+
+The first periodic run is scheduled one minute after installation. Later runs
+use the configured interval. The interval and exact UTC start boundary are
+recorded in the frozen release configuration, and the interval is retained by
+automatic payload refreshes. The exact task definition check requires one named
+logon trigger and one named, unbounded time trigger with the recorded start
+boundary and interval; missing, additional, disabled, malformed, or drifted
+triggers invalidate the managed task.
 
 The stable ownership marker is `uok.windows-autostart.v1`. A foreign task with
 the same name is never overwritten or removed. A known earlier UOK prototype
@@ -76,9 +91,10 @@ credential-free database-capacity environment as an immutable release under:
 ```
 
 The generated configuration records the source commit and whether its working
-tree was clean or dirty, UOK version, Podman machine and connection, Podman and
-Compose-provider paths, expected image IDs, payload paths, and SHA-256 hashes.
-It does not contain passwords, tokens, database URLs, or environment values.
+tree was clean or dirty, UOK version, periodic start boundary, check interval,
+Podman machine and connection, Podman and Compose-provider paths, expected image
+IDs, payload paths, and SHA-256 hashes. It does not contain passwords, tokens,
+database URLs, or environment values.
 
 Using a frozen payload prevents sign-in recovery from reading a partially
 hydrated OneDrive worktree or reconciling containers from an unreviewed branch.
@@ -96,8 +112,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 ```
 
 `AutoStartStatus` is read-only. It reports ownership, task state, last result,
-payload integrity, maintenance mode, source commit, and configuration path. It
-does not start Podman or UOK.
+payload integrity, maintenance mode, source commit, check interval, and
+configuration path. It does not start Podman or UOK.
 
 `AutoStartVerify` refuses maintenance-disabled, drifted, or hash-invalid state;
 starts the exact managed Scheduled Task; waits up to its bounded execution
@@ -118,7 +134,7 @@ is recorded only for diagnostics and redacts common credential forms.
 ## Maintenance Disable
 
 Use the disable marker when an intentional maintenance stop must survive the
-next sign-in:
+next sign-in and periodic check:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartDisable
@@ -153,6 +169,9 @@ The final cold-path acceptance check is:
 5. Require the Podman machine running, PostgreSQL healthy, API running on
    `127.0.0.1:18088`, and `/health` returning the configured UOK identity.
 
-If the task fails, keep the JSONL log, correct the nearest machine, connection,
-provider, image, payload-integrity, container-label, or health issue, reinstall
-when the image/provider contract changed, then run `AutoStartVerify` again.
+After this cold-path check, a controlled API-container stop may be used to prove
+the periodic path recovers UOK within the configured interval plus the bounded
+worker duration. If the task fails, keep the JSONL log, correct the nearest
+machine, connection, provider, image, payload-integrity, container-label, task
+trigger, or health issue, reinstall when the image/provider contract changed,
+then run `AutoStartVerify` again.

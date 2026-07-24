@@ -6,6 +6,8 @@ param(
     [string]$MachineName = "podman-machine-default",
     [ValidateRange(0, 600)]
     [int]$DelaySeconds = 30,
+    [ValidateRange(1, 1440)]
+    [int]$CheckIntervalMinutes = 1,
     [switch]$RunNow,
     [switch]$ConfirmUninstall
 )
@@ -14,7 +16,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $ContractVersion = "uok.windows-autostart.v1"
 $TaskPath = "\UOK\"
-$TaskDescription = "$ContractVersion managed task. Starts the user-scoped Podman machine and restores the frozen UOK local candidate after sign-in."
+$TaskDescription = "$ContractVersion managed task. Restores the frozen UOK local candidate after sign-in and during periodic health recovery."
 . (Join-Path $PSScriptRoot "uok_autostart_support.ps1")
 
 function Assert-UokWindowsAutoStartHost {
@@ -32,6 +34,7 @@ function Get-UokAutoStartStatus {
     if ($configPath -and (Test-Path -LiteralPath $configPath)) {
         try { $config = Get-Content -Raw -LiteralPath $configPath | ConvertFrom-Json } catch { $config = $null }
     }
+    $checkInterval = if ($config) { Get-UokConfiguredCheckIntervalMinutes -Config $config } else { $null }
     $payloadOk = if ($config) { Test-UokAutoStartPayload -Config $config } else { $false }
     $definitionOk = if ($config) { Test-UokAutoStartTaskDefinition -Task $task -Config $config -ConfigPath $configPath } else { $false }
     $info = if ($task) { Get-ScheduledTaskInfo -TaskName $TaskName -TaskPath $TaskPath } else { $null }
@@ -47,6 +50,7 @@ function Get-UokAutoStartStatus {
         Disabled = Test-Path -LiteralPath $paths.Disabled
         SourceCommit = if ($config) { $config.source_commit } else { $null }
         SourceTreeState = if ($config -and $config.psobject.Properties["source_tree_state"]) { $config.source_tree_state } else { "legacy-unknown" }
+        CheckIntervalMinutes = $checkInterval
         ConfigPath = $configPath
     }
 }
@@ -67,7 +71,9 @@ function Install-UokAutoStart {
     $release = New-UokAutoStartReleasePaths -Paths $paths
     $hashes = Copy-UokAutoStartPayload -Release $release
     $userId = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-    $config = New-UokAutoStartConfig -Release $release -PayloadHashes $hashes -ConfiguredDelaySeconds $DelaySeconds -UserId $userId
+    $periodicStart = (Get-Date).AddMinutes(1)
+    $periodicStart = $periodicStart.AddTicks(-($periodicStart.Ticks % [TimeSpan]::TicksPerSecond))
+    $config = New-UokAutoStartConfig -Release $release -PayloadHashes $hashes -ConfiguredDelaySeconds $DelaySeconds -ConfiguredCheckIntervalMinutes $CheckIntervalMinutes -ConfiguredPeriodicStart $periodicStart -UserId $userId
     $config | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $release.Config -Encoding UTF8
     $config = Get-Content -Raw -LiteralPath $release.Config | ConvertFrom-Json
     if (-not (Test-UokAutoStartPayload -Config $config)) { throw "Staged UOK auto-start payload failed integrity validation." }
@@ -76,11 +82,14 @@ function Install-UokAutoStart {
     $powerShellPath = Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe"
     $arguments = Get-UokTaskArguments -WorkerPath $release.Worker -ConfigPath $release.Config
     $action = New-ScheduledTaskAction -Execute $powerShellPath -Argument $arguments -WorkingDirectory $release.ReleaseRoot
-    $trigger = New-ScheduledTaskTrigger -AtLogOn -User $userId
-    $trigger.Delay = "PT${DelaySeconds}S"
+    $logonTrigger = New-ScheduledTaskTrigger -AtLogOn -User $userId
+    $logonTrigger.Id = "UOKLogonRecovery"
+    $logonTrigger.Delay = "PT${DelaySeconds}S"
+    $periodicTrigger = New-ScheduledTaskTrigger -Once -At $periodicStart -RepetitionInterval (New-TimeSpan -Minutes $CheckIntervalMinutes)
+    $periodicTrigger.Id = "UOKPeriodicRecovery"
     $principal = New-ScheduledTaskPrincipal -UserId $userId -LogonType Interactive -RunLevel Limited
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit (New-TimeSpan -Minutes 15) -MultipleInstances IgnoreNew
-    $definition = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Description $TaskDescription
+    $definition = New-ScheduledTask -Action $action -Trigger @($logonTrigger, $periodicTrigger) -Principal $principal -Settings $settings -Description $TaskDescription
     try {
         Register-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath -InputObject $definition -Force | Out-Null
         $registered = Get-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath
@@ -164,7 +173,15 @@ Assert-UokWindowsAutoStartHost
 $RepoRoot = [System.IO.Path]::GetFullPath($RepoRoot)
 switch ($Action) {
     "Install" { Install-UokAutoStart }
-    "Refresh" { if ((Get-UokAutoStartStatus).Installed) { Install-UokAutoStart } }
+    "Refresh" {
+        $status = Get-UokAutoStartStatus
+        if ($status.Installed) {
+            if (-not $PSBoundParameters.ContainsKey("CheckIntervalMinutes") -and $null -ne $status.CheckIntervalMinutes) {
+                $CheckIntervalMinutes = [int]$status.CheckIntervalMinutes
+            }
+            Install-UokAutoStart
+        }
+    }
     "Status" { Get-UokAutoStartStatus | Format-List }
     "Verify" { Test-UokAutoStart }
     "Disable" { Set-UokAutoStartDisabled -Disabled $true }

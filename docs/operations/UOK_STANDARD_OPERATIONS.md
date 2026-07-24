@@ -35,7 +35,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `BackupDb` | Create local PostgreSQL 18 custom-format dump | `.\scripts\uok_ops.ps1 -Action BackupDb` |
 | `RestoreDb` | Restore a local dump into the local stack, guarded by explicit confirmation | `.\scripts\uok_ops.ps1 -Action RestoreDb -BackupPath <dump> -ConfirmRestore` |
 | `AsuhTest` | Create a local ASUH incident event and run health plus candidate verifier | `.\scripts\uok_ops.ps1 -Action AsuhTest -IncidentReason "reason"` |
-| `AutoStartInstall` | Install or refresh the owned, user-scoped Windows sign-in recovery task and frozen no-build payload | `.\scripts\uok_ops.ps1 -Action AutoStartInstall` |
+| `AutoStartInstall` | Install or refresh the owned, user-scoped Windows sign-in and periodic recovery task with its frozen no-build payload | `.\scripts\uok_ops.ps1 -Action AutoStartInstall` |
 | `AutoStartStatus` | Read task ownership, last result, maintenance state, and payload integrity without starting Podman | `.\scripts\uok_ops.ps1 -Action AutoStartStatus` |
 | `AutoStartVerify` | Run the managed task now and require task result zero plus the expected UOK health identity | `.\scripts\uok_ops.ps1 -Action AutoStartVerify` |
 | `AutoStartDisable` | Preserve an intentional maintenance stop across sign-in without uninstalling | `.\scripts\uok_ops.ps1 -Action AutoStartDisable` |
@@ -325,7 +325,7 @@ refreshes an installed auto-start payload after the new API image, database
 capacity, and health checks pass. It does nothing to auto-start state when the
 managed task is not installed.
 
-## Windows Sign-In Auto-Start
+## Windows Auto-Start And Recovery Watchdog
 
 Install and prove the supported user-scoped recovery path:
 
@@ -335,7 +335,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 ```
 
 The owned `\UOK\UOK Podman Auto Start` task runs 30 seconds after the installing
-user signs in. It uses limited privilege, no stored password, bounded native
+user signs in and repeats every minute by default. Use
+`-CheckIntervalMinutes <1-1440>` with `AutoStartInstall` to set a different
+reviewed interval. It uses limited privilege, no stored password, bounded native
 command timeouts, a pinned Podman connection and Compose provider, an exclusive
 lock, and a frozen `%LOCALAPPDATA%` payload. Existing image-pinned UOK containers
 are started first; frozen Compose is a no-build/no-pull fallback only when a
@@ -347,9 +349,9 @@ stop and `AutoStartEnable` to resume recovery. `AutoStartUninstall` removes only
 the owned task and payload; it never stops Podman, deletes containers or volumes,
 or removes local data or logs.
 
-This is sign-in recovery for rootless Podman, not a pre-login service or a
-production boot claim. Full behavior, security boundaries, troubleshooting,
-logs, rollback, and reboot acceptance are defined in
+This is an interactive-user watchdog for rootless Podman, not a pre-login
+service or a production boot claim. Full behavior, security boundaries,
+troubleshooting, logs, rollback, and reboot acceptance are defined in
 `docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`.
 
 ## Source Boundary And Naming
