@@ -1,9 +1,20 @@
 # Shipment Readiness Signals Slice Delivery – 2026-07-18
 
-**Status:** Implemented; final candidate and hosted-CI qualification in
-progress.
+**Status:** Locally and hosted qualified; published as stacked draft PR
+[#73](https://github.com/Soyuz-Tec/UOK/pull/73).
 
 **Candidate:** `UOK-3.1.0-alpha.3`
+
+**Hosted-qualified code head:**
+`cf89e9b555805c8219f549d972003f0329574a81`
+
+**Exact rebuilt implementation commit:**
+`887e49f3a6910374c8f8af560ef11397134d5ce5`
+
+**Stacked prerequisite:** draft PR
+[#72](https://github.com/Soyuz-Tec/UOK/pull/72) at
+`2c9831b041bd3a54de11be10ed58c476a95706f0`; both its push and
+pull-request candidate checks are green.
 
 **Design authority:**
 `docs/delivery/shipment-readiness-signals-slice-design-2026-07-18.md`
@@ -140,10 +151,95 @@ architecture unfreeze.
 | TypeScript and Vite production build | Pass; existing bundle-size warning only |
 | Independent backend/architecture review | Pass after fail-closed list-mode correction; no remaining P0/P1 |
 | Independent UI review | Pass after stale-data, module-action authorization, and tenant search-storage corrections; no remaining P0/P1 |
-| Full TechnologyAudit / EngineeringEvidence / Audit | Pending final qualification |
-| PostgreSQL Rebuild / Verify / all 12 candidate verifiers | Pending final qualification |
-| Live desktop and 375 CSS-pixel browser proof | Pending final qualification |
-| GitHub preflight, draft PR, and exact-head hosted CI | Pending publication |
+| Full TechnologyAudit / EngineeringEvidence / Audit | Pass; EngineeringEvidence captured clean exact source at `887e49f` |
+| PostgreSQL Rebuild / Verify / all 12 candidate verifiers | Pass; exact API image `1800a128ae4613563ab4b7fc588f0652309b48406eb59b6c84fb348ce212b062` |
+| Live desktop and 375 CSS-pixel browser proof | Pass; no horizontal overflow, mutation controls, or console errors |
+| GitHub preflight and stacked draft PR | Pass; PR #73 targets prerequisite branch from PR #72 |
+| Exact-head hosted CI | Pass at `cf89e9b`; pull-request run `30065228009` and push rerun `30065226191` attempt 2 |
+
+### Exact-Source Qualification Evidence
+
+The clean qualification worktree was
+`C:\Users\vasan\OneDrive\Documents\UOK-readiness-qualification` on
+`qualification/shipment-readiness-signals`, with exact HEAD `887e49f` and zero
+dirty paths. Sanitized local engineering evidence was generated at
+`var/evidence/engineering/uok_engineering_20260724T021313Z.json`; `var/`
+remains local-only.
+
+The full local gate completed with:
+
+- all 158 unique Python test files passing;
+- clean Python and npm dependency audits;
+- generated OpenAPI, TypeScript, and frontend-module catalogs matching source;
+- all release, public-facade, physical-boundary, naming, source-size, and
+  final-image gates passing;
+- 133 frontend test files / 487 tests passing;
+- TypeScript and Vite production build passing, with only the existing
+  non-blocking bundle-size warning;
+- 19 Playwright scenarios passing and one expected live-only scenario skipped;
+  and
+- all 12 authenticated candidate verifiers passing.
+
+`Rebuild` produced exact API image
+`1800a128ae4613563ab4b7fc588f0652309b48406eb59b6c84fb348ce212b062`.
+The rebuilt candidate returned HTTP 200 from `/health` with status `ok`,
+version and target version `UOK-3.1.0-alpha.3`. Offline and live database
+capacity checks both passed.
+
+The Shipment Readiness verifier proved the exact transition
+`ready -> attention_required -> ready`, while the Shipment remained `closed`
+at header version `6`. Viewer read access and fail-closed module disablement
+also passed.
+
+### Exact-Head Hosted CI Evidence
+
+The two changes after the rebuilt implementation commit affect only the
+Shipment Readiness session test:
+
+- `fa8d5789c34398afa5374d2ad8a1d105282dac30` qualifies browser storage
+  through `window`; and
+- `cf89e9b555805c8219f549d972003f0329574a81` clears the temporary storage
+  before Vitest restores its globals.
+
+No production source changed. The corrected session suite passed all six tests
+under both local Node 24 and Node 26 before publication.
+
+Both hosted events are green on exact head `cf89e9b`:
+
+- pull-request run
+  [`30065228009`](https://github.com/Soyuz-Tec/UOK/actions/runs/30065228009),
+  job
+  [`89394746811`](https://github.com/Soyuz-Tec/UOK/actions/runs/30065228009/job/89394746811);
+  and
+- push run
+  [`30065226191`](https://github.com/Soyuz-Tec/UOK/actions/runs/30065226191)
+  attempt 2, job
+  [`89400162433`](https://github.com/Soyuz-Tec/UOK/actions/runs/30065226191/job/89400162433).
+
+The first push attempt passed the Shipment Readiness suite but hit one
+unrelated Compliance lifecycle UI timing failure. The same exact head passed
+that test in the pull-request event, and the failed-job push rerun passed
+without a source change.
+
+### Live Browser Evidence
+
+The in-app browser exercised the rebuilt candidate through the real UI. A
+temporary Shipment `UI-PROOF-SHIPMENT-20260717` was first shown as `ready`,
+then as `attention_required` after an owner-authorized required document was
+left missing, and finally as `ready` after that requirement was received. Its
+Shipment header remained `planned` at version `3`.
+
+The same browser session also proved:
+
+- exactly one grid row is tabbable, with Arrow, Home, and End moving both focus
+  and selection;
+- the `ready` filter returned only Ready rows;
+- the owner-supplied Open Shipment link remained same-origin and carried the
+  exact Shipment ID;
+- the UI exposed no mutation controls;
+- at 375 by 812 CSS pixels, root and body client/scroll widths remained equal
+  at 360 pixels with no document-level horizontal overflow; and
+- the browser console contained zero errors.
 
 ## Candidate Verifier
 
