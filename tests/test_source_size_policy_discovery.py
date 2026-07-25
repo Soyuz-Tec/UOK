@@ -117,7 +117,8 @@ def test_invalid_utf8_and_python_syntax_fail_closed(tmp_path: Path) -> None:
 
 
 def test_source_file_symlink_is_rejected(tmp_path: Path) -> None:
-    target = tmp_path / "outside.py"
+    target = tmp_path / "outside/target.py"
+    target.parent.mkdir()
     target.write_text("VALUE = 1\n", encoding="utf-8")
     link = tmp_path / "src/linked.py"
     link.parent.mkdir(parents=True)
@@ -129,6 +130,7 @@ def test_source_file_symlink_is_rejected(tmp_path: Path) -> None:
     analysis = rules.analyze_source_size(tmp_path)
 
     assert _rules(analysis, "hard") == {"source_symlink"}
+    assert analysis.hard[0].identity == "symlink:src/linked.py"
     assert analysis.scanned_file_count == 0
 
 
@@ -146,4 +148,39 @@ def test_source_directory_symlink_is_rejected(tmp_path: Path) -> None:
     analysis = rules.analyze_source_size(tmp_path)
 
     assert _rules(analysis, "hard") == {"source_symlink"}
+    assert analysis.hard[0].identity == "symlink:src/linked"
+    assert analysis.scanned_file_count == 0
+
+
+def test_repository_root_source_symlink_is_rejected(tmp_path: Path) -> None:
+    target = tmp_path / "outside/target.py"
+    target.parent.mkdir()
+    target.write_text("VALUE = 1\n", encoding="utf-8")
+    link = tmp_path / "linked.py"
+    try:
+        os.symlink(target, link)
+    except OSError as exc:
+        pytest.skip(f"symlink creation is unavailable: {exc}")
+
+    analysis = rules.analyze_source_size(tmp_path)
+
+    assert _rules(analysis, "hard") == {"source_symlink"}
+    assert analysis.hard[0].identity == "symlink:linked.py"
+    assert analysis.scanned_file_count == 0
+
+
+def test_whole_source_root_symlink_is_rejected(tmp_path: Path) -> None:
+    target = tmp_path / "outside"
+    target.mkdir()
+    (target / "target.py").write_text("VALUE = 1\n", encoding="utf-8")
+    link = tmp_path / "src"
+    try:
+        os.symlink(target, link, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlink creation is unavailable: {exc}")
+
+    analysis = rules.analyze_source_size(tmp_path)
+
+    assert _rules(analysis, "hard") == {"source_symlink"}
+    assert analysis.hard[0].identity == "symlink:src"
     assert analysis.scanned_file_count == 0
