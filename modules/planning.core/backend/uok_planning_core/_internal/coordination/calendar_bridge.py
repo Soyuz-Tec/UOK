@@ -41,15 +41,15 @@ def calendar_availability_read_model(
         require_permission(actor, "calendar.freebusy.read")
         ensure_module_operational(db, actor.organization_id, "calendar.core")
         from uok_calendar_core.public_api import freebusy_rows_for_participants, occurrence_rows_for_participants
-    except (ImportError, PermissionError, ValueError) as exc:
-        return {**base, "reason": str(exc)}
+    except (ImportError, PermissionError, ValueError):
+        return {**base, "reason": "Calendar availability provider is unavailable."}
     task_parties = _task_party_ids(db, actor, resources, assignments, participants)
     party_ids = set().union(*task_parties.values()) if task_parties else set()
     try:
         busy = freebusy_rows_for_participants(db, actor, start, end, party_ids)
         events = occurrence_rows_for_participants(db, actor, start, end, party_ids)
-    except ValueError as exc:
-        return {**base, "reason": str(exc)}
+    except ValueError:
+        return {**base, "reason": "Calendar availability data could not be read."}
     return {
         **base,
         "status": "ready",

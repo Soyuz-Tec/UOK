@@ -91,7 +91,7 @@ These accepted lessons must guide future implementation:
 | Stack discipline prevents rewrites | Write durable backend in Python and durable frontend in React + TypeScript + Vite | `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` |
 | Engineering system is internalized | Convert Microsoft SDL, Google Engineering Practices, SLSA, OpenSSF Scorecard, ISO, NIST, and OWASP guidance into UOK policies, gates, reviews, release evidence, and dashboards | `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md` |
 | Quality standards are executable | Keep source reviewable, dependencies pinned, stack choices audited, and line-of-code integrity enforced | `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md` |
-| Quality scorecards are repeatable | Generate engineering evidence with a comparable scorecard after meaningful feature work | `scripts/engineering_evidence.py` |
+| Repository-conformance scorecards are repeatable | Generate engineering evidence with evidence completeness and explicit unavailable categories after meaningful feature work | `scripts/engineering_evidence.py` |
 | UI policy is mandatory now | Apply the Apple-informed UOK UI policy to current work, not only future redesigns | `docs/design/UOK_UI_DESIGN_POLICY.md` |
 | Workspace UI implementation is standardized | Use the UOK workspace UI implementation standard for specialist review roles, workspace anatomy, shared primitive promotion, and UI verification gates | `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md` |
 | Global reusable UI belongs in shared areas | Reusable pop-ups, inline editing, searchable filters, tables, and column resizing belong in module-neutral shared components | `web/src/shared` and `docs/design/UOK_UI_DESIGN_POLICY.md` |
@@ -126,7 +126,7 @@ These accepted lessons must guide future implementation:
 | Language, framework, dependency, or build change | Add an ADR and update `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md` |
 | Engineering system, checklist, review, release gate, dashboard, or audit-evidence change | Update `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`, operations docs, CI, and PR template as applicable |
 | Code quality, line-of-code, efficiency, or technology audit change | Update `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`, `scripts/quality_audit.py`, and operations docs |
-| Quality scorecard, evidence schema, or dashboard metric change | Update `scripts/engineering_evidence.py`, `scripts/quality_scorecard.py`, quality docs, operations docs, and tests |
+| Repository-conformance scorecard, evidence schema, or dashboard metric change | Update `scripts/engineering_evidence.py`, `scripts/quality_scorecard.py`, quality docs, operations docs, and tests |
 | Naming, product, or cargo modeling change | Update naming and separation policy docs before implementation is accepted |
 | Candidate verification gate change | Update `docs/ARCHITECTURE.md`, this guide, `docs/operations/UOK_STANDARD_OPERATIONS.md`, affected module plans, verifier scripts, and tests |
 | Local operation, backup, restore, rebuild, GitHub, or ASUH procedure change | Update `docs/operations/UOK_STANDARD_OPERATIONS.md`, `docs/operations/UOK_ASUH_TEST_EVENTS.md`, and related scripts |
@@ -175,7 +175,9 @@ Run the focused quality and technology audit before expanding a feature area:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
 ```
 
-Generate comparable engineering evidence and quality scorecard after meaningful feature work:
+Generate comparable engineering evidence and its repository-conformance
+scorecard after meaningful feature work. Review evidence completeness and the
+unavailable-category list with the score:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action EngineeringEvidence

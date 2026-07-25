@@ -1,15 +1,21 @@
 from __future__ import annotations
 
-import argparse
 import os
 import subprocess
 import sys
 import time
 from pathlib import Path
 
+import coverage_provenance
+from engineering_coverage import MeasurementValidationError
+from python_test_cli import parse_python_test_args
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TEST_DATABASE_RELATIVE_PATH = Path("data/test_uok_baseline.db")
+COVERAGE_DIRECTORY_RELATIVE_PATH = Path("var/evidence/coverage/python")
+COVERAGE_DATA_FILE_NAME = ".coverage"
+COVERAGE_REPORT_FILE_NAMES = ("coverage.xml", "coverage.json")
 
 
 class TestDiscoveryError(RuntimeError):
@@ -24,7 +30,10 @@ def _test_roots(repo_root: Path) -> list[Path]:
         raise TestDiscoveryError(_missing_message(repo_root, missing))
 
     module_roots = sorted(
-        (path for path in modules_root.iterdir() if path.is_dir() and not path.name.startswith(".")),
+        (
+            path for path in modules_root.iterdir()
+            if path.is_dir() and not path.name.startswith(".")
+        ),
         key=lambda path: path.name.casefold(),
     )
     if not module_roots:
@@ -62,9 +71,10 @@ def _validate_unique_files(repo_root: Path, files: list[Path]) -> None:
     if not collisions:
         return
 
-    formatted = sorted(
-        {", ".join(sorted(_relative(repo_root, path) for path in paths)) for paths in collisions}
-    )
+    formatted = sorted({
+        ", ".join(sorted(_relative(repo_root, path) for path in paths))
+        for paths in collisions
+    })
     raise TestDiscoveryError("Duplicate Python test file(s): " + "; ".join(formatted))
 
 
@@ -110,8 +120,97 @@ def _prepare_test_database(repo_root: Path) -> None:
         _unlink_with_retry(Path(f"{database}{suffix}"))
 
 
-def run_test_files(repo_root: Path, files: list[Path]) -> int:
+def _prepare_coverage_directory(
+    repo_root: Path,
+    coverage_directory: Path | None = None,
+) -> Path:
+    if coverage_directory is None:
+        coverage_directory = repo_root / COVERAGE_DIRECTORY_RELATIVE_PATH
+    coverage_directory.mkdir(parents=True, exist_ok=True)
+    for path in coverage_directory.glob(f"{COVERAGE_DATA_FILE_NAME}*"):
+        path.unlink(missing_ok=True)
+    for file_name in COVERAGE_REPORT_FILE_NAMES:
+        (coverage_directory / file_name).unlink(missing_ok=True)
+    return coverage_directory
+
+
+def _coverage_environment(environment: dict[str, str], coverage_directory: Path) -> dict[str, str]:
+    coverage_environment = environment.copy()
+    coverage_environment["COVERAGE_FILE"] = str(
+        (coverage_directory / COVERAGE_DATA_FILE_NAME).resolve()
+    )
+    return coverage_environment
+
+
+def _test_command(relative: str, *, collect_coverage: bool) -> list[str]:
+    if collect_coverage:
+        return [
+            sys.executable,
+            "-m",
+            "coverage",
+            "run",
+            "--parallel-mode",
+            "-m",
+            "pytest",
+            "-q",
+            relative,
+        ]
+    return [sys.executable, "-m", "pytest", "-q", relative]
+
+
+def _write_coverage_reports(
+    repo_root: Path,
+    environment: dict[str, str],
+    coverage_directory: Path,
+) -> int:
+    commands = [
+        [sys.executable, "-m", "coverage", "combine", str(coverage_directory)],
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "xml",
+            "-o",
+            str(coverage_directory / "coverage.xml"),
+        ],
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "json",
+            "--pretty-print",
+            "-o",
+            str(coverage_directory / "coverage.json"),
+        ],
+        [sys.executable, "-m", "coverage", "report"],
+    ]
+    for command in commands:
+        result = subprocess.run(
+            command,
+            cwd=repo_root,
+            env=environment,
+            check=False,
+        )
+        if result.returncode != 0:
+            return result.returncode
+    return 0
+
+
+def run_test_files(
+    repo_root: Path,
+    files: list[Path],
+    *,
+    collect_coverage: bool = False,
+    coverage_directory: Path | None = None,
+) -> int:
     environment = _test_environment(repo_root)
+    prepared_directory = None
+    if collect_coverage:
+        prepared_directory = _prepare_coverage_directory(
+            repo_root,
+            coverage_directory,
+        )
+        environment = _coverage_environment(environment, prepared_directory)
     github_groups = environment.get("GITHUB_ACTIONS", "").lower() == "true"
     for index, path in enumerate(files, start=1):
         _prepare_test_database(repo_root)
@@ -121,7 +220,7 @@ def run_test_files(repo_root: Path, files: list[Path]) -> int:
         else:
             print(f"[{index}/{len(files)}] {relative}", flush=True)
         result = subprocess.run(
-            [sys.executable, "-m", "pytest", "-q", relative],
+            _test_command(relative, collect_coverage=collect_coverage),
             cwd=repo_root,
             env=environment,
             check=False,
@@ -130,20 +229,17 @@ def run_test_files(repo_root: Path, files: list[Path]) -> int:
             print("::endgroup::", flush=True)
         if result.returncode != 0:
             return result.returncode
+    if prepared_directory is not None:
+        return _write_coverage_reports(
+            repo_root,
+            environment,
+            prepared_directory,
+        )
     return 0
 
 
-def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Discover and run every UOK Python test file in an isolated sequential subprocess."
-    )
-    parser.add_argument("--check", action="store_true", help="Validate discovery without running tests.")
-    parser.add_argument("--list", action="store_true", help="Print the validated test file list.")
-    return parser.parse_args()
-
-
 def main() -> int:
-    args = _parse_args()
+    args = parse_python_test_args()
     try:
         files = discover_test_files(REPO_ROOT)
     except TestDiscoveryError as error:
@@ -156,7 +252,39 @@ def main() -> int:
     print(f"Validated {len(files)} unique Python test files.", flush=True)
     if args.check or args.list:
         return 0
-    return run_test_files(REPO_ROOT, files)
+    try:
+        coverage_run = (
+            coverage_provenance.begin_coverage_run(REPO_ROOT, "python")
+            if args.coverage
+            else None
+        )
+        result = run_test_files(
+            REPO_ROOT,
+            files,
+            collect_coverage=args.coverage,
+            coverage_directory=(
+                REPO_ROOT / coverage_run.output_directory
+                if coverage_run is not None
+                else None
+            ),
+        )
+        if result or coverage_run is None:
+            return result
+        coverage_provenance.bind_coverage_run_artifacts(REPO_ROOT, coverage_run)
+        provenance = coverage_provenance.seal_coverage_run(REPO_ROOT, coverage_run)
+    except MeasurementValidationError as error:
+        print(f"Python coverage provenance failed: {error}", file=sys.stderr)
+        return 2
+    finally:
+        if "coverage_run" in locals() and coverage_run is not None:
+            coverage_provenance.discard_coverage_run(REPO_ROOT, coverage_run)
+    message = (
+        "Coverage passed; clean-HEAD provenance was not sealed for a dirty tree."
+        if provenance is None
+        else f"Coverage provenance written to {provenance}"
+    )
+    print(message)
+    return 0
 
 
 if __name__ == "__main__":

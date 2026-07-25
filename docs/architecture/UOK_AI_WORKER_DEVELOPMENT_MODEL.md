@@ -36,7 +36,7 @@ Do not add more workers to compensate for unclear authority. First clarify the r
 | Frontend developer | React, TypeScript, Vite, generated contracts, shared primitives, frontend tests |
 | UI designer | Workspace anatomy, interaction density, semantic tokens, accessibility, visual consistency |
 | UI validator | Playwright proof, screenshots, focus, keyboard paths, light/dark/system appearance, responsive checks, console cleanliness |
-| Auditor | Source size, module boundaries, docs consistency, test adequacy, reviewability, quality scorecard |
+| Auditor | Source size, module boundaries, docs consistency, test adequacy, reviewability, repository-conformance scorecard and evidence completeness |
 | Security/ops verifier | Auth, permissions, auditability, secrets, dependency posture, rollback, `uok_ops.ps1`, GitHub readiness |
 | Documentation steward | Architecture docs, ADRs, module plans, operations docs, documentation index, PR evidence |
 

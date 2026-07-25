@@ -24,7 +24,12 @@ Before non-trivial edits:
 - AI worker development model: `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`
 - UI design: `docs/design/UOK_UI_DESIGN_POLICY.md`
 - Standard operations: `docs/operations/UOK_STANDARD_OPERATIONS.md`
+- Engineering maturity gap closure: `docs/governance/UOK_LEVEL4_ENGINEERING_MATURITY_PLAN.md`
+- CI quality gates: `docs/operations/UOK_CI_QUALITY_GATES.md`
 - GitHub guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
+- Database security: `docs/operations/UOK_DATABASE_SECURITY.md`
+- Reliability and recovery: `docs/operations/UOK_RELIABILITY_AND_RECOVERY.md`
+- Immutable prereleases: `docs/operations/UOK_IMMUTABLE_PRERELEASES.md`
 
 ## Implementation Rules
 

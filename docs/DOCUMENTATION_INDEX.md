@@ -29,6 +29,11 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | Artifact | Owns | Update when |
 |---|---|---|
 | `AGENTS.md` | Repo-local Codex working agreements and required preflight checks | Agent workflow, mandatory local checks, or repository-specific coding rules change |
+| `CONTRIBUTING.md` | Contributor setup, change workflow, PR expectations, and security-report routing | Contributor workflow, supported toolchain, verification, or PR rules change |
+| `GOVERNANCE.md` | Maintainer responsibilities, decision records, and independent-review target | Maintainer model, ownership, decision class, or review-independence rules change |
+| `SECURITY.md` | Supported-version boundary and private vulnerability-reporting policy | Supported release, reporting route, response target, or disclosure rule changes |
+| `SUPPORT.md` | Public question, defect, feature, conduct, and security routing | Public support channel or issue-form routing changes |
+| `CODE_OF_CONDUCT.md` | Contributor conduct and enforcement expectations | Community conduct or enforcement policy changes |
 | `README.md` | Quick project entry, local run path, verification summary | Version, startup, login, or headline discipline changes |
 | `modules/README.md` | Module package shape and current module catalog | Module inventory, physical package shape, or module discoverability changes |
 | `web/README.md` | Product-neutral shell ownership and module frontend composition entry point | Shell/module frontend boundary, generated catalog, or frontend verification path changes |
@@ -36,12 +41,18 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/DOCUMENTATION_INDEX.md` | Documentation routing and artifact ownership | New durable Markdown artifact is added or an artifact changes purpose |
 | `docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md` | Development continuity process, feedback loop, documentation update rules | Workflow, quality gates, or continuity responsibilities change |
 | `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md` | Internalized engineering system based on Microsoft SDL, Google Engineering Practices, SLSA, OpenSSF Scorecard, ISO, NIST, and OWASP standards | Policies, checklists, CI gates, code review rules, release gates, dashboards, or audit evidence change |
+| `docs/governance/UOK_LEVEL4_ENGINEERING_MATURITY_PLAN.md` | Level 4 gap-closure phases, measurable exits, dependencies, and remaining external decisions | Engineering-maturity target, sequence, exit gate, metric, or dependency changes |
+| `docs/governance/UOK_ENGINEERING_EVIDENCE_V2_MIGRATION.md` | Fail-closed coverage measurement v2 producer, validation, score derivation, and evidence-envelope migration | Measurement schema, evidence envelope, coverage scoring, source verification, or consumer compatibility changes |
 | `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md` | Development-time AI worker roles, activation levels, handoff protocol, and verification authority | Coding-agent workflow, specialist review workers, worker handoff, or AI-assisted development governance changes |
 | `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md` | Code quality, line-of-code integrity, efficiency, source-size, and technology audit rules | Quality standards, technology audit gates, source-size policy, or reviewability rules change |
 | `docs/operations/UOK_STANDARD_OPERATIONS.md` | Standard local operations, audits, GitHub preflight, backup, restore, rebuild, Windows sign-in recovery, and repeatable commands | Operations command, evidence, startup, backup, restore, or GitHub workflow changes |
+| `docs/operations/UOK_CI_QUALITY_GATES.md` | CI lint, type, coverage, hosted browser, timeout, concurrency, and evidence-retention gates | CI quality command, measured baseline, threshold, scope, timeout, browser proof, or artifact retention changes |
 | `docs/operations/UOK_ASUH_TEST_EVENTS.md` | Local ASUH incident-drill schedule and event trigger rules | ASUH event types, local schedules, or incident drill expectations change |
 | `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md` | GitHub-facing source-of-truth, ownership, dependency, Scorecard, branch-protection, and evidence controls | GitHub workflows, synchronization policy, CODEOWNERS, dependency monitoring, branch-protection expectations, or engineering evidence change |
 | `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md` | Application pool configuration, connection-capacity budgets, telemetry, recovery verification, and the PgBouncer activation boundary | Pool settings, worker/replica budget, database limits, recovery checks, or external-pooler decision changes |
+| `docs/operations/UOK_DATABASE_SECURITY.md` | PostgreSQL role/policy foundation, exact-table verification, RLS activation gate, guessed-ID proof, and rollback | Database role, grant, tenant policy, RLS activation, database-security verification, or rollback changes |
+| `docs/operations/UOK_RELIABILITY_AND_RECOVERY.md` | Public health contract, authenticated diagnostics, bounded SLI evidence, and isolated restore drills | Health probes, diagnostics, SLI collection, SLO boundary, backup verification, or recovery drill changes |
+| `docs/operations/UOK_IMMUTABLE_PRERELEASES.md` | Exact-tag prerelease validation, build-once image publication, vulnerability scan, SBOM, attestations, checksums, and rollback | Release tag, GHCR image, scan policy, SBOM, attestation, release asset, or rollback metadata changes |
 | `docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md` | User-scoped Windows Podman sign-in recovery, frozen payload, task ownership, maintenance mode, logs, rollback, and reboot acceptance | Local task definition, startup payload, provider/connection pinning, recovery checks, or uninstall behavior changes |
 | `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md` | Repeatable Planning backend/browser budgets, profiles, evidence, and rollback-only fixture rules | Planning scale threshold, benchmark profile, virtualization trigger, or performance evidence changes |
 | `docs/operations/UOK_PLANNING_RELEASE_READINESS.md` | Gate E production-like local health, candidate, scale, recovery, live-browser, and evidence profile | Planning release-readiness composition or evidence boundary changes |
@@ -76,6 +87,10 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md` | Contacts system-of-record scope, first-class facts, consent, team access, purge, quality, and interoperability boundary | Contacts storage, privacy, authorization, import/export, dedupe, activity, custom fields, or provider adapter changes |
 | `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md` | Host-owned backend composition, minimal shared kernel ports, exact request-DI exception, neutral frontend surface contract, and shell/module cycle enforcement | Host/kernel ownership, ORM/bootstrap composition, module runtime port, shell/module surface contract, or dependency enforcement changes |
 | `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md` | K Connect retained Delete/Restore, prior-state persistence, row locking, strong ETags, stale repair, and no-cascade boundary | Thread archive/restore, lifecycle validators, capability projection, archived discovery, or Planning-link behavior changes |
+| `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md` | Closed all-table tenant inventory, least-privileged PostgreSQL roles, dormant fail-closed policies, and evidence-gated RLS activation | PostgreSQL ownership, role/grant topology, tenant classification, RLS policy, activation gate, or live proof changes |
+| `docs/architecture/ADR-0031-http-response-and-public-surface-security.md` | Fail-closed API docs exposure, trusted hosts, HTTPS-derived HSTS, and response-security headers | Public HTTP surface, proxy trust, host validation, HSTS, CSP, or security-header behavior changes |
+| `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md` | Exact-tag build-once prereleases, immutable image digest, vulnerability gate, SBOMs, attestations, and rollback evidence | Release identity, OCI publication, scan severity, SBOM, provenance, attestation, or prerelease policy changes |
+| `docs/architecture/ADR-0033-bounded-legacy-credential-migration-and-auth-rate-limits.md` | Default-off time-bounded legacy credential migration and fail-closed bounded authentication rate limits | Password hashing, legacy credential migration, login response, rate-limit, or production ingress controls change |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/planning-data-boundary-inventory-2026-07-15.md` | Pre-refactor evidence of Planning reads across capability-module data boundaries | A correction is needed to the dated leak inventory or its audit method |
@@ -154,11 +169,16 @@ Active policies are mandatory until replaced through an ADR or explicit policy u
 - `docs/architecture/UOK_PRODUCT_CARGO_SEPARATION_POLICY.md`
 - `docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md`
 - `docs/operations/UOK_STANDARD_OPERATIONS.md`
+- `docs/operations/UOK_CI_QUALITY_GATES.md`
 - `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - `docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md`
 - `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`
 - `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
 - `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`
+- `docs/operations/UOK_DATABASE_SECURITY.md`
+- `docs/operations/UOK_RELIABILITY_AND_RECOVERY.md`
+- `docs/operations/UOK_IMMUTABLE_PRERELEASES.md`
+- `docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`
 - `docs/operations/UOK_PLANNING_SCALE_BUDGETS.md`
 
 Implementation must either comply with these artifacts or update them through the policy-change process.
@@ -199,6 +219,10 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
 - `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
 - `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
+- `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md`
+- `docs/architecture/ADR-0031-http-response-and-public-surface-security.md`
+- `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md`
+- `docs/architecture/ADR-0033-bounded-legacy-credential-migration-and-auth-rate-limits.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/planning-data-boundary-inventory-2026-07-15.md`
 - `docs/architecture/planning-data-boundary-fix-2026-07-15.md`
@@ -260,7 +284,28 @@ If a research finding becomes mandatory, promote it into an active policy, modul
 Operations records define repeatable local work:
 
 - `docs/operations/UOK_STANDARD_OPERATIONS.md`
+- `docs/operations/UOK_CI_QUALITY_GATES.md`
 - `docs/operations/UOK_ASUH_TEST_EVENTS.md`
+- `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
+- `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`
+- `docs/operations/UOK_DATABASE_SECURITY.md`
+- `docs/operations/UOK_RELIABILITY_AND_RECOVERY.md`
+- `docs/operations/UOK_IMMUTABLE_PRERELEASES.md`
+- `docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`
+- `docs/operations/UOK_PLANNING_RELEASE_READINESS.md`
+
+### Governance And Community Records
+
+Governance and community records define repository participation and
+accountability:
+
+- `docs/governance/UOK_LEVEL4_ENGINEERING_MATURITY_PLAN.md`
+- `docs/governance/UOK_ENGINEERING_EVIDENCE_V2_MIGRATION.md`
+- `CONTRIBUTING.md`
+- `GOVERNANCE.md`
+- `SECURITY.md`
+- `SUPPORT.md`
+- `CODE_OF_CONDUCT.md`
 
 Operations records may reference local evidence under `var/`, but local evidence must stay out of Git unless explicitly promoted into a sanitized documentation artifact.
 

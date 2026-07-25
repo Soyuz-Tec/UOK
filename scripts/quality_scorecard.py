@@ -1,85 +1,26 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
-
-GRADE_THRESHOLDS = (
-    (95, "A"),
-    (85, "B"),
-    (75, "C"),
-    (65, "D"),
+import engineering_measurements
+from quality_scorecard_contract import (
+    CATEGORY,
+    CATEGORY_DEFINITIONS,
+    GRADE_THRESHOLDS,
+    LIMITATIONS,
+    MEASUREMENT_SCHEMA,
+    MEASUREMENT_STATUS_SCHEMA,
+    REPEATABILITY,
+    SCHEMA_COMPATIBILITY,
+    SCORECARD_SCHEMA,
+    STATIC_CONTROL_CAP,
+    UNAVAILABLE_REASONS,
+    ScoreCategory,
 )
+from quality_scorecard_source_size import source_size_metrics as _source_size_metrics
 
-
-@dataclass(frozen=True)
-class ScoreCategory:
-    name: str
-    score: int
-    evidence: list[str]
-    improvement: str
-
-
-CategoryDefinition = tuple[str, list[str], str]
-
-
-CATEGORY_DEFINITIONS: tuple[CategoryDefinition, ...] = (
-    (
-        "correctness",
-        ["required_artifacts", "runtime_stack", "module_shape"],
-        "Run the full Verify gate when behavior changed.",
-    ),
-    (
-        "test_coverage",
-        ["required_artifacts", "github_guardrails"],
-        "Add focused tests or verifier evidence for uncovered behavior.",
-    ),
-    (
-        "split_quality",
-        ["source_size", "operations_hygiene"],
-        "Split oversized or mixed-responsibility files before expansion.",
-    ),
-    (
-        "reuse_and_boundaries",
-        ["module_shape", "operations_hygiene"],
-        "Move repeated UI or workflow behavior into the smallest shared owner.",
-    ),
-    (
-        "module_discipline",
-        ["module_shape", "runtime_stack"],
-        "Keep module behavior in manifests, module folders, and module tests.",
-    ),
-    (
-        "ui_consistency",
-        ["frontend_stack", "required_artifacts"],
-        "Keep durable UI in React, TypeScript, generated contracts, and policy docs.",
-    ),
-    (
-        "runtime_efficiency",
-        ["runtime_stack", "source_size"],
-        "Prefer paginated, indexed, typed, and bounded workflows.",
-    ),
-    (
-        "security_and_supply_chain",
-        ["github_guardrails", "python_stack", "frontend_stack"],
-        "Keep dependencies pinned, audits clean, and GitHub checks passing.",
-    ),
-    (
-        "documentation",
-        [
-            "required_artifacts",
-            "documentation_references",
-            "operations_hygiene",
-            "internal_engineering_system",
-        ],
-        "Update owning Markdown artifacts with behavior and policy changes.",
-    ),
-    (
-        "ci_and_release_readiness",
-        ["github_guardrails", "runtime_stack", "operations_hygiene"],
-        "Use GitHub readiness and PR checks before publication.",
-    ),
-)
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _check_map(audit_report: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -93,66 +34,199 @@ def _check_map(audit_report: dict[str, Any]) -> dict[str, dict[str, Any]]:
     }
 
 
-def _check_score(checks: dict[str, dict[str, Any]], name: str) -> int:
+def _check_score(
+    checks: dict[str, dict[str, Any]],
+    name: str,
+    source_metrics: dict[str, Any],
+) -> int:
     check = checks.get(name, {"ok": False, "details": ""})
     if not check["ok"]:
         return 0
-    if name == "source_size" and "soft:" in check["details"]:
+    if name == "source_size":
+        ratchet_status = source_metrics["ratchet"]["status"]
+        if source_metrics["hard_count"] or ratchet_status in {
+            "violations",
+            "baseline_update_required",
+            "not_evaluated",
+        }:
+            return 0
+        if source_metrics["soft_count"] or source_metrics["active_exception_count"]:
+            return 75
+    if name == "community_governance" and "external:" in check["details"]:
         return 75
     return 100
 
 
-def _score(checks: dict[str, dict[str, Any]], required: list[str]) -> int:
-    if not required:
-        return 0
-    return round(sum(_check_score(checks, name) for name in required) / len(required))
+def _audit_category(
+    definition: CATEGORY,
+    checks: dict[str, dict[str, Any]],
+    source_metrics: dict[str, Any],
+) -> ScoreCategory:
+    name, required, improvement, _ = definition
+    raw_score = round(
+        sum(_check_score(checks, item, source_metrics) for item in required)
+        / len(required)
+    )
+    score = min(STATIC_CONTROL_CAP, raw_score)
+    evidence = []
+    for check_name in required:
+        check_score = _check_score(checks, check_name, source_metrics)
+        status = "pass" if check_score == 100 else "review" if check_score else "fail"
+        evidence.append(f"{check_name}: {status}")
+    metrics = source_metrics if "source_size" in required else {}
+    return ScoreCategory(
+        name=name,
+        score=score,
+        status="scored",
+        basis="static_repository_control_conformance",
+        evidence=evidence,
+        improvement=improvement,
+        metrics=metrics,
+    )
 
 
-def _evidence(checks: dict[str, dict[str, Any]], required: list[str]) -> list[str]:
-    evidence: list[str] = []
-    for name in required:
-        score = _check_score(checks, name)
-        status = "pass" if score == 100 else "review" if score else "fail"
-        evidence.append(f"{name}: {status}")
-    return evidence
+def _measurement_category(
+    definition: CATEGORY,
+    measurements: dict[str, Any] | None,
+) -> tuple[ScoreCategory, dict[str, Any]]:
+    name, _, improvement, _ = definition
+    categories = measurements["categories"] if measurements else {}
+    measurement = categories.get(
+        name,
+        {
+            "status": "unavailable",
+            "reason": UNAVAILABLE_REASONS[name],
+        },
+    )
+    if measurement["status"] == "measured":
+        evidence = [
+            f"{name}: measured",
+            f"method: {measurement['method']}",
+            *(f"source: {source['path']}" for source in measurement["sources"]),
+        ]
+        values = (
+            engineering_measurements.coverage_score(measurement["metrics"]),
+            "measured",
+            "verified_local_measurement",
+            evidence,
+            dict(measurement["metrics"]),
+        )
+    else:
+        values = (
+            None,
+            "unavailable",
+            "measurement_required",
+            [f"{name}: unavailable", str(measurement["reason"])],
+            {},
+        )
+    score, status, basis, evidence, metrics = values
+    return ScoreCategory(
+        name=name,
+        score=score,
+        status=status,
+        basis=basis,
+        evidence=evidence,
+        improvement=improvement,
+        metrics=metrics,
+    ), measurement
 
 
-def _grade(score: int) -> str:
+def _grade(score: int | None) -> str:
+    if score is None:
+        return "N/A"
     for threshold, grade in GRADE_THRESHOLDS:
         if score >= threshold:
             return grade
     return "F"
 
 
-def _category(definition: CategoryDefinition, checks: dict[str, dict[str, Any]]) -> ScoreCategory:
-    name, required, improvement = definition
-    return ScoreCategory(
-        name=name,
-        score=_score(checks, required),
-        evidence=_evidence(checks, required),
-        improvement=improvement,
+def _score_categories(
+    checks: dict[str, dict[str, Any]],
+    source_metrics: dict[str, Any],
+    measurements: dict[str, Any] | None,
+) -> tuple[list[ScoreCategory], dict[str, Any]]:
+    scored: list[ScoreCategory] = []
+    measurement_evidence: dict[str, Any] = {}
+    for definition in CATEGORY_DEFINITIONS:
+        name, _, _, measurement_required = definition
+        if measurement_required:
+            category, measurement = _measurement_category(definition, measurements)
+            measurement_evidence[name] = measurement
+            scored.append(category)
+        else:
+            scored.append(_audit_category(definition, checks, source_metrics))
+    return scored, measurement_evidence
+
+
+def _conformance_summary(
+    scored: list[ScoreCategory],
+) -> tuple[int | None, int, dict[str, Any]]:
+    available = [category.score for category in scored if category.score is not None]
+    overall = round(sum(available) / len(available)) if available else None
+    unavailable = [category.name for category in scored if category.score is None]
+    completeness = round(100 * len(available) / len(scored))
+    return (
+        overall,
+        completeness,
+        {
+            "score": overall,
+            "grade": _grade(overall),
+            "status": "complete" if not unavailable else "partial",
+            "scored_category_count": len(available),
+            "total_category_count": len(scored),
+            "evidence_completeness_percent": completeness,
+            "unavailable_categories": unavailable,
+        },
     )
 
 
-def build_scorecard(audit_report: dict[str, Any]) -> dict[str, Any]:
+def build_scorecard(
+    audit_report: dict[str, Any],
+    *,
+    source_size_report: dict[str, Any] | None = None,
+    measurements: dict[str, Any] | None = None,
+    measurement_repo_root: Path = REPO_ROOT,
+) -> dict[str, Any]:
+    if measurements is not None:
+        measurements = engineering_measurements.validate_measurements(
+            measurements, measurement_repo_root
+        )
     checks = _check_map(audit_report)
-    scored = [_category(definition, checks) for definition in CATEGORY_DEFINITIONS]
-    overall = round(sum(category.score for category in scored) / len(scored))
+    source_metrics = _source_size_metrics(source_size_report)
+    scored, measurement_evidence = _score_categories(
+        checks,
+        source_metrics,
+        measurements,
+    )
+    overall, completeness, conformance = _conformance_summary(scored)
+    audit_total = len(checks)
+    trend_metrics = {
+        "quality_audit_check_count": audit_total,
+        "quality_audit_pass_count": sum(1 for check in checks.values() if check["ok"]),
+        "quality_audit_fail_count": sum(
+            1 for check in checks.values() if not check["ok"]
+        ),
+        "evidence_completeness_percent": completeness,
+        "source_size": source_metrics,
+    }
+    measurement_view = measurements or {
+        "schema": MEASUREMENT_STATUS_SCHEMA,
+        "accepted_input_schema": MEASUREMENT_SCHEMA,
+        "status": "not_supplied",
+        "categories": measurement_evidence,
+    }
     return {
-        "schema": "uok.quality_scorecard.v1",
+        "schema": SCORECARD_SCHEMA,
+        "schema_compatibility": dict(SCHEMA_COMPATIBILITY),
+        "title": "UOK Repository Conformance Scorecard",
+        "score_semantics": "repository_conformance",
         "overall_score": overall,
         "grade": _grade(overall),
+        "repository_conformance": conformance,
         "quality_audit_ok": bool(audit_report.get("ok")),
         "categories": [category.__dict__ for category in scored],
-        "repeatability": {
-            "local_command": (
-                "powershell -NoProfile -ExecutionPolicy Bypass -File "
-                ".\\scripts\\uok_ops.ps1 -Action EngineeringEvidence"
-            ),
-            "ci_gate": "python scripts/engineering_evidence.py --stdout",
-            "publish_gate": (
-                "TechnologyAudit, Verify, EngineeringEvidence, "
-                "GithubReadiness, and GithubPrChecks"
-            ),
-        },
+        "measurement_evidence": measurement_view,
+        "trend_metrics": trend_metrics,
+        "limitations": list(LIMITATIONS),
+        "repeatability": dict(REPEATABILITY),
     }

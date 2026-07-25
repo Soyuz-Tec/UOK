@@ -1,4 +1,6 @@
-FROM python:3.14-slim AS openapi-generate
+# Docker Hub OCI index digest verified 2026-07-24 with
+# `docker buildx imagetools inspect --raw` plus an independent SHA-256 readback.
+FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6 AS openapi-generate
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -20,7 +22,8 @@ COPY web/src ./web/src
 RUN python scripts/export_openapi_schema.py
 RUN python scripts/generate_frontend_module_catalog.py --check
 
-FROM node:26-alpine AS web-build
+# Docker Hub OCI index digest verified 2026-07-24 with the same registry readback.
+FROM node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66 AS web-build
 
 WORKDIR /app/web
 COPY web/package.json web/package-lock.json ./
@@ -31,7 +34,17 @@ COPY modules /app/modules
 COPY --from=openapi-generate /app/web/src/generated ./src/generated
 RUN npm run generate:client && npm run build:client -- --outDir /app/web-dist
 
-FROM python:3.14-slim
+FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6
+
+ARG UOK_VERSION=development
+ARG UOK_REVISION=unknown
+ARG UOK_SOURCE_URL=https://github.com/Soyuz-Tec/UOK
+
+LABEL org.opencontainers.image.title="UOK" \
+      org.opencontainers.image.description="Unified Operating Kernel modular monolith" \
+      org.opencontainers.image.version="${UOK_VERSION}" \
+      org.opencontainers.image.revision="${UOK_REVISION}" \
+      org.opencontainers.image.source="${UOK_SOURCE_URL}"
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -59,4 +72,6 @@ RUN useradd -r -u 10001 uok && mkdir -p /data && chown -R uok:uok /data /app
 USER uok
 
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/ready', timeout=3).read()"]
 CMD ["python", "-m", "uvicorn", "uok.host.application:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1"]

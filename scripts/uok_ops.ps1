@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "DatabaseCapacity", "PlanningReleaseReadiness", "ContactsVerifierGroupCleanup", "BackupDb", "RestoreDb", "AsuhTest", "AutoStartInstall", "AutoStartStatus", "AutoStartVerify", "AutoStartDisable", "AutoStartEnable", "AutoStartUninstall", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
+    [ValidateSet("ToolchainPreflight", "Audit", "TechnologyAudit", "EngineeringEvidence", "UiProof", "Verify", "Rebuild", "Health", "DatabaseCapacity", "PlanningReleaseReadiness", "ContactsVerifierGroupCleanup", "BackupDb", "RestoreDb", "AsuhTest", "AutoStartInstall", "AutoStartStatus", "AutoStartVerify", "AutoStartDisable", "AutoStartEnable", "AutoStartUninstall", "GithubPreflight", "GithubReadiness", "GithubSecuritySetup", "GithubPrChecks")]
     [string]$Action = "Audit",
     [string]$BaseUrl = "http://127.0.0.1:18088",
     [string]$ProjectName = "uok",
@@ -22,10 +22,12 @@ param(
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $RepoRoot
-
 . (Join-Path $PSScriptRoot "uok_common_ops.ps1")
+. (Join-Path $PSScriptRoot "uok_toolchain_versions.ps1")
+. (Join-Path $PSScriptRoot "uok_toolchain_preflight.ps1")
 function Invoke-PowerShellScript {
     param([string[]]$Arguments)
+
     Invoke-Native "powershell" $Arguments
 }
 
@@ -47,66 +49,21 @@ function Invoke-UokHealth {
     }
 }
 
-. (Join-Path $PSScriptRoot "uok_db_ops.ps1")
-. (Join-Path $PSScriptRoot "uok_contacts_cleanup_ops.ps1")
-. (Join-Path $PSScriptRoot "uok_planning_release_ops.ps1")
-
-function Test-UokSourceSize {
-    Invoke-UokStep "Source-size guardrail" {
-        $roots = "src", "modules", "web\src", "tests", "scripts", "migrations"
-        $excluded = "\\node_modules\\|\\static\\app\\|\\generated\\|__pycache__|\\.pytest_cache"
-        $files = foreach ($root in $roots) {
-            if (Test-Path $root) {
-                Get-ChildItem $root -Recurse -File -Include *.py,*.ts,*.tsx,*.css,*.ps1,*.sql |
-                    Where-Object { $_.FullName -notmatch $excluded }
-            }
-        }
-        $violations = @()
-        foreach ($file in $files) {
-            $lines = (Get-Content -LiteralPath $file.FullName | Measure-Object -Line).Lines
-            if ($lines -gt 300) {
-                $relative = Resolve-Path -LiteralPath $file.FullName -Relative
-                $violations += "${relative}: $lines lines"
-            }
-        }
-        if ($violations.Count -gt 0) {
-            throw "Source-size violations:`n$($violations -join "`n")"
-        }
-        Write-Host "No scanned source files over 300 lines."
-    }
-}
-
-function Test-UokFolderOrganization {
-    Invoke-UokStep "Folder organization" {
-        $required = @(
-            "docs\ARCHITECTURE.md",
-            "docs\DOCUMENTATION_INDEX.md",
-            "docs\architecture\UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md",
-            "docs\operations\UOK_STANDARD_OPERATIONS.md",
-            "docs\operations\UOK_ASUH_TEST_EVENTS.md"
-        )
-        foreach ($path in $required) {
-            if (-not (Test-Path $path)) {
-                throw "Required documentation artifact missing: $path"
-            }
-        }
-        Get-ChildItem modules -Filter manifest.yaml -Recurse | ForEach-Object {
-            $moduleRoot = Split-Path -Parent $_.FullName
-            foreach ($folder in "backend", "web", "migrations", "tests") {
-                if (-not (Test-Path (Join-Path $moduleRoot $folder))) {
-                    throw "Module folder missing: $moduleRoot\$folder"
-                }
-            }
-        }
-        Write-Host "Required folders and documentation anchors are present."
-    }
+foreach ($helper in @(
+    "uok_db_ops.ps1",
+    "uok_contacts_cleanup_ops.ps1",
+    "uok_planning_release_ops.ps1",
+    "uok_ci_quality_ops.ps1",
+    "uok_repository_quality_ops.ps1"
+)) {
+    . (Join-Path $PSScriptRoot $helper)
 }
 
 function Invoke-UokAudit {
     Invoke-UokStep "Git whitespace audit" { Invoke-Native "git" @("diff", "--check") }
     Invoke-UokTechnologyAudit
     Invoke-UokStep "Compile Python" { Invoke-Native "python" @("-m", "compileall", "-q", "src", "modules", "tests", "conftest.py") }
-    Invoke-UokStep "Python tests" { Invoke-Native "python" @("scripts/run_python_tests.py") }
+    Invoke-UokCiQuality
     Invoke-UokStep "Python dependency audit" { Invoke-Native "python" @("-m", "pip_audit", "-r", "requirements-dev.txt") }
     Push-Location web
     try {
@@ -155,7 +112,6 @@ function Invoke-UokVerify {
     Invoke-UokAudit
     Push-Location web
     try {
-        Invoke-UokStep "Frontend tests" { Invoke-Native "npm" @("test") }
         Invoke-UokStep "Static frontend build" { Invoke-Native "npm" @("run", "build:static") }
     } finally {
         Pop-Location
@@ -167,14 +123,28 @@ function Invoke-UokVerify {
 }
 
 function Invoke-UokRebuild {
+    Assert-UokRebuildRecoveryQuiesced
+    $identity = Get-UokRebuildIdentity
     Invoke-UokDatabaseCapacityOffline
-    Invoke-UokStep "Rebuild local Podman stack" {
-        Invoke-Native "podman" @("compose", "-p", $ProjectName, "-f", $ComposeFile, "up", "-d", "--build")
-    }
+    Invoke-UokExactComposeRebuild -RuntimeProject $ProjectName -ComposePath $ComposeFile -Identity $identity
     Invoke-UokHealth
     Invoke-UokDatabaseCapacityLive
+    Assert-UokApiImageIdentity `
+        -RuntimeProject $ProjectName `
+        -ExpectedVersion $identity.Version `
+        -ExpectedRevision $identity.Revision
     Sync-UokApiRecoveryImageTag -RuntimeProject $ProjectName
-    if ($env:OS -eq "Windows_NT") { Invoke-PowerShellScript @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_autostart_ops.ps1", "-Action", "Refresh") }
+    if ($env:OS -eq "Windows_NT") {
+        Invoke-PowerShellScript @(
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            ".\scripts\uok_autostart_ops.ps1",
+            "-Action",
+            "Refresh"
+        )
+    }
 }
 
 function Invoke-UokDatabaseCapacityOffline {
@@ -186,7 +156,6 @@ function Invoke-UokDatabaseCapacityOffline {
         )
     }
 }
-
 function Invoke-UokDatabaseCapacityLive {
     Invoke-UokStep "Live database connection-capacity policy" {
         $apiContainer = "$ProjectName-api-1"
@@ -199,7 +168,6 @@ function Invoke-UokDatabaseCapacityLive {
         )
     }
 }
-
 function Invoke-UokDatabaseCapacity {
     Invoke-UokDatabaseCapacityOffline
     Invoke-UokDatabaseCapacityLive
@@ -267,13 +235,20 @@ function Invoke-UokGithubOperation {
 function Invoke-UokAutoStartOperation {
     param([string]$AutoStartAction)
     $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\scripts\uok_autostart_ops.ps1", "-Action", $AutoStartAction)
-    if ($AutoStartAction -eq "Install") { $arguments += @("-CheckIntervalMinutes", "$CheckIntervalMinutes") }
+    if ($AutoStartAction -eq "Install") {
+        $arguments += @("-CheckIntervalMinutes", "$CheckIntervalMinutes")
+    }
     if ($AutoStartAction -eq "Uninstall") {
         $arguments += "-ConfirmUninstall"
     }
     Invoke-PowerShellScript $arguments
 }
+if (Test-UokActionRequiresTargetToolchain -Action $Action) {
+    Assert-UokTargetToolchain -RepoRoot $RepoRoot -Force:($Action -eq "ToolchainPreflight")
+}
+
 switch ($Action) {
+    "ToolchainPreflight" { Write-Host "UOK target toolchain preflight passed." }
     "Audit" { Invoke-UokAudit }
     "TechnologyAudit" { Invoke-UokTechnologyAudit }
     "EngineeringEvidence" { Invoke-UokEngineeringEvidence }

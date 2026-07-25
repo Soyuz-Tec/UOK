@@ -13,7 +13,11 @@ from uok_planning_core._internal.analysis.analysis_schemas import (
     PlanningWhatIfSnapshotRequest,
 )
 from uok_planning_core._internal.delivery.api_contracts import PLANNING_MUTATION_RESPONSES
-from uok_planning_core._internal.delivery.api_support import require_planning_read, run_planning_command
+from uok_planning_core._internal.delivery.api_support import (
+    PLANNING_READ_FAILURES,
+    require_planning_read,
+    run_planning_command,
+)
 from uok_planning_core._internal.analysis.what_if import list_what_if_snapshots, what_if_detail, what_if_or_error
 from uok_planning_core._internal.analysis.risk_analysis import analysis_detail, list_risk_analyses, risk_analysis_or_error
 from uok_planning_core._internal.analysis.optimization import list_optimizations, list_recommendations, optimization_detail, optimization_or_error
@@ -26,6 +30,10 @@ from uok.kernel.command_contracts import (
 from uok.kernel.security import Actor
 
 router = APIRouter(prefix="/api/planning", tags=["planning-analysis"])
+WHAT_IF_READ_ERROR = "Planning project was not found or its what-if snapshots are unavailable."
+RISK_READ_ERROR = "Planning project was not found or its risk analyses are unavailable."
+OPTIMIZATION_READ_ERROR = "Planning project was not found or its optimizations are unavailable."
+RECOMMENDATION_READ_ERROR = "Planning project was not found or its recommendations are unavailable."
 AnalysisIdempotencyKey = Annotated[
     str,
     Header(
@@ -63,8 +71,8 @@ def project_what_if_snapshots(
     require_planning_read(db, actor)
     try:
         return list_what_if_snapshots(db, actor, project_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": WHAT_IF_READ_ERROR}) from exc
 
 
 @router.get("/projects/{project_id}/what-if-snapshots/{snapshot_id}")
@@ -77,8 +85,8 @@ def project_what_if_snapshot(
     require_planning_read(db, actor)
     try:
         return what_if_detail(what_if_or_error(db, actor, project_id, snapshot_id))
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": WHAT_IF_READ_ERROR}) from exc
 
 
 @router.post("/projects/{project_id}/risk-analyses", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
@@ -101,8 +109,8 @@ def project_risk_analyses(project_id: str, actor: Actor = Depends(current_actor)
     require_planning_read(db, actor)
     try:
         return list_risk_analyses(db, actor, project_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": RISK_READ_ERROR}) from exc
 
 
 @router.get("/projects/{project_id}/risk-analyses/{run_id}")
@@ -110,8 +118,8 @@ def project_risk_analysis(project_id: str, run_id: str, actor: Actor = Depends(c
     require_planning_read(db, actor)
     try:
         return analysis_detail(risk_analysis_or_error(db, actor, project_id, run_id))
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": RISK_READ_ERROR}) from exc
 
 
 @router.post("/projects/{project_id}/optimizations", responses=PLANNING_MUTATION_RESPONSES, response_model=None)
@@ -124,8 +132,8 @@ def project_optimizations(project_id: str, actor: Actor = Depends(current_actor)
     require_planning_read(db, actor)
     try:
         return list_optimizations(db, actor, project_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": OPTIMIZATION_READ_ERROR}) from exc
 
 
 @router.get("/projects/{project_id}/optimizations/{run_id}")
@@ -133,8 +141,8 @@ def project_optimization(project_id: str, run_id: str, actor: Actor = Depends(cu
     require_planning_read(db, actor)
     try:
         return optimization_detail(db, actor, optimization_or_error(db, actor, project_id, run_id))
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": OPTIMIZATION_READ_ERROR}) from exc
 
 
 @router.get("/projects/{project_id}/recommendations")
@@ -142,8 +150,8 @@ def project_recommendations(project_id: str, actor: Actor = Depends(current_acto
     require_planning_read(db, actor)
     try:
         return list_recommendations(db, actor, project_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": RECOMMENDATION_READ_ERROR}) from exc
 
 
 @router.post("/projects/{project_id}/recommendations/{recommendation_id}/decision", responses=PLANNING_MUTATION_RESPONSES, response_model=None)

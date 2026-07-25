@@ -20,7 +20,7 @@ if (packageJson.version !== "1.34.17") {
 }
 
 const adapterPath = path.join(redoclyRoot, "lib", "js-yaml", "index.js");
-const source = fs.readFileSync(adapterPath, "utf8");
+let adapterSource = fs.readFileSync(adapterPath, "utf8");
 const vulnerableAdapter = `const js_yaml_1 = require("js-yaml");
 const DEFAULT_SCHEMA_WITHOUT_TIMESTAMP = js_yaml_1.JSON_SCHEMA.extend({
     implicit: [js_yaml_1.types.merge],
@@ -51,16 +51,28 @@ const parseYaml = (str, opts) => {
     return documents[0];
 };`;
 
-if (source.includes(patchedAdapter)) {
-  process.exit(0);
-}
-if (!source.includes(vulnerableAdapter)) {
+if (adapterSource.includes(vulnerableAdapter)) {
+  adapterSource = adapterSource.replace(vulnerableAdapter, patchedAdapter);
+  fs.writeFileSync(adapterPath, adapterSource, "utf8");
+} else if (!adapterSource.includes(patchedAdapter)) {
   throw new Error(
     "The Redocly js-yaml adapter no longer matches the reviewed source.",
   );
 }
-fs.writeFileSync(
-  adapterPath,
-  source.replace(vulnerableAdapter, patchedAdapter),
-  "utf8",
-);
+
+const utilsPath = path.join(redoclyRoot, "lib", "utils.js");
+let utilsSource = fs.readFileSync(utilsPath, "utf8");
+const vulnerableMinimatchImport = `const minimatch = require("minimatch");`;
+const patchedMinimatchImport = `const minimatch = require("minimatch").minimatch;`;
+
+if (utilsSource.includes(vulnerableMinimatchImport)) {
+  utilsSource = utilsSource.replace(
+    vulnerableMinimatchImport,
+    patchedMinimatchImport,
+  );
+  fs.writeFileSync(utilsPath, utilsSource, "utf8");
+} else if (!utilsSource.includes(patchedMinimatchImport)) {
+  throw new Error(
+    "The Redocly minimatch import no longer matches the reviewed source.",
+  );
+}

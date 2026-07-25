@@ -14,7 +14,11 @@
     "generate:modules": "python ../scripts/generate_frontend_module_catalog.py",
     "check:contracts": "python ../scripts/check_generated_contracts.py",
     "test": "vitest run",
+    "test:coverage": "python ../scripts/run_frontend_coverage.py",
     "test:ui-proof": "playwright test",
+    "lint": "biome lint ../web/src ../web/e2e ../modules",
+    "format:check": "biome format package.json vitest.coverage.config.ts ../biome.json",
+    "typecheck": "tsc -b",
     "build:client": "tsc -b && vite build --base=/static/app/",
     "build": "npm run generate:api && npm run generate:modules && npm run build:client",
     "build:static": "npm run generate:api && npm run generate:modules && npm run build:client -- --outDir ../src/uok/static/app --emptyOutDir",
@@ -26,6 +30,7 @@
     "react-dom": "19.2.7"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.5",
     "@playwright/test": "1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -33,6 +38,7 @@
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.3",
+    "@vitest/coverage-v8": "4.1.9",
     "jsdom": "^29.1.1",
     "openapi-typescript": "^7.13.0",
     "typescript": "^5.9.3",
@@ -41,7 +47,8 @@
   },
   "overrides": {
     "@redocly/openapi-core": {
-      "js-yaml": "5.2.2"
+      "js-yaml": "5.2.2",
+      "minimatch": "10.2.5"
     }
   }
 }
