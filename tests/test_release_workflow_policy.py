@@ -144,9 +144,9 @@ def test_policy_rejects_unreviewed_action_commit() -> None:
 
 def test_policy_requires_exact_base_images_and_final_label_mapping() -> None:
     base = DOCKERFILE.replace(
-        "python:3.14-slim@sha256:"
-        "cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6",
-        "python:3.14-slim",
+        "python:3.14-alpine@sha256:"
+        "26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92",
+        "python:3.14-alpine",
         1,
     )
     label = DOCKERFILE.replace(

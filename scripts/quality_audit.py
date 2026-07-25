@@ -49,7 +49,7 @@ def check_runtime_stack() -> CheckResult:
     ci = read_text(".github/workflows/uok-ci.yml")
     problems: list[str] = []
     expected = {
-        "Dockerfile Python 3.14": "python:3.14-slim" in dockerfile,
+        "Dockerfile Python 3.14": "python:3.14-alpine" in dockerfile,
         "Dockerfile Node 26": "node:26-alpine" in dockerfile,
         "Compose PostgreSQL 18": "postgres:18-alpine" in compose,
         "CI PostgreSQL 18": "postgres:18-alpine" in ci,

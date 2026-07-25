@@ -2,12 +2,12 @@ from __future__ import annotations
 
 
 EXPECTED_BASES = (
-    "python:3.14-slim@sha256:"
-    "cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6",
+    "python:3.14-alpine@sha256:"
+    "26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92",
     "node:26-alpine@sha256:"
     "e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66",
-    "python:3.14-slim@sha256:"
-    "cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6",
+    "python:3.14-alpine@sha256:"
+    "26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92",
 )
 JOB_ORDER = (
     "validate",

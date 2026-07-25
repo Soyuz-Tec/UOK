@@ -46,12 +46,13 @@ digests are pinned.
    remote tag through GitHub's Git API and requires its peeled commit to be
    that same reviewed commit.
 5. Every Dockerfile base uses a readable tag plus a reviewed Docker Hub OCI
-   index digest. The 2026-07-24 pins are:
-   `python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6`
+   index digest. The current pins are:
+   `python:3.14-alpine@sha256:26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92`
    for both Python stages and
    `node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66`
    for the frontend stage. Registry manifest-digest output and an SHA-256 of
-   the raw registry index agreed for each pin.
+   the raw registry index agreed for each pin. ADR-0034 records the security
+   evidence and compatibility decision for the Python base change.
 6. Buildx is sourced from the exact reviewed v0.35.0 commit
    `a319e5b15052cf6557ceb666eb8ff6e32380b782`. Its BuildKit daemon is
    `moby/buildkit:v0.31.2@sha256:2f5adac4ecd194d9f8c10b7b5d7bceb5186853db1b26e5abd3a657af0b7e26ec`.

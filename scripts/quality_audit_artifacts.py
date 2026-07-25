@@ -24,6 +24,7 @@ REQUIRED_ARTIFACTS = (
     "docs/architecture/ADR-0031-http-response-and-public-surface-security.md",
     "docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md",
     "docs/architecture/ADR-0033-legacy-credential-retirement-and-auth-rate-limits.md",
+    "docs/architecture/ADR-0034-python-alpine-runtime-base.md",
     "docs/design/UOK_UI_DESIGN_POLICY.md",
     "docs/operations/UOK_STANDARD_OPERATIONS.md",
     "docs/operations/UOK_ASUH_TEST_EVENTS.md",
