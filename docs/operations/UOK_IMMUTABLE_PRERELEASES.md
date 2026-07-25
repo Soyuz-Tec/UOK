@@ -22,13 +22,19 @@ registry OCI index digest:
 
 | Stages | Reviewed input |
 |---|---|
-| OpenAPI generation and final runtime | `python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6` |
+| OpenAPI generation and final runtime | `python:3.14-alpine@sha256:26730869004e2b9c4b9ad09cab8625e81d256d1ce97e72df5520e806b1709f92` |
 | Frontend build | `node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66` |
 
-These values were resolved from Docker Hub on 2026-07-24. For each tag,
+These values were resolved from Docker Hub on 2026-07-25. For each tag,
 `docker buildx imagetools inspect <image> --format '{{.Manifest.Digest}}'`
 matched an independently calculated SHA-256 of the bytes returned by
 `docker buildx imagetools inspect <image> --raw`.
+
+The Python Alpine pin replaced the Debian slim pin after the exact hosted
+candidate reported 23 release-blocking Debian OS-package findings with no
+fixed versions. The same Trivy 0.70 database found zero `HIGH` or `CRITICAL`
+findings in the reviewed Alpine input. ADR-0034 records the alternatives,
+compatibility gates, and rollback boundary.
 
 Refresh a pin only in a reviewed source change. Retain the readable tag,
 confirm the new raw registry digest, run the release-policy tests, and rebuild
