@@ -12,6 +12,7 @@ from uok_release_evidence_common import (
     load_json,
     release_controls,
     sha256_file,
+    validate_repository_identity,
 )
 
 
@@ -23,8 +24,16 @@ def verify_release_evidence(directory: Path) -> dict[str, Any]:
     if manifest.get("tag") != f"UOK-{manifest.get('version', '')}":
         raise ReleaseEvidenceError("Release manifest tag and version do not match")
     image = manifest.get("image", {})
+    validate_repository_identity(
+        github_repository=str(manifest.get("github_repository", "")),
+        image_repository=str(image.get("repository", "")),
+    )
     if image.get("reference") != f"{image.get('repository')}@{image.get('digest')}":
         raise ReleaseEvidenceError("Release manifest image reference is inconsistent")
+    if image.get("published_tag") != (
+        f"{image.get('repository')}:{manifest.get('version')}"
+    ):
+        raise ReleaseEvidenceError("Release manifest published tag is inconsistent")
     if not DIGEST_PATTERN.fullmatch(str(image.get("digest", ""))):
         raise ReleaseEvidenceError("Release manifest image digest is invalid")
     if not DIGEST_PATTERN.fullmatch(str(image.get("config_digest", ""))):

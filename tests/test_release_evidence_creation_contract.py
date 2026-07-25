@@ -98,6 +98,30 @@ def _create_arguments(root: Path) -> dict[str, Any]:
             {"image_repository": "ghcr.io/Soyuz-Tec/UOK"},
             "Image repository must be a lowercase GHCR path",
         ),
+        (
+            {"image_repository": "ghcr.io/"},
+            "Image repository must be a lowercase GHCR path",
+        ),
+        (
+            {"image_repository": "ghcr.io/../uok"},
+            "Image repository must be a lowercase GHCR path",
+        ),
+        (
+            {"image_repository": "evil.example/ghcr.io/soyuz-tec/uok"},
+            "Image repository must be a lowercase GHCR path",
+        ),
+        (
+            {"image_repository": "ghcr.io/soyuz-tec/uok?tag=latest"},
+            "Image repository must be a lowercase GHCR path",
+        ),
+        (
+            {"image_repository": "ghcr.io/other/uok"},
+            "Image repository must be a lowercase GHCR path",
+        ),
+        (
+            {"github_repository": "Soyuz-Tec/UOK\n`unsafe`"},
+            "GitHub repository must use the owner/name form",
+        ),
     ],
 )
 def test_release_identity_validation_preserves_errors_and_order(

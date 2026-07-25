@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from hashlib import sha256
 from threading import RLock
 from time import monotonic
@@ -15,7 +14,6 @@ from ..kernel_models import Membership, Organization, User
 from ..seed import ORG_NAME
 from ..util import hash_password, password_needs_rehash, verify_password
 from .auth_policy import (
-    build_legacy_sha256_login_deadline,
     is_valid_email,
     normalized_email,
 )
@@ -33,7 +31,6 @@ AUTH_ATTEMPTS_LOCK = RLock()
 AUTH_RATE_LIMIT_WINDOW_SECONDS = 5 * 60
 AUTH_RATE_LIMIT_MAX_ATTEMPTS = 12
 AUTH_RATE_LIMIT_MAX_KEYS = 1024
-LEGACY_SHA256_LOGIN_DEADLINE = build_legacy_sha256_login_deadline()
 
 
 def auth_rate_key(scope: str, identity: str) -> str:
@@ -104,14 +101,6 @@ def clear_auth_rate_key(key: str) -> None:
         AUTH_ATTEMPTS.pop(key, None)
 
 
-def legacy_sha256_login_migration_active(
-    *,
-    now: datetime | None = None,
-) -> bool:
-    deadline = LEGACY_SHA256_LOGIN_DEADLINE
-    return deadline is not None and (now or datetime.now(timezone.utc)) < deadline
-
-
 def request_client_rate_key(scope: str, request: Request) -> str:
     host = request.client.host if request.client else "unknown"
     return auth_rate_key(f"{scope}-client", host)
@@ -127,11 +116,7 @@ def login(
     client_rate_key = request_client_rate_key("login", request)
     check_auth_rate_limits(client_rate_key, rate_key)
     user = db.scalar(select(User).where(User.username == req.username))
-    if not user or not verify_password(
-        req.password,
-        user.password_hash,
-        allow_legacy_sha256=legacy_sha256_login_migration_active(),
-    ):
+    if not user or not verify_password(req.password, user.password_hash):
         record_auth_attempts(client_rate_key, rate_key)
         raise HTTPException(status_code=401, detail="Invalid username or password")
     if password_needs_rehash(user.password_hash):

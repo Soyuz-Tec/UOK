@@ -11,6 +11,37 @@ from uok.host.http_security import (
 )
 
 
+EXPECTED_APP_CSP = "; ".join(
+    (
+        "default-src 'self'",
+        "base-uri 'self'",
+        "connect-src 'self'",
+        "font-src 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+        "img-src 'self' data:",
+        "manifest-src 'self'",
+        "object-src 'none'",
+        "script-src 'self'",
+        "style-src 'self' 'unsafe-inline'",
+    )
+)
+EXPECTED_LOCAL_DOCS_CSP = "; ".join(
+    (
+        "default-src 'none'",
+        "base-uri 'none'",
+        "connect-src 'self'",
+        "font-src 'self' data: https://cdn.jsdelivr.net",
+        "form-action 'none'",
+        "frame-ancestors 'none'",
+        "img-src 'self' data: https://fastapi.tiangolo.com",
+        "object-src 'none'",
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+    )
+)
+
+
 def security_test_app(environment: dict[str, str]) -> FastAPI:
     settings = build_http_security_settings(environment)
     app = FastAPI(**fastapi_docs_urls(settings))
@@ -50,11 +81,11 @@ def test_local_mode_preserves_api_docs_with_scoped_csp() -> None:
     with TestClient(app) as client:
         docs = client.get("/docs")
         assert docs.status_code == 200
-        assert "https://cdn.jsdelivr.net" in docs.headers["content-security-policy"]
+        assert docs.headers["content-security-policy"] == EXPECTED_LOCAL_DOCS_CSP
 
         response = client.get("/")
         assert response.status_code == 200
-        assert "https://cdn.jsdelivr.net" not in response.headers["content-security-policy"]
+        assert response.headers["content-security-policy"] == EXPECTED_APP_CSP
         assert response.headers["x-content-type-options"] == "nosniff"
         assert response.headers["x-frame-options"] == "DENY"
         assert response.headers["referrer-policy"] == "no-referrer"

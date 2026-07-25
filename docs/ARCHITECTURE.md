@@ -154,7 +154,7 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - ADR-0030: `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md`
 - ADR-0031: `docs/architecture/ADR-0031-http-response-and-public-surface-security.md`
 - ADR-0032: `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md`
-- ADR-0033: `docs/architecture/ADR-0033-bounded-legacy-credential-migration-and-auth-rate-limits.md`
+- ADR-0033: `docs/architecture/ADR-0033-legacy-credential-retirement-and-auth-rate-limits.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
