@@ -20,10 +20,34 @@ CHECKSUM_PATTERN = re.compile(
 RELEASE_TAG_RULESET_ID = 19_715_390
 RELEASE_TAG_RULESET_NAME = "UOK immutable release tags"
 RELEASE_TAG_PATTERN = "refs/tags/UOK-*"
+REPOSITORY_COMPONENT = r"[A-Za-z0-9](?:[A-Za-z0-9_.-]{0,98}[A-Za-z0-9])?"
+LOWERCASE_REPOSITORY_COMPONENT = r"[a-z0-9](?:[a-z0-9_.-]{0,98}[a-z0-9])?"
+GITHUB_REPOSITORY_PATTERN = re.compile(
+    rf"{REPOSITORY_COMPONENT}/{REPOSITORY_COMPONENT}\Z"
+)
+GHCR_REPOSITORY_PATTERN = re.compile(
+    rf"ghcr\.io/{LOWERCASE_REPOSITORY_COMPONENT}/"
+    rf"{LOWERCASE_REPOSITORY_COMPONENT}\Z"
+)
 
 
 class ReleaseEvidenceError(RuntimeError):
     """Raised when release evidence is incomplete, unsafe, or inconsistent."""
+
+
+def validate_repository_identity(
+    *,
+    github_repository: str,
+    image_repository: str,
+) -> None:
+    if not GITHUB_REPOSITORY_PATTERN.fullmatch(github_repository):
+        raise ReleaseEvidenceError("GitHub repository must use the owner/name form")
+    expected_image_repository = f"ghcr.io/{github_repository.lower()}"
+    if (
+        not GHCR_REPOSITORY_PATTERN.fullmatch(image_repository)
+        or image_repository != expected_image_repository
+    ):
+        raise ReleaseEvidenceError("Image repository must be a lowercase GHCR path")
 
 
 def load_json(path: Path) -> Any:

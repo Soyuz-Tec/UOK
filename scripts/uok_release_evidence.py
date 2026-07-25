@@ -22,6 +22,7 @@ from uok_release_evidence_common import (
     SAFE_NAME_PATTERN as SAFE_NAME_PATTERN,
     ReleaseEvidenceError as ReleaseEvidenceError,
     release_controls,
+    validate_repository_identity,
 )
 from uok_release_evidence_verify import (
     verify_release_evidence as verify_release_evidence,
@@ -33,6 +34,7 @@ def _validate_release_identity(
     tag: str,
     version: str,
     source_commit: str,
+    github_repository: str,
     image_repository: str,
     image_digest: str,
     image_config_digest: str,
@@ -49,10 +51,10 @@ def _validate_release_identity(
         raise ReleaseEvidenceError(
             "Image configuration digest must be a lowercase sha256 digest"
         )
-    if image_repository != image_repository.lower() or not image_repository.startswith(
-        "ghcr.io/"
-    ):
-        raise ReleaseEvidenceError("Image repository must be a lowercase GHCR path")
+    validate_repository_identity(
+        github_repository=github_repository,
+        image_repository=image_repository,
+    )
 
 
 def _validated_release_inputs(
@@ -181,6 +183,7 @@ def create_release_evidence(
         tag=tag,
         version=version,
         source_commit=source_commit,
+        github_repository=github_repository,
         image_repository=image_repository,
         image_digest=image_digest,
         image_config_digest=image_config_digest,

@@ -86,11 +86,12 @@ The module release contract adds module-owned test and verifier evidence to the 
 contract. Application startup uses the runtime scope so OCI images may omit `modules/*/tests`;
 local Audit, CI, and candidate catalog discovery use the release scope before publication.
 
-## Legacy password migration
+## Legacy password retirement
 
-New and reset credentials are Argon2id-only. A legacy 64-hex SHA-256 credential is rejected by
-default. Before upgrading a persisted database, count affected users by organization without
-reading or exporting the hashes:
+New, reset, seeded, and verified credentials are Argon2id-only. UOK does not
+accept a legacy 64-hex SHA-256 credential. Before upgrading a persisted
+database, count affected users by organization without reading or exporting
+the hashes:
 
 ```sql
 SELECT m.organization_id, count(*) AS legacy_password_count
@@ -101,17 +102,15 @@ GROUP BY m.organization_id
 ORDER BY m.organization_id;
 ```
 
-If the count is zero, keep legacy migration disabled. If it is nonzero, take and restore-test a
-backup, arrange an approved password-reset or IAM path for inactive users, then set both
-`UOK_LEGACY_SHA256_LOGIN_MIGRATION=1` and an explicit UTC
-`UOK_LEGACY_SHA256_LOGIN_UNTIL=<timestamp>Z`. Startup rejects missing, malformed, expired, or
-more-than-14-day windows. During the bounded window only, a successful legacy login is immediately
-rehash-committed as Argon2id before a token is issued. Wrong, disabled, and expired attempts remain
-the same generic 401. The deadline is checked on every login, including in a long-running process.
+If the count is nonzero, stop promotion, take and restore-test a backup, and
+use an authorized password-reset or external-IAM path to replace every legacy
+credential. There is no application fallback or environment flag that enables
+weak verification. Wrong, legacy, malformed, and unknown credentials return
+the same generic 401.
 
-Monitor only the credential-free count above. Promotion requires zero remaining legacy hashes,
-removal of both migration variables, a restart, and a successful Argon2 login proof. The committed
-Compose configuration intentionally never enables this migration mode.
+Promotion requires zero remaining legacy hashes, a restart, and successful
+Argon2id login proof. Retain only the credential-free count and the qualified
+backup/restore evidence; never read or export stored hashes.
 
 The application also applies hashed identity and immediate-client buckets. Login failures are
 recorded atomically under one process lock; successful login may clear only its identity bucket and

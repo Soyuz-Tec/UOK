@@ -141,6 +141,40 @@ def test_trivy_report_must_bind_the_qualified_image_id(tmp_path: Path) -> None:
         _create(tmp_path, **inputs)
 
 
+def test_verifier_rejects_semantically_rewritten_image_repository(
+    tmp_path: Path,
+) -> None:
+    _create(tmp_path, **_inputs(tmp_path))
+    manifest_path = tmp_path / MANIFEST_NAME
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["image"]["repository"] = "ghcr.io/other/uok"
+    manifest["image"]["reference"] = f"ghcr.io/other/uok@{DIGEST}"
+    manifest["image"]["published_tag"] = "ghcr.io/other/uok:3.1.0-alpha.3"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(
+        ReleaseEvidenceError,
+        match="Image repository must be a lowercase GHCR path",
+    ):
+        verify_release_evidence(tmp_path)
+
+
+def test_verifier_rejects_semantically_rewritten_published_tag(
+    tmp_path: Path,
+) -> None:
+    _create(tmp_path, **_inputs(tmp_path))
+    manifest_path = tmp_path / MANIFEST_NAME
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["image"]["published_tag"] = "ghcr.io/soyuz-tec/uok:other"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    with pytest.raises(
+        ReleaseEvidenceError,
+        match="Release manifest published tag is inconsistent",
+    ):
+        verify_release_evidence(tmp_path)
+
+
 def test_non_image_trivy_report_fails_closed(tmp_path: Path) -> None:
     inputs = _inputs(tmp_path)
     _write_json(

@@ -92,7 +92,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md` | Closed all-table tenant inventory, least-privileged PostgreSQL roles, dormant fail-closed policies, and evidence-gated RLS activation | PostgreSQL ownership, role/grant topology, tenant classification, RLS policy, activation gate, or live proof changes |
 | `docs/architecture/ADR-0031-http-response-and-public-surface-security.md` | Fail-closed API docs exposure, trusted hosts, HTTPS-derived HSTS, and response-security headers | Public HTTP surface, proxy trust, host validation, HSTS, CSP, or security-header behavior changes |
 | `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md` | Exact-tag build-once prereleases, immutable image digest, vulnerability gate, SBOMs, attestations, and rollback evidence | Release identity, OCI publication, scan severity, SBOM, provenance, attestation, or prerelease policy changes |
-| `docs/architecture/ADR-0033-bounded-legacy-credential-migration-and-auth-rate-limits.md` | Default-off time-bounded legacy credential migration and fail-closed bounded authentication rate limits | Password hashing, legacy credential migration, login response, rate-limit, or production ingress controls change |
+| `docs/architecture/ADR-0033-legacy-credential-retirement-and-auth-rate-limits.md` | Argon2id-only credential retirement and fail-closed bounded authentication rate limits | Password hashing, credential retirement, login response, rate-limit, or production ingress controls change |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/planning-data-boundary-inventory-2026-07-15.md` | Pre-refactor evidence of Planning reads across capability-module data boundaries | A correction is needed to the dated leak inventory or its audit method |
@@ -225,7 +225,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md`
 - `docs/architecture/ADR-0031-http-response-and-public-surface-security.md`
 - `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md`
-- `docs/architecture/ADR-0033-bounded-legacy-credential-migration-and-auth-rate-limits.md`
+- `docs/architecture/ADR-0033-legacy-credential-retirement-and-auth-rate-limits.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/planning-data-boundary-inventory-2026-07-15.md`
 - `docs/architecture/planning-data-boundary-fix-2026-07-15.md`
