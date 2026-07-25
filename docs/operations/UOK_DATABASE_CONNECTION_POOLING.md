@@ -12,6 +12,11 @@ worker and one replica. PgBouncer is deliberately not deployed in this profile;
 its activation conditions are recorded in
 `docs/architecture/ADR-0024-database-connection-pooling.md`.
 
+The local profile still uses its bootstrap database role. The production role
+and tenant-policy foundation is defined separately by ADR-0030 and
+`docs/operations/UOK_DATABASE_SECURITY.md`. That foundation is not active in
+the shared local stack and does not change this pooling topology.
+
 ## Runtime Settings
 
 | Environment setting | Local default | Validation and purpose |
@@ -184,6 +189,12 @@ URL. Production automatic schema creation and local seeding remain disabled.
 Prepared statements, transaction-mode feature compatibility, least-privileged
 roles, pool statistics, outage behavior, and rollback must be runtime-proven
 before promotion.
+
+Any future RLS activation must additionally prove transaction-local
+`uok.organization_id` assignment and cleanup across every pool checkout,
+commit, rollback, exception, cancellation, and tenant switch. Session-global
+tenant context is prohibited because a pooled connection could retain the
+prior request's organization.
 
 ## Rollback
 

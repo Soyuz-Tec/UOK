@@ -1,0 +1,39 @@
+name: Question
+description: Ask a focused UOK usage, architecture, or contributor question.
+title: "question: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for public, non-sensitive questions. Report vulnerabilities privately through SECURITY.md and never include secrets or personal data.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Question area
+      options:
+        - Usage or local operation
+        - Architecture or module boundary
+        - Contributing or development workflow
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: State the single question and the outcome you need.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Relevant context
+      description: Include the exact commit or tag, environment, and sanitized evidence when relevant.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I removed credentials, secrets, personal data, and private database content.
+          required: true

@@ -12,7 +12,7 @@ from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatc
 
 
 PASSWORD_HASHER = PasswordHasher(time_cost=2, memory_cost=19456, parallelism=1)
-LEGACY_SHA256_LENGTH = 64
+
 
 def dumps(value: Any) -> str:
     def default(obj: Any) -> Any:
@@ -35,15 +35,24 @@ def hash_password(password: str) -> str:
     return PASSWORD_HASHER.hash(password)
 
 
-def verify_password(password: str, password_hash: str) -> bool:
+def verify_password(
+    password: str,
+    password_hash: str,
+    *,
+    allow_legacy_sha256: bool = False,
+) -> bool:
     if password_hash.startswith("$argon2"):
         try:
             return PASSWORD_HASHER.verify(password_hash, password)
         except (InvalidHashError, VerificationError, VerifyMismatchError):
             return False
-    if len(password_hash) == LEGACY_SHA256_LENGTH:
-        legacy_hash = sha256(password.encode("utf-8")).hexdigest()
-        return compare_digest(legacy_hash, password_hash)
+    if (
+        allow_legacy_sha256
+        and len(password_hash) == 64
+        and all(character in "0123456789abcdefABCDEF" for character in password_hash)
+    ):
+        candidate = sha256(password.encode("utf-8")).hexdigest()
+        return compare_digest(candidate, password_hash.lower())
     return False
 
 

@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from uok_planning_core._internal.persistence.models import PlanningAnalysisRecommendation, PlanningAnalysisRun, PlanningTask
 from uok_planning_core._internal.analysis.optimizer_engine import OPTIMIZER_ENGINE_NAME, OPTIMIZER_ENGINE_VERSION, run_optimizer
-from uok_planning_core._internal.analysis.risk_analysis import analysis_checksum, analysis_integrity
+from uok_planning_core._internal.analysis.risk_analysis import analysis_checksum, analysis_integrity, analysis_json_object
 from uok_planning_core._internal.analysis.risk_engine import require_current_snapshot_cpm
 from uok_planning_core._internal.scheduling.scheduler import apply_schedule, parse_planning_date, project_calendar, project_or_error, task_or_error
 from uok_planning_core._internal.scheduling.schedule_math import working_duration
@@ -76,7 +76,7 @@ def optimization_or_error(db: Session, actor: Actor, project_id: str, run_id: st
 
 
 def optimization_metadata(db: Session, actor: Actor, row: PlanningAnalysisRun) -> dict[str, Any]:
-    result = loads(row.result_json, {})
+    result = analysis_json_object(row.result_json)
     recommendations = list_recommendations(db, actor, row.project_id, row.id)
     return {
         "id": row.id, "project_id": row.project_id, "snapshot_id": row.snapshot_id,
@@ -92,8 +92,8 @@ def optimization_metadata(db: Session, actor: Actor, row: PlanningAnalysisRun) -
 def optimization_detail(db: Session, actor: Actor, row: PlanningAnalysisRun) -> dict[str, Any]:
     return {
         **optimization_metadata(db, actor, row),
-        "inputs": loads(row.inputs_json, {}), "limits": loads(row.limits_json, {}),
-        "result": loads(row.result_json, {}),
+        "inputs": analysis_json_object(row.inputs_json), "limits": analysis_json_object(row.limits_json),
+        "result": analysis_json_object(row.result_json),
     }
 
 

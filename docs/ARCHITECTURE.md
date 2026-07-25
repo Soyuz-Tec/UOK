@@ -27,6 +27,7 @@ Operator browser
 | Backend host | `src/uok/host` | FastAPI application/lifespan, DI, engine/session/pool ownership, manifest provider resolution, ORM registration, router/command/policy/report composition, and static asset serving. |
 | Shared kernel | `src/uok/kernel`, `src/uok/kernel_models.py` | Single declarative metadata contract, host-configured module-runtime port, and product-neutral organization, identity, governance, lifecycle, command-log, and event mappings. |
 | Database connectivity | `src/uok/host/database.py`, `src/uok/host/db_pool.py` | Validated process-local SQLAlchemy pooling, stale-connection pre-ping, safe telemetry, bounded timeout behavior, and session lifecycle. |
+| Database security foundation | `src/uok/database_security.py`, `deploy/postgres/database-security-foundation.sql` | Manifest/ORM-derived all-table tenant inventory plus dormant least-privilege PostgreSQL roles and fail-closed tenant policies. RLS activation remains blocked until trusted transaction context, authentication, and pool cleanup are qualified. |
 | Module packages | `modules/<module_name>` | Module manifest, backend package, module-owned ORM mappings, module-local React source and CSS, module tests, migrations, candidate verifier scenarios, and behavior. |
 | Frontend shell | `web/src` | React + TypeScript + Vite workbench shell, navigation, shared controls and tokens, typed module surface contract, and generated API/module catalogs. |
 | Database baseline | `migrations/001_initial_baseline.sql` | Initial shared candidate schema plus schema-version evidence. Future schema changes must be migration-gated and module-owned where applicable. |
@@ -184,6 +185,10 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - ADR-0028: `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
 - ADR-0029: `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
 - ADR-0030: `docs/architecture/ADR-0030-request-authoritative-frontend-async-boundary.md`
+- ADR-0030: `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md`
+- ADR-0031: `docs/architecture/ADR-0031-http-response-and-public-surface-security.md`
+- ADR-0032: `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md`
+- ADR-0033: `docs/architecture/ADR-0033-bounded-legacy-credential-migration-and-auth-rate-limits.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -191,6 +196,11 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - Windows Podman sign-in recovery: `docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`
 - Contacts Core operations: `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`
 - Database connection-pooling operations: `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`
+- PostgreSQL database-security operations: `docs/operations/UOK_DATABASE_SECURITY.md`
+- CI quality and evidence gates: `docs/operations/UOK_CI_QUALITY_GATES.md`
+- Reliability and recovery operations: `docs/operations/UOK_RELIABILITY_AND_RECOVERY.md`
+- Immutable prerelease operations: `docs/operations/UOK_IMMUTABLE_PRERELEASES.md`
+- Engineering maturity gap-closure plan: `docs/governance/UOK_LEVEL4_ENGINEERING_MATURITY_PLAN.md`
 - ASUH test events: `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - GitHub engineering guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
 - AI operations kernel architecture: `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md`
@@ -263,6 +273,7 @@ Before publishing a candidate, run:
 
 ```powershell
 python -m compileall -q src modules tests conftest.py
+python scripts/verify_database_security.py
 python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
 python scripts/validate_container_module_assets.py
 python scripts/run_python_tests.py

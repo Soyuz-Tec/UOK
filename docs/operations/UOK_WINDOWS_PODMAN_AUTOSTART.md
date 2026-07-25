@@ -21,7 +21,11 @@ Windows sign-in or repeating time trigger
   -> maintenance-disable check and exclusive lock
   -> validated named Podman machine and pinned connection
   -> start the machine only when the connection is unavailable
-  -> start existing image-pinned UOK db/api containers when present
+  -> require the installed database and files volume fingerprints
+  -> require db/api containers to mount those exact named volumes at the
+     governed destinations and use the pinned images
+  -> start the validated existing UOK db/api containers when present
+  -> bounded restart when the running API is unhealthy
   -> frozen Compose fallback only when a container is missing
   -> PostgreSQL health plus UOK identity/version health verification
   -> bounded structured local log and exit status
@@ -30,7 +34,10 @@ Windows sign-in or repeating time trigger
 The automatic path never builds, pulls, removes, prunes, recreates an existing
 service container, deletes an existing volume or Podman machine, restores a
 database, or stops unrelated containers. The frozen fallback can create a
-missing UOK service container and its required local network or volume.
+missing UOK service container and local network while attaching only the
+already-verified named volumes. A same-label/image container with a bind mount,
+missing mount, or different named volume fails before it can be started or
+accepted.
 
 ## Prerequisites
 
@@ -41,6 +48,16 @@ Before installation:
    Compose is accepted when it is the available verified provider.
 3. Run `Rebuild` at least once so the expected API and PostgreSQL images exist.
 4. Confirm `http://127.0.0.1:18088/health` returns the expected UOK candidate.
+
+`Rebuild` must run from a clean commit. It stamps the API image with the UOK
+version and exact Git revision, verifies those labels on the running container,
+then freezes that exact image ID and both existing data-volume fingerprints
+into the managed recovery payload.
+
+An installed one-minute recovery task must be maintenance-disabled and no
+longer running before `Rebuild`. Leave it disabled if rebuild or inspection
+fails. After a successful refresh, run `AutoStartEnable` and `AutoStartVerify`;
+the final accepted state has `Disabled=False`.
 
 The installer refuses a missing machine, connection, image, provider, or a
 same-named foreign Scheduled Task.
@@ -90,11 +107,13 @@ credential-free database-capacity environment as an immutable release under:
 %LOCALAPPDATA%\UOK\startup\releases\<release-id>\
 ```
 
-The generated configuration records the source commit and whether its working
-tree was clean or dirty, UOK version, periodic start boundary, check interval,
+The installer refuses a dirty worktree or image labels that do not match the
+source commit and version. The generated configuration records the clean source
+commit, verified image version and revision, periodic start boundary, check interval,
 Podman machine and connection, Podman and Compose-provider paths, expected image
-IDs, payload paths, and SHA-256 hashes. It does not contain passwords, tokens,
-database URLs, or environment values.
+IDs, the database and files volume names plus creation fingerprints, payload
+paths, and SHA-256 hashes. It does not contain passwords, tokens, database URLs,
+or environment values.
 
 Using a frozen payload prevents sign-in recovery from reading a partially
 hydrated OneDrive worktree or reconciling containers from an unreviewed branch.
@@ -112,15 +131,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 ```
 
 `AutoStartStatus` is read-only. It reports ownership, task state, last result,
-payload integrity, maintenance mode, source commit, check interval, and
+payload integrity, whether exact volume identity is configured, the database
+and files volume names, maintenance mode, source commit, check interval, and
 configuration path. It does not start Podman or UOK.
 
 `AutoStartVerify` refuses maintenance-disabled, drifted, or hash-invalid state;
 starts the exact managed Scheduled Task; waits up to its bounded execution
 window for a new run; and requires task result `0` plus HTTP health with the
 configured UOK name and version. A controlled recovery test may stop only the
-UOK API and database containers before running verification. Do not stop the
-shared Podman machine when unrelated local projects are active.
+stateless UOK API before running verification. Do not remove either data volume,
+delete the database container, or stop the shared Podman machine when unrelated
+local projects are active. Missing or recreated data volumes fail closed rather
+than allowing Compose to mask data loss with a fresh empty volume.
 
 Structured, sanitized JSON Lines logs are stored at:
 

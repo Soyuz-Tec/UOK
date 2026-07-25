@@ -163,7 +163,7 @@ Validated unchanged totals and surfaces:
 | Static production build | Passed |
 | Playwright UI proof | Passed: 19 tests / 1 expected skip |
 | TechnologyAudit | Passed |
-| EngineeringEvidence | Passed: score 98 / grade A |
+| EngineeringEvidence | Passed under the legacy v1 repository-conformance method: score 98 / grade A; evidence completeness was not represented and this is not a maturity rating |
 | Exact-source PostgreSQL Rebuild and `/health` | Passed |
 | All candidate verifiers | Passed: 12 of 12 |
 | Live desktop and 375-CSS-pixel browser proof | Passed |
@@ -206,7 +206,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
   `5800105a79ef5e8b9420b07c92f192746081d03f`
 - Engineering evidence:
   `var/evidence/engineering/uok_engineering_20260724T045549Z.json`
-  (local-only, clean head, score 98 / grade A).
+  (local-only, clean head, legacy v1 repository-conformance score 98 /
+  grade A; evidence completeness was not represented).
 - OCI API image digest:
   `8499cea58048e450cea588f55a579e3ec603fbfb4ab158f364e8dd0fab9514cf`
 - Database image digest:

@@ -21,9 +21,90 @@ dev = [
   "pytest==9.1.1",
   "httpx2==2.5.0",
   "pip-audit==2.10.0",
+  "coverage==7.15.2",
+  "mypy==2.3.0",
+  "ruff==0.16.0",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests", "modules"]
 addopts = "-q"
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+source_dirs = [
+  "src/uok",
+  "modules/agents.core/backend",
+  "modules/apps.manager/backend",
+  "modules/calendar.core/backend",
+  "modules/communications.core/backend",
+  "modules/compliance.core/backend",
+  "modules/contacts.core/backend",
+  "modules/intelligence.core/backend",
+  "modules/locations.core/backend",
+  "modules/planning.core/backend",
+  "modules/product.master/backend",
+  "modules/reports.core/backend",
+  "modules/routes.core/backend",
+  "modules/shipments.core/backend",
+]
+omit = [
+  "modules/*/migrations/*",
+  "modules/*/tests/*",
+  "modules/*/verify/*",
+]
+
+[tool.coverage.report]
+# Full 204-file sequential baseline: 87.95% combined statement/branch coverage.
+# The whole-number floor is deliberately rounded down for non-regression.
+fail_under = 87
+precision = 1
+show_missing = true
+skip_covered = true
+sort = "Cover"
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+  "raise NotImplementedError",
+]
+
+[tool.mypy]
+python_version = "3.14"
+files = [
+  "src/uok/kernel",
+  "scripts/run_python_tests.py",
+  "modules/*/backend/*/public_api.py",
+]
+follow_imports = "skip"
+ignore_missing_imports = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+strict_equality = true
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+[tool.ruff]
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+# These are explicit pre-gate debts. New violations outside these files fail CI.
+[tool.ruff.lint.per-file-ignores]
+"modules/calendar.core/backend/uok_calendar_core/commands.py" = ["F401"]
+"modules/planning.core/backend/uok_planning_core/_internal/analysis/optimization.py" = ["F401"]
+"modules/planning.core/backend/uok_planning_core/_internal/delivery/commands.py" = ["F401"]
+"modules/planning.core/backend/uok_planning_core/_internal/scheduling/read_model.py" = ["F401"]
+"modules/planning.core/tests/test_canonical_cpm.py" = ["E402"]
+"modules/planning.core/tests/test_cpm_validation.py" = ["E402"]
+"modules/planning.core/tests/test_planning_database_invariants.py" = ["F401"]
+"modules/planning.core/tests/test_schedule_graph.py" = ["E402"]
+"modules/planning.core/verify/runtime/planning_scale_benchmark.py" = ["E402"]
+"scripts/generate_frontend_module_catalog.py" = ["F841"]
+"src/uok/host/application.py" = ["E402"]
+"src/uok/host/database.py" = ["F401"]

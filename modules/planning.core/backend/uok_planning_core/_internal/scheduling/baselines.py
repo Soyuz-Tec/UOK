@@ -249,8 +249,8 @@ def _collection_delta(left: list[dict[str, Any]], right: list[dict[str, Any]]) -
 def _snapshot_or_error(row: PlanningBaseline) -> tuple[dict[str, Any], str | None]:
     try:
         snapshot = loads(row.snapshot_json, {})
-    except (TypeError, ValueError, json.JSONDecodeError) as exc:
-        return {}, f"Baseline snapshot is not valid JSON: {exc}"
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}, "Baseline snapshot JSON is invalid."
     if not isinstance(snapshot, dict):
         return {}, "Baseline snapshot must be a JSON object."
     return snapshot, None
