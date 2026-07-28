@@ -13,7 +13,7 @@ dependencies = [
   "python-multipart==0.0.32",
   "python-dateutil==2.9.0.post0",
   "icalendar==7.2.0",
-  "phonenumbers==9.0.34",
+  "phonenumbers==9.0.35",
 ]
 
 [project.optional-dependencies]
