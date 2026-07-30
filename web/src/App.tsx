@@ -51,6 +51,9 @@ function AppView({ workbench }: { workbench: Workbench }) {
 
   return (
     <div className={workbench.sidebarCollapsed ? "shell sidebar-collapsed" : "shell"}>
+      <a className="skip-link" href="#uok-main-content">
+        {t("nav.skipToContent", "Skip to main content")}
+      </a>
       <aside className="sidebar" aria-label={t("nav.primary")}>
         <div className="sidebar-top">
           <button type="button" className="brand" aria-label={t("nav.home")} title={t("nav.home")} onClick={() => workbench.setActive("overview")}>
@@ -102,7 +105,7 @@ function AppView({ workbench }: { workbench: Workbench }) {
         />
       </aside>
 
-      <main className="workbench">
+      <main id="uok-main-content" className="workbench" tabIndex={-1}>
         {workbench.active === "overview" && (
           <section className="content-grid" aria-label="Overview">
             <Pane title="Readiness" description="Release gates">

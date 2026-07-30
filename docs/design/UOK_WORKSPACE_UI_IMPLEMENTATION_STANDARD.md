@@ -219,6 +219,7 @@ Run the relevant gates before UI work is complete:
 
 ```powershell
 npm --prefix web test
+npm --prefix web run test:accessibility
 npm --prefix web run test:ui-proof
 npm --prefix web run build:static
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
@@ -233,6 +234,14 @@ When runtime UI behavior changes, also verify:
 - critical text fits at desktop, tablet, and narrow widths;
 - selected, hover, focus, disabled, loading, invalid, and destructive states remain visible;
 - the workflow has no duplicate or contradictory controls.
+
+The protected frontend gate runs the browser accessibility proof against
+representative shell, module, modal, and narrow touch states. The proof must
+report no automated WCAG 2.0, 2.1, or 2.2 Level A/AA violations, preserve a
+keyboard skip path to the main landmark, keep coarse-pointer targets at least
+`44x44` CSS pixels, and avoid horizontal document overflow at 320 CSS pixels.
+Automated results supplement rather than replace keyboard and assistive-
+technology review.
 
 The standardized wrapper is:
 

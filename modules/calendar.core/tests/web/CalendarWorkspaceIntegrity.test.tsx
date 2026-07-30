@@ -147,6 +147,7 @@ describe("CalendarWorkspace integrity", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "More actions" }));
     fireEvent.click(within(screen.getByRole("dialog", { name: "More actions" })).getByRole("button", { name: "Export ICS" }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "More actions" })).not.toBeInTheDocument());
     const alert = await screen.findByRole("alert", undefined, { timeout: 4_000 });
     expect(alert).toHaveTextContent("Export denied");
     expect(alert).not.toHaveClass("visually-hidden");

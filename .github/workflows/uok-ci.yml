@@ -144,6 +144,14 @@ jobs:
         working-directory: web
         run: npm run test
 
+      - name: Install Chromium for accessibility proof
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Run WCAG accessibility proof
+        working-directory: web
+        run: npm run test:accessibility
+
       - name: Build frontend
         working-directory: web
         env:

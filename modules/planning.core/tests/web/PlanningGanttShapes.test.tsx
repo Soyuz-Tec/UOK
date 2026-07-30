@@ -111,15 +111,16 @@ describe("Planning Gantt task shapes", () => {
     expect(task.querySelector(".planning-owned-task-bar")).toBeTruthy();
     const label = task.querySelector(".planning-owned-task-label-viewport");
     const status = task.querySelector(".planning-owned-status-surface");
-    const source = task.querySelector(".planning-owned-link-handle.source");
+    const source = container.querySelector(".planning-owned-link-handle.source");
     const tooltip = task.querySelector(".planning-owned-tooltip-surface");
     const baseline = task.querySelector(".baseline-code");
+    expect(task.querySelector("[role='button']")).toBeNull();
     expect(label?.getAttribute("width")).toBe("40");
     expect(task.querySelector(".planning-owned-task-label")?.getAttribute("clip-path")).toMatch(/^url\(#.+-label\)$/);
     expect(task.querySelectorAll(".planning-owned-tooltip-line[clip-path]")).toHaveLength(2);
     expect(status?.getAttribute("x")).toBe("58");
     expect(source?.getAttribute("cx")).toBe("110");
-    expect(task.querySelector(".planning-owned-link-handle.target")?.getAttribute("cx")).toBe("5");
+    expect(container.querySelector(".planning-owned-link-handle.target")?.getAttribute("cx")).toBe("5");
     expect(tooltip?.getAttribute("x")).toBe("123");
     expect(tooltip?.getAttribute("y")).toBe("62");
     expect(baseline?.getAttribute("y")).toBe("89");

@@ -74,6 +74,8 @@ describe("UOK app", () => {
 
     const { container } = render(<App />);
     expect(container.querySelector(".brand-mark")).toHaveTextContent("K");
+    expect(screen.getByRole("link", { name: "Skip to main content" })).toHaveAttribute("href", "#uok-main-content");
+    expect(within(container).getByRole("main")).toHaveAttribute("tabindex", "-1");
 
     expect(container.querySelector(".shell")).not.toHaveClass("sidebar-collapsed");
     const collapseToggle = screen.getByRole("button", { name: "Collapse sidebar" });

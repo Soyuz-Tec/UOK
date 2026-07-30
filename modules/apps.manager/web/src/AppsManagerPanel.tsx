@@ -79,13 +79,19 @@ export function AppsManagerPanel({ modules, busyAction, onAction }: {
       <Pane description={`${visibleModules.length} of ${modules.length} modules`} wide>
         <div className="module-list" role="list" aria-label="Available modules">
           {visibleModules.length ? groupedModules.map((group) => (
-            <div className="apps-module-group" role="group" aria-label={group.label} key={group.key}>
+            <div className="apps-module-group" role="listitem" key={group.key}>
               {groupBy !== "none" ? <h2 className="apps-module-group-heading">{group.label}</h2> : null}
-              {group.modules.map((module) => (
-                <ModuleRow key={module.name} module={module} busyAction={busyAction} onAction={onAction} />
-              ))}
+              <div className="apps-module-group-list" role="list" aria-label={group.label}>
+                {group.modules.map((module) => (
+                  <ModuleRow key={module.name} module={module} busyAction={busyAction} onAction={onAction} />
+                ))}
+              </div>
             </div>
-          )) : <EmptyState text={modules.length ? "No modules match the current search." : "No module records found."} />}
+          )) : (
+            <div role="listitem">
+              <EmptyState text={modules.length ? "No modules match the current search." : "No module records found."} />
+            </div>
+          )}
         </div>
       </Pane>
     </section>

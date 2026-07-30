@@ -9,7 +9,7 @@ const messages: Record<UokLocale, Record<string, string>> = {
   "en-US": {
     "nav.primary": "Primary navigation", "nav.overview": "Overview", "nav.apps": "Apps", "nav.contacts": "Contacts",
     "nav.calendar": "Calendar", "nav.communications": "K Connect", "nav.planning": "Planning", "nav.evidence": "Evidence", "nav.architecture": "Architecture",
-    "nav.home": "Home", "nav.expand": "Expand sidebar", "nav.collapse": "Collapse sidebar",
+    "nav.home": "Home", "nav.expand": "Expand sidebar", "nav.collapse": "Collapse sidebar", "nav.skipToContent": "Skip to main content",
     "account.controls": "Signed in user controls", "account.menu": "Account menu", "account.appearance": "Appearance", "account.language": "Language",
     "account.refresh": "Refresh", "account.logout": "Logout", "account.cancel": "Cancel", "account.endSession": "End this session and return to the login screen?",
     "account.open": "Open account menu for", "account.close": "Close account menu for",
@@ -126,7 +126,7 @@ const messages: Record<UokLocale, Record<string, string>> = {
   ar: {
     "nav.primary": "التنقل الرئيسي", "nav.overview": "نظرة عامة", "nav.apps": "التطبيقات", "nav.contacts": "جهات الاتصال",
     "nav.calendar": "التقويم", "nav.communications": "كي كونكت", "nav.planning": "التخطيط", "nav.evidence": "الأدلة", "nav.architecture": "البنية",
-    "nav.home": "الرئيسية", "nav.expand": "توسيع الشريط الجانبي", "nav.collapse": "طي الشريط الجانبي",
+    "nav.home": "الرئيسية", "nav.expand": "توسيع الشريط الجانبي", "nav.collapse": "طي الشريط الجانبي", "nav.skipToContent": "تخطي إلى المحتوى الرئيسي",
     "account.controls": "عناصر تحكم المستخدم", "account.menu": "قائمة الحساب", "account.appearance": "المظهر", "account.language": "اللغة",
     "account.refresh": "تحديث", "account.logout": "تسجيل الخروج", "account.cancel": "إلغاء", "account.endSession": "إنهاء هذه الجلسة والعودة إلى شاشة تسجيل الدخول؟",
     "account.open": "فتح قائمة الحساب لـ", "account.close": "إغلاق قائمة الحساب لـ",

@@ -28,6 +28,7 @@ test("Gantt task overlays and semantic markers remain collision-free", async ({ 
   const narrowTask = page.getByRole("button", {
     name: "One-day critical task with a long title, Critical path task, 45% complete",
   });
+  const narrowTaskContainer = narrowTask.locator("..");
   const tooltip = narrowTask.locator(".planning-owned-tooltip");
   await expect(tooltip).toHaveCSS("visibility", "hidden");
 
@@ -45,7 +46,7 @@ test("Gantt task overlays and semantic markers remain collision-free", async ({ 
   const label = await requiredBox(narrowTask.locator(".planning-owned-task-label-viewport"));
   const status = await requiredBox(narrowTask.locator(".planning-owned-status-surface"));
   const endResize = await requiredBox(narrowTask.locator(".planning-owned-resize-handle.end"));
-  const sourceHandle = await requiredBox(narrowTask.locator(".planning-owned-link-handle.source"));
+  const sourceHandle = await requiredBox(narrowTaskContainer.locator(".planning-owned-link-handle.source"));
   const baselineCode = await requiredBox(narrowTask.locator(".baseline-code"));
   expect(right(label)).toBeLessThanOrEqual(status.x);
   expect(right(endResize)).toBeLessThanOrEqual(status.x);

@@ -1,4 +1,48 @@
+.skip-link {
+  position: fixed;
+  inset-block-start: var(--uok-space-3);
+  inset-inline-start: var(--uok-space-3);
+  z-index: 200;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  border: 2px solid var(--uok-focus-ring);
+  border-radius: var(--uok-radius-3);
+  padding: 0 var(--uok-space-4);
+  background: var(--uok-bg-elevated);
+  color: var(--uok-text-primary);
+  font-weight: 700;
+  transform: translateY(calc(-100% - var(--uok-space-5)));
+  transition: transform 120ms ease-out;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 @media (pointer: coarse) {
+  button,
+  [role="button"],
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="tab"],
+  a[href] {
+    min-width: 44px;
+  }
+
+  button,
+  [role="button"],
+  [role="menuitem"],
+  [role="menuitemradio"],
+  [role="tab"],
+  a[href],
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  select,
+  textarea {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
   .nav-item,
   .session-user-trigger,
   .session-menu-button,

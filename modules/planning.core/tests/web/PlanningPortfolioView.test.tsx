@@ -36,6 +36,7 @@ describe("Planning portfolio", () => {
 
     expect(await screen.findByRole("table", { name: "محفظة تسليم متعددة المشاريع" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "مشروع جديد" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "خيارات البحث: كل الحالات" }));
     expect(screen.getByRole("option", { name: "مسودة" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "معلّق" })).toBeTruthy();
     expect(screen.getByRole("option", { name: "مكتمل" })).toBeTruthy();

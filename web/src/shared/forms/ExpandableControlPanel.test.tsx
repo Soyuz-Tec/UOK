@@ -25,7 +25,9 @@ describe("ExpandableControlPanel", () => {
       </ExpandableControlPanel>,
     );
 
+    expect(screen.queryByRole("dialog", { name: "Date controls" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Open date controls" }));
+    expect(screen.getByRole("dialog", { name: "Date controls" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole("button", { name: "Preferred control" })).toHaveFocus());
   });
 
