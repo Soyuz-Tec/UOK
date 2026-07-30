@@ -97,7 +97,7 @@ describe("CalendarEventEditor", () => {
     const dialog = screen.getByRole("dialog", { name: "Edit recurring series" });
     expect(within(dialog).getByText("Changes, cancellation, and restoration apply to the entire recurring series.")).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole("button", { name: actionLabel }));
-    const confirmationDialog = await screen.findByRole("dialog", { name: "Confirm action" });
+    const confirmationDialog = await screen.findByRole("alertdialog", { name: "Confirm action" });
     expect(confirmationDialog).toHaveTextContent(confirmation);
     fireEvent.click(within(confirmationDialog).getByRole("button", { name: actionLabel }));
     expect(action === "cancel" ? onCancel : onRestore).toHaveBeenCalledOnce();

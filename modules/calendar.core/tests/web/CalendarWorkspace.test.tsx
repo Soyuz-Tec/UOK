@@ -192,7 +192,7 @@ describe("CalendarWorkspace", () => {
     const deleteButton = await screen.findByRole("button", { name: "Delete calendar" });
     await waitFor(() => expect(deleteButton).toBeEnabled());
     fireEvent.click(deleteButton);
-    const dialog = screen.getByRole("dialog", { name: "Delete calendar" });
+    const dialog = screen.getByRole("alertdialog", { name: "Delete calendar" });
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete calendar" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
@@ -205,7 +205,7 @@ describe("CalendarWorkspace", () => {
 
     fireEvent.click(trigger);
     fireEvent.click(await screen.findByRole("button", { name: "Restore calendar: Operations" }));
-    const restoreDialog = screen.getByRole("dialog", { name: "Restore calendar" });
+    const restoreDialog = screen.getByRole("alertdialog", { name: "Restore calendar" });
     fireEvent.click(within(restoreDialog).getByRole("button", { name: "Restore calendar" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
       "/api/calendar/calendars/calendar-1/restore",

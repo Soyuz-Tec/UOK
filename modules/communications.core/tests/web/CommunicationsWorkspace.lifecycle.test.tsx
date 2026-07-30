@@ -30,14 +30,14 @@ describe("K Connect recoverable thread deletion", () => {
     const deleteButton = screen.getByRole("button", { name: "Delete thread" });
     deleteButton.focus();
     fireEvent.click(deleteButton);
-    const dialog = screen.getByRole("dialog", { name: "Confirm thread deletion" });
+    const dialog = screen.getByRole("alertdialog", { name: "Confirm thread deletion" });
     expect(dialog).toHaveTextContent("Delete “Closed control room”?");
     expect(dialog).toHaveTextContent("linked Planning records are not deleted");
     expect(dialog).toHaveTextContent("Restore will return it to closed");
     fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Delete thread" })).toHaveFocus());
     fireEvent.click(screen.getByRole("button", { name: "Delete thread" }));
-    fireEvent.click(within(screen.getByRole("dialog", { name: "Confirm thread deletion" })).getByRole("button", { name: "Delete thread" }));
+    fireEvent.click(within(screen.getByRole("alertdialog", { name: "Confirm thread deletion" })).getByRole("button", { name: "Delete thread" }));
 
     await screen.findByRole("button", { name: "Restore thread" });
     expect((fetchMock.mock.calls[2][1] as RequestInit).headers).toMatchObject({ "If-Match": closed.etag });
@@ -91,17 +91,17 @@ describe("K Connect recoverable thread deletion", () => {
     renderWorkspace();
     await screen.findByText("Concurrent room", { selector: "h2" });
     fireEvent.click(screen.getByRole("button", { name: "Delete thread" }));
-    fireEvent.click(within(screen.getByRole("dialog", { name: "Confirm thread deletion" })).getByRole("button", { name: "Delete thread" }));
+    fireEvent.click(within(screen.getByRole("alertdialog", { name: "Confirm thread deletion" })).getByRole("button", { name: "Delete thread" }));
 
     await screen.findByText("Concurrent room renamed", { selector: "h2" });
-    expect(screen.queryByRole("dialog", { name: "Confirm thread deletion" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("alertdialog", { name: "Confirm thread deletion" })).not.toBeInTheDocument();
     expect(await screen.findByRole("status")).toHaveTextContent("explicitly open and confirm Delete or Restore again");
     expect(fetchMock).toHaveBeenCalledTimes(4);
     expect(fetchMock.mock.calls[3][0]).toBe("/api/communications/threads/thread-stale?include_archived=true");
     await waitFor(() => expect(screen.getByRole("button", { name: "Delete thread" })).toHaveFocus());
 
     fireEvent.click(screen.getByRole("button", { name: "Delete thread" }));
-    expect(screen.getByRole("dialog", { name: "Confirm thread deletion" })).toHaveTextContent("Concurrent room renamed");
+    expect(screen.getByRole("alertdialog", { name: "Confirm thread deletion" })).toHaveTextContent("Concurrent room renamed");
     expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 });

@@ -13,7 +13,8 @@ export function WorkspaceEditorPopup({
   size = "wide",
   chrome = "standard",
   className = "",
-  dismissible = true
+  dismissible = true,
+  dialogRole = "dialog",
 }: {
   open: boolean;
   label: string;
@@ -25,6 +26,7 @@ export function WorkspaceEditorPopup({
   chrome?: "standard" | "minimal";
   className?: string;
   dismissible?: boolean;
+  dialogRole?: "dialog" | "alertdialog";
 }) {
   const { t } = useUokLocalization();
 
@@ -36,6 +38,7 @@ export function WorkspaceEditorPopup({
       size={size}
       className={`workspace-editor-popup workspace-editor-popup-${chrome} ${className}`.trim()}
       dismissible={dismissible}
+      dialogRole={dialogRole}
     >
       {chrome === "standard" ? (
         <header className="workspace-editor-popup-header">

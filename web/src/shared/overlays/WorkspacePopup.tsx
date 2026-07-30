@@ -66,7 +66,8 @@ export function WorkspacePopup({
   children,
   size = "default",
   className = "",
-  dismissible = true
+  dismissible = true,
+  dialogRole = "dialog",
 }: {
   open: boolean;
   label: string;
@@ -75,6 +76,7 @@ export function WorkspacePopup({
   size?: "compact" | "default" | "wide";
   className?: string;
   dismissible?: boolean;
+  dialogRole?: "dialog" | "alertdialog";
 }) {
   const { t } = useUokLocalization();
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -159,7 +161,7 @@ export function WorkspacePopup({
     >
       <section
         className={`workspace-popup workspace-popup-${size} ${dragging ? "workspace-popup-dragging" : ""} ${className}`.trim()}
-        role="dialog"
+        role={dialogRole}
         aria-modal="true"
         aria-label={label}
         ref={popupRef}

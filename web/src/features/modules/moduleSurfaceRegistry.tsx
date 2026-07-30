@@ -6,10 +6,21 @@ import type {
   ModuleSurfaceHostContext,
 } from "@uok/contracts/moduleSurface";
 import { generatedModuleSurfaceCatalog } from "@uok/generated/moduleSurfaceCatalog";
+import { ModuleErrorBoundary } from "@uok/shared/feedback";
 import type { Option } from "@uok/shared/options";
 import type { Section } from "@uok/shared/types";
 
 type ValidatedModuleSurface = Omit<ModuleSurface, "id"> & { id: Section };
+
+function ModuleSurfaceRenderer({
+  host,
+  surface,
+}: {
+  host: ModuleSurfaceHostContext;
+  surface: ValidatedModuleSurface;
+}) {
+  return surface.render(host);
+}
 
 export function validateModuleSurfaceCatalog(
   registrations: readonly GeneratedModuleSurfaceRegistration[],
@@ -76,7 +87,9 @@ export function ModuleSurfaceOutlet({
               data-module-surface={surface.id}
               style={{ display: active ? "contents" : "none" }}
             >
-              {surface.render(host)}
+              <ModuleErrorBoundary active={active} moduleLabel={surface.label}>
+                <ModuleSurfaceRenderer host={host} surface={surface} />
+              </ModuleErrorBoundary>
             </div>
           );
         })}

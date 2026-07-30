@@ -200,6 +200,6 @@ describe("Location Master workspace", () => {
 
 async function confirmLifecycleAction(name: string) {
   fireEvent.click(screen.getByRole("button", { name }));
-  const confirmation = await screen.findByRole("dialog", { name: "Confirm action" });
+  const confirmation = await screen.findByRole("alertdialog", { name: "Confirm action" });
   fireEvent.click(within(confirmation).getByRole("button", { name }));
 }

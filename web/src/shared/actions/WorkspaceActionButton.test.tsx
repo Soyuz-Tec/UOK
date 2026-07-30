@@ -104,7 +104,7 @@ describe("ConfirmCommandButton", () => {
     trigger.focus();
     fireEvent.click(trigger);
 
-    const dialog = screen.getByRole("dialog", { name: "Delete record" });
+    const dialog = screen.getByRole("alertdialog", { name: "Delete record" });
     expect(screen.getByRole("button", { name: "Move Delete record" })).toBeInTheDocument();
     const deleteButton = screen.getByRole("button", { name: "Delete" });
     expect(deleteButton).toBeDisabled();
@@ -135,6 +135,6 @@ describe("ConfirmCommandButton", () => {
     fireEvent.click(screen.getByRole("button", { name: "Delete" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Record is protected.");
-    expect(screen.getByRole("dialog", { name: "Delete record" })).toBeInTheDocument();
+    expect(screen.getByRole("alertdialog", { name: "Delete record" })).toBeInTheDocument();
   });
 });

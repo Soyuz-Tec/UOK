@@ -117,11 +117,6 @@
     max-height: calc(100vh - (var(--uok-space-3) * 2));
   }
 
-  .logout-dialog-actions {
-    align-items: stretch;
-    flex-direction: column-reverse;
-  }
-
   .form-section,
   .pane-section {
     padding: var(--uok-space-3);

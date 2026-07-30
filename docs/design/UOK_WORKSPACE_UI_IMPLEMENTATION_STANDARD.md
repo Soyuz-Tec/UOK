@@ -137,6 +137,13 @@ active. Closing the child restores focus inside the parent, and only a later,
 separate dismissal may close the parent. Modules must not add document-level
 keyboard handlers that bypass this stack.
 
+Destructive and consequential confirmations use the shared
+`ConfirmationDialog` directly or through `ConfirmCommandButton`. The shared
+dialog owns `alertdialog` semantics, async submission, nondismissible committed
+work, actionable error reporting, optional required reasons, and focus
+restoration. Shell or module code must not introduce a second confirmation
+backdrop, focus trap, or button implementation.
+
 Every `WorkspacePopup` and `WorkspaceEditorPopup` is draggable through the
 shared overlay implementation rather than module-local handlers. A dedicated
 localized move handle must support pointer and touch movement with pointer
@@ -187,6 +194,13 @@ Required shared primitives include:
 - workspace popup or sheet
 - detail list and status summary
 - empty, loading, error, and permission states
+
+Module surfaces are contained by the shared module error boundary. A render
+failure in one module must leave shell navigation and other module roots
+operable, show the shared error state without exposing stack details, and offer
+a bounded retry. Shared `AsyncState` is the canonical module-neutral
+loading/error/empty feedback surface; domain-specific recovery context remains
+module-owned.
 
 ## Coding Rules
 
