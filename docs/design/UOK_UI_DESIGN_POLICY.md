@@ -162,6 +162,8 @@ The next UI iteration must introduce or preserve:
 A UI change is not acceptable if it:
 
 - Introduces hard-coded status colors without semantic tokens.
+- References an undefined global `--uok-*` CSS variable; the automated frontend
+  design-token contract must stay green.
 - Hides workflow state, verification state, or errors behind decoration.
 - Depends on color alone to communicate status.
 - Breaks keyboard navigation or visible focus.

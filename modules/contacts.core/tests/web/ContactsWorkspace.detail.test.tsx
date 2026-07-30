@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -145,6 +145,22 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(screen.getByLabelText("Contact inspector")).toBeInTheDocument();
   });
 
+  it("opens compact List and Detail selections in a popup and restores the persistent inspector after widening", async () => {
+    const media = installMatchMedia(true);
+    renderContactsWorkspace("split");
+
+    expect(screen.queryByLabelText("Contact inspector")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Example Contact/i }));
+
+    const dialog = screen.getByRole("dialog", { name: "Contact details" });
+    expect(within(dialog).getByText("Example Contact")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Contact inspector")).not.toBeInTheDocument();
+
+    act(() => media.setMatches(false));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Contact details" })).not.toBeInTheDocument());
+    expect(screen.getByLabelText("Contact inspector")).toHaveTextContent("Example Contact");
+  });
+
   it("keeps List and Detail rows focused on selection identity", () => {
     renderContactsWorkspace("split", [organizationContact, contact]);
 
@@ -214,4 +230,28 @@ function response(body: unknown, status = 200, headers: Record<string, string> =
     headers: { get: (name: string) => headers[name] ?? headers[name.toLowerCase()] ?? null },
     json: vi.fn().mockResolvedValue(body)
   } as unknown as Response;
+}
+
+function installMatchMedia(initialMatches: boolean) {
+  let matches = initialMatches;
+  const listeners = new Set<(event: MediaQueryListEvent) => void>();
+  const media = {
+    get matches() {
+      return matches;
+    },
+    media: "(max-width: 980px)",
+    onchange: null,
+    addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => listeners.add(listener),
+    removeEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) => listeners.delete(listener),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+    setMatches(value: boolean) {
+      matches = value;
+      const event = { matches, media: this.media } as MediaQueryListEvent;
+      listeners.forEach((listener) => listener(event));
+    }
+  };
+  vi.stubGlobal("matchMedia", vi.fn(() => media));
+  return media;
 }

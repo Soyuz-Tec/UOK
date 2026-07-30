@@ -58,7 +58,7 @@
 
 .product-detail-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--uok-space-3);
 }
 
@@ -67,7 +67,8 @@
 }
 
 .product-detail-grid .detail-item strong {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .product-detail-actions,
