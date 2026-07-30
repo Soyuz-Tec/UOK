@@ -126,6 +126,28 @@ export function TaskShape({
     const centerX = x + barHeight / 2;
     const centerY = y + barHeight / 2;
     return (
+      <g className="planning-owned-task-container">
+        <g
+          className={className}
+          role="button"
+          tabIndex={0}
+          aria-label={accessibilityLabel}
+          onClick={() => onSelect(task.id)}
+          onKeyDown={(event) => selectOnKey(event, task.id, onSelect)}
+          onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)}
+        >
+          <title>{accessibilityLabel}</title>
+          <polygon className="planning-owned-task-bar" points={`${centerX},${y} ${x + barHeight},${centerY} ${centerX},${y + barHeight} ${x},${centerY}`} />
+          <TaskStatusCode x={overlay.indicatorX} y={y + 1} indicator={indicator} />
+          <TaskLabelViewport clipId={`${overlayId}-label`} x={readOnly ? overlay.indicatorRight + 8 : overlay.sourceHandleX + 10} y={y} width={Math.min(240, Math.max(0, timelineWidth - (readOnly ? overlay.indicatorRight + 12 : overlay.sourceHandleX + 14)))} height={barHeight} title={task.title} />
+          <TaskTooltip clipIdPrefix={`${overlayId}-tooltip`} task={task} x={overlay.tooltipX} y={overlay.tooltipY} indicator={indicator} />
+        </g>
+        {readOnly ? null : <DependencyHandles task={task} sourceX={overlay.sourceHandleX} targetX={Math.max(5, x - 12)} y={centerY} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
+      </g>
+    );
+  }
+  return (
+    <g className="planning-owned-task-container">
       <g
         className={className}
         role="button"
@@ -133,37 +155,19 @@ export function TaskShape({
         aria-label={accessibilityLabel}
         onClick={() => onSelect(task.id)}
         onKeyDown={(event) => selectOnKey(event, task.id, onSelect)}
-        onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)}
       >
         <title>{accessibilityLabel}</title>
-        <polygon className="planning-owned-task-bar" points={`${centerX},${y} ${x + barHeight},${centerY} ${centerX},${y + barHeight} ${x},${centerY}`} />
-        <TaskStatusCode x={overlay.indicatorX} y={y + 1} indicator={indicator} />
-        <TaskLabelViewport clipId={`${overlayId}-label`} x={readOnly ? overlay.indicatorRight + 8 : overlay.sourceHandleX + 10} y={y} width={Math.min(240, Math.max(0, timelineWidth - (readOnly ? overlay.indicatorRight + 12 : overlay.sourceHandleX + 14)))} height={barHeight} title={task.title} />
-        {readOnly ? null : <DependencyHandles task={task} sourceX={overlay.sourceHandleX} targetX={Math.max(5, x - 12)} y={centerY} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
+        <rect className="planning-owned-task-bar" x={x} y={y} width={width} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)} />
+        <rect className="progress" x={x} y={y} width={progressWidth} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} />
+        {readOnly ? null : <rect className="planning-owned-resize-handle start" x={x - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-start", event.clientX)} />}
+        {readOnly ? null : <rect className="planning-owned-resize-handle end" x={x + width - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-end", event.clientX)} />}
+        {readOnly ? null : <circle className="planning-owned-progress-handle" cx={x + progressWidth} cy={y + barHeight / 2} r="5" onPointerDown={(event) => onDragStart(task.id, "progress", event.clientX, width)} />}
+        <TaskLabelViewport clipId={`${overlayId}-label`} x={overlay.labelX} y={y} width={overlay.labelWidth} height={barHeight} title={task.title} />
+        <TaskStatusCode x={overlay.indicatorX} y={y + Math.max(2, (barHeight - 18) / 2)} indicator={indicator} />
+        {showBaselines ? <PlanningBaselineLane task={task} chartStart={chartStart} scale={scale} cellWidth={cellWidth} y={baselineY} showCode={rowSize >= 50} timelineWidth={timelineWidth} /> : null}
         <TaskTooltip clipIdPrefix={`${overlayId}-tooltip`} task={task} x={overlay.tooltipX} y={overlay.tooltipY} indicator={indicator} />
       </g>
-    );
-  }
-  return (
-    <g
-      className={className}
-      role="button"
-      tabIndex={0}
-      aria-label={accessibilityLabel}
-      onClick={() => onSelect(task.id)}
-      onKeyDown={(event) => selectOnKey(event, task.id, onSelect)}
-    >
-      <title>{accessibilityLabel}</title>
-      <rect className="planning-owned-task-bar" x={x} y={y} width={width} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} onPointerDown={readOnly ? undefined : (event) => onDragStart(task.id, "move", event.clientX)} />
-      <rect className="progress" x={x} y={y} width={progressWidth} height={barHeight} rx={task.task_type === "summary" ? 1 : 4} />
-      {readOnly ? null : <rect className="planning-owned-resize-handle start" x={x - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-start", event.clientX)} />}
-      {readOnly ? null : <rect className="planning-owned-resize-handle end" x={x + width - 4} y={y} width="8" height={barHeight} rx="3" onPointerDown={(event) => onDragStart(task.id, "resize-end", event.clientX)} />}
-      {readOnly ? null : <circle className="planning-owned-progress-handle" cx={x + progressWidth} cy={y + barHeight / 2} r="5" onPointerDown={(event) => onDragStart(task.id, "progress", event.clientX, width)} />}
-      <TaskLabelViewport clipId={`${overlayId}-label`} x={overlay.labelX} y={y} width={overlay.labelWidth} height={barHeight} title={task.title} />
-      <TaskStatusCode x={overlay.indicatorX} y={y + Math.max(2, (barHeight - 18) / 2)} indicator={indicator} />
-      {showBaselines ? <PlanningBaselineLane task={task} chartStart={chartStart} scale={scale} cellWidth={cellWidth} y={baselineY} showCode={rowSize >= 50} timelineWidth={timelineWidth} /> : null}
       {readOnly ? null : <DependencyHandles task={task} sourceX={overlay.sourceHandleX} targetX={Math.max(5, x - 12)} y={y + barHeight / 2} onLinkStart={onLinkStart} onLinkFinish={onLinkFinish} />}
-      <TaskTooltip clipIdPrefix={`${overlayId}-tooltip`} task={task} x={overlay.tooltipX} y={overlay.tooltipY} indicator={indicator} />
     </g>
   );
 }

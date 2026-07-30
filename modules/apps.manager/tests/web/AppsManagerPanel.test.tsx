@@ -58,8 +58,8 @@ describe("AppsManagerPanel", () => {
 
     fireEvent.change(screen.getByLabelText("Status filter"), { target: { value: "all" } });
     fireEvent.click(screen.getByRole("button", { name: "Maturity" }));
-    expect(screen.getByRole("group", { name: "Runtime proven" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Integration tested" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Runtime proven" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Integration tested" })).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText("Module sort field"), { target: { value: "name" } });
     fireEvent.click(screen.getByRole("button", { name: "Sort ascending" }));

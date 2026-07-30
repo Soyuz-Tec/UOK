@@ -84,32 +84,34 @@ export function PlanningGanttGridRow({
       {columns.map((column) => (
         <PlanningGanttGridCell key={column.id} assignedByTask={assignedByTask} column={column} pinnedOffsets={pinnedOffsets} readOnly={readOnly} summaryExpanded={summaryExpanded} task={task} taskDepth={taskDepth} onSummaryToggle={onSummaryToggle} onTaskEdit={onTaskInlineEdit} />
       ))}
-      <button
-        type="button"
-        className="planning-owned-row-menu-trigger"
-        aria-label={`Task actions for ${task.title}`}
-        disabled={readOnly}
-        onClick={(event) => onOpenTaskMenu(task.id, event.currentTarget.getBoundingClientRect().left, event.currentTarget.getBoundingClientRect().bottom + 4, event)}
-      >
-        <MoreHorizontal size={16} aria-hidden="true" />
-      </button>
-      <div
-        className="planning-owned-row-height-handle"
-        role="separator"
-        tabIndex={0}
-        aria-label={`Resize row ${task.title}`}
-        aria-orientation="horizontal"
-        aria-valuemin={34}
-        aria-valuemax={96}
-        aria-valuenow={rowHeight}
-        title="Drag to resize row. Double-click to fit row height."
-        onDoubleClick={fitRow}
-        onKeyDown={handleResizeKey}
-        onPointerDown={startResize}
-        onPointerMove={updateResize}
-        onPointerUp={finishResize}
-        onPointerCancel={finishResize}
-      />
+      <div className="planning-owned-row-control-cell" role="cell">
+        <button
+          type="button"
+          className="planning-owned-row-menu-trigger"
+          aria-label={`Task actions for ${task.title}`}
+          disabled={readOnly}
+          onClick={(event) => onOpenTaskMenu(task.id, event.currentTarget.getBoundingClientRect().left, event.currentTarget.getBoundingClientRect().bottom + 4, event)}
+        >
+          <MoreHorizontal size={16} aria-hidden="true" />
+        </button>
+        <div
+          className="planning-owned-row-height-handle"
+          role="separator"
+          tabIndex={0}
+          aria-label={`Resize row ${task.title}`}
+          aria-orientation="horizontal"
+          aria-valuemin={34}
+          aria-valuemax={96}
+          aria-valuenow={rowHeight}
+          title="Drag to resize row. Double-click to fit row height."
+          onDoubleClick={fitRow}
+          onKeyDown={handleResizeKey}
+          onPointerDown={startResize}
+          onPointerMove={updateResize}
+          onPointerUp={finishResize}
+          onPointerCancel={finishResize}
+        />
+      </div>
     </div>
   );
 

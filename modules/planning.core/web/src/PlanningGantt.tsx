@@ -156,7 +156,6 @@ export function PlanningGantt({
       className={`planning-gantt-shell planning-owned-gantt planning-owned-${appearance} ${readOnly ? "planning-readonly-mode" : ""} ${linkDrag ? "planning-linking" : ""}`}
       ref={setGanttShellElement}
       aria-label={t("planning.gantt")}
-      aria-readonly={readOnly}
       style={{ "--planning-gantt-content-height": `${shellHeight}px`, "--planning-gantt-header-height": `${headerHeight}px`, "--planning-grid-width": `${splitPercent}%` } as CSSProperties}
     >
       <PlanningGanttGrid bodyRef={gridScrollRef}
@@ -191,7 +190,7 @@ export function PlanningGantt({
           ref={svgRef}
           width={width}
           height={canvasHeight}
-          role="img"
+          role="group"
           aria-label={`${schedule.project.name} ${t("planning.timeline")}`}
           onPointerMove={(event) => updateLinkPointer(event)}
           onPointerUp={() => setLinkDrag(null)}

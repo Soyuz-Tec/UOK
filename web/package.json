@@ -14,6 +14,7 @@
     "generate:modules": "python ../scripts/generate_frontend_module_catalog.py",
     "check:contracts": "python ../scripts/check_generated_contracts.py",
     "test": "vitest run",
+    "test:accessibility": "playwright test e2e/accessibility.spec.ts",
     "test:ui-proof": "playwright test",
     "build:client": "tsc -b && vite build --base=/static/app/",
     "build": "npm run generate:api && npm run generate:modules && npm run build:client",
@@ -26,6 +27,7 @@
     "react-dom": "19.2.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
     "@playwright/test": "1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

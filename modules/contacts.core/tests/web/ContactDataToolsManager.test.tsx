@@ -64,6 +64,7 @@ describe("Contacts data and governance tools", () => {
     fireEvent.click(within(rollbackConfirmation).getByRole("button", { name: "Rollback import" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/contacts/import-batches/executed-batch/rollback", expect.objectContaining({ method: "POST" })));
     expect(await within(dialog).findByText(/1 rolled back/i)).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("alertdialog", { name: "Confirm action" })).not.toBeInTheDocument());
 
     fireEvent.click(within(dialog).getByRole("button", { name: "CSV" }));
     await waitFor(() => expect(fetchMock.mock.calls.some(([path]) => String(path).startsWith("/api/contacts/export.csv"))).toBe(true));

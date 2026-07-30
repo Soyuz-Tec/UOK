@@ -151,8 +151,8 @@ export function ExpandableControlPanel({
         <span>{triggerSummary}</span>
         <ChevronDown size={16} aria-hidden="true" />
       </button>
-      <button type="button" className="expandable-control-scrim" aria-label={`${t("command.close", "Close")} ${label}`} onClick={close} />
-      <div ref={panelRef} id={panelId} className={["expandable-control-surface", panelClassName].filter(Boolean).join(" ")} role="dialog" aria-label={label} aria-modal={compactPresentation ? "true" : "false"} tabIndex={-1}>
+      <button type="button" className="expandable-control-scrim" aria-label={`${t("command.close", "Close")} ${label}`} onClick={close} hidden={!isOpen} />
+      <div ref={panelRef} id={panelId} className={["expandable-control-surface", panelClassName].filter(Boolean).join(" ")} role="dialog" aria-label={label} aria-modal={compactPresentation ? "true" : "false"} tabIndex={-1} hidden={!isOpen}>
         {typeof children === "function" ? children({ close }) : children}
       </div>
     </div>

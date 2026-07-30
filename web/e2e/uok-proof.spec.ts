@@ -499,7 +499,7 @@ test("UOK proof gate covers planning Gantt usability and visual stability", asyn
     await planningControls.getByRole("button", { name: "Review mode", exact: true }).click();
     await expect(planningControls.getByRole("button", { name: "Edit mode", exact: true })).toHaveAttribute("aria-pressed", "true");
     await planningControls.getByRole("button", { name: "Done", exact: true }).click();
-    await expect(page.locator(".planning-gantt-shell")).toHaveAttribute("aria-readonly", "true");
+    await expect(page.getByLabel("Planning Gantt chart")).toHaveClass(/planning-readonly-mode/);
     await expect(page.getByRole("button", { name: "New task", exact: true })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Task actions for Define schedule scope" })).toBeDisabled();
     const { inspectorDialog: reviewInspectorDialog, planningControlsTrigger: reviewShowInspector } = await openPlanningInspector(page);

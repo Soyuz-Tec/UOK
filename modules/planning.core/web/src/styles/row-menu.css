@@ -1,3 +1,7 @@
+.planning-owned-row-control-cell {
+  display: contents;
+}
+
 .planning-owned-grid-row:focus-visible {
   outline: 3px solid var(--uok-focus-ring);
   outline-offset: -3px;
