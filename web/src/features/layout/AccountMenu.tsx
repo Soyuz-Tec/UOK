@@ -4,6 +4,7 @@ import { ChevronUp, LogOut, RefreshCw } from "lucide-react";
 import { appearanceOptions } from "../../shared/options";
 import { formatLabel } from "../../shared/format";
 import { uokLocaleOptions, useUokLocalization } from "../../shared/localization";
+import { ConfirmationDialog } from "../../shared/overlays";
 import type { Appearance, SessionUser, UokLocale } from "../../shared/types";
 
 export function AccountMenu({ user, appearance, locale, busy, onAppearanceChange, onLocaleChange, onRefresh, onSignOut }: {
@@ -22,7 +23,7 @@ export function AccountMenu({ user, appearance, locale, busy, onAppearanceChange
   const rootRef = useRef<HTMLElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const confirmButtonRef = useRef<HTMLButtonElement | null>(null);
+  const menuFocusTimerRef = useRef<number | null>(null);
   const displayName = user?.display_name || user?.username || "Signed in";
   const identity = user?.email || user?.username || "Active user";
   const initial = displayName.slice(0, 1).toUpperCase();
@@ -38,19 +39,24 @@ export function AccountMenu({ user, appearance, locale, busy, onAppearanceChange
   useEffect(() => {
     if (!expanded) return;
     const firstMenuButton = menuRef.current?.querySelector<HTMLButtonElement>("button:not([disabled])");
-    window.setTimeout(() => firstMenuButton?.focus(), 0);
+    menuFocusTimerRef.current = window.setTimeout(() => {
+      menuFocusTimerRef.current = null;
+      firstMenuButton?.focus();
+    }, 0);
 
     function onPointerDown(event: PointerEvent) {
       if (rootRef.current && !rootRef.current.contains(event.target as Node)) closeMenu();
     }
 
     document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
+    return () => {
+      if (menuFocusTimerRef.current !== null) {
+        window.clearTimeout(menuFocusTimerRef.current);
+        menuFocusTimerRef.current = null;
+      }
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
   }, [closeMenu, expanded]);
-
-  useEffect(() => {
-    if (confirmingLogout) window.setTimeout(() => confirmButtonRef.current?.focus(), 0);
-  }, [confirmingLogout]);
 
   function onMenuKeyDown(event: React.KeyboardEvent) {
     if (event.key === "Escape") {
@@ -111,7 +117,13 @@ export function AccountMenu({ user, appearance, locale, busy, onAppearanceChange
             <span>{t("account.refresh")}</span>
           </button>
           <div className="session-menu-divider" />
-          <button type="button" role="menuitem" className="session-menu-button destructive" onClick={() => setConfirmingLogout(true)}>
+          <button type="button" role="menuitem" className="session-menu-button destructive" onClick={() => {
+            if (menuFocusTimerRef.current !== null) {
+              window.clearTimeout(menuFocusTimerRef.current);
+              menuFocusTimerRef.current = null;
+            }
+            setConfirmingLogout(true);
+          }}>
             <LogOut size={16} aria-hidden="true" />
             <span>{t("account.logout")}</span>
           </button>
@@ -125,26 +137,18 @@ export function AccountMenu({ user, appearance, locale, busy, onAppearanceChange
         </span>
         <ChevronUp size={16} aria-hidden="true" />
       </button>
-      {confirmingLogout && (
-        <div className="logout-dialog-backdrop" role="presentation">
-          <section className="logout-dialog" role="alertdialog" aria-modal="true" aria-labelledby="logout-dialog-title" aria-describedby="logout-dialog-body">
-            <div className="logout-dialog-icon" aria-hidden="true">
-              <LogOut size={20} />
-            </div>
-            <div>
-              <h2 id="logout-dialog-title">{t("account.logout")}</h2>
-              <p id="logout-dialog-body">{t("account.endSession")}</p>
-            </div>
-            <div className="logout-dialog-actions">
-              <button type="button" className="command-button" onClick={() => setConfirmingLogout(false)}>{t("account.cancel")}</button>
-              <button ref={confirmButtonRef} type="button" className="command-button destructive" onClick={() => {
-                setConfirmingLogout(false);
-                onSignOut();
-              }}>{t("account.logout")}</button>
-            </div>
-          </section>
-        </div>
-      )}
+      <ConfirmationDialog
+        open={confirmingLogout}
+        icon={LogOut}
+        label={t("account.logout")}
+        title={t("account.logout")}
+        description={t("account.endSession")}
+        confirmLabel={t("account.logout")}
+        cancelLabel={t("account.cancel")}
+        onClose={() => setConfirmingLogout(false)}
+        onConfirm={onSignOut}
+        destructive
+      />
     </footer>
   );
 }

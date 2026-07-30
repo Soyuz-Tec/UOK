@@ -99,15 +99,15 @@ describe("CalendarSelector", () => {
     const trigger = screen.getByRole("button", { name: "Calendar display: Operations" });
     fireEvent.click(trigger);
     fireEvent.click(screen.getByRole("button", { name: "Delete calendar" }));
-    const dialog = screen.getByRole("dialog", { name: "Delete calendar" });
+    const dialog = screen.getByRole("alertdialog", { name: "Delete calendar" });
     expect(dialog).toHaveTextContent("Operations");
     expect(dialog).toHaveTextContent("retained for audit");
     expect(dialog).toHaveTextContent("restore it from Deleted calendars");
     fireEvent.click(within(dialog).getByRole("button", { name: "Cancel" }));
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Delete calendar" })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole("alertdialog", { name: "Delete calendar" })).not.toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: "Delete calendar" }));
-    fireEvent.click(within(screen.getByRole("dialog", { name: "Delete calendar" })).getByRole("button", { name: "Delete calendar" }));
+    fireEvent.click(within(screen.getByRole("alertdialog", { name: "Delete calendar" })).getByRole("button", { name: "Delete calendar" }));
     await waitFor(() => expect(onDeleteCalendar).toHaveBeenCalledWith(calendar));
     await waitFor(() => expect(trigger).toHaveFocus());
 
@@ -147,7 +147,7 @@ describe("CalendarSelector", () => {
     expect(screen.queryByRole("button", { name: "Delete calendar" })).not.toBeInTheDocument();
     expect(screen.getByRole("note")).toHaveTextContent("system-managed");
     fireEvent.click(screen.getByRole("button", { name: "Restore calendar: Former operations" }));
-    const dialog = screen.getByRole("dialog", { name: "Restore calendar" });
+    const dialog = screen.getByRole("alertdialog", { name: "Restore calendar" });
     expect(dialog).toHaveTextContent("retained events, participants, and reminders");
     fireEvent.click(within(dialog).getByRole("button", { name: "Restore calendar" }));
 
@@ -173,7 +173,7 @@ describe("CalendarSelector", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Calendar display: Calendar A" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete calendar" }));
-    expect(screen.getByRole("dialog", { name: "Delete calendar" })).toHaveTextContent("Calendar A");
+    expect(screen.getByRole("alertdialog", { name: "Delete calendar" })).toHaveTextContent("Calendar A");
 
     rerender(
       <CalendarSelector
@@ -184,7 +184,7 @@ describe("CalendarSelector", () => {
       />,
     );
 
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Delete calendar" })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole("alertdialog", { name: "Delete calendar" })).not.toBeInTheDocument());
     expect(onDeleteCalendar).not.toHaveBeenCalled();
     const survivingTrigger = screen.getByRole("button", { name: "Calendar display: Calendar B" });
     await waitFor(() => expect(survivingTrigger).toHaveFocus());

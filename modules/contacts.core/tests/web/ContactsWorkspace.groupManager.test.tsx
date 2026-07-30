@@ -78,14 +78,14 @@ describe("Contacts Groups Manager", () => {
     await waitFor(() => expect(api).toHaveBeenCalledWith("/api/contacts/groups/group-manual/members/contact-1", expect.objectContaining({ method: "DELETE" })));
 
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete group" }));
-    let confirmation = await screen.findByRole("dialog", { name: "Confirm group deletion" });
+    let confirmation = await screen.findByRole("alertdialog", { name: "Confirm group deletion" });
     expect(confirmation).toHaveTextContent("Delete “Priority contacts” from active use?");
     expect(confirmation).toHaveTextContent("1 memberships will be hidden, but no contacts will be deleted");
     expect(confirmation).toHaveTextContent("restored from Archived");
     fireEvent.click(within(confirmation).getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(within(dialog).getByRole("button", { name: "Delete group" })).toHaveFocus());
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete group" }));
-    confirmation = await screen.findByRole("dialog", { name: "Confirm group deletion" });
+    confirmation = await screen.findByRole("alertdialog", { name: "Confirm group deletion" });
     fireEvent.click(within(confirmation).getByRole("button", { name: "Delete group" }));
     await waitFor(() => expect(api).toHaveBeenCalledWith("/api/contacts/groups/group-manual", expect.objectContaining({
       method: "DELETE",
@@ -113,7 +113,7 @@ describe("Contacts Groups Manager", () => {
 
     fireEvent.click(await within(dialog).findByRole("button", { name: /Important contacts/ }));
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete group" }));
-    const confirmation = await screen.findByRole("dialog", { name: "Confirm group deletion" });
+    const confirmation = await screen.findByRole("alertdialog", { name: "Confirm group deletion" });
     fireEvent.click(within(confirmation).getByRole("button", { name: "Delete group" }));
 
     expect(await within(confirmation).findByRole("alert")).toHaveTextContent("changed after this action was prepared");
@@ -138,10 +138,10 @@ describe("Contacts Groups Manager", () => {
 
     fireEvent.click(await within(dialog).findByRole("button", { name: /Important contacts/ }));
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete group" }));
-    const confirmation = await screen.findByRole("dialog", { name: "Confirm group deletion" });
+    const confirmation = await screen.findByRole("alertdialog", { name: "Confirm group deletion" });
     fireEvent.click(within(confirmation).getByRole("button", { name: "Delete group" }));
 
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Confirm group deletion" })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole("alertdialog", { name: "Confirm group deletion" })).not.toBeInTheDocument());
     expect(api.mock.calls.filter(([path, options]) => String(path).endsWith("/group-manual") && (options as RequestInit | undefined)?.method === "DELETE")).toHaveLength(1);
     expect(within(dialog).queryByRole("button", { name: "Delete group" })).not.toBeInTheDocument();
     await waitFor(() => expect(within(dialog).getByRole("button", { name: /Company: Example/ })).toHaveFocus());

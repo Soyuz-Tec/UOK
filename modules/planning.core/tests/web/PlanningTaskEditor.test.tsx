@@ -27,7 +27,7 @@ describe("PlanningTaskEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Delete task" }));
     expect(onDeleteTask).not.toHaveBeenCalled();
-    const dialog = screen.getByRole("dialog", { name: "Delete task Delivery task" });
+    const dialog = screen.getByRole("alertdialog", { name: "Delete task Delivery task" });
     expect(within(dialog).getByText(/Child tasks are also deleted/i)).toBeInTheDocument();
     fireEvent.click(within(dialog).getByRole("button", { name: "Delete task" }));
 
@@ -53,7 +53,7 @@ describe("PlanningTaskEditor", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "حذف المهمة" }));
-    expect(screen.getByRole("dialog", { name: "حذف المهمة Delivery task" })).toBeInTheDocument();
+    expect(screen.getByRole("alertdialog", { name: "حذف المهمة Delivery task" })).toBeInTheDocument();
   });
 });
 

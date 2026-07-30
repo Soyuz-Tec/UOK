@@ -72,7 +72,7 @@ async function runLifecycle(buttonName: string, reason: string) {
   if (buttonName === "Archive document type") {
     fireEvent.click(button);
     const confirmation = await screen.findByRole(
-      "dialog",
+      "alertdialog",
       { name: "Confirm action" },
     );
     await act(async () => {

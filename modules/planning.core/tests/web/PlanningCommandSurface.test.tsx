@@ -58,7 +58,7 @@ describe("PlanningCommandSurface", () => {
     const searchOptions = screen.getByRole("button", { name: "Search options: All tasks" });
     fireEvent.click(searchOptions);
     fireEvent.click(screen.getByRole("button", { name: "Delete project" }));
-    const dialog = screen.getByRole("dialog", { name: "Delete project Pilot" });
+    const dialog = screen.getByRole("alertdialog", { name: "Delete project Pilot" });
     const confirm = within(dialog).getByRole("button", { name: "Delete project" });
     expect(confirm).toBeDisabled();
     fireEvent.change(within(dialog).getByRole("textbox", { name: "Reason for deleting" }), { target: { value: "Duplicate plan" } });
@@ -86,7 +86,7 @@ describe("PlanningCommandSurface", () => {
     fireEvent.click(screen.getByRole("button", { name: "Search options: All tasks" }));
     fireEvent.click(screen.getByRole("button", { name: "Delete project" }));
     fireEvent.change(screen.getByRole("textbox", { name: "Reason for deleting" }), { target: { value: "Outdated delete reason" } });
-    expect(screen.getByRole("dialog", { name: "Delete project Pilot" })).toBeInTheDocument();
+    expect(screen.getByRole("alertdialog", { name: "Delete project Pilot" })).toBeInTheDocument();
 
     const archivedProject = { ...schedule.project, status: "archived" as const, revision: 2 };
     rerender(<PlanningCommandSurface
@@ -94,7 +94,7 @@ describe("PlanningCommandSurface", () => {
       actions={actions}
     />);
 
-    expect(screen.queryByRole("dialog", { name: "Delete project Pilot" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("alertdialog", { name: "Delete project Pilot" })).not.toBeInTheDocument();
     const restore = screen.getByRole("button", { name: "Restore project" });
     await waitFor(() => expect(restore).toHaveFocus());
   });
@@ -108,7 +108,7 @@ describe("PlanningCommandSurface", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^خيارات البحث:/ }));
     fireEvent.click(screen.getByRole("button", { name: "حذف المشروع" }));
-    const dialog = screen.getByRole("dialog", { name: "حذف المشروع Pilot" });
+    const dialog = screen.getByRole("alertdialog", { name: "حذف المشروع Pilot" });
     expect(within(dialog).getByRole("textbox", { name: "سبب الحذف" })).toBeInTheDocument();
     expect(within(dialog).getByRole("button", { name: "حذف المشروع" })).toBeDisabled();
   });

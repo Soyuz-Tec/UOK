@@ -31,3 +31,58 @@
   color: var(--uok-text-tertiary);
   font-size: var(--uok-callout);
 }
+
+.module-error-boundary {
+  min-width: 0;
+}
+
+.async-state {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--uok-space-3);
+  align-items: center;
+  min-height: 112px;
+  border: var(--uok-line);
+  border-radius: var(--uok-radius-3);
+  padding: var(--uok-space-4);
+  color: var(--uok-text-secondary);
+  background: var(--uok-bg-elevated);
+}
+
+.async-state-error {
+  border-color: color-mix(in srgb, var(--uok-status-danger) 38%, var(--uok-separator));
+}
+
+.async-state-error > svg {
+  color: var(--uok-status-danger);
+}
+
+.async-state-loading > svg {
+  color: var(--uok-accent);
+}
+
+.async-state-copy {
+  display: grid;
+  gap: var(--uok-space-1);
+  min-width: 0;
+}
+
+.async-state-copy strong {
+  color: var(--uok-text-primary);
+}
+
+.async-state-copy p {
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 680px) {
+  .async-state {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .async-state .command-button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}

@@ -50,7 +50,7 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(detail).getByRole("button", { name: "Purge" })).toBeInTheDocument();
     fireEvent.click(within(detail).getByRole("button", { name: "Delete" }));
 
-    let confirmation = await screen.findByRole("dialog", { name: "Confirm contact deletion" });
+    let confirmation = await screen.findByRole("alertdialog", { name: "Confirm contact deletion" });
     expect(confirmation).toHaveTextContent("Delete “Example Contact” from active use?");
     expect(confirmation).toHaveTextContent("group memberships, and audit history remain");
     fireEvent.click(within(confirmation).getByRole("button", { name: "Cancel" }));
@@ -58,7 +58,7 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(onArchive).not.toHaveBeenCalled();
 
     fireEvent.click(within(detail).getByRole("button", { name: "Delete" }));
-    confirmation = await screen.findByRole("dialog", { name: "Confirm contact deletion" });
+    confirmation = await screen.findByRole("alertdialog", { name: "Confirm contact deletion" });
     fireEvent.click(within(confirmation).getByRole("button", { name: "Delete" }));
     await waitFor(() => expect(onArchive).toHaveBeenCalledTimes(1));
     expect(onPurge).not.toHaveBeenCalled();

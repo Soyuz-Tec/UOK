@@ -123,4 +123,28 @@ describe("module surface registry", () => {
     rerender(<ModuleSurfaceOutlet section="apps" host={host} surfaces={surfaces} />);
     expect(screen.getByLabelText("Apps value")).toHaveValue("unsaved");
   });
+
+  it("contains a module render failure and allows a bounded retry", () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    let shouldThrow = true;
+    const surfaces = validateModuleSurfaceCatalog([
+      registration("apps.manager", "apps", {
+        label: "Apps Manager",
+        render: () => <FailingSurface shouldThrow={shouldThrow} />,
+      }),
+    ]);
+
+    render(<ModuleSurfaceOutlet section="apps" host={host} surfaces={surfaces} />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Apps Manager could not open");
+    shouldThrow = false;
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(screen.getByText("Recovered module")).toBeInTheDocument();
+    expect(consoleError).toHaveBeenCalled();
+  });
 });
+
+function FailingSurface({ shouldThrow }: { shouldThrow: boolean }) {
+  if (shouldThrow) throw new Error("Module render failed.");
+  return <p>Recovered module</p>;
+}

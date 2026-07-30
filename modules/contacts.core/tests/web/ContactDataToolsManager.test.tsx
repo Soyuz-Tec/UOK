@@ -60,7 +60,7 @@ describe("Contacts data and governance tools", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Execute import" }));
     await waitFor(() => expect(importBodies(fetchMock)).toContainEqual(expect.objectContaining({ dry_run: false })));
     fireEvent.click(await within(dialog).findByRole("button", { name: "Rollback import" }));
-    const rollbackConfirmation = await screen.findByRole("dialog", { name: "Confirm action" });
+    const rollbackConfirmation = await screen.findByRole("alertdialog", { name: "Confirm action" });
     fireEvent.click(within(rollbackConfirmation).getByRole("button", { name: "Rollback import" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/contacts/import-batches/executed-batch/rollback", expect.objectContaining({ method: "POST" })));
     expect(await within(dialog).findByText(/1 rolled back/i)).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe("Contacts data and governance tools", () => {
 
     fireEvent.click(within(manager).getByRole("button", { name: "Contact teams" }));
     fireEvent.click(await within(manager).findByRole("button", { name: "Delete" }));
-    const confirmation = await screen.findByRole("dialog", { name: "Delete contact team" });
+    const confirmation = await screen.findByRole("alertdialog", { name: "Delete contact team" });
     const confirmDelete = within(confirmation).getByRole("button", { name: "Delete" });
     expect(confirmDelete).toBeDisabled();
     fireEvent.change(within(confirmation).getByLabelText("Reason for deletion"), { target: { value: "Team no longer needed" } });
@@ -130,14 +130,14 @@ describe("Contacts data and governance tools", () => {
     const fieldRecord = fieldHeadings.map((element) => element.closest("article")).find(Boolean);
     expect(fieldRecord).not.toBeNull();
     fireEvent.click(within(fieldRecord as HTMLElement).getByRole("button", { name: "Delete" }));
-    const confirmation = await screen.findByRole("dialog", { name: "Delete custom field" });
+    const confirmation = await screen.findByRole("alertdialog", { name: "Delete custom field" });
     fireEvent.change(within(confirmation).getByLabelText("Reason for deletion"), { target: { value: "Field retired" } });
     fireEvent.click(within(confirmation).getByRole("button", { name: "Delete" }));
 
     expect(await within(confirmation).findByText(/changed after this action was prepared.*review it/i)).toBeInTheDocument();
-    expect(screen.getByRole("dialog", { name: "Delete custom field" })).toBeInTheDocument();
+    expect(screen.getByRole("alertdialog", { name: "Delete custom field" })).toBeInTheDocument();
     fireEvent.click(within(confirmation).getByRole("button", { name: "Delete" }));
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Delete custom field" })).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole("alertdialog", { name: "Delete custom field" })).not.toBeInTheDocument());
 
     const deleteCalls = fetchMock.mock.calls.filter(([path, options]) => path === "/api/contacts/custom-fields/field-1" && options?.method === "DELETE");
     expect(deleteCalls).toHaveLength(2);
