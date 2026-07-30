@@ -68,7 +68,7 @@ The module facade is intentionally limited to runtime composition providers. ORM
 - Permissions: `products.read`, `products.manage`
 - Workbench section: `products`
 
-The UI uses the existing neutral module-surface host contract. All Product DTOs, HTTP calls, command payloads, state, components, and CSS remain module-owned.
+The UI uses the existing neutral module-surface host contract. All Product DTOs, HTTP calls, command payloads, state, components, and CSS remain module-owned. The Product inspector uses an adaptive fact grid that collapses before values become unreadably narrow; long values wrap at word boundaries rather than one character at a time.
 
 ## Non-Goals
 

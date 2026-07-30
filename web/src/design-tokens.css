@@ -7,6 +7,9 @@
   --uok-bg-grouped-primary: #eef1f4;
   --uok-bg-grouped-secondary: #f8f9fb;
   --uok-bg-grouped-tertiary: #ffffff;
+  --uok-bg-canvas: var(--uok-bg-base);
+  --uok-bg-grouped: var(--uok-bg-grouped-primary);
+  --uok-bg-muted: var(--uok-bg-grouped-secondary);
   --uok-text-primary: #111827;
   --uok-text-secondary: #465364;
   --uok-text-tertiary: #697386;
@@ -20,6 +23,9 @@
   --uok-status-warning: #a15c00;
   --uok-status-danger: #b3261e;
   --uok-status-info: #0b63ce;
+  --uok-success: var(--uok-status-success);
+  --uok-warning: var(--uok-status-warning);
+  --uok-danger: var(--uok-status-danger);
   --uok-focus-ring: #0a84ff;
 
   --uok-space-1: 4px;
@@ -29,8 +35,10 @@
   --uok-space-5: 20px;
   --uok-space-6: 24px;
   --uok-space-8: 32px;
+  --uok-radius-1: 4px;
   --uok-radius-2: 6px;
   --uok-radius-3: 8px;
+  --uok-radius-5: 16px;
   --uok-radius-pill: 999px;
   --uok-control-height: 44px;
   --uok-row-height: 50px;
@@ -41,14 +49,19 @@
   --uok-line: 1px solid var(--uok-separator);
   --uok-shadow-1: 0 2px 8px color-mix(in srgb, #111827 12%, transparent);
   --uok-shadow-2: 0 18px 48px color-mix(in srgb, #111827 18%, transparent), 0 4px 12px color-mix(in srgb, #111827 10%, transparent);
+  --uok-shadow-lg: var(--uok-shadow-2);
 
   --uok-large-title: 1.75rem;
+  --uok-title-1: 1.5rem;
   --uok-title-2: 1.25rem;
+  --uok-title-3: 1.125rem;
+  --uok-title: var(--uok-title-2);
   --uok-headline: 1rem;
   --uok-body: 0.95rem;
   --uok-callout: 0.875rem;
   --uok-footnote: 0.82rem;
   --uok-caption: 0.78rem;
+  --uok-caption-1: var(--uok-caption);
 }
 
 :root[data-appearance="dark"] {

@@ -12,10 +12,15 @@ import { ContactQualityWorkspace } from "./ContactQualityWorkspace";
 import { ContactResultsPanel } from "./ContactResultsPanel";
 import { ContactsToolbar } from "./ContactsToolbar";
 import type { ContactsWorkspaceProps } from "./types";
+import { useCompactContactsWorkspace } from "./useCompactContactsWorkspace";
 import { useContactFieldVisibility } from "./useContactFieldVisibility";
 
 export function ContactsWorkspace(props: ContactsWorkspaceProps) {
-  const popupMode = props.contactsView === "table" || props.contactsView === "cards" || props.contactsView === "quality";
+  const compactWorkspace = useCompactContactsWorkspace();
+  const popupMode = props.contactsView === "table"
+    || props.contactsView === "cards"
+    || props.contactsView === "quality"
+    || (props.contactsView === "split" && compactWorkspace);
   const [detailPopupOpen, setDetailPopupOpen] = useState(false);
   const [groupsManagerOpen, setGroupsManagerOpen] = useState(false);
   const [dataToolsOpen, setDataToolsOpen] = useState(false);
@@ -139,7 +144,7 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
         <div className="contacts-workspace-main">
           {props.contactsView === "quality" ? (
             <ContactQualityWorkspace {...props} onOpenEditor={() => setDetailPopupOpen(true)} />
-          ) : props.contactsView === "split" ? (
+          ) : props.contactsView === "split" && !compactWorkspace ? (
             <WorkflowSplitView
               primaryLabel="Contact results"
               secondaryLabel="Contact inspector"

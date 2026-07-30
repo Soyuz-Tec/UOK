@@ -99,6 +99,11 @@ Bulk and export paths must honor consent and explicit permissions. Purge must re
 
 Contacts uses the shared minimal workspace command surface for search, paging, view selection, fields, and New Contact. List + Detail, Table, and Cards keep distinct purposes. Search options own filters, saved views, sort, and sectioning.
 
+At compact workspace widths, List + Detail becomes a one-pane results flow.
+Selecting a contact opens the existing shared detail popup instead of stacking
+the inspector after the complete result list. Wide layouts retain the
+persistent side-by-side inspector and selection state.
+
 The Groups Manager replaces the redundant persistent rail. It is a shared draggable popup with:
 
 - manual/generated/empty/archived filters;
