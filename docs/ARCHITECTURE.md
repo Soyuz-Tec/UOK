@@ -79,11 +79,13 @@ Operator browser
   retained surface render. Contacts and every other module retain ownership of
   their HTTP reads, DTOs, state, preferences, criteria, and commands.
 - Product-neutral request authority lives in
-  `web/src/shared/request-authority`. Delivery 6a applies it to the shell; later
-  Delivery 6 slices apply owner-local authorities to the remaining modules.
-  Adopted owners use independent named request lanes, guard every post-await
-  side effect, and epoch-stamp reusable committed state. Abort signals are
-  cooperative only; current-ticket proof is authoritative.
+  `web/src/shared/request-authority`. Delivery 6a applies it to the shell and
+  Delivery 6b applies owner-local read authority to Compliance list, detail,
+  and history requests. Compliance commands and the other audited module
+  owners remain phased Delivery 6 work. Adopted paths use independent named
+  request lanes, guard every post-await side effect, and epoch-stamp reusable
+  committed state. Abort signals are cooperative only; current-ticket proof is
+  authoritative.
 - Durable module workspaces compose one minimal shared command surface with optional query, context, and actions groups plus the common localized action vocabulary accepted in ADR-0025. Shared code owns layout and accessibility; modules retain domain nouns, state, permissions, options, and handlers.
 - Compliance Document Types, Product Master, Location Master, Route/Corridor Master, Shipment Support, and Shipment Readiness own their complete DTO, HTTP, state, and workbench surfaces under their module web roots; Intelligence is read-only and declares no command surface. Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
 - Docker copies module production source into the frontend build stage, TypeScript/Vitest discover the module-owned source and test roots, and final-image validation keeps module tests out of the runtime image.

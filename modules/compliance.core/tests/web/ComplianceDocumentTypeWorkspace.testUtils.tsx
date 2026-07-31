@@ -1,4 +1,4 @@
-import type { ModuleSurfaceHostContext } from "@uok/contracts/moduleSurface";
+import type { ModuleSurfaceRenderContext } from "@uok/contracts/moduleSurface";
 import { vi } from "vitest";
 import type {
   ComplianceDocumentType,
@@ -53,11 +53,11 @@ export const nameHistory: ComplianceDocumentTypeNameHistory[] = [{
   changed_at: "2026-07-17T11:00:00Z",
 }];
 
-type HostOverrides = Omit<Partial<ModuleSurfaceHostContext>, "session"> & {
-  session?: Partial<ModuleSurfaceHostContext["session"]>;
+type HostOverrides = Omit<Partial<ModuleSurfaceRenderContext>, "session"> & {
+  session?: Partial<ModuleSurfaceRenderContext["session"]>;
 };
 
-export function complianceHost(overrides: HostOverrides = {}): ModuleSurfaceHostContext {
+export function complianceHost(overrides: HostOverrides = {}): ModuleSurfaceRenderContext {
   const { session, ...hostOverrides } = overrides;
   return {
     session: {
@@ -73,6 +73,7 @@ export function complianceHost(overrides: HostOverrides = {}): ModuleSurfaceHost
     moduleAction: vi.fn(),
     refreshHost: vi.fn().mockResolvedValue(undefined),
     moduleRefreshRevision: 0,
+    surfaceActive: true,
     ...hostOverrides,
   };
 }
@@ -131,4 +132,12 @@ export function jsonResponse(value: unknown, status = 200) {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+export function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((accept) => {
+    resolve = accept;
+  });
+  return { promise, resolve };
 }

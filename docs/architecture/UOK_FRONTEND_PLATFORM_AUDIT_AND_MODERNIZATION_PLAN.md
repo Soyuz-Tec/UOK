@@ -371,7 +371,7 @@ Expected outcome: one measured baseline, responsive and accessible shared behavi
 
 | Delivery | Scope | Status | ADR |
 |---|---|---|---|
-| 6 | Request-authoritative async boundary and generation-bound unauthorized handling across session, capability, operational, criteria, activation, and lifetime changes | In progress: sub-slice 6a establishes the shared primitive, atomic shell session, shell adoption, and per-surface activity contract; module-owner adoption remains phased | ADR-0030 |
+| 6 | Request-authoritative async boundary and generation-bound unauthorized handling across session, capability, operational, criteria, activation, and lifetime changes | In progress: sub-slice 6a establishes the shared primitive, atomic shell session, shell adoption, and per-surface activity contract; 6b adopts list/detail/history read authority in Compliance; Compliance mutations and other module-owner paths remain phased | ADR-0030 |
 | 7 | Shared HTTP transport and runtime response decoding in bounded owner slices | Planned | Yes for the transport/error contract |
 | 8 | Server-authoritative identity bootstrap, revocable logout, token rotation, and replay proof | Planned | Yes; dedicated auth-session ADR |
 | 9 | Canonical browser navigation and exact entity deep links | Planned | Yes; neutral surface contract changes |
@@ -387,10 +387,12 @@ Expected outcome: every browser/server boundary has typed ownership, stale sessi
 
 Delivery 6 is intentionally partitioned. Sub-slice 6a establishes the neutral
 contract and shell proof without moving domain behavior into shared code.
-Subsequent sub-slices migrate audited module owners in bounded groups. Delivery
-6 and Top-20 Issue 1 remain open until every identified owner path guards
-success, error, loading/finally, host refresh, and unauthorized dispatch and
-masks epoch-stale committed state.
+Sub-slice 6b starts owner adoption with Compliance list, detail, and history
+reads. Subsequent sub-slices retain separate mutation reconciliation and
+migrate the other audited module owners in bounded groups. Delivery 6 and
+Top-20 Issue 1 remain open until every identified owner path guards success,
+error, loading/finally, host refresh, and unauthorized dispatch and masks
+epoch-stale committed state.
 
 ### Phase 3 - Feature Refactors
 
@@ -431,7 +433,7 @@ Every delivery must merge and qualify before the next begins. Runtime-affecting 
 
 | Rank | Issue | Severity | Evidence | Shared solution | Status |
 |---|---|---|---|---|---|
-| 1 | Old-session responses can overwrite new-session state or an old `401` can trigger logout | High | Shell, Contacts, Compliance, Product, Location, Route, and Shipment request paths | ABA-safe request boundary plus generation-bound unauthorized callback | In progress: Delivery 6a shell/foundation current; module-owner paths remain open |
+| 1 | Old-session responses can overwrite new-session state or an old `401` can trigger logout | High | Shell, Contacts, Compliance, Product, Location, Route, and Shipment request paths | ABA-safe request boundary plus generation-bound unauthorized callback | In progress: Delivery 6a shell/foundation and 6b Compliance reads current; Compliance mutations and other module-owner paths remain open |
 | 2 | Logout leaves the bearer token replayable until its default eight-hour expiry | High | `useAuthState.ts`; `src/uok/host/security.py` | Token identity/revocation, rotation, server logout, and replay tests | Open |
 | 3 | Nineteen clients implement transport and response handling separately | High | Direct `fetch` inventory | Shared HTTP mechanics plus module decoders | Open |
 | 4 | Client identity outlives token storage and is weakly decoded | Medium | `web/src/shared/session.ts` | Strict server-rehydrated session identity | Open |

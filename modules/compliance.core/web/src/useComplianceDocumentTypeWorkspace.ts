@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import type { ModuleSurfaceHostContext } from "@uok/contracts/moduleSurface";
+import type { ModuleSurfaceRenderContext } from "@uok/contracts/moduleSurface";
 import {
   complianceDocumentTypeCategories,
   filterAndSortComplianceDocumentTypes,
@@ -14,10 +14,13 @@ import { useComplianceDocumentTypeMutations } from "./useComplianceDocumentTypeM
 import { useComplianceDocumentTypeReads } from "./useComplianceDocumentTypeReads";
 
 export function useComplianceDocumentTypeWorkspace(
-  host: ModuleSurfaceHostContext,
+  host: ModuleSurfaceRenderContext,
   operational: boolean,
 ) {
-  const [stateToken, setStateToken] = useState(host.session.token);
+  const [stateSession, setStateSession] = useState({
+    token: host.session.token,
+    generation: host.session.generation,
+  });
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] =
     useState<ComplianceDocumentTypeStatusFilter>("current");
@@ -56,14 +59,17 @@ export function useComplianceDocumentTypeWorkspace(
   });
 
   useEffect(() => {
-    setStateToken(host.session.token);
+    setStateSession({
+      token: host.session.token,
+      generation: host.session.generation,
+    });
     setQuery("");
     setStatusFilter("current");
     setCategoryFilter("all");
     setSortBy("code");
     setSortDirection("asc");
     setStatus("Compliance Document Types ready.");
-  }, [host.session.token]);
+  }, [host.session.generation, host.session.token]);
 
   useEffect(() => {
     if (!host.session.token || !operational || selectionVisible) return;
@@ -83,19 +89,26 @@ export function useComplianceDocumentTypeWorkspace(
     selected,
     selectedId: selectionVisible ? reads.selectedId : "",
     categories,
-    query: stateToken === host.session.token ? query : "",
+    query: sessionMatches(stateSession, host.session) ? query : "",
     setQuery,
-    statusFilter: stateToken === host.session.token ? statusFilter : "current",
+    statusFilter: sessionMatches(stateSession, host.session) ? statusFilter : "current",
     setStatusFilter,
-    categoryFilter: stateToken === host.session.token ? categoryFilter : "all",
+    categoryFilter: sessionMatches(stateSession, host.session) ? categoryFilter : "all",
     setCategoryFilter,
-    sortBy: stateToken === host.session.token ? sortBy : "code",
+    sortBy: sessionMatches(stateSession, host.session) ? sortBy : "code",
     setSortBy,
-    sortDirection: stateToken === host.session.token ? sortDirection : "asc",
+    sortDirection: sessionMatches(stateSession, host.session) ? sortDirection : "asc",
     setSortDirection,
     busyAction: mutations.busyAction || (reads.refreshing ? "refresh" : ""),
-    status: stateToken === host.session.token
+    status: sessionMatches(stateSession, host.session)
       ? status
       : "Compliance Document Types ready.",
   };
+}
+
+function sessionMatches(
+  state: { token: string; generation: number },
+  session: { token: string; generation: number },
+) {
+  return state.token === session.token && state.generation === session.generation;
 }

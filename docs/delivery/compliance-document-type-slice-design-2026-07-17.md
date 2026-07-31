@@ -171,7 +171,7 @@ One module-owned **Compliance Document Types** workspace provides:
 - read-only behavior for actors without `compliance.manage`;
 - archived rows hidden by default and available through an explicit filter.
 
-All UI source and CSS live in `modules/compliance.core/web/src`; tests live in `modules/compliance.core/tests/web`. The canonical `moduleSurface.tsx` receives only `ModuleSurfaceHostContext`; no shell, generated-catalog, or foreign-module import is allowed. Components, state, editor, actions, and tests are split before reaching source-size limits.
+All UI source and CSS live in `modules/compliance.core/web/src`; tests live in `modules/compliance.core/tests/web`. The canonical `moduleSurface.tsx` receives the neutral `ModuleSurfaceRenderContext`: the base host context plus the registry-owned `surfaceActive` value. No shell, generated-catalog, or foreign-module import is allowed. Components, state, editor, actions, and tests are split before reaching source-size limits.
 
 ## 10. Test Plan
 
