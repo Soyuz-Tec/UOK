@@ -55,7 +55,9 @@ describe("Shipment Readiness read workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Enable Shipment Readiness" }));
     expect(moduleAction).toHaveBeenCalledWith("intelligence.core", "enable");
 
-    rerender(<ShipmentReadinessWorkspace host={intelligenceHost({ token: "" })} />);
+    rerender(<ShipmentReadinessWorkspace host={intelligenceHost({
+      session: { token: "", generation: 1 },
+    })} />);
     expect(screen.getByText("Sign in to open Shipment Readiness.")).toBeInTheDocument();
   });
 
@@ -177,7 +179,7 @@ describe("Shipment Readiness read workspace", () => {
       }, 400))
       .mockResolvedValueOnce(jsonResponse({ detail: "expired" }, 401));
     vi.stubGlobal("fetch", fetchMock);
-    const host = intelligenceHost({ onUnauthorized });
+    const host = intelligenceHost({ session: { onUnauthorized } });
     const { rerender } = render(<ShipmentReadinessWorkspace host={host} />);
 
     await screen.findByText("No tenant-visible Shipments are available.");

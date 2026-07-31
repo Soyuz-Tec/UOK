@@ -30,28 +30,28 @@ export function useComplianceDocumentTypeMutations({
   setStatus: (value: string) => void;
   setStatusFilter: (value: ComplianceDocumentTypeStatusFilter) => void;
 }) {
-  const sessionToken = useRef(host.token);
+  const sessionToken = useRef(host.session.token);
   const mutationRequest = useRef(0);
   const activeOperation = useRef("");
-  const [stateToken, setStateToken] = useState(host.token);
+  const [stateToken, setStateToken] = useState(host.session.token);
   const [editorMode, setEditorMode] = useState<ComplianceEditorMode>(null);
   const [editorError, setEditorError] = useState("");
   const [busyAction, setBusyAction] = useState("");
-  if (sessionToken.current !== host.token) {
-    sessionToken.current = host.token;
+  if (sessionToken.current !== host.session.token) {
+    sessionToken.current = host.session.token;
     mutationRequest.current += 1;
     activeOperation.current = "";
   }
-  const sessionMatches = stateToken === host.token;
+  const sessionMatches = stateToken === host.session.token;
 
   useEffect(() => {
     mutationRequest.current += 1;
     activeOperation.current = "";
-    setStateToken(host.token);
+    setStateToken(host.session.token);
     setEditorMode(null);
     setEditorError("");
     setBusyAction("");
-  }, [host.token]);
+  }, [host.session.token]);
 
   function openEditor(mode: Exclude<ComplianceEditorMode, null>) {
     if (mode === "edit" && !selected) return;
@@ -72,8 +72,13 @@ export function useComplianceDocumentTypeMutations({
     if (activeOperation.current || (mode === "edit" && !selected)) return;
     const action = mode === "create" ? "create" : "update";
     await runMutation(action, () => mode === "create"
-      ? createComplianceDocumentType(host.token, draft, host.onUnauthorized)
-      : updateComplianceDocumentType(host.token, selected!, draft, host.onUnauthorized));
+      ? createComplianceDocumentType(host.session.token, draft, host.session.onUnauthorized)
+      : updateComplianceDocumentType(
+        host.session.token,
+        selected!,
+        draft,
+        host.session.onUnauthorized,
+      ));
   }
 
   async function runLifecycle(
@@ -84,11 +89,11 @@ export function useComplianceDocumentTypeMutations({
     await runMutation(
       action,
       () => changeComplianceDocumentTypeLifecycle(
-        host.token,
+        host.session.token,
         selected,
         action,
         reason,
-        host.onUnauthorized,
+        host.session.onUnauthorized,
       ),
       lifecycleFilter[action],
     );
@@ -99,7 +104,7 @@ export function useComplianceDocumentTypeMutations({
     operation: () => Promise<ComplianceDocumentType>,
     nextFilter?: ComplianceDocumentTypeStatusFilter,
   ) {
-    const token = host.token;
+    const token = host.session.token;
     const request = ++mutationRequest.current;
     activeOperation.current = action;
     setBusyAction(action);

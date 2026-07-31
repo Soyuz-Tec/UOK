@@ -35,7 +35,9 @@ describe("Shipment Support workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Install Shipment Support" }));
     expect(moduleAction).toHaveBeenCalledWith("shipments.core", "install");
 
-    rerender(<ShipmentSupportWorkspace host={shipmentHost({ token: "" })} />);
+    rerender(<ShipmentSupportWorkspace host={shipmentHost({
+      session: { token: "", generation: 1 },
+    })} />);
     expect(screen.getByText("Sign in to open Shipment Support.")).toBeInTheDocument();
   });
 
@@ -211,7 +213,9 @@ describe("Shipment Support workspace", () => {
     const onUnauthorized = vi.fn();
     const foreignParty = { ...shipperParty, status: "missing" as const, display_label: null, status_summary: "Party is not in this organization." };
     vi.stubGlobal("fetch", shipmentFetchMock({ party: () => foreignParty }));
-    render(<ShipmentSupportWorkspace host={shipmentHost({ onUnauthorized })} />);
+    render(<ShipmentSupportWorkspace host={shipmentHost({
+      session: { onUnauthorized },
+    })} />);
     await screen.findByRole("heading", { name: activeShipment.code });
     fireEvent.click(screen.getByRole("button", { name: "New shipment" }));
     fillMinimalCreateForm();
@@ -220,7 +224,9 @@ describe("Shipment Support workspace", () => {
 
     cleanup();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ detail: "expired" }, 401)));
-    render(<ShipmentSupportWorkspace host={shipmentHost({ onUnauthorized })} />);
+    render(<ShipmentSupportWorkspace host={shipmentHost({
+      session: { onUnauthorized },
+    })} />);
     await waitFor(() => expect(onUnauthorized).toHaveBeenCalled());
   });
 });

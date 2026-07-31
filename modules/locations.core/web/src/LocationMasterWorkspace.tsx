@@ -60,10 +60,10 @@ export function LocationMasterWorkspace({ host }: { host: ModuleSurfaceHostConte
   }), [locations, query, sortBy, sortDirection, statusFilter]);
 
   const refreshLocations = useCallback(async () => {
-    if (!host.token || !operational) return;
+    if (!host.session.token || !operational) return;
     try {
       setBusyAction("refresh");
-      const rows = await loadLocationDefinitions(host.token, host.onUnauthorized);
+      const rows = await loadLocationDefinitions(host.session.token, host.session.onUnauthorized);
       setLocations(rows);
       setSelectedId((current) => rows.some((location) => location.id === current)
         ? current
@@ -74,10 +74,10 @@ export function LocationMasterWorkspace({ host }: { host: ModuleSurfaceHostConte
     } finally {
       setBusyAction("");
     }
-  }, [host.onUnauthorized, host.token, operational]);
+  }, [host.session.onUnauthorized, host.session.token, operational]);
 
   useEffect(() => {
-    if (!host.token || !operational) {
+    if (!host.session.token || !operational) {
       setLocations([]);
       setSelectedId("");
       setHistory([]);
@@ -85,16 +85,16 @@ export function LocationMasterWorkspace({ host }: { host: ModuleSurfaceHostConte
       return;
     }
     void refreshLocations();
-  }, [host.moduleRefreshRevision, host.token, operational, refreshLocations]);
+  }, [host.moduleRefreshRevision, host.session.token, operational, refreshLocations]);
 
   useEffect(() => {
-    if (!host.token || !operational || !selectedRecordId) {
+    if (!host.session.token || !operational || !selectedRecordId) {
       setHistory([]);
       return;
     }
     let active = true;
     setHistoryLoading(true);
-    void loadLocationNameHistory(host.token, selectedRecordId, host.onUnauthorized)
+    void loadLocationNameHistory(host.session.token, selectedRecordId, host.session.onUnauthorized)
       .then((rows) => {
         if (active) setHistory(rows);
       })
@@ -107,9 +107,9 @@ export function LocationMasterWorkspace({ host }: { host: ModuleSurfaceHostConte
     return () => {
       active = false;
     };
-  }, [host.onUnauthorized, host.token, operational, selectedRecordId, selectedVersion]);
+  }, [host.session.onUnauthorized, host.session.token, operational, selectedRecordId, selectedVersion]);
 
-  if (!host.token) return <EmptyState text="Sign in to open Location Master." />;
+  if (!host.session.token) return <EmptyState text="Sign in to open Location Master." />;
   if (!operational) return <LocationModuleState module={module} host={host} />;
 
   return (
@@ -219,15 +219,15 @@ export function LocationMasterWorkspace({ host }: { host: ModuleSurfaceHostConte
     if (!canManage || activeOperation.current || (mode === "edit" && !selected)) return;
     const action = mode === "create" ? "create" : "update";
     await runMutation(action, async () => mode === "create"
-      ? createLocationDefinition(host.token, draft, host.onUnauthorized)
-      : updateLocationDefinition(host.token, selected!, draft, host.onUnauthorized));
+      ? createLocationDefinition(host.session.token, draft, host.session.onUnauthorized)
+      : updateLocationDefinition(host.session.token, selected!, draft, host.session.onUnauthorized));
   }
 
   async function runLifecycle(action: "archive" | "restore", location: LocationDefinition) {
     if (!canManage || activeOperation.current) return;
     await runMutation(action, () => action === "archive"
-      ? archiveLocationDefinition(host.token, location, host.onUnauthorized)
-      : restoreLocationDefinition(host.token, location, host.onUnauthorized));
+      ? archiveLocationDefinition(host.session.token, location, host.session.onUnauthorized)
+      : restoreLocationDefinition(host.session.token, location, host.session.onUnauthorized));
     setStatusFilter(action === "archive" ? "all" : "active");
   }
 

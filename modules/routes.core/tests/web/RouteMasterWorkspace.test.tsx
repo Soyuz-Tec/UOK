@@ -33,7 +33,9 @@ describe("Route/Corridor Master workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Install Route/Corridor Master" }));
     expect(moduleAction).toHaveBeenCalledWith("routes.core", "install");
 
-    rerender(<RouteMasterWorkspace host={routeHost({ token: "" })} />);
+    rerender(<RouteMasterWorkspace host={routeHost({
+      session: { token: "", generation: 1 },
+    })} />);
     expect(screen.getByText("Sign in to open Route/Corridor Master.")).toBeInTheDocument();
   });
 
@@ -186,7 +188,7 @@ describe("Route/Corridor Master workspace", () => {
     const onUnauthorized = vi.fn();
     const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse({ detail: "routes.read required" }, 403)));
     vi.stubGlobal("fetch", fetchMock);
-    const host = routeHost({ onUnauthorized });
+    const host = routeHost({ session: { onUnauthorized } });
     const { rerender } = render(<RouteMasterWorkspace host={host} />);
     await screen.findByText("routes.read required");
 

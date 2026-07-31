@@ -29,16 +29,25 @@ export type HostModuleStatus = {
   dependents: string[];
 };
 
-export type ModuleSurfaceHostContext = {
+export type ModuleSurfaceSession = {
   token: string;
+  generation: number;
+  onUnauthorized: () => void;
+};
+
+export type ModuleSurfaceHostContext = {
+  session: ModuleSurfaceSession;
   currentUserRole: string;
   appearance: HostAppearance;
   moduleRows: readonly HostModuleStatus[];
   busyAction: string;
   moduleAction: (moduleName: string, action: HostModuleAction) => Promise<void>;
-  refreshHost: (overrideToken?: string) => Promise<void>;
+  refreshHost: () => Promise<void>;
   moduleRefreshRevision: number;
-  onUnauthorized: () => void;
+};
+
+export type ModuleSurfaceRenderContext = ModuleSurfaceHostContext & {
+  surfaceActive: boolean;
 };
 
 export type ModuleSurface = {
@@ -47,7 +56,7 @@ export type ModuleSurface = {
   icon: ElementType;
   moduleName: string;
   order?: number;
-  render: (context: ModuleSurfaceHostContext) => ReactNode;
+  render: (context: ModuleSurfaceRenderContext) => ReactNode;
 };
 
 export type FrontendModuleManifest = {

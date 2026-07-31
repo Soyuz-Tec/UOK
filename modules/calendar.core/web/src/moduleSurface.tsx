@@ -14,7 +14,7 @@ export const calendarModuleSurface: ModuleSurface = {
   order: 40,
   render: (host) => (
     <CalendarWorkspace
-      token={host.token}
+      token={host.session.token}
       moduleRows={[...host.moduleRows]}
       busyAction={host.busyAction}
       onInstall={() => void host.moduleAction(CALENDAR_MODULE_ID, "install")}

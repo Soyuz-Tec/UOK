@@ -118,18 +118,30 @@ New extension points require an architecture update and a failing validation tes
   shared mappings remain in `src/uok/kernel_models.py`.
 - `modules/<module>` owns module-specific backend implementation, ORM definitions, UI surface, migrations, tests, runtime/release verification assets, commands, events, permissions, and maintenance behavior.
 - Module production frontend source and CSS live under `modules/<module>/web/src`; module frontend tests live under `modules/<module>/tests/web`. Shared shell, reusable module-neutral controls, design tokens, generated contracts, and catalog composition remain under `web/src`.
-- Module surfaces depend only on `web/src/contracts/moduleSurface.ts`. The
-  generated runtime catalog is the sole shell importer of exact
-  `moduleSurface.tsx` entries; modules must not import shell app/features or
-  concrete Workbench implementation types.
+- Module surfaces depend only on
+  `web/src/contracts/moduleSurface.ts`. The base context exposes an atomic
+  `ModuleSurfaceSession` and other product-neutral host capabilities; the
+  generated registry alone adds the exact `surfaceActive` value to each
+  `ModuleSurfaceRenderContext`. Modules must not import shell app/features,
+  construct a competing session authority, or invent a surface activity value.
+- A new or materially changed module async path must create owner-local request
+  authority from `web/src/shared/request-authority`. It must invalidate that
+  authority for relevant session-generation, capability, operational,
+  criteria/entity, activation, and lifetime changes; use independent lanes for
+  independent work; guard every post-await side effect; and epoch-stamp any
+  reusable committed state. Endpoint, DTO, selection, validation, and workflow
+  ownership remains in the module.
+- The generated runtime catalog remains the sole shell importer of exact
+  `moduleSurface.tsx` entries. Request authority and `surfaceActive` do not
+  change manifest schema, compile-time composition, or module ownership.
 - Feature backends may use `uok.kernel.module_runtime` wrapper operations. They
   may not configure that port or import lifecycle/catalog composition
   implementations. Lifecycle mutations are restricted to the Apps Manager
   adapter; other capabilities receive read-only runtime operations.
 - Module → Host production exceptions are path-and-symbol exact:
-  `uok.host.database.get_db` and `uok.host.security.current_actor` in the 18
+  `uok.host.database.get_db` and `uok.host.security.current_actor` in the 19
   documented HTTP adapters, plus `uok.host.commands.execute_command` in the
-  Calendar, Contacts, and Planning command adapters, for 39 exact allowed
+  Calendar, Communications, Contacts, and Planning command adapters, for 42 exact allowed
   imports in total. Engine, `SessionLocal`, pool, application, host registries,
   and every unlisted host import are forbidden.
 - Product, cargo, CRM, accounting, inventory, document, and industry-specific logic must not be embedded in the kernel.
@@ -148,8 +160,8 @@ New extension points require an architecture update and a failing validation tes
   (64 total) on one SQLAlchemy metadata graph. The former global ORM
   compatibility imports are retired.
 - Current manifests declare 108 commands, 118 events, 12 candidate verifiers,
-  and 11 workbench surfaces. Host adapter scope remains 18 documented HTTP
-  adapters and 39 exact allowed imports.
+  and 11 workbench surfaces. Host adapter scope remains 19 documented HTTP
+  adapters and 42 exact allowed imports.
 - Shipment requirement and document-instance metadata stays owned by
   `shipments.core`; the instance schema contains no blob, binary, file,
   storage-key, upload, or preview contract.
@@ -198,3 +210,8 @@ Also run and review:
 ## Acceptance Rule
 
 A module is not ready for serious expansion unless its README, manifest, backend package, UI ownership, migrations, tests, permissions, command/event ownership, data retention behavior, and lifecycle behavior are declared and validated. A module with a workbench UI must additionally declare `web_surface`, its canonical `web_entry`, and a unique `web_section`; production source, local CSS, and frontend tests must remain in the owning module paths.
+
+A module with new or materially changed async frontend behavior must also prove
+current-session success, stale success/error/finally suppression, stale and
+current unauthorized behavior, relevant same-value ABA transitions,
+deactivation/reactivation where active-only work exists, and unmount behavior.

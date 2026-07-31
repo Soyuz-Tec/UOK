@@ -50,11 +50,19 @@ export const nameHistory: LocationNameHistory[] = [{
   changed_at: "2026-07-16T11:00:00Z",
 }];
 
-export function locationHost(
-  overrides: Partial<ModuleSurfaceHostContext> = {},
-): ModuleSurfaceHostContext {
+type HostOverrides = Omit<Partial<ModuleSurfaceHostContext>, "session"> & {
+  session?: Partial<ModuleSurfaceHostContext["session"]>;
+};
+
+export function locationHost(overrides: HostOverrides = {}): ModuleSurfaceHostContext {
+  const { session, ...hostOverrides } = overrides;
   return {
-    token: "test-token",
+    session: {
+      token: "test-token",
+      generation: 0,
+      onUnauthorized: vi.fn(),
+      ...session,
+    },
     currentUserRole: "ops_manager",
     appearance: "system",
     moduleRows: [locationModuleRow],
@@ -62,8 +70,7 @@ export function locationHost(
     moduleAction: vi.fn(),
     refreshHost: vi.fn().mockResolvedValue(undefined),
     moduleRefreshRevision: 0,
-    onUnauthorized: vi.fn(),
-    ...overrides,
+    ...hostOverrides,
   };
 }
 

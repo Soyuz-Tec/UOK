@@ -66,12 +66,12 @@ export function RouteMasterWorkspace({ host }: { host: ModuleSurfaceHostContext 
   }), [modeFilter, query, routes, sortBy, sortDirection, statusFilter]);
 
   const refreshRoutes = useCallback(async () => {
-    if (!host.token || !operational) return;
+    if (!host.session.token || !operational) return;
     try {
       setBusyAction("refresh");
       const [routeRows, optionRows] = await Promise.all([
-        loadRouteDefinitions(host.token, host.onUnauthorized),
-        loadLocationOptions(host.token, host.onUnauthorized),
+        loadRouteDefinitions(host.session.token, host.session.onUnauthorized),
+        loadLocationOptions(host.session.token, host.session.onUnauthorized),
       ]);
       setRoutes(routeRows);
       setLocationOptions(optionRows);
@@ -84,10 +84,10 @@ export function RouteMasterWorkspace({ host }: { host: ModuleSurfaceHostContext 
     } finally {
       setBusyAction("");
     }
-  }, [host.onUnauthorized, host.token, operational]);
+  }, [host.session.onUnauthorized, host.session.token, operational]);
 
   useEffect(() => {
-    if (!host.token || !operational) {
+    if (!host.session.token || !operational) {
       setRoutes([]);
       setLocationOptions([]);
       setSelectedId("");
@@ -97,10 +97,10 @@ export function RouteMasterWorkspace({ host }: { host: ModuleSurfaceHostContext 
       return;
     }
     void refreshRoutes();
-  }, [host.moduleRefreshRevision, host.token, operational, refreshRoutes]);
+  }, [host.moduleRefreshRevision, host.session.token, operational, refreshRoutes]);
 
   useEffect(() => {
-    if (!host.token || !operational || !selectedId) {
+    if (!host.session.token || !operational || !selectedId) {
       setDetail(null);
       setHistory([]);
       return;
@@ -108,8 +108,8 @@ export function RouteMasterWorkspace({ host }: { host: ModuleSurfaceHostContext 
     let active = true;
     setHistoryLoading(true);
     void Promise.all([
-      loadRouteDefinition(host.token, selectedId, host.onUnauthorized),
-      loadRouteNameHistory(host.token, selectedId, host.onUnauthorized),
+      loadRouteDefinition(host.session.token, selectedId, host.session.onUnauthorized),
+      loadRouteNameHistory(host.session.token, selectedId, host.session.onUnauthorized),
     ]).then(([route, rows]) => {
       if (!active) return;
       setDetail(route);
@@ -122,9 +122,9 @@ export function RouteMasterWorkspace({ host }: { host: ModuleSurfaceHostContext 
     return () => {
       active = false;
     };
-  }, [host.moduleRefreshRevision, host.onUnauthorized, host.token, operational, selectedId, listSelected?.version]);
+  }, [host.moduleRefreshRevision, host.session.onUnauthorized, host.session.token, operational, selectedId, listSelected?.version]);
 
-  if (!host.token) return <EmptyState text="Sign in to open Route/Corridor Master." />;
+  if (!host.session.token) return <EmptyState text="Sign in to open Route/Corridor Master." />;
   if (!operational) return <RouteModuleState module={module} host={host} />;
 
   return (
@@ -232,15 +232,15 @@ export function RouteMasterWorkspace({ host }: { host: ModuleSurfaceHostContext 
     if (!canManage || activeOperation.current || (mode === "edit" && !selected)) return;
     const action = mode === "create" ? "create" : "update";
     await runMutation(action, () => mode === "create"
-      ? createRouteDefinition(host.token, draft, host.onUnauthorized)
-      : updateRouteDefinition(host.token, selected!, draft, host.onUnauthorized));
+      ? createRouteDefinition(host.session.token, draft, host.session.onUnauthorized)
+      : updateRouteDefinition(host.session.token, selected!, draft, host.session.onUnauthorized));
   }
 
   async function runLifecycle(action: "archive" | "restore", route: RouteDefinition) {
     if (!canManage || activeOperation.current) return;
     const changed = await runMutation(action, () => action === "archive"
-      ? archiveRouteDefinition(host.token, route, host.onUnauthorized)
-      : restoreRouteDefinition(host.token, route, host.onUnauthorized));
+      ? archiveRouteDefinition(host.session.token, route, host.session.onUnauthorized)
+      : restoreRouteDefinition(host.session.token, route, host.session.onUnauthorized));
     if (changed) setStatusFilter(action === "archive" ? "all" : "active");
   }
 

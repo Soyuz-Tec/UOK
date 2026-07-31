@@ -53,11 +53,19 @@ export const nameHistory: ComplianceDocumentTypeNameHistory[] = [{
   changed_at: "2026-07-17T11:00:00Z",
 }];
 
-export function complianceHost(
-  overrides: Partial<ModuleSurfaceHostContext> = {},
-): ModuleSurfaceHostContext {
+type HostOverrides = Omit<Partial<ModuleSurfaceHostContext>, "session"> & {
+  session?: Partial<ModuleSurfaceHostContext["session"]>;
+};
+
+export function complianceHost(overrides: HostOverrides = {}): ModuleSurfaceHostContext {
+  const { session, ...hostOverrides } = overrides;
   return {
-    token: "test-token",
+    session: {
+      token: "test-token",
+      generation: 0,
+      onUnauthorized: vi.fn(),
+      ...session,
+    },
     currentUserRole: "ops_manager",
     appearance: "system",
     moduleRows: [complianceModuleRow],
@@ -65,8 +73,7 @@ export function complianceHost(
     moduleAction: vi.fn(),
     refreshHost: vi.fn().mockResolvedValue(undefined),
     moduleRefreshRevision: 0,
-    onUnauthorized: vi.fn(),
-    ...overrides,
+    ...hostOverrides,
   };
 }
 

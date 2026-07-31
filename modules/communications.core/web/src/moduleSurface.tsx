@@ -14,7 +14,7 @@ export const communicationsModuleSurface: ModuleSurface = {
   order: 50,
   render: (host) => (
     <CommunicationsWorkspace
-      token={host.token}
+      token={host.session.token}
       moduleRows={[...host.moduleRows]}
       busyAction={host.busyAction}
       onInstall={() => void host.moduleAction(COMMUNICATIONS_MODULE_ID, "install")}

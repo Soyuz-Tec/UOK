@@ -17,7 +17,7 @@ export function useComplianceDocumentTypeWorkspace(
   host: ModuleSurfaceHostContext,
   operational: boolean,
 ) {
-  const [stateToken, setStateToken] = useState(host.token);
+  const [stateToken, setStateToken] = useState(host.session.token);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] =
     useState<ComplianceDocumentTypeStatusFilter>("current");
@@ -56,20 +56,20 @@ export function useComplianceDocumentTypeWorkspace(
   });
 
   useEffect(() => {
-    setStateToken(host.token);
+    setStateToken(host.session.token);
     setQuery("");
     setStatusFilter("current");
     setCategoryFilter("all");
     setSortBy("code");
     setSortDirection("asc");
     setStatus("Compliance Document Types ready.");
-  }, [host.token]);
+  }, [host.session.token]);
 
   useEffect(() => {
-    if (!host.token || !operational || selectionVisible) return;
+    if (!host.session.token || !operational || selectionVisible) return;
     setSelectedId(visibleDocumentTypes[0]?.id || "");
   }, [
-    host.token,
+    host.session.token,
     operational,
     setSelectedId,
     selectionVisible,
@@ -83,17 +83,19 @@ export function useComplianceDocumentTypeWorkspace(
     selected,
     selectedId: selectionVisible ? reads.selectedId : "",
     categories,
-    query: stateToken === host.token ? query : "",
+    query: stateToken === host.session.token ? query : "",
     setQuery,
-    statusFilter: stateToken === host.token ? statusFilter : "current",
+    statusFilter: stateToken === host.session.token ? statusFilter : "current",
     setStatusFilter,
-    categoryFilter: stateToken === host.token ? categoryFilter : "all",
+    categoryFilter: stateToken === host.session.token ? categoryFilter : "all",
     setCategoryFilter,
-    sortBy: stateToken === host.token ? sortBy : "code",
+    sortBy: stateToken === host.session.token ? sortBy : "code",
     setSortBy,
-    sortDirection: stateToken === host.token ? sortDirection : "asc",
+    sortDirection: stateToken === host.session.token ? sortDirection : "asc",
     setSortDirection,
     busyAction: mutations.busyAction || (reads.refreshing ? "refresh" : ""),
-    status: stateToken === host.token ? status : "Compliance Document Types ready.",
+    status: stateToken === host.session.token
+      ? status
+      : "Compliance Document Types ready.",
   };
 }

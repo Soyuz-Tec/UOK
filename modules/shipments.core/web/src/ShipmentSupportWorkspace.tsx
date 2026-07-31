@@ -64,13 +64,13 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
     sortDirection,
   }), [query, shipments, sortBy, sortDirection, statusFilter]);
   const refreshShipments = useCallback(async () => {
-    if (!host.token || !operational) return;
+    if (!host.session.token || !operational) return;
     try {
       setBusyAction("refresh");
       const [shipmentRows, locations, routes] = await Promise.all([
-        loadShipments(host.token, host.onUnauthorized),
-        loadLocationOptions(host.token, host.onUnauthorized),
-        loadRouteOptions(host.token, host.onUnauthorized),
+        loadShipments(host.session.token, host.session.onUnauthorized),
+        loadLocationOptions(host.session.token, host.session.onUnauthorized),
+        loadRouteOptions(host.session.token, host.session.onUnauthorized),
       ]);
       setShipments(shipmentRows);
       setLocationOptions(locations);
@@ -84,9 +84,9 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
     } finally {
       setBusyAction("");
     }
-  }, [host.onUnauthorized, host.token, operational, requestedShipmentId]);
+  }, [host.session.onUnauthorized, host.session.token, operational, requestedShipmentId]);
   useEffect(() => {
-    if (!host.token || !operational) {
+    if (!host.session.token || !operational) {
       setShipments([]);
       setLocationOptions([]);
       setRouteOptions([]);
@@ -97,9 +97,9 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
       return;
     }
     void refreshShipments();
-  }, [host.moduleRefreshRevision, host.token, operational, refreshShipments]);
+  }, [host.moduleRefreshRevision, host.session.token, operational, refreshShipments]);
   useEffect(() => {
-    if (!host.token || !operational || !selectedId) {
+    if (!host.session.token || !operational || !selectedId) {
       setDetail(null);
       setHistory([]);
       return;
@@ -107,8 +107,8 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
     let active = true;
     setHistoryLoading(true);
     void Promise.all([
-      loadShipment(host.token, selectedId, host.onUnauthorized),
-      loadShipmentStatusHistory(host.token, selectedId, host.onUnauthorized),
+      loadShipment(host.session.token, selectedId, host.session.onUnauthorized),
+      loadShipmentStatusHistory(host.session.token, selectedId, host.session.onUnauthorized),
     ]).then(([shipment, rows]) => {
       if (!active) return;
       setDetail(shipment);
@@ -121,8 +121,8 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
     return () => {
       active = false;
     };
-  }, [host.moduleRefreshRevision, host.onUnauthorized, host.token, operational, selectedId, listSelected?.version]);
-  if (!host.token) return <EmptyState text="Sign in to open Shipment Support." />;
+  }, [host.moduleRefreshRevision, host.session.onUnauthorized, host.session.token, operational, selectedId, listSelected?.version]);
+  if (!host.session.token) return <EmptyState text="Sign in to open Shipment Support." />;
   if (!operational) return <ShipmentModuleState module={module} host={host} />;
   return (
     <section className="shipment-support-workspace" aria-label="Shipment Support">
@@ -186,11 +186,11 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
             canManage={canManage}
             documentEvidence={selected ? (
               <ShipmentDocumentEvidencePanels
-                key={`${host.token}:${host.currentUserRole}:${selected.id}`}
-                token={host.token}
+                key={`${host.session.token}:${host.currentUserRole}:${selected.id}`}
+                token={host.session.token}
                 shipmentId={selected.id}
                 canManage={canManage}
-                onUnauthorized={host.onUnauthorized}
+                onUnauthorized={host.session.onUnauthorized}
                 onStatus={setStatus}
               />
             ) : null}
@@ -245,14 +245,14 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
     setEditorError("");
     try {
       const [shipper, consignee] = await Promise.all([
-        resolvePartyReference(host.token, draft.shipperPartyId, host.onUnauthorized),
-        resolvePartyReference(host.token, draft.consigneePartyId, host.onUnauthorized),
+        resolvePartyReference(host.session.token, draft.shipperPartyId, host.session.onUnauthorized),
+        resolvePartyReference(host.session.token, draft.consigneePartyId, host.session.onUnauthorized),
       ]);
       if (shipper.status !== "ready") throw new Error(`Shipper Party: ${shipper.status_summary}`);
       if (consignee.status !== "ready") throw new Error(`Consignee Party: ${consignee.status_summary}`);
       const shipment = mode === "create"
-        ? await createShipment(host.token, draft, host.onUnauthorized)
-        : await updateShipment(host.token, selected!, draft, host.onUnauthorized);
+        ? await createShipment(host.session.token, draft, host.session.onUnauthorized)
+        : await updateShipment(host.session.token, selected!, draft, host.session.onUnauthorized);
       applyMutation(action, shipment);
     } catch (error) {
       const message = errorMessage(error);
@@ -269,7 +269,7 @@ export function ShipmentSupportWorkspace({ host }: { host: ModuleSurfaceHostCont
     activeOperation.current = "transition";
     setBusyAction("transition");
     try {
-      const changed = await transitionShipmentStatus(host.token, shipment, newStatus, reason, host.onUnauthorized);
+      const changed = await transitionShipmentStatus(host.session.token, shipment, newStatus, reason, host.session.onUnauthorized);
       applyMutation("transition", changed);
     } catch (error) {
       setStatus(errorMessage(error));

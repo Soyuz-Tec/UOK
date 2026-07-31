@@ -37,7 +37,7 @@ export function ShipmentReadinessWorkspace({
   const [query, setQuery] = useState("");
   const [bandFilter, setBandFilter] = useState<ShipmentReadinessBandFilter>("all");
   const [selectedId, setSelectedId] = useState("");
-  const savedViewsStorageKey = useEphemeralSavedViewsKey(host.token);
+  const savedViewsStorageKey = useEphemeralSavedViewsKey(host.session.token);
   const bandOptions = useMemo(() => [
     { value: "all", label: t("intelligence.band.all", "All readiness signals") },
     {
@@ -87,7 +87,7 @@ export function ShipmentReadinessWorkspace({
     );
   }, [selectedId, visibleSignals]);
 
-  if (!host.token) {
+  if (!host.session.token) {
     return (
       <EmptyState
         text={t("intelligence.signIn", "Sign in to open Shipment Readiness.")}

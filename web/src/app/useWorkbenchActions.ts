@@ -1,17 +1,36 @@
+import { useRef } from "react";
+
 import type { ModuleAction } from "../shared/types";
 import type { WorkbenchData } from "./useWorkbenchData";
 
 export function useWorkbenchActions(data: WorkbenchData) {
-  async function moduleAction(moduleName: string, action: ModuleAction) {
+  const actionQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+  function moduleAction(moduleName: string, action: ModuleAction) {
+    const queuedAction = actionQueueRef.current.then(() => runModuleAction(moduleName, action));
+    actionQueueRef.current = queuedAction.catch(() => undefined);
+    return queuedAction;
+  }
+
+  async function runModuleAction(moduleName: string, action: ModuleAction) {
+    const request = data.beginRequest("module-action");
+    const busyKey = `${moduleName}:${action}`;
     try {
-      data.setBusyAction(`${moduleName}:${action}`);
-      const response = await data.api<unknown>(`/api/modules/${moduleName}/${action}`, { method: "POST" });
-      data.setOut(response);
-      await data.refresh();
+      if (!request.isCurrent()) return;
+      request.runIfCurrent(() => data.setBusyAction(busyKey, request.generation));
+      const response = await data.api<unknown>(
+        `/api/modules/${moduleName}/${action}`,
+        { method: "POST" },
+        request
+      );
+      if (!request.isCurrent()) return;
+      data.setOut(response, request.generation);
+      await data.refresh(request);
     } catch (error) {
-      data.setOut(error);
+      request.runIfCurrent(() => data.setOut(error, request.generation));
     } finally {
-      data.setBusyAction("");
+      request.runIfCurrent(() => data.clearBusyAction(busyKey, request.generation));
+      request.release();
     }
   }
 

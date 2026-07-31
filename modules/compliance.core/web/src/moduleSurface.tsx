@@ -13,7 +13,7 @@ export const complianceDocumentTypeModuleSurface: ModuleSurface = {
   order: 36,
   render: (host) => (
     <ComplianceDocumentTypeWorkspace
-      key={`${host.token}:${host.currentUserRole}`}
+      key={`${host.session.token}:${host.currentUserRole}`}
       host={host}
     />
   ),

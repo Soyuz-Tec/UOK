@@ -42,14 +42,16 @@ describe("Compliance Document Types session-safe reads", () => {
       return jsonResponse(tenantBType);
     }));
     const { rerender } = render(<ComplianceDocumentTypeWorkspace host={complianceHost({
-      token: "tenant-a",
+      session: { token: "tenant-a", generation: 0 },
     })} />);
     await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1));
 
-    rerender(<ComplianceDocumentTypeWorkspace host={complianceHost({ token: "" })} />);
+    rerender(<ComplianceDocumentTypeWorkspace host={complianceHost({
+      session: { token: "", generation: 1 },
+    })} />);
     expect(screen.getByText("Sign in to open Compliance Document Types.")).toBeInTheDocument();
     rerender(<ComplianceDocumentTypeWorkspace host={complianceHost({
-      token: "tenant-b",
+      session: { token: "tenant-b", generation: 2 },
     })} />);
     await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2));
 

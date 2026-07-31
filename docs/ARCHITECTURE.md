@@ -70,7 +70,20 @@ Operator browser
 - Apps Manager, Calendar, Communications, Compliance, Contacts, Planning, Product Master, Location Master, Route/Corridor Master, Shipment Support, and Shipment Readiness own executable React source and local CSS under `modules/<module_name>/web/src`; their frontend tests live under `modules/<module_name>/tests/web`.
 - Workbench surfaces declare the release/build extension `web_surface` plus canonical `web_entry` and unique `web_section` metadata in the closed manifest. A deterministic generator validates those manifests and emits literal TypeScript imports in `web/src/generated/moduleSurfaceCatalog.ts` for the typed registry under `web/src/features/modules`.
 - Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and all declared entries into the normal static application bundle.
-- Module surfaces receive only the nine-field neutral host port in `web/src/contracts/moduleSurface.ts`, including a monotonic global-refresh revision. Contacts owns its HTTP reads, DTOs, state, preferences, storage keys, and commands; the shell owns only product-neutral auth/layout/navigation/orchestration, keeps visited module roots mounted without importing module internals, and contains each root with the shared recoverable render-error boundary.
+- Module surfaces receive only the neutral host port in
+  `web/src/contracts/moduleSurface.ts`. Its session projection atomically
+  carries token, monotonically increasing generation, and a generation-bound
+  unauthorized callback; the remaining base fields carry neutral role,
+  appearance, module status, lifecycle action, busy state, host refresh, and
+  refresh revision. The generated registry alone adds `surfaceActive` for each
+  retained surface render. Contacts and every other module retain ownership of
+  their HTTP reads, DTOs, state, preferences, criteria, and commands.
+- Product-neutral request authority lives in
+  `web/src/shared/request-authority`. Delivery 6a applies it to the shell; later
+  Delivery 6 slices apply owner-local authorities to the remaining modules.
+  Adopted owners use independent named request lanes, guard every post-await
+  side effect, and epoch-stamp reusable committed state. Abort signals are
+  cooperative only; current-ticket proof is authoritative.
 - Durable module workspaces compose one minimal shared command surface with optional query, context, and actions groups plus the common localized action vocabulary accepted in ADR-0025. Shared code owns layout and accessibility; modules retain domain nouns, state, permissions, options, and handlers.
 - Compliance Document Types, Product Master, Location Master, Route/Corridor Master, Shipment Support, and Shipment Readiness own their complete DTO, HTTP, state, and workbench surfaces under their module web roots; Intelligence is read-only and declares no command surface. Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
 - Docker copies module production source into the frontend build stage, TypeScript/Vitest discover the module-owned source and test roots, and final-image validation keeps module tests out of the runtime image.
@@ -151,6 +164,7 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - ADR-0027: `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
 - ADR-0028: `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
 - ADR-0029: `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
+- ADR-0030: `docs/architecture/ADR-0030-request-authoritative-frontend-async-boundary.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
