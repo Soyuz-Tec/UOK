@@ -26,7 +26,7 @@
     "dev": "vite --host 127.0.0.1 --port 5187"
   },
   "dependencies": {
-    "lucide-react": "1.23.0",
+    "lucide-react": "1.27.0",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },
