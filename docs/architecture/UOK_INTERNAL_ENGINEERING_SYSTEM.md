@@ -55,7 +55,7 @@ UOK documents should use the well-known standard names above when a rule is deri
 |---|---|
 | Policies | `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/architecture/*`, `docs/design/*`, and `docs/operations/*` |
 | Checklists | Pull request template, module acceptance rules, candidate completion definition, GitHub preflight, and release evidence expectations |
-| CI gates | Python compile, Python tests, dependency audits, technology audit, engineering evidence, module contract, source-size, source-boundary, naming, frontend tests, static build, and OpenSSF Scorecard |
+| CI gates | Python compile/tests/audits; technology evidence; module, source-size, boundary, and naming policy; generated frontend contracts; exact dependency policy; ESLint; Stylelint; unit and accessibility tests; static build and bundle budgets; OCI build; CodeQL; and OpenSSF Scorecard |
 | Code review rules | Small focused changes, ownership clarity, readable code, tests for behavior, architecture impact stated, no avoidable complexity |
 | Release gates | Candidate verifier, module verifier scripts, migration checks, dependency audits, build output, local runtime health, backup/restore confidence where relevant |
 | Dashboards | Current implementation uses CI results, local audit JSON, generated quality scorecard, module evidence, candidate verifier output, and future UI status surfaces |
@@ -118,6 +118,7 @@ Before candidate promotion or GitHub publication, UOK must have:
 - GitHub guardrails in place through CODEOWNERS, Dependabot, PR template, Copilot instructions, and OpenSSF Scorecard workflow;
 - source-boundary and naming gates clean;
 - dependency audits clean;
+- frontend dependency policy, ESLint, Stylelint, accessibility, and bundle budgets clean;
 - module contract clean;
 - frontend build and generated API client current;
 - local runtime smoke evidence when runtime behavior changed;

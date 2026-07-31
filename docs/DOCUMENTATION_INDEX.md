@@ -38,6 +38,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md` | Internalized engineering system based on Microsoft SDL, Google Engineering Practices, SLSA, OpenSSF Scorecard, ISO, NIST, and OWASP standards | Policies, checklists, CI gates, code review rules, release gates, dashboards, or audit evidence change |
 | `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md` | Development-time AI worker roles, activation levels, handoff protocol, and verification authority | Coding-agent workflow, specialist review workers, worker handoff, or AI-assisted development governance changes |
 | `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md` | Code quality, line-of-code integrity, efficiency, source-size, and technology audit rules | Quality standards, technology audit gates, source-size policy, or reviewability rules change |
+| `docs/architecture/UOK_FRONTEND_PLATFORM_AUDIT_AND_MODERNIZATION_PLAN.md` | Whole-frontend maturity assessment, reuse inventory, top-20 issues, target architecture, and delivery traceability | A frontend platform delivery merges, a top-20 issue changes status, or a shared artifact is promoted or retired |
 | `docs/operations/UOK_STANDARD_OPERATIONS.md` | Standard local operations, audits, GitHub preflight, backup, restore, rebuild, Windows sign-in recovery, and repeatable commands | Operations command, evidence, startup, backup, restore, or GitHub workflow changes |
 | `docs/operations/UOK_ASUH_TEST_EVENTS.md` | Local ASUH incident-drill schedule and event trigger rules | ASUH event types, local schedules, or incident drill expectations change |
 | `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md` | GitHub-facing source-of-truth, ownership, dependency, Scorecard, branch-protection, and evidence controls | GitHub workflows, synchronization policy, CODEOWNERS, dependency monitoring, branch-protection expectations, or engineering evidence change |
@@ -209,6 +210,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/UOK_MODULE_ROADMAP.md`
 - `docs/architecture/UOK_GLOBAL_EXPORT_ARTIFACTS.md`
 - `docs/architecture/UOK_GLOBAL_SHARED_FEATURES.md`
+- `docs/architecture/UOK_FRONTEND_PLATFORM_AUDIT_AND_MODERNIZATION_PLAN.md`
 - `docs/design/UOK_LOCALIZATION_AND_BIDIRECTIONAL_POLICY.md`
 - `docs/reports/SECURE_REPORTS_ARTIFACT_ENGINE.md`
 

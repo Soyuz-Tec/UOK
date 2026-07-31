@@ -98,6 +98,10 @@ The technology audit must confirm:
 - TypeScript `strict` remains enabled and `allowJs` remains disabled;
 - durable frontend JavaScript is not added under `web/src` or `modules/*/web/src`;
 - `web/package-lock.json` is present;
+- direct frontend runtime dependencies and the governed lint toolchain use approved exact versions, the lockfile root matches the manifest, and critical runtime packages resolve once;
+- ESLint covers shell, shared, module production, tests, end-to-end tests, configs, and frontend scripts with React Hooks correctness enforced;
+- Stylelint covers shell and module CSS, rejects hexadecimal colors outside `web/src/design-tokens.css`, the configured physical left/right property list, `text-align: left|right`, unjustified `!important`, and ID selectors;
+- the built frontend stays within reviewed raw and gzip JavaScript/CSS budgets, and CI runs the budget check only after the production build;
 - Dockerfile, local compose, and CI stay aligned with Python 3.14, Node 26, and PostgreSQL 18;
 - container stages install runtime Python requirements only;
 - the repository wires a non-mutating OpenAPI JSON and generated TypeScript declaration drift check; the broader `Audit` gate executes it and requires exact runtime-schema parity;
@@ -106,6 +110,34 @@ The technology audit must confirm:
 - this standard is linked from the documentation index and operations runbook.
 - active documentation repository references, internal links, and index coverage resolve with exact path casing and contain no retired frontend locations.
 - engineering evidence includes a repeatable quality scorecard.
+
+## Frontend Quality Gates
+
+Frontend changes must run the platform gates in dependency order:
+
+```powershell
+npm --prefix web ci
+npm --prefix web run check:contracts
+npm --prefix web audit --audit-level=low
+npm --prefix web run check:dependencies
+npm --prefix web run lint
+npm --prefix web run lint:styles
+npm --prefix web test
+npm --prefix web run test:accessibility
+npm --prefix web run build:static
+npm --prefix web run check:bundle-budget
+```
+
+`check:dependencies` is the direct-manifest and lockfile authority. `lint` and
+`lint:styles` are correctness gates rather than formatting suggestions.
+`check:bundle-budget` measures every emitted JavaScript and CSS asset in raw and
+gzip form and fails closed when assets are missing or exceed the reviewed
+ceiling. Current ceilings are owned by
+`docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`.
+
+The canonical maturity assessment, reuse inventory, and sequenced remediation
+work are owned by
+`docs/architecture/UOK_FRONTEND_PLATFORM_AUDIT_AND_MODERNIZATION_PLAN.md`.
 
 ## Quality Scorecard
 

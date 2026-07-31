@@ -15,6 +15,7 @@ Use this document with:
 - `docs/design/UOK_UI_DESIGN_POLICY.md`
 - `docs/design/UOK_APPLE_HIG_TECHNICAL_REFERENCE.md`
 - `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
+- `docs/architecture/UOK_FRONTEND_PLATFORM_AUDIT_AND_MODERNIZATION_PLAN.md`
 - `docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md`
 - the affected module plan under `docs/modules/<module-name>/`
 
