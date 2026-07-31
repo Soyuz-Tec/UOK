@@ -1,4 +1,4 @@
-import type { ModuleSurfaceHostContext } from "@uok/contracts/moduleSurface";
+import type { ModuleSurfaceRenderContext } from "@uok/contracts/moduleSurface";
 import { ContactsWorkspace } from "./ContactsWorkspace";
 import { CONTACTS_MODULE_ID } from "./contactModule";
 import { useContactCommands } from "./app/useContactCommands";
@@ -6,18 +6,12 @@ import { useContactData } from "./app/useContactData";
 import { useContactPreferences } from "./app/useContactPreferences";
 import { useContactWorkspaceState } from "./app/useContactWorkspaceState";
 
-export function ContactsModuleRoot({ host }: { host: ModuleSurfaceHostContext }) {
+export function ContactsModuleRoot({ host }: { host: ModuleSurfaceRenderContext }) {
   const preferences = useContactPreferences();
   const state = useContactWorkspaceState(preferences);
   const module = host.moduleRows.find((row) => row.name === CONTACTS_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
-  const data = useContactData(
-    host.session.token,
-    operational,
-    state.filters,
-    host.moduleRefreshRevision,
-    host.session.onUnauthorized,
-  );
+  const data = useContactData(host, operational, state.filters);
   const commands = useContactCommands({
     creating: state.creating,
     data,

@@ -1,22 +1,8 @@
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ContactFilters } from "../../web/src/contracts";
 import { useContactData } from "../../web/src/app/useContactData";
-
-const filters: ContactFilters = {
-  query: "",
-  contactGroupId: "",
-  statusFilter: "",
-  reviewFilter: "all",
-  typeFilter: "all",
-  sourceFilter: "all",
-  qualityFilter: "all",
-  contactPage: 0,
-  contactPageSize: 25,
-  contactSortBy: "display_name",
-  contactSortDir: "asc",
-};
+import { contactFilters, contactsHost } from "./ContactReadTestUtils";
 
 describe("useContactData", () => {
   beforeEach(() => {
@@ -45,14 +31,18 @@ describe("useContactData", () => {
       .filter(([input]) => String(input).startsWith("/api/contacts?"))
       .length;
     const { rerender } = renderHook(
-      ({ revision }) => useContactData("test-token", true, filters, revision, onUnauthorized),
+      ({ revision }) => useContactData(
+        contactsHost({
+          moduleRefreshRevision: revision,
+          session: { onUnauthorized },
+        }),
+        true,
+        contactFilters(),
+      ),
       { initialProps: { revision: 0 } },
     );
 
     await waitFor(() => expect(contactListCalls()).toBeGreaterThan(0));
-    await act(async () => {
-      await new Promise((resolve) => window.setTimeout(resolve, 300));
-    });
     const before = contactListCalls();
 
     rerender({ revision: 1 });
