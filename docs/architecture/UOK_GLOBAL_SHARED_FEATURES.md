@@ -22,7 +22,7 @@ UOK modules can own domain behavior without copying common workspace and infrast
 | Toggle, command, icon, and segmented controls | `web/src/shared/primitives` | Contacts and Planning |
 | Bounded draggable modal workspace overlays and editor composition | `web/src/shared/overlays` | Communications, Contacts, and Planning |
 | Consequential-command confirmation, async state, and recoverable module render containment | `web/src/shared/overlays` and `web/src/shared/feedback` | Shell and module workspaces |
-| Request-authoritative async epochs, independent owner lanes, guarded one-shot callbacks, cooperative cancellation, and stale-state masking | `web/src/shared/request-authority`, atomic shell session state, and the neutral module surface contract | Shell in Delivery 6a; Compliance reads in Delivery 6b; command paths and other module owners through phased Delivery 6 adoption |
+| Request-authoritative async epochs, independent owner lanes, guarded one-shot callbacks, cooperative cancellation, and stale-state masking | `web/src/shared/request-authority`, atomic shell session state, and the neutral module surface contract | Shell in Delivery 6a; Compliance reads in 6b and commands in 6c; other module owners through phased Delivery 6 adoption |
 | Empty states, status pills, detail items, and fact lists | `web/src/shared/data-display` | Apps, Contacts, Planning |
 | Skip path, focus visibility, coarse-pointer target sizing, closed-panel semantics, and representative 320 CSS-pixel reflow proof | `web/src/App.tsx`, `web/src/styles/accessibility.css`, shared primitives, and `web/e2e/accessibility.spec.ts` | Shell and shared-primitives consumers; protected narrow proof currently covers the shell and Planning |
 | Frontend dependency, lint, logical-style, generated-contract, accessibility, test, and bundle-budget gates | `web/scripts`, root/web lint configs, `scripts/frontend_quality_policy.py`, and CI | Every shell, shared, and module frontend change |
@@ -59,8 +59,9 @@ epoch freshness checks. The shell owns the atomic authentication session and
 the generated registry owns the exact per-surface activity signal. Each module
 still owns the authority transitions caused by its capabilities, operational
 state, criteria, selected entity, and lifetime. Shared request authority does
-not own endpoint definitions, DTO decoding, domain errors, commands, or
-workflow state.
+not own endpoint definitions, DTO decoding, domain errors, command idempotency,
+replay policy, server reconciliation, commands, or workflow state. Those
+remain module-owned.
 
 ## Module Responsibilities
 

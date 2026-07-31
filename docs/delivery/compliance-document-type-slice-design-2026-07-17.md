@@ -173,6 +173,14 @@ One module-owned **Compliance Document Types** workspace provides:
 
 All UI source and CSS live in `modules/compliance.core/web/src`; tests live in `modules/compliance.core/tests/web`. The canonical `moduleSurface.tsx` receives the neutral `ModuleSurfaceRenderContext`: the base host context plus the registry-owned `surfaceActive` value. No shell, generated-catalog, or foreign-module import is allowed. Components, state, editor, actions, and tests are split before reaching source-size limits.
 
+Commands validate the current session, capability, operational, activation,
+criteria, selection/version, and lifetime boundary immediately before
+dispatch. A dispatched command is not cancelled or automatically replayed.
+Captured-intent browser effects remain ticket-guarded, while a distinct
+single-flight reconciliation obligation survives boundary changes and reloads
+the current owner list, detail, and history from the server without restoring
+stale filters or selection.
+
 ## 10. Test Plan
 
 ### Unit And Domain
@@ -199,6 +207,13 @@ All UI source and CSS live in `modules/compliance.core/web/src`; tests live in `
 - Signed-out/install/enable/loading/error states.
 - Search, category/status filters, sort, keyboard row selection, create/edit payloads, lifecycle buttons, and version progression.
 - Viewer/finance read-only behavior, 401/403 handling, global-refresh reload, responsive narrow layout, and no ID/state leakage.
+- Same-token generation and role/capability ABA, hidden/disabled/reactivated
+  surfaces, unmount, double submit, and true-lock UI behavior.
+- Signal-free one-POST commands with caller-owned idempotency, no automatic
+  replay, stale/current `401`, and signed-out-to-new-session reconciliation.
+- Commit-then-`503`, transport loss, malformed success, conflict retry,
+  authoritative response-hint replacement, monotonic versions, owner-isolated
+  history, and mid-reconciliation user-intent supersession.
 
 ### Architecture Gates
 

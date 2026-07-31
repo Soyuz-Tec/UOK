@@ -12,16 +12,17 @@ import type {
 export function ComplianceDocumentTypeActions({
   documentType,
   busyAction,
+  operationActive,
   onEdit,
   onLifecycle,
 }: {
   documentType: ComplianceDocumentType;
   busyAction: string;
+  operationActive: boolean;
   onEdit: () => void;
   onLifecycle: (action: ComplianceDocumentTypeLifecycleAction, reason: string) => void;
 }) {
   const [reason, setReason] = useState("");
-  const lifecycleBusy = ["deactivate", "activate", "archive", "restore"].includes(busyAction);
   const reasonMissing = !reason.trim();
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export function ComplianceDocumentTypeActions({
           value={reason}
           maxLength={500}
           required
-          disabled={lifecycleBusy}
+          disabled={operationActive}
           placeholder="Required before changing status"
           aria-invalid={reasonMissing || undefined}
           aria-describedby={reasonMissing
@@ -54,7 +55,7 @@ export function ComplianceDocumentTypeActions({
         {documentType.status !== "archived" ? (
           <WorkspaceActionButton
             action="edit"
-            disabled={lifecycleBusy}
+            disabled={operationActive}
             onClick={onEdit}
           >
             Edit document type
@@ -64,7 +65,7 @@ export function ComplianceDocumentTypeActions({
           <CommandButton
             icon={CirclePause}
             loading={busyAction === "deactivate"}
-            disabled={lifecycleBusy || reasonMissing}
+            disabled={operationActive || reasonMissing}
             onClick={() => onLifecycle("deactivate", reason)}
           >
             Deactivate document type
@@ -74,7 +75,7 @@ export function ComplianceDocumentTypeActions({
           <CommandButton
             icon={CirclePlay}
             loading={busyAction === "activate"}
-            disabled={lifecycleBusy || reasonMissing}
+            disabled={operationActive || reasonMissing}
             onClick={() => onLifecycle("activate", reason)}
           >
             Activate document type
@@ -84,7 +85,7 @@ export function ComplianceDocumentTypeActions({
           <CommandButton
             icon={ArchiveRestore}
             loading={busyAction === "restore"}
-            disabled={lifecycleBusy || reasonMissing}
+            disabled={operationActive || reasonMissing}
             onClick={() => onLifecycle("restore", reason)}
           >
             Restore document type
@@ -95,7 +96,7 @@ export function ComplianceDocumentTypeActions({
             message={`Archive ${documentType.canonical_name}? It can be restored later.`}
             destructive
             loading={busyAction === "archive"}
-            disabled={lifecycleBusy || reasonMissing}
+            disabled={operationActive || reasonMissing}
             onConfirm={() => onLifecycle("archive", reason)}
           >
             Archive document type

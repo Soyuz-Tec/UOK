@@ -101,6 +101,20 @@ module criteria, DTOs, commands, or workflow state into the shell.
    possible server commit; they are not treated as latest-wins because aborting
    a request cannot retract an accepted mutation.
 
+   Compliance command owners apply the same distinction. Dispatch authority is
+   rechecked immediately before one command invocation, including the
+   monotonic authority epoch so a boundary `A -> B -> A` transition fails
+   closed. Once dispatched, a command is deliberately non-abortable, is not
+   superseded, and is never automatically replayed. One caller-owned
+   idempotency key identifies that operation. Its mutation-effect ticket guards
+   only browser effects tied to the captured intent, including one-shot current
+   unauthorized handling. A separate single-flight reconciliation obligation
+   survives ticket invalidation, session or role changes, surface deactivation,
+   and ambiguous response loss until the current readable owner boundary
+   reconciles list, selected detail, and history. Command response records are
+   selection hints only; reconciled server state owns the committed UI and
+   status message.
+
 7. Cooperative cancellation is an efficiency mechanism, not freshness proof.
    Non-abortable work and already-delivered responses still require a current
    ticket before any side effect.
@@ -118,8 +132,10 @@ module criteria, DTOs, commands, or workflow state into the shell.
      request adoption.
    - Delivery 6b adopts that contract for Compliance list, detail, and history
      reads, including same-token generation, activation, operational, role,
-     unauthorized, and lifetime invalidation. Compliance command/mutation
-     reconciliation remains a separate owner-local slice.
+     unauthorized, and lifetime invalidation.
+   - Delivery 6c adopts dispatch authority, guarded browser effects, and
+     persistent server reconciliation for Compliance create, update,
+     activate/deactivate, and archive/restore commands.
    - Later Delivery 6 slices migrate module owners in bounded groups while
      preserving their DTOs, endpoints, criteria, selections, commands, and
      specialized workflows.
@@ -188,7 +204,17 @@ Required focused proof includes:
 - serialized shell lifecycle mutations with post-commit reconciliation;
 - retained surface active, inactive, reactivated, and unmounted transitions;
 - same-token capability and module disable/re-enable transitions; and
-- presentation-only rerenders that do not restart requests.
+- presentation-only rerenders that do not restart requests;
+- pre-dispatch session-generation, role/capability, operational, activation,
+  criteria, selection/version, and lifetime transitions;
+- one signal-free command POST with one caller-owned idempotency key and no
+  automatic replay;
+- commit-then-`503`, transport failure, malformed success, and conflict
+  reconciliation;
+- stale/current `401`, signed-out-to-new-session reconciliation, selection
+  `A -> B -> A`, monotonic versions, and cross-owner history isolation; and
+- failed host refresh, pending reconciliation retry, and mid-reconciliation
+  user-intent supersession while the true operation lock remains active.
 
 Run:
 

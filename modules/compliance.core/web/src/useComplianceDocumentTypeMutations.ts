@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-import type { ModuleSurfaceHostContext } from "@uok/contracts/moduleSurface";
+import type { ModuleSurfaceRenderContext } from "@uok/contracts/moduleSurface";
+import type { ComplianceMutationInteraction } from "./complianceMutationAuthority";
 import {
   changeComplianceDocumentTypeLifecycle,
   createComplianceDocumentType,
+  isComplianceApiError,
   updateComplianceDocumentType,
 } from "./complianceApi";
 import type {
@@ -12,55 +14,77 @@ import type {
   ComplianceDocumentTypeLifecycleAction,
   ComplianceDocumentTypeStatusFilter,
 } from "./types";
+import type {
+  ComplianceReconciliationRequest,
+  ComplianceReconciliationResult,
+} from "./useComplianceDocumentTypeReconciliation";
+import { useComplianceDocumentTypeMutationCoordinator } from "./useComplianceDocumentTypeMutationCoordinator";
 
 export type ComplianceEditorMode = "create" | "edit" | null;
 
 export function useComplianceDocumentTypeMutations({
   host,
+  operational,
+  canManage,
+  interactionRef,
   selected,
-  applyDocumentType,
-  invalidateRefresh,
+  reconcileDocumentTypes,
+  supersedeReadsForMutation,
   setStatus,
   setStatusFilter,
 }: {
-  host: ModuleSurfaceHostContext;
+  host: ModuleSurfaceRenderContext;
+  operational: boolean;
+  canManage: boolean;
+  interactionRef: { current: ComplianceMutationInteraction };
   selected: ComplianceDocumentType | null;
-  applyDocumentType: (value: ComplianceDocumentType) => void;
-  invalidateRefresh: () => void;
+  reconcileDocumentTypes: (
+    request?: ComplianceReconciliationRequest,
+  ) => Promise<ComplianceReconciliationResult>;
+  supersedeReadsForMutation: () => void;
   setStatus: (value: string) => void;
   setStatusFilter: (value: ComplianceDocumentTypeStatusFilter) => void;
 }) {
-  const sessionToken = useRef(host.session.token);
-  const mutationRequest = useRef(0);
-  const activeOperation = useRef("");
-  const [stateToken, setStateToken] = useState(host.session.token);
   const [editorMode, setEditorMode] = useState<ComplianceEditorMode>(null);
   const [editorError, setEditorError] = useState("");
-  const [busyAction, setBusyAction] = useState("");
-  if (sessionToken.current !== host.session.token) {
-    sessionToken.current = host.session.token;
-    mutationRequest.current += 1;
-    activeOperation.current = "";
-  }
-  const sessionMatches = stateToken === host.session.token;
+  const coordinator = useComplianceDocumentTypeMutationCoordinator({
+    host,
+    operational,
+    canManage,
+    interactionRef,
+    reconcileDocumentTypes,
+    supersedeReadsForMutation,
+  });
 
   useEffect(() => {
-    mutationRequest.current += 1;
-    activeOperation.current = "";
-    setStateToken(host.session.token);
     setEditorMode(null);
     setEditorError("");
-    setBusyAction("");
-  }, [host.session.token]);
+  }, [
+    canManage,
+    host.currentUserRole,
+    host.session.generation,
+    host.session.token,
+    host.surfaceActive,
+    operational,
+    selected?.id,
+    selected?.version,
+  ]);
 
   function openEditor(mode: Exclude<ComplianceEditorMode, null>) {
-    if (mode === "edit" && !selected) return;
+    if (
+      coordinator.operationActive
+      || !host.session.token
+      || !canManage
+      || !operational
+      || !host.surfaceActive
+      || (mode === "edit" && !selected)
+    ) return;
     setEditorError("");
     setEditorMode(mode);
   }
 
   function closeEditor() {
-    if (activeOperation.current) return;
+    if (coordinator.operationActive) return;
     setEditorMode(null);
     setEditorError("");
   }
@@ -69,75 +93,62 @@ export function useComplianceDocumentTypeMutations({
     mode: Exclude<ComplianceEditorMode, null>,
     draft: ComplianceDocumentTypeDraft,
   ) {
-    if (activeOperation.current || (mode === "edit" && !selected)) return;
+    const target = mode === "edit" ? selected : null;
+    if (mode === "edit" && !target) return;
     const action = mode === "create" ? "create" : "update";
-    await runMutation(action, () => mode === "create"
-      ? createComplianceDocumentType(host.session.token, draft, host.session.onUnauthorized)
-      : updateComplianceDocumentType(
-        host.session.token,
-        selected!,
-        draft,
-        host.session.onUnauthorized,
-      ));
+    await coordinator.runOperation({
+      action,
+      target: target ? { id: target.id, version: target.version } : undefined,
+      execute: (request) => mode === "create"
+        ? createComplianceDocumentType(host.session.token, draft, request)
+        : updateComplianceDocumentType(host.session.token, target!, draft, request),
+      onSuccess: (documentType) => {
+        setEditorMode(null);
+        setEditorError("");
+        setStatus(successMessage(action, documentType));
+      },
+      onError: (error) => {
+        const message = reconciledErrorMessage(error);
+        setEditorError(message);
+        setStatus(message);
+      },
+      onPending: () => {
+        const message = pendingReconciliationMessage(action);
+        setEditorError(message);
+        setStatus(message);
+      },
+    });
   }
 
   async function runLifecycle(
     action: ComplianceDocumentTypeLifecycleAction,
     reason: string,
   ) {
-    if (!selected || activeOperation.current) return;
-    await runMutation(
+    const target = selected;
+    if (!target) return;
+    await coordinator.runOperation({
       action,
-      () => changeComplianceDocumentTypeLifecycle(
+      target: { id: target.id, version: target.version },
+      execute: (request) => changeComplianceDocumentTypeLifecycle(
         host.session.token,
-        selected,
+        target,
         action,
         reason,
-        host.session.onUnauthorized,
+        request,
       ),
-      lifecycleFilter[action],
-    );
-  }
-
-  async function runMutation(
-    action: string,
-    operation: () => Promise<ComplianceDocumentType>,
-    nextFilter?: ComplianceDocumentTypeStatusFilter,
-  ) {
-    const token = host.session.token;
-    const request = ++mutationRequest.current;
-    activeOperation.current = action;
-    setBusyAction(action);
-    setEditorError("");
-    invalidateRefresh();
-    try {
-      const documentType = await operation();
-      if (!isCurrent(sessionToken, mutationRequest, token, request)) return false;
-      if (nextFilter) setStatusFilter(nextFilter);
-      applyDocumentType(documentType);
-      setEditorMode(null);
-      setStatus(`${actionLabel(action)} ${documentType.canonical_name}.`);
-      void host.refreshHost().catch(() => undefined);
-      return true;
-    } catch (error) {
-      if (!isCurrent(sessionToken, mutationRequest, token, request)) return false;
-      const message = errorMessage(error);
-      if (action === "create" || action === "update") setEditorError(message);
-      setStatus(message);
-      return false;
-    } finally {
-      if (isCurrent(sessionToken, mutationRequest, token, request)) {
-        activeOperation.current = "";
-        setBusyAction("");
-      }
-    }
+      onSuccess: (documentType) => {
+        setStatus(successMessage(action, documentType));
+        setStatusFilter(lifecycleFilter[action]);
+      },
+      onError: (error) => setStatus(reconciledErrorMessage(error)),
+      onPending: () => setStatus(pendingReconciliationMessage(action)),
+    });
   }
 
   return {
-    editorMode: sessionMatches ? editorMode : null,
-    editorError: sessionMatches ? editorError : "",
-    busyAction: sessionMatches ? busyAction : "",
-    activeOperation,
+    editorMode,
+    editorError,
+    ...coordinator,
     openEditor,
     closeEditor,
     saveDocumentType,
@@ -155,28 +166,38 @@ const lifecycleFilter: Record<
   restore: "current",
 };
 
-function isCurrent(
-  sessionToken: { current: string },
-  requestRef: { current: number },
-  token: string,
-  request: number,
-) {
-  return sessionToken.current === token && requestRef.current === request;
-}
-
 function actionLabel(action: string) {
-  return ({
-    create: "Created",
-    update: "Updated",
-    deactivate: "Deactivated",
-    activate: "Activated",
-    archive: "Archived",
-    restore: "Restored",
-  } as Record<string, string>)[action] || "Changed";
+  return (actionLabels[action] || "Changed");
 }
 
-function errorMessage(error: unknown) {
-  return error instanceof Error
+const actionLabels: Record<string, string> = {
+  create: "Created",
+  update: "Updated",
+  deactivate: "Deactivated",
+  activate: "Activated",
+  archive: "Archived",
+  restore: "Restored",
+};
+
+function reconciledErrorMessage(error: unknown) {
+  const message = error instanceof Error
     ? error.message
     : "Compliance Document Types request failed.";
+  const ambiguous = !isComplianceApiError(error) || error.ambiguous;
+  return ambiguous
+    ? `${message} The command outcome was uncertain; current server state was reloaded.`
+    : `${message} Current server state was reloaded.`;
+}
+
+function pendingReconciliationMessage(action: string) {
+  return `${actionLabel(action)} command outcome is unconfirmed; authoritative reconciliation is pending.`;
+}
+
+function successMessage(
+  action: string,
+  documentType: ComplianceDocumentType | null,
+) {
+  return documentType
+    ? `${actionLabel(action)} ${documentType.canonical_name}.`
+    : `${actionLabel(action)} document type; authoritative state was reloaded.`;
 }

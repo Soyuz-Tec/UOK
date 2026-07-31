@@ -12,10 +12,7 @@ export const complianceDocumentTypeModuleSurface: ModuleSurface = {
   moduleName: COMPLIANCE_MODULE_ID,
   order: 36,
   render: (host) => (
-    <ComplianceDocumentTypeWorkspace
-      key={`${host.session.token}:${host.currentUserRole}`}
-      host={host}
-    />
+    <ComplianceDocumentTypeWorkspace host={host} />
   ),
 };
 
