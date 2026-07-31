@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { WorkspaceActionButton } from "@uok/shared/actions";
 import { FieldMessage } from "@uok/shared/forms";
@@ -21,12 +21,14 @@ export function LocationEditor({
   onSubmit: (draft: LocationDraft) => void;
 }) {
   const [draft, setDraft] = useState<LocationDraft>(() => initialDraft(mode, location));
+  const currentLocation = useRef(location);
+  currentLocation.current = location;
   const validationId = "location-editor-validation";
   const countryCodeValid = /^[A-Za-z]{2}$/.test(draft.countryCode.trim());
   const valid = Boolean(draft.code.trim() && draft.canonicalName.trim() && countryCodeValid);
 
   useEffect(() => {
-    setDraft(initialDraft(mode, location));
+    setDraft(initialDraft(mode, currentLocation.current));
   }, [mode, location?.id, location?.version]);
 
   return (

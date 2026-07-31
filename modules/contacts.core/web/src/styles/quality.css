@@ -94,7 +94,7 @@
   padding: var(--uok-space-3) var(--uok-space-4);
   color: var(--uok-text-primary);
   background: transparent;
-  text-align: left;
+  text-align: start;
 }
 
 .quality-contact:hover {
@@ -154,7 +154,7 @@
 
 .quality-action-panel ol {
   margin: 0;
-  padding-left: var(--uok-space-5);
+  padding-inline-start: var(--uok-space-5);
   color: var(--uok-text-secondary);
 }
 

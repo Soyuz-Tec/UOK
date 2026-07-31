@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { WorkspaceActionButton } from "@uok/shared/actions";
 import { FieldMessage } from "@uok/shared/forms";
@@ -25,12 +25,14 @@ export function ShipmentEditor({
   onSubmit: (draft: ShipmentDraft) => void;
 }) {
   const [draft, setDraft] = useState<ShipmentDraft>(() => initialDraft(mode, shipment));
+  const currentShipment = useRef(shipment);
+  currentShipment.current = shipment;
   const locations = useMemo(() => mergeLocationOptions(locationOptions, shipment), [locationOptions, shipment]);
   const routes = useMemo(() => mergeRouteOptions(routeOptions, shipment), [routeOptions, shipment]);
   const validation = validateDraft(draft, locations, routes);
 
   useEffect(() => {
-    setDraft(initialDraft(mode, shipment));
+    setDraft(initialDraft(mode, currentShipment.current));
   }, [mode, shipment?.id, shipment?.version]);
 
   return (

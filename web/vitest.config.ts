@@ -6,6 +6,7 @@ import viteConfig from "./vite.config";
 export default mergeConfig(viteConfig, defineConfig({
   test: {
     environment: "jsdom",
+    maxWorkers: "50%",
     include: [
       "src/**/*.{test,spec}.{ts,tsx}",
       "../modules/*/tests/web/**/*.{test,spec}.{ts,tsx}",

@@ -46,7 +46,7 @@
   max-height: 460px;
   overflow: auto;
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: anywhere;
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
   padding: var(--uok-space-3);

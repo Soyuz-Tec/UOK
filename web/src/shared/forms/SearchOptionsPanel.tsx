@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import { CommandButton, IconButton } from "../primitives";
 import { useUokLocalization } from "../localization";
 import type { SavedSearchView, SearchWorkspaceFilter, SearchWorkspaceOption, SearchWorkspaceSort } from "./SearchWorkspace.types";
-import { optionLabel } from "./searchWorkspaceUtils";
 
 export function SearchOptionsPanel({
   activeChipCount,

@@ -26,7 +26,6 @@ import { applyPlanningRecommendation, createPlanningOptimization, createPlanning
 import type { PlanningMutationIntent } from "./planningConcurrencyState";
 import { planningHistoryDiff, planningLevelHistory } from "./planningHistory";
 import { withCascade } from "./planningWorkspaceHelpers";
-import type { PlanningSchedule } from "./types";
 import type { PlanningLevelingCommandResult } from "./levelingTypes";
 import type { PlanningBulkTaskUpdate } from "./PlanningBulkEditControls";
 import type {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type {
   ContactFilters,
@@ -93,6 +93,11 @@ export function useContactData(
       setBusyAction("");
     }
   }, [api, apiResponse, filters, operational, token]);
+  const refreshRef = useRef(refresh);
+
+  useEffect(() => {
+    refreshRef.current = refresh;
+  }, [refresh]);
 
   const loadContactDetail = useCallback(async (partyId: string) => {
     if (!token || !operational || !partyId) {
@@ -111,8 +116,8 @@ export function useContactData(
       clearData();
       return;
     }
-    void refresh();
-  }, [moduleRefreshRevision, operational, token]);
+    void refreshRef.current();
+  }, [clearData, moduleRefreshRevision, operational, token]);
 
   useEffect(() => {
     if (!token || !operational) return;

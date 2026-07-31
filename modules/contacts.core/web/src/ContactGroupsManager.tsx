@@ -35,22 +35,23 @@ export function ContactGroupsManager({
   const [statusFilter, setStatusFilter] = useState<ContactGroupStatusFilter>("active");
   const [emptyOnly, setEmptyOnly] = useState(false);
   const busy = Boolean(manager.busyAction);
+  const { clearFocusRecovery, focusRecovery } = manager;
 
   useEffect(() => {
     if (manager.notice === "archived") setStatusFilter("archived");
   }, [manager.notice]);
 
   useEffect(() => {
-    if (!manager.focusRecovery) return;
+    if (!focusRecovery) return;
     const frame = window.requestAnimationFrame(() => {
       const popup = document.querySelector<HTMLElement>(".contact-groups-manager-popup");
       const groupButton = Array.from(popup?.querySelectorAll<HTMLButtonElement>("button[data-group-id]") || [])
-        .find((button) => button.dataset.groupId === manager.focusRecovery?.groupId);
+        .find((button) => button.dataset.groupId === focusRecovery.groupId);
       (groupButton || popup?.querySelector<HTMLButtonElement>(".workspace-popup-close") || popup)?.focus();
-      manager.clearFocusRecovery();
+      clearFocusRecovery();
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [manager.clearFocusRecovery, manager.focusRecovery]);
+  }, [clearFocusRecovery, focusRecovery]);
 
   return (
     <WorkspaceEditorPopup

@@ -44,7 +44,7 @@ export function ContactExchangeToolsPanel(props: ContactDataToolsPanelProps) {
       }
       return next;
     });
-  }, [headers.join("|")]);
+  }, [headers]);
 
   const loadFile = async (file: File | undefined) => {
     if (!file) return;

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, type Dispatch, type SetStateAction } from "react";
 
-import { isPlanningPreconditionError, listPlanningProjects, transitionPlanningProject } from "./planningApi";
+import { listPlanningProjects, transitionPlanningProject } from "./planningApi";
 import type { PlanningStrongEtag } from "./planningApi";
 import type { PlanningProjectCreateRequest } from "./planningContracts";
 import { createPlanningDemoSchedule } from "./planningDemoSchedule";
 import { createPlanningWorkspaceProject } from "./planningProjectCreation";
+import { handlePlanningProjectTransitionFailure } from "./planningProjectTransitionFailure";
 import { planningWorkspaceErrorMessage, planningWorkspaceErrorStatus } from "./planningWorkspaceStatus";
 import type { PlanningProject, PlanningSchedule } from "./types";
 
@@ -30,53 +31,68 @@ type ProjectOperationProps = {
 };
 
 export function usePlanningProjectOperations(props: ProjectOperationProps) {
+  const {
+    clearHistory,
+    clearRecovery,
+    finishOperation,
+    invalidateOperation,
+    isOperationCurrent,
+    operational,
+    reloadSchedule,
+    setCurrentEtag,
+    setProjects,
+    setSchedule,
+    setSelectedProjectId,
+    setStatus,
+    startOperation,
+    token,
+  } = props;
   const selectedProjectIdRef = useRef(props.selectedProjectId);
   useEffect(() => {
     selectedProjectIdRef.current = props.selectedProjectId;
   }, [props.selectedProjectId]);
 
   useLayoutEffect(() => {
-    props.invalidateOperation();
-    props.clearHistory();
-    props.clearRecovery();
-  }, [props.clearHistory, props.clearRecovery, props.invalidateOperation, props.operational, props.token]);
+    invalidateOperation();
+    clearHistory();
+    clearRecovery();
+  }, [clearHistory, clearRecovery, invalidateOperation, operational, token]);
 
   const selectProject = useCallback((projectId: string) => {
     selectedProjectIdRef.current = projectId;
-    props.setSelectedProjectId(projectId);
-  }, [props.setSelectedProjectId]);
+    setSelectedProjectId(projectId);
+  }, [setSelectedProjectId]);
 
   const refresh = useCallback(async () => {
-    if (!props.token || !props.operational) return;
-    const ticket = props.startOperation("refresh");
+    if (!token || !operational) return;
+    const ticket = startOperation("refresh");
     if (!ticket) return;
     try {
-      const rows = await listPlanningProjects(props.token);
-      if (!props.isOperationCurrent(ticket)) return;
-      props.setProjects(rows);
+      const rows = await listPlanningProjects(token);
+      if (!isOperationCurrent(ticket)) return;
+      setProjects(rows);
       const selected = selectedProjectIdRef.current;
       const projectId = rows.some((project) => project.id === selected)
         ? selected
         : rows.find((project) => project.status !== "archived")?.id || rows[0]?.id || "";
       if (projectId) {
-        await props.reloadSchedule(projectId, () => props.isOperationCurrent(ticket));
-        if (!props.isOperationCurrent(ticket)) return;
+        await reloadSchedule(projectId, () => isOperationCurrent(ticket));
+        if (!isOperationCurrent(ticket)) return;
         selectProject(projectId);
       } else {
         selectProject("");
-        props.setSchedule(null);
-        props.setCurrentEtag(null);
+        setSchedule(null);
+        setCurrentEtag(null);
       }
-      props.setStatus({ status: "ready", projects: rows.length });
+      setStatus({ status: "ready", projects: rows.length });
     } catch (error) {
-      if (props.isOperationCurrent(ticket)) props.setStatus(planningWorkspaceErrorStatus(error));
+      if (isOperationCurrent(ticket)) setStatus(planningWorkspaceErrorStatus(error));
     } finally {
-      props.finishOperation(ticket);
+      finishOperation(ticket);
     }
   }, [
-    props.finishOperation, props.isOperationCurrent, props.operational, props.reloadSchedule,
-    props.setCurrentEtag, props.setProjects, props.setSchedule, props.setStatus,
-    props.startOperation, props.token, selectProject,
+    finishOperation, isOperationCurrent, operational, reloadSchedule, selectProject,
+    setCurrentEtag, setProjects, setSchedule, setStatus, startOperation, token,
   ]);
 
   useEffect(() => {
@@ -172,7 +188,18 @@ export function usePlanningProjectOperations(props: ProjectOperationProps) {
           reason: trimmedReason,
         }, { ifMatch: etag });
       } catch (error) {
-        if (props.isOperationCurrent(ticket)) await handleTransitionFailure(error, projectId, label, ticket);
+        if (props.isOperationCurrent(ticket)) {
+          await handlePlanningProjectTransitionFailure({
+            clearHistory: props.clearHistory,
+            clearRecovery: props.clearRecovery,
+            error,
+            isCurrent: () => props.isOperationCurrent(ticket),
+            label,
+            projectId,
+            reloadSchedule: props.reloadSchedule,
+            setStatus: props.setStatus,
+          });
+        }
         throw error;
       }
       if (!props.isOperationCurrent(ticket)) return projectId;
@@ -245,30 +272,6 @@ export function usePlanningProjectOperations(props: ProjectOperationProps) {
     } finally {
       props.finishOperation(ticket);
     }
-  }
-
-  async function handleTransitionFailure(error: unknown, projectId: string, label: string, ticket: number) {
-    if (!isPlanningPreconditionError(error)) {
-      props.setStatus(planningWorkspaceErrorStatus(error));
-      return;
-    }
-    props.clearHistory();
-    props.clearRecovery();
-    let reloaded = false;
-    try {
-      await props.reloadSchedule(projectId, () => props.isOperationCurrent(ticket));
-      reloaded = props.isOperationCurrent(ticket);
-    } catch {
-      reloaded = false;
-    }
-    props.setStatus({
-      status: "error",
-      http_status: error.status,
-      ...error.detail,
-      repair: reloaded
-        ? `The latest schedule is loaded. Review it, then confirm ${label} again.`
-        : `Reload the latest schedule before confirming ${label} again.`,
-    });
   }
 
   function commitCreatedProject(project: PlanningProject) {

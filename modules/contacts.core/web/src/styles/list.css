@@ -30,7 +30,7 @@
   min-height: 68px;
   border-bottom: var(--uok-line);
   padding: var(--uok-space-3) var(--uok-space-4);
-  text-align: left;
+  text-align: start;
 }
 
 .contact-list-header {
@@ -193,7 +193,7 @@
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: currentColor;
+  background: currentcolor;
 }
 
 .contact-state-text.success {

@@ -36,7 +36,7 @@
   [role="menuitemradio"],
   [role="tab"],
   a[href],
-  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+  input:not([type="checkbox"], [type="radio"], [type="hidden"]),
   select,
   textarea {
     min-height: 44px;

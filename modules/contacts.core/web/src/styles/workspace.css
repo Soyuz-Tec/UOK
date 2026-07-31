@@ -33,7 +33,7 @@
 }
 
 .contacts-view-split .workflow-primary-region {
-  border-right: var(--uok-line);
+  border-inline-end: var(--uok-line);
 }
 
 .contacts-view-split .contact-list,

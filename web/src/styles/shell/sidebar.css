@@ -2,7 +2,7 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: var(--uok-space-5);
-  border-right: var(--uok-line);
+  border-inline-end: var(--uok-line);
   padding: max(var(--uok-space-4), env(safe-area-inset-top)) var(--uok-space-3) var(--uok-space-4);
   background: var(--uok-bg-grouped-primary);
 }
@@ -25,7 +25,7 @@
   padding: 0 var(--uok-space-2);
   background: transparent;
   color: var(--uok-text-primary);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 

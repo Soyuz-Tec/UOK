@@ -50,6 +50,8 @@ export function ProductMasterWorkspace({ host }: { host: ModuleSurfaceHostContex
   const [status, setStatus] = useState("Product Master ready.");
   const activeOperation = useRef("");
   const selected = products.find((product) => product.id === selectedId) || null;
+  const selectedRecordId = selected?.id || "";
+  const selectedVersion = selected?.version;
   const visibleProducts = useMemo(() => filterAndSortProducts(products, {
     query,
     status: statusFilter,
@@ -86,13 +88,13 @@ export function ProductMasterWorkspace({ host }: { host: ModuleSurfaceHostContex
   }, [host.moduleRefreshRevision, host.token, operational, refreshProducts]);
 
   useEffect(() => {
-    if (!host.token || !operational || !selected) {
+    if (!host.token || !operational || !selectedRecordId) {
       setHistory([]);
       return;
     }
     let active = true;
     setHistoryLoading(true);
-    void loadProductNameHistory(host.token, selected.id, host.onUnauthorized)
+    void loadProductNameHistory(host.token, selectedRecordId, host.onUnauthorized)
       .then((rows) => {
         if (active) setHistory(rows);
       })
@@ -105,7 +107,7 @@ export function ProductMasterWorkspace({ host }: { host: ModuleSurfaceHostContex
     return () => {
       active = false;
     };
-  }, [host.onUnauthorized, host.token, operational, selected?.id, selected?.version]);
+  }, [host.onUnauthorized, host.token, operational, selectedRecordId, selectedVersion]);
 
   if (!host.token) return <EmptyState text="Sign in to open Product Master." />;
   if (!operational) return <ProductModuleState module={module} host={host} />;

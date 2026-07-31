@@ -39,7 +39,7 @@ export function PlanningRequirementsPanel({ schedule, selectedTask, busy, readOn
   const [targetLinkId, setTargetLinkId] = useState("");
   const requirements = (schedule.requirements || []).filter((row) => row.task_id === selectedTask?.id);
   const compatibleLinks = useMemo(() => {
-    return compatibleRequirementLinks(schedule, selectedTask?.id, type);
+    return compatibleRequirementLinks(schedule.links, selectedTask?.id, type);
   }, [schedule.links, selectedTask?.id, type]);
   const readiness = selectedTask?.readiness || { ready: true, required_count: 0, blocking_count: 0 };
 
@@ -77,7 +77,7 @@ export function PlanningRequirementsPanel({ schedule, selectedTask, busy, readOn
           <RequirementRow
             key={`${requirement.id}:${requirement.target_link_id || "unlinked"}`}
             requirement={requirement}
-            links={compatibleRequirementLinks(schedule, selectedTask?.id, requirement.requirement_type)}
+            links={compatibleRequirementLinks(schedule.links, selectedTask?.id, requirement.requirement_type)}
             busy={busy}
             readOnly={readOnly}
             canApprove={canApprove}
@@ -139,9 +139,9 @@ function RequirementRow({ requirement, links, busy, readOnly, canApprove, onAdva
   );
 }
 
-function compatibleRequirementLinks(schedule: PlanningSchedule, taskId: string | undefined, type: PlanningRequirementType) {
+function compatibleRequirementLinks(links: PlanningSchedule["links"], taskId: string | undefined, type: PlanningRequirementType) {
   const accepted = linkKinds[type];
-  return schedule.links.filter((link) => (
+  return links.filter((link) => (
     (!link.task_id || link.task_id === taskId)
     && (!accepted || accepted.includes(link.target.kind))
   ));

@@ -12,7 +12,6 @@ import {
   rowHeight,
   type DragState,
   type PlanningGridColumn,
-  type TimelineScale,
 } from "./planningGanttModel";
 import { visibleRows } from "./planningGanttTree";
 import { DependencyLines, ProjectBoundaryMarkers, TaskShape, TaskTimelineMarkers, TimelineBackground, TimelineCreateDraftShape, TimelineHeaders, TodayMarker } from "./PlanningGanttShapes";

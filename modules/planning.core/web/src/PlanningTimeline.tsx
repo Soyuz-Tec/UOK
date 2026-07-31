@@ -125,8 +125,14 @@ export function PlanningTimeline({
   const selectedTaskVisible = Boolean(selectedTaskId && visibleSchedule.tasks.some((task) => task.id === selectedTaskId));
   const visibleSelectedTaskId = selectedTaskVisible ? selectedTaskId : "";
   const selectedCount = selectedVisible ? visibleSchedule.tasks.length : selectedTaskVisible ? 1 : 0;
-  const selectedTaskIds = selectedVisible ? visibleSchedule.tasks.map((task) => task.id) : visibleSelectedTaskId ? [visibleSelectedTaskId] : [];
-  const selectedTasks = useMemo(() => selectedTaskIds.map((taskId) => visibleSchedule.tasks.find((task) => task.id === taskId)).filter((task): task is PlanningSchedule["tasks"][number] => Boolean(task)), [selectedTaskIds, visibleSchedule.tasks]);
+  const selectedTasks = useMemo(() => {
+    const selectedTaskIds = selectedVisible
+      ? visibleSchedule.tasks.map((task) => task.id)
+      : visibleSelectedTaskId ? [visibleSelectedTaskId] : [];
+    return selectedTaskIds
+      .map((taskId) => visibleSchedule.tasks.find((task) => task.id === taskId))
+      .filter((task): task is PlanningSchedule["tasks"][number] => Boolean(task));
+  }, [selectedVisible, visibleSchedule.tasks, visibleSelectedTaskId]);
   const savedViewConfig = useMemo<PlanningSavedViewConfig>(() => ({
     activeView,
     cascadeScheduling,

@@ -13,7 +13,6 @@ import {
   endOfUnit,
   groupLabel,
   startOfUnit,
-  timelineScales,
   unitDays,
   unitKey,
   unitLabel,

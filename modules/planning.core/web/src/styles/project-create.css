@@ -72,7 +72,7 @@
   font-size: inherit;
 }
 
-@media (max-width: 860px) {
+@media (width <= 860px) {
   .planning-project-reload-notice {
     grid-template-columns: auto minmax(0, 1fr);
   }
@@ -83,7 +83,7 @@
   }
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .planning-project-create-form {
     padding: var(--uok-space-4);
   }

@@ -65,7 +65,7 @@ export function useSearchRefinements({
       });
     }
     return chips;
-  }, [effectiveGroupBy, filterValues, filters, groupDefaultValue, groupingEnabled, groupOptions, onChange, onGroupByChange, sort, t, value]);
+  }, [effectiveGroupBy, filters, groupDefaultValue, groupingEnabled, groupOptions, onChange, onGroupByChange, sort, t, value]);
   const refinementDetails = activeChips.map((chip) => chip.label).join("; ");
   const summary = activeChips.length
     ? activeChips.length === 1

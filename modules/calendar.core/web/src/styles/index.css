@@ -1,6 +1,6 @@
-@import "./calendar-toolbar.css";
-@import "./calendar-date-navigator.css";
-@import "./calendar-year-picker.css";
-@import "./calendar.css";
-@import "./calendar-selector.css";
-@import "./calendar-workflows.css";
+@import url("./calendar-toolbar.css");
+@import url("./calendar-date-navigator.css");
+@import url("./calendar-year-picker.css");
+@import url("./calendar.css");
+@import url("./calendar-selector.css");
+@import url("./calendar-workflows.css");

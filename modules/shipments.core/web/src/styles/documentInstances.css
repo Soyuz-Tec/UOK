@@ -134,7 +134,7 @@
   margin-top: 0.2em;
 }
 
-@media (max-width: 520px) {
+@media (width <= 520px) {
   .shipment-instances-header,
   .shipment-instance-row-header {
     align-items: stretch;

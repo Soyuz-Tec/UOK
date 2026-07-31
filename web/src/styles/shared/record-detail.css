@@ -151,7 +151,7 @@
   width: 1px;
   height: 1px;
   overflow: hidden;
-  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 
@@ -209,7 +209,7 @@
   border-radius: 999px;
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .record-profile-header {
     align-items: stretch;
     flex-direction: column;
@@ -230,20 +230,20 @@
   .record-tag,
   .detail-grid,
   .detail-item {
-    border-color: #d0d5dd;
-    background: #fff;
-    color: #111827;
+    border-color: var(--uok-print-border);
+    background: var(--uok-print-background);
+    color: var(--uok-print-text);
     box-shadow: none;
   }
 
-  .record-profile-actions,
-  .record-tag .icon-button,
-  .contact-inspector-actions,
-  .contact-group-membership-add,
-  .segmented-control,
-  .contact-manage-disclosure,
-  .contact-technical-details summary::-webkit-details-marker {
-    display: none !important;
+  :root .record-profile-actions,
+  :root .record-tag .icon-button,
+  :root .contact-inspector-actions,
+  :root .contact-group-membership-add,
+  :root .segmented-control,
+  :root .contact-manage-disclosure,
+  :root .contact-technical-details summary::-webkit-details-marker {
+    display: none;
   }
 
   .record-profile-header,

@@ -206,6 +206,10 @@ module-owned.
 
 - Durable UI code must remain React + TypeScript + Vite.
 - CSS must use semantic tokens and be split by design-system layer, shell, shared primitive, or feature surface.
+- ESLint must pass with zero warnings across shell and module-owned TypeScript. Keep generated declarations out of manual lint scope, and do not suppress React hook, unsafe type, unused-code, or production console findings without a narrowly documented reason.
+- Stylelint must pass across shell and module-owned CSS. Use semantic color tokens, logical inline/block properties instead of physical left/right declarations, and reserve `!important` for the shared reduced-motion accessibility override. The inherited `no-descending-specificity` rule is the only repository-wide exception: existing base, state, responsive, and module layers intentionally interleave selector specificity, so mechanical reordering would risk changing the cascade. New CSS must still keep selectors narrow and state ordering reviewable.
+- Runtime dependencies must stay on the approved React, React DOM, and Lucide stack, use exact versions, appear only under `dependencies` rather than optional, peer, or bundled dependency sections, match the version-3 lockfile, and preserve one resolved version of each critical package. The governed ESLint, TypeScript-ESLint, React Hooks, globals, Stylelint, and standard-config toolchain must also use exact versions. Additions require deliberate architecture and supply-chain review.
+- The built static assets must stay within the checked-in raw and gzip ceilings: JavaScript `1000 KiB` raw and `270 KiB` gzip; CSS `220 KiB` raw and `30 KiB` gzip. A ceiling change is a reviewed budget decision, not an automatic response to a regression.
 - React components and hooks should generally stay under `300` lines.
 - Avoid mixed files that combine API mapping, view state, layout, validation, and rendering.
 - Use typed props, explicit state names, and narrow hooks.
@@ -218,12 +222,20 @@ module-owned.
 Run the relevant gates before UI work is complete:
 
 ```powershell
+npm --prefix web run check:dependencies
+npm --prefix web run lint
+npm --prefix web run lint:styles
 npm --prefix web test
 npm --prefix web run test:accessibility
 npm --prefix web run test:ui-proof
 npm --prefix web run build:static
+npm --prefix web run check:bundle-budget
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
 ```
+
+Protected CI runs the dependency and lint gates before tests, then evaluates the
+bundle budget against the completed production build. `npm audit` remains a
+separate supply-chain gate; it does not replace the direct-dependency policy.
 
 When runtime UI behavior changes, also verify:
 

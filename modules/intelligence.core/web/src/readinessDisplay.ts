@@ -100,6 +100,8 @@ export function expiryAttentionLabel(
 }
 
 export function safeShipmentOpenPath(path: string | null) {
+  // Control characters and backslashes are deliberately rejected at this navigation trust boundary.
+  // eslint-disable-next-line no-control-regex
   if (!path || /[\u0000-\u001f\\]/.test(path)) return null;
   try {
     const url = new URL(path, window.location.origin);

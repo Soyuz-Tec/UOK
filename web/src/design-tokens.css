@@ -1,12 +1,12 @@
 :root {
   color-scheme: light;
-  --uok-font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 
+  --uok-font-family: inter, ui-sans-serif, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", sans-serif;
   --uok-bg-base: #f5f6f8;
-  --uok-bg-elevated: #ffffff;
+  --uok-bg-elevated: #fff;
   --uok-bg-grouped-primary: #eef1f4;
   --uok-bg-grouped-secondary: #f8f9fb;
-  --uok-bg-grouped-tertiary: #ffffff;
+  --uok-bg-grouped-tertiary: #fff;
   --uok-bg-canvas: var(--uok-bg-base);
   --uok-bg-grouped: var(--uok-bg-grouped-primary);
   --uok-bg-muted: var(--uok-bg-grouped-secondary);
@@ -15,6 +15,9 @@
   --uok-text-tertiary: #697386;
   --uok-text-placeholder: #7f8794;
   --uok-separator: #d8dee6;
+  --uok-print-background: #fff;
+  --uok-print-border: #d0d5dd;
+  --uok-print-text: #111827;
   --uok-border: var(--uok-separator);
   --uok-link: #0969da;
   --uok-accent: #0a66c2;
@@ -27,7 +30,6 @@
   --uok-warning: var(--uok-status-warning);
   --uok-danger: var(--uok-status-danger);
   --uok-focus-ring: #0a84ff;
-
   --uok-space-1: 4px;
   --uok-space-2: 8px;
   --uok-space-3: 12px;
@@ -50,7 +52,6 @@
   --uok-shadow-1: 0 2px 8px color-mix(in srgb, #111827 12%, transparent);
   --uok-shadow-2: 0 18px 48px color-mix(in srgb, #111827 18%, transparent), 0 4px 12px color-mix(in srgb, #111827 10%, transparent);
   --uok-shadow-lg: var(--uok-shadow-2);
-
   --uok-large-title: 1.75rem;
   --uok-title-1: 1.5rem;
   --uok-title-2: 1.25rem;
@@ -66,6 +67,7 @@
 
 :root[data-appearance="dark"] {
   color-scheme: dark;
+
   --uok-bg-base: #101418;
   --uok-bg-elevated: #171d24;
   --uok-bg-grouped-primary: #131920;
@@ -90,6 +92,7 @@
 @media (prefers-color-scheme: dark) {
   :root[data-appearance="system"] {
     color-scheme: dark;
+
     --uok-bg-base: #101418;
     --uok-bg-elevated: #171d24;
     --uok-bg-grouped-primary: #131920;
@@ -114,11 +117,11 @@
 
 @media (prefers-contrast: more) {
   :root {
-    --uok-separator: currentColor;
+    --uok-separator: currentcolor;
     --uok-focus-ring: #0047ff;
   }
 
   :root[data-appearance="dark"] {
-    --uok-focus-ring: #ffffff;
+    --uok-focus-ring: #fff;
   }
 }

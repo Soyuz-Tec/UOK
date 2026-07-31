@@ -78,7 +78,7 @@ export function useWorkbenchData(token: string, onUnauthorized: () => void) {
   useEffect(() => {
     if (!token) return;
     void refresh();
-  }, [token]);
+  }, [refresh, token]);
 
   return {
     alignment,

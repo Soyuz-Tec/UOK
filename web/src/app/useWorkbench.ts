@@ -34,12 +34,13 @@ export function useWorkbench() {
     username
   } = auth;
   const data = useWorkbenchData(token, clearAuthState);
+  const dataRefresh = data.refresh;
   const authWorkflows = useAuthWorkflows(auth, data);
   const actions = useWorkbenchActions(data);
   const refresh = useCallback(async (overrideToken?: string) => {
-    await data.refresh(overrideToken);
+    await dataRefresh(overrideToken);
     setModuleRefreshRevision((revision) => revision + 1);
-  }, [data.refresh]);
+  }, [dataRefresh]);
   const moduleHost: ModuleSurfaceHostContext = {
     token,
     currentUserRole: currentUser?.role || "",

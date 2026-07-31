@@ -10,7 +10,7 @@ import { CalendarWorkspaceStatus } from "./CalendarWorkspaceStatus";
 import { downloadCalendarIcs, loadCalendarEventDetail } from "./calendarClient";
 import { resolveCalendarDraftTiming } from "./calendarDraftTiming";
 import { CALENDAR_MODULE_ID } from "./calendarModule";
-import { addDays, addMonths, eventStart, rangeForView, startOfDay } from "./calendarDates";
+import { addDays, addMonths, rangeForView, startOfDay } from "./calendarDates";
 import { draftFromEvent, emptyDraft, eventPayload } from "./calendarDrafts";
 import { filterCalendarEvents } from "./calendarFilters";
 import { calendarColorMap } from "./calendarPresentation";

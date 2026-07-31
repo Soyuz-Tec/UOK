@@ -8,10 +8,12 @@ import { removeStorageItem, writeStorageJson, writeStorageString } from "../shar
 import type { SessionUser } from "../shared/types";
 
 export function useAuthWorkflows(auth: AuthState, data: WorkbenchData) {
+  const { clearAuthState } = auth;
+  const { clearData } = data;
   const clearSession = useCallback((message = "Signed out.") => {
-    auth.clearAuthState();
-    data.clearData(message);
-  }, [auth.clearAuthState, data.clearData]);
+    clearAuthState();
+    clearData(message);
+  }, [clearAuthState, clearData]);
 
   async function login(event?: FormEvent) {
     event?.preventDefault();

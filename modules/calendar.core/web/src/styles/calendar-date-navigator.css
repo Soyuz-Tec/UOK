@@ -147,7 +147,7 @@
   font-weight: 800;
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .calendar-date-navigator-panel {
     position: fixed;
     inset-block-start: var(--uok-space-3);

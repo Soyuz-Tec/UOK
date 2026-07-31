@@ -241,7 +241,7 @@ export function PlanningWorkspace({ token, appearance, module, moduleRows, busyA
         size="wide"
         chrome="minimal"
         className="planning-inspector-popup"
-        dismissible={!Boolean(actions.busy)}
+        dismissible={!actions.busy}
       >
         <PlanningInspector
           token={token}

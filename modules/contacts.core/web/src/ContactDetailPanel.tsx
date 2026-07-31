@@ -3,7 +3,7 @@ import { FileCheck2 } from "lucide-react";
 import { contactDetailPaneOptions } from "./contactWorkspaceOptions";
 import { formatLabel } from "@uok/shared/format";
 import { DetailItem, EmptyState } from "@uok/shared/data-display";
-import { CommandButton, IconButton, SegmentedControl } from "@uok/shared/primitives";
+import { CommandButton, SegmentedControl } from "@uok/shared/primitives";
 import { ContactActivityTimeline } from "./ContactActivityTimeline";
 import { ContactBusinessIntelligenceProfilePanel } from "./ContactBusinessIntelligenceProfile";
 import { ContactFactRows } from "./ContactFactRows";

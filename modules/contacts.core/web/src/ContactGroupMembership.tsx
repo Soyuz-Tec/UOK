@@ -24,7 +24,7 @@ export function ContactGroupMembership({
   onRemoveFromGroup: (groupId: string) => Promise<void>;
 }) {
   const [nextGroupId, setNextGroupId] = useState("");
-  const memberships = contact.groups || [];
+  const memberships = useMemo(() => contact.groups || [], [contact.groups]);
   const memberGroupIds = useMemo(() => new Set(memberships.map((group) => group.id)), [memberships]);
   const availableGroups = groups.filter((group) => group.kind === "manual" && group.status === "active" && !memberGroupIds.has(group.id));
   const userGroups = memberships.filter((group) => !isSystemGroup(group));

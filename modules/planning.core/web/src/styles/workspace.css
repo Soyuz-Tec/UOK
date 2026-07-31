@@ -11,9 +11,6 @@
   gap: var(--uok-space-2);
   min-width: 0;
   align-content: start;
-}
-
-.planning-primary-stack {
   position: relative;
   min-height: 100%;
 }
@@ -25,11 +22,16 @@
 
 .planning-inspector-tabs button {
   min-height: 36px;
+  min-width: 0;
   border: 0;
+  padding: 0 var(--uok-space-2);
+  overflow: hidden;
   color: var(--uok-text-secondary);
   background: transparent;
   font: inherit;
   cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .planning-inspector-tabs button.selected {
@@ -146,16 +148,8 @@
   background: var(--uok-bg-grouped-secondary);
 }
 
-.planning-inspector-tabs button {
-  min-width: 0;
-  padding: 0 var(--uok-space-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .planning-inspector-tabs button + button {
-  border-left: var(--uok-line);
+  border-inline-start: var(--uok-line);
 }
 
 .planning-form-grid {

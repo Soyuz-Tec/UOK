@@ -31,7 +31,6 @@ test("500-row Gantt meets the initial interaction and long-task budgets", async 
   const longTasks = await page.evaluate(() => (window as Window & { uokLongTasks?: number[] }).uokLongTasks || []);
   const evidence = { interactive_ms: Number(interactiveMs.toFixed(2)), rendered_grid_rows: renderedRows, rendered_timeline_tasks: renderedTasks, max_long_task_ms: Math.max(0, ...longTasks) };
   await testInfo.attach("planning-500-row-browser-budget.json", { body: JSON.stringify(evidence, null, 2), contentType: "application/json" });
-  console.log(`PLANNING_SCALE_EVIDENCE ${JSON.stringify(evidence)}`);
   expect(evidence.rendered_grid_rows).toBeGreaterThan(0);
   expect(evidence.rendered_grid_rows).toBeLessThan(100);
   expect(evidence.rendered_timeline_tasks).toBe(evidence.rendered_grid_rows);

@@ -16,10 +16,13 @@ type PlanningErrorStatus = {
 export function PlanningErrorNotice({ status }: { status: unknown }) {
   const error = planningErrorStatus(status);
   const noticeRef = useRef<HTMLElement>(null);
+  const hasError = error !== null;
+  const errorCode = error?.code;
+  const errorCorrelationId = error?.correlation_id;
 
   useEffect(() => {
-    if (error) noticeRef.current?.focus();
-  }, [error?.correlation_id, error?.code]);
+    if (hasError) noticeRef.current?.focus();
+  }, [errorCode, errorCorrelationId, hasError]);
 
   if (!error) return null;
   return (

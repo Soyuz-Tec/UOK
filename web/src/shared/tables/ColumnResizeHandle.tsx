@@ -22,7 +22,10 @@ export function ColumnResizeHandle({
     event.preventDefault();
     const startX = event.clientX;
     const startWidth = width;
-    const resize = (moveEvent: globalThis.PointerEvent) => onResize(startWidth + moveEvent.clientX - startX);
+    const direction = inlineEndDirection(event.currentTarget);
+    const resize = (moveEvent: globalThis.PointerEvent) => {
+      onResize(startWidth + ((moveEvent.clientX - startX) * direction));
+    };
     const stop = () => {
       window.removeEventListener("pointermove", resize);
       window.removeEventListener("pointerup", stop);
@@ -33,12 +36,13 @@ export function ColumnResizeHandle({
 
   const resizeFromKeyboard = (event: KeyboardEvent<HTMLDivElement>) => {
     const step = event.shiftKey ? acceleratedResizeStep : resizeStep;
+    const direction = inlineEndDirection(event.currentTarget);
     if (event.key === "ArrowLeft") {
       event.preventDefault();
-      onResize(width - step);
+      onResize(width - (step * direction));
     } else if (event.key === "ArrowRight") {
       event.preventDefault();
-      onResize(width + step);
+      onResize(width + (step * direction));
     } else if (event.key === "Home") {
       event.preventDefault();
       onResize(minWidth);
@@ -64,4 +68,8 @@ export function ColumnResizeHandle({
       onPointerDown={startPointerResize}
     />
   );
+}
+
+function inlineEndDirection(element: HTMLElement) {
+  return getComputedStyle(element).direction === "rtl" ? -1 : 1;
 }

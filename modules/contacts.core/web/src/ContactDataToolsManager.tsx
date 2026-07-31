@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { DatabaseZap, FileUp, Fingerprint, GitCompareArrows, ListChecks, Puzzle, ShieldCheck, UsersRound } from "lucide-react";
+import { type DatabaseZap, FileUp, Fingerprint, GitCompareArrows, ListChecks, Puzzle, ShieldCheck, UsersRound } from "lucide-react";
 
 import { useUokLocalization } from "@uok/shared/localization";
 import { WorkspaceEditorPopup } from "@uok/shared/overlays";
@@ -54,13 +54,14 @@ export function ContactDataToolsManager({
   const [notice, setNotice] = useState("");
   const canGovern = currentUserRole === "platform_admin" || currentUserRole === "ops_manager";
   const canRestore = canGovern;
+  const selectedContactId = selectedContact?.id;
 
   useEffect(() => {
     if (!open) return;
     setError("");
     setNotice("");
-    setSelectedIds(selectedContact ? [selectedContact.id] : []);
-  }, [open, selectedContact?.id]);
+    setSelectedIds(selectedContactId ? [selectedContactId] : []);
+  }, [open, selectedContactId]);
 
   const run: ContactDataToolsRun = async (action, operation, successMessage, options) => {
     setBusyAction(action);

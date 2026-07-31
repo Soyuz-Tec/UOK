@@ -36,7 +36,7 @@ describe("Planning project lifecycle workspace actions", () => {
     const first = project("project-1", "Primary");
     const second = project("project-2", "Fallback");
     let archived = false;
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init: RequestInit = {}) => {
       const path = String(input);
       if (path === "/api/planning/projects/project-1/transitions") {
         archived = true;
@@ -122,7 +122,7 @@ describe("Planning project lifecycle workspace actions", () => {
     const archived = { ...project("project-1", "Archived plan"), status: "archived" as const };
     const active = { ...archived, status: "active" as const, revision: 2 };
     let restored = false;
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init: RequestInit = {}) => {
       const path = String(input);
       if (path === "/api/planning/projects/project-1/transitions") {
         restored = true;

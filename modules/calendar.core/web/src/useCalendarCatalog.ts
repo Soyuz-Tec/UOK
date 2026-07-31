@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CalendarApiError, calendarJson, loadCalendarCapabilities } from "./calendarClient";
 import { durationDays, rangeForView } from "./calendarDates";
@@ -34,19 +34,25 @@ export function useCalendarCatalog({
   const [statusMessage, setStatusMessage] = useState("Ready");
   const [workspaceError, setWorkspaceError] = useState("");
   const refreshSequence = useRef(0);
-  const api = <T,>(path: string, options: RequestInit = {}) => calendarJson<T>(token, path, options);
+  const activeCalendarIdRef = useRef(activeCalendarId);
+  const onDeleteSuccessRef = useLatest(onDeleteSuccess);
+  const onRefreshStartRef = useLatest(onRefreshStart);
+  const api = useCallback(
+    <T,>(path: string, options: RequestInit = {}) => calendarJson<T>(token, path, options),
+    [token],
+  );
 
-  function setWorkspaceStatus(text: string) {
+  const setWorkspaceStatus = useCallback((text: string) => {
     setStatusMessage(text);
     setWorkspaceError("");
-  }
+  }, []);
 
-  function setWorkspaceFailure(error: unknown) {
+  const setWorkspaceFailure = useCallback((error: unknown) => {
     setWorkspaceError(calendarErrorMessage(error));
-  }
+  }, []);
 
-  async function refreshCalendar(calendarId?: string) {
-    onRefreshStart();
+  const refreshCalendar = useCallback(async (calendarId?: string) => {
+    onRefreshStartRef.current();
     const requestId = ++refreshSequence.current;
     if (!token || !operational) return;
     try {
@@ -55,7 +61,7 @@ export function useCalendarCatalog({
         : "/api/calendar/calendars");
       const activeRows = rows.filter((row) => row.status !== "deleted");
       const deletedRows = rows.filter((row) => row.status === "deleted");
-      const requested = calendarId ?? activeCalendarId;
+      const requested = calendarId ?? activeCalendarIdRef.current;
       const nextId = requested === null
         ? activeRows[0]?.id || ""
         : requested === "" || activeRows.some((row) => row.id === requested) ? requested : activeRows[0]?.id || "";
@@ -75,6 +81,7 @@ export function useCalendarCatalog({
       if (requestId !== refreshSequence.current) return;
       setCalendars(activeRows);
       setDeletedCalendars(deletedRows);
+      activeCalendarIdRef.current = nextId;
       setActiveCalendarId(nextId);
       setEvents(nextEvents);
       setBusyCount(nextBusyCount);
@@ -82,7 +89,17 @@ export function useCalendarCatalog({
     } catch (error) {
       if (requestId === refreshSequence.current) setWorkspaceFailure(error);
     }
-  }
+  }, [
+    api,
+    capabilities.manage,
+    cursorDate,
+    operational,
+    onRefreshStartRef,
+    setWorkspaceFailure,
+    setWorkspaceStatus,
+    token,
+    view,
+  ]);
 
   async function createCalendar() {
     if (!capabilities.create || calendarBusyAction) return;
@@ -110,7 +127,7 @@ export function useCalendarCatalog({
         method: "DELETE",
         headers: { "If-Match": calendar.etag },
       });
-      onDeleteSuccess(calendar);
+      onDeleteSuccessRef.current(calendar);
       await refreshCalendar();
       setWorkspaceStatus(`Deleted ${calendar.name}. Its events remain retained for audit.`);
     } catch (error) {
@@ -152,13 +169,22 @@ export function useCalendarCatalog({
   }, [token, operational]);
 
   useEffect(() => {
+    const cancelRefresh = onRefreshStartRef.current;
     void refreshCalendar();
-    return onRefreshStart;
-  }, [token, operational, view, cursorDate, capabilities.manage]);
+    return cancelRefresh;
+  }, [onRefreshStartRef, refreshCalendar]);
 
   return {
     activeCalendarId, api, busyCount, calendarBusyAction, calendars, capabilities, deletedCalendars,
     createCalendar, deleteCalendar, events, refreshCalendar, restoreCalendar, setStatusMessage,
     setWorkspaceFailure, setWorkspaceStatus, statusMessage, workspaceError,
   };
+}
+
+function useLatest<T>(value: T) {
+  const valueRef = useRef(value);
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
+  return valueRef;
 }

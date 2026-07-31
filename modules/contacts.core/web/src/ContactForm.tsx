@@ -5,7 +5,7 @@ import type { ContactDraft } from "./contracts";
 import { validEmail } from "@uok/shared/format";
 import { FieldMessage } from "@uok/shared/forms";
 import { ContactFormDisclosure } from "./ContactFormDisclosure";
-import { addableSections, contactDraftHasMeaningfulValue, contactDraftSectionState, isValidWebsite } from "./contactFormModel";
+import { contactDraftHasMeaningfulValue, contactDraftSectionState, isValidWebsite } from "./contactFormModel";
 import type { AddableSection } from "./contactFormModel";
 
 export function ContactForm({ draft, formKey, onChange, onSave, onCancel, busy }: {

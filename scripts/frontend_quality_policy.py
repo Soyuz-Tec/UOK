@@ -9,6 +9,30 @@ from typing import Any
 from frontend_source_policy import is_durable_javascript
 
 
+_FRONTEND_TOOLING_ARTIFACTS = (
+    "eslint.config.mjs",
+    "web/eslint.config.mjs",
+    "web/stylelint.config.mjs",
+    "web/scripts/run-eslint.mjs",
+    "web/scripts/check-bundle-budget.mjs",
+    "web/scripts/check-dependency-policy.mjs",
+)
+
+_FRONTEND_TOOLING_SCRIPTS = {
+    "lint": "node scripts/run-eslint.mjs",
+    "lint:styles": 'stylelint "src/**/*.css" "../modules/*/web/src/**/*.css"',
+    "check:bundle-budget": "node scripts/check-bundle-budget.mjs",
+    "check:dependencies": "node scripts/check-dependency-policy.mjs",
+}
+
+_FRONTEND_CI_COMMANDS = (
+    "npm run check:dependencies",
+    "npm run lint",
+    "npm run lint:styles",
+    "npm run check:bundle-budget",
+)
+
+
 def frontend_stack_problems(repo_root: Path) -> list[str]:
     package = _read_json(repo_root / "web" / "package.json")
     tsconfig = _read_json(repo_root / "web" / "tsconfig.json")
@@ -40,7 +64,41 @@ def frontend_stack_problems(repo_root: Path) -> list[str]:
     for expected in ("../modules/*/web/src", "../modules/*/tests/web"):
         if expected not in include:
             problems.append(f"TypeScript module ownership root missing: {expected}")
+    problems.extend(_frontend_tooling_problems(repo_root, package))
     problems.extend(_durable_javascript_problems(repo_root))
+    return problems
+
+
+def _frontend_tooling_problems(
+    repo_root: Path, package: dict[str, Any]
+) -> list[str]:
+    problems = [
+        f"frontend tooling artifact missing: {relative}"
+        for relative in _FRONTEND_TOOLING_ARTIFACTS
+        if not (repo_root / relative).is_file()
+    ]
+    package_scripts = package.get("scripts", {})
+    for name, expected in _FRONTEND_TOOLING_SCRIPTS.items():
+        if package_scripts.get(name) != expected:
+            problems.append(f"frontend {name} script must be {expected}")
+
+    workflow_path = repo_root / ".github" / "workflows" / "uok-ci.yml"
+    if not workflow_path.is_file():
+        problems.append("frontend protected CI workflow missing")
+        return problems
+
+    workflow = workflow_path.read_text(encoding="utf-8")
+    for command in _FRONTEND_CI_COMMANDS:
+        if command not in workflow:
+            problems.append(f"frontend protected CI command missing: {command}")
+    build_command = "npm run build:static"
+    budget_command = "npm run check:bundle-budget"
+    if (
+        build_command in workflow
+        and budget_command in workflow
+        and workflow.index(budget_command) < workflow.index(build_command)
+    ):
+        problems.append("frontend bundle budget CI gate must run after the build")
     return problems
 
 

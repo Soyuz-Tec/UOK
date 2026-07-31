@@ -14,7 +14,7 @@
   height: max(540px, calc(100vh - 238px));
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .planning-timeline-workbench.focus-mode {
     inset: var(--uok-space-1);
   }

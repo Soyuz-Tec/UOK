@@ -45,6 +45,22 @@ describe("ResizableDataTable", () => {
     fireEvent.doubleClick(handle);
     expect(storedWidth("name")).toBe(180);
   });
+
+  it("resizes from the logical inline-end edge in RTL", () => {
+    render(<div dir="rtl">{table()}</div>);
+    const handle = screen.getByRole("separator", { name: "Resize Name column" });
+
+    fireEvent.keyDown(handle, { key: "ArrowLeft" });
+    expect(storedWidth("name")).toBe(188);
+    fireEvent.keyDown(handle, { key: "ArrowRight" });
+    expect(storedWidth("name")).toBe(180);
+
+    fireEvent.pointerDown(handle, { clientX: 200, pointerId: 1 });
+    fireEvent.pointerMove(window, { clientX: 176, pointerId: 1 });
+    fireEvent.pointerUp(window, { pointerId: 1 });
+
+    expect(storedWidth("name")).toBe(204);
+  });
 });
 
 function table(overrides: Partial<Parameters<typeof ResizableDataTable<Row>>[0]> = {}) {

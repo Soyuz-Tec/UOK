@@ -121,7 +121,7 @@
   grid-column: 1 / -1;
 }
 
-@media (max-width: 760px) {
+@media (width <= 760px) {
   .location-detail-grid,
   .location-editor-grid {
     grid-template-columns: 1fr;
@@ -132,7 +132,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@media (width <= 520px) {
   .location-detail-actions,
   .location-detail-actions .command-button,
   .location-editor-actions,

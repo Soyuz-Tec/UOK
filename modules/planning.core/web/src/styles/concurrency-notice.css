@@ -46,7 +46,7 @@
   justify-content: flex-end;
 }
 
-@media (max-width: 860px) {
+@media (width <= 860px) {
   .planning-concurrency-notice {
     grid-template-columns: auto minmax(0, 1fr);
   }
@@ -57,7 +57,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@media (width <= 520px) {
   .planning-concurrency-actions,
   .planning-concurrency-actions .command-button {
     width: 100%;

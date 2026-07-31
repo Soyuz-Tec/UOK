@@ -1,2 +1,2 @@
-@import "./account-menu/popover.css";
-@import "./account-menu/trigger.css";
+@import url("./account-menu/popover.css");
+@import url("./account-menu/trigger.css");

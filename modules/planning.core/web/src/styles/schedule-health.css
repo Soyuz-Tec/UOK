@@ -136,7 +136,7 @@
   max-width: 420px;
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .planning-schedule-health,
   .planning-schedule-health .expandable-control-trigger {
     width: 100%;

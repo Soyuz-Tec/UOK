@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { WorkspaceActionButton } from "@uok/shared/actions";
 import { FieldMessage } from "@uok/shared/forms";
@@ -21,11 +21,13 @@ export function ProductEditor({
   onSubmit: (draft: ProductDraft) => void;
 }) {
   const [draft, setDraft] = useState<ProductDraft>(() => initialDraft(mode, product));
+  const currentProduct = useRef(product);
+  currentProduct.current = product;
   const validationId = "product-editor-validation";
   const valid = Boolean(draft.code.trim() && draft.canonicalName.trim());
 
   useEffect(() => {
-    setDraft(initialDraft(mode, product));
+    setDraft(initialDraft(mode, currentProduct.current));
   }, [mode, product?.id, product?.version]);
 
   return (

@@ -138,7 +138,7 @@
   font-weight: 760;
 }
 
-@media (max-width: 760px) {
+@media (width <= 760px) {
   .contact-groups-manager-layout {
     grid-template-columns: minmax(0, 1fr);
     max-height: min(780px, 78vh);
@@ -165,7 +165,7 @@
   }
 }
 
-@media (max-width: 420px) {
+@media (width <= 420px) {
   .contact-groups-manager-popup {
     width: calc(100vw - var(--uok-space-2) - var(--uok-space-2));
   }

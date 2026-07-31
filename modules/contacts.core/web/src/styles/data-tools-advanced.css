@@ -3,6 +3,7 @@
   min-height: 84px;
   resize: vertical;
 }
+
 .contact-data-tools-form-actions,
 .contact-data-tools-button-row,
 .contact-data-tools-inline-form {
@@ -81,7 +82,7 @@
   font-size: var(--uok-caption);
 }
 
-@media (max-width: 820px) {
+@media (width <= 820px) {
   .contact-data-tools-shell {
     grid-template-columns: minmax(0, 1fr);
     max-height: min(820px, 80vh);
@@ -118,7 +119,7 @@
   }
 }
 
-@media (max-width: 460px) {
+@media (width <= 460px) {
   .contact-data-tools-popup {
     width: calc(100vw - var(--uok-space-2) - var(--uok-space-2));
   }

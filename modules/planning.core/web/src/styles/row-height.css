@@ -1,8 +1,7 @@
 .planning-owned-row-height-handle {
   position: absolute;
-  inset-inline-end: 38px;
+  inset-inline: var(--uok-space-2) 38px;
   bottom: 0;
-  inset-inline-start: var(--uok-space-2);
   z-index: 3;
   height: 8px;
   cursor: ns-resize;
@@ -12,9 +11,8 @@
 
 .planning-owned-row-height-handle::after {
   position: absolute;
-  inset-inline-end: 0;
+  inset-inline: 0;
   bottom: 2px;
-  inset-inline-start: 0;
   height: 2px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--uok-accent) 52%, transparent);
