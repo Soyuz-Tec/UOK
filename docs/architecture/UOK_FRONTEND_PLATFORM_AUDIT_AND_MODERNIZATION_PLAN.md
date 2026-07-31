@@ -4,7 +4,7 @@
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
-**Baseline revision:** `b22c9fd` after protected merge of frontend platform Deliveries 1 through 4.
+**Baseline revision:** `8f84ddc` after protected merge of frontend platform Deliveries 1 through 5.
 
 ## Purpose And Scope
 
@@ -54,7 +54,7 @@ The target is not a new framework or a generic schema-driven UI. UOK should pres
 - The approved stack is React 19, TypeScript 5, Vite 8, Lucide, and plain CSS tokens. `web/package.json` has only React, React DOM, and Lucide as direct runtime dependencies.
 - `web/src/generated/moduleSurfaceCatalog.ts` contains literal imports for all eleven workbench surfaces. The browser does not inspect manifests or load remote code.
 - `web/src/features/modules/moduleSurfaceRegistry.tsx` validates the catalog, contains each surface with `ModuleErrorBoundary`, and keeps visited roots mounted to preserve owner state.
-- `web/src/contracts/moduleSurface.ts` exposes a nine-field product-neutral host context. Module DTOs, API clients, state, preferences, and commands stay module-owned.
+- `web/src/contracts/moduleSurface.ts` exposes a product-neutral base host context with an atomic session projection and a registry-owned per-surface activity extension. Module DTOs, API clients, state, preferences, criteria, and commands stay module-owned.
 
 This boundary is sound. The audit found zero cross-owner strongly connected component cycles. The shell must not absorb feature state, and shared code must not encode contact, shipment, calendar, or planning rules.
 
@@ -363,7 +363,7 @@ idle | loading | success | empty | refreshing | error
 | 2 | Shared feedback and recovery | Completed in PR #94, merge `ccacf8f` | No |
 | 3 | Accessibility contracts and protected axe proof | Completed in PR #95, merge `2d9d90c` | No |
 | 4 | ESLint/Stylelint, dependency and bundle policy, logical CSS/RTL, hook correctness | Completed in PR #96, merge `b22c9fd` | No |
-| 5 | Canonical audit baseline and governance reconciliation | Current delivery; completes on protected merge | No |
+| 5 | Canonical audit baseline and governance reconciliation | Completed in PR #97, merge `8f84ddc` | No |
 
 Expected outcome: one measured baseline, responsive and accessible shared behavior, protected dependency/style/bundle gates, and a reviewable remaining-delivery sequence.
 
@@ -371,7 +371,7 @@ Expected outcome: one measured baseline, responsive and accessible shared behavi
 
 | Delivery | Scope | Status | ADR |
 |---|---|---|---|
-| 6 | Request-authoritative async boundary and generation-bound unauthorized handling across session, capability, operational, criteria, activation, and lifetime changes | Planned | Yes if host contract changes |
+| 6 | Request-authoritative async boundary and generation-bound unauthorized handling across session, capability, operational, criteria, activation, and lifetime changes | In progress: sub-slice 6a establishes the shared primitive, atomic shell session, shell adoption, and per-surface activity contract; module-owner adoption remains phased | ADR-0030 |
 | 7 | Shared HTTP transport and runtime response decoding in bounded owner slices | Planned | Yes for the transport/error contract |
 | 8 | Server-authoritative identity bootstrap, revocable logout, token rotation, and replay proof | Planned | Yes; dedicated auth-session ADR |
 | 9 | Canonical browser navigation and exact entity deep links | Planned | Yes; neutral surface contract changes |
@@ -384,6 +384,13 @@ Expected outcome: one measured baseline, responsive and accessible shared behavi
 | 16 | Table selection, remote collection, and versioned saved-view contracts | Planned | Conditional on server query protocol |
 
 Expected outcome: every browser/server boundary has typed ownership, stale sessions cannot commit or sign out a newer session, logout is enforceable server-side, URLs are canonical, files and links are bounded, static delivery is secure and cache-efficient, initial loading is split, and shared form/collection behavior is proven by real consumers.
+
+Delivery 6 is intentionally partitioned. Sub-slice 6a establishes the neutral
+contract and shell proof without moving domain behavior into shared code.
+Subsequent sub-slices migrate audited module owners in bounded groups. Delivery
+6 and Top-20 Issue 1 remain open until every identified owner path guards
+success, error, loading/finally, host refresh, and unauthorized dispatch and
+masks epoch-stale committed state.
 
 ### Phase 3 - Feature Refactors
 
@@ -424,7 +431,7 @@ Every delivery must merge and qualify before the next begins. Runtime-affecting 
 
 | Rank | Issue | Severity | Evidence | Shared solution | Status |
 |---|---|---|---|---|---|
-| 1 | Old-session responses can overwrite new-session state or an old `401` can trigger logout | High | Shell, Contacts, Compliance, Product, Location, Route, and Shipment request paths | ABA-safe request boundary plus generation-bound unauthorized callback | Open |
+| 1 | Old-session responses can overwrite new-session state or an old `401` can trigger logout | High | Shell, Contacts, Compliance, Product, Location, Route, and Shipment request paths | ABA-safe request boundary plus generation-bound unauthorized callback | In progress: Delivery 6a shell/foundation current; module-owner paths remain open |
 | 2 | Logout leaves the bearer token replayable until its default eight-hour expiry | High | `useAuthState.ts`; `src/uok/host/security.py` | Token identity/revocation, rotation, server logout, and replay tests | Open |
 | 3 | Nineteen clients implement transport and response handling separately | High | Direct `fetch` inventory | Shared HTTP mechanics plus module decoders | Open |
 | 4 | Client identity outlives token storage and is weakly decoded | Medium | `web/src/shared/session.ts` | Strict server-rehydrated session identity | Open |
@@ -549,6 +556,7 @@ The shared control should forward safe native button props and events instead of
 - Module-local UI ownership and the compile-time manifest/catalog validation model.
 - Neutral module surface contract and the retained visited-root lifecycle requirement.
 - Shared command/search layout and common action vocabulary.
+- Product-neutral request-authority epochs, independent lanes, guarded callbacks, and committed-state freshness checks.
 - Shared overlays, confirmation, empty state, render-error containment, locale/direction types and translation API, existing semantic token values, table column utilities, pagination, and Planning virtualization.
 - ESLint, Stylelint, dependency, accessibility, test, build, bundle, candidate, and neutrality gates.
 

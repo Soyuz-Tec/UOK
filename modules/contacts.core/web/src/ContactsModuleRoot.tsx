@@ -12,11 +12,11 @@ export function ContactsModuleRoot({ host }: { host: ModuleSurfaceHostContext })
   const module = host.moduleRows.find((row) => row.name === CONTACTS_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const data = useContactData(
-    host.token,
+    host.session.token,
     operational,
     state.filters,
     host.moduleRefreshRevision,
-    host.onUnauthorized,
+    host.session.onUnauthorized,
   );
   const commands = useContactCommands({
     creating: state.creating,
@@ -45,7 +45,7 @@ export function ContactsModuleRoot({ host }: { host: ModuleSurfaceHostContext })
 
   return (
     <ContactsWorkspace
-      token={host.token}
+      token={host.session.token}
       currentUserRole={host.currentUserRole}
       operational={operational}
       module={module}

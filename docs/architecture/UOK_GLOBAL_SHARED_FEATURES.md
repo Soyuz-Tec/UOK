@@ -22,6 +22,7 @@ UOK modules can own domain behavior without copying common workspace and infrast
 | Toggle, command, icon, and segmented controls | `web/src/shared/primitives` | Contacts and Planning |
 | Bounded draggable modal workspace overlays and editor composition | `web/src/shared/overlays` | Communications, Contacts, and Planning |
 | Consequential-command confirmation, async state, and recoverable module render containment | `web/src/shared/overlays` and `web/src/shared/feedback` | Shell and module workspaces |
+| Request-authoritative async epochs, independent owner lanes, guarded one-shot callbacks, cooperative cancellation, and stale-state masking | `web/src/shared/request-authority`, atomic shell session state, and the neutral module surface contract | Shell in Delivery 6a; module owners through phased Delivery 6 adoption |
 | Empty states, status pills, detail items, and fact lists | `web/src/shared/data-display` | Apps, Contacts, Planning |
 | Skip path, focus visibility, coarse-pointer target sizing, closed-panel semantics, and representative 320 CSS-pixel reflow proof | `web/src/App.tsx`, `web/src/styles/accessibility.css`, shared primitives, and `web/e2e/accessibility.spec.ts` | Shell and shared-primitives consumers; protected narrow proof currently covers the shell and Planning |
 | Frontend dependency, lint, logical-style, generated-contract, accessibility, test, and bundle-budget gates | `web/scripts`, root/web lint configs, `scripts/frontend_quality_policy.py`, and CI | Every shell, shared, and module frontend change |
@@ -52,6 +53,15 @@ business commands; they must not add separate drag implementations. Movement
 must preserve the shared focus trap, background isolation, dismissal lock,
 scrolling, focus restoration, and responsive accessibility contract.
 
+The request-authority boundary owns only monotonic epochs, newest-ticket
+ownership within named lanes, cooperative abort signals, guarded callbacks, and
+epoch freshness checks. The shell owns the atomic authentication session and
+the generated registry owns the exact per-surface activity signal. Each module
+still owns the authority transitions caused by its capabilities, operational
+state, criteria, selected entity, and lifetime. Shared request authority does
+not own endpoint definitions, DTO decoding, domain errors, commands, or
+workflow state.
+
 ## Module Responsibilities
 
 Modules still own:
@@ -65,6 +75,11 @@ Modules still own:
 
 - Backend shared helpers live in `src/uok` only when they are product-neutral runtime infrastructure.
 - Frontend shared primitives live in `web/src/shared`.
+- New or materially changed frontend async work must use owner-local request
+  authority. Every success, failure, loading finalizer, host refresh, and
+  unauthorized callback must be guarded by the same current ticket; reusable
+  state must carry the authority epoch. Existing owners migrate through the
+  phased Delivery 6 audit plan.
 - Module-local compatibility adapters may remain when tests or call sites depend on an existing module API, but they must delegate reusable behavior to shared code.
 - Server-backed exports should use `reports.core` when the requested format is declared by the reports module.
 - Browser-only visual exports may remain module-local until a matching reports adapter exists.

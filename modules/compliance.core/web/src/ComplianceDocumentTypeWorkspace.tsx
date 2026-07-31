@@ -27,7 +27,7 @@ export function ComplianceDocumentTypeWorkspace({
   );
   const workspace = useComplianceDocumentTypeWorkspace(host, operational);
 
-  if (!host.token) {
+  if (!host.session.token) {
     return <EmptyState text="Sign in to open Compliance Document Types." />;
   }
   if (!operational) return <ComplianceModuleState module={module} host={host} />;

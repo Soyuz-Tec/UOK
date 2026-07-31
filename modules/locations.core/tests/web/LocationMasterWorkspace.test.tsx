@@ -174,11 +174,16 @@ describe("Location Master workspace", () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse({ detail: "locations.read required" }, 403));
     vi.stubGlobal("fetch", fetchMock);
-    const { rerender } = render(<LocationMasterWorkspace host={locationHost({ onUnauthorized })} />);
+    const { rerender } = render(<LocationMasterWorkspace host={locationHost({
+      session: { onUnauthorized },
+    })} />);
     await screen.findByText("locations.read required");
 
     fetchMock.mockResolvedValueOnce(jsonResponse({ detail: "expired" }, 401));
-    rerender(<LocationMasterWorkspace host={locationHost({ onUnauthorized, moduleRefreshRevision: 1 })} />);
+    rerender(<LocationMasterWorkspace host={locationHost({
+      session: { onUnauthorized },
+      moduleRefreshRevision: 1,
+    })} />);
     await waitFor(() => expect(onUnauthorized).toHaveBeenCalled());
   });
 

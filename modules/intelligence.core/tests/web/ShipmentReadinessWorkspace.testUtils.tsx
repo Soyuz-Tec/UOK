@@ -114,11 +114,19 @@ export const intelligenceModuleRow = {
   dependents: [],
 };
 
-export function intelligenceHost(
-  overrides: Partial<ModuleSurfaceHostContext> = {},
-): ModuleSurfaceHostContext {
+type HostOverrides = Omit<Partial<ModuleSurfaceHostContext>, "session"> & {
+  session?: Partial<ModuleSurfaceHostContext["session"]>;
+};
+
+export function intelligenceHost(overrides: HostOverrides = {}): ModuleSurfaceHostContext {
+  const { session, ...hostOverrides } = overrides;
   return {
-    token: "test-token",
+    session: {
+      token: "test-token",
+      generation: 0,
+      onUnauthorized: vi.fn(),
+      ...session,
+    },
     currentUserRole: "viewer",
     appearance: "system",
     moduleRows: [intelligenceModuleRow],
@@ -126,8 +134,7 @@ export function intelligenceHost(
     moduleAction: vi.fn(),
     refreshHost: vi.fn().mockResolvedValue(undefined),
     moduleRefreshRevision: 0,
-    onUnauthorized: vi.fn(),
-    ...overrides,
+    ...hostOverrides,
   };
 }
 

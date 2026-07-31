@@ -60,10 +60,10 @@ export function ProductMasterWorkspace({ host }: { host: ModuleSurfaceHostContex
   }), [products, query, sortBy, sortDirection, statusFilter]);
 
   const refreshProducts = useCallback(async () => {
-    if (!host.token || !operational) return;
+    if (!host.session.token || !operational) return;
     try {
       setBusyAction("refresh");
-      const rows = await loadProductDefinitions(host.token, host.onUnauthorized);
+      const rows = await loadProductDefinitions(host.session.token, host.session.onUnauthorized);
       setProducts(rows);
       setSelectedId((current) => rows.some((product) => product.id === current)
         ? current
@@ -74,10 +74,10 @@ export function ProductMasterWorkspace({ host }: { host: ModuleSurfaceHostContex
     } finally {
       setBusyAction("");
     }
-  }, [host.onUnauthorized, host.token, operational]);
+  }, [host.session.onUnauthorized, host.session.token, operational]);
 
   useEffect(() => {
-    if (!host.token || !operational) {
+    if (!host.session.token || !operational) {
       setProducts([]);
       setSelectedId("");
       setHistory([]);
@@ -85,16 +85,16 @@ export function ProductMasterWorkspace({ host }: { host: ModuleSurfaceHostContex
       return;
     }
     void refreshProducts();
-  }, [host.moduleRefreshRevision, host.token, operational, refreshProducts]);
+  }, [host.moduleRefreshRevision, host.session.token, operational, refreshProducts]);
 
   useEffect(() => {
-    if (!host.token || !operational || !selectedRecordId) {
+    if (!host.session.token || !operational || !selectedRecordId) {
       setHistory([]);
       return;
     }
     let active = true;
     setHistoryLoading(true);
-    void loadProductNameHistory(host.token, selectedRecordId, host.onUnauthorized)
+    void loadProductNameHistory(host.session.token, selectedRecordId, host.session.onUnauthorized)
       .then((rows) => {
         if (active) setHistory(rows);
       })
@@ -107,9 +107,9 @@ export function ProductMasterWorkspace({ host }: { host: ModuleSurfaceHostContex
     return () => {
       active = false;
     };
-  }, [host.onUnauthorized, host.token, operational, selectedRecordId, selectedVersion]);
+  }, [host.session.onUnauthorized, host.session.token, operational, selectedRecordId, selectedVersion]);
 
-  if (!host.token) return <EmptyState text="Sign in to open Product Master." />;
+  if (!host.session.token) return <EmptyState text="Sign in to open Product Master." />;
   if (!operational) return <ProductModuleState module={module} host={host} />;
 
   return (
@@ -219,15 +219,15 @@ export function ProductMasterWorkspace({ host }: { host: ModuleSurfaceHostContex
     if (!canManage || activeOperation.current || (mode === "edit" && !selected)) return;
     const action = mode === "create" ? "create" : "update";
     await runMutation(action, async () => mode === "create"
-      ? createProductDefinition(host.token, draft, host.onUnauthorized)
-      : updateProductDefinition(host.token, selected!, draft, host.onUnauthorized));
+      ? createProductDefinition(host.session.token, draft, host.session.onUnauthorized)
+      : updateProductDefinition(host.session.token, selected!, draft, host.session.onUnauthorized));
   }
 
   async function runLifecycle(action: "archive" | "restore", product: ProductDefinition) {
     if (!canManage || activeOperation.current) return;
     await runMutation(action, () => action === "archive"
-      ? archiveProductDefinition(host.token, product, host.onUnauthorized)
-      : restoreProductDefinition(host.token, product, host.onUnauthorized));
+      ? archiveProductDefinition(host.session.token, product, host.session.onUnauthorized)
+      : restoreProductDefinition(host.session.token, product, host.session.onUnauthorized));
     setStatusFilter(action === "archive" ? "all" : "active");
   }
 

@@ -4,6 +4,8 @@
 **Date:** 2026-07-16
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
+**Amended by:** `ADR-0030-request-authoritative-frontend-async-boundary.md`
+
 ## Context
 
 UOK had physically module-owned backend and frontend source, but two remaining
@@ -54,7 +56,7 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
    runtime queries and operational checks.
 4. Module → Host exceptions are explicit path-and-symbol adapter seams:
    - `from uok.host.database import get_db` and
-    `from uok.host.security import current_actor` in the 18 documented module
+    `from uok.host.security import current_actor` in the 19 documented module
      HTTP adapters;
    - `from uok.host.commands import execute_command` in the exact Calendar,
      Communications, Contacts, and Planning command adapters.
@@ -69,12 +71,14 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
    `uok.communication_models` compatibility import paths are retired. Callers
    use the explicit kernel mapping owner or the capability module's own private
    persistence package.
-7. `web/src/contracts/moduleSurface.ts` is the neutral frontend port. It
-   exposes exactly the shell capabilities a module renderer needs: token,
-   current role, appearance, readonly module status rows, current busy action,
-   module lifecycle action, host refresh, a monotonic module-refresh revision,
-   and unauthorized callback. It does not import `Workbench`, generated
-   runtime catalogs, or feature code.
+7. `web/src/contracts/moduleSurface.ts` remains the neutral frontend port.
+   Its base host context exposes an atomic `ModuleSurfaceSession` containing
+   token, monotonically increasing session generation, and a generation-bound
+   unauthorized callback, plus current role, appearance, readonly module status,
+   current busy action, module lifecycle action, host refresh, and monotonic
+   module-refresh revision. The generated registry alone extends that base with
+   `surfaceActive` for each retained surface render. The port imports no
+   `Workbench`, generated runtime catalog, or feature code.
 8. `web/src/generated/moduleSurfaceCatalog.ts` is the sole shell source that
    imports exact module `moduleSurface.tsx` entries. Pure navigation section
    types are generated separately in `web/src/generated/moduleSections.ts` so
@@ -85,9 +89,11 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
    root and exports no hooks or shell-facing domain constants.
 10. The shell keeps only visited module roots mounted behind a generic
     `ModuleSurfaceOutlet`, preserving owner-local unsaved state without
-    importing a feature. Global refresh increments the neutral revision, and a
-    module-reported 401 clears both authentication and all host-scoped tenant
-    data.
+    importing a feature. The registry reports each retained root's exact active
+    state. Global refresh increments the neutral revision. ADR-0030 requires
+    shell and owner-local async effects to use monotonic request authority so
+    stale completions and stale unauthorized responses cannot affect a newer
+    session or owner state.
 11. Architecture tests use Python AST import analysis plus a TypeScript
     import/source scanner covering relative, aliased, dynamic, re-export, and
     type-only imports. They reject kernel feature dependencies, direct or

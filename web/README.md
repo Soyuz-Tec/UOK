@@ -32,11 +32,15 @@ code. The generator emits literal imports into
 allowed to import exact module `moduleSurface.tsx` entries. Vite builds those
 entries into the normal static bundle.
 
-Module surfaces receive only token, role, appearance, readonly module status,
-module lifecycle action, refresh, unauthorized handling, and busy state through
-the neutral host contract. A feature module must not import shell app/features
-or the concrete `Workbench`; the shell must not own feature DTOs, routes,
-preferences, or commands.
+Module surfaces receive an atomic session snapshot (token, monotonically
+increasing generation, and unauthorized handler), role, appearance, readonly
+module status, module lifecycle action, refresh, and busy state through the
+neutral host contract. The registry adds `surfaceActive` only to the per-surface
+render context so a retained surface can pause optional background work while
+remaining mounted. Outlet and shell construction use the base host context and
+must not invent an activity value. A feature module must not import shell
+app/features or the concrete `Workbench`; the shell must not own feature DTOs,
+routes, preferences, or commands.
 
 ## Verify
 

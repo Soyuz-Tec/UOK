@@ -169,7 +169,9 @@ describe("Product Master workspace", () => {
   it("reports unauthorized reads through the neutral host callback", async () => {
     const onUnauthorized = vi.fn();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ detail: "expired" }, 401)));
-    render(<ProductMasterWorkspace host={productHost({ onUnauthorized })} />);
+    render(<ProductMasterWorkspace host={productHost({
+      session: { onUnauthorized },
+    })} />);
     await waitFor(() => expect(onUnauthorized).toHaveBeenCalled());
   });
 

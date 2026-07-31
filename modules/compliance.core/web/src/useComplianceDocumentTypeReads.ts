@@ -16,14 +16,14 @@ export function useComplianceDocumentTypeReads(
   operational: boolean,
   setStatus: (value: string) => void,
 ) {
-  const sessionToken = useRef(host.token);
+  const sessionToken = useRef(host.session.token);
   const listRequest = useRef(0);
   const detailRequest = useRef(0);
   const lastRefreshRevision = useRef(host.moduleRefreshRevision);
   const previousSession = useRef<{ token: string; operational: boolean } | null>(null);
-  const onUnauthorized = useRef(host.onUnauthorized);
+  const onUnauthorized = useRef(host.session.onUnauthorized);
   const updateStatus = useRef(setStatus);
-  const [stateToken, setStateToken] = useState(host.token);
+  const [stateToken, setStateToken] = useState(host.session.token);
   const [documentTypes, setDocumentTypes] = useState<ComplianceDocumentType[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [detail, setDetail] = useState<ComplianceDocumentType | null>(null);
@@ -31,22 +31,22 @@ export function useComplianceDocumentTypeReads(
   const [historyOwnerId, setHistoryOwnerId] = useState("");
   const [historyLoading, setHistoryLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  onUnauthorized.current = host.onUnauthorized;
+  onUnauthorized.current = host.session.onUnauthorized;
   updateStatus.current = setStatus;
-  if (sessionToken.current !== host.token) {
-    sessionToken.current = host.token;
+  if (sessionToken.current !== host.session.token) {
+    sessionToken.current = host.session.token;
     listRequest.current += 1;
     detailRequest.current += 1;
   }
-  const sessionMatches = stateToken === host.token;
+  const sessionMatches = stateToken === host.session.token;
   const safeRows = sessionMatches ? documentTypes : [];
   const safeSelectedId = sessionMatches ? selectedId : "";
   const listSelected = safeRows.find((row) => row.id === safeSelectedId) || null;
   const selected = detail?.id === safeSelectedId ? detail : listSelected;
 
   const refreshDocumentTypes = useCallback(async () => {
-    if (!host.token || !operational) return;
-    const token = host.token;
+    if (!host.session.token || !operational) return;
+    const token = host.session.token;
     const request = ++listRequest.current;
     setRefreshing(true);
     try {
@@ -68,19 +68,19 @@ export function useComplianceDocumentTypeReads(
     } finally {
       if (isCurrent(sessionToken, listRequest, token, request)) setRefreshing(false);
     }
-  }, [host.token, operational]);
+  }, [host.session.token, operational]);
 
   useEffect(() => {
-    const sessionChanged = previousSession.current?.token !== host.token
+    const sessionChanged = previousSession.current?.token !== host.session.token
       || previousSession.current.operational !== operational;
     const refreshRequested =
       lastRefreshRevision.current !== host.moduleRefreshRevision;
-    previousSession.current = { token: host.token, operational };
+    previousSession.current = { token: host.session.token, operational };
     lastRefreshRevision.current = host.moduleRefreshRevision;
     if (sessionChanged) {
       listRequest.current += 1;
       detailRequest.current += 1;
-      setStateToken(host.token);
+      setStateToken(host.session.token);
       setDocumentTypes([]);
       setSelectedId("");
       setDetail(null);
@@ -91,20 +91,20 @@ export function useComplianceDocumentTypeReads(
     }
     if (
       (sessionChanged || refreshRequested)
-      && host.token
+      && host.session.token
       && operational
     ) {
       void refreshDocumentTypes();
     }
   }, [
     host.moduleRefreshRevision,
-    host.token,
+    host.session.token,
     operational,
     refreshDocumentTypes,
   ]);
 
   useEffect(() => {
-    const token = host.token;
+    const token = host.session.token;
     const request = ++detailRequest.current;
     setDetail(null);
     setHistory([]);
@@ -134,7 +134,7 @@ export function useComplianceDocumentTypeReads(
       }
     });
   }, [
-    host.token,
+    host.session.token,
     operational,
     safeSelectedId,
     listSelected?.version,
@@ -148,7 +148,7 @@ export function useComplianceDocumentTypeReads(
   function applyDocumentType(documentType: ComplianceDocumentType) {
     invalidateRefresh();
     detailRequest.current += 1;
-    setStateToken(host.token);
+    setStateToken(host.session.token);
     setDocumentTypes((current) => [
       documentType,
       ...current.filter((row) => row.id !== documentType.id),

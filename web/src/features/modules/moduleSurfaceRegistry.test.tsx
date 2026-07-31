@@ -1,12 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import type {
   GeneratedModuleSurfaceRegistration,
   ModuleSurface,
   ModuleSurfaceHostContext,
+  ModuleSurfaceRenderContext,
 } from "@uok/contracts/moduleSurface";
 import {
   ModuleSurfaceOutlet,
@@ -17,7 +18,11 @@ import {
 
 const Icon = () => null;
 const host: ModuleSurfaceHostContext = {
-  token: "test-token",
+  session: {
+    token: "test-token",
+    generation: 0,
+    onUnauthorized: vi.fn(),
+  },
   currentUserRole: "platform_admin",
   appearance: "system",
   moduleRows: [],
@@ -25,14 +30,25 @@ const host: ModuleSurfaceHostContext = {
   moduleAction: vi.fn(),
   refreshHost: vi.fn(),
   moduleRefreshRevision: 0,
-  onUnauthorized: vi.fn(),
 };
 
-function StatefulSurface({ label }: { label: string }) {
+function StatefulSurface({
+  label,
+  onUnmount,
+  surfaceActive,
+}: {
+  label: string;
+  onUnmount?: () => void;
+  surfaceActive: boolean;
+}) {
   const [value, setValue] = useState("");
+  useEffect(() => () => onUnmount?.(), [onUnmount]);
   return (
     <label>
       {label}
+      <output aria-label={`${label} activity`}>
+        {surfaceActive ? "active" : "hidden"}
+      </output>
       <input
         aria-label={`${label} value`}
         value={value}
@@ -101,27 +117,45 @@ describe("module surface registry", () => {
   });
 
   it("mounts module surfaces lazily and retains visited module state", () => {
+    const onAppsUnmount = vi.fn();
     const surfaces = validateModuleSurfaceCatalog([
       registration("apps.manager", "apps", {
-        render: () => <StatefulSurface label="Apps" />,
+        render: ({ surfaceActive }: ModuleSurfaceRenderContext) => (
+          <StatefulSurface
+            label="Apps"
+            onUnmount={onAppsUnmount}
+            surfaceActive={surfaceActive}
+          />
+        ),
       }),
       registration("calendar.core", "calendar", {
-        render: () => <StatefulSurface label="Calendar" />,
+        render: ({ surfaceActive }: ModuleSurfaceRenderContext) => (
+          <StatefulSurface label="Calendar" surfaceActive={surfaceActive} />
+        ),
       }),
     ]);
-    const { rerender } = render(
+    const { rerender, unmount } = render(
       <ModuleSurfaceOutlet section="apps" host={host} surfaces={surfaces} />,
     );
 
     expect(screen.queryByLabelText("Calendar value")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Apps activity")).toHaveTextContent("active");
     fireEvent.change(screen.getByLabelText("Apps value"), { target: { value: "unsaved" } });
 
     rerender(<ModuleSurfaceOutlet section="calendar" host={host} surfaces={surfaces} />);
     expect(screen.getByLabelText("Calendar value")).toBeVisible();
     expect(screen.getByLabelText("Apps value")).not.toBeVisible();
+    expect(screen.getByLabelText("Apps activity")).toHaveTextContent("hidden");
+    expect(screen.getByLabelText("Calendar activity")).toHaveTextContent("active");
 
     rerender(<ModuleSurfaceOutlet section="apps" host={host} surfaces={surfaces} />);
     expect(screen.getByLabelText("Apps value")).toHaveValue("unsaved");
+    expect(screen.getByLabelText("Apps activity")).toHaveTextContent("active");
+    expect(screen.getByLabelText("Calendar activity")).toHaveTextContent("hidden");
+    expect(onAppsUnmount).not.toHaveBeenCalled();
+
+    unmount();
+    expect(onAppsUnmount).toHaveBeenCalledTimes(1);
   });
 
   it("contains a module render failure and allows a bounded retry", () => {

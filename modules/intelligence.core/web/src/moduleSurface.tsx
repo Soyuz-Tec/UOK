@@ -16,7 +16,7 @@ export const shipmentReadinessModuleSurface: ModuleSurface = {
   order: 45,
   render: (host) => (
     <ShipmentReadinessWorkspace
-      key={`${host.token}:${host.currentUserRole}`}
+      key={`${host.session.token}:${host.currentUserRole}`}
       host={host}
     />
   ),

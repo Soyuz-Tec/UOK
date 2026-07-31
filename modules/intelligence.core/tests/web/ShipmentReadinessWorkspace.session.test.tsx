@@ -42,14 +42,16 @@ describe("Shipment Readiness session-safe reads", () => {
       return authorization === "Bearer tenant-a" ? tenantA.promise : tenantB.promise;
     }));
     const { rerender } = render(<ShipmentReadinessWorkspace host={intelligenceHost({
-      token: "tenant-a",
+      session: { token: "tenant-a", generation: 0 },
     })} />);
     await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1));
 
-    rerender(<ShipmentReadinessWorkspace host={intelligenceHost({ token: "" })} />);
+    rerender(<ShipmentReadinessWorkspace host={intelligenceHost({
+      session: { token: "", generation: 1 },
+    })} />);
     expect(screen.getByText("Sign in to open Shipment Readiness.")).toBeInTheDocument();
     rerender(<ShipmentReadinessWorkspace host={intelligenceHost({
-      token: "tenant-b",
+      session: { token: "tenant-b", generation: 2 },
     })} />);
     await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2));
 
@@ -184,7 +186,7 @@ describe("Shipment Readiness session-safe reads", () => {
     const onUnauthorized = vi.fn();
     vi.stubGlobal("fetch", vi.fn(() => response.promise));
     const { unmount } = render(<ShipmentReadinessWorkspace host={intelligenceHost({
-      onUnauthorized,
+      session: { onUnauthorized },
     })} />);
     await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1));
 
@@ -195,7 +197,7 @@ describe("Shipment Readiness session-safe reads", () => {
 
   it("does not carry saved Shipment searches into a new tenant session", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(readinessResponse)));
-    const host = intelligenceHost({ token: "tenant-a" });
+    const host = intelligenceHost({ session: { token: "tenant-a", generation: 0 } });
     const { rerender } = render(<ShipmentReadinessWorkspace host={host} />);
     await screen.findByRole("heading", { name: attentionSignal.code });
 
@@ -210,7 +212,7 @@ describe("Shipment Readiness session-safe reads", () => {
     }]));
 
     rerender(<ShipmentReadinessWorkspace host={intelligenceHost({
-      token: "tenant-b",
+      session: { token: "tenant-b", generation: 1 },
     })} />);
     await waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2));
 

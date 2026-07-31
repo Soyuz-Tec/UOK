@@ -15,7 +15,7 @@ export const planningModuleSurface: ModuleSurface = {
     const planningModule = host.moduleRows.find((row) => row.name === PLANNING_MODULE_ID);
     return (
       <PlanningWorkspace
-        token={host.token}
+        token={host.session.token}
         appearance={host.appearance}
         module={planningModule}
         moduleRows={[...host.moduleRows]}

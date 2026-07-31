@@ -1,97 +1,240 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import {
+  createRequestAuthority,
+  type RequestAuthorityTicket
+} from "../shared/request-authority";
+import {
+  workbenchRequestHeaders,
+  type DashboardBundle,
+  type StampedValue,
+  type WorkbenchRequest,
+  type WorkbenchSession,
+} from "./workbenchDataContracts";
 import type {
   Dashboard,
   ModuleStatus,
   QualityReport
 } from "../shared/types";
 
-function requestHeaders(token: string, overrideToken?: string) {
-  const value: Record<string, string> = { "Content-Type": "application/json" };
-  const activeToken = overrideToken ?? token;
-  if (activeToken) value.Authorization = `Bearer ${activeToken}`;
-  return value;
-}
+export function useWorkbenchData(
+  session: WorkbenchSession,
+  isSessionGenerationCurrent: (generation: number) => boolean
+) {
+  const [outState, setOutState] = useState<StampedValue<unknown>>({
+    generation: session.generation,
+    value: session.token ? "Loading workspace..." : "Log in to begin."
+  });
+  const [dashboardState, setDashboardState] = useState<StampedValue<DashboardBundle> | null>(null);
+  const [busyState, setBusyState] = useState<StampedValue<string>>({
+    generation: session.generation,
+    value: ""
+  });
+  const authorityRef = useRef(createRequestAuthority());
+  const observedSessionGenerationRef = useRef(session.generation);
+  const mountedRef = useRef(true);
 
-export function useWorkbenchData(token: string, onUnauthorized: () => void) {
-  const [out, setOut] = useState<unknown>("Log in to begin.");
-  const [dashboard, setDashboard] = useState<Dashboard | null>(null);
-  const [modules, setModules] = useState<Record<string, ModuleStatus>>({});
-  const [evidence, setEvidence] = useState<QualityReport | null>(null);
-  const [alignment, setAlignment] = useState<QualityReport | null>(null);
-  const [busyAction, setBusyAction] = useState<string>("");
+  const beginRequest = useCallback((lane: string): WorkbenchRequest => {
+    const generation = session.generation;
+    const ticket: RequestAuthorityTicket = authorityRef.current.begin(lane);
+    const isCurrent = () => (
+      mountedRef.current &&
+      isSessionGenerationCurrent(generation) &&
+      ticket.isCurrent()
+    );
+    const guardedUnauthorized = ticket.onceIfCurrent(() => (
+      isSessionGenerationCurrent(generation) ? session.onUnauthorized() : null
+    ));
+    return {
+      generation,
+      signal: ticket.signal,
+      isCurrent,
+      runIfCurrent<Result>(effect: () => Result) {
+        return isCurrent() ? effect() : undefined;
+      },
+      onUnauthorized() {
+        return isCurrent() ? guardedUnauthorized() : undefined;
+      },
+      release: ticket.release
+    };
+  }, [isSessionGenerationCurrent, session]);
 
-  const moduleRows = useMemo(() => Object.values(modules).sort((a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name)), [modules]);
+  const setOut = useCallback((value: unknown, generation = session.generation) => {
+    if (!mountedRef.current || !isSessionGenerationCurrent(generation)) return false;
+    setOutState({ generation, value });
+    return true;
+  }, [isSessionGenerationCurrent, session.generation]);
 
-  const clearData = useCallback((message = "Signed out.") => {
-    setDashboard(null);
-    setModules({});
-    setEvidence(null);
-    setAlignment(null);
-    setBusyAction("");
-    setOut(message);
-  }, []);
+  const setBusyAction = useCallback((value: string, generation = session.generation) => {
+    if (!mountedRef.current || !isSessionGenerationCurrent(generation)) return false;
+    setBusyState({ generation, value });
+    return true;
+  }, [isSessionGenerationCurrent, session.generation]);
 
-  const apiResponse = useCallback(async <T,>(path: string, options: RequestInit = {}, overrideToken?: string): Promise<{ data: T; response: Response }> => {
+  const clearBusyAction = useCallback((expectedValue: string, generation = session.generation) => {
+    if (!mountedRef.current || !isSessionGenerationCurrent(generation)) return false;
+    setBusyState((current) => (
+      current.generation === generation && current.value === expectedValue
+        ? { generation, value: "" }
+        : current
+    ));
+    return true;
+  }, [isSessionGenerationCurrent, session.generation]);
+
+  const clearData = useCallback((
+    message = "Signed out.",
+    generation = session.generation
+  ) => {
+    if (!mountedRef.current || !isSessionGenerationCurrent(generation)) return false;
+    authorityRef.current.invalidate();
+    setDashboardState(null);
+    setBusyState({ generation, value: "" });
+    setOutState({ generation, value: message });
+    return true;
+  }, [isSessionGenerationCurrent, session.generation]);
+
+  const apiResponse = useCallback(async <T,>(
+    path: string,
+    options: RequestInit = {},
+    request?: WorkbenchRequest
+  ): Promise<{ data: T; response: Response }> => {
+    const requestGeneration = request?.generation ?? session.generation;
     const res = await fetch(path, {
       ...options,
-      headers: { ...requestHeaders(token, overrideToken), ...(options.headers || {}) }
+      headers: { ...workbenchRequestHeaders(session.token), ...(options.headers || {}) },
+      signal: options.signal ?? request?.signal
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       if (res.status === 401 && path !== "/api/auth/login" && path !== "/api/auth/register") {
-        onUnauthorized();
-        clearData("Session expired. Sign in again.");
+        const clearedGeneration = request
+          ? request.onUnauthorized()
+          : isSessionGenerationCurrent(requestGeneration)
+            ? session.onUnauthorized()
+            : null;
+        if (typeof clearedGeneration === "number") {
+          clearData("Session expired. Sign in again.", clearedGeneration);
+        }
       }
       throw data;
     }
     return { data: data as T, response: res };
-  }, [clearData, onUnauthorized, token]);
+  }, [clearData, isSessionGenerationCurrent, session]);
 
-  const api = useCallback(async <T,>(path: string, options: RequestInit = {}, overrideToken?: string): Promise<T> => {
-    return (await apiResponse<T>(path, options, overrideToken)).data;
+  const api = useCallback(async <T,>(
+    path: string,
+    options: RequestInit = {},
+    request?: WorkbenchRequest
+  ): Promise<T> => {
+    return (await apiResponse<T>(path, options, request)).data;
   }, [apiResponse]);
 
-  const refresh = useCallback(async (overrideToken?: string) => {
-    const activeToken = overrideToken ?? token;
-    if (!activeToken) return;
+  const refresh = useCallback(async (parentRequest?: WorkbenchRequest) => {
+    if (!session.token || !isSessionGenerationCurrent(session.generation)) return false;
+    const refreshRequest = beginRequest("host-refresh");
+    let unauthorizedHandled = false;
+    const isCombinedCurrent = () => refreshRequest.isCurrent() && Boolean(parentRequest?.isCurrent());
+    const request: WorkbenchRequest = parentRequest ? {
+      generation: refreshRequest.generation,
+      signal: refreshRequest.signal,
+      isCurrent: isCombinedCurrent,
+      runIfCurrent<Result>(effect: () => Result) {
+        return isCombinedCurrent() ? effect() : undefined;
+      },
+      onUnauthorized() {
+        if (unauthorizedHandled || !isCombinedCurrent()) return undefined;
+        unauthorizedHandled = true;
+        return refreshRequest.onUnauthorized();
+      },
+      release: refreshRequest.release
+    } : refreshRequest;
+    const busyKey = "refresh";
     try {
-      setBusyAction("refresh");
-      const [dash, catalog, evidenceBody, alignmentBody] = await Promise.all([
-        api<Dashboard>("/api/dashboard", {}, activeToken),
-        api<{ modules: Record<string, ModuleStatus> }>("/api/modules/catalog", {}, activeToken),
-        api<QualityReport>("/api/baseline-evidence", {}, activeToken),
-        api<QualityReport>("/api/architecture/alignment", {}, activeToken)
+      request.runIfCurrent(() => setBusyAction(busyKey, request.generation));
+      const [dashboard, catalog, evidence, alignment] = await Promise.all([
+        api<Dashboard>("/api/dashboard", {}, request),
+        api<{ modules: Record<string, ModuleStatus> }>("/api/modules/catalog", {}, request),
+        api<QualityReport>("/api/baseline-evidence", {}, request),
+        api<QualityReport>("/api/architecture/alignment", {}, request)
       ]);
-      setDashboard(dash);
-      setModules(catalog.modules);
-      setEvidence(evidenceBody);
-      setAlignment(alignmentBody);
-      setOut({ status: "ready", counts: dash.counts });
+      if (!request.isCurrent()) return false;
+      setDashboardState({
+        generation: request.generation,
+        value: {
+          dashboard,
+          modules: catalog.modules,
+          evidence,
+          alignment
+        }
+      });
+      setOut({ status: "ready", counts: dashboard.counts }, request.generation);
+      return true;
     } catch (error) {
-      setOut(error);
+      request.runIfCurrent(() => setOut(error, request.generation));
+      return false;
     } finally {
-      setBusyAction("");
+      request.runIfCurrent(() => clearBusyAction(busyKey, request.generation));
+      request.release();
     }
-  }, [api, token]);
+  }, [
+    api,
+    beginRequest,
+    clearBusyAction,
+    isSessionGenerationCurrent,
+    session.generation,
+    session.token,
+    setBusyAction,
+    setOut
+  ]);
 
   useEffect(() => {
-    if (!token) return;
-    void refresh();
-  }, [refresh, token]);
+    if (observedSessionGenerationRef.current !== session.generation) {
+      observedSessionGenerationRef.current = session.generation;
+      authorityRef.current.invalidate();
+    }
+    if (session.token) {
+      void refresh();
+    }
+  }, [refresh, session.generation, session.token]);
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+    authorityRef.current.dispose();
+  }, []);
+
+  const dashboardBundle = (
+    dashboardState?.generation === session.generation &&
+    isSessionGenerationCurrent(session.generation)
+  ) ? dashboardState.value : null;
+  const moduleRows = useMemo(() => (
+    Object.values(dashboardBundle?.modules ?? {}).sort(
+      (a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name)
+    )
+  ), [dashboardBundle]);
+  const hasCurrentSession = isSessionGenerationCurrent(session.generation);
+  const out = outState.generation === session.generation && hasCurrentSession
+    ? outState.value
+    : session.token
+      ? "Loading workspace..."
+      : "Log in to begin.";
+  const busyAction = busyState.generation === session.generation && hasCurrentSession
+    ? busyState.value
+    : "";
 
   return {
-    alignment,
+    alignment: dashboardBundle?.alignment ?? null,
     api,
+    beginRequest,
     busyAction,
+    clearBusyAction,
     clearData,
-    dashboard,
-    evidence,
+    dashboard: dashboardBundle?.dashboard ?? null,
+    evidence: dashboardBundle?.evidence ?? null,
     moduleRows,
     out,
     refresh,
     setBusyAction,
-    setOut,
+    setOut
   };
 }
 

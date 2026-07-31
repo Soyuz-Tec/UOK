@@ -37,7 +37,9 @@ describe("Compliance Document Types read workspace", () => {
     fireEvent.click(screen.getByRole("button", { name: "Enable Compliance Document Types" }));
     expect(moduleAction).toHaveBeenCalledWith("compliance.core", "enable");
 
-    rerender(<ComplianceDocumentTypeWorkspace host={complianceHost({ token: "" })} />);
+    rerender(<ComplianceDocumentTypeWorkspace host={complianceHost({
+      session: { token: "", generation: 1 },
+    })} />);
     expect(screen.getByText("Sign in to open Compliance Document Types.")).toBeInTheDocument();
   });
 
@@ -117,7 +119,7 @@ describe("Compliance Document Types read workspace", () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse({ detail: "compliance.read required" }, 403));
     vi.stubGlobal("fetch", fetchMock);
-    const host = complianceHost({ onUnauthorized });
+    const host = complianceHost({ session: { onUnauthorized } });
     const { rerender } = render(<ComplianceDocumentTypeWorkspace host={host} />);
     await screen.findByText("compliance.read required");
 

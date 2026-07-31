@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { ModuleSurfaceHostContext } from "../contracts/moduleSurface";
 import { useAuthState } from "./useAuthState";
@@ -16,8 +16,8 @@ export function useWorkbench() {
   const auth = useAuthState();
   const {
     authMode,
-    clearAuthState,
     currentUser,
+    isSessionGenerationCurrent,
     loginError,
     password,
     registerEmail,
@@ -33,24 +33,34 @@ export function useWorkbench() {
     token,
     username
   } = auth;
-  const data = useWorkbenchData(token, clearAuthState);
+  const data = useWorkbenchData(auth.session, isSessionGenerationCurrent);
   const dataRefresh = data.refresh;
   const authWorkflows = useAuthWorkflows(auth, data);
   const actions = useWorkbenchActions(data);
-  const refresh = useCallback(async (overrideToken?: string) => {
-    await dataRefresh(overrideToken);
-    setModuleRefreshRevision((revision) => revision + 1);
+  const refresh = useCallback(async () => {
+    const refreshed = await dataRefresh();
+    if (refreshed) {
+      setModuleRefreshRevision((revision) => revision + 1);
+    }
   }, [dataRefresh]);
-  const moduleHost: ModuleSurfaceHostContext = {
+  const sessionGeneration = auth.session.generation;
+  const clearSession = authWorkflows.clearSession;
+  const moduleSession = useMemo(() => ({
     token,
+    generation: sessionGeneration,
+    onUnauthorized: () => {
+      clearSession("Session expired. Sign in again.", sessionGeneration);
+    }
+  }), [clearSession, sessionGeneration, token]);
+  const moduleHost: ModuleSurfaceHostContext = {
+    session: moduleSession,
     currentUserRole: currentUser?.role || "",
     appearance: preferences.appearance,
     moduleRows: data.moduleRows,
     busyAction: data.busyAction,
     moduleAction: actions.moduleAction,
-    refreshHost: data.refresh,
+    refreshHost: refresh,
     moduleRefreshRevision,
-    onUnauthorized: authWorkflows.clearSession,
   };
 
   return {

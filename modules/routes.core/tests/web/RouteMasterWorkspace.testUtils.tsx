@@ -84,9 +84,19 @@ export const routeHistory: RouteNameHistory[] = [{
   changed_at: "2026-07-16T11:00:00Z",
 }];
 
-export function routeHost(overrides: Partial<ModuleSurfaceHostContext> = {}): ModuleSurfaceHostContext {
+type HostOverrides = Omit<Partial<ModuleSurfaceHostContext>, "session"> & {
+  session?: Partial<ModuleSurfaceHostContext["session"]>;
+};
+
+export function routeHost(overrides: HostOverrides = {}): ModuleSurfaceHostContext {
+  const { session, ...hostOverrides } = overrides;
   return {
-    token: "test-token",
+    session: {
+      token: "test-token",
+      generation: 0,
+      onUnauthorized: vi.fn(),
+      ...session,
+    },
     currentUserRole: "ops_manager",
     appearance: "system",
     moduleRows: [routeModuleRow],
@@ -94,8 +104,7 @@ export function routeHost(overrides: Partial<ModuleSurfaceHostContext> = {}): Mo
     moduleAction: vi.fn(),
     refreshHost: vi.fn().mockResolvedValue(undefined),
     moduleRefreshRevision: 0,
-    onUnauthorized: vi.fn(),
-    ...overrides,
+    ...hostOverrides,
   };
 }
 
