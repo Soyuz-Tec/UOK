@@ -136,6 +136,16 @@ module criteria, DTOs, commands, or workflow state into the shell.
    - Delivery 6c adopts dispatch authority, guarded browser effects, and
      persistent server reconciliation for Compliance create, update,
      activate/deactivate, and archive/restore commands.
+   - Delivery 6d adopts the contract for the Contacts primary party-list,
+     contact-group-list, and selected-party-detail reads. The owner uses
+     independent `list`, `groups`, and `detail` lanes; invalidates them across
+     session generation, authorization-relevant role, module operational state,
+     retained-surface activation, and component lifetime; captures the complete
+     Contacts filter tuple with ABA-safe criteria generations for list reads;
+     and captures selected Party ID plus the selected row revision for detail
+     reads. Contacts commands, saved views, activity, relationship-options
+     lookup, Groups Manager workflows, and Data Tools remain later owner-local
+     slices.
    - Later Delivery 6 slices migrate module owners in bounded groups while
      preserving their DTOs, endpoints, criteria, selections, commands, and
      specialized workflows.
@@ -158,7 +168,7 @@ remote frontend loading boundary changes.
 - Module surface callers use `host.session.token`,
   `host.session.generation`, and `host.session.onUnauthorized`; renderers also
   receive `surfaceActive`.
-- The migration is intentionally incomplete after the foundation sub-slice.
+- The migration remains intentionally incomplete after each adopted sub-slice.
   Unmigrated owner paths remain tracked as open audit scope rather than being
   described as protected.
 - The additional generation and state stamps are process-local frontend
@@ -214,7 +224,16 @@ Required focused proof includes:
 - stale/current `401`, signed-out-to-new-session reconciliation, selection
   `A -> B -> A`, monotonic versions, and cross-owner history isolation; and
 - failed host refresh, pending reconciliation retry, and mid-reconciliation
-  user-intent supersession while the true operation lock remains active.
+  user-intent supersession while the true operation lock remains active;
+- Contacts `list`, `groups`, and `detail` lane independence and out-of-order
+  completion;
+- full-filter criteria `A -> B -> A` and selected-Party ID/revision
+  `A -> B -> A` invalidation;
+- same-token generation, role, disable/re-enable, inactive/reactivated surface,
+  and unmount transitions;
+- stale/current one-shot `401`, stale success/error/loading-finalizer
+  suppression, and epoch-stamped Contacts list/group/detail masking; and
+- presentation-only rerenders that do not restart primary Contacts reads.
 
 Run:
 

@@ -371,7 +371,7 @@ Expected outcome: one measured baseline, responsive and accessible shared behavi
 
 | Delivery | Scope | Status | ADR |
 |---|---|---|---|
-| 6 | Request-authoritative async boundary and generation-bound unauthorized handling across session, capability, operational, criteria, activation, and lifetime changes | In progress: 6a establishes the shell/foundation; 6b adopts Compliance reads; 6c adopts Compliance command authority and reconciliation; other module-owner paths remain phased | ADR-0030 |
+| 6 | Request-authoritative async boundary and generation-bound unauthorized handling across session, capability, operational, criteria, activation, and lifetime changes | In progress: 6a establishes the shell/foundation; 6b adopts Compliance reads; 6c adopts Compliance command authority and reconciliation; 6d adopts Contacts primary list/group/detail reads; remaining Contacts async owners and other module-owner paths remain phased | ADR-0030 |
 | 7 | Shared HTTP transport and runtime response decoding in bounded owner slices | Planned | Yes for the transport/error contract |
 | 8 | Server-authoritative identity bootstrap, revocable logout, token rotation, and replay proof | Planned | Yes; dedicated auth-session ADR |
 | 9 | Canonical browser navigation and exact entity deep links | Planned | Yes; neutral surface contract changes |
@@ -390,11 +390,17 @@ contract and shell proof without moving domain behavior into shared code.
 Sub-slice 6b starts owner adoption with Compliance list, detail, and history
 reads. Sub-slice 6c separates one-time non-abortable Compliance command
 dispatch, ticket-guarded captured-intent browser effects, and a retained
-server-authoritative list/detail/history reconciliation obligation. Subsequent
-sub-slices migrate the other audited module owners in bounded groups. Delivery
-6 and Top-20 Issue 1 remain open until every identified owner path guards
-success, error, loading/finally, host refresh, and unauthorized dispatch and
-masks epoch-stale committed state.
+server-authoritative list/detail/history reconciliation obligation. Sub-slice
+6d adopts independent request-authoritative list, groups, and detail lanes for
+the ContactsModuleRoot primary reads. Contacts commands, saved views, activity,
+relationship options, Groups Manager, Data Tools, and the other audited module
+owners remain open. A current Contacts detail `403` or `404` clears richer
+detail state but retains the separately authorized list projection; immediate
+mid-session party-visibility revocation remains a list-reconciliation
+follow-up. Subsequent sub-slices migrate those owner paths in bounded groups.
+Delivery 6 and Top-20 Issue 1 remain open until every identified owner path
+guards success, error, loading/finally, host refresh, and unauthorized dispatch
+and masks epoch-stale committed state.
 
 ### Phase 3 - Feature Refactors
 
@@ -435,7 +441,7 @@ Every delivery must merge and qualify before the next begins. Runtime-affecting 
 
 | Rank | Issue | Severity | Evidence | Shared solution | Status |
 |---|---|---|---|---|---|
-| 1 | Old-session responses can overwrite new-session state or an old `401` can trigger logout | High | Shell, Contacts, Compliance, Product, Location, Route, and Shipment request paths | ABA-safe request boundary plus generation-bound unauthorized callback | In progress: shell and all Compliance read/mutation paths are current; Contacts, Product, Location, Route, Shipment, and any other inventoried owner paths remain open |
+| 1 | Old-session responses can overwrite new-session state or an old `401` can trigger logout | High | Shell, Contacts, Compliance, Product, Location, Route, and Shipment request paths | ABA-safe request boundary plus generation-bound unauthorized callback | In progress: shell and all Compliance read/mutation paths plus Contacts primary list/group/detail reads are current; remaining Contacts async owners, Product, Location, Route, Shipment, and any other inventoried owner paths remain open |
 | 2 | Logout leaves the bearer token replayable until its default eight-hour expiry | High | `useAuthState.ts`; `src/uok/host/security.py` | Token identity/revocation, rotation, server logout, and replay tests | Open |
 | 3 | Nineteen clients implement transport and response handling separately | High | Direct `fetch` inventory | Shared HTTP mechanics plus module decoders | Open |
 | 4 | Client identity outlives token storage and is weakly decoded | Medium | `web/src/shared/session.ts` | Strict server-rehydrated session identity | Open |

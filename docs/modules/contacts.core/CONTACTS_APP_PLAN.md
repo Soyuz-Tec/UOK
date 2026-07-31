@@ -57,6 +57,32 @@ Contacts commands and permission atoms are discovered through the validated mani
 | 6. Genuine activity plus truthful interoperability boundary | Server-backed activity, vCard exchange, provider-neutral external identities; no false live-provider claim | command support, exchange/system modules, focused tests |
 | 7. Custom-field extensibility plus production qualification | Governed definitions/values plus recoverable definition Delete/Restore are implemented; archived definitions leave active editing while stored values remain recoverable; full release proof remains an explicit gate | system models/commands/lifecycle, migration 003, lifecycle tests, qualification checklist below |
 
+### Frontend Platform: Delivery 6d Primary Reads
+
+Delivery 6d applies ADR-0030 only to the primary reads owned by
+`ContactsModuleRoot`: `GET /api/contacts?...`, including total and next-page
+state; `GET /api/contacts/groups` for the primary filter/options list; and
+`GET /api/contacts/{selectedPartyId}` for selected-party detail.
+
+Owner-local `list`, `groups`, and `detail` lanes guard every post-await success,
+error, loading finalizer, selection effect, and unauthorized callback. Their
+boundary includes the atomic session token and generation, current role,
+`contacts.core` operational state, exact retained-surface activation, and
+component lifetime. List authority captures the complete `ContactFilters`
+tuple with a monotonic criteria generation; detail authority captures selected
+Party ID plus the selected list-row revision. Reusable committed read state is
+epoch-stamped and hidden once stale.
+
+Primary evidence is `ContactsModuleRoot.tsx`, `app/contactReadAuthority.ts`,
+`app/useContactReadBoundary.ts`, `app/contactReadApi.ts`,
+`app/useContactPrimaryReads.ts`, `app/useContactData.ts`, and the focused
+Contacts primary-read authority tests.
+
+This slice does not cover Contacts commands or mutation reconciliation, saved
+views, activity, relationship-options lookup, Groups Manager APIs, or Data
+Tools for facts, consent, teams, import/export, dedupe, interoperability, and
+custom fields. Those paths remain phased Delivery 6 scope.
+
 ## Data And Integrity Rules
 
 - `Party` is the canonical person/organization identity. User-facing Delete invokes recoverable archive; purge remains a distinct privileged operation that irreversibly anonymizes contact-owned PII while retaining a non-PII tombstone and platform audit evidence.
@@ -159,6 +185,11 @@ For runtime/UI changes, rebuild the PostgreSQL candidate and verify authenticate
 3. Keep the neutral module-surface host port narrow and the shell/Contacts
    cycle enforcement green as new Contacts workflows are added.
 4. Continue additive module-owned migrations and remove the legacy primary projection only through a separately accepted migration decision.
+5. Reconcile the primary list after a current detail `403` or `404` before
+   claiming immediate mid-session party-visibility revocation. Delivery 6d
+   clears the richer detail response and retains only the independently
+   authorized list projection; it does not claim server-side dynamic
+   revocation.
 
 ## Non-Goals
 

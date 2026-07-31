@@ -85,10 +85,13 @@ Operator browser
   Commands validate dispatch authority once, remain non-abortable and
   non-replayed after dispatch, guard captured-intent browser effects, and retain
   a separate owner-local list/detail/history reconciliation obligation until
-  authoritative settlement. Other audited module owners remain phased Delivery
-  6 work. Adopted paths use independent named request lanes, guard every
-  post-await side effect, and epoch-stamp reusable committed state. Abort
-  signals are cooperative only; current-ticket proof is authoritative.
+  authoritative settlement. Delivery 6d applies owner-local read authority to
+  the Contacts primary party list, contact-group filter/options list, and
+  selected-party detail reads. Contacts commands and secondary async owners,
+  plus the other audited module owners, remain phased Delivery 6 work. Adopted
+  paths use independent named request lanes, guard every post-await side effect,
+  and epoch-stamp reusable committed state. Abort signals are cooperative only;
+  current-ticket proof is authoritative.
 - Durable module workspaces compose one minimal shared command surface with optional query, context, and actions groups plus the common localized action vocabulary accepted in ADR-0025. Shared code owns layout and accessibility; modules retain domain nouns, state, permissions, options, and handlers.
 - Compliance Document Types, Product Master, Location Master, Route/Corridor Master, Shipment Support, and Shipment Readiness own their complete DTO, HTTP, state, and workbench surfaces under their module web roots; Intelligence is read-only and declares no command surface. Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.
 - Docker copies module production source into the frontend build stage, TypeScript/Vitest discover the module-owned source and test roots, and final-image validation keeps module tests out of the runtime image.
