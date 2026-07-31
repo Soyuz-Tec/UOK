@@ -21,7 +21,10 @@ UOK modules can own domain behavior without copying common workspace and infrast
 | Bounded pagination controls and accessible range announcements | `web/src/shared/tables` | Contacts and Planning portfolio |
 | Toggle, command, icon, and segmented controls | `web/src/shared/primitives` | Contacts and Planning |
 | Bounded draggable modal workspace overlays and editor composition | `web/src/shared/overlays` | Communications, Contacts, and Planning |
+| Consequential-command confirmation, async state, and recoverable module render containment | `web/src/shared/overlays` and `web/src/shared/feedback` | Shell and module workspaces |
 | Empty states, status pills, detail items, and fact lists | `web/src/shared/data-display` | Apps, Contacts, Planning |
+| Skip path, focus visibility, coarse-pointer target sizing, closed-panel semantics, and representative 320 CSS-pixel reflow proof | `web/src/App.tsx`, `web/src/styles/accessibility.css`, shared primitives, and `web/e2e/accessibility.spec.ts` | Shell and shared-primitives consumers; protected narrow proof currently covers the shell and Planning |
+| Frontend dependency, lint, logical-style, generated-contract, accessibility, test, and bundle-budget gates | `web/scripts`, root/web lint configs, `scripts/frontend_quality_policy.py`, and CI | Every shell, shared, and module frontend change |
 
 ## Promotion Rule
 
@@ -74,7 +77,12 @@ Shared feature changes must pass:
 python -m compileall -q src modules tests conftest.py
 python scripts/run_python_tests.py
 npm --prefix web run check:contracts
+npm --prefix web run check:dependencies
+npm --prefix web run lint
+npm --prefix web run lint:styles
 npm --prefix web test
-npm --prefix web run build
+npm --prefix web run test:accessibility
+npm --prefix web run build:static
+npm --prefix web run check:bundle-budget
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
 ```

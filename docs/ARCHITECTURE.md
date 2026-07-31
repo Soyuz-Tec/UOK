@@ -121,6 +121,7 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - Internal engineering system: `docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md`
 - AI worker development model: `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`
 - Code quality and technology audit standard: `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
+- Frontend platform audit and modernization plan: `docs/architecture/UOK_FRONTEND_PLATFORM_AUDIT_AND_MODERNIZATION_PLAN.md`
 - ADR-0001: `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - ADR-0002: `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`
 - ADR-0003: `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`
@@ -232,10 +233,17 @@ python -m compileall -q src modules tests conftest.py
 python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
 python scripts/validate_container_module_assets.py
 python scripts/run_python_tests.py
+npm --prefix web ci
 npm --prefix web run check:contracts
+npm --prefix web audit --audit-level=low
+npm --prefix web run check:dependencies
+npm --prefix web run lint
+npm --prefix web run lint:styles
 npm --prefix web test
+npm --prefix web run test:accessibility
 npm --prefix web run test:ui-proof
 npm --prefix web run build:static
+npm --prefix web run check:bundle-budget
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\verify_uok_candidate_isolated.ps1
 ```
 

@@ -26,7 +26,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `EngineeringEvidence` | Generate local engineering-system evidence and quality scorecard under `var/evidence/engineering` | `.\scripts\uok_ops.ps1 -Action EngineeringEvidence` |
 | `UiProof` | Run the Playwright UI proof gate against the Vite workspace, including Planning Gantt layout, keyboard, appearance, responsive, screenshot, and console checks | `.\scripts\uok_ops.ps1 -Action UiProof` |
 | `Audit` | Deterministic isolated Python tests plus code, dependency, source-size, naming, module contract, and folder organization checks | `.\scripts\uok_ops.ps1 -Action Audit` |
-| `Verify` | Full audit plus frontend tests, static build, UI proof, and candidate verifier | `.\scripts\uok_ops.ps1 -Action Verify` |
+| `Verify` | Full audit plus frontend tests, static build, UI proof, and isolated candidate verification; run the direct dependency, lint, accessibility, and bundle commands below when changing frontend code | `.\scripts\uok_ops.ps1 -Action Verify` |
 | `Rebuild` | Rebuild and start local Podman stack on `127.0.0.1:18088` | `.\scripts\uok_ops.ps1 -Action Rebuild` |
 | `Health` | Check local candidate `/health` | `.\scripts\uok_ops.ps1 -Action Health` |
 | `DatabaseCapacity` | Load the committed capacity policy, enforce its offline budget, and verify cluster-wide live PostgreSQL capacity, role safety, and grouped sessions | `.\scripts\uok_ops.ps1 -Action DatabaseCapacity` |
@@ -58,6 +58,10 @@ working tree:
 python -m pip install -r requirements-dev.txt
 python -m pip_audit -r requirements-dev.txt
 npm --prefix web run check:contracts
+npm --prefix web audit --audit-level=low
+npm --prefix web run check:dependencies
+npm --prefix web run lint
+npm --prefix web run lint:styles
 $env:PYTHONPATH = "src"
 python -c "from uok.module_release_contract import validate_module_release_contracts; r=validate_module_release_contracts(); assert r['ok'], r; print(r)"
 ```
@@ -159,6 +163,24 @@ Use this focused gate when the frontend shell or module workspace changes:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action UiProof
 ```
+
+Run the frontend platform checks directly while developing a shell, shared
+primitive, module surface, stylesheet, or frontend build-policy change:
+
+```powershell
+npm --prefix web run check:contracts
+npm --prefix web run check:dependencies
+npm --prefix web run lint
+npm --prefix web run lint:styles
+npm --prefix web test
+npm --prefix web run test:accessibility
+npm --prefix web run build:static
+npm --prefix web run check:bundle-budget
+```
+
+The current whole-frontend assessment, completed deliveries, remaining
+top-20 issues, and required sequencing are recorded in
+`docs/architecture/UOK_FRONTEND_PLATFORM_AUDIT_AND_MODERNIZATION_PLAN.md`.
 
 ### Source Candidate Package
 
