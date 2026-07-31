@@ -1,6 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import type { ModuleSurfaceHostContext } from "@uok/contracts/moduleSurface";
+import type { ModuleSurfaceRenderContext } from "@uok/contracts/moduleSurface";
+import { createRequestAuthority } from "@uok/shared/request-authority";
+import {
+  advanceComplianceDetailCriteria,
+  beginComplianceRead,
+  complianceDetailCriteria,
+  complianceReadBoundary,
+  complianceReadErrorMessage,
+  complianceReadyStatus,
+  complianceReadsEnabled,
+  sameComplianceReadBoundary,
+  selectComplianceDocumentTypeId,
+  supersedeComplianceReadLane,
+  type ComplianceReadBoundary,
+} from "./complianceReadAuthority";
 import {
   loadComplianceDocumentType,
   loadComplianceDocumentTypeNameHistory,
@@ -12,151 +26,207 @@ import type {
 } from "./types";
 
 export function useComplianceDocumentTypeReads(
-  host: ModuleSurfaceHostContext,
+  host: ModuleSurfaceRenderContext,
   operational: boolean,
   setStatus: (value: string) => void,
 ) {
-  const sessionToken = useRef(host.session.token);
-  const listRequest = useRef(0);
-  const detailRequest = useRef(0);
+  const [authority] = useState(createRequestAuthority);
+  const token = host.session.token;
+  const generation = host.session.generation;
+  const role = host.currentUserRole;
+  const surfaceActive = host.surfaceActive;
+  const boundary = useMemo(
+    () => complianceReadBoundary(
+      token,
+      generation,
+      role,
+      operational,
+      surfaceActive,
+    ),
+    [generation, operational, role, surfaceActive, token],
+  );
+  const boundaryRef = useRef(boundary);
+  const previousEffectBoundary = useRef<ComplianceReadBoundary | null>(null);
   const lastRefreshRevision = useRef(host.moduleRefreshRevision);
-  const previousSession = useRef<{ token: string; operational: boolean } | null>(null);
-  const onUnauthorized = useRef(host.session.onUnauthorized);
   const updateStatus = useRef(setStatus);
-  const [stateToken, setStateToken] = useState(host.session.token);
+  const listStatus = useRef(complianceReadyStatus);
+  const onUnauthorized = useRef(host.session.onUnauthorized);
+  const [, renderInvalidation] = useState(0);
+  const [listEpoch, setListEpoch] = useState(authority.epoch);
   const [documentTypes, setDocumentTypes] = useState<ComplianceDocumentType[]>([]);
   const [selectedId, setSelectedId] = useState("");
+  const [detailEpoch, setDetailEpoch] = useState(authority.epoch);
+  const detailCriteriaRef = useRef({ value: "", generation: 0 });
+  const [detailCriteriaGeneration, setDetailCriteriaGeneration] = useState(0);
   const [detail, setDetail] = useState<ComplianceDocumentType | null>(null);
   const [history, setHistory] = useState<ComplianceDocumentTypeNameHistory[]>([]);
   const [historyOwnerId, setHistoryOwnerId] = useState("");
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  onUnauthorized.current = host.session.onUnauthorized;
+  const [refreshing, setRefreshing] = useState({ epoch: authority.epoch, value: false });
   updateStatus.current = setStatus;
-  if (sessionToken.current !== host.session.token) {
-    sessionToken.current = host.session.token;
-    listRequest.current += 1;
-    detailRequest.current += 1;
-  }
-  const sessionMatches = stateToken === host.session.token;
-  const safeRows = sessionMatches ? documentTypes : [];
-  const safeSelectedId = sessionMatches ? selectedId : "";
+  onUnauthorized.current = host.session.onUnauthorized;
+
+  useLayoutEffect(() => {
+    if (sameComplianceReadBoundary(boundaryRef.current, boundary)) return;
+    boundaryRef.current = boundary;
+    authority.invalidate();
+    listStatus.current = complianceReadyStatus;
+    updateStatus.current(complianceReadyStatus);
+    renderInvalidation((current) => current + 1);
+  }, [authority, boundary]);
+
+  const readEnabled = complianceReadsEnabled(boundary);
+  const listCurrent = Boolean(readEnabled) && authority.isCurrentEpoch(listEpoch);
+  const safeRows = listCurrent ? documentTypes : [];
+  const safeSelectedId = listCurrent ? selectedId : "";
   const listSelected = safeRows.find((row) => row.id === safeSelectedId) || null;
-  const selected = detail?.id === safeSelectedId ? detail : listSelected;
+  const detailCriteria = complianceDetailCriteria(safeSelectedId, listSelected?.version);
+  const detailCurrent = Boolean(readEnabled)
+    && authority.isCurrentEpoch(detailEpoch)
+    && detailCriteriaGeneration === detailCriteriaRef.current.generation;
+  const selected = detailCurrent && detail?.id === safeSelectedId ? detail : listSelected;
+
+  useLayoutEffect(() => {
+    if (detailCriteriaRef.current.value === detailCriteria) return;
+    advanceComplianceDetailCriteria(authority, detailCriteriaRef, detailCriteria);
+    updateStatus.current(listStatus.current);
+    renderInvalidation((current) => current + 1);
+  }, [authority, detailCriteria]);
+
+  const beginRead = useCallback((lane: string) => {
+    return beginComplianceRead(
+      authority,
+      boundaryRef,
+      onUnauthorized,
+      () => {
+        listStatus.current = complianceReadyStatus;
+        updateStatus.current(complianceReadyStatus);
+        renderInvalidation((current) => current + 1);
+      },
+      lane,
+    );
+  }, [authority]);
 
   const refreshDocumentTypes = useCallback(async () => {
-    if (!host.session.token || !operational) return;
-    const token = host.session.token;
-    const request = ++listRequest.current;
-    setRefreshing(true);
+    const current = boundaryRef.current;
+    if (!current.token || !current.operational || !current.surfaceActive) return;
+    const request = beginRead("list");
+    setRefreshing({ epoch: request.ticket.epoch, value: true });
     try {
-      const rows = await loadComplianceDocumentTypes(token, onUnauthorized.current);
-      if (!isCurrent(sessionToken, listRequest, token, request)) return;
-      setStateToken(token);
+      const rows = await loadComplianceDocumentTypes(current.token, request.request);
+      if (!request.isCurrent()) return;
+      setListEpoch(request.ticket.epoch);
       setDocumentTypes(rows);
-      setSelectedId((current) => rows.some((row) => row.id === current)
-        ? current
-        : rows.find((row) => row.status === "active")?.id
-          || rows.find((row) => row.status === "inactive")?.id
-          || rows[0]?.id
-          || "");
-      updateStatus.current(`${rows.length} compliance document type(s) loaded.`);
+      setSelectedId((selectedIdValue) => (
+        selectComplianceDocumentTypeId(rows, selectedIdValue)
+      ));
+      const status = `${rows.length} compliance document type(s) loaded.`;
+      listStatus.current = status;
+      updateStatus.current(status);
     } catch (error) {
-      if (isCurrent(sessionToken, listRequest, token, request)) {
-        updateStatus.current(errorMessage(error));
+      if (request.isCurrent()) {
+        const status = complianceReadErrorMessage(error);
+        listStatus.current = status;
+        updateStatus.current(status);
       }
     } finally {
-      if (isCurrent(sessionToken, listRequest, token, request)) setRefreshing(false);
+      if (request.isCurrent()) {
+        setRefreshing({ epoch: request.ticket.epoch, value: false });
+      }
+      request.ticket.release();
     }
-  }, [host.session.token, operational]);
+  }, [beginRead]);
 
   useEffect(() => {
-    const sessionChanged = previousSession.current?.token !== host.session.token
-      || previousSession.current.operational !== operational;
-    const refreshRequested =
-      lastRefreshRevision.current !== host.moduleRefreshRevision;
-    previousSession.current = { token: host.session.token, operational };
+    const boundaryChanged = !previousEffectBoundary.current
+      || !sameComplianceReadBoundary(previousEffectBoundary.current, boundary);
+    const refreshRequested = lastRefreshRevision.current !== host.moduleRefreshRevision;
+    previousEffectBoundary.current = boundary;
     lastRefreshRevision.current = host.moduleRefreshRevision;
-    if (sessionChanged) {
-      listRequest.current += 1;
-      detailRequest.current += 1;
-      setStateToken(host.session.token);
+    if (boundaryChanged) {
+      setListEpoch(authority.epoch);
       setDocumentTypes([]);
       setSelectedId("");
+      setDetailEpoch(authority.epoch);
       setDetail(null);
       setHistory([]);
       setHistoryOwnerId("");
       setHistoryLoading(false);
-      setRefreshing(false);
+      setRefreshing({ epoch: authority.epoch, value: false });
     }
-    if (
-      (sessionChanged || refreshRequested)
-      && host.session.token
-      && operational
-    ) {
+    if ((boundaryChanged || refreshRequested) && complianceReadsEnabled(boundary)) {
       void refreshDocumentTypes();
     }
-  }, [
-    host.moduleRefreshRevision,
-    host.session.token,
-    operational,
-    refreshDocumentTypes,
-  ]);
+  }, [authority, boundary, host.moduleRefreshRevision, refreshDocumentTypes]);
 
   useEffect(() => {
-    const token = host.session.token;
-    const request = ++detailRequest.current;
+    const current = boundaryRef.current;
+    const request = beginRead("detail");
+    const criteriaGeneration = detailCriteriaRef.current.generation;
+    setDetailEpoch(request.ticket.epoch);
+    setDetailCriteriaGeneration(criteriaGeneration);
     setDetail(null);
     setHistory([]);
     setHistoryOwnerId("");
-    if (!token || !operational || !safeSelectedId) {
+    if (!complianceReadsEnabled(current) || !safeSelectedId) {
       setHistoryLoading(false);
+      request.ticket.release();
       return;
     }
     setHistoryLoading(true);
     void Promise.all([
-      loadComplianceDocumentType(token, safeSelectedId, onUnauthorized.current),
-      loadComplianceDocumentTypeNameHistory(token, safeSelectedId, onUnauthorized.current),
+      loadComplianceDocumentType(current.token, safeSelectedId, request.request),
+      loadComplianceDocumentTypeNameHistory(
+        current.token,
+        safeSelectedId,
+        request.request,
+      ),
     ]).then(([documentType, rows]) => {
-      if (!isCurrent(sessionToken, detailRequest, token, request)) return;
+      if (!request.isCurrent()) return;
       setDetail(documentType);
       setHistory(rows);
       setHistoryOwnerId(safeSelectedId);
     }).catch((error) => {
-      if (!isCurrent(sessionToken, detailRequest, token, request)) return;
+      if (!request.isCurrent()) return;
       setDetail(null);
       setHistory([]);
       setHistoryOwnerId("");
-      updateStatus.current(errorMessage(error));
+      updateStatus.current(complianceReadErrorMessage(error));
     }).finally(() => {
-      if (isCurrent(sessionToken, detailRequest, token, request)) {
-        setHistoryLoading(false);
-      }
+      if (request.isCurrent()) setHistoryLoading(false);
+      request.ticket.release();
     });
-  }, [
-    host.session.token,
-    operational,
-    safeSelectedId,
-    listSelected?.version,
-  ]);
+  }, [beginRead, listSelected?.version, safeSelectedId]);
+
+  useEffect(() => () => {
+    authority.dispose();
+  }, [authority]);
 
   function invalidateRefresh() {
-    listRequest.current += 1;
-    setRefreshing(false);
+    supersedeComplianceReadLane(authority, "list");
+    setRefreshing({ epoch: authority.epoch, value: false });
   }
 
   function applyDocumentType(documentType: ComplianceDocumentType) {
-    invalidateRefresh();
-    detailRequest.current += 1;
-    setStateToken(host.session.token);
+    supersedeComplianceReadLane(authority, "list");
+    const criteriaGeneration = advanceComplianceDetailCriteria(
+      authority,
+      detailCriteriaRef,
+      complianceDetailCriteria(documentType.id, documentType.version),
+    );
+    setListEpoch(authority.epoch);
     setDocumentTypes((current) => [
       documentType,
       ...current.filter((row) => row.id !== documentType.id),
     ]);
     setSelectedId(documentType.id);
+    setDetailEpoch(authority.epoch);
+    setDetailCriteriaGeneration(criteriaGeneration);
     setDetail(documentType);
     setHistory([]);
     setHistoryOwnerId("");
+    setHistoryLoading(false);
+    setRefreshing({ epoch: authority.epoch, value: false });
   }
 
   return {
@@ -164,26 +234,13 @@ export function useComplianceDocumentTypeReads(
     selected,
     selectedId: safeSelectedId,
     setSelectedId,
-    history: sessionMatches && historyOwnerId === safeSelectedId ? history : [],
-    historyLoading: sessionMatches && historyLoading,
-    refreshing: sessionMatches && refreshing,
+    history: detailCurrent && historyOwnerId === safeSelectedId ? history : [],
+    historyLoading: detailCurrent && historyLoading,
+    refreshing: listCurrent
+      && refreshing.epoch === authority.epoch
+      && refreshing.value,
     refreshDocumentTypes,
     invalidateRefresh,
     applyDocumentType,
   };
-}
-
-function isCurrent(
-  sessionToken: { current: string },
-  requestRef: { current: number },
-  token: string,
-  request: number,
-) {
-  return sessionToken.current === token && requestRef.current === request;
-}
-
-function errorMessage(error: unknown) {
-  return error instanceof Error
-    ? error.message
-    : "Compliance Document Types request failed.";
 }

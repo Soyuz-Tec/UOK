@@ -116,6 +116,10 @@ module criteria, DTOs, commands, or workflow state into the shell.
    - Delivery 6a establishes the atomic shell session, amended module surface
      contract, per-surface activity signal, shared request authority, and shell
      request adoption.
+   - Delivery 6b adopts that contract for Compliance list, detail, and history
+     reads, including same-token generation, activation, operational, role,
+     unauthorized, and lifetime invalidation. Compliance command/mutation
+     reconciliation remains a separate owner-local slice.
    - Later Delivery 6 slices migrate module owners in bounded groups while
      preserving their DTOs, endpoints, criteria, selections, commands, and
      specialized workflows.

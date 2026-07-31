@@ -6,40 +6,44 @@ import type {
 } from "./types";
 
 type UnauthorizedHandler = () => void;
+type ComplianceRequestContext = {
+  onUnauthorized: UnauthorizedHandler;
+  signal?: AbortSignal;
+};
 type ComplianceCommandResult = ComplianceDocumentType & { correlation_id: string };
 
 export function loadComplianceDocumentTypes(
   token: string,
-  onUnauthorized: UnauthorizedHandler,
+  request: ComplianceRequestContext,
 ) {
   return complianceJson<ComplianceDocumentType[]>(
     token,
     "/api/compliance/document-types?include_archived=true",
-    onUnauthorized,
+    request,
   );
 }
 
 export function loadComplianceDocumentType(
   token: string,
   documentTypeId: string,
-  onUnauthorized: UnauthorizedHandler,
+  request: ComplianceRequestContext,
 ) {
   return complianceJson<ComplianceDocumentType>(
     token,
     `/api/compliance/document-types/${documentTypeId}`,
-    onUnauthorized,
+    request,
   );
 }
 
 export function loadComplianceDocumentTypeNameHistory(
   token: string,
   documentTypeId: string,
-  onUnauthorized: UnauthorizedHandler,
+  request: ComplianceRequestContext,
 ) {
   return complianceJson<ComplianceDocumentTypeNameHistory[]>(
     token,
     `/api/compliance/document-types/${documentTypeId}/name-history`,
-    onUnauthorized,
+    request,
   );
 }
 
@@ -96,7 +100,7 @@ async function complianceCommand(
   const response = await complianceJson<{ result: ComplianceCommandResult }>(
     token,
     "/api/commands",
-    onUnauthorized,
+    { onUnauthorized },
     {
       method: "POST",
       body: JSON.stringify({
@@ -112,7 +116,7 @@ async function complianceCommand(
 async function complianceJson<T>(
   token: string,
   path: string,
-  onUnauthorized: UnauthorizedHandler,
+  request: ComplianceRequestContext,
   options: RequestInit = {},
 ): Promise<T> {
   const response = await fetch(path, {
@@ -122,10 +126,11 @@ async function complianceJson<T>(
       Authorization: `Bearer ${token}`,
       ...(options.headers || {}),
     },
+    signal: options.signal ?? request.signal,
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    if (response.status === 401) onUnauthorized();
+    if (response.status === 401) request.onUnauthorized();
     throw new Error(complianceErrorMessage(body, response.status));
   }
   return body as T;

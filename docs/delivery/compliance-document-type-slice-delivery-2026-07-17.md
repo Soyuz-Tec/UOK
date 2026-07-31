@@ -115,9 +115,10 @@ read them directly.
 - Archived records are hidden from normal lists unless explicitly requested.
 - Only canonical-name changes append owner-local name history; every successful
   mutation emits correlated command/event evidence.
-- Tenant/session changes, refreshes, selections, history reads, and mutations
-  use request-generation guards so stale async completions cannot repopulate or
-  mutate the wrong tenant's workspace state.
+- List, detail, and history reads use ADR-0030 request authority across
+  session-generation, role, operational, activation, selection, and lifetime
+  changes. Compliance commands retain their legacy request guards and remain
+  open phased Delivery 6 mutation-reconciliation scope.
 
 ## Architecture Freeze Compliance
 

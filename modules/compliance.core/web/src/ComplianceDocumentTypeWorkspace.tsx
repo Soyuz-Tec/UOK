@@ -1,4 +1,4 @@
-import type { ModuleSurfaceHostContext } from "@uok/contracts/moduleSurface";
+import type { ModuleSurfaceRenderContext } from "@uok/contracts/moduleSurface";
 import { WorkspaceActionButton, WorkspaceActionsMenu } from "@uok/shared/actions";
 import { EmptyState } from "@uok/shared/data-display";
 import { SearchWorkspace } from "@uok/shared/forms";
@@ -18,7 +18,7 @@ import { useComplianceDocumentTypeWorkspace } from "./useComplianceDocumentTypeW
 export function ComplianceDocumentTypeWorkspace({
   host,
 }: {
-  host: ModuleSurfaceHostContext;
+  host: ModuleSurfaceRenderContext;
 }) {
   const module = host.moduleRows.find((row) => row.name === COMPLIANCE_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
