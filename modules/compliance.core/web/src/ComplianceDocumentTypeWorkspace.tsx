@@ -25,7 +25,11 @@ export function ComplianceDocumentTypeWorkspace({
   const canManage = ["platform_admin", "ops_manager", "trader"].includes(
     host.currentUserRole,
   );
-  const workspace = useComplianceDocumentTypeWorkspace(host, operational);
+  const workspace = useComplianceDocumentTypeWorkspace(
+    host,
+    operational,
+    canManage,
+  );
 
   if (!host.session.token) {
     return <EmptyState text="Sign in to open Compliance Document Types." />;
@@ -103,9 +107,9 @@ export function ComplianceDocumentTypeWorkspace({
           <WorkspaceActionsMenu items={[{
             id: "refresh",
             action: "refresh",
-            loading: workspace.busyAction === "refresh",
-            disabled: Boolean(workspace.activeOperation.current),
-            onSelect: () => void workspace.refreshDocumentTypes(),
+            loading: ["refresh", "reconcile"].includes(workspace.busyAction),
+            disabled: workspace.operationActive && !workspace.reconciliationPending,
+            onSelect: () => void workspace.refreshWorkspace(),
           }]} />
         )}
         primaryAction={canManage ? (
@@ -114,7 +118,7 @@ export function ComplianceDocumentTypeWorkspace({
             labelKey="command.newComplianceDocumentType"
             fallbackLabel="New document type"
             primary
-            disabled={Boolean(workspace.busyAction)}
+            disabled={workspace.operationActive || Boolean(workspace.busyAction)}
             onClick={() => workspace.openEditor("create")}
           />
         ) : null}
@@ -138,6 +142,7 @@ export function ComplianceDocumentTypeWorkspace({
             history={workspace.history}
             historyLoading={workspace.historyLoading}
             busyAction={workspace.busyAction}
+            operationActive={workspace.operationActive}
             canManage={canManage}
             onEdit={() => workspace.openEditor("edit")}
             onLifecycle={(action, reason) => void workspace.runLifecycle(action, reason)}
@@ -151,7 +156,7 @@ export function ComplianceDocumentTypeWorkspace({
           : "Edit compliance document type"}
         title={workspace.editorMode === "create" ? "New document type" : "Edit document type"}
         description="Govern tenant-approved document vocabulary without creating files or shipment rules."
-        dismissible={!workspace.activeOperation.current}
+        dismissible={!workspace.operationActive}
         onClose={workspace.closeEditor}
       >
         {workspace.editorMode ? (
@@ -159,6 +164,7 @@ export function ComplianceDocumentTypeWorkspace({
             mode={workspace.editorMode}
             documentType={workspace.editorMode === "edit" ? workspace.selected : null}
             busy={["create", "update"].includes(workspace.busyAction)}
+            locked={workspace.operationActive}
             error={workspace.editorError}
             onCancel={workspace.closeEditor}
             onSubmit={(draft) => void workspace.saveDocumentType(

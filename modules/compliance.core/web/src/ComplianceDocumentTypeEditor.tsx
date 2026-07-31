@@ -12,6 +12,7 @@ export function ComplianceDocumentTypeEditor({
   mode,
   documentType,
   busy,
+  locked,
   error,
   onCancel,
   onSubmit,
@@ -19,6 +20,7 @@ export function ComplianceDocumentTypeEditor({
   mode: "create" | "edit";
   documentType: ComplianceDocumentType | null;
   busy: boolean;
+  locked: boolean;
   error: string;
   onCancel: () => void;
   onSubmit: (draft: ComplianceDocumentTypeDraft) => void;
@@ -42,7 +44,7 @@ export function ComplianceDocumentTypeEditor({
       ].filter(Boolean).join(" ") || undefined}
       onSubmit={(event) => {
         event.preventDefault();
-        if (!validation && !busy) onSubmit(draft);
+        if (!validation && !locked) onSubmit(draft);
       }}
     >
       <div className="compliance-document-type-editor-grid">
@@ -53,7 +55,7 @@ export function ComplianceDocumentTypeEditor({
             value={draft.code}
             maxLength={80}
             required
-            disabled={busy || mode === "edit"}
+            disabled={locked || mode === "edit"}
             aria-invalid={!draft.code.trim() || undefined}
             aria-describedby={!draft.code.trim()
               ? "compliance-document-type-editor-validation"
@@ -68,7 +70,7 @@ export function ComplianceDocumentTypeEditor({
             value={draft.canonicalName}
             maxLength={180}
             required
-            disabled={busy}
+            disabled={locked}
             aria-invalid={!draft.canonicalName.trim() || undefined}
             aria-describedby={!draft.canonicalName.trim()
               ? "compliance-document-type-editor-validation"
@@ -81,7 +83,7 @@ export function ComplianceDocumentTypeEditor({
           <input
             value={draft.category}
             maxLength={120}
-            disabled={busy}
+            disabled={locked}
             placeholder="Optional family"
             onChange={(event) => setDraft({ ...draft, category: event.target.value })}
           />
@@ -93,7 +95,7 @@ export function ComplianceDocumentTypeEditor({
               value={draft.reason}
               maxLength={500}
               required
-              disabled={busy}
+              disabled={locked}
               placeholder="Why this registry entry changed"
               aria-invalid={!draft.reason.trim() || undefined}
               aria-describedby={!draft.reason.trim()
@@ -109,7 +111,7 @@ export function ComplianceDocumentTypeEditor({
             value={draft.description}
             maxLength={2000}
             rows={4}
-            disabled={busy}
+            disabled={locked}
             placeholder="Optional operational meaning"
             onChange={(event) => setDraft({ ...draft, description: event.target.value })}
           />
@@ -124,7 +126,7 @@ export function ComplianceDocumentTypeEditor({
         <FieldMessage id="compliance-document-type-editor-error">{error}</FieldMessage>
       ) : null}
       <div className="compliance-document-type-editor-actions">
-        <WorkspaceActionButton action="cancel" disabled={busy} onClick={onCancel} />
+        <WorkspaceActionButton action="cancel" disabled={locked} onClick={onCancel} />
         <WorkspaceActionButton
           action={mode === "create" ? "create" : "save"}
           labelKey={mode === "create"
@@ -134,7 +136,7 @@ export function ComplianceDocumentTypeEditor({
           type="submit"
           primary
           loading={busy}
-          disabled={Boolean(validation)}
+          disabled={locked || Boolean(validation)}
         />
       </div>
     </form>

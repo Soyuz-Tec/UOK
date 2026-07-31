@@ -84,7 +84,7 @@ export function advanceComplianceDetailCriteria(
   value: string,
 ) {
   if (criteriaRef.current.value === value) return criteriaRef.current.generation;
-  supersedeComplianceReadLane(authority, "detail");
+  supersedeComplianceReadLanes(authority, ["detail", "reconcile"]);
   const generation = criteriaRef.current.generation + 1;
   criteriaRef.current = { value, generation };
   return generation;
@@ -107,6 +107,13 @@ export function supersedeComplianceReadLane(
   lane: string,
 ) {
   authority.begin(lane).release();
+}
+
+export function supersedeComplianceReadLanes(
+  authority: RequestAuthority,
+  lanes: readonly string[],
+) {
+  for (const lane of lanes) supersedeComplianceReadLane(authority, lane);
 }
 
 export function complianceReadErrorMessage(error: unknown) {

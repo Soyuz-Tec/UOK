@@ -11,6 +11,7 @@ export function ComplianceDocumentTypeDetail({
   history,
   historyLoading,
   busyAction,
+  operationActive,
   canManage,
   onEdit,
   onLifecycle,
@@ -19,6 +20,7 @@ export function ComplianceDocumentTypeDetail({
   history: ComplianceDocumentTypeNameHistory[];
   historyLoading: boolean;
   busyAction: string;
+  operationActive: boolean;
   canManage: boolean;
   onEdit: () => void;
   onLifecycle: (action: ComplianceDocumentTypeLifecycleAction, reason: string) => void;
@@ -60,6 +62,7 @@ export function ComplianceDocumentTypeDetail({
         <ComplianceDocumentTypeActions
           documentType={documentType}
           busyAction={busyAction}
+          operationActive={operationActive}
           onEdit={onEdit}
           onLifecycle={onLifecycle}
         />

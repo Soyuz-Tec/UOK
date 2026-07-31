@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { ModuleSurfaceRenderContext } from "@uok/contracts/moduleSurface";
+import type { ComplianceMutationInteraction } from "./complianceMutationAuthority";
 import {
   complianceDocumentTypeCategories,
   filterAndSortComplianceDocumentTypes,
@@ -16,6 +17,7 @@ import { useComplianceDocumentTypeReads } from "./useComplianceDocumentTypeReads
 export function useComplianceDocumentTypeWorkspace(
   host: ModuleSurfaceRenderContext,
   operational: boolean,
+  canManage: boolean,
 ) {
   const [stateSession, setStateSession] = useState({
     token: host.session.token,
@@ -29,6 +31,12 @@ export function useComplianceDocumentTypeWorkspace(
   const [sortDirection, setSortDirection] =
     useState<ComplianceDocumentTypeSortDirection>("asc");
   const [status, setStatus] = useState("Compliance Document Types ready.");
+  const interactionRef = useRef<ComplianceMutationInteraction>({
+    criteriaGeneration: 0,
+    selectionGeneration: 0,
+    selectedId: "",
+    selectedVersion: null,
+  });
   const reads = useComplianceDocumentTypeReads(host, operational, setStatus);
   const { setSelectedId } = reads;
   const categories = useMemo(
@@ -49,16 +57,51 @@ export function useComplianceDocumentTypeWorkspace(
     (row) => row.id === reads.selectedId,
   );
   const selected = selectionVisible ? reads.selected : null;
+  interactionRef.current = {
+    ...interactionRef.current,
+    selectedId: selected?.id || "",
+    selectedVersion: selected?.version ?? null,
+  };
+  const setWorkspaceSelectedId = useCallback((value: string) => {
+    const row = reads.documentTypes.find((candidate) => candidate.id === value);
+    interactionRef.current = {
+      ...interactionRef.current,
+      selectionGeneration: interactionRef.current.selectionGeneration + 1,
+      selectedId: value,
+      selectedVersion: row?.version ?? null,
+    };
+    setSelectedId(value);
+  }, [reads.documentTypes, setSelectedId]);
+  const updateCriteria = useCallback(<Value,>(
+    setter: (value: Value) => void,
+    value: Value,
+  ) => {
+    interactionRef.current = {
+      ...interactionRef.current,
+      criteriaGeneration: interactionRef.current.criteriaGeneration + 1,
+    };
+    setter(value);
+  }, []);
   const mutations = useComplianceDocumentTypeMutations({
     host,
+    operational,
+    canManage,
+    interactionRef,
     selected,
-    applyDocumentType: reads.applyDocumentType,
-    invalidateRefresh: reads.invalidateRefresh,
+    reconcileDocumentTypes: reads.reconcileDocumentTypes,
+    supersedeReadsForMutation: reads.supersedeReadsForMutation,
     setStatus,
-    setStatusFilter,
+    setStatusFilter: (value) => updateCriteria(setStatusFilter, value),
   });
 
   useEffect(() => {
+    interactionRef.current = {
+      ...interactionRef.current,
+      criteriaGeneration: interactionRef.current.criteriaGeneration + 1,
+      selectionGeneration: interactionRef.current.selectionGeneration + 1,
+      selectedId: "",
+      selectedVersion: null,
+    };
     setStateSession({
       token: host.session.token,
       generation: host.session.generation,
@@ -73,14 +116,22 @@ export function useComplianceDocumentTypeWorkspace(
 
   useEffect(() => {
     if (!host.session.token || !operational || selectionVisible) return;
-    setSelectedId(visibleDocumentTypes[0]?.id || "");
+    setWorkspaceSelectedId(visibleDocumentTypes[0]?.id || "");
   }, [
     host.session.token,
     operational,
-    setSelectedId,
+    setWorkspaceSelectedId,
     selectionVisible,
     visibleDocumentTypes,
   ]);
+
+  async function refreshWorkspace() {
+    if (mutations.reconciliationPending) {
+      await mutations.retryPendingReconciliation();
+      return;
+    }
+    if (!mutations.operationActive) await reads.refreshDocumentTypes();
+  }
 
   return {
     ...reads,
@@ -88,18 +139,24 @@ export function useComplianceDocumentTypeWorkspace(
     documentTypes: visibleDocumentTypes,
     selected,
     selectedId: selectionVisible ? reads.selectedId : "",
+    setSelectedId: setWorkspaceSelectedId,
     categories,
     query: sessionMatches(stateSession, host.session) ? query : "",
-    setQuery,
+    setQuery: (value: string) => updateCriteria(setQuery, value),
     statusFilter: sessionMatches(stateSession, host.session) ? statusFilter : "current",
-    setStatusFilter,
+    setStatusFilter: (value: ComplianceDocumentTypeStatusFilter) => (
+      updateCriteria(setStatusFilter, value)
+    ),
     categoryFilter: sessionMatches(stateSession, host.session) ? categoryFilter : "all",
-    setCategoryFilter,
+    setCategoryFilter: (value: string) => updateCriteria(setCategoryFilter, value),
     sortBy: sessionMatches(stateSession, host.session) ? sortBy : "code",
-    setSortBy,
+    setSortBy: (value: ComplianceDocumentTypeSort) => updateCriteria(setSortBy, value),
     sortDirection: sessionMatches(stateSession, host.session) ? sortDirection : "asc",
-    setSortDirection,
+    setSortDirection: (value: ComplianceDocumentTypeSortDirection) => (
+      updateCriteria(setSortDirection, value)
+    ),
     busyAction: mutations.busyAction || (reads.refreshing ? "refresh" : ""),
+    refreshWorkspace,
     status: sessionMatches(stateSession, host.session)
       ? status
       : "Compliance Document Types ready.",

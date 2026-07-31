@@ -6,15 +6,22 @@ import type {
 } from "./types";
 
 type UnauthorizedHandler = () => void;
-type ComplianceRequestContext = {
+
+export type ComplianceReadRequest = {
   onUnauthorized: UnauthorizedHandler;
   signal?: AbortSignal;
 };
+
+export type ComplianceCommandRequest = {
+  onUnauthorized: UnauthorizedHandler;
+  idempotencyKey: string;
+};
+
 type ComplianceCommandResult = ComplianceDocumentType & { correlation_id: string };
 
 export function loadComplianceDocumentTypes(
   token: string,
-  request: ComplianceRequestContext,
+  request: ComplianceReadRequest,
 ) {
   return complianceJson<ComplianceDocumentType[]>(
     token,
@@ -26,7 +33,7 @@ export function loadComplianceDocumentTypes(
 export function loadComplianceDocumentType(
   token: string,
   documentTypeId: string,
-  request: ComplianceRequestContext,
+  request: ComplianceReadRequest,
 ) {
   return complianceJson<ComplianceDocumentType>(
     token,
@@ -38,7 +45,7 @@ export function loadComplianceDocumentType(
 export function loadComplianceDocumentTypeNameHistory(
   token: string,
   documentTypeId: string,
-  request: ComplianceRequestContext,
+  request: ComplianceReadRequest,
 ) {
   return complianceJson<ComplianceDocumentTypeNameHistory[]>(
     token,
@@ -50,21 +57,21 @@ export function loadComplianceDocumentTypeNameHistory(
 export function createComplianceDocumentType(
   token: string,
   draft: ComplianceDocumentTypeDraft,
-  onUnauthorized: UnauthorizedHandler,
+  request: ComplianceCommandRequest,
 ) {
   return complianceCommand(token, "CreateComplianceDocumentType", {
     code: draft.code.trim(),
     canonical_name: draft.canonicalName.trim(),
     description: optionalValue(draft.description),
     category: optionalValue(draft.category),
-  }, "compliance-document-type-create", onUnauthorized);
+  }, request);
 }
 
 export function updateComplianceDocumentType(
   token: string,
   documentType: ComplianceDocumentType,
   draft: ComplianceDocumentTypeDraft,
-  onUnauthorized: UnauthorizedHandler,
+  request: ComplianceCommandRequest,
 ) {
   return complianceCommand(token, "UpdateComplianceDocumentType", {
     compliance_document_type_id: documentType.id,
@@ -73,7 +80,7 @@ export function updateComplianceDocumentType(
     description: optionalValue(draft.description),
     category: optionalValue(draft.category),
     reason: draft.reason.trim(),
-  }, "compliance-document-type-update", onUnauthorized);
+  }, request);
 }
 
 export function changeComplianceDocumentTypeLifecycle(
@@ -81,59 +88,91 @@ export function changeComplianceDocumentTypeLifecycle(
   documentType: ComplianceDocumentType,
   action: ComplianceDocumentTypeLifecycleAction,
   reason: string,
-  onUnauthorized: UnauthorizedHandler,
+  request: ComplianceCommandRequest,
 ) {
   return complianceCommand(token, lifecycleCommands[action], {
     compliance_document_type_id: documentType.id,
     expected_version: documentType.version,
     reason: reason.trim(),
-  }, `compliance-document-type-${action}`, onUnauthorized);
+  }, request);
 }
 
 async function complianceCommand(
   token: string,
   commandType: string,
   payload: Record<string, unknown>,
-  idempotencyPrefix: string,
-  onUnauthorized: UnauthorizedHandler,
+  request: ComplianceCommandRequest,
 ) {
-  const response = await complianceJson<{ result: ComplianceCommandResult }>(
+  return complianceJson<ComplianceDocumentType>(
     token,
     "/api/commands",
-    { onUnauthorized },
+    {
+      onUnauthorized: request.onUnauthorized,
+      ambiguousServerFailure: true,
+    },
     {
       method: "POST",
       body: JSON.stringify({
         command_type: commandType,
         payload,
-        idempotency_key: `${idempotencyPrefix}:${crypto.randomUUID()}`,
+        idempotency_key: request.idempotencyKey,
       }),
     },
+    decodeComplianceCommandResult,
   );
-  return response.result;
 }
+
+type ComplianceTransportRequest = {
+  onUnauthorized: UnauthorizedHandler;
+  signal?: AbortSignal;
+  ambiguousServerFailure?: boolean;
+};
 
 async function complianceJson<T>(
   token: string,
   path: string,
-  request: ComplianceRequestContext,
+  request: ComplianceTransportRequest,
   options: RequestInit = {},
+  decode: (body: unknown, status: number) => T = (body) => body as T,
 ): Promise<T> {
-  const response = await fetch(path, {
+  const signal = options.signal ?? request.signal;
+  const requestOptions: RequestInit = {
     ...options,
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
       ...(options.headers || {}),
     },
-    signal: options.signal ?? request.signal,
-  });
+  };
+  if (signal) requestOptions.signal = signal;
+  const response = await fetch(path, requestOptions);
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
     if (response.status === 401) request.onUnauthorized();
-    throw new Error(complianceErrorMessage(body, response.status));
+    throw new ComplianceApiError(
+      complianceErrorMessage(body, response.status),
+      response.status,
+      body,
+      Boolean(request.ambiguousServerFailure && response.status >= 500),
+    );
   }
-  return body as T;
+  return decode(body, response.status);
+}
+
+export class ComplianceApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+    readonly body: unknown,
+    readonly ambiguous = false,
+  ) {
+    super(message);
+    this.name = "ComplianceApiError";
+  }
+}
+
+export function isComplianceApiError(error: unknown): error is ComplianceApiError {
+  return error instanceof ComplianceApiError;
 }
 
 const lifecycleCommands: Record<ComplianceDocumentTypeLifecycleAction, string> = {
@@ -142,6 +181,48 @@ const lifecycleCommands: Record<ComplianceDocumentTypeLifecycleAction, string> =
   archive: "ArchiveComplianceDocumentType",
   restore: "RestoreComplianceDocumentType",
 };
+
+function decodeComplianceCommandResult(body: unknown, status: number) {
+  if (
+    body
+    && typeof body === "object"
+    && !Array.isArray(body)
+    && "result" in body
+    && isComplianceCommandResult(body.result)
+  ) {
+    return body.result;
+  }
+  throw new ComplianceApiError(
+    "Compliance command response was invalid; the server outcome is ambiguous.",
+    status,
+    body,
+    true,
+  );
+}
+
+function isComplianceCommandResult(value: unknown): value is ComplianceCommandResult {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const row = value as Record<string, unknown>;
+  return typeof row.id === "string"
+    && typeof row.code === "string"
+    && typeof row.canonical_name === "string"
+    && optionalString(row.description)
+    && optionalString(row.category)
+    && ["active", "inactive", "archived"].includes(String(row.status))
+    && Number.isInteger(row.version)
+    && Number(row.version) >= 1
+    && typeof row.created_by_user_id === "string"
+    && typeof row.updated_by_user_id === "string"
+    && typeof row.created_at === "string"
+    && typeof row.updated_at === "string"
+    && optionalString(row.archived_at)
+    && typeof row.correlation_id === "string"
+    && row.correlation_id.length > 0;
+}
+
+function optionalString(value: unknown) {
+  return value === null || typeof value === "string";
+}
 
 function optionalValue(value: string) {
   return value.trim() || null;

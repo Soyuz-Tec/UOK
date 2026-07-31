@@ -92,7 +92,7 @@ describe("Compliance Document Types interaction ordering", () => {
       }
       if (path.includes("include_archived=true")) {
         listCalls += 1;
-        return listCalls === 1 ? jsonResponse([current]) : staleRefresh.promise;
+        return listCalls === 2 ? staleRefresh.promise : jsonResponse([current]);
       }
       if (path.includes("name-history")) return jsonResponse([]);
       return jsonResponse(current);

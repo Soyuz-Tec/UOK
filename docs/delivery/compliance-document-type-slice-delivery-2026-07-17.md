@@ -117,8 +117,10 @@ read them directly.
   mutation emits correlated command/event evidence.
 - List, detail, and history reads use ADR-0030 request authority across
   session-generation, role, operational, activation, selection, and lifetime
-  changes. Compliance commands retain their legacy request guards and remain
-  open phased Delivery 6 mutation-reconciliation scope.
+  changes. All six commands now use pre-dispatch authority, one caller-owned
+  idempotency key, non-abortable/no-replay dispatch, guarded captured-intent
+  effects, and persistent owner-local list/detail/history reconciliation after
+  every non-`401` settlement, including ambiguous or conflicting outcomes.
 
 ## Architecture Freeze Compliance
 
