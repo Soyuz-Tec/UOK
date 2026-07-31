@@ -31,7 +31,9 @@ export function useContactReadOutcome(authority: RequestAuthority) {
     epoch,
     criteriaGeneration,
   )), []);
+  const clearAllReadOutcomes = useCallback(() => setOutcome(null), []);
   return {
+    clearAllReadOutcomes,
     clearReadOutcome,
     outcome,
     setReadOutcome,

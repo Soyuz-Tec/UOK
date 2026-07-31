@@ -8,7 +8,7 @@ import { useContactWorkspaceState } from "./app/useContactWorkspaceState";
 
 export function ContactsModuleRoot({ host }: { host: ModuleSurfaceRenderContext }) {
   const preferences = useContactPreferences();
-  const state = useContactWorkspaceState(preferences);
+  const state = useContactWorkspaceState(preferences, host.session);
   const module = host.moduleRows.find((row) => row.name === CONTACTS_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const data = useContactData(host, operational, state.filters);
@@ -16,7 +16,10 @@ export function ContactsModuleRoot({ host }: { host: ModuleSurfaceRenderContext 
     creating: state.creating,
     data,
     draft: state.draft,
+    editing: state.editing,
+    host,
     noteText: state.noteText,
+    operational,
     relationshipTarget: state.relationshipTarget,
     relationshipType: state.relationshipType,
     setContactDetailPane: state.setContactDetailPane,
@@ -25,7 +28,6 @@ export function ContactsModuleRoot({ host }: { host: ModuleSurfaceRenderContext 
     setEditing: state.setEditing,
     setNoteText: state.setNoteText,
     setRelationshipTarget: state.setRelationshipTarget,
-    refreshHost: host.refreshHost,
   });
 
   function selectContact(id: string) {
@@ -34,6 +36,10 @@ export function ContactsModuleRoot({ host }: { host: ModuleSurfaceRenderContext 
   }
 
   async function refreshAll() {
+    if (commands.reconciliationPending) {
+      await commands.retryPendingReconciliation();
+      return;
+    }
     await Promise.all([data.refresh(), host.refreshHost()]);
   }
 
@@ -68,7 +74,7 @@ export function ContactsModuleRoot({ host }: { host: ModuleSurfaceRenderContext 
       noteText={state.noteText}
       relationshipTarget={state.relationshipTarget}
       relationshipType={state.relationshipType}
-      busyAction={data.busyAction || host.busyAction}
+      busyAction={commands.busyAction || data.busyAction || host.busyAction}
       onActivate={() => void host.moduleAction(
         CONTACTS_MODULE_ID,
         module?.status === "disabled" ? "enable" : "install",
@@ -99,7 +105,7 @@ export function ContactsModuleRoot({ host }: { host: ModuleSurfaceRenderContext 
       onSave={commands.saveDraft}
       onCancelEdit={state.cancelEdit}
       onArchive={commands.archiveSelected}
-      onRestore={commands.restoreSelected}
+      onRestore={() => void commands.restoreSelected()}
       onPurge={commands.purgeSelected}
       onMarkReady={commands.markSelectedReady}
       onNoteTextChange={state.setNoteText}

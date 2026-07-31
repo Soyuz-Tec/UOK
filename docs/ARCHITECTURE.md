@@ -87,10 +87,21 @@ Operator browser
   a separate owner-local list/detail/history reconciliation obligation until
   authoritative settlement. Delivery 6d applies owner-local read authority to
   the Contacts primary party list, contact-group filter/options list, and
-  selected-party detail reads. Contacts commands and secondary async owners,
-  plus the other audited module owners, remain phased Delivery 6 work. Adopted
-  paths use independent named request lanes, guard every post-await side effect,
-  and epoch-stamp reusable committed state. Abort signals are cooperative only;
+  selected-party detail reads. Delivery 6e adopts the bounded Contacts
+  primary-party commands `CreateContact`, `UpdateContact` from the form,
+  inline editor, or mark-ready action, `ArchiveContact`, and `RestoreContact`,
+  together with current-boundary reconciliation of the primary list, groups,
+  selection, and selected detail. One owner-local synchronous gate prevents
+  excluded legacy mutations from interleaving with the adopted reconciliation
+  obligation. Session replacement clears tenant-owned editor, search, group,
+  and filter state. The selected row `updated_at` value is only
+  browser-intent freshness evidence; it is not an ETag, optimistic-concurrency
+  token, or lost-update guarantee. Purge, notes and activity, membership and
+  Groups Manager, relationships and relationship options, merge and dedupe,
+  Data Tools, import/export, saved views, secondary Contacts async owners, and
+  the other audited module owners remain phased Delivery 6 work. Adopted paths
+  use independent named request lanes, guard every post-await side effect, and
+  epoch-stamp reusable committed state. Abort signals are cooperative only;
   current-ticket proof is authoritative.
 - Durable module workspaces compose one minimal shared command surface with optional query, context, and actions groups plus the common localized action vocabulary accepted in ADR-0025. Shared code owns layout and accessibility; modules retain domain nouns, state, permissions, options, and handlers.
 - Compliance Document Types, Product Master, Location Master, Route/Corridor Master, Shipment Support, and Shipment Readiness own their complete DTO, HTTP, state, and workbench surfaces under their module web roots; Intelligence is read-only and declares no command surface. Reports owns the typed report HTTP client under `modules/reports.core/web/src` without declaring a workbench surface. `agents.core` remains an inert planned scaffold with no executable frontend entry.

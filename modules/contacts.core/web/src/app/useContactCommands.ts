@@ -1,15 +1,28 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useRef, useState, type Dispatch, type SetStateAction } from "react";
+
+import type { ModuleSurfaceRenderContext } from "@uok/contracts/moduleSurface";
 
 import { nonEmptyDraftPayload } from "./contactDraft";
+import { contactCommandResultId, executeContactCommand } from "./contactCommandApi";
 import type { ContactData } from "./useContactData";
-import type { ContactDetailPane, ContactDraft, ContactMergeFieldChoices, ContactCommandResponse } from "../contracts";
+import { useContactCommandCoordinator } from "./useContactCommandCoordinator";
+import { useLegacyContactCommands } from "./useLegacyContactCommands";
+import { createContactCommandOperationGate } from "./contactCommandOperationGate";
+import type {
+  ContactDetailPane,
+  ContactDraft,
+  ContactCommandResponse,
+} from "../contracts";
 import { emptyDraft } from "../contracts";
 
 export function useContactCommands({
   creating,
   data,
   draft,
+  editing,
+  host,
   noteText,
+  operational,
   relationshipTarget,
   relationshipType,
   setContactDetailPane,
@@ -18,12 +31,14 @@ export function useContactCommands({
   setEditing,
   setNoteText,
   setRelationshipTarget,
-  refreshHost,
 }: {
   creating: boolean;
   data: ContactData;
   draft: ContactDraft;
+  editing: boolean;
+  host: ModuleSurfaceRenderContext;
   noteText: string;
+  operational: boolean;
   relationshipTarget: string;
   relationshipType: string;
   setContactDetailPane: Dispatch<SetStateAction<ContactDetailPane>>;
@@ -32,146 +47,190 @@ export function useContactCommands({
   setEditing: Dispatch<SetStateAction<boolean>>;
   setNoteText: Dispatch<SetStateAction<string>>;
   setRelationshipTarget: Dispatch<SetStateAction<string>>;
-  refreshHost: () => Promise<void>;
 }) {
-  async function command(commandType: string, payload: Record<string, unknown>, prefix: string) {
-    try {
-      data.setBusyAction(commandType);
-      const response = await data.api<ContactCommandResponse>("/api/commands", {
-        method: "POST",
-        body: JSON.stringify({
-          command_type: commandType,
-          payload,
-          idempotency_key: `${prefix}:${Date.now()}`,
-        }),
-      });
-      data.setOut(response);
-      await Promise.all([data.refresh(), refreshHost()]);
-      return response;
-    } catch (error) {
-      data.setOut(error);
-      return null;
-    } finally {
-      data.setBusyAction("");
-    }
+  const currentRef = useRef({ creating, data, draft, editing });
+  const editorRef = useRef({ key: "", generation: 0 });
+  const editorKey = JSON.stringify([creating, editing, draft]);
+  if (editorRef.current.key !== editorKey) {
+    editorRef.current = {
+      key: editorKey,
+      generation: editorRef.current.generation + 1,
+    };
   }
+  currentRef.current = { creating, data, draft, editing };
+  const [operationGate] = useState(createContactCommandOperationGate);
+  const coordinator = useContactCommandCoordinator({
+    host,
+    operational,
+    interaction: data.contactMutationInteraction,
+    operationGate,
+    reconcilePrimaryContacts: data.reconcilePrimaryContacts,
+    supersedeReadsForMutation: data.supersedeReadsForMutation,
+  });
+  const legacy = useLegacyContactCommands({
+    data,
+    host,
+    noteText,
+    relationshipTarget,
+    relationshipType,
+    operationGate,
+    setNoteText,
+    setRelationshipTarget,
+  });
 
   async function saveDraft() {
-    const payload = nonEmptyDraftPayload(draft);
-    const result = !creating && data.selectedContactId
-      ? await command("UpdateContact", { ...payload, party_id: data.selectedContactId }, "contact-update")
-      : await command("CreateContact", payload, "contact-create");
-    const resultId = result?.result?.id || result?.result?.contact_id;
-    if (resultId) data.setSelectedContactId(resultId);
+    const intentGeneration = editorRef.current.generation;
+    if (creating) {
+      return runManaged({
+        action: "CreateContact",
+        payload: nonEmptyDraftPayload(draft),
+        intentIsCurrent: () => editorIntentCurrent(intentGeneration, true),
+        preferredId: (response) => contactCommandResultId(response?.result),
+        onSuccess: closeEditorAfterSave,
+      });
+    }
+    const target = selectedTarget();
+    if (!editing || !target.id) return false;
+    return runManaged({
+      action: "UpdateContact",
+      payload: { ...draft, party_id: target.id },
+      intentIsCurrent: () => editorIntentCurrent(intentGeneration, false)
+        && targetCurrent(target),
+      preferredId: () => target.id,
+      onSuccess: closeEditorAfterSave,
+    });
+  }
+
+  async function updateSelectedContactField(field: keyof ContactDraft, value: string) {
+    const target = selectedTarget();
+    if (!target.id) throw new Error("No contact selected.");
+    const success = await runManaged({
+      action: "UpdateContact",
+      payload: { party_id: target.id, [field]: value },
+      intentIsCurrent: () => targetCurrent(target),
+      preferredId: () => target.id,
+    });
+    if (!success) throw new Error("Contact update failed.");
+  }
+
+  async function archiveSelected() {
+    const target = selectedTarget();
+    if (!target.id || !target.canDelete) throw new Error("No deletable contact selected.");
+    const success = await runManaged({
+      action: "ArchiveContact",
+      payload: { party_id: target.id },
+      intentIsCurrent: () => targetCurrent(target, "delete"),
+      preferredId: () => target.id,
+    });
+    if (!success) throw new Error("The contact could not be deleted. Review the latest record and try again.");
+  }
+
+  async function restoreSelected() {
+    const target = selectedTarget();
+    if (!target.id || !target.canRestore) return false;
+    return runManaged({
+      action: "RestoreContact",
+      capability: "restore",
+      payload: { party_id: target.id },
+      intentIsCurrent: () => targetCurrent(target, "restore"),
+      preferredId: () => target.id,
+    });
+  }
+
+  async function markSelectedReady() {
+    const target = selectedTarget();
+    if (!target.id) return false;
+    return runManaged({
+      action: "UpdateContact",
+      payload: { party_id: target.id, review_state: "ready" },
+      intentIsCurrent: () => targetCurrent(target),
+      preferredId: () => target.id,
+    });
+  }
+
+  async function runManaged({
+    action,
+    capability = "manage",
+    payload,
+    intentIsCurrent,
+    preferredId,
+    onSuccess = () => undefined,
+  }: {
+    action: "CreateContact" | "UpdateContact" | "ArchiveContact" | "RestoreContact";
+    capability?: "manage" | "restore";
+    payload: Record<string, unknown>;
+    intentIsCurrent: () => boolean;
+    preferredId: (response?: ContactCommandResponse) => string | undefined;
+    onSuccess?: () => void;
+  }) {
+    return coordinator.runOperation({
+      action,
+      capability,
+      execute: (request) => executeContactCommand(
+        request.token,
+        action,
+        payload,
+        request,
+      ),
+      intentIsCurrent,
+      preferredSelectedId: preferredId,
+      onAccepted: () => currentRef.current.data.setOut(null),
+      onSuccess: () => {
+        currentRef.current.data.setOut(null);
+        onSuccess();
+      },
+      onError: (error) => currentRef.current.data.setOut(error),
+      onPending: (error) => currentRef.current.data.setOut(
+        error || "Contacts reconciliation is pending. Refresh to retry.",
+      ),
+    });
+  }
+
+  function closeEditorAfterSave() {
     setContactDetailPane("overview");
     setCreating(false);
     setEditing(false);
     setDraft(emptyDraft);
   }
 
-  async function updateSelectedContactField(field: keyof ContactDraft, value: string) {
-    if (!data.selectedContactId) throw new Error("No contact selected.");
-    const result = await command("UpdateContact", { party_id: data.selectedContactId, [field]: value }, `contact-inline-${field}`);
-    if (!result) throw new Error("Contact update failed.");
-    await data.loadContactDetail(data.selectedContactId);
+  function editorIntentCurrent(generation: number, expectedCreating: boolean) {
+    return editorRef.current.generation === generation
+      && currentRef.current.creating === expectedCreating
+      && currentRef.current.editing;
   }
 
-  async function archiveSelected() {
-    if (!data.selectedContactId) throw new Error("No contact selected.");
-    const result = await command("ArchiveContact", { party_id: data.selectedContactId }, "contact-archive");
-    if (!result) throw new Error("The contact could not be deleted. Review the latest record and try again.");
+  function selectedTarget() {
+    const contact = data.selectedContact;
+    return {
+      id: data.selectedContactId,
+      revision: data.contactMutationInteraction.selectedRevision,
+      canDelete: contact?.can_delete === true,
+      canRestore: contact?.can_restore === true,
+    };
   }
 
-  async function restoreSelected() {
-    if (data.selectedContactId) await command("RestoreContact", { party_id: data.selectedContactId }, "contact-restore");
-  }
-
-  async function purgeSelected() {
-    if (!data.selectedContactId) throw new Error("No contact selected.");
-    const result = await command("PurgeContact", { party_id: data.selectedContactId }, "contact-purge");
-    if (!result) throw new Error("The contact could not be purged. Review the latest record and try again.");
-  }
-
-  async function markSelectedReady() {
-    if (data.selectedContactId) {
-      await command("UpdateContact", { party_id: data.selectedContactId, review_state: "ready" }, "contact-mark-ready");
-      await data.loadContactDetail(data.selectedContactId);
-    }
-  }
-
-  async function addNote() {
-    if (!data.selectedContactId || !noteText.trim()) return;
-    await command("AddContactNote", { party_id: data.selectedContactId, body: noteText }, "contact-note");
-    setNoteText("");
-    await data.loadContactDetail(data.selectedContactId);
-  }
-
-  async function addSelectedContactToGroup(groupId: string) {
-    if (!data.selectedContactId || !groupId) return;
-    await command("AddContactsToGroup", { group_id: groupId, party_ids: [data.selectedContactId] }, "contact-group-add");
-    await data.loadContactDetail(data.selectedContactId);
-  }
-
-  async function removeSelectedContactFromGroup(groupId: string) {
-    if (!data.selectedContactId || !groupId) return;
-    await command("RemoveContactFromGroup", { group_id: groupId, party_id: data.selectedContactId }, "contact-group-remove");
-    await data.loadContactDetail(data.selectedContactId);
-  }
-
-  async function linkRelationship() {
-    if (!data.selectedContactId || !relationshipTarget) return;
-    await command("LinkContactRelationship", {
-      from_party_id: data.selectedContactId,
-      to_party_id: relationshipTarget,
-      relationship_type: relationshipType
-    }, "contact-relationship");
-    setRelationshipTarget("");
-    await data.loadContactDetail(data.selectedContactId);
-  }
-
-  async function updateRelationship(relationshipId: string, fromPartyId: string, toPartyId: string, nextRelationshipType: string) {
-    if (!data.selectedContactId || !relationshipId || !fromPartyId || !toPartyId) return;
-    await command("UpdateContactRelationship", {
-      relationship_id: relationshipId,
-      from_party_id: fromPartyId,
-      to_party_id: toPartyId,
-      relationship_type: nextRelationshipType
-    }, "contact-relationship-update");
-    await data.loadContactDetail(data.selectedContactId);
-  }
-
-  async function removeRelationship(relationshipId: string) {
-    if (!data.selectedContactId || !relationshipId) return;
-    await command("RemoveContactRelationship", { relationship_id: relationshipId }, "contact-relationship-remove");
-    await data.loadContactDetail(data.selectedContactId);
-  }
-
-  async function mergeDuplicate(primaryContactId: string, duplicateContactId: string, fieldChoices: ContactMergeFieldChoices = {}) {
-    if (!primaryContactId || !duplicateContactId) return;
-    const choices = Object.keys(fieldChoices).length ? { field_choices: fieldChoices } : {};
-    const result = await command("MergeDuplicateContact", {
-      primary_party_id: primaryContactId,
-      duplicate_party_id: duplicateContactId,
-      ...choices
-    }, "contact-duplicate-merge");
-    const resultId = result?.result?.id || result?.result?.contact_id || primaryContactId;
-    data.setSelectedContactId(resultId);
-    await data.loadContactDetail(resultId);
+  function targetCurrent(
+    target: ReturnType<typeof selectedTarget>,
+    required?: "delete" | "restore",
+  ) {
+    const current = currentRef.current.data;
+    const contact = current.selectedContact;
+    return current.selectedContactId === target.id
+      && current.contactMutationInteraction.selectedRevision === target.revision
+      && (!required || (required === "delete"
+        ? contact?.can_delete === true
+        : contact?.can_restore === true));
   }
 
   return {
-    addNote,
-    addSelectedContactToGroup,
+    ...legacy,
     archiveSelected,
-    linkRelationship,
+    busyAction: coordinator.busyAction,
     markSelectedReady,
-    mergeDuplicate,
-    purgeSelected,
-    removeRelationship,
-    removeSelectedContactFromGroup,
+    reconciliationPending: coordinator.reconciliationPending,
     restoreSelected,
+    retryPendingReconciliation: coordinator.retryPendingReconciliation,
     saveDraft,
-    updateRelationship,
-    updateSelectedContactField
+    updateSelectedContactField,
   };
 }

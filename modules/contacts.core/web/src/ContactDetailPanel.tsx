@@ -38,7 +38,7 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
           onChange={props.onDraftChange}
           onSave={props.onSave}
           onCancel={props.onCancelEdit}
-          busy={props.busyAction === "CreateContact" || props.busyAction === "UpdateContact"}
+          busy={Boolean(props.busyAction)}
         />
       ) : contact ? (
         <>
@@ -53,6 +53,7 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
                 <ContactGroupMembership
                   contact={contact}
                   groups={props.contactGroups}
+                  busyAction={props.busyAction}
                   onAddToGroup={props.onAddSelectedContactToGroup}
                   onRemoveFromGroup={props.onRemoveSelectedContactFromGroup}
                 />
@@ -80,7 +81,7 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
                   <span>Internal note</span>
                   <input value={props.noteText} onChange={(event) => props.onNoteTextChange(event.target.value)} disabled={!contact} />
                 </label>
-                <CommandButton icon={FileCheck2} onClick={props.onAddNote} disabled={!contact || !props.noteText.trim()}>Add</CommandButton>
+                <CommandButton icon={FileCheck2} onClick={props.onAddNote} disabled={!contact || !props.noteText.trim() || Boolean(props.busyAction)}>Add</CommandButton>
               </div>
               <ContactActivityTimeline
                 token={props.token}

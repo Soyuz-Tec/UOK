@@ -22,6 +22,8 @@ import {
 import { useContactReadBoundary } from "./useContactReadBoundary";
 import { useContactReadOutcome } from "./useContactReadOutcome";
 import { useContactReadScheduling } from "./useContactReadScheduling";
+import { useContactPrimaryReconciliation,
+  type ContactPrimaryReconciliationSnapshot } from "./useContactPrimaryReconciliation";
 
 export function useContactPrimaryReads(
   host: ModuleSurfaceRenderContext,
@@ -51,7 +53,7 @@ export function useContactPrimaryReads(
   const [groupsLoading, setGroupsLoading] = useState({
     epoch: authority.epoch, value: false,
   });
-  const { clearReadOutcome, outcome, setReadOutcome } =
+  const { clearAllReadOutcomes, clearReadOutcome, outcome, setReadOutcome } =
     useContactReadOutcome(authority);
   const readEnabled = contactReadsEnabled(boundary);
   const listCurrent = readEnabled
@@ -91,6 +93,53 @@ export function useContactPrimaryReads(
     selectionRef.current = next;
     setSelectionState(next);
   }, [authority]);
+
+  const applyReconciliation = useCallback((
+    snapshot: ContactPrimaryReconciliationSnapshot,
+    epoch: number,
+    criteriaGeneration: number,
+  ) => {
+    const selectedRow = snapshot.list.rows.find((row) => row.id === snapshot.selectedId);
+    const detailGeneration = advanceContactDetailCriteria(
+      authority,
+      detailCriteriaRef,
+      contactDetailCriteria(snapshot.selectedId, selectedRow?.updated_at),
+    );
+    const nextList = { epoch, criteriaGeneration, ...snapshot.list };
+    const nextSelection = { epoch, id: snapshot.selectedId };
+    listCommitRef.current = nextList;
+    selectionRef.current = nextSelection;
+    setListCommit(nextList);
+    setGroupsCommit({ epoch, rows: snapshot.groups });
+    setSelectionState(nextSelection);
+    setDetailCommit({
+      epoch,
+      criteriaGeneration: detailGeneration,
+      ownerId: snapshot.selectedId,
+      ownerUpdatedAt: selectedRow?.updated_at ?? "",
+      row: snapshot.detail,
+    });
+    clearAllReadOutcomes();
+  }, [authority, clearAllReadOutcomes]);
+  const setReconciliationRefreshing = useCallback((
+    epoch: number,
+    criteriaGeneration: number,
+    value: boolean,
+  ) => {
+    setListLoading({ epoch, criteriaGeneration, value });
+    setGroupsLoading({ epoch, value });
+  }, []);
+  const reconciliation = useContactPrimaryReconciliation({
+    authority,
+    beginRead,
+    boundaryRef,
+    detailCriteriaRef,
+    filtersRef,
+    listCriteriaRef,
+    selectionRef,
+    onApplied: applyReconciliation,
+    onRefreshing: setReconciliationRefreshing,
+  });
 
   const refreshContacts = useCallback(async () => {
     const current = boundaryRef.current;
@@ -230,6 +279,9 @@ export function useContactPrimaryReads(
     detailCriteriaRef.current.generation,
   );
   return {
+    contactMutationInteraction: { criteriaGeneration: listCriteriaRef.current.generation,
+      selectionGeneration: detailCriteriaRef.current.generation, selectedId: selectedContactId,
+      selectedRevision: listSelected?.updated_at ?? "" },
     contacts,
     contactGroups: groupsCurrent ? groupsCommit.rows : [],
     contactHasNext: listCurrent ? listCommit.hasNext : false,
@@ -238,8 +290,10 @@ export function useContactPrimaryReads(
     out: outcomeCurrent ? outcome.value : null,
     refresh,
     refreshing,
+    reconcilePrimaryContacts: reconciliation.reconcilePrimaryContacts,
     selectedContact: detailCurrent ? detailCommit.row : listSelected,
     selectedContactId,
     setSelectedContactId,
+    supersedeReadsForMutation: reconciliation.supersedeReadsForMutation,
   };
 }

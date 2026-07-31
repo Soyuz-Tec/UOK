@@ -199,7 +199,8 @@ export const emptyDraft: ContactDraft = {
 };
 
 export type ContactCommandResponse = {
-  result: ContactRecord;
-  status: string;
-  idempotent?: boolean;
+  result: unknown;
+  status: "succeeded";
+  idempotent: boolean;
+  command_id?: string;
 };

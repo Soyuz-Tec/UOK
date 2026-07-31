@@ -1,11 +1,23 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { draftFromContact } from "./contactDraft";
 import type { ContactPreferences } from "./useContactPreferences";
 import type { ContactDetailPane, ContactDraft, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter } from "../contracts";
 import { emptyDraft } from "../contracts";
 
-export function useContactWorkspaceState(preferences: ContactPreferences) {
+type ContactWorkspaceOwner = {
+  token: string;
+  generation: number;
+};
+
+export function useContactWorkspaceState(
+  preferences: ContactPreferences,
+  owner: ContactWorkspaceOwner,
+) {
+  const previousOwner = useRef({
+    token: owner.token,
+    generation: owner.generation,
+  });
   const [draft, setDraft] = useState<ContactDraft>(emptyDraft);
   const [editing, setEditing] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -24,8 +36,49 @@ export function useContactWorkspaceState(preferences: ContactPreferences) {
   const [noteText, setNoteText] = useState("");
   const [relationshipTarget, setRelationshipTarget] = useState("");
   const [relationshipType, setRelationshipType] = useState("primary_contact");
+  const ownerChanged = previousOwner.current.token !== owner.token
+    || previousOwner.current.generation !== owner.generation;
 
-  const filters = useMemo(() => ({
+  useLayoutEffect(() => {
+    if (previousOwner.current.token === owner.token
+      && previousOwner.current.generation === owner.generation) return;
+    previousOwner.current = {
+      token: owner.token,
+      generation: owner.generation,
+    };
+    setCreating(false);
+    setEditing(false);
+    setDraft(emptyDraft);
+    setNoteText("");
+    setRelationshipTarget("");
+    setQuery("");
+    setContactGroupId("");
+    setStatusFilter("active");
+    setReviewFilter("all");
+    setTypeFilter("all");
+    setSourceFilter("all");
+    setQualityFilter("all");
+    setContactPage(0);
+    setContactPageSize(25);
+    setContactSortBy("updated_at");
+    setContactSortDir("desc");
+    setContactDetailPane("overview");
+    setRelationshipType("primary_contact");
+  }, [owner.generation, owner.token]);
+
+  const filters = useMemo(() => ownerChanged ? ({
+    query: "",
+    contactGroupId: "",
+    statusFilter: "active",
+    reviewFilter: "all",
+    typeFilter: "all",
+    sourceFilter: "all" as const,
+    qualityFilter: "all" as const,
+    contactPage: 0,
+    contactPageSize: 25,
+    contactSortBy: "updated_at" as const,
+    contactSortDir: "desc" as const,
+  }) : ({
     query,
     contactGroupId,
     statusFilter,
@@ -36,8 +89,21 @@ export function useContactWorkspaceState(preferences: ContactPreferences) {
     contactPage,
     contactPageSize,
     contactSortBy,
-    contactSortDir
-  }), [contactGroupId, contactPage, contactPageSize, contactSortBy, contactSortDir, qualityFilter, query, reviewFilter, sourceFilter, statusFilter, typeFilter]);
+    contactSortDir,
+  }), [
+    contactGroupId,
+    contactPage,
+    contactPageSize,
+    contactSortBy,
+    contactSortDir,
+    ownerChanged,
+    qualityFilter,
+    query,
+    reviewFilter,
+    sourceFilter,
+    statusFilter,
+    typeFilter,
+  ]);
 
   function startCreate() {
     setCreating(true);
