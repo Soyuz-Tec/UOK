@@ -23,18 +23,18 @@ export function ContactRelationshipsPanel(props: ContactsWorkspaceProps & { cont
     const nextTarget = relationshipEditTarget || relatedPartyId(rel);
     if (!nextTarget) return;
     const inbound = relationshipIsInbound(contact.id, rel);
-    await props.onUpdateRelationship(
+    const completed = await props.onUpdateRelationship(
       rel.id,
       inbound ? nextTarget : contact.id,
       inbound ? contact.id : nextTarget,
       relationshipEditType || rel.relationship_type
     );
-    setEditingRelationshipId("");
+    if (completed) setEditingRelationshipId("");
   }
 
   async function removeRelationship(rel: ContactRelationship) {
-    await props.onRemoveRelationship(rel.id);
-    if (editingRelationshipId === rel.id) setEditingRelationshipId("");
+    const completed = await props.onRemoveRelationship(rel.id);
+    if (completed && editingRelationshipId === rel.id) setEditingRelationshipId("");
   }
 
   return (
@@ -54,7 +54,7 @@ export function ContactRelationshipsPanel(props: ContactsWorkspaceProps & { cont
             {relationshipTypeOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
           </select>
         </label>
-        <CommandButton icon={Link2} onClick={props.onLinkRelationship} disabled={!props.relationshipTarget}>Link</CommandButton>
+        <CommandButton icon={Link2} onClick={props.onLinkRelationship} disabled={!props.relationshipTarget || Boolean(props.busyAction)}>Link</CommandButton>
       </div>
       <div className="record-list">
         {contact.relationships?.length ? contact.relationships.map((rel) => {
@@ -82,8 +82,8 @@ export function ContactRelationshipsPanel(props: ContactsWorkspaceProps & { cont
                     {rel.related_party_email ? <small>{rel.related_party_email}</small> : null}
                   </div>
                   <div className="relationship-row-actions">
-                    <IconButton icon={Pencil} label={`Edit relationship with ${rel.related_party_name || relatedPartyFallback(rel)}`} onClick={() => startRelationshipEdit(rel)} />
-                    <IconButton icon={Unlink2} label={`Unlink ${rel.related_party_name || relatedPartyFallback(rel)}`} onClick={() => void removeRelationship(rel)} disabled={props.busyAction === "RemoveContactRelationship"} />
+                    <IconButton icon={Pencil} label={`Edit relationship with ${rel.related_party_name || relatedPartyFallback(rel)}`} onClick={() => startRelationshipEdit(rel)} disabled={Boolean(props.busyAction)} />
+                    <IconButton icon={Unlink2} label={`Unlink ${rel.related_party_name || relatedPartyFallback(rel)}`} onClick={() => void removeRelationship(rel)} disabled={Boolean(props.busyAction)} />
                   </div>
                 </>
               )}
@@ -136,8 +136,8 @@ function RelationshipEditor({
         </label>
       </div>
       <div className="relationship-row-actions">
-        <IconButton icon={Check} label="Save relationship" primary onClick={onSave} disabled={!target || busyAction === "UpdateContactRelationship"} />
-        <IconButton icon={X} label="Cancel relationship edit" onClick={onCancel} />
+        <IconButton icon={Check} label="Save relationship" primary onClick={onSave} disabled={!target || Boolean(busyAction)} />
+        <IconButton icon={X} label="Cancel relationship edit" onClick={onCancel} disabled={Boolean(busyAction)} />
       </div>
     </>
   );

@@ -8,7 +8,7 @@ afterEach(resetContactsWorkspaceTest);
 
 describe("ContactsWorkspace quality workflow", () => {
   it("shows a guided quality workspace with duplicate comparison", async () => {
-    const onMergeDuplicate = vi.fn().mockResolvedValue(undefined);
+    const onMergeDuplicate = vi.fn().mockResolvedValue(true);
     renderContactsWorkspace("quality", [contact, importedContact, duplicateContact], { onMergeDuplicate });
 
     expect(screen.getByRole("region", { name: "Contact quality workspace" })).toBeInTheDocument();

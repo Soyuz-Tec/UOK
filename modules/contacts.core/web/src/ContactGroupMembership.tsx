@@ -15,13 +15,15 @@ function isSystemGroup(group: { kind?: string; name: string }) {
 export function ContactGroupMembership({
   contact,
   groups,
+  busyAction,
   onAddToGroup,
   onRemoveFromGroup
 }: {
   contact: ContactRecord;
   groups: ContactGroupRecord[];
-  onAddToGroup: (groupId: string) => Promise<void>;
-  onRemoveFromGroup: (groupId: string) => Promise<void>;
+  busyAction: string;
+  onAddToGroup: (groupId: string) => Promise<boolean>;
+  onRemoveFromGroup: (groupId: string) => Promise<boolean>;
 }) {
   const [nextGroupId, setNextGroupId] = useState("");
   const memberships = useMemo(() => contact.groups || [], [contact.groups]);
@@ -32,8 +34,7 @@ export function ContactGroupMembership({
 
   async function addMembership() {
     if (!nextGroupId) return;
-    await onAddToGroup(nextGroupId);
-    setNextGroupId("");
+    if (await onAddToGroup(nextGroupId)) setNextGroupId("");
   }
 
   return (
@@ -43,12 +44,12 @@ export function ContactGroupMembership({
         <div className="contact-group-membership-add">
           <label className="field compact">
             <span className="visually-hidden">Add to group</span>
-            <select value={nextGroupId} onChange={(event) => setNextGroupId(event.target.value)}>
+            <select value={nextGroupId} onChange={(event) => setNextGroupId(event.target.value)} disabled={Boolean(busyAction)}>
               <option value="">Add to group</option>
               {availableGroups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
             </select>
           </label>
-          <IconButton icon={Plus} label="Add contact to selected group" onClick={() => void addMembership()} disabled={!nextGroupId} />
+          <IconButton icon={Plus} label="Add contact to selected group" onClick={() => void addMembership()} disabled={!nextGroupId || Boolean(busyAction)} />
         </div>
       </div>
       {memberships.length ? (
@@ -59,7 +60,7 @@ export function ContactGroupMembership({
               label: group.name,
               removeLabel: `Remove ${contact.display_name} from ${group.name}`
             }))}
-            onRemove={(groupId) => void onRemoveFromGroup(groupId)}
+            onRemove={busyAction ? undefined : (groupId) => void onRemoveFromGroup(groupId)}
             removeIcon={X}
             emptyText={systemGroups.length ? undefined : "No user-managed groups."}
           />

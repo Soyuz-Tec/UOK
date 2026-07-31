@@ -143,9 +143,28 @@ module criteria, DTOs, commands, or workflow state into the shell.
      retained-surface activation, and component lifetime; captures the complete
      Contacts filter tuple with ABA-safe criteria generations for list reads;
      and captures selected Party ID plus the selected row revision for detail
-     reads. Contacts commands, saved views, activity, relationship-options
-     lookup, Groups Manager workflows, and Data Tools remain later owner-local
-     slices.
+     reads. At Delivery 6d acceptance, Contacts commands, saved views, activity,
+     relationship-options lookup, Groups Manager workflows, and Data Tools all
+     remained later owner-local slices; Delivery 6e below narrows the next
+     command subset without changing the 6d read boundary.
+   - Delivery 6e adopts a bounded Contacts command slice. It is
+     limited to `CreateContact`, `UpdateContact` from the form, inline editor,
+     or mark-ready action, `ArchiveContact`, and `RestoreContact`. These commands
+     apply the established one-time non-abortable dispatch, guarded
+     captured-intent browser effects, and a retained reconciliation obligation
+     for the current primary party list, contact-group projection, selection,
+     and selected-party detail. The selected row `updated_at` value proves only
+     that browser intent still names the same observed row revision; it is not
+     an ETag, an optimistic-concurrency precondition, or protection from a
+     server-side lost update. Purge, notes and activity, selected-party group
+     membership and Groups Manager, relationship commands and options, merge
+     and dedupe, Data Tools, import/export, saved views, and other audited owner
+     paths remain later authority-adoption slices. A synchronous owner-local
+     command gate nevertheless spans adopted and excluded commands so an
+     excluded mutation and refresh cannot overlap an adopted reconciliation.
+     Token or session-generation replacement clears tenant-owned Contacts
+     drafts, notes, relationship targets, search, group, filters, and page
+     state; retained-surface deactivation alone preserves that state.
    - Later Delivery 6 slices migrate module owners in bounded groups while
      preserving their DTOs, endpoints, criteria, selections, commands, and
      specialized workflows.
@@ -234,6 +253,19 @@ Required focused proof includes:
 - stale/current one-shot `401`, stale success/error/loading-finalizer
   suppression, and epoch-stamped Contacts list/group/detail masking; and
 - presentation-only rerenders that do not restart primary Contacts reads.
+- pre-dispatch invalidation and guarded browser effects for the bounded
+  `CreateContact`, `UpdateContact`, `ArchiveContact`, and `RestoreContact`
+  slice, including form, inline-edit, and mark-ready update intent;
+- exactly one non-abortable command dispatch with one caller-owned idempotency
+  key, no automatic replay, and stale/current one-shot unauthorized handling;
+- current-boundary primary list, groups, selection, and selected-detail
+  reconciliation after success or an ambiguous possible server commit; and
+- session, role, operational, activation, filter, selection, selected-row
+  `updated_at`, and lifetime transitions without claiming ETag or lost-update
+  protection; and
+- bidirectional adopted/legacy same-tick exclusion, reconciliation-pending
+  exclusion, session-owned transient-state reset, and response-hint
+  minimization.
 
 Run:
 

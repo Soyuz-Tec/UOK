@@ -39,8 +39,8 @@ describe("ContactsWorkspace relationship and group interactions", () => {
   it("edits and unlinks relationship rows without leaving the contact workspace", async () => {
     const remoteContact = { id: "remote-contact", display_name: "Remote Decision Maker", party_type: "person", email: "remote@example.test" };
     installRelationshipLookupMock([remoteContact]);
-    const onUpdateRelationship = vi.fn().mockResolvedValue(undefined);
-    const onRemoveRelationship = vi.fn().mockResolvedValue(undefined);
+    const onUpdateRelationship = vi.fn().mockResolvedValue(true);
+    const onRemoveRelationship = vi.fn().mockResolvedValue(true);
     renderContactsWorkspace("split", [{
       ...organizationContact,
       relationships: [{

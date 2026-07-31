@@ -81,7 +81,57 @@ Contacts primary-read authority tests.
 This slice does not cover Contacts commands or mutation reconciliation, saved
 views, activity, relationship-options lookup, Groups Manager APIs, or Data
 Tools for facts, consent, teams, import/export, dedupe, interoperability, and
-custom fields. Those paths remain phased Delivery 6 scope.
+custom fields. Delivery 6e narrows the next command-adoption slice as described
+below; every other path remains phased Delivery 6 scope.
+
+### Frontend Platform: Delivery 6e Primary Party Commands
+
+Delivery 6e adopts a bounded command slice. It applies ADR-0030
+only to `CreateContact`, `UpdateContact` from the full form, inline editor, or
+mark-ready action, `ArchiveContact`, and `RestoreContact` as issued by the
+primary Contacts workspace through `POST /api/commands`.
+
+Each included operation captures its browser intent, rechecks the current
+session generation, authorization-relevant role or capability, operational
+state, retained-surface activation, component lifetime, current filters, and,
+when applicable, selected Party ID and observed row `updated_at` immediately
+before one non-abortable dispatch. One caller-owned idempotency key identifies
+that invocation, which is never automatically replayed. A command-effect ticket
+guards captured-intent outcome, busy/finally, editor cleanup, selection hints,
+host refresh, and one-shot unauthorized handling.
+
+One synchronous owner-local command gate spans both the adopted commands and
+the explicitly excluded legacy mutation paths. Managed ownership remains held
+through authoritative reconciliation and retry; legacy ownership remains held
+through its existing command, refresh, and caller-local post-effects. This gate
+does not claim request-authority adoption for the legacy paths, but prevents
+their refreshes from racing an adopted reconciliation. Token or
+session-generation replacement also clears tenant-owned editor, note,
+relationship-target, search, group, filter, and page state; surface
+deactivation alone retains it.
+
+Because dispatch cannot be retracted, a separate owner-local reconciliation
+obligation survives command-effect invalidation and settles the current primary
+Party list, group projection, selection, and selected Party detail from server
+reads. Command response data is a hint only and does not become committed read
+state. The selected row `updated_at` value is browser-intent freshness evidence
+only; Delivery 6e does not claim an ETag, optimistic-concurrency precondition,
+or lost-update protection.
+
+Accepted implementation evidence is bounded to `ContactsModuleRoot.tsx`,
+`app/useContactCommands.ts`, `app/contactCommandApi.ts`, the owner-local command
+authority/coordinator/reconciliation sources, the Delivery 6d primary-read
+sources, `app/contactCommandOperationGate.ts`, the session-owned workspace
+state, and focused Contacts command authority, reconciliation, session, and
+operation-gate tests. Focused acceptance covers 60 tests across nine files; the
+complete Contacts frontend suite covers 135 tests across 27 files.
+
+`PurgeContact`, notes and activity, selected-contact group membership and
+Groups Manager, relationship commands and relationship-options lookup, merge
+and dedupe, Data Tools for facts, consent, teams, interoperability and custom
+fields, import/export, saved views, and all other module owners remain later
+Delivery 6 slices. Delivery 6e also does not close the current-detail `403` or
+`404` primary-list reconciliation residual recorded below.
 
 ## Data And Integrity Rules
 

@@ -107,8 +107,8 @@ export function renderContactsWorkspace(initialView: ContactsView, records: Cont
         setSelectedId("");
         setEditing(true);
       },
-      onAddSelectedContactToGroup: vi.fn(),
-      onRemoveSelectedContactFromGroup: vi.fn(),
+      onAddSelectedContactToGroup: vi.fn().mockResolvedValue(true),
+      onRemoveSelectedContactFromGroup: vi.fn().mockResolvedValue(true),
       onEdit: () => setEditing(true),
       onInlineUpdate: vi.fn(),
       onDraftChange: vi.fn(),
@@ -123,9 +123,9 @@ export function renderContactsWorkspace(initialView: ContactsView, records: Cont
       onRelationshipTargetChange: setRelationshipTarget,
       onRelationshipTypeChange: setRelationshipType,
       onLinkRelationship: vi.fn(),
-      onUpdateRelationship: vi.fn(),
-      onRemoveRelationship: vi.fn(),
-      onMergeDuplicate: vi.fn(),
+      onUpdateRelationship: vi.fn().mockResolvedValue(true),
+      onRemoveRelationship: vi.fn().mockResolvedValue(true),
+      onMergeDuplicate: vi.fn().mockResolvedValue(true),
       ...overrides
     };
 

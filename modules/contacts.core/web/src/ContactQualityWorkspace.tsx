@@ -41,8 +41,13 @@ export function ContactQualityWorkspace({
   };
 
   const mergeDuplicate = async (primaryContactId: string, duplicateContactId: string, fieldChoices?: ContactMergeFieldChoices) => {
-    await props.onMergeDuplicate(primaryContactId, duplicateContactId, fieldChoices);
-    setComparisonOpen(false);
+    if (await props.onMergeDuplicate(
+      primaryContactId,
+      duplicateContactId,
+      fieldChoices,
+    )) {
+      setComparisonOpen(false);
+    }
   };
 
   return (
@@ -137,7 +142,7 @@ export function ContactQualityWorkspace({
                 <span>Purpose note</span>
                 <input value={props.noteText} onChange={(event) => props.onNoteTextChange(event.target.value)} placeholder="Why this contact exists in UOK" />
               </label>
-              <CommandButton icon={FileCheck2} onClick={props.onAddNote} disabled={!props.noteText.trim()}>Add note</CommandButton>
+              <CommandButton icon={FileCheck2} onClick={props.onAddNote} disabled={!props.noteText.trim() || Boolean(props.busyAction)}>Add note</CommandButton>
             </section>
           </>
         ) : (
@@ -149,7 +154,7 @@ export function ContactQualityWorkspace({
         open={comparisonOpen}
         contact={selected}
         matches={matches}
-        mergeBusy={props.busyAction === "MergeDuplicateContact"}
+        mergeBusy={Boolean(props.busyAction)}
         onClose={() => setComparisonOpen(false)}
         onMerge={(primaryContactId, duplicateContactId, fieldChoices) => void mergeDuplicate(primaryContactId, duplicateContactId, fieldChoices)}
         onOpenMatch={openMatch}
