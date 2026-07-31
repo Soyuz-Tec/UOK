@@ -164,7 +164,7 @@
   pointer-events: none;
 }
 
-:dir(rtl) .workflow-split-view.secondary-slide.secondary-closed .workflow-secondary-region {
+:root[dir="rtl"] .workflow-split-view.secondary-slide.secondary-closed .workflow-secondary-region {
   transform: translateX(calc(-100% - var(--uok-space-4)));
 }
 

@@ -7,6 +7,7 @@ test("closed secondary slides exit toward the physical inline-end edge", async (
   const secondary = page.locator(".rtl-secondary-slide-fixture .workflow-secondary-region");
 
   await page.evaluate(() => {
+    document.documentElement.setAttribute("lang", "en-US");
     document.documentElement.setAttribute("dir", "ltr");
     const fixture = document.createElement("div");
     fixture.className = "workflow-split-view secondary-slide secondary-closed rtl-secondary-slide-fixture";
@@ -25,6 +26,13 @@ test("closed secondary slides exit toward the physical inline-end edge", async (
 
   expect(await translationX(secondary)).toBeLessThan(0);
   await expect(secondary).toHaveCSS("inset-inline-end", "16px");
+
+  await page.locator("html").evaluate((element) => {
+    element.setAttribute("lang", "ar");
+    element.setAttribute("dir", "ltr");
+  });
+
+  expect(await translationX(secondary)).toBeGreaterThan(0);
 });
 
 test("table resize handles and cell alignment follow the inline-end edge", async ({ page }) => {
