@@ -20,6 +20,7 @@ export function useComplianceDocumentTypeReads(
   const listRequest = useRef(0);
   const detailRequest = useRef(0);
   const lastRefreshRevision = useRef(host.moduleRefreshRevision);
+  const previousSession = useRef<{ token: string; operational: boolean } | null>(null);
   const onUnauthorized = useRef(host.onUnauthorized);
   const updateStatus = useRef(setStatus);
   const [stateToken, setStateToken] = useState(host.token);
@@ -70,24 +71,31 @@ export function useComplianceDocumentTypeReads(
   }, [host.token, operational]);
 
   useEffect(() => {
+    const sessionChanged = previousSession.current?.token !== host.token
+      || previousSession.current.operational !== operational;
+    const refreshRequested =
+      lastRefreshRevision.current !== host.moduleRefreshRevision;
+    previousSession.current = { token: host.token, operational };
     lastRefreshRevision.current = host.moduleRefreshRevision;
-    listRequest.current += 1;
-    detailRequest.current += 1;
-    setStateToken(host.token);
-    setDocumentTypes([]);
-    setSelectedId("");
-    setDetail(null);
-    setHistory([]);
-    setHistoryOwnerId("");
-    setHistoryLoading(false);
-    setRefreshing(false);
-    if (host.token && operational) void refreshDocumentTypes();
-  }, [host.token, operational, refreshDocumentTypes]);
-
-  useEffect(() => {
-    if (lastRefreshRevision.current === host.moduleRefreshRevision) return;
-    lastRefreshRevision.current = host.moduleRefreshRevision;
-    if (host.token && operational) void refreshDocumentTypes();
+    if (sessionChanged) {
+      listRequest.current += 1;
+      detailRequest.current += 1;
+      setStateToken(host.token);
+      setDocumentTypes([]);
+      setSelectedId("");
+      setDetail(null);
+      setHistory([]);
+      setHistoryOwnerId("");
+      setHistoryLoading(false);
+      setRefreshing(false);
+    }
+    if (
+      (sessionChanged || refreshRequested)
+      && host.token
+      && operational
+    ) {
+      void refreshDocumentTypes();
+    }
   }, [
     host.moduleRefreshRevision,
     host.token,

@@ -25,6 +25,7 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
   const [groupsManagerOpen, setGroupsManagerOpen] = useState(false);
   const [dataToolsOpen, setDataToolsOpen] = useState(false);
   const canManageGroups = props.currentUserRole === "platform_admin" || props.currentUserRole === "ops_manager";
+  const { onCreate, onSelect } = props;
 
   useEffect(() => {
     if (!popupMode) setDetailPopupOpen(false);
@@ -42,14 +43,14 @@ export function ContactsWorkspace(props: ContactsWorkspaceProps) {
   }, [props.operational, props.token]);
 
   const selectContact = useCallback((id: string) => {
-    props.onSelect(id);
+    onSelect(id);
     if (popupMode) setDetailPopupOpen(true);
-  }, [popupMode, props.onSelect]);
+  }, [onSelect, popupMode]);
 
   const createContact = useCallback(() => {
-    props.onCreate();
+    onCreate();
     if (popupMode) setDetailPopupOpen(true);
-  }, [popupMode, props.onCreate]);
+  }, [onCreate, popupMode]);
 
   const changeView = (value: ContactsWorkspaceProps["contactsView"]) => {
     setDetailPopupOpen(false);

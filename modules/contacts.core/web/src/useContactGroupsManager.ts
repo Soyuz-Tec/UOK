@@ -48,6 +48,8 @@ export function useContactGroupsManager({
   const clearFocusRecovery = useCallback(() => setFocusRecovery(null), []);
 
   const selectedGroup = groups.find((group) => group.id === selectedGroupId) || null;
+  const selectedGroupIdForRefresh = selectedGroup?.id || "";
+  const selectedGroupStatusForRefresh = selectedGroup?.status || "";
 
   const refreshGroups = useCallback(async (preferredGroupId = "") => {
     const rows = await api.groups();
@@ -60,7 +62,7 @@ export function useContactGroupsManager({
     return rows;
   }, [api]);
 
-  const refreshMembers = useCallback(async (group: ManagedContactGroup | null) => {
+  const refreshMembers = useCallback(async (group: Pick<ManagedContactGroup, "id" | "status"> | null) => {
     if (!group || group.status === "archived") {
       setMembers([]);
       return;
@@ -85,8 +87,22 @@ export function useContactGroupsManager({
     setName(selectedGroup?.name || "");
     setDescription(selectedGroup?.description || "");
     setError("");
-    void refreshMembers(selectedGroup).catch((reason) => setError(errorMessage(reason, fallbackError)));
-  }, [creating, fallbackError, open, refreshMembers, selectedGroup?.description, selectedGroup?.id, selectedGroup?.kind, selectedGroup?.name, selectedGroup?.status]);
+    void refreshMembers(
+      selectedGroupIdForRefresh
+        ? { id: selectedGroupIdForRefresh, status: selectedGroupStatusForRefresh }
+        : null
+    ).catch((reason) => setError(errorMessage(reason, fallbackError)));
+  }, [
+    creating,
+    fallbackError,
+    open,
+    refreshMembers,
+    selectedGroup?.description,
+    selectedGroup?.kind,
+    selectedGroup?.name,
+    selectedGroupIdForRefresh,
+    selectedGroupStatusForRefresh
+  ]);
 
   useEffect(() => {
     if (!open || !canManage || creating || selectedGroup?.kind !== "manual" || selectedGroup.status === "archived") {
@@ -121,7 +137,7 @@ export function useContactGroupsManager({
     } catch (reason) {
       const message = errorMessage(reason, fallbackError);
       setError(message);
-      if (rethrow) throw new Error(message);
+      if (rethrow) throw new Error(message, { cause: reason });
     } finally {
       setBusyAction("");
     }

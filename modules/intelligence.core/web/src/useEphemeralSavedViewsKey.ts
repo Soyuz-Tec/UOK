@@ -5,10 +5,11 @@ import { browserStorage, removeStorageItem } from "@uok/shared/storage";
 const STORAGE_PREFIX = "uok_intelligence_shipment_readiness_session_views";
 
 export function useEphemeralSavedViewsKey(sessionToken: string) {
-  const storageKey = useMemo(
-    () => `${STORAGE_PREFIX}:${randomSuffix()}`,
-    [sessionToken],
-  );
+  const storageKey = useMemo(() => {
+    // The opaque key must rotate at every authenticated session boundary.
+    void sessionToken;
+    return `${STORAGE_PREFIX}:${randomSuffix()}`;
+  }, [sessionToken]);
 
   useEffect(() => {
     removeMatchingKeys("session", storageKey);

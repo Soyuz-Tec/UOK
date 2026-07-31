@@ -140,6 +140,18 @@ jobs:
         working-directory: web
         run: npm audit
 
+      - name: Enforce frontend dependency policy
+        working-directory: web
+        run: npm run check:dependencies
+
+      - name: Lint frontend source
+        working-directory: web
+        run: npm run lint
+
+      - name: Lint frontend styles
+        working-directory: web
+        run: npm run lint:styles
+
       - name: Run frontend tests
         working-directory: web
         run: npm run test
@@ -157,6 +169,10 @@ jobs:
         env:
           PYTHONPATH: ../src
         run: npm run build:static
+
+      - name: Enforce frontend bundle budgets
+        working-directory: web
+        run: npm run check:bundle-budget
 
       - name: Build OCI image without publishing
         run: docker build --tag "uok-ci:${GITHUB_SHA}" .

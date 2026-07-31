@@ -186,14 +186,14 @@
   transform: scaleX(-1);
 }
 
-@media (max-width: 980px) {
+@media (width <= 980px) {
   .pagination-controls,
   .pagination-stepper {
     inline-size: 100%;
   }
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .pagination-page-control,
   .pagination-page-size-select,
   .pagination-page-size-select .expandable-control-trigger {

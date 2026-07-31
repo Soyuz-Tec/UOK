@@ -27,6 +27,7 @@ export function useComplianceDocumentTypeWorkspace(
     useState<ComplianceDocumentTypeSortDirection>("asc");
   const [status, setStatus] = useState("Compliance Document Types ready.");
   const reads = useComplianceDocumentTypeReads(host, operational, setStatus);
+  const { setSelectedId } = reads;
   const categories = useMemo(
     () => complianceDocumentTypeCategories(reads.documentTypes),
     [reads.documentTypes],
@@ -66,11 +67,11 @@ export function useComplianceDocumentTypeWorkspace(
 
   useEffect(() => {
     if (!host.token || !operational || selectionVisible) return;
-    reads.setSelectedId(visibleDocumentTypes[0]?.id || "");
+    setSelectedId(visibleDocumentTypes[0]?.id || "");
   }, [
     host.token,
     operational,
-    reads.setSelectedId,
+    setSelectedId,
     selectionVisible,
     visibleDocumentTypes,
   ]);

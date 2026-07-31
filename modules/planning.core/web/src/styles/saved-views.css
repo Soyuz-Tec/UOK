@@ -29,11 +29,11 @@
 
 .planning-saved-views input {
   width: 112px;
-  border-left: var(--uok-line);
-  padding-left: var(--uok-space-2);
+  border-inline-start: var(--uok-line);
+  padding-inline-start: var(--uok-space-2);
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .planning-saved-views,
   .planning-saved-views label,
   .planning-saved-views select,
@@ -47,8 +47,8 @@
   }
 
   .planning-saved-views input {
-    border-left: 0;
+    border-inline-start: 0;
     border-top: var(--uok-line);
-    padding-left: 0;
+    padding-inline-start: 0;
   }
 }

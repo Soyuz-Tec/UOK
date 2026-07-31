@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { WorkspaceActionButton } from "@uok/shared/actions";
 import { FieldMessage } from "@uok/shared/forms";
@@ -37,13 +37,15 @@ export function ShipmentDocumentRequirementEditor({
   onSubmit: (draft: ShipmentDocumentRequirementDraft) => void;
 }) {
   const [draft, setDraft] = useState(() => initialRequirementDraft(mode, target));
+  const currentTarget = useRef(target);
+  currentTarget.current = target;
   const validation = useMemo(
     () => validateRequirementDraft(mode, target, draft),
     [draft, mode, target],
   );
 
   useEffect(() => {
-    setDraft(initialRequirementDraft(mode, target));
+    setDraft(initialRequirementDraft(mode, currentTarget.current));
   }, [mode, target?.id, target?.version]);
 
   return (

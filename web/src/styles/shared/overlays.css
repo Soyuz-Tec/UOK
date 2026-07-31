@@ -3,8 +3,7 @@
   inset: 0;
   z-index: 40;
   display: grid;
-  align-items: start;
-  justify-items: center;
+  place-items: start center;
   overflow: auto;
   padding: max(var(--uok-space-6), env(safe-area-inset-top)) max(var(--uok-space-6), env(safe-area-inset-right)) max(var(--uok-space-6), env(safe-area-inset-bottom)) max(var(--uok-space-6), env(safe-area-inset-left));
   background: color-mix(in srgb, var(--uok-bg-canvas) 46%, transparent);
@@ -20,7 +19,7 @@
   border-radius: var(--uok-radius-3);
   background: var(--uok-bg-elevated);
   box-shadow: var(--uok-shadow-2);
-  transform: translate3d(var(--workspace-popup-x, 0px), var(--workspace-popup-y, 0px), 0);
+  transform: translate3d(var(--workspace-popup-x, 0), var(--workspace-popup-y, 0), 0);
 }
 
 .workspace-popup-compact {
@@ -45,8 +44,7 @@
 .workspace-popup-close {
   grid-row: 1;
   grid-column: 2;
-  align-self: center;
-  justify-self: center;
+  place-self: center center;
   display: inline-grid;
   place-items: center;
   width: 36px;
@@ -179,8 +177,9 @@
 
 .workspace-context-menu {
   position: fixed;
-  top: min(var(--context-menu-y), calc(100vh - 280px));
-  left: min(var(--context-menu-x), calc(100vw - 280px));
+
+  /* Pointer coordinates use physical viewport x/y values in every writing direction. */
+  inset: min(var(--context-menu-y), calc(100vh - 280px)) auto auto min(var(--context-menu-x), calc(100vw - 280px));
   z-index: 45;
   display: grid;
   min-width: 236px;
@@ -204,7 +203,7 @@
   color: var(--uok-text-secondary);
   background: transparent;
   font: 700 var(--uok-callout) var(--uok-font-family);
-  text-align: left;
+  text-align: start;
 }
 
 .workspace-context-menu button:last-child {

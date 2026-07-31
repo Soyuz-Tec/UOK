@@ -76,7 +76,7 @@
   overflow-wrap: break-word;
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .async-state {
     grid-template-columns: auto minmax(0, 1fr);
   }

@@ -1,5 +1,5 @@
 import { ChevronDown, type LucideIcon } from "lucide-react";
-import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useUokLocalization } from "../localization";
 import { hasOpenWorkspaceOverlay } from "../overlays/overlayStack";
 
@@ -48,11 +48,11 @@ export function ExpandableControlPanel({
   const [compactPresentation, setCompactPresentation] = useState(false);
   const isOpen = open ?? internalOpen;
 
-  const setOpen = (nextOpen: boolean, restoreFocus = false) => {
+  const setOpen = useCallback((nextOpen: boolean, restoreFocus = false) => {
     if (open === undefined) setInternalOpen(nextOpen);
     onOpenChange?.(nextOpen);
     if (!nextOpen && restoreFocus) queueMicrotask(() => triggerRef.current?.focus());
-  };
+  }, [onOpenChange, open]);
 
   useEffect(() => {
     const media = window.matchMedia?.("(max-width: 680px)");
@@ -131,7 +131,7 @@ export function ExpandableControlPanel({
       document.removeEventListener("mousedown", closeFromOutside);
       document.removeEventListener("keydown", closeFromEscape);
     };
-  }, [compactPresentation, initialFocusSelector, isOpen, onOpenChange, open]);
+  }, [compactPresentation, isOpen, setOpen]);
 
   const close = () => setOpen(false, true);
 

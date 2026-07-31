@@ -47,13 +47,13 @@
   outline-offset: -3px;
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .planning-gantt-split-handle {
     display: none;
   }
 }
 
-@media (pointer: coarse) and (min-width: 681px) {
+@media (pointer: coarse) and (width >= 681px) {
   .planning-gantt-split-handle {
     inset-inline-start: calc(var(--planning-grid-track-width, var(--planning-grid-width, 42%)) - 14px);
     width: 28px;

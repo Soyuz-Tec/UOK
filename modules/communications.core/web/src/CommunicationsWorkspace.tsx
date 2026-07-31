@@ -1,5 +1,5 @@
 import { MessageCircleMore } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { EmptyState } from "@uok/shared/data-display";
 import { Pane } from "@uok/shared/layout";
@@ -12,7 +12,6 @@ import {
   CommunicationApiError,
   createCommunicationThread,
   deleteCommunicationThread,
-  loadCommunicationCapabilities,
   loadCommunicationThread,
   loadCommunicationThreads,
   restoreCommunicationThread,
@@ -24,9 +23,8 @@ import {
   type ThreadSort,
   type ThreadSortDirection,
 } from "./communicationsWorkspaceModel";
-import type { CommunicationCapabilities, CommunicationThread } from "./types";
-
-const readOnlyCapabilities: CommunicationCapabilities = { read: false, create: false, delete: false, restore: false };
+import type { CommunicationThread } from "./types";
+import { useCommunicationThreadCatalog } from "./useCommunicationThreadCatalog";
 
 export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInstall }: {
   token: string;
@@ -38,9 +36,12 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
   const module = moduleRows.find((row) => row.name === COMMUNICATIONS_MODULE_ID);
   const operational = module?.status === "installed" || module?.status === "upgraded";
   const requestedThreadId = new URLSearchParams(window.location.search).get("thread_id") || "";
-  const [threads, setThreads] = useState<CommunicationThread[]>([]);
-  const [selectedId, setSelectedId] = useState(requestedThreadId);
-  const [requestedThread, setRequestedThread] = useState<CommunicationThread | null>(null);
+  const catalog = useCommunicationThreadCatalog({ token, operational, requestedThreadId });
+  const {
+    activeOperation, authorizedCapabilities, authorizedRequestedThread, authorizedThreads,
+    captureSession, refresh, refreshing, selectedId, sessionMatches, setRequestedThread,
+    setSelectedId, setStatus, setThreads, status,
+  } = catalog;
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
   const [contextFilter, setContextFilter] = useState("all");
@@ -48,16 +49,14 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
   const [sortDirection, setSortDirection] = useState<ThreadSortDirection>("desc");
   const [title, setTitle] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [creatingThread, setCreatingThread] = useState(false);
   const [lifecycleBusy, setLifecycleBusy] = useState<"delete" | "restore" | "">("");
   const [focusCommand, setFocusCommand] = useState<CommunicationFocusCommand>("");
-  const [capabilities, setCapabilities] = useState(readOnlyCapabilities);
-  const activeOperation = useRef<"refresh" | "create" | "delete" | "restore" | "">("");
-  const [status, setStatus] = useState("K Connect ready.");
   const availableThreads = useMemo(
-    () => requestedThread && !threads.some((thread) => thread.id === requestedThread.id) ? [requestedThread, ...threads] : threads,
-    [requestedThread, threads],
+    () => authorizedRequestedThread && !authorizedThreads.some((thread) => thread.id === authorizedRequestedThread.id)
+      ? [authorizedRequestedThread, ...authorizedThreads]
+      : authorizedThreads,
+    [authorizedRequestedThread, authorizedThreads],
   );
   const visibleThreads = useMemo(
     () => filterAndSortThreads(availableThreads, { contextFilter, query, sortBy, sortDirection, statusFilter }),
@@ -84,8 +83,11 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
   const operationBusy = refreshing || creatingThread || Boolean(lifecycleBusy);
 
   useEffect(() => {
-    if (!token || !operational) return;
-    void refresh();
+    setCreateOpen(false);
+    setCreatingThread(false);
+    setLifecycleBusy("");
+    setFocusCommand("");
+    setTitle("");
   }, [operational, token]);
 
   if (!operational) {
@@ -101,12 +103,14 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
         query={query} statusFilter={statusFilter} contextFilter={contextFilter}
         sortBy={sortBy} sortDirection={sortDirection} statusOptions={statusOptions}
         contextOptions={contextOptions} refreshing={refreshing} operationBusy={operationBusy}
-        canCreate={capabilities.create} onQueryChange={setQuery} onStatusChange={setStatusFilter}
+        canCreate={authorizedCapabilities.create} onQueryChange={setQuery} onStatusChange={setStatusFilter}
         onContextChange={setContextFilter} onSortChange={setSortBy} onSortDirectionChange={setSortDirection}
         onClear={() => { setQuery(""); setStatusFilter("active"); setContextFilter("all"); }}
         onRefresh={() => void refresh()} onOpenCreate={() => { setTitle(""); setCreateOpen(true); }}
       />
-      <span className="communications-status" role="status">{status}</span>
+      <span className="communications-status" role="status">
+        {sessionMatches ? status : "Loading authorized threads."}
+      </span>
       <div className="communications-layout">
         <Pane title="Threads" description={`${visibleThreads.length} of ${availableThreads.length} visible`}>
           <div className="communications-thread-list">
@@ -119,8 +123,8 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
         <Pane title="Thread" description={selected?.status || "No selection"} wide>
           <CommunicationThreadDetail
             thread={selected}
-            canDelete={capabilities.delete}
-            canRestore={capabilities.restore}
+            canDelete={authorizedCapabilities.delete}
+            canRestore={authorizedCapabilities.restore}
             busyAction={lifecycleBusy}
             focusCommand={focusCommand}
             onDelete={deleteThread}
@@ -136,40 +140,14 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
     </section>
   );
 
-  async function refresh() {
-    if (activeOperation.current) return;
-    activeOperation.current = "refresh";
-    setRefreshing(true);
-    try {
-      const [nextCapabilities, rows] = await Promise.all([
-        loadCommunicationCapabilities(token).catch(() => readOnlyCapabilities),
-        loadCommunicationThreads(token, "all"),
-      ]);
-      setCapabilities(nextCapabilities);
-      setThreads(rows);
-      setRequestedThread(null);
-      if (requestedThreadId) {
-        const exact = rows.find((row) => row.id === requestedThreadId) || await loadCommunicationThread(token, requestedThreadId);
-        setRequestedThread(exact);
-        setSelectedId(exact.id);
-      } else {
-        if (!selectedId && rows[0]) setSelectedId(rows[0].id);
-      }
-      setStatus(`${rows.length} authorized thread(s) loaded.`);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "K Connect refresh failed.");
-    } finally {
-      activeOperation.current = "";
-      setRefreshing(false);
-    }
-  }
-
   async function createThread() {
     if (activeOperation.current) return;
+    const isCurrent = captureSession();
     activeOperation.current = "create";
     setCreatingThread(true);
     try {
       const created = await createCommunicationThread(token, { title: title.trim(), context_type: "general" });
+      if (!isCurrent()) return;
       setTitle("");
       setSelectedId(created.id);
       setRequestedThread(created);
@@ -177,16 +155,24 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
       setStatus(`Created ${created.title}.`);
       setCreateOpen(false);
       try {
-        setThreads(await loadCommunicationThreads(token, "all"));
+        const rows = await loadCommunicationThreads(token, "all");
+        if (!isCurrent()) return;
+        setThreads(rows);
         setRequestedThread(null);
       } catch {
-        setStatus(`Created ${created.title}. The thread list could not be refreshed; the new thread remains available locally.`);
+        if (isCurrent()) {
+          setStatus(`Created ${created.title}. The thread list could not be refreshed; the new thread remains available locally.`);
+        }
       }
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Thread creation failed.");
+      if (isCurrent()) {
+        setStatus(error instanceof Error ? error.message : "Thread creation failed.");
+      }
     } finally {
-      activeOperation.current = "";
-      setCreatingThread(false);
+      if (isCurrent()) {
+        activeOperation.current = "";
+        setCreatingThread(false);
+      }
     }
   }
 
@@ -205,20 +191,24 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
     nextFilter: "active" | "archived",
   ) {
     if (activeOperation.current) throw new Error(t("communications.operationBusy", "Another K Connect operation is still running."));
+    const isCurrent = captureSession();
     activeOperation.current = action;
     setLifecycleBusy(action);
     try {
       const updated = await mutate(token, thread);
+      if (!isCurrent()) return;
       replaceThread(updated);
       setStatusFilter(nextFilter);
       setSelectedId(updated.id);
       setFocusCommand(action === "delete" ? "restore" : "delete");
       setStatus(action === "delete"
         ? t("communications.noticeDeleted", "Thread deleted from active use. It remains available under Archived.")
-        : t("communications.noticeRestored", "Thread restored."));
+      : t("communications.noticeRestored", "Thread restored."));
     } catch (error) {
+      if (!isCurrent()) return;
       if (error instanceof CommunicationApiError && error.stale) {
         const latest = await loadCommunicationThread(token, thread.id, true);
+        if (!isCurrent()) return;
         replaceThread(latest);
         setStatusFilter(latest.status === "archived" ? "archived" : "active");
         setSelectedId(latest.id);
@@ -229,8 +219,10 @@ export function CommunicationsWorkspace({ token, moduleRows, busyAction, onInsta
       setStatus(error instanceof Error ? error.message : t("communications.lifecycleFailed", "Thread lifecycle change failed."));
       throw error;
     } finally {
-      activeOperation.current = "";
-      setLifecycleBusy("");
+      if (isCurrent()) {
+        activeOperation.current = "";
+        setLifecycleBusy("");
+      }
     }
   }
 

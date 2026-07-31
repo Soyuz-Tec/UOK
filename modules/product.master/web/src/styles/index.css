@@ -3,6 +3,7 @@
   gap: var(--uok-space-3);
   min-width: 0;
 }
+
 .product-master-status {
   margin: 0;
   color: var(--uok-text-secondary);
@@ -126,7 +127,7 @@
   min-height: 100px;
 }
 
-@media (max-width: 760px) {
+@media (width <= 760px) {
   .product-detail-grid,
   .product-editor-grid {
     grid-template-columns: 1fr;
@@ -137,7 +138,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@media (width <= 520px) {
   .product-detail-actions,
   .product-detail-actions .command-button,
   .product-editor-actions,

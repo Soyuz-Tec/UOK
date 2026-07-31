@@ -71,7 +71,7 @@ export function usePlanningGanttVirtualization(
     const next = Math.max(0, selected.top - viewportHeight / 3);
     synchronize(next, gridRef.current);
     if (chartRef.current) chartRef.current.scrollTop = next;
-  }, [chartRef, gridRef, layouts, selectedTaskId, synchronize, viewportHeight, virtualized]);
+  }, [chartRef, gridRef, layouts, scrollTop, selectedTaskId, synchronize, viewportHeight, virtualized]);
 
   return { ...window, virtualized, onGridScroll, onChartScroll };
 }

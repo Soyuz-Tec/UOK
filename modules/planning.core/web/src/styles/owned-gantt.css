@@ -1,7 +1,8 @@
 .planning-owned-gantt {
-  --planning-gantt-grid-min-width: min(340px, 44.736842%);
-  --planning-gantt-chart-min-width: min(420px, 55.263158%);
+  --planning-gantt-grid-min-width: min(340px, 44.7368%);
+  --planning-gantt-chart-min-width: min(420px, 55.2632%);
   --planning-grid-track-width: clamp(var(--planning-gantt-grid-min-width), var(--planning-grid-width, 42%), calc(100% - var(--planning-gantt-chart-min-width)));
+
   display: grid;
   grid-template-columns: var(--planning-grid-track-width) minmax(var(--planning-gantt-chart-min-width), 1fr);
 }
@@ -75,7 +76,7 @@
   color: var(--uok-text-secondary);
   background: transparent;
   font: 600 var(--uok-callout) var(--uok-font-family);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
@@ -217,7 +218,7 @@
 
 .planning-owned-task .progress {
   fill: color-mix(in srgb, var(--uok-bg-elevated) 38%, transparent);
-  stroke: 0;
+  stroke: none;
   pointer-events: none;
 }
 
@@ -281,7 +282,7 @@
   stroke-dasharray: 4 3;
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .planning-owned-gantt {
     grid-template-columns: 1fr;
   }

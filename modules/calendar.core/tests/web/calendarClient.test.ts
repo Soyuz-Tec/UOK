@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { CalendarApiError, calendarJson } from "../../web/src/calendarClient";
+import { type CalendarApiError, calendarJson } from "../../web/src/calendarClient";
 
 afterEach(() => vi.restoreAllMocks());
 

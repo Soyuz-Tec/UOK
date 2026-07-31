@@ -153,7 +153,7 @@ export function usePlanningWorkspaceMutations({
       clearRecovery();
       if (isPlanningPreconditionError(error)) {
         clearHistory();
-        let reloaded = false;
+        let reloaded: boolean;
         try {
           await reloadSchedule(selectedProjectId, () => isOperationCurrent(ticket));
           reloaded = isOperationCurrent(ticket);
@@ -164,7 +164,7 @@ export function usePlanningWorkspaceMutations({
           ? `The latest schedule is loaded. Review it, then confirm ${mutation.label} again.`
           : `Reload the latest schedule before confirming ${mutation.label} again.`;
         setStatus({ status: "stale", ...error.detail, repair });
-        throw new Error(`${error.detail.message} ${repair}`);
+        throw new Error(`${error.detail.message} ${repair}`, { cause: error });
       }
       setStatus(planningWorkspaceErrorStatus(error));
       await reloadSchedule(selectedProjectId, () => isOperationCurrent(ticket)).catch(() => undefined);

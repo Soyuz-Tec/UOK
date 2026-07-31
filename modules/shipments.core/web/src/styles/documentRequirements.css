@@ -104,7 +104,7 @@
   min-height: calc(var(--uok-control-height) * 2);
 }
 
-@media (max-width: 520px) {
+@media (width <= 520px) {
   .shipment-requirements-header,
   .shipment-requirement-row-header {
     align-items: stretch;

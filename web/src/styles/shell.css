@@ -1,4 +1,4 @@
-@import "./shell/layout.css";
-@import "./shell/sidebar.css";
-@import "./shell/navigation.css";
-@import "./shell/account-chip.css";
+@import url("./shell/layout.css");
+@import url("./shell/sidebar.css");
+@import url("./shell/navigation.css");
+@import url("./shell/account-chip.css");

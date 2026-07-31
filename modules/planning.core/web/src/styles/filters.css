@@ -23,7 +23,7 @@
   white-space: nowrap;
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .planning-filters,
   .planning-filters .search-field {
     width: 100%;

@@ -103,7 +103,7 @@
   padding: var(--uok-space-3);
   color: var(--uok-text-secondary);
   background: var(--uok-bg-elevated);
-  text-align: left;
+  text-align: start;
 }
 
 .contact-form-add-section:hover {

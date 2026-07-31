@@ -47,9 +47,8 @@
 }
 
 .contact-technical-details .detail-grid {
-  border-right: 0;
+  border-inline: 0;
   border-bottom: 0;
-  border-left: 0;
   border-radius: 0 0 var(--uok-radius-3) var(--uok-radius-3);
 }
 
@@ -115,7 +114,7 @@
   flex-wrap: wrap;
   gap: var(--uok-space-2);
   align-items: center;
-  padding-left: 44px;
+  padding-inline-start: 44px;
   color: var(--uok-text-tertiary);
   font-size: var(--uok-footnote);
 }
@@ -178,7 +177,7 @@
   position: absolute;
   z-index: 2;
   top: calc(100% + var(--uok-space-2));
-  right: 0;
+  inset-inline-end: 0;
   display: grid;
   gap: var(--uok-space-2);
   min-width: 168px;

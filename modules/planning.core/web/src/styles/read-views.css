@@ -18,9 +18,6 @@
   background: var(--uok-bg-elevated);
   font: inherit;
   text-align: start;
-}
-
-.planning-calendar-view button {
   cursor: pointer;
 }
 
@@ -192,7 +189,7 @@
   color: var(--uok-text-secondary);
   background: var(--uok-bg-elevated);
   font: inherit;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 

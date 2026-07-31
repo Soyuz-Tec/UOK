@@ -28,7 +28,7 @@ export function ComplianceDocumentTypeEditor({
 
   useEffect(() => {
     setDraft(initialDraft(mode, documentType));
-  }, [mode, documentType?.id, documentType?.version]);
+  }, [documentType, mode]);
 
   return (
     <form

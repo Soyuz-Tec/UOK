@@ -38,7 +38,7 @@ export function ContactTeamsToolsPanel(props: ContactDataToolsPanelProps) {
   useEffect(() => {
     setName(selectedTeam?.name || "");
     setDescription(selectedTeam?.description || "");
-  }, [selectedTeam?.id]);
+  }, [selectedTeam?.description, selectedTeam?.id, selectedTeam?.name]);
 
   const createTeam = async () => {
     if (!name.trim()) return;

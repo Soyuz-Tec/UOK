@@ -135,7 +135,7 @@
 
 .calendar-weekday,
 .calendar-day {
-  border-right: var(--uok-line);
+  border-inline-end: var(--uok-line);
   border-bottom: var(--uok-line);
 }
 
@@ -196,7 +196,7 @@
   color: var(--uok-text-primary);
   border-inline-start: 3px solid var(--calendar-event-color, var(--uok-accent));
   background: color-mix(in srgb, var(--calendar-event-color, var(--uok-accent)) 10%, var(--uok-bg-elevated));
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
@@ -237,7 +237,7 @@
   display: inline-flex;
   justify-self: start;
   max-width: 100%;
-  border: 1px solid currentColor;
+  border: 1px solid currentcolor;
   border-radius: 999px;
   padding: 1px 5px;
   overflow: hidden;

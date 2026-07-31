@@ -183,7 +183,7 @@
   grid-template-columns: repeat(8, minmax(72px, 1fr));
 }
 
-@media (max-width: 1260px) {
+@media (width <= 1260px) {
   .planning-command-bar [aria-label="Timeline utilities"] {
     align-items: center;
   }
@@ -193,7 +193,7 @@
   }
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .planning-controls-menu,
   .planning-controls-menu .expandable-control-trigger {
     width: 100%;

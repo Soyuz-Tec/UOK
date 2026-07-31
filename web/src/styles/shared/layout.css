@@ -164,7 +164,11 @@
   pointer-events: none;
 }
 
-@media (max-width: 900px) {
+:dir(rtl) .workflow-split-view.secondary-slide.secondary-closed .workflow-secondary-region {
+  transform: translateX(calc(-100% - var(--uok-space-4)));
+}
+
+@media (width <= 900px) {
   .workflow-split-view.secondary-slide,
   .workflow-split-view.secondary-slide.secondary-closed {
     grid-template-columns: minmax(0, 1fr);
@@ -173,7 +177,7 @@
   .workflow-split-view.secondary-slide .workflow-secondary-region {
     position: fixed;
     top: var(--uok-space-4);
-    right: var(--uok-space-4);
+    inset-inline-end: var(--uok-space-4);
     bottom: var(--uok-space-4);
     z-index: 30;
     width: min(380px, calc(100vw - (var(--uok-space-4) * 2)));

@@ -37,6 +37,7 @@ export function useShipmentReadiness(
   if (sessionToken.current !== host.token || requestAsOf.current !== asOf) {
     sessionToken.current = host.token;
     requestAsOf.current = asOf;
+    lastRefreshRevision.current = host.moduleRefreshRevision;
     requestGeneration.current += 1;
   }
 
@@ -107,7 +108,6 @@ export function useShipmentReadiness(
   }, [asOf, host.token, operational]);
 
   useEffect(() => {
-    lastRefreshRevision.current = host.moduleRefreshRevision;
     requestGeneration.current += 1;
     activeRequest.current?.abort();
     activeRequest.current = null;

@@ -50,6 +50,8 @@ export function LocationMasterWorkspace({ host }: { host: ModuleSurfaceHostConte
   const [status, setStatus] = useState("Location Master ready.");
   const activeOperation = useRef("");
   const selected = locations.find((location) => location.id === selectedId) || null;
+  const selectedRecordId = selected?.id || "";
+  const selectedVersion = selected?.version;
   const visibleLocations = useMemo(() => filterAndSortLocations(locations, {
     query,
     status: statusFilter,
@@ -86,13 +88,13 @@ export function LocationMasterWorkspace({ host }: { host: ModuleSurfaceHostConte
   }, [host.moduleRefreshRevision, host.token, operational, refreshLocations]);
 
   useEffect(() => {
-    if (!host.token || !operational || !selected) {
+    if (!host.token || !operational || !selectedRecordId) {
       setHistory([]);
       return;
     }
     let active = true;
     setHistoryLoading(true);
-    void loadLocationNameHistory(host.token, selected.id, host.onUnauthorized)
+    void loadLocationNameHistory(host.token, selectedRecordId, host.onUnauthorized)
       .then((rows) => {
         if (active) setHistory(rows);
       })
@@ -105,7 +107,7 @@ export function LocationMasterWorkspace({ host }: { host: ModuleSurfaceHostConte
     return () => {
       active = false;
     };
-  }, [host.onUnauthorized, host.token, operational, selected?.id, selected?.version]);
+  }, [host.onUnauthorized, host.token, operational, selectedRecordId, selectedVersion]);
 
   if (!host.token) return <EmptyState text="Sign in to open Location Master." />;
   if (!operational) return <LocationModuleState module={module} host={host} />;

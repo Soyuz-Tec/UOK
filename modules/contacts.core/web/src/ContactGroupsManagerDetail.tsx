@@ -113,7 +113,11 @@ export function ContactGroupsManagerDetail({
       ) : null}
 
       {isManual ? (
-        <form className="contact-groups-manager-form" onSubmit={(event) => { event.preventDefault(); creating ? onCreate() : onSave(); }}>
+        <form className="contact-groups-manager-form" onSubmit={(event) => {
+          event.preventDefault();
+          if (creating) onCreate();
+          else onSave();
+        }}>
           <label className="field">
             <span>{t("contacts.groups.name", "Group name")}</span>
             <input value={name} required maxLength={120} disabled={!controlsEnabled} onChange={(event) => onNameChange(event.target.value)} />

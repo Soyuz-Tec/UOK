@@ -16,7 +16,7 @@
 }
 
 .contacts-table .initial-cell {
-  padding-right: 0;
+  padding-inline-end: 0;
   text-align: center;
 }
 
@@ -80,7 +80,7 @@
   border: var(--uok-line);
   border-radius: var(--uok-radius-3);
   padding: var(--uok-space-4);
-  text-align: left;
+  text-align: start;
 }
 
 .contact-card-avatar {

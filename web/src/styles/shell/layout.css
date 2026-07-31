@@ -6,6 +6,7 @@
 
 .shell {
   --uok-active-sidebar-width: var(--uok-sidebar-width);
+
   min-height: 100vh;
   display: grid;
   grid-template-columns: var(--uok-active-sidebar-width) minmax(0, 1fr);

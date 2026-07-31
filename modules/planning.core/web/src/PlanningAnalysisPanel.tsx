@@ -1,5 +1,5 @@
 import { FlaskConical, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { CommandButton } from "@uok/shared/primitives";
 import type { PlanningOptimizationCreateRequest, PlanningRecommendation, PlanningRiskCreateRequest, PlanningRiskMetadata, PlanningWhatIfCreateRequest, PlanningWhatIfDetail, PlanningWhatIfMetadata } from "./analysisTypes";
@@ -48,9 +48,27 @@ export function PlanningAnalysisPanel({
   const [recommendations, setRecommendations] = useState<PlanningRecommendation[]>([]);
   const [decisionReason, setDecisionReason] = useState("Reviewed with the delivery owner");
 
+  const load = useCallback(async (snapshotId: string) => {
+    setDetail(await loadPlanningWhatIfSnapshot(token, schedule.project.id, snapshotId));
+  }, [schedule.project.id, token]);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const next = await listPlanningWhatIfSnapshots(token, schedule.project.id);
+      setRows(next);
+      if (next[0]) await load(next[0].id);
+      else setDetail(null);
+      setRiskRows(await listPlanningRiskAnalyses(token, schedule.project.id));
+      setRecommendations(await listPlanningRecommendations(token, schedule.project.id));
+    } finally {
+      setLoading(false);
+    }
+  }, [load, schedule.project.id, token]);
+
   useEffect(() => {
     void refresh();
-  }, [schedule.project.id]);
+  }, [refresh]);
 
   return (
     <section className="planning-editor" aria-label="Planning analysis scenarios">
@@ -136,24 +154,6 @@ export function PlanningAnalysisPanel({
     if (!selected) return;
     await onCreate({ name: name.trim(), task_changes: [{ task_id: selected.id, start, end }] });
     await refresh();
-  }
-
-  async function refresh() {
-    setLoading(true);
-    try {
-      const next = await listPlanningWhatIfSnapshots(token, schedule.project.id);
-      setRows(next);
-      if (next[0]) await load(next[0].id);
-      else setDetail(null);
-      setRiskRows(await listPlanningRiskAnalyses(token, schedule.project.id));
-      setRecommendations(await listPlanningRecommendations(token, schedule.project.id));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function load(snapshotId: string) {
-    setDetail(await loadPlanningWhatIfSnapshot(token, schedule.project.id, snapshotId));
   }
 
   function selectTask(nextId: string) {

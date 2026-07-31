@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { WorkspaceActionButton } from "@uok/shared/actions";
 import { FieldMessage } from "@uok/shared/forms";
@@ -38,6 +38,8 @@ export function ShipmentDocumentInstanceMetadataEditor({
   onSubmit: (draft: ShipmentDocumentInstanceMetadataDraft) => void;
 }) {
   const [draft, setDraft] = useState(() => initialInstanceMetadataDraft(target));
+  const currentTarget = useRef(target);
+  currentTarget.current = target;
   const requirementOptions = useMemo(
     () => matchingRequirementOptions(requirements, draft.complianceDocumentTypeId),
     [draft.complianceDocumentTypeId, requirements],
@@ -48,9 +50,8 @@ export function ShipmentDocumentInstanceMetadataEditor({
   );
   const messageId = validation ? "shipment-instance-metadata-validation"
     : error ? "shipment-instance-metadata-error" : undefined;
-
   useEffect(() => {
-    setDraft(initialInstanceMetadataDraft(target));
+    setDraft(initialInstanceMetadataDraft(currentTarget.current));
   }, [target?.id, target?.version]);
 
   return (

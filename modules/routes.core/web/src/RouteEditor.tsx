@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { WorkspaceActionButton } from "@uok/shared/actions";
 import { FieldMessage } from "@uok/shared/forms";
@@ -24,12 +24,14 @@ export function RouteEditor({
   onSubmit: (draft: RouteDraft) => void;
 }) {
   const [draft, setDraft] = useState<RouteDraft>(() => initialDraft(mode, route));
+  const currentRoute = useRef(route);
+  currentRoute.current = route;
   const options = useMemo(() => mergeOptions(locationOptions, route), [locationOptions, route]);
   const validation = validateDraft(draft, locationOptions);
   const validationId = "route-editor-validation";
 
   useEffect(() => {
-    setDraft(initialDraft(mode, route));
+    setDraft(initialDraft(mode, currentRoute.current));
   }, [mode, route?.id, route?.version]);
 
   return (

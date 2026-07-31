@@ -186,7 +186,7 @@
   text-decoration: none;
 }
 
-@media (max-width: 760px) {
+@media (width <= 760px) {
   .shipment-readiness-detail-grid {
     grid-template-columns: 1fr;
   }
@@ -200,7 +200,7 @@
   }
 }
 
-@media (max-width: 520px) {
+@media (width <= 520px) {
   .shipment-readiness-status-region {
     grid-template-columns: 1fr;
   }

@@ -168,14 +168,14 @@
   background: var(--uok-bg-muted);
 }
 
-@media (max-width: 760px) {
+@media (width <= 760px) {
   .route-detail-grid,
   .route-editor-grid {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 520px) {
+@media (width <= 520px) {
   .route-detail-actions,
   .route-detail-actions .command-button,
   .route-editor-actions,

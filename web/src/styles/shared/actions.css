@@ -47,7 +47,7 @@
   justify-content: flex-start;
 }
 
-@media (max-width: 680px) {
+@media (width <= 680px) {
   .workspace-actions-menu-panel {
     position: fixed;
     inset: var(--uok-space-3);

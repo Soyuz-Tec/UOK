@@ -33,11 +33,10 @@
   border: 1px dashed var(--uok-border);
   border-radius: var(--uok-radius-2);
   justify-content: center;
-  inset-inline-start: var(--uok-space-4);
+  inset-inline: var(--uok-space-4) var(--uok-space-4);
   min-height: 136px;
   pointer-events: none;
   position: absolute;
-  inset-inline-end: var(--uok-space-4);
   text-align: center;
   top: 76px;
 }
