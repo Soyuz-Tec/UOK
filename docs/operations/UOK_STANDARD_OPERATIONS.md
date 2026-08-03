@@ -4,7 +4,7 @@
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
-**Applies to:** local verification, audits, UI proof automation, folder organization checks, GitHub preparation, PostgreSQL connection capacity, backup and restore, Podman rebuilds, and repeatable incident drills.
+**Applies to:** local verification, audits, UI proof automation, folder organization checks, GitHub preparation, PostgreSQL connection capacity and database-security inventory, backup and restore, Podman rebuilds, and repeatable incident drills.
 
 ## Purpose
 
@@ -22,11 +22,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 | Action | Purpose | Command |
 |---|---|---|
-| `TechnologyAudit` | Focused code-quality, line-of-code, stack, dependency, module-shape, and operations hygiene audit | `.\scripts\uok_ops.ps1 -Action TechnologyAudit` |
-| `EngineeringEvidence` | Generate local engineering-system evidence and quality scorecard under `var/evidence/engineering` | `.\scripts\uok_ops.ps1 -Action EngineeringEvidence` |
+| `TechnologyAudit` | Focused code-quality, source-size cap/ratchet, stack, dependency, module-shape, and operations hygiene audit | `.\scripts\uok_ops.ps1 -Action TechnologyAudit` |
+| `EngineeringEvidence` | Generate local engineering-system evidence, complete source-size/ratchet report, repository-conformance scorecard, evidence completeness, and trend metrics under `var/evidence/engineering` | `.\scripts\uok_ops.ps1 -Action EngineeringEvidence` |
 | `UiProof` | Run the Playwright UI proof gate against the Vite workspace, including Planning Gantt layout, keyboard, appearance, responsive, screenshot, and console checks | `.\scripts\uok_ops.ps1 -Action UiProof` |
-| `Audit` | Deterministic isolated Python tests plus code, dependency, source-size, naming, module contract, and folder organization checks | `.\scripts\uok_ops.ps1 -Action Audit` |
-| `Verify` | Full audit plus frontend tests, static build, UI proof, and isolated candidate verification; run the direct dependency, lint, accessibility, and bundle commands below when changing frontend code | `.\scripts\uok_ops.ps1 -Action Verify` |
+| `Audit` | Full local CI-quality lane: Ruff, scoped mypy, deterministic sequential Python tests with coverage, dependency and database/release policy, frontend dependency/contracts/lint/style/type/tests/coverage, source size, naming, module contract, and folder organization | `.\scripts\uok_ops.ps1 -Action Audit` |
+| `Verify` | Full audit plus accessibility, static build, bundle budget, UI proof, and isolated candidate verification | `.\scripts\uok_ops.ps1 -Action Verify` |
 | `Rebuild` | Rebuild and start local Podman stack on `127.0.0.1:18088` | `.\scripts\uok_ops.ps1 -Action Rebuild` |
 | `Health` | Check local candidate `/health` | `.\scripts\uok_ops.ps1 -Action Health` |
 | `DatabaseCapacity` | Load the committed capacity policy, enforce its offline budget, and verify cluster-wide live PostgreSQL capacity, role safety, and grouped sessions | `.\scripts\uok_ops.ps1 -Action DatabaseCapacity` |
@@ -46,9 +46,21 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 | `GithubSecuritySetup` | Enable Dependabot alerts/security updates, configure merge hygiene, and report branch-protection/ruleset availability | `.\scripts\uok_ops.ps1 -Action GithubSecuritySetup` |
 | `GithubPrChecks` | Show or watch PR checks for the current branch or a supplied PR number | `.\scripts\uok_ops.ps1 -Action GithubPrChecks -PullRequestNumber <number> -WatchChecks` |
 
-The script is a convenience wrapper. Shared PowerShell operation helpers live in `scripts/uok_common_ops.ps1`; operation scripts should dot-source that helper instead of copying `Invoke-UokStep` or native-command handling. The underlying commands remain visible and may be run directly when debugging.
+The script is a convenience wrapper. Shared PowerShell operation helpers live
+in `scripts/uok_common_ops.ps1`; repository source-size and folder checks live
+in `scripts/uok_repository_quality_ops.ps1`. Operation scripts should
+dot-source the appropriate helper instead of copying audit loops,
+`Invoke-UokStep`, or native-command handling. The underlying commands remain
+visible and may be run directly when debugging.
 
-Local `Audit` and GitHub CI both invoke `python scripts/run_python_tests.py`. The runner discovers the root suite and every module test path, rejects missing paths and duplicate resolved files, then runs each file sequentially in a fresh subprocess with ambient pytest options and plugin auto-loading disabled so shared SQLite state or machine-global pytest configuration cannot make aggregate discovery order-dependent. Independent modules may reuse ordinary test filenames. Use `--check` to validate discovery only or `--list` to inspect the exact ordered suite.
+Local `Audit` and GitHub CI both invoke `python scripts/run_python_tests.py --coverage`.
+The runner discovers the root suite and every module test path, rejects missing paths and duplicate
+resolved files, then runs each file sequentially in a fresh subprocess with ambient pytest options
+and plugin auto-loading disabled so shared SQLite state or machine-global pytest configuration
+cannot make aggregate discovery order-dependent. Independent modules may reuse ordinary test
+filenames. Use `--check` to validate discovery only or `--list` to inspect the exact ordered suite.
+`Audit` also runs the direct Ruff, scoped mypy, offline database-security, immutable-release,
+frontend lint/type, normal-test, and coverage gates defined by `UOK_CI_QUALITY_GATES.md`.
 
 Developer verification installs `requirements-dev.txt`; OCI build and runtime stages continue to
 install runtime-only `requirements.txt`. Verify both generated API artifacts without modifying the
@@ -73,6 +85,40 @@ both with `web/src/generated`, and exits nonzero on drift. Regenerate intentiona
 The module release contract adds module-owned test and verifier evidence to the runtime manifest
 contract. Application startup uses the runtime scope so OCI images may omit `modules/*/tests`;
 local Audit, CI, and candidate catalog discovery use the release scope before publication.
+
+## Legacy password retirement
+
+New, reset, seeded, and verified credentials are Argon2id-only. UOK does not
+accept a legacy 64-hex SHA-256 credential. Before upgrading a persisted
+database, count affected users by organization without reading or exporting
+the hashes:
+
+```sql
+SELECT m.organization_id, count(*) AS legacy_password_count
+FROM users AS u
+JOIN memberships AS m ON m.user_id = u.id
+WHERE u.password_hash ~ '^[0-9A-Fa-f]{64}$'
+GROUP BY m.organization_id
+ORDER BY m.organization_id;
+```
+
+If the count is nonzero, stop promotion, take and restore-test a backup, and
+use an authorized password-reset or external-IAM path to replace every legacy
+credential. There is no application fallback or environment flag that enables
+weak verification. Wrong, legacy, malformed, and unknown credentials return
+the same generic 401.
+
+Promotion requires zero remaining legacy hashes, a restart, and successful
+Argon2id login proof. Retain only the credential-free count and the qualified
+backup/restore evidence; never read or export stored hashes.
+
+The application also applies hashed identity and immediate-client buckets. Login failures are
+recorded atomically under one process lock; successful login may clear only its identity bucket and
+cannot erase the client's accumulated anti-spray failures. Registration attempts remain bounded.
+Saturation rejects new keys instead of evicting an unexpired block. This in-memory control matches
+the committed single-worker local runtime only; a multi-worker or multi-host deployment must
+enforce a shared rate limit at trusted ingress and must not trust client-supplied forwarding
+headers directly.
 OCI stages run `python scripts/validate_container_module_assets.py --require-tests-excluded` after
 copying source. That gate discovers runtime-proven verifiers from validated manifests, checks their
 exact module-owned paths, enforces the canonical `modules/<module_name>/tests` declaration, and
@@ -134,6 +180,30 @@ and emits one `ModuleLifecycleReconciled` audit event. Repeating the action is a
 
 ## Required Verification Levels
 
+### Target Toolchain Preflight
+
+Run the durable local preflight before development or qualification:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action ToolchainPreflight
+```
+
+The wrapper requires Python `>=3.14,<3.15`, Node.js `>=26,<27`, and npm
+`>=11,<12`. On Windows it prefers a compatible repository `.venv`, then the
+Python launcher, and searches the process plus user and machine `PATH` entries
+for a compatible Node.js installation. Selected directories are prepended only
+to the current wrapper process so Python invoked by npm uses the same target
+environment. Non-Windows hosts prefer `.venv/bin/python` and otherwise validate
+the existing `PATH`.
+
+`Audit`, `Verify`, `TechnologyAudit`, `EngineeringEvidence`, `UiProof`,
+`Rebuild`, `PlanningReleaseReadiness`, and `AsuhTest` run this check before any
+proof or build step. The preflight performs no installation or download and
+fails closed on missing, unsupported, prerelease, or ambiguous version output.
+Runtime-only health, database backup/restore, database-capacity, auto-start, and
+GitHub status actions remain available when a development toolchain is not
+needed.
+
 ### Fast Check
 
 Use before small docs or source edits:
@@ -144,6 +214,29 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 ```
 
 Use `TechnologyAudit` alone when the change only affects stack policy, quality rules, source organization, or operational guardrails.
+
+Use the focused source-size gate while splitting or adding handwritten source:
+
+```powershell
+python scripts/source_size_policy.py
+```
+
+It is the single implementation used by local operations and hosted CI. It
+checks UOK's physical-line reviewability heuristics, the `300`-line file and
+`120`-line production/tooling Python function hard caps, exact expiring
+exceptions, and the no-new/no-growth soft-debt ratchet in
+`config/source_size_policy.json`. The default mode prints a concise summary
+and exits nonzero on a blocking finding; `--json` emits the complete
+`uok.source_size_report.v1` report. To review a candidate baseline without
+writing it:
+
+```powershell
+python scripts/source_size_policy.py --print-baseline
+```
+
+Do not accept a generated baseline mechanically. Normal maintenance lowers or
+removes resolved maxima. Any added or increased entry needs explicit owner,
+reason, and follow-up review. Line count is not runtime-performance evidence.
 
 ### Candidate Check
 
@@ -273,13 +366,15 @@ GitHub publication should include:
 - clean intentional diff;
 - no generated runtime artifacts from `var/`;
 - UOK Internal Engineering System alignment clear in the PR;
-- source-size guardrail clean;
+- source-size hard caps clean, exceptions exact and unexpired, and no new or
+  grown soft-warning baseline debt;
 - module contract clean;
 - source-boundary and naming clean;
 - Python and frontend dependency audits clean;
 - Playwright UI proof clean when frontend behavior changed;
 - candidate verifier clean;
-- engineering evidence includes a quality scorecard with no unreviewed category drift;
+- engineering evidence includes the repository-conformance scorecard,
+  evidence completeness, and an explicit unavailable-category list;
 - PR description covering scope, architecture impact, tests, risk, and rollback.
 - PR checks passing through `GithubPrChecks` or GitHub Actions.
 
@@ -309,6 +404,25 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 ```
 
 `GithubSecuritySetup` is intentionally idempotent for Dependabot alerts, Dependabot security updates, and merge hygiene. If GitHub blocks private-repo branch protection or repository rulesets on the current plan, the command reports the blocker and leaves issue tracking as the fallback.
+
+## PostgreSQL Database Security
+
+Run the credential-free all-table inventory after any ORM mapping, module
+manifest, migration, or tenant-ownership change:
+
+```powershell
+python scripts/verify_database_security.py
+```
+
+This command must classify every mapped table and validate every direct
+`organization_id` column. It reports foundation readiness only and must retain
+`production_ready: false` while RLS activation remains blocked.
+
+Least-privileged role provisioning, live foundation verification, active RLS
+qualification, guessed-ID proof, secret handling, and rollback are governed by
+`docs/operations/UOK_DATABASE_SECURITY.md` and ADR-0030. The shared local
+candidate is not a provisioning target. Do not enable RLS table-by-table or
+infer production tenant isolation from application tests alone.
 
 ## PostgreSQL Connection Capacity
 
@@ -382,8 +496,22 @@ podman compose -p uok -f deploy\compose-local-18088.yaml up -d --build
 The standardized wrapper is:
 
 ```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartDisable
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Rebuild
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartEnable
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action AutoStartVerify
 ```
+
+`Rebuild` is an exact-source operation. It refuses a dirty worktree, derives
+the application version and lowercase 40-hex Git `HEAD`, passes both into the
+image build, and verifies the labels on the running API image before refreshing
+the recovery image and task payload. The raw Compose command above is for
+troubleshooting only: without the identity environment variables it produces
+`development` / `unknown` labels and is not qualification evidence.
+When the managed recovery task exists, `Rebuild` also refuses to start unless
+the maintenance-disable marker is present and the task is not running. Keep
+recovery disabled after any failed rebuild; enable and verify it only after the
+new runtime, image labels, volume pins, and refreshed payload pass inspection.
 
 This uses PostgreSQL 18 and serves UOK at:
 
@@ -411,8 +539,12 @@ user signs in and repeats every minute by default. Use
 reviewed interval. It uses limited privilege, no stored password, bounded native
 command timeouts, a pinned Podman connection and Compose provider, an exclusive
 lock, and a frozen `%LOCALAPPDATA%` payload. Existing image-pinned UOK containers
-are started first; frozen Compose is a no-build/no-pull fallback only when a
-service container is missing.
+are started first; a running-but-unhealthy API receives one bounded restart
+after database readiness. Both named data-volume fingerprints must match the
+installed contract before recovery, and each existing or newly recovered
+container must mount the exact configured named volume at its governed
+destination. Frozen Compose is a no-build/no-pull fallback only when a service
+container is missing.
 
 Use `AutoStartStatus` for a read-only ownership, task-result, maintenance, and
 payload-integrity report. Use `AutoStartDisable` before an intentional maintenance
@@ -461,7 +593,41 @@ See `docs/operations/UOK_ASUH_TEST_EVENTS.md` for schedule and incident trigger 
 
 Local evidence belongs under `var/` and must not be committed unless a future task explicitly promotes sanitized evidence into docs.
 
-`EngineeringEvidence` writes a repeatable JSON record with the current quality audit and quality scorecard. Use it after meaningful feature work and before publication so quality trends can be compared without relying on chat history.
+`EngineeringEvidence` writes a repeatable JSON record with the current quality
+audit, the complete `uok.source_size_report.v1` result, stable warning and
+ratchet metrics, and repository-conformance scorecard. The scorecard retains
+the compatibility fields `overall_score` and `grade`, but they are
+repository-conformance aliases rather than maturity or production-readiness
+claims.
+
+Coverage, security/supply-chain, and hosted CI/release categories remain
+`unavailable` and unscored unless their registered evidence method verifies
+them. Runtime efficiency is likewise unavailable until benchmark, latency, and
+resource-use evidence is measured at a declared workload and environment;
+source size cannot make it available. Control or workflow presence is not
+treated as measured coverage, security verification, performance, or a
+successful release. The current local
+`coverage_combined_v2` method verifies exact tracked-source coverage plus
+unchanged clean-HEAD producer provenance and independently corroborated
+run-unique coverage artifacts only; security and hosted CI/release stay
+unavailable.
+
+From a clean exact-HEAD checkout, build and include a reviewed
+`uok.engineering_measurements.v2` file without changing the standard wrapper:
+
+```powershell
+python scripts/build_engineering_measurements.py
+python scripts/engineering_evidence.py --measurements <measurement-json> --stdout
+```
+
+The builder rejects a dirty, wrong, or stale repository, naive time, unknown
+keys or methods, caller scores, malformed JSON, path escapes or symlinks,
+missing/tampered producer provenance, artifact metadata mismatches, and
+incomplete or extra tracked-source inventories. Evidence output uses the
+`uok.engineering_evidence.v2` envelope. Migration details are in
+`docs/governance/UOK_ENGINEERING_EVIDENCE_V2_MIGRATION.md`.
+
+Use the reported evidence-completeness percentage and unavailable-category list whenever comparing scorecard trends. An unavailable category is never a pass.
 
 Durable standards belong in:
 

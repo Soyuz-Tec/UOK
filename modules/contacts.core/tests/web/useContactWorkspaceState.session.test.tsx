@@ -66,6 +66,25 @@ describe("Contacts workspace session ownership", () => {
     expect(view.result.current.contactDetailPane).toBe("overview");
     expect(view.result.current.relationshipType).toBe("primary_contact");
   });
+
+  it("clears note and relationship drafts before a different contact becomes selected", () => {
+    const view = renderHook(() => useContactWorkspaceState(
+      preferences,
+      { token: "token-a", generation: 0 },
+    ));
+
+    act(() => {
+      view.result.current.setNoteText("Draft for contact A");
+      view.result.current.setRelationshipTarget("contact-a-target");
+      view.result.current.setRelationshipType("billing_contact");
+    });
+
+    act(() => view.result.current.clearSelectionState());
+
+    expect(view.result.current.noteText).toBe("");
+    expect(view.result.current.relationshipTarget).toBe("");
+    expect(view.result.current.relationshipType).toBe("primary_contact");
+  });
 });
 
 const preferences: ContactPreferences = {

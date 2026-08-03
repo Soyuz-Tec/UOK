@@ -152,12 +152,14 @@ def delete_view(view_id: str, actor: Actor = Depends(current_actor), db: Session
 def activity(party_id: str, response: Response, limit: int = Query(default=50, ge=1, le=200), offset: int = Query(default=0, ge=0), actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
     _ready(db, actor, "contacts.read")
     rows, total = _read(lambda: contact_activity_rows(db, actor, party_id, limit=limit, offset=offset))
+    _apply_response_headers(response, private_no_store_headers())
     response.headers["X-Total-Count"] = str(total)
     return rows
 
 
-def relationship_options(query: str = Query(..., min_length=2, max_length=120), exclude_party_id: str = Query(default="", max_length=80), limit: int = Query(default=20, ge=1, le=50), actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
+def relationship_options(response: Response, query: str = Query(..., min_length=2, max_length=120), exclude_party_id: str = Query(default="", max_length=80), limit: int = Query(default=20, ge=1, le=50), actor: Actor = Depends(current_actor), db: Session = Depends(get_db)) -> list[dict[str, Any]]:
     _ready(db, actor, "contacts.read")
+    _apply_response_headers(response, private_no_store_headers())
     return relationship_lookup_rows(db, actor, query, exclude_party_id, limit)
 
 

@@ -212,16 +212,26 @@ This restriction applies to UOK production code. It does not prohibit one-off lo
 
 ### Maintainability Scan
 
-Before each candidate package, run a source-size scan and split any non-generated file that is too large or mixed-responsibility for efficient human review. As a working target:
+Before each candidate package, run the executable source-size policy:
 
-- Backend route composition files should generally stay under `200` lines.
-- Backend command bus files should generally stay under `200` lines.
-- Backend business service files should generally stay under `300` lines unless the file is a cohesive policy module.
-- React component and hook files should generally stay under `300` lines.
-- CSS files should be split when they cross feature or layer boundaries, even if they still build correctly.
-- Test files should be split when they cover more than one major behavior area.
+```powershell
+python scripts/source_size_policy.py
+```
 
-These limits are architectural guardrails, not arbitrary formatting rules. A larger file is acceptable only when it is cohesive, generated, or explicitly justified in the architecture notes and still passes the same verification gates.
+The exact thresholds, file classifications, physical-line definition,
+function rules, no-growth baseline, generated/vendor exclusions, symlink
+rejection, and expiring exception schema are owned by
+`docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md` and
+`config/source_size_policy.json`. Do not duplicate those values in a second
+policy implementation.
+
+The numeric limits are UOK reviewability heuristics, not universal industry
+standards and not runtime-performance proof. A cohesive file still must pass
+the hard cap or have one exact, owned, issue-linked, expiring configuration
+exception. Prose justification does not bypass the executable gate. Split CSS
+at feature or design-system-layer boundaries and split tests when they mix
+unrelated behavior even when their physical line count remains below a
+threshold.
 
 ### Vite Build
 

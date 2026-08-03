@@ -3,3 +3,6 @@
 pytest==9.1.1
 httpx2==2.5.0
 pip-audit==2.10.0
+coverage==7.15.2
+mypy==2.3.0
+ruff==0.16.0

@@ -6,8 +6,10 @@
 * @Soyuz-Tec
 
 /.github/ @Soyuz-Tec
+/config/ @Soyuz-Tec
 /docs/architecture/ @Soyuz-Tec
 /docs/design/ @Soyuz-Tec
+/docs/governance/ @Soyuz-Tec
 /docs/modules/ @Soyuz-Tec
 /docs/operations/ @Soyuz-Tec
 /docs/reports/ @Soyuz-Tec
@@ -16,6 +18,7 @@
 /web/src/features/modules/ @Soyuz-Tec
 /web/src/generated/ @Soyuz-Tec
 /web/src/shared/ @Soyuz-Tec
+/web/e2e/ @Soyuz-Tec
 /migrations/ @Soyuz-Tec
 /tests/ @Soyuz-Tec
 /scripts/ @Soyuz-Tec

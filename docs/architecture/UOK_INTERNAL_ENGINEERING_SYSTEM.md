@@ -55,11 +55,11 @@ UOK documents should use the well-known standard names above when a rule is deri
 |---|---|
 | Policies | `AGENTS.md`, `docs/ARCHITECTURE.md`, `docs/architecture/*`, `docs/design/*`, and `docs/operations/*` |
 | Checklists | Pull request template, module acceptance rules, candidate completion definition, GitHub preflight, and release evidence expectations |
-| CI gates | Python compile/tests/audits; technology evidence; module, source-size, boundary, and naming policy; generated frontend contracts; exact dependency policy; ESLint; Stylelint; unit and accessibility tests; static build and bundle budgets; OCI build; CodeQL; and OpenSSF Scorecard |
+| CI gates | Python compile, Ruff, mypy, sequential branch coverage, dependency audits, technology audit, engineering evidence v2, database-security inventory, module contract, source-size hard caps and no-growth ratchet, source-boundary and naming policy; generated frontend contracts; dependency policy; ESLint, Stylelint, Biome configuration, type checks, unit/accessibility/coverage proof, static build and bundle budgets; PostgreSQL 18; disposable API candidate; hosted Chromium proof; OCI build and exact-image Trivy scan; CodeQL; and OpenSSF Scorecard |
 | Code review rules | Small focused changes, ownership clarity, readable code, tests for behavior, architecture impact stated, no avoidable complexity |
-| Release gates | Candidate verifier, module verifier scripts, migration checks, dependency audits, build output, local runtime health, backup/restore confidence where relevant |
-| Dashboards | Current implementation uses CI results, local audit JSON, generated quality scorecard, module evidence, candidate verifier output, and future UI status surfaces |
-| Audit evidence | CI logs, local audit output, generated engineering evidence, generated quality scorecard, verifier output, PR review records, release notes, ASUH events, and local runtime smoke evidence |
+| Release gates | Exact tag/commit validation, build-once image identity, vulnerability gate, SPDX/CycloneDX SBOMs, provenance attestations, immutable digest, checksums/rollback metadata, candidate and module verifiers, migration checks, dependency audits, local runtime health, and backup/restore evidence where relevant |
+| Dashboards | Current implementation uses CI results, local audit JSON, generated repository-conformance scorecard with explicit evidence completeness, module evidence, candidate verifier output, and future UI status surfaces |
+| Audit evidence | CI logs, local audit output, generated engineering evidence and repository-conformance scorecard, verifier output, PR review records, release notes, ASUH events, and local runtime smoke evidence |
 
 ## Mandatory Development Flow
 
@@ -84,6 +84,10 @@ Every non-trivial UOK change follows this flow:
 
 5. Review for UOK fit.
    - Ensure the change is product-neutral where required, module-owned where appropriate, typed, source-size compliant, and aligned with the UI and stack policies.
+   - Treat physical line limits as UOK reviewability heuristics. They do not
+     replace complexity review or prove runtime performance; performance
+     claims require workload-specific benchmark, latency, and resource
+     evidence.
    - When AI workers are used, apply `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`; specialist output remains advisory until verified by the coordinator against UOK gates.
 
 6. Verify.
@@ -115,30 +119,41 @@ Before candidate promotion or GitHub publication, UOK must have:
 - passing `Audit`;
 - passing `Verify` for candidate-level handoff;
 - passing CI on GitHub when published;
+- passing Ruff, mypy, Python/frontend coverage floors, PostgreSQL 18, hosted
+  Chromium proof, and exact-image high/critical vulnerability gate;
 - GitHub guardrails in place through CODEOWNERS, Dependabot, PR template, Copilot instructions, and OpenSSF Scorecard workflow;
 - source-boundary and naming gates clean;
+- source-size hard caps clean and no new or grown baseline soft debt;
 - dependency audits clean;
 - frontend dependency policy, ESLint, Stylelint, accessibility, and bundle budgets clean;
 - module contract clean;
 - frontend build and generated API client current;
 - local runtime smoke evidence when runtime behavior changed;
-- backup/restore or ASUH evidence when operations behavior changed.
+- backup/restore or ASUH evidence when operations behavior changed;
+- immutable tag/commit, image digest, SBOM, provenance, checksums, and rollback
+  evidence before an intentional prerelease is published.
 
 ## Dashboard And Evidence Direction
 
 UOK should progressively expose the engineering system through dashboards:
 
 - CI status and latest verification result;
-- generated quality scorecard result;
+- generated repository-conformance scorecard result and evidence completeness;
 - module installation and health status;
 - source-boundary and naming status;
+- source-size hard-cap, exception, soft-debt, and ratchet status;
 - dependency audit status;
 - OpenSSF Scorecard status;
 - candidate verifier status;
 - backup/restore and ASUH drill status;
 - module-level test and evidence status.
 
-Until a dedicated dashboard exists, command output, generated engineering evidence, generated quality scorecards, and CI logs are the audit evidence source.
+Until a dedicated dashboard exists, command output, generated engineering
+evidence, generated repository-conformance scorecards, and CI logs are the
+audit evidence source. Repository conformance is not an engineering-maturity
+or production-readiness rating; unavailable coverage, runtime-efficiency,
+security, or release measurements remain explicit and unscored. Source size
+cannot make runtime efficiency available.
 
 ## No Certification Claim
 
@@ -152,6 +167,7 @@ Run:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action TechnologyAudit
+python scripts/source_size_policy.py
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action Audit
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action EngineeringEvidence
 ```

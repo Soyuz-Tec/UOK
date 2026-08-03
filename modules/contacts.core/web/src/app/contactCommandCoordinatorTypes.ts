@@ -5,10 +5,14 @@ import type {
 } from "./contactMutationAuthority";
 
 export type ContactManagedCommand =
+  | "AddContactNote"
+  | "LinkContactRelationship"
+  | "RemoveContactRelationship"
   | "CreateContact"
   | "UpdateContact"
   | "ArchiveContact"
-  | "RestoreContact";
+  | "RestoreContact"
+  | "UpdateContactRelationship";
 
 export type ContactCommandRunInput = {
   action: ContactManagedCommand;
@@ -26,7 +30,19 @@ export type ContactCommandRunInput = {
   onPending: (error?: unknown) => void;
 };
 
-export type ContactCommandOperation = ContactCommandRunInput & {
+export type ContactManagedRunner = (input: {
+  action: ContactManagedCommand;
+  capability?: ContactMutationCapability;
+  payload: Record<string, unknown>;
+  intentIsCurrent: () => boolean;
+  preferredId: (response?: ContactCommandResponse) => string | undefined;
+  onSuccess?: () => void;
+}) => Promise<boolean>;
+
+export type ContactCommandOperation = Omit<
+  ContactCommandRunInput,
+  "execute" | "preferredSelectedId"
+> & {
   id: number;
   gateOwner: symbol;
   effect: ContactMutationEffect | null;
@@ -48,6 +64,14 @@ export function redactStaleContactCommandOutcome(
       error: new Error("A stale Contacts command outcome requires reconciliation."),
     };
   }
+}
+
+export function retainedContactCommandError(error: unknown) {
+  return new Error(
+    error instanceof Error
+      ? error.message
+      : "The Contacts command failed; authoritative state was reconciled.",
+  );
 }
 
 export function contactCommandBusyAction(

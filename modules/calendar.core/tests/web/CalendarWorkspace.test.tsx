@@ -26,10 +26,10 @@ const installedCalendar: ModuleStatus = {
 };
 
 describe("CalendarWorkspace", () => {
-  afterEach(cleanup);
-
+  afterEach(() => { cleanup(); vi.useRealTimers(); });
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.useFakeTimers({ now: new Date("2026-07-09T12:00:00Z"), toFake: ["Date"] });
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
       const path = String(input);
       const body = path.includes("/api/calendar/capabilities")

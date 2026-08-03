@@ -1,3 +1,9 @@
+import type { ContactReadRequest } from "./app/contactReadApi";
+import {
+  contactSecondaryReadJson,
+  contactSecondaryTotalCount,
+} from "./app/contactSecondaryReadApi";
+
 export type ContactActivityRecord = {
   id: string;
   party_id: string;
@@ -20,30 +26,23 @@ export async function getContactActivity(
   partyId: string,
   limit: number,
   offset: number,
-  signal?: AbortSignal
+  request: ContactReadRequest,
 ): Promise<ContactActivityPage> {
   const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
-  const response = await fetch(`/api/contacts/${encodeURIComponent(partyId)}/activity?${params}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    signal
-  });
-  const body = await response.json().catch(() => []);
-  if (!response.ok) throw new Error(activityApiError(body));
-  if (!Array.isArray(body)) throw new Error("Contacts activity response is invalid.");
-  const headerCount = Number(response.headers.get("X-Total-Count"));
+  const { body, response } = await contactSecondaryReadJson<unknown>(
+    token,
+    `/api/contacts/${encodeURIComponent(partyId)}/activity?${params}`,
+    request,
+    "Unable to load contact activity.",
+  );
+  if (!Array.isArray(body)) {
+    throw new Error("Contacts activity response is invalid.");
+  }
   return {
     items: body as ContactActivityRecord[],
-    totalCount: Number.isFinite(headerCount) ? headerCount : body.length
+    totalCount: contactSecondaryTotalCount(
+      response.headers.get("X-Total-Count"),
+      body.length,
+    ),
   };
-}
-
-function activityApiError(body: unknown) {
-  if (body && typeof body === "object" && "detail" in body) {
-    const detail = (body as { detail?: unknown }).detail;
-    if (typeof detail === "string") return detail;
-    if (detail && typeof detail === "object" && "error" in detail && typeof (detail as { error?: unknown }).error === "string") {
-      return (detail as { error: string }).error;
-    }
-  }
-  return "Unable to load contact activity.";
 }

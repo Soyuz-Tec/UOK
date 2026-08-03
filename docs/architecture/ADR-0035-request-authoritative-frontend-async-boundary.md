@@ -1,4 +1,4 @@
-# ADR-0030: Request-Authoritative Frontend Async Boundary
+# ADR-0035: Request-Authoritative Frontend Async Boundary
 
 **Status:** Accepted
 
@@ -156,15 +156,39 @@ module criteria, DTOs, commands, or workflow state into the shell.
      and selected-party detail. The selected row `updated_at` value proves only
      that browser intent still names the same observed row revision; it is not
      an ETag, an optimistic-concurrency precondition, or protection from a
-     server-side lost update. Purge, notes and activity, selected-party group
-     membership and Groups Manager, relationship commands and options, merge
-     and dedupe, Data Tools, import/export, saved views, and other audited owner
-     paths remain later authority-adoption slices. A synchronous owner-local
+     server-side lost update. At Delivery 6e acceptance, purge, notes and
+     activity, selected-party group membership and Groups Manager, relationship
+     commands and options, merge and dedupe, Data Tools, import/export, saved
+     views, and other audited owner paths remained later authority-adoption
+     slices; Delivery 6f below narrows activity and relationship productivity
+     without changing the 6e primary-command boundary. A synchronous owner-local
      command gate nevertheless spans adopted and excluded commands so an
      excluded mutation and refresh cannot overlap an adopted reconciliation.
      Token or session-generation replacement clears tenant-owned Contacts
      drafts, notes, relationship targets, search, group, filters, and page
      state; retained-surface deactivation alone preserves that state.
+    - Delivery 6f implements a bounded Contacts activity and
+      relationship-productivity authority slice. Local qualification completed
+      on 2026-08-03; exact-head hosted CI remains required before merge. Activity
+      and relationship-options hooks retain independent
+     owner-local authorities and criteria: selected Party, paging, and refresh
+     intent for activity; normalized query and excluded Party for relationship
+     options. Every success, error, loading finalizer, and unauthorized effect
+     is current-ticket guarded and epoch-stamped state is hidden once stale.
+     The authenticated read responses are private, non-cacheable, and vary by
+     authorization. `AddContactNote`, `LinkContactRelationship`,
+     `UpdateContactRelationship`, and `RemoveContactRelationship` use the shared
+     command gate, one-time non-replayed dispatch, current-only composer/editor
+     effects, and current-primary list/groups/detail reconciliation. Notes and
+     relationships remain fields of the selected-party detail projection; the
+     slice adds no redundant notes or relationships read. Selected-row
+     `updated_at` remains browser-intent freshness evidence only, not an ETag,
+     optimistic-concurrency precondition, or lost-update guarantee. Purge,
+     selected-party group membership and Groups Manager, merge/dedupe/rollback,
+     Data Tools for facts, consent, teams, custom fields, and external
+     identities, import/file/bulk/export, saved views, the current-detail
+     `403`/`404` list-reconciliation residual, and other audited module owners
+     remain later slices.
    - Later Delivery 6 slices migrate module owners in bounded groups while
      preserving their DTOs, endpoints, criteria, selections, commands, and
      specialized workflows.
@@ -265,7 +289,19 @@ Required focused proof includes:
   protection; and
 - bidirectional adopted/legacy same-tick exclusion, reconciliation-pending
   exclusion, session-owned transient-state reset, and response-hint
-  minimization.
+  minimization;
+- independent Contacts activity and relationship-options owner authorities,
+  including criteria ABA, stale/current one-shot `401`, activation, session,
+  role, operational, and lifetime invalidation;
+- current-only activity/lookup success, error, loading-finalizer, empty-state,
+  option-selection, and retry effects with epoch-stamped stale-state masking;
+- private no-store and authorization-varying response headers for the adopted
+  authenticated activity and relationship-options reads;
+- shared-gate exclusion, one-time non-replayed dispatch, current-only
+  note-composer and relationship-editor effects, and current-primary
+  reconciliation for the four adopted productivity commands; and
+- no redundant notes/relationships read and no ETag, optimistic-concurrency,
+  or lost-update claim from selected-row `updated_at`.
 
 Run:
 

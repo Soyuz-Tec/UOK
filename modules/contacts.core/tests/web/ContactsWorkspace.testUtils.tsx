@@ -49,7 +49,16 @@ export function renderContactsWorkspace(initialView: ContactsView, records: Cont
     const selectedContact = records.find((row) => row.id === selectedId) || null;
     const props: ContactsWorkspaceProps = {
       token: "token",
+      contactReadBoundary: {
+        token: "token",
+        generation: 0,
+        role: "platform_admin",
+        operational: true,
+        surfaceActive: true,
+      },
+      onUnauthorized: vi.fn(),
       currentUserRole: "platform_admin",
+      canManage: true,
       operational: true,
       contacts: records,
       contactGroups: [contactGroup],
@@ -76,6 +85,7 @@ export function renderContactsWorkspace(initialView: ContactsView, records: Cont
       noteText,
       relationshipTarget,
       relationshipType,
+      activityRefreshGeneration: 0,
       busyAction: "",
       onActivate: vi.fn(),
       onRefreshContacts: vi.fn(),

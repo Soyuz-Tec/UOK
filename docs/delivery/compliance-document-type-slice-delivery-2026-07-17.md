@@ -115,7 +115,7 @@ read them directly.
 - Archived records are hidden from normal lists unless explicitly requested.
 - Only canonical-name changes append owner-local name history; every successful
   mutation emits correlated command/event evidence.
-- List, detail, and history reads use ADR-0030 request authority across
+- List, detail, and history reads use ADR-0035 request authority across
   session-generation, role, operational, activation, selection, and lifetime
   changes. All six commands now use pre-dispatch authority, one caller-owned
   idempotency key, non-abortable/no-replay dispatch, guarded captured-intent

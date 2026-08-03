@@ -1,3 +1,6 @@
+import type { ContactReadRequest } from "./app/contactReadApi";
+import { contactSecondaryReadJson } from "./app/contactSecondaryReadApi";
+
 export type ContactRelationshipOption = {
   id: string;
   display_name: string;
@@ -10,30 +13,21 @@ export async function getContactRelationshipOptions(
   token: string,
   query: string,
   excludePartyId: string,
-  signal?: AbortSignal
+  request: ContactReadRequest,
 ): Promise<ContactRelationshipOption[]> {
   const params = new URLSearchParams({
     query: query.trim(),
     exclude_party_id: excludePartyId,
     limit: "20"
   });
-  const response = await fetch(`/api/contacts/relationship-options?${params}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    signal
-  });
-  const body = await response.json().catch(() => []);
-  if (!response.ok) throw new Error(relationshipOptionsApiError(body));
-  if (!Array.isArray(body)) throw new Error("Contact lookup response is invalid.");
-  return body as ContactRelationshipOption[];
-}
-
-function relationshipOptionsApiError(body: unknown) {
-  if (body && typeof body === "object" && "detail" in body) {
-    const detail = (body as { detail?: unknown }).detail;
-    if (typeof detail === "string") return detail;
-    if (detail && typeof detail === "object" && "error" in detail && typeof (detail as { error?: unknown }).error === "string") {
-      return (detail as { error: string }).error;
-    }
+  const { body } = await contactSecondaryReadJson<unknown>(
+    token,
+    `/api/contacts/relationship-options?${params}`,
+    request,
+    "Unable to search contacts.",
+  );
+  if (!Array.isArray(body)) {
+    throw new Error("Contact lookup response is invalid.");
   }
-  return "Unable to search contacts.";
+  return body as ContactRelationshipOption[];
 }

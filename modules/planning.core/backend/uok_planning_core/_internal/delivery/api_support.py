@@ -17,6 +17,16 @@ from uok.kernel.command_contracts import (
 from uok.kernel.module_runtime import ensure_module_operational
 from uok.kernel.security import Actor, require_permission
 
+PLANNING_READ_FAILURES = (
+    AttributeError,
+    IndexError,
+    KeyError,
+    OverflowError,
+    TypeError,
+    ValueError,
+)
+PLANNING_ACCESS_ERROR = "Planning is unavailable for this organization."
+
 
 def require_planning_read(db: Session, actor: Actor) -> None:
     try:
@@ -25,7 +35,7 @@ def require_planning_read(db: Session, actor: Actor) -> None:
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=f"Permission denied: {exc}") from exc
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+        raise HTTPException(status_code=400, detail={"error": PLANNING_ACCESS_ERROR}) from exc
 
 
 def run_planning_command(
@@ -64,4 +74,9 @@ def run_planning_command(
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
 
 
-__all__ = ["require_planning_read", "run_planning_command"]
+__all__ = [
+    "PLANNING_ACCESS_ERROR",
+    "PLANNING_READ_FAILURES",
+    "require_planning_read",
+    "run_planning_command",
+]

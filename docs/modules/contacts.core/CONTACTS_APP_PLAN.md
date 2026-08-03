@@ -59,7 +59,7 @@ Contacts commands and permission atoms are discovered through the validated mani
 
 ### Frontend Platform: Delivery 6d Primary Reads
 
-Delivery 6d applies ADR-0030 only to the primary reads owned by
+Delivery 6d applies ADR-0035 only to the primary reads owned by
 `ContactsModuleRoot`: `GET /api/contacts?...`, including total and next-page
 state; `GET /api/contacts/groups` for the primary filter/options list; and
 `GET /api/contacts/{selectedPartyId}` for selected-party detail.
@@ -86,7 +86,7 @@ below; every other path remains phased Delivery 6 scope.
 
 ### Frontend Platform: Delivery 6e Primary Party Commands
 
-Delivery 6e adopts a bounded command slice. It applies ADR-0030
+Delivery 6e adopts a bounded command slice. It applies ADR-0035
 only to `CreateContact`, `UpdateContact` from the full form, inline editor, or
 mark-ready action, `ArchiveContact`, and `RestoreContact` as issued by the
 primary Contacts workspace through `POST /api/commands`.
@@ -126,12 +126,84 @@ state, and focused Contacts command authority, reconciliation, session, and
 operation-gate tests. Focused acceptance covers 60 tests across nine files; the
 complete Contacts frontend suite covers 135 tests across 27 files.
 
-`PurgeContact`, notes and activity, selected-contact group membership and
-Groups Manager, relationship commands and relationship-options lookup, merge
-and dedupe, Data Tools for facts, consent, teams, interoperability and custom
-fields, import/export, saved views, and all other module owners remain later
-Delivery 6 slices. Delivery 6e also does not close the current-detail `403` or
-`404` primary-list reconciliation residual recorded below.
+At Delivery 6e acceptance, `PurgeContact`, notes and activity, selected-contact
+group membership and Groups Manager, relationship commands and
+relationship-options lookup, merge and dedupe, Data Tools for facts, consent,
+teams, interoperability and custom fields, import/export, saved views, and all
+other module owners remained later Delivery 6 slices. Delivery 6f narrows the
+activity and relationship-productivity subset below without changing the 6e
+primary-command boundary. Delivery 6e also does not close the current-detail
+`403` or `404` primary-list reconciliation residual recorded below.
+
+### Frontend Platform: Delivery 6f Activity And Relationship Productivity
+
+Delivery 6f implements a bounded activity and relationship-productivity
+authority slice. Local qualification completed on 2026-08-03 with all 187
+Contacts frontend tests across 34 files, both focused backend privacy tests,
+the 750-test whole-frontend lane, and protected browser proof; exact-head
+hosted CI remains required before merge. It adopts the paginated
+`GET /api/contacts/{partyId}/activity` read and the debounced
+`GET /api/contacts/relationship-options` read without changing their module
+ownership or adding a shared transport.
+
+`useContactActivity` and `useContactRelationshipOptions` retain independent
+owner-local request authorities. Activity criteria include the selected Party,
+page, page size, and explicit refresh intent. Relationship-options criteria
+include the normalized query and excluded selected Party. Their boundaries also
+include the atomic session token and generation, current role,
+`contacts.core` operational state, exact retained-surface activation, and
+component lifetime. Every post-await success, error, loading finalizer, empty
+state, retry, option-selection, and unauthorized effect is current-ticket
+guarded, and reusable committed state is epoch-stamped and hidden once stale.
+The authenticated API responses emit `Cache-Control: private, no-store` and
+`Vary: Authorization` so private productivity data is not shared or reused.
+
+The same slice adopts `AddContactNote`, `LinkContactRelationship`,
+`UpdateContactRelationship`, and `RemoveContactRelationship` through the shared
+owner command gate, one-time non-abortable/no-replay dispatch, and the retained
+current-primary list/groups/detail reconciliation obligation. Note-composer and
+relationship-editor cleanup, selection, success, error, busy/finally, refresh,
+and unauthorized effects apply only while the captured browser intent remains
+current. Notes and relationships continue to arrive in the selected-party
+detail projection; Delivery 6f adds no redundant notes or relationships read.
+The selected row `updated_at` remains browser-intent freshness evidence only,
+not an ETag, optimistic-concurrency precondition, or lost-update guarantee.
+
+Read-side implementation evidence is `contactActivityApi.ts`,
+`useContactActivity.ts`, `ContactActivityTimeline.tsx`,
+`contactRelationshipOptionsApi.ts`, `useContactRelationshipOptions.ts`,
+`ContactRelationshipLookup.tsx`, `app/contactSecondaryReadApi.ts`,
+`app/contactSecondaryReadAuthority.ts`, and
+`app/useContactSecondaryReadAuthority.ts`. Focused read proof is
+`contactActivityApi.test.ts`, `useContactActivity.authority.test.tsx`,
+`contactRelationshipOptionsApi.test.ts`, and
+`useContactRelationshipOptions.authority.test.tsx`. Backend evidence is
+`modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_system.py`
+and `modules/contacts.core/tests/test_contacts_productivity_read_privacy.py`,
+including the private no-store and authorization-varying response headers.
+
+Command-side implementation evidence is `ContactsModuleRoot.tsx`,
+`ContactDetailPanel.tsx`, `ContactRelationshipsPanel.tsx`,
+`ContactRelationshipEditor.tsx`, `types.ts`,
+`app/useContactCommands.ts`, `app/useContactCommandCoordinator.ts`,
+`app/useContactProductivityCommands.ts`, `app/useLegacyContactCommands.ts`,
+`app/contactCommandCoordinatorTypes.ts`, the shared
+`app/contactCommandOperationGate.ts`, and
+`app/useContactPrimaryReconciliation.ts`. Focused command proof is
+`ContactProductivityCommandTestUtils.ts`,
+`useContactCommands.productivity.test.tsx`,
+`useContactCommands.productivityAuthority.test.tsx`,
+`useContactCommands.productivityReconciliation.test.tsx`,
+`useContactCommands.operationGate.test.tsx`,
+`ContactsWorkspace.detail.test.tsx`, and
+`ContactsWorkspace.relationships.test.tsx`.
+
+`PurgeContact`, selected-contact group membership and Groups Manager,
+merge/dedupe/rollback, Data Tools for facts, consent, teams, custom fields, and
+external identities, import/file ingestion/bulk/export, saved views, the
+current-detail `403`/`404` primary-list reconciliation residual, and all other
+module owners remain later Delivery 6 scope. Delivery 6 and Top-20 Issue 1
+remain open.
 
 ## Data And Integrity Rules
 

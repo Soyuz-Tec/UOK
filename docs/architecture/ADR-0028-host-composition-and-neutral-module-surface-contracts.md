@@ -4,7 +4,7 @@
 **Date:** 2026-07-16
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
-**Amended by:** `ADR-0030-request-authoritative-frontend-async-boundary.md`
+**Amended by:** `ADR-0035-request-authoritative-frontend-async-boundary.md`
 
 ## Context
 
@@ -90,7 +90,7 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
 10. The shell keeps only visited module roots mounted behind a generic
     `ModuleSurfaceOutlet`, preserving owner-local unsaved state without
     importing a feature. The registry reports each retained root's exact active
-    state. Global refresh increments the neutral revision. ADR-0030 requires
+    state. Global refresh increments the neutral revision. ADR-0035 requires
     shell and owner-local async effects to use monotonic request authority so
     stale completions and stale unauthorized responses cannot affect a newer
     session or owner state.

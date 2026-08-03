@@ -3,9 +3,14 @@ from __future__ import annotations
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from uok_planning_core._internal.delivery.api_support import require_planning_read, run_planning_command
+from uok_planning_core._internal.delivery.api_support import (
+    PLANNING_READ_FAILURES,
+    require_planning_read,
+    run_planning_command,
+)
 from uok_planning_core._internal.delivery.batch_schemas import PlanningBatchRequest
 from uok_planning_core._internal.analysis.analysis_api import router as analysis_router
 from uok_planning_core._internal.delivery.api_contracts import ETAG_RESPONSE_HEADERS, PLANNING_BATCH_RESPONSES, PLANNING_CREATE_RESPONSES, PLANNING_MUTATION_RESPONSES
@@ -50,6 +55,9 @@ router.routes.extend(resource_calendar_router.routes)
 router.routes.extend(analysis_router.routes)
 router.routes.extend(portfolio_router.routes)
 router.routes.extend(revision_router.routes)
+SCHEDULE_READ_ERROR = "Planning project was not found or its schedule is unavailable."
+BASELINE_COMPARE_ERROR = "Planning project or baseline was not found or could not be compared."
+BASELINE_READ_ERROR = "Planning project or baseline was not found or could not be read."
 PlanningIdempotencyKey = Annotated[
     str,
     Header(
@@ -104,8 +112,8 @@ def project_schedule(project_id: str, response: Response, actor: Actor = Depends
     require_planning_read(db, actor)
     try:
         schedule, etag = read_locked_schedule_snapshot(db, actor, project_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": SCHEDULE_READ_ERROR}) from exc
     response.headers["ETag"] = etag
     response.headers["Cache-Control"] = "private, no-store"
     response.headers["Vary"] = "Authorization"
@@ -220,8 +228,8 @@ def compare_project_baselines(
     try:
         project_or_error(db, actor, project_id)
         return compare_baselines(db, actor, project_id, left_baseline_id, right_baseline_id)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": BASELINE_COMPARE_ERROR}) from exc
 
 
 @router.get("/projects/{project_id}/baselines/{baseline_id}")
@@ -235,8 +243,8 @@ def project_baseline(
     try:
         project_or_error(db, actor, project_id)
         return baseline_detail(baseline_or_error(db, actor, project_id, baseline_id))
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+    except PLANNING_READ_FAILURES as exc:
+        raise HTTPException(status_code=400, detail={"error": BASELINE_READ_ERROR}) from exc
 
 
 @router.post("/projects/{project_id}/resources", responses=PLANNING_MUTATION_RESPONSES, response_model=None)

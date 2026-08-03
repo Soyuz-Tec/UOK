@@ -7,7 +7,9 @@ import { contactCommandResultId, executeContactCommand } from "./contactCommandA
 import type { ContactData } from "./useContactData";
 import { useContactCommandCoordinator } from "./useContactCommandCoordinator";
 import { useLegacyContactCommands } from "./useLegacyContactCommands";
+import { useContactProductivityCommands } from "./useContactProductivityCommands";
 import { createContactCommandOperationGate } from "./contactCommandOperationGate";
+import type { ContactManagedCommand } from "./contactCommandCoordinatorTypes";
 import type {
   ContactDetailPane,
   ContactDraft,
@@ -70,10 +72,14 @@ export function useContactCommands({
   const legacy = useLegacyContactCommands({
     data,
     host,
+    operationGate,
+  });
+  const productivity = useContactProductivityCommands({
+    data,
     noteText,
     relationshipTarget,
     relationshipType,
-    operationGate,
+    runManaged,
     setNoteText,
     setRelationshipTarget,
   });
@@ -156,22 +162,24 @@ export function useContactCommands({
     preferredId,
     onSuccess = () => undefined,
   }: {
-    action: "CreateContact" | "UpdateContact" | "ArchiveContact" | "RestoreContact";
+    action: ContactManagedCommand;
     capability?: "manage" | "restore";
     payload: Record<string, unknown>;
     intentIsCurrent: () => boolean;
     preferredId: (response?: ContactCommandResponse) => string | undefined;
     onSuccess?: () => void;
   }) {
+    let dispatchPayload: Record<string, unknown> | null = payload;
     return coordinator.runOperation({
       action,
       capability,
-      execute: (request) => executeContactCommand(
-        request.token,
-        action,
-        payload,
-        request,
-      ),
+      execute: (request) => {
+        const nextPayload = dispatchPayload;
+        dispatchPayload = null;
+        return nextPayload
+          ? executeContactCommand(request.token, action, nextPayload, request)
+          : Promise.reject(new Error("The Contacts command dispatch was already consumed."));
+      },
       intentIsCurrent,
       preferredSelectedId: preferredId,
       onAccepted: () => currentRef.current.data.setOut(null),
@@ -224,6 +232,7 @@ export function useContactCommands({
 
   return {
     ...legacy,
+    ...productivity,
     archiveSelected,
     busyAction: coordinator.busyAction,
     markSelectedReady,
