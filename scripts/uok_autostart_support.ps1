@@ -13,7 +13,6 @@ function Get-UokAutoStartPaths {
         StableCapacity = (Join-Path $stateRoot "payload\database-capacity.env")
     }
 }
-
 function New-UokAutoStartReleasePaths {
     param($Paths)
     $releaseId = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmssfff") + "-" + [guid]::NewGuid().ToString("N")
@@ -27,7 +26,6 @@ function New-UokAutoStartReleasePaths {
         Capacity = (Join-Path $releaseRoot "database-capacity.env")
     }
 }
-
 function Invoke-UokAutoStartTextCommand {
     param([string]$FilePath, [string[]]$Arguments)
     $previousPreference = $ErrorActionPreference
@@ -42,7 +40,6 @@ function Invoke-UokAutoStartTextCommand {
     if ($exitCode -ne 0) { throw "$FilePath exited with code $exitCode for '$($Arguments -join ' ')'. Output: $text" }
     return $text
 }
-
 function Resolve-UokComposeProvider {
     foreach ($name in "podman-compose.exe", "podman-compose", "docker-compose.exe", "docker-compose") {
         $command = Get-Command $name -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -50,17 +47,14 @@ function Resolve-UokComposeProvider {
     }
     throw "No supported Compose provider is installed. Install podman-compose or Docker Compose before enabling auto-start."
 }
-
 function Get-UokNamedTasks {
     return @(Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue)
 }
-
 function Test-UokManagedTask {
     param($Task)
     $action = @($Task.Actions) | Select-Object -First 1
     return [string]$Task.Description -like "$ContractVersion*" -and $action -and [string]$action.Arguments -like "*uok_autostart_worker.ps1*"
 }
-
 function Test-UokLegacyPrototypeTask {
     param($Task, $Paths)
     if ($Task.TaskPath -ne "\") { return $false }
@@ -95,9 +89,7 @@ function Get-UokSourceVersion {
 
 function Get-UokPodmanInspection {
     param([string]$PodmanPath, [string]$Connection, [string]$Kind, [string]$Object)
-    $json = Invoke-UokAutoStartTextCommand -FilePath $PodmanPath -Arguments @(
-        "--connection", $Connection, $Kind, "inspect", $Object
-    )
+    $json = Invoke-UokAutoStartTextCommand -FilePath $PodmanPath -Arguments @("--connection", $Connection, $Kind, "inspect", $Object)
     try { return @($json | ConvertFrom-Json -ErrorAction Stop)[0] }
     catch { throw "Unable to parse Podman $Kind inspection for ${Object}: $($_.Exception.Message)" }
 }

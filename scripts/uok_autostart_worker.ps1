@@ -128,7 +128,6 @@ function Get-UokContainerId {
     if ($ids.Count -eq 1) { return $ids[0] }
     return $null
 }
-
 function Get-UokInspectValue {
     param($Config, [string]$PodmanPath, [string]$ObjectId, [string]$Format)
     $result = Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @(

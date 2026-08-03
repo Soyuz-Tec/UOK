@@ -29,7 +29,6 @@ def windows_autostart_policy_problems(root: Path) -> list[str]:
         override = _read(root, "deploy/compose-autostart.override.yaml")
     except OSError:
         return ["Windows Podman auto-start policy artifacts are unavailable"]
-
     problems = [
         f"standard operations must implement and document {action}"
         for action in ACTIONS
