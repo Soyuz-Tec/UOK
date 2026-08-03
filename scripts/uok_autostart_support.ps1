@@ -93,19 +93,25 @@ function Get-UokSourceVersion {
     return $match.Groups["version"].Value
 }
 
+function Get-UokPodmanInspection {
+    param([string]$PodmanPath, [string]$Connection, [string]$Kind, [string]$Object)
+    $json = Invoke-UokAutoStartTextCommand -FilePath $PodmanPath -Arguments @(
+        "--connection", $Connection, $Kind, "inspect", $Object
+    )
+    try { return @($json | ConvertFrom-Json -ErrorAction Stop)[0] }
+    catch { throw "Unable to parse Podman $Kind inspection for ${Object}: $($_.Exception.Message)" }
+}
+
 function Get-UokMountedVolumeIdentity {
     param([string]$PodmanPath, [string]$Connection, [string]$Container, [string]$Destination)
-    $format = '{{range .Mounts}}{{if eq .Destination "' + $Destination + '"}}{{.Name}}{{end}}{{end}}'
-    $name = Invoke-UokAutoStartTextCommand -FilePath $PodmanPath -Arguments @(
-        "--connection", $Connection, "container", "inspect", $Container, "--format", $format
-    )
+    $inspection = Get-UokPodmanInspection -PodmanPath $PodmanPath -Connection $Connection -Kind "container" -Object $Container
+    $mounts = @($inspection.Mounts | Where-Object { $_.Destination -eq $Destination -and $_.Type -eq "volume" })
+    $name = if ($mounts.Count -eq 1) { "$($mounts[0].Name)" } else { "" }
     if (-not $name -or $name -notmatch "^[a-zA-Z0-9][a-zA-Z0-9_.-]+$") {
         throw "Unable to resolve the named volume mounted at $Destination for $Container."
     }
-    $fingerprint = Invoke-UokAutoStartTextCommand -FilePath $PodmanPath -Arguments @(
-        "--connection", $Connection, "volume", "inspect", $name,
-        "--format", "{{.Name}}|{{.Driver}}|{{.CreatedAt}}"
-    )
+    $volume = Get-UokPodmanInspection -PodmanPath $PodmanPath -Connection $Connection -Kind "volume" -Object $name
+    $fingerprint = "$($volume.Name)|$($volume.Driver)|$($volume.CreatedAt)"
     return [pscustomobject]@{ Name = $name; Fingerprint = $fingerprint }
 }
 
@@ -149,17 +155,19 @@ function New-UokAutoStartConfig {
     if (-not $connection) { throw "Podman machine connection '$MachineName' is not installed." }
     $apiImage = "docker.io/library/uok-api:latest"
     $dbImage = "docker.io/library/postgres:18-alpine"
-    $apiImageId = Invoke-UokAutoStartTextCommand -FilePath $podmanPath -Arguments @("--connection", $connection.Name, "image", "inspect", $apiImage, "--format", "{{.Id}}")
-    $dbImageId = Invoke-UokAutoStartTextCommand -FilePath $podmanPath -Arguments @("--connection", $connection.Name, "image", "inspect", $dbImage, "--format", "{{.Id}}")
-    $liveApiImageId = Invoke-UokAutoStartTextCommand -FilePath $podmanPath -Arguments @("--connection", $connection.Name, "container", "inspect", "uok-api-1", "--format", "{{.Image}}")
-    $liveDbImageId = Invoke-UokAutoStartTextCommand -FilePath $podmanPath -Arguments @("--connection", $connection.Name, "container", "inspect", "uok-db-1", "--format", "{{.Image}}")
+    $apiImageInspect = Get-UokPodmanInspection -PodmanPath $podmanPath -Connection $connection.Name -Kind "image" -Object $apiImage
+    $dbImageInspect = Get-UokPodmanInspection -PodmanPath $podmanPath -Connection $connection.Name -Kind "image" -Object $dbImage
+    $liveApiInspect = Get-UokPodmanInspection -PodmanPath $podmanPath -Connection $connection.Name -Kind "container" -Object "uok-api-1"
+    $liveDbInspect = Get-UokPodmanInspection -PodmanPath $podmanPath -Connection $connection.Name -Kind "container" -Object "uok-db-1"
+    $apiImageId, $dbImageId = "$($apiImageInspect.Id)", "$($dbImageInspect.Id)"
+    $liveApiImageId, $liveDbImageId = "$($liveApiInspect.Image)", "$($liveDbInspect.Image)"
     $dbVolume = Get-UokMountedVolumeIdentity -PodmanPath $podmanPath -Connection $connection.Name -Container "uok-db-1" -Destination "/var/lib/postgresql"
     $filesVolume = Get-UokMountedVolumeIdentity -PodmanPath $podmanPath -Connection $connection.Name -Container "uok-api-1" -Destination "/data"
     $sourceCommit = Invoke-UokAutoStartTextCommand -FilePath "git.exe" -Arguments @("-C", $RepoRoot, "rev-parse", "HEAD")
     $sourceStatus = Invoke-UokAutoStartTextCommand -FilePath "git.exe" -Arguments @("-C", $RepoRoot, "status", "--porcelain", "--untracked-files=normal")
     $sourceVersion = Get-UokSourceVersion
-    $imageVersion = Invoke-UokAutoStartTextCommand -FilePath $podmanPath -Arguments @("--connection", $connection.Name, "image", "inspect", $apiImageId, "--format", '{{ index .Labels "org.opencontainers.image.version" }}')
-    $imageRevision = Invoke-UokAutoStartTextCommand -FilePath $podmanPath -Arguments @("--connection", $connection.Name, "image", "inspect", $apiImageId, "--format", '{{ index .Labels "org.opencontainers.image.revision" }}')
+    $imageVersion = "$($apiImageInspect.Labels.'org.opencontainers.image.version')"
+    $imageRevision = "$($apiImageInspect.Labels.'org.opencontainers.image.revision')"
     if ($sourceStatus) { throw "Auto-start installation requires a clean committed worktree." }
     if ($liveApiImageId -ne $apiImageId -or $liveDbImageId -ne $dbImageId) {
         throw "Live container images do not match the governed recovery image references."

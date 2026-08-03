@@ -30,7 +30,6 @@ function Write-UokAutoStartLog {
     Add-Content -LiteralPath $script:UokAutoStartLogPath -Value $line -Encoding UTF8
     Write-Host $line
 }
-
 function ConvertTo-UokNativeArgument {
     param([string]$Value)
     if ($Value.Contains('"')) { throw "Native arguments must not contain quotation marks." }
@@ -38,7 +37,6 @@ function ConvertTo-UokNativeArgument {
     $escaped = $Value -replace '(\\+)$', '$1$1'
     return '"' + $escaped + '"'
 }
-
 function Invoke-UokAutoStartNative {
     param(
         [string]$FilePath,
@@ -141,11 +139,14 @@ function Get-UokInspectValue {
 
 function Assert-UokContainerContract {
     param($Config, [string]$PodmanPath, [string]$ContainerId, [string]$ExpectedImageId, [string]$Service, [string]$Destination, [string]$ExpectedVolume)
-    $actual = Get-UokInspectValue -Config $Config -PodmanPath $PodmanPath -ObjectId $ContainerId -Format "{{.Image}}"
+    $result = Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @(
+        "--connection", $Config.connection_name, "inspect", $ContainerId
+    ) -TimeoutSeconds 15
+    $inspection = @($result.StdOut | ConvertFrom-Json -ErrorAction Stop)[0]
+    $actual = "$($inspection.Image)"
     if ($actual -ne $ExpectedImageId) { throw "$Service container image does not match the installed auto-start contract." }
-    $format = '{{range .Mounts}}{{if eq .Destination "' + $Destination + '"}}{{.Type}}|{{.Name}}{{end}}{{end}}'
-    $mount = Get-UokInspectValue -Config $Config -PodmanPath $PodmanPath -ObjectId $ContainerId -Format $format
-    if ($mount -ne "volume|$ExpectedVolume") { throw "$Service container volume does not match the installed auto-start contract." }
+    $mounts = @($inspection.Mounts | Where-Object { $_.Destination -eq $Destination -and $_.Type -eq "volume" })
+    if ($mounts.Count -ne 1 -or "$($mounts[0].Name)" -ne $ExpectedVolume) { throw "$Service container volume does not match the installed auto-start contract." }
 }
 
 function Wait-UokDatabaseHealthy {

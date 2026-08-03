@@ -70,7 +70,8 @@ def windows_autostart_policy_problems(root: Path) -> list[str]:
         "Windows auto-start must fail closed on missing or unmounted data volumes": (
             "Assert-UokVolumeReference" in worker
             and worker.count("Assert-UokContainerContract -Config") == 6
-            and "{{.Type}}|{{.Name}}" in worker
+            and "ConvertFrom-Json -ErrorAction Stop" in worker
+            and '$_.Destination -eq $Destination -and $_.Type -eq "volume"' in worker
             and '-Destination "/var/lib/postgresql"' in worker
             and '-Destination "/data"' in worker
             and "db_volume_fingerprint" in worker
