@@ -125,7 +125,7 @@ describe("UOK app", () => {
     expect(screen.queryByText("Data workflow")).not.toBeInTheDocument();
     expect(container.querySelector(".contacts-header")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add new" })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "New contact" }).length).toBeGreaterThan(0);
+    expect((await screen.findAllByRole("button", { name: "New contact" }, { timeout: 5000 })).length).toBeGreaterThan(0);
     expect(screen.queryByRole("button", { name: "New" })).not.toBeInTheDocument();
   });
 });

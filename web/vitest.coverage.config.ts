@@ -34,12 +34,12 @@ export default mergeConfig(
         include: ["web/src/**/*.{ts,tsx}", "modules/*/web/src/**/*.{ts,tsx}"],
         exclude: ["web/src/generated/**", "web/src/test/**", "**/*.{test,spec}.{ts,tsx}"],
         thresholds: {
-          // Measured whole-tree baseline: 67.42 / 71.28 / 77.17 / 73.01.
+          // Measured whole-tree baseline: 70.49 / 74.31 / 80.70 / 76.48.
           // Rounded-down floors leave only platform variance, not feature drift.
-          branches: 67,
-          functions: 71,
-          lines: 77,
-          statements: 73,
+          branches: 70,
+          functions: 74,
+          lines: 80,
+          statements: 76,
         },
       },
     },

@@ -6,6 +6,8 @@
 
 **Amended by:** `ADR-0035-request-authoritative-frontend-async-boundary.md`
 
+**Amended:** 2026-08-03 for compile-time-known lazy module workspaces.
+
 ## Context
 
 UOK had physically module-owned backend and frontend source, but two remaining
@@ -80,17 +82,20 @@ runtime behavior, tenant scoping, authorization, and audit behavior.
    `surfaceActive` for each retained surface render. The port imports no
    `Workbench`, generated runtime catalog, or feature code.
 8. `web/src/generated/moduleSurfaceCatalog.ts` is the sole shell source that
-   imports exact module `moduleSurface.tsx` entries. Pure navigation section
-   types are generated separately in `web/src/generated/moduleSections.ts` so
-   shared shell types do not depend on the runtime module catalog.
+   imports exact module `moduleSurface.tsx` entries. Those small entries expose
+   synchronous navigation metadata and a literal, owner-local lazy workspace
+   import; they never interpret a runtime path. Pure navigation section types
+   are generated separately in `web/src/generated/moduleSections.ts` so shared
+   shell types do not depend on the runtime module catalog.
 9. Contacts owns its frontend DTOs, draft/filter state, HTTP reads, preferences
    and storage keys, commands, and workspace root below
    `modules/contacts.core/web/src`. Its public UI entry renders the owner-local
    root and exports no hooks or shell-facing domain constants.
-10. The shell keeps only visited module roots mounted behind a generic
-    `ModuleSurfaceOutlet`, preserving owner-local unsaved state without
-    importing a feature. The registry reports each retained root's exact active
-    state. Global refresh increments the neutral revision. ADR-0035 requires
+10. The shell loads each module workspace on first activation under one
+    accessible Suspense and module error boundary, then keeps only visited
+    module roots mounted behind the generic `ModuleSurfaceOutlet`, preserving
+    owner-local unsaved state. The registry reports each retained root's exact
+    active state. Global refresh increments the neutral revision. ADR-0035 requires
     shell and owner-local async effects to use monotonic request authority so
     stale completions and stale unauthorized responses cannot affect a newer
     session or owner state.
@@ -183,8 +188,9 @@ existing Contacts command adapter.
   without changing shell orchestration. Visited module roots retain unsaved
   owner-local state, global refresh reaches owner-local reads, and a module 401
   clears host-scoped data before another tenant can sign in.
-- The generated catalog remains compile-time composition. No browser runtime
-  plugin loader, remote bundle, or microservice boundary is introduced.
+- The generated catalog remains compile-time composition. Literal local dynamic
+  imports create static Vite chunks; no browser runtime plugin loader, remote
+  bundle, or microservice boundary is introduced.
 
 ## Alternatives Considered
 

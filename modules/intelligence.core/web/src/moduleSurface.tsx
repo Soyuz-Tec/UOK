@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import { ScanSearch } from "lucide-react";
 
 import type { ModuleSurface } from "@uok/contracts/moduleSurface";
@@ -5,8 +6,9 @@ import {
   INTELLIGENCE_MODULE_ID,
   INTELLIGENCE_SECTION_ID,
 } from "./intelligenceModule";
-import { ShipmentReadinessWorkspace } from "./ShipmentReadinessWorkspace";
 import "./styles/index.css";
+
+const ShipmentReadinessWorkspace = lazy(() => import("./ShipmentReadinessWorkspace").then((module) => ({ default: module.ShipmentReadinessWorkspace })));
 
 export const shipmentReadinessModuleSurface: ModuleSurface = {
   id: INTELLIGENCE_SECTION_ID,

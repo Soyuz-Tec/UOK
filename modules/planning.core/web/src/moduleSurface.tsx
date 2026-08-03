@@ -1,9 +1,11 @@
+import { lazy } from "react";
 import { CalendarRange } from "lucide-react";
 
 import type { ModuleSurface } from "@uok/contracts/moduleSurface";
 import { PLANNING_MODULE_ID, PLANNING_SECTION_ID } from "./planningModule";
-import { PlanningWorkspace } from "./PlanningWorkspace";
 import "./styles/index.css";
+
+const PlanningWorkspace = lazy(() => import("./PlanningWorkspace").then((module) => ({ default: module.PlanningWorkspace })));
 
 export const planningModuleSurface: ModuleSurface = {
   id: PLANNING_SECTION_ID,

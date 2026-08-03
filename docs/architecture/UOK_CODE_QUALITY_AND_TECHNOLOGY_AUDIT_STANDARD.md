@@ -179,8 +179,9 @@ npm --prefix web run check:bundle-budget
 `check:dependencies` is the direct-manifest and lockfile authority. `lint` and
 `lint:styles` are correctness gates rather than formatting suggestions.
 `check:bundle-budget` measures every emitted JavaScript and CSS asset in raw and
-gzip form and fails closed when assets are missing or exceed the reviewed
-ceiling. Current ceilings are owned by
+gzip form, identifies the exact HTML entry, enforces the minimum split-chunk
+count plus entry and largest-deferred ceilings, and fails closed when assets are
+missing or exceed the reviewed cumulative or per-load ceiling. Current ceilings are owned by
 `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`.
 
 The canonical maturity assessment, reuse inventory, and sequenced remediation

@@ -140,7 +140,7 @@ primary-command boundary. Delivery 6e also does not close the current-detail
 Delivery 6f implements a bounded activity and relationship-productivity
 authority slice. Local qualification completed on 2026-08-03 with all 187
 Contacts frontend tests across 34 files, both focused backend privacy tests,
-the 750-test whole-frontend lane, and protected browser proof; exact-head
+the 751-test whole-frontend lane, and protected browser proof; exact-head
 hosted CI remains required before merge. It adopts the paginated
 `GET /api/contacts/{partyId}/activity` read and the debounced
 `GET /api/contacts/relationship-options` read without changing their module

@@ -1,9 +1,11 @@
+import { lazy } from "react";
 import { ContactRound } from "lucide-react";
 
 import type { ModuleSurface } from "@uok/contracts/moduleSurface";
 import { CONTACTS_MODULE_ID, CONTACTS_SECTION_ID } from "./contactModule";
-import { ContactsModuleRoot } from "./ContactsModuleRoot";
 import "./styles/index.css";
+
+const ContactsModuleRoot = lazy(() => import("./ContactsModuleRoot").then((module) => ({ default: module.ContactsModuleRoot })));
 
 export const contactsModuleSurface: ModuleSurface = {
   id: CONTACTS_SECTION_ID,

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { Suspense, useRef } from "react";
 
 import type {
   GeneratedModuleSurfaceRegistration,
@@ -26,7 +26,11 @@ function ModuleSurfaceRenderer({
     ...host,
     surfaceActive,
   };
-  return surface.render(renderContext);
+  return (
+    <Suspense fallback={<p role="status">Loading {surface.label}…</p>}>
+      {surface.render(renderContext)}
+    </Suspense>
+  );
 }
 
 export function validateModuleSurfaceCatalog(

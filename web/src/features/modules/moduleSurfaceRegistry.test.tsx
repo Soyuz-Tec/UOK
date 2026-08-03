@@ -1,6 +1,7 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
-import { useEffect, useState } from "react";
+import { lazy, useEffect, useState } from "react";
+import type { ComponentType } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import type {
@@ -156,6 +157,21 @@ describe("module surface registry", () => {
 
     unmount();
     expect(onAppsUnmount).toHaveBeenCalledTimes(1);
+  });
+
+  it("announces an asynchronously loaded module surface", async () => {
+    let resolveModule!: (value: { default: ComponentType }) => void;
+    const LazySurface = lazy(() => new Promise<{ default: ComponentType }>((resolve) => { resolveModule = resolve; }));
+    const surfaces = validateModuleSurfaceCatalog([
+      registration("apps.manager", "apps", {
+        label: "Apps Manager",
+        render: () => <LazySurface />,
+      }),
+    ]);
+    render(<ModuleSurfaceOutlet section="apps" host={host} surfaces={surfaces} />);
+    expect(screen.getByRole("status")).toHaveTextContent("Loading Apps Manager");
+    await act(async () => resolveModule({ default: () => <p>Loaded module</p> }));
+    expect(await screen.findByText("Loaded module")).toBeInTheDocument();
   });
 
   it("contains a module render failure and allows a bounded retry", () => {

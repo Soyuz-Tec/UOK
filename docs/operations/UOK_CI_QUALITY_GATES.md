@@ -136,15 +136,24 @@ all non-generated shell and module production TypeScript, including the real
 line/branch denominator against the independently emitted LCOV inventory
 before publishing canonical evidence.
 
+The production bundle gate requires at least 12 JavaScript assets, identifies
+the exact script referenced by compiled `index.html`, and enforces cumulative,
+entry, and largest-deferred raw/gzip ceilings. The 2026-08-03 qualified build
+emits 23 JavaScript assets: a 226.06 KiB raw/70.09 KiB gzip entry and a largest
+deferred chunk of 225.14 KiB raw/61.04 KiB gzip. This proves compile-time module
+workspace splitting while retaining the closed manifest catalog; it is not a
+wire-transfer measurement until the static host's compression policy is
+qualified separately.
+
 The measured whole-tree frontend baseline and rounded-down non-regression
 floors are:
 
 | Metric | Measured baseline | CI floor |
 |---|---:|---:|
-| Statements | `73.04%` | `73%` |
-| Branches | `67.47%` | `67%` |
-| Functions | `71.33%` | `71%` |
-| Lines | `77.18%` | `77%` |
+| Statements | `76.48%` | `76%` |
+| Branches | `70.49%` | `70%` |
+| Functions | `74.31%` | `74%` |
+| Lines | `80.70%` | `80%` |
 
 Raise a floor when the measured baseline improves materially. Lowering a floor
 requires a reviewed explanation in the pull request and this runbook.

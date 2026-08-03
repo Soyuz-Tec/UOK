@@ -41,9 +41,9 @@ The target is not a new framework or a generic schema-driven UI. UOK should pres
 | Production `ResizableDataTable` consumers | 8 |
 | CSS media declarations | 77 `@media` blocks, 23 exact forms; 60 width-bearing blocks using 16 distinct widths |
 | CSS cascade layers | 0 |
-| Current JavaScript bundle | 1 file, 939.46 KiB raw, 247.45 KiB gzip |
-| Current CSS bundle | 1 file, 198.47 KiB raw, 26.43 KiB gzip |
-| Unit proof at Delivery 4 | 145 files, 543 tests |
+| Current JavaScript bundle | 23 files, 991.67 KiB cumulative raw and 280.89 KiB cumulative gzip; initial entry 226.06 KiB raw and 70.09 KiB gzip; largest deferred chunk 225.14 KiB raw and 61.04 KiB gzip |
+| Current CSS bundle | 1 file, 198.30 KiB raw, 26.33 KiB gzip |
+| Current unit proof | 186 files, 751 tests |
 | Browser proof at Delivery 4 | 24 passed, 1 intentional live-only skip |
 | Candidate proof at Delivery 4 | Two immutable-image passes; 12 module verifiers per pass; zero retained disposable resources |
 
@@ -111,7 +111,9 @@ UOK needs an ABA-safe request-authority generation, a generation-bound unauthori
 - URL and UI state can diverge.
 - Async session safety is inconsistent.
 - API transport and response validation are fragmented.
-- The initial bundle contains every module.
+- The initial entry retains only shell and synchronous surface metadata; each
+  compile-time-known module workspace loads on first activation and then stays
+  mounted under the retained-surface lifecycle.
 - Form, selection, pagination, and saved-view contracts are incomplete.
 - Master workspace orchestration and CSS are substantially duplicated.
 - Theme bootstrap, cascade ownership, z-index, motion, and breakpoint policy are incomplete.
@@ -120,7 +122,7 @@ UOK needs an ABA-safe request-authority generation, a generation-bound unauthori
 
 ### Performance And Dependency Findings
 
-- The production build emits one 939.46 KiB JavaScript asset and one 198.47 KiB CSS asset. Literal imports in `web/src/generated/moduleSurfaceCatalog.ts` make all eleven module surfaces part of the initial authentication/shell graph; there are no dynamic module imports.
+- The production build emits 23 JavaScript assets and one 198.30 KiB CSS asset. The generated catalog keeps eleven small literal module entries in the initial graph; each entry owns one literal local lazy workspace import. The exact HTML entry is 226.06 KiB raw and 70.09 KiB gzip, and the largest deferred Planning chunk is 225.14 KiB raw and 61.04 KiB gzip.
 - The static host sends the full JavaScript asset without negotiated compression and does not apply an explicit immutable policy to hashed assets, so the gzip budget currently measures potential size rather than delivered wire size.
 - `web/src/shared/localization/UokLocalization.tsx` creates a new provider value on every parent render and constructs new `Intl.DateTimeFormat` or `Intl.NumberFormat` instances on every format call. Seventy-three localization consumers make this a shared invalidation and allocation boundary.
 - `web/src/app/useWorkbench.ts` recreates `moduleHost` on every hook render. Because the registry retains visited module roots, shell-only state changes can propagate into hidden workspaces without a stable host/render boundary.
@@ -148,7 +150,7 @@ The performance target is measurable: gzip-enabled wire delivery, an initial-ent
 | HTTP transport | Nineteen production owners implement transport differently | `rg -l "fetch\\(" web/src modules -g "*.ts" -g "*.tsx" -g "!**/*.test.ts" -g "!**/*.test.tsx" -g "!**/tests/**"` | Normalize mechanics without centralizing endpoints | Planned shared HTTP package | P0 | High | Consistent auth, errors, decoding, cancellation |
 | Auth session | Local-only logout leaves the bearer token replayable until its default eight-hour expiry | `web/src/app/useAuthState.ts`; `src/uok/host/security.py` | Server-authoritative identity and revocation | Identity bootstrap, token identifier/rotation, and server logout | P0 | High | Bound logout, theft, and shared-device exposure |
 | Static delivery | Hashed assets lack compression/cache policy and browser security headers | `src/uok/host/application.py` | Share one host delivery policy | Static response middleware and exact-candidate response-header tests | P0 | Medium | Lower wire size, safe repeat loads, browser defense in depth |
-| Module loading | Eleven generated imports are eager | `web/src/generated/moduleSurfaceCatalog.ts`; `web/src/features/modules/moduleSurfaceRegistry.tsx` | Compile-time-known lazy factories | Generated lazy surface registration | P0 | High | Smaller authentication and shell entry |
+| Module loading | Eleven synchronous surface descriptors plus eleven compile-time-known lazy workspace chunks | `web/src/generated/moduleSurfaceCatalog.ts`; module-local `moduleSurface.tsx`; `web/src/features/modules/moduleSurfaceRegistry.tsx` | Preserve literal owner-local lazy boundaries and retained state | Protected entry/chunk budgets and async loading proof | P0 | High | Completed locally; exact-head hosted CI pending |
 | Forms | Field/error/focus rules repeat across editors | `web/src/shared/forms/FieldMessage.tsx`; `modules/contacts.core/web/src/ContactForm.tsx`; `modules/product.master/web/src/ProductEditor.tsx`; `modules/locations.core/web/src/LocationEditor.tsx` | Dependency-free accessible field contract | `FormField`, invalid-focus helper, form summary | P1 | Medium | Consistent validation and keyboard submit |
 | Tables | Eight consumers repeat row keyboard selection | `web/src/shared/tables/ResizableDataTable.tsx`; `rg -l "ResizableDataTable" web/src modules -g "*.tsx"` | One selection and roving-focus contract | `useDataGridSelection` in shared tables | P1 | Medium | Correct one-tab-stop table interaction |
 | Remote collections | Contacts and Planning repeat pagination/request state | `modules/contacts.core/web/src/app/useContactData.ts`; `modules/planning.core/web/src/PlanningWorkspace.tsx`; `modules/planning.core/web/src/PlanningModuleState.tsx` | Typed request/page controller | `useRemoteCollection` | P1 | Medium | Fewer stale reads and page-reset defects |
@@ -230,7 +232,7 @@ Expected outcome: one measured baseline, responsive and accessible shared behavi
 | 11 | CSV formula neutralization and export proof | Planned | No |
 | 12 | Bounded Contacts file ingestion before browser reads | Planned | No |
 | 13 | Static compression/cache policy and browser security headers | Planned | Yes; static-delivery and browser-security ADR |
-| 14 | Compile-time module code splitting, retained lifecycle, and entry/chunk budgets | Planned | Yes; amend ADR-0023 and ADR-0028 |
+| 14 | Compile-time module code splitting, retained lifecycle, and entry/chunk budgets | Implemented and locally qualified on 2026-08-03; ADR-0023/ADR-0028 amended, 23-asset build and entry/deferred/cumulative budgets pass; exact-head hosted CI pending | ADR-0023 and ADR-0028 amended |
 | 15 | Shared form foundation and Product/Contacts pilot | Planned | No without a new dependency |
 | 16 | Table selection, remote collection, and versioned saved-view contracts | Planned | Conditional on server query protocol |
 
@@ -314,7 +316,7 @@ Every delivery must merge and qualify before the next begins. Runtime-affecting 
 | 2 | Logout leaves the bearer token replayable until its default eight-hour expiry | High | `useAuthState.ts`; `src/uok/host/security.py` | Token identity/revocation, rotation, server logout, and replay tests | Open |
 | 3 | Nineteen clients implement transport and response handling separately | High | Direct `fetch` inventory | Shared HTTP mechanics plus module decoders | Open |
 | 4 | Client identity outlives token storage and is weakly decoded | Medium | `web/src/shared/session.ts` | Strict server-rehydrated session identity | Open |
-| 5 | Authentication and shell download every module workspace | High | Generated eager catalog; one 939.46 KiB JS asset | Compile-time-known lazy surfaces | Open |
+| 5 | Authentication and shell download every module workspace | High | Former one-file entry replaced by 23 static assets; entry 226.06 KiB raw/70.09 KiB gzip | Compile-time-known lazy surfaces | Completed locally; exact-head hosted CI pending |
 | 6 | URL and active workspace diverge; Back/Forward and copy/reload are incomplete | Medium | `web/src/app/useWorkbench.ts` | Typed reactive location/history contract | Open |
 | 7 | Planning-to-Contacts `party_id` link does not select the requested Party | Medium | Planning participant links and Contacts selection initialization | Exact module-owned entity route decoding | Open |
 | 8 | Static delivery lacks compression, explicit cache policy, and tested browser security headers | Medium | FastAPI static runtime response and host tests | Static delivery/security middleware and proof | Open |
@@ -456,7 +458,8 @@ The shared control should forward safe native button props and events instead of
 - Repeated Enter/Space row-selection helpers after the shared table contract.
 - Global unscoped saved-view storage.
 - Unvalidated internal path rendering.
-- Eager module imports after an ADR-approved lazy generator is proven.
+- Eager module-workspace imports; synchronous surface metadata remains required
+  for navigation and closed-catalog validation.
 
 ### Rebuild From Scratch
 
