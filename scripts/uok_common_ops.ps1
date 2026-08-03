@@ -100,16 +100,20 @@ function Assert-UokApiImageIdentity {
     if ($LASTEXITCODE -ne 0 -or -not $imageId) {
         throw "Unable to resolve the exact API image for $containerName."
     }
-    $actualVersion = "$(
-        & podman image inspect --format "{{ index .Labels `"org.opencontainers.image.version`" }}" $imageId |
-            Select-Object -Last 1
-    )".Trim()
-    if ($LASTEXITCODE -ne 0) { throw "Unable to read the API image version label." }
-    $actualRevision = "$(
-        & podman image inspect --format "{{ index .Labels `"org.opencontainers.image.revision`" }}" $imageId |
-            Select-Object -Last 1
-    )".Trim()
-    if ($LASTEXITCODE -ne 0) { throw "Unable to read the API image revision label." }
+    $imageInspectJson = & podman image inspect $imageId
+    if ($LASTEXITCODE -ne 0 -or -not $imageInspectJson) {
+        throw "Unable to inspect the API image labels."
+    }
+    try {
+        $imageInspect = @($imageInspectJson | ConvertFrom-Json -ErrorAction Stop)[0]
+    }
+    catch {
+        throw "Unable to parse the API image inspection result: $($_.Exception.Message)"
+    }
+    $actualVersion = "$($imageInspect.Labels.'org.opencontainers.image.version')".Trim()
+    $actualRevision = "$($imageInspect.Labels.'org.opencontainers.image.revision')".Trim()
+    if (-not $actualVersion) { throw "Unable to read the API image version label." }
+    if (-not $actualRevision) { throw "Unable to read the API image revision label." }
     if ($actualVersion -ne $ExpectedVersion -or $actualRevision -ne $ExpectedRevision) {
         throw (
             "API image identity mismatch. Expected version/revision " +
