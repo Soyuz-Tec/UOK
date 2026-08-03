@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import type { DragEvent as ReactDragEvent } from "react";
 
 import { useUokLocalization } from "@uok/shared/localization";
@@ -7,6 +7,7 @@ import { PlanningFlowCard } from "./PlanningFlowCard";
 import { localizedPlanningStatusLabel, planningFlowDropTarget, planningFlowLanes } from "./planningFlowBoardModel";
 import type { PlanningTaskUpdateRequest } from "./planningContracts";
 import type { PlanningSchedule, PlanningTask, PlanningTaskStatus } from "./types";
+import { usePlanningFlowFocus } from "./usePlanningFlowFocus";
 
 type PendingMove = { taskId: string };
 type DragState = { taskId: string; hoveredStatus?: PlanningTaskStatus };
@@ -27,19 +28,17 @@ export function PlanningFlowBoard({
   const { formatDate, formatNumber, t } = useUokLocalization();
   const boardRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
-  const activeDragTaskId = useRef<string | null>(null);
-  const deferredFocusTaskId = useRef<string | null>(null);
-  const deferredFocusOrigin = useRef<Element | null>(null);
-  const deferredFocusTimer = useRef<number | null>(null);
   const openControlRefs = useRef(new Map<string, HTMLButtonElement>());
+  const {
+    activeDragTaskId, cancelDeferredFocus, clearReconciledFocus, deferTaskFocus,
+    deferredFocusTaskId, expectReconciledFocus, restoreTaskFocus,
+  } = usePlanningFlowFocus(schedule.project.revision, boardRef, openControlRefs);
   const pendingMoveTaskId = useRef<string | null>(null);
   const instructionsId = useId();
   const [announcement, setAnnouncement] = useState("");
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const lanes = planningFlowLanes(schedule);
-
-  useEffect(() => () => cancelDeferredFocus(), []);
 
   if (!schedule.task_flow) {
     return (
@@ -201,6 +200,7 @@ export function PlanningFlowBoard({
     if (!fromDrag) activeDragTaskId.current = null;
     const statusLabel = localizedPlanningStatusLabel(schedule, targetStatus, t);
     pendingMoveTaskId.current = task.id;
+    expectReconciledFocus(task.id, schedule.project.revision);
     setPendingMove({ taskId: task.id });
     setAnnouncement(template(t("planning.board.moving", "Moving {task} to {status}."), { task: task.title, status: statusLabel }));
     try {
@@ -208,6 +208,7 @@ export function PlanningFlowBoard({
       if (!applied) throw new Error("Task move was not accepted");
       setAnnouncement(template(t("planning.board.moveSuccess", "{task} moved to {status}."), { task: task.title, status: statusLabel }));
     } catch {
+      clearReconciledFocus();
       setAnnouncement(t("planning.board.moveNotApplied", "Task move was not applied. Review the Planning notice."));
     } finally {
       pendingMoveTaskId.current = null;
@@ -215,37 +216,6 @@ export function PlanningFlowBoard({
       if (fromDrag && activeDragTaskId.current === task.id) deferTaskFocus(task.id);
       else restoreTaskFocus(task.id);
     }
-  }
-
-  function deferTaskFocus(taskId: string) {
-    cancelDeferredFocus();
-    deferredFocusTaskId.current = taskId;
-    deferredFocusOrigin.current = document.activeElement;
-    deferredFocusTimer.current = window.setTimeout(() => {
-      if (activeDragTaskId.current !== taskId || deferredFocusTaskId.current !== taskId) return;
-      const focusMoved = document.activeElement !== deferredFocusOrigin.current
-        && document.activeElement instanceof HTMLElement
-        && document.activeElement !== document.body
-        && document.activeElement.isConnected;
-      activeDragTaskId.current = null;
-      cancelDeferredFocus();
-      if (!focusMoved) restoreTaskFocus(taskId);
-    }, 100);
-  }
-
-  function cancelDeferredFocus() {
-    if (deferredFocusTimer.current !== null) window.clearTimeout(deferredFocusTimer.current);
-    deferredFocusTimer.current = null;
-    deferredFocusTaskId.current = null;
-    deferredFocusOrigin.current = null;
-  }
-
-  function restoreTaskFocus(taskId: string) {
-    window.requestAnimationFrame(() => {
-      const control = openControlRefs.current.get(taskId);
-      if (control?.isConnected) control.focus();
-      else boardRef.current?.focus();
-    });
   }
 
   async function updateTitle(taskId: string, title: string) {

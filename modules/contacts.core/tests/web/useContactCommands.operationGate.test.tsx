@@ -16,37 +16,68 @@ afterEach(() => {
 });
 
 describe("Contacts shared command operation gate", () => {
-  it("admits managed first, rejects legacy, then releases after completion", async () => {
+  it("admits managed productivity first and rejects primary plus legacy commands", async () => {
     const command = deferred<Response>();
     const fetchMock = vi.fn(() => command.promise);
     vi.stubGlobal("fetch", fetchMock);
     const props = hookProps();
     const { result } = renderHook(() => useContactCommands(props));
-    let managed!: Promise<boolean>;
+    let productivity!: Promise<boolean>;
+    let primary!: Promise<boolean>;
     let legacy!: Promise<boolean>;
     act(() => {
-      managed = result.current.saveDraft();
-      legacy = result.current.addNote();
+      productivity = result.current.addNote();
+      primary = result.current.saveDraft();
+      legacy = result.current.addSelectedContactToGroup("group-a");
     });
 
+    await expect(primary).resolves.toBe(false);
     await expect(legacy).resolves.toBe(false);
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect(commandType(fetchMock)).toBe("UpdateContact");
+    expect(commandType(fetchMock)).toBe("AddContactNote");
     expect(props.data.api).not.toHaveBeenCalled();
     expect(props.data.refresh).not.toHaveBeenCalled();
     expect(props.setNoteText).not.toHaveBeenCalled();
 
     await act(async () => {
       command.resolve(commandResponse(contactA));
-      await managed;
+      await productivity;
     });
     await act(async () => {
-      await expect(result.current.addNote()).resolves.toBe(true);
+      await expect(result.current.addSelectedContactToGroup("group-a"))
+        .resolves.toBe(true);
     });
     expect(props.data.api).toHaveBeenCalledTimes(1);
   });
 
-  it("admits legacy first and rejects a same-tick managed command", async () => {
+  it("admits a primary command first and rejects productivity plus legacy commands", async () => {
+    const command = deferred<Response>();
+    const fetchMock = vi.fn(() => command.promise);
+    vi.stubGlobal("fetch", fetchMock);
+    const props = hookProps();
+    const { result } = renderHook(() => useContactCommands(props));
+    let primary!: Promise<boolean>;
+    let productivity!: Promise<boolean>;
+    let legacy!: Promise<boolean>;
+    act(() => {
+      primary = result.current.saveDraft();
+      productivity = result.current.addNote();
+      legacy = result.current.addSelectedContactToGroup("group-a");
+    });
+
+    await expect(productivity).resolves.toBe(false);
+    await expect(legacy).resolves.toBe(false);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(commandType(fetchMock)).toBe("UpdateContact");
+    expect(props.data.api).not.toHaveBeenCalled();
+
+    await act(async () => {
+      command.resolve(commandResponse(contactA));
+      await primary;
+    });
+  });
+
+  it("admits legacy first and rejects same-tick primary plus productivity commands", async () => {
     const legacyResponse = deferred<typeof succeededResponse>();
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
@@ -55,13 +86,16 @@ describe("Contacts shared command operation gate", () => {
     const props = hookProps({ data });
     const { result } = renderHook(() => useContactCommands(props));
     let legacy!: Promise<boolean>;
-    let managed!: Promise<boolean>;
+    let primary!: Promise<boolean>;
+    let productivity!: Promise<boolean>;
     act(() => {
-      legacy = result.current.addNote();
-      managed = result.current.saveDraft();
+      legacy = result.current.addSelectedContactToGroup("group-a");
+      primary = result.current.saveDraft();
+      productivity = result.current.addNote();
     });
 
-    await expect(managed).resolves.toBe(false);
+    await expect(primary).resolves.toBe(false);
+    await expect(productivity).resolves.toBe(false);
     expect(data.api).toHaveBeenCalledTimes(1);
     expect(fetchMock).not.toHaveBeenCalled();
 
@@ -71,13 +105,14 @@ describe("Contacts shared command operation gate", () => {
     });
     expect(data.refresh).toHaveBeenCalledTimes(1);
     expect(data.loadContactDetail).toHaveBeenCalledTimes(1);
-    expect(props.setNoteText).toHaveBeenCalledWith("");
+    expect(props.setNoteText).not.toHaveBeenCalled();
   });
 
   it.each(["failed", "deferred"])(
-    "blocks legacy throughout managed %s reconciliation",
+    "blocks primary and legacy throughout productivity %s reconciliation",
     async (kind) => {
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(commandResponse(contactA)));
+      const fetchMock = vi.fn().mockResolvedValue(commandResponse(contactA));
+      vi.stubGlobal("fetch", fetchMock);
       const reconcilePrimaryContacts = vi.fn()
         .mockResolvedValueOnce(kind === "failed"
           ? { kind: "failed", error: new Error("reads unavailable") }
@@ -92,14 +127,16 @@ describe("Contacts shared command operation gate", () => {
       const { result } = renderHook(() => useContactCommands(props));
 
       await act(async () => {
-        await expect(result.current.saveDraft()).resolves.toBe(false);
+        await expect(result.current.addNote()).resolves.toBe(false);
       });
       vi.mocked(data.api).mockClear();
       vi.mocked(data.refresh).mockClear();
       vi.mocked(data.setBusyAction).mockClear();
       vi.mocked(props.setNoteText).mockClear();
       await act(async () => {
-        await expect(result.current.addNote()).resolves.toBe(false);
+        await expect(result.current.saveDraft()).resolves.toBe(false);
+        await expect(result.current.addSelectedContactToGroup("group-a"))
+          .resolves.toBe(false);
       });
       expect(data.api).not.toHaveBeenCalled();
       expect(data.refresh).not.toHaveBeenCalled();
@@ -109,9 +146,11 @@ describe("Contacts shared command operation gate", () => {
       await act(async () => {
         await expect(result.current.retryPendingReconciliation())
           .resolves.toBe(true);
-        await expect(result.current.addNote()).resolves.toBe(true);
+        await expect(result.current.addSelectedContactToGroup("group-a"))
+          .resolves.toBe(true);
       });
       expect(reconcilePrimaryContacts).toHaveBeenCalledTimes(2);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
       expect(data.api).toHaveBeenCalledTimes(1);
     },
   );

@@ -17,6 +17,7 @@ import {
 import {
   contactCommandBusyAction,
   redactStaleContactCommandOutcome,
+  retainedContactCommandError,
   type ContactCommandOperation,
   type ContactCommandRunInput,
 } from "./contactCommandCoordinatorTypes";
@@ -63,7 +64,9 @@ export function useContactCommandCoordinator({
   const operationRef = useRef<ContactCommandOperation | null>(null);
   const operationSequence = useRef(0);
   const mounted = useRef(true);
-  const [phase, setPhase] = useState<"idle" | "command" | "pending" | "reconciling">("idle");
+  const [phase, setPhase] = useState<
+    "idle" | "preflight" | "command" | "pending" | "reconciling"
+  >("idle");
   const [retryRevision, setRetryRevision] = useState(0);
   boundaryRef.current = boundary;
   interactionRef.current = interaction;
@@ -122,7 +125,7 @@ export function useContactCommandCoordinator({
     }
     setPhase("pending");
     if (result.kind === "failed" && effectCurrent(operation)) {
-      operation.onPending(result.error);
+      operation.onPending(retainedContactCommandError(result.error));
     } else if (result.kind === "superseded") {
       setRetryRevision((current) => current + 1);
     }
@@ -140,7 +143,13 @@ export function useContactCommandCoordinator({
       input.capability,
     );
     const operation: ContactCommandOperation = {
-      ...input,
+      action: input.action,
+      capability: input.capability,
+      intentIsCurrent: input.intentIsCurrent,
+      onAccepted: input.onAccepted,
+      onError: input.onError,
+      onPending: input.onPending,
+      onSuccess: input.onSuccess,
       id: ++operationSequence.current,
       gateOwner,
       effect: null,
@@ -148,7 +157,7 @@ export function useContactCommandCoordinator({
       reconciling: false,
     };
     operationRef.current = operation;
-    setPhase("command");
+    setPhase("preflight");
     await Promise.resolve();
     if (!authority.isCurrentEpoch(epoch)
       || !isContactMutationDispatchCurrent(
@@ -168,20 +177,24 @@ export function useContactCommandCoordinator({
       onUnauthorizedRef,
       input.capability,
     );
+    setPhase("command");
     if (effectCurrent(operation)) input.onAccepted?.();
     supersedeReadsRef.current();
+    const dispatch = input.execute;
+    const preferredSelectedId = input.preferredSelectedId;
     try {
-      const response = await input.execute({
+      const responsePromise = dispatch({
         token: captured.boundary.token,
         idempotencyKey: contactMutationIdempotencyKey(input.action),
         onUnauthorized: () => {
           if (effectCurrent(operation)) operation.effect?.request.onUnauthorized();
         },
       });
+      const response = await responsePromise;
       operation.outcome = {
         kind: "success",
         preferredSelectedId: effectCurrent(operation)
-          ? input.preferredSelectedId(response)
+          ? preferredSelectedId(response)
           : undefined,
       };
     } catch (error) {
@@ -192,7 +205,7 @@ export function useContactCommandCoordinator({
       operation.outcome = {
         kind: "error",
         error: effectCurrent(operation)
-          ? error
+          ? retainedContactCommandError(error)
           : new Error("A stale Contacts command outcome requires reconciliation."),
       };
     }
@@ -245,7 +258,7 @@ export function useContactCommandCoordinator({
 
   const operation = operationRef.current;
   return {
-    busyAction: contactCommandBusyAction(
+    busyAction: phase === "preflight" ? "" : contactCommandBusyAction(
       operation,
       operation ? effectCurrent(operation) : false,
     ),

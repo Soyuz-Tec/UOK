@@ -6,24 +6,37 @@ import { formatLabel } from "@uok/shared/format";
 import { useUokLocalization } from "@uok/shared/localization";
 import { CommandButton } from "@uok/shared/primitives";
 import { PaginationControls } from "@uok/shared/tables";
+import type { ContactReadBoundary } from "./app/contactReadAuthority";
 import type { ContactActivityRecord } from "./contactActivityApi";
 import { useContactActivity } from "./useContactActivity";
 
 const activityPageSizes = [10, 25, 50];
 
 export function ContactActivityTimeline({
-  token,
+  boundary,
+  onUnauthorized,
   contactId,
-  refreshKey
+  contactRevision,
+  refreshGeneration,
 }: {
-  token: string;
+  boundary: ContactReadBoundary;
+  onUnauthorized: () => void;
   contactId: string;
-  refreshKey?: string | number;
+  contactRevision: string;
+  refreshGeneration?: string | number;
 }) {
   const { formatDate, t } = useUokLocalization();
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(activityPageSizes[0]);
-  const activity = useContactActivity({ token, partyId: contactId, page, pageSize, refreshKey });
+  const activity = useContactActivity({
+    boundary,
+    onUnauthorized,
+    partyId: contactId,
+    contactRevision,
+    page,
+    pageSize,
+    refreshGeneration,
+  });
 
   useEffect(() => setPage(0), [contactId]);
 

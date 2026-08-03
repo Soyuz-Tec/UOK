@@ -1,10 +1,12 @@
+import { lazy } from "react";
 import { CalendarDays } from "lucide-react";
 
 import type { ModuleSurface } from "@uok/contracts/moduleSurface";
 
-import { CalendarWorkspace } from "./CalendarWorkspace";
 import { CALENDAR_MODULE_ID, CALENDAR_SECTION_ID } from "./calendarModule";
 import "./styles/index.css";
+
+const CalendarWorkspace = lazy(() => import("./CalendarWorkspace").then((module) => ({ default: module.CalendarWorkspace })));
 
 export const calendarModuleSurface: ModuleSurface = {
   id: CALENDAR_SECTION_ID,

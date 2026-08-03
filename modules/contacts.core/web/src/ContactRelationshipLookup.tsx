@@ -2,17 +2,25 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 
 import { formatLabel } from "@uok/shared/format";
 import { useUokLocalization } from "@uok/shared/localization";
+import {
+  contactReadsEnabled,
+  type ContactReadBoundary,
+} from "./app/contactReadAuthority";
 import type { ContactRelationshipOption } from "./contactRelationshipOptionsApi";
 import { useContactRelationshipOptions } from "./useContactRelationshipOptions";
 
 export function ContactRelationshipLookup({
-  token,
+  boundary,
+  onUnauthorized,
+  canManage,
   contactId,
   value,
   initialLabel,
   onChange
 }: {
-  token: string;
+  boundary: ContactReadBoundary;
+  onUnauthorized: () => void;
+  canManage: boolean;
   contactId: string;
   value: string;
   initialLabel?: string;
@@ -25,15 +33,30 @@ export function ContactRelationshipLookup({
   const [activeIndex, setActiveIndex] = useState(0);
   const userSearching = useRef(false);
   const previousValue = useRef(value);
-  const lookup = useContactRelationshipOptions(token, searchActive ? query : "", contactId);
-  const showResults = searchActive && query.trim().length >= 2;
+  const lookup = useContactRelationshipOptions({
+    boundary,
+    onUnauthorized,
+    canManage,
+    query: searchActive ? query : "",
+    excludePartyId: contactId,
+  });
+  const showResults = canManage
+    && contactReadsEnabled(boundary)
+    && searchActive
+    && query.trim().length >= 2;
 
   useEffect(() => {
     setQuery(initialLabel || "");
     setSearchActive(false);
     setActiveIndex(0);
     userSearching.current = false;
-  }, [contactId, initialLabel]);
+  }, [boundary.generation, boundary.token, contactId, initialLabel]);
+
+  useEffect(() => {
+    if (canManage && boundary.operational && boundary.surfaceActive) return;
+    setSearchActive(false);
+    setActiveIndex(0);
+  }, [boundary.operational, boundary.surfaceActive, canManage]);
 
   useEffect(() => {
     if (previousValue.current && !value && !userSearching.current) {
@@ -81,6 +104,7 @@ export function ContactRelationshipLookup({
           aria-controls={listboxId}
           aria-expanded={showResults}
           aria-activedescendant={showResults && lookup.options[activeIndex] ? `${listboxId}-${lookup.options[activeIndex].id}` : undefined}
+          disabled={!canManage || !contactReadsEnabled(boundary)}
           value={query}
           placeholder={t("contacts.relationships.searchPlaceholder", "Type at least two characters")}
           onChange={(event) => {

@@ -1,10 +1,12 @@
+import { lazy } from "react";
 import { MessageCircleMore } from "lucide-react";
 
 import type { ModuleSurface } from "@uok/contracts/moduleSurface";
 
-import { CommunicationsWorkspace } from "./CommunicationsWorkspace";
 import { COMMUNICATIONS_MODULE_ID, COMMUNICATIONS_SECTION_ID } from "./communicationsModule";
 import "./styles/index.css";
+
+const CommunicationsWorkspace = lazy(() => import("./CommunicationsWorkspace").then((module) => ({ default: module.CommunicationsWorkspace })));
 
 export const communicationsModuleSurface: ModuleSurface = {
   id: COMMUNICATIONS_SECTION_ID,

@@ -1,9 +1,11 @@
+import { lazy } from "react";
 import { Store } from "lucide-react";
 
 import type { ModuleSurface } from "@uok/contracts/moduleSurface";
 
-import { AppsManagerPanel } from "./AppsManagerPanel";
 import "./styles/index.css";
+
+const AppsManagerPanel = lazy(() => import("./AppsManagerPanel").then((module) => ({ default: module.AppsManagerPanel })));
 
 export const appsManagerModuleSurface: ModuleSurface = {
   id: "apps",

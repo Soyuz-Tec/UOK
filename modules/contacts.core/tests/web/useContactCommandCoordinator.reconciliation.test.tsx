@@ -64,7 +64,12 @@ describe("Contacts command reconciliation", () => {
 
     expect(input.execute).toHaveBeenCalledTimes(1);
     expect(options.reconcilePrimaryContacts).toHaveBeenCalledTimes(1);
-    expect(input.onError).toHaveBeenCalledWith(error);
+    const retainedError = input.onError.mock.calls[0]?.[0];
+    expect(retainedError).toEqual(expect.objectContaining({
+      message: error.message,
+    }));
+    expect(retainedError).not.toHaveProperty("body");
+    expect(retainedError).not.toHaveProperty("status");
     expect(input.onSuccess).not.toHaveBeenCalled();
   });
 

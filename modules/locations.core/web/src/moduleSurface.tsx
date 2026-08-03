@@ -1,9 +1,11 @@
+import { lazy } from "react";
 import { MapPin } from "lucide-react";
 
 import type { ModuleSurface } from "@uok/contracts/moduleSurface";
-import { LocationMasterWorkspace } from "./LocationMasterWorkspace";
 import { LOCATION_MODULE_ID, LOCATION_SECTION_ID } from "./locationModule";
 import "./styles/index.css";
+
+const LocationMasterWorkspace = lazy(() => import("./LocationMasterWorkspace").then((module) => ({ default: module.LocationMasterWorkspace })));
 
 export const locationMasterModuleSurface: ModuleSurface = {
   id: LOCATION_SECTION_ID,

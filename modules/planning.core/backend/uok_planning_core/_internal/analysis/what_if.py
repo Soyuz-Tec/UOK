@@ -122,8 +122,8 @@ def what_if_detail(row: PlanningWhatIfSnapshot) -> dict[str, Any]:
 def what_if_integrity(row: PlanningWhatIfSnapshot) -> dict[str, Any]:
     try:
         snapshot = loads(row.snapshot_json, {})
-    except (TypeError, ValueError, json.JSONDecodeError) as exc:
-        return {"status": "corrupt", "verified": False, "message": f"Snapshot JSON is invalid: {exc}"}
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {"status": "corrupt", "verified": False, "message": "Snapshot JSON is invalid."}
     shape_ok = (
         isinstance(snapshot, dict)
         and int(snapshot.get("schema_version") or 0) == int(row.schema_version)

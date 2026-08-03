@@ -125,6 +125,9 @@ export function useContactWorkspaceState(
     setCreating(false);
     setEditing(false);
     setDraft(emptyDraft);
+    setNoteText("");
+    setRelationshipTarget("");
+    setRelationshipType("primary_contact");
   }
 
   function changeContactGroupBy(value: typeof preferences.contactGroupBy) {

@@ -4,6 +4,8 @@
 **Date:** 2026-07-10
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
+**Amended:** 2026-08-03 to permit compile-time-known lazy workspace chunks.
+
 ## Context
 
 UOK manifests already declared a `web_path`, but the executable Apps Manager,
@@ -36,9 +38,12 @@ Python service remains the scheduling authority.
    checked-in literal TypeScript imports in
    `web/src/generated/moduleSurfaceCatalog.ts`. Generated-contract drift
    checking fails when manifests and the catalog disagree.
-5. The browser never reads manifest YAML, resolves a manifest path, or loads a
-   module dynamically. Manifest metadata influences the frontend only through
-   the generated compile-time catalog and the statically compiled Vite bundle.
+5. The browser never reads manifest YAML, resolves an arbitrary manifest path,
+   or loads remote module code. Manifest metadata influences the frontend only
+   through the generated compile-time catalog. Each statically imported module
+   entry may use one literal `React.lazy(() => import("./OwnedWorkspace"))`
+   boundary so Vite emits a reviewed local chunk without creating a runtime
+   plugin or path-resolution boundary.
 6. `web/src` remains the shell, shared UI/control, generated contract, and
    composition layer. The generated catalog feeds one typed module-surface
    registry; it is the only shell source allowed to import exact module surface
@@ -72,6 +77,9 @@ Python service remains the scheduling authority.
 - Adding or removing a workbench surface requires one closed manifest change,
   its canonical TypeScript entry, regenerated catalog output, and tests; a
   forgotten manual shell import cannot silently define catalog truth.
+- Authentication and the shell no longer download every module workspace.
+  The first visit loads that owner chunk, and the existing retained-surface
+  outlet keeps the resolved workspace mounted during later navigation.
 - Module-local CSS loads only when its statically imported module entry is part
   of the bundle. Product-neutral tokens, shell layout, and reusable controls
   stay in `web/src`.

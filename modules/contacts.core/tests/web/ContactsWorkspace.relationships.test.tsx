@@ -1,8 +1,10 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { contact, contactGroup, organizationContact, renderContactsWorkspace, resetContactsWorkspaceTest } from "./ContactsWorkspace.testUtils";
+import { deferred } from "./ContactReadTestUtils";
+import type { ContactsWorkspaceProps } from "../../web/src/types";
 
 afterEach(() => {
   document.documentElement.dir = "ltr";
@@ -72,10 +74,82 @@ describe("ContactsWorkspace relationship and group interactions", () => {
     fireEvent.change(relationshipSelector, { target: { value: "billing_contact" } });
     fireEvent.click(within(relationshipRow).getByLabelText("Save relationship"));
 
-    await waitFor(() => expect(onUpdateRelationship).toHaveBeenCalledWith("relationship-1", remoteContact.id, organizationContact.id, "billing_contact"));
+    await waitFor(() => expect(onUpdateRelationship).toHaveBeenCalledWith(
+      "relationship-1",
+      remoteContact.id,
+      organizationContact.id,
+      "billing_contact",
+      expect.objectContaining({ generation: expect.any(Number), isCurrent: expect.any(Function) }),
+    ));
 
-    fireEvent.click(within(relationshipRow).getByLabelText("Unlink Example Contact"));
+    const unlink = await waitFor(() => (
+      within(relationshipRow).getByLabelText("Unlink Example Contact")
+    ));
+    fireEvent.click(unlink);
     await waitFor(() => expect(onRemoveRelationship).toHaveBeenCalledWith("relationship-1"));
+  });
+
+  it("does not let an old row-editor completion close a relationship editor after A-B-A", async () => {
+    const update = deferred<boolean>();
+    const onUpdateRelationship = vi.fn<ContactsWorkspaceProps["onUpdateRelationship"]>(
+      () => update.promise,
+    );
+    const selected = {
+      ...organizationContact,
+      relationships: [
+        {
+          id: "relationship-a",
+          from_party_id: contact.id,
+          to_party_id: organizationContact.id,
+          relationship_type: "primary_contact",
+          direction: "inbound",
+          related_party_id: contact.id,
+          related_party_name: contact.display_name,
+          related_party_type: contact.party_type,
+          related_party_email: contact.email,
+        },
+        {
+          id: "relationship-b",
+          from_party_id: "remote-person",
+          to_party_id: organizationContact.id,
+          relationship_type: "advisor",
+          direction: "inbound",
+          related_party_id: "remote-person",
+          related_party_name: "Remote Person",
+          related_party_type: "person",
+          related_party_email: "remote@example.test",
+        },
+      ],
+    };
+    renderContactsWorkspace("split", [selected, contact], { onUpdateRelationship });
+    fireEvent.click(screen.getByRole("button", { name: /Avalon Bear Hill/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Relationships" }));
+    const inspector = screen.getByLabelText("Contact inspector");
+    const firstRow = within(inspector).getByText(contact.email || "")
+      .closest(".relationship-row") as HTMLElement;
+    const secondRow = within(inspector).getByText("remote@example.test")
+      .closest(".relationship-row") as HTMLElement;
+
+    fireEvent.click(within(firstRow).getByLabelText("Edit relationship with Example Contact"));
+    fireEvent.click(within(firstRow).getByLabelText("Save relationship"));
+    await waitFor(() => expect(onUpdateRelationship).toHaveBeenCalledTimes(1));
+    const firstIntent = onUpdateRelationship.mock.calls[0]?.[4];
+    expect(firstIntent).toBeDefined();
+    if (!firstIntent) throw new Error("Relationship editor intent was not captured.");
+    expect(firstIntent.isCurrent(firstIntent.generation)).toBe(true);
+
+    fireEvent.click(within(firstRow).getByLabelText("Cancel relationship edit"));
+    fireEvent.click(within(secondRow).getByLabelText("Edit relationship with Remote Person"));
+    fireEvent.click(within(secondRow).getByLabelText("Cancel relationship edit"));
+    fireEvent.click(within(firstRow).getByLabelText("Edit relationship with Example Contact"));
+    expect(firstIntent.isCurrent(firstIntent.generation)).toBe(false);
+
+    await act(async () => {
+      update.resolve(true);
+      await update.promise;
+    });
+
+    expect(within(firstRow).getByLabelText("Save relationship")).toBeInTheDocument();
   });
 
   it("searches the full readable contact set before linking a relationship", async () => {
@@ -94,7 +168,10 @@ describe("ContactsWorkspace relationship and group interactions", () => {
     expect(onLinkRelationship).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(`/api/contacts/relationship-options?query=Remote&exclude_party_id=${contact.id}`),
-      expect.objectContaining({ headers: { Authorization: "Bearer token" } })
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: "Bearer token" }),
+        signal: expect.any(AbortSignal),
+      })
     );
   });
 
@@ -143,6 +220,44 @@ describe("ContactsWorkspace relationship and group interactions", () => {
     expect(screen.getByText("سجل النشاط")).toBeInTheDocument();
     expect(await screen.findByText("لا يوجد نشاط مسجل بعد.")).toBeInTheDocument();
     expect(document.documentElement).toHaveAttribute("dir", "rtl");
+  });
+
+  it("keeps productivity controls inert for a read-only role", () => {
+    const onLinkRelationship = vi.fn();
+    const onUpdateRelationship = vi.fn();
+    const onRemoveRelationship = vi.fn();
+    renderContactsWorkspace("split", [{
+      ...contact,
+      relationships: [{
+        id: "relationship-read-only",
+        from_party_id: contact.id,
+        to_party_id: organizationContact.id,
+        relationship_type: "works_for",
+        direction: "outbound",
+        related_party_id: organizationContact.id,
+        related_party_name: organizationContact.display_name,
+      }],
+    }, organizationContact], {
+      canManage: false,
+      currentUserRole: "viewer",
+      onLinkRelationship,
+      onUpdateRelationship,
+      onRemoveRelationship,
+      relationshipTarget: organizationContact.id,
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Example Contact/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Relationships" }));
+    const inspector = screen.getByLabelText("Contact inspector");
+
+    expect(within(inspector).queryByRole("button", { name: "Link" }))
+      .not.toBeInTheDocument();
+    expect(within(inspector).queryByLabelText("Edit relationship with Avalon Bear Hill"))
+      .not.toBeInTheDocument();
+    expect(within(inspector).queryByLabelText("Unlink Avalon Bear Hill"))
+      .not.toBeInTheDocument();
+    expect(onLinkRelationship).not.toHaveBeenCalled();
+    expect(onUpdateRelationship).not.toHaveBeenCalled();
+    expect(onRemoveRelationship).not.toHaveBeenCalled();
   });
 });
 

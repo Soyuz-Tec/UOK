@@ -75,7 +75,7 @@ def risk_analysis_or_error(db: Session, actor: Actor, project_id: str, run_id: s
 
 
 def analysis_metadata(row: PlanningAnalysisRun) -> dict[str, Any]:
-    result = loads(row.result_json, {})
+    result = analysis_json_object(row.result_json)
     return {
         "id": row.id, "project_id": row.project_id, "snapshot_id": row.snapshot_id,
         "analysis_type": row.analysis_type, "status": row.status,
@@ -94,9 +94,9 @@ def analysis_metadata(row: PlanningAnalysisRun) -> dict[str, Any]:
 def analysis_detail(row: PlanningAnalysisRun) -> dict[str, Any]:
     return {
         **analysis_metadata(row),
-        "inputs": loads(row.inputs_json, {}),
-        "limits": loads(row.limits_json, {}),
-        "result": loads(row.result_json, {}),
+        "inputs": analysis_json_object(row.inputs_json),
+        "limits": analysis_json_object(row.limits_json),
+        "result": analysis_json_object(row.result_json),
     }
 
 
@@ -111,8 +111,8 @@ def analysis_integrity(row: PlanningAnalysisRun) -> dict[str, Any]:
             "result": loads(row.result_json, {}),
         }
         calculated = analysis_checksum(content)
-    except (TypeError, ValueError, json.JSONDecodeError) as exc:
-        return {"status": "corrupt", "verified": False, "message": f"Analysis JSON is invalid: {exc}"}
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {"status": "corrupt", "verified": False, "message": "Analysis JSON is invalid."}
     verified = compare_digest(str(row.checksum), calculated)
     return {
         "status": "verified" if verified else "checksum_mismatch",
@@ -126,6 +126,14 @@ def analysis_checksum(content: dict[str, Any]) -> str:
     return sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def analysis_json_object(value: str | None) -> dict[str, Any]:
+    try:
+        parsed = loads(value, {})
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
 def _timestamp(value: datetime) -> str:
     if value.tzinfo is None or value.utcoffset() is None:
         value = value.replace(tzinfo=timezone.utc)
@@ -133,6 +141,6 @@ def _timestamp(value: datetime) -> str:
 
 
 __all__ = [
-    "analysis_checksum", "analysis_detail", "analysis_integrity", "analysis_metadata",
+    "analysis_checksum", "analysis_detail", "analysis_integrity", "analysis_json_object", "analysis_metadata",
     "create_risk_analysis", "list_risk_analyses", "risk_analysis_or_error",
 ]

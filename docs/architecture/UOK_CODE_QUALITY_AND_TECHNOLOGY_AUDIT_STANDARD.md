@@ -48,44 +48,90 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 ## Line-Of-Code Integrity
 
-Line count is a reviewability signal, not the only quality signal. UOK uses a tiered model:
+Physical line count is a maintainability and reviewability signal. It is not a
+complexity measure, benchmark, latency measurement, memory profile, or proof
+of runtime performance. No cited industry standard defines a universal
+`200`-, `250`-, or `300`-line rule:
 
-- `300` lines is the hard local audit threshold for scanned non-generated source files.
-- `200` lines is the soft review threshold for route composition, command-family files, React components, hooks, and tests.
-- Files above the soft threshold are acceptable only when they remain cohesive and have a clear owner.
-- Files above the hard threshold must be split or explicitly justified in the owning architecture or module document.
+- [NIST SP 800-218 SSDF](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-218.pdf)
+  requires organizations to define and automate review and analysis practices;
+- [ISO/IEC 5055](https://www.iso.org/standard/80623.html) defines automated
+  measurement of structural and coding-practice violations;
+- [Google Engineering Practices](https://google.github.io/eng-practices/review/developer/small-cls.html)
+  explicitly treats change size as contextual rather than a fixed line count;
+  and
+- Ruff's
+  [too-many-statements](https://docs.astral.sh/ruff/rules/too-many-statements/)
+  and [McCabe complexity](https://docs.astral.sh/ruff/settings/#lintmccabe)
+  rules are complexity signals, not physical-line standards.
 
-The working source-size target is:
+UOK therefore adopts the following repository-specific heuristics:
 
-| File class | Target |
-|---|---|
-| Backend route composition | soft warning above `200` lines; hard gate above `300` lines |
-| Backend command bus or command-family files | soft warning above `200` lines; hard gate above `300` lines |
-| Backend business services, read models, and policy modules | soft warning above `250` lines; hard gate above `300` lines unless cohesive and documented |
-| React components and hooks | soft warning above `200` lines; hard gate above `300` lines |
-| CSS | split by design-system layer, shell, shared primitive, or feature surface |
-| Tests | split by behavior area when scenarios become unrelated |
+| Source class | Soft review threshold | Hard gate |
+|---|---:|---:|
+| Files named for route, API, or command families; Python files in API/router directories; React components/hooks; and test files | `200` physical lines | `300` physical lines |
+| Other handwritten Python, TypeScript, CSS, PowerShell, and SQL | `250` physical lines | `300` physical lines |
+| Production/tooling Python functions | `60` physical lines | `120` physical lines |
 
-Function and component guidance:
+The focused-file classification is deliberately path- and name-based rather
+than inferred from source semantics. Python filenames are tokenized across
+separators and camel-case boundaries for exact route, API, and command-family
+tokens; Python files beneath exact `api`, `apis`, `route`, `routes`, `router`,
+or `routers` directory parts are also focused. TypeScript filenames use the
+same tokenization for route/API families, including names such as
+`shipmentApi.ts`, while React components, hooks, and tests retain their
+dedicated path/type rules. Substrings such as `capital` do not match `api`.
 
-- Prefer functions under `60` lines unless the logic is a cohesive parser, mapper, or validation table.
-- Prefer React render components that mainly render one surface, with data loading and mutation orchestration in hooks.
-- Prefer backend API routes that delegate validation, command handling, and read-model shaping to focused helpers.
-- Prefer test files grouped by behavior area; a test file above `200` lines should still describe one scenario family.
-- Cohesive pytest `test_*` scenario bodies may exceed the normal `60` line function preference when splitting the body would make the behavior harder to audit; the executable audit still applies the `200` line soft threshold to the owning test file.
+Test functions and module candidate-verifier functions are exempt from the
+function thresholds because scenario setup is often clearest as one auditable
+flow. Their files remain subject to the normal soft and hard file thresholds.
+Migrations are never exempt from the file caps. Generated, compiled, lock, and
+vendor content is excluded only by the exact path and type rules in
+`scripts/source_size_policy.py`; a symlink encountered in a scanned source
+root is rejected instead of followed or silently excluded.
 
-Soft warnings do not fail the build by themselves. They must appear in repeatable audit evidence, including the full `source_size_policy` section of `EngineeringEvidence`, and reduce the relevant quality scorecard category so they can be reviewed before expansion. Hard violations fail `TechnologyAudit`, `Audit`, and `Verify`.
+The authoritative command is:
 
-The audit gate checks non-generated source files in:
+```powershell
+python scripts/source_size_policy.py
+```
 
-- `src`
-- `modules`
-- `web/src` and module frontend roots under `modules`
-- `tests`
-- `scripts`
-- `migrations`
+The default command prints a concise operator summary. Add `--json` to emit
+the complete `uok.source_size_report.v1` JSON report. Both modes fail on any
+unapproved hard-cap breach, new soft-warning identity, or growth above an
+accepted soft baseline. `config/source_size_policy.json` stores the
+review-debt ratchet using stable `file:<path>` and
+`function:<path>::<qualified-symbol>` identities.
+Unchanged or reduced baseline debt passes. A fully resolved warning produces
+`baseline_update_required` until its obsolete entry is removed, preventing the
+configuration from accumulating stale allowances. Generate a candidate
+configuration for review without modifying the repository with:
 
-The hard local audit threshold is `300` lines for scanned non-generated source files. A larger file is allowed only when it is generated, a lockfile, a compiled asset, or explicitly justified in the relevant architecture or module document.
+```powershell
+python scripts/source_size_policy.py --print-baseline
+```
+
+Baseline regeneration is not a routine escape hatch. A normal update may only
+lower or remove accepted maxima. Adding or increasing baseline debt requires
+an explicit reviewed reset in the pull request, with the affected owner and
+follow-up recorded.
+
+A hard violation cannot be suppressed by prose. A future exception must be a
+bounded entry in `config/source_size_policy.json` that identifies exactly one
+file or qualified Python symbol and records its kind, exact path/symbol,
+owner, reason, tracking issue, expiry date, and elevated maximum. Wildcards,
+expired entries, unused entries, incomplete entries, and exceptions that do
+not match the finding fail closed. Exceptions do not remove the finding from
+evidence; they make only the explicitly bounded excess non-blocking until
+expiry.
+
+The scan covers handwritten `.py`, `.ts`, `.tsx`, `.css`, `.ps1`, and `.sql`
+files under `src`, `modules`, `web`, `tests`, `scripts`, `migrations`, and
+`deploy`, plus root `conftest.py`.
+The complete report, including hard-cap, active-exception, soft-warning, and
+ratchet counts, is retained in `EngineeringEvidence`. Hard violations and
+ratchet regressions fail `TechnologyAudit`, `Audit`, `Verify`, and hosted CI.
+Existing accepted soft debt remains visible and must not grow.
 
 ## Technology Audit Rules
 
@@ -109,7 +155,9 @@ The technology audit must confirm:
 - local evidence under `var/` remains ignored;
 - this standard is linked from the documentation index and operations runbook.
 - active documentation repository references, internal links, and index coverage resolve with exact path casing and contain no retired frontend locations.
-- engineering evidence includes a repeatable quality scorecard.
+- the source-size configuration is schema-valid, exact, non-expired, and
+  consistent with the current handwritten-source inventory;
+- engineering evidence includes a repeatable repository-conformance scorecard.
 
 ## Frontend Quality Gates
 
@@ -131,8 +179,9 @@ npm --prefix web run check:bundle-budget
 `check:dependencies` is the direct-manifest and lockfile authority. `lint` and
 `lint:styles` are correctness gates rather than formatting suggestions.
 `check:bundle-budget` measures every emitted JavaScript and CSS asset in raw and
-gzip form and fails closed when assets are missing or exceed the reviewed
-ceiling. Current ceilings are owned by
+gzip form, identifies the exact HTML entry, enforces the minimum split-chunk
+count plus entry and largest-deferred ceilings, and fails closed when assets are
+missing or exceed the reviewed cumulative or per-load ceiling. Current ceilings are owned by
 `docs/design/UOK_WORKSPACE_UI_IMPLEMENTATION_STANDARD.md`.
 
 The canonical maturity assessment, reuse inventory, and sequenced remediation
@@ -154,7 +203,48 @@ work are owned by
 - documentation;
 - CI and release readiness.
 
-The scorecard is not a replacement for `Verify`. It is a repeatable review aid that shows whether the current work still follows the desired engineering system and where the next improvement should go.
+The scorecard is a **repository-conformance scorecard**, not an engineering-maturity, security-assurance, test-coverage, certification, or production-readiness rating. The backward-compatible `overall_score` and `grade` fields alias `repository_conformance.score` and `repository_conformance.grade`; consumers must also read its evidence-completeness status.
+
+Repository audit checks may score categories whose rules are directly executable from the checkout. These categories must not receive presence-only credit:
+
+- `test_coverage` requires machine-readable line and branch coverage evidence;
+- `security_and_supply_chain` requires a current attributed scanner, provenance, dependency, and control assessment;
+- `ci_and_release_readiness` requires current hosted-CI and immutable-release evidence.
+- `runtime_efficiency` requires current benchmark, latency, and resource-use
+  evidence at a declared workload and environment; source size cannot score it.
+
+When that evidence is not supplied, the category is `unavailable`, its score is `null`, it is excluded from the repository-conformance average, and the scorecard reports partial evidence completeness. Unavailable never means passing. A test file, scanner workflow, release workflow, or guardrail file proves only that a control exists; it does not prove coverage, security, execution, or release readiness.
+
+Optional coverage input uses the fail-closed
+`uok.engineering_measurements.v2` schema. The only registered local method is
+`coverage_combined_v2`; it verifies the current clean Git HEAD, unchanged
+per-lane producer provenance, timezone-aware observation time, exact
+non-symlink coverage artifacts, SHA-256 and byte metadata, run-bound
+producer output, a full checkout without hidden index flags, exact tracked
+Python/frontend inventories, and file-by-file JSON-to-XML/LCOV line and branch
+corroboration. A caller cannot supply a score. This is local trusted-runner
+reproducibility and integrity evidence, not independent or tamper-proof
+attestation. The required GitHub Actions result and retained artifacts for the
+exact reviewed commit are the authoritative shared execution record. Build
+and consume the verified local input with:
+
+```powershell
+python scripts/build_engineering_measurements.py
+python scripts/engineering_evidence.py --measurements <measurement-json> --stdout
+```
+
+Security/supply-chain and hosted CI/release categories remain unavailable to
+this local coverage method. Runtime efficiency also remains unavailable until a
+registered measurement method verifies benchmark, latency, and resource-use
+evidence. Static repository-control categories are capped below 100 even when
+every presence check passes. See
+`docs/governance/UOK_ENGINEERING_EVIDENCE_V2_MIGRATION.md` for the producer,
+consumer, and retired-v1 migration contract.
+
+`EngineeringEvidence` also retains the complete `source_size_policy` report,
+including its schema, scan count, hard-cap and active-exception counts, soft
+findings, and no-growth ratchet status. The scorecard remains a review aid and
+is not a replacement for `Verify`.
 
 ## Efficiency Rules
 
@@ -202,6 +292,12 @@ Engineering scorecard and evidence:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Action EngineeringEvidence
+```
+
+Focused source-size policy:
+
+```powershell
+python scripts/source_size_policy.py
 ```
 
 GitHub preparation:

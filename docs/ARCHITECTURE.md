@@ -27,6 +27,7 @@ Operator browser
 | Backend host | `src/uok/host` | FastAPI application/lifespan, DI, engine/session/pool ownership, manifest provider resolution, ORM registration, router/command/policy/report composition, and static asset serving. |
 | Shared kernel | `src/uok/kernel`, `src/uok/kernel_models.py` | Single declarative metadata contract, host-configured module-runtime port, and product-neutral organization, identity, governance, lifecycle, command-log, and event mappings. |
 | Database connectivity | `src/uok/host/database.py`, `src/uok/host/db_pool.py` | Validated process-local SQLAlchemy pooling, stale-connection pre-ping, safe telemetry, bounded timeout behavior, and session lifecycle. |
+| Database security foundation | `src/uok/database_security.py`, `deploy/postgres/database-security-foundation.sql` | Manifest/ORM-derived all-table tenant inventory plus dormant least-privilege PostgreSQL roles and fail-closed tenant policies. RLS activation remains blocked until trusted transaction context, authentication, and pool cleanup are qualified. |
 | Module packages | `modules/<module_name>` | Module manifest, backend package, module-owned ORM mappings, module-local React source and CSS, module tests, migrations, candidate verifier scenarios, and behavior. |
 | Frontend shell | `web/src` | React + TypeScript + Vite workbench shell, navigation, shared controls and tokens, typed module surface contract, and generated API/module catalogs. |
 | Database baseline | `migrations/001_initial_baseline.sql` | Initial shared candidate schema plus schema-version evidence. Future schema changes must be migration-gated and module-owned where applicable. |
@@ -69,7 +70,7 @@ Operator browser
 - Static runtime validation completes before extension imports. The host-owned deterministic model registry then composes 55 module-owned mappings with nine kernel mappings (64 total) on the single `uok.kernel.persistence.Base` before migration inspection, schema creation, or router composition. Current closed manifests declare 108 commands, 118 events, 19 exact Host HTTP adapters with 42 exact allowed imports, 12 candidate verifiers, and 11 workbench surfaces.
 - Apps Manager, Calendar, Communications, Compliance, Contacts, Planning, Product Master, Location Master, Route/Corridor Master, Shipment Support, and Shipment Readiness own executable React source and local CSS under `modules/<module_name>/web/src`; their frontend tests live under `modules/<module_name>/tests/web`.
 - Workbench surfaces declare the release/build extension `web_surface` plus canonical `web_entry` and unique `web_section` metadata in the closed manifest. A deterministic generator validates those manifests and emits literal TypeScript imports in `web/src/generated/moduleSurfaceCatalog.ts` for the typed registry under `web/src/features/modules`.
-- Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and all declared entries into the normal static application bundle.
+- Frontend composition is compile-time only. The browser never reads manifest YAML, resolves dynamic module paths, or loads remote module code; Vite compiles the generated catalog and literal owner-local lazy imports into the normal static application and its reviewed chunks.
 - Module surfaces receive only the neutral host port in
   `web/src/contracts/moduleSurface.ts`. Its session projection atomically
   carries token, monotonically increasing generation, and a generation-bound
@@ -96,9 +97,20 @@ Operator browser
   obligation. Session replacement clears tenant-owned editor, search, group,
   and filter state. The selected row `updated_at` value is only
   browser-intent freshness evidence; it is not an ETag, optimistic-concurrency
-  token, or lost-update guarantee. Purge, notes and activity, membership and
-  Groups Manager, relationships and relationship options, merge and dedupe,
-  Data Tools, import/export, saved views, secondary Contacts async owners, and
+  token, or lost-update guarantee. Delivery 6f implements the bounded Contacts
+  activity and relationship-productivity authority slice while qualification
+  remains in progress. Activity and relationship-options reads become
+  independent request-authoritative owners, and their authenticated responses
+  carry private no-store and authorization-varying cache policy. `AddContactNote`,
+  `LinkContactRelationship`, `UpdateContactRelationship`, and
+  `RemoveContactRelationship` enter the shared owner gate and current-primary
+  reconciliation contract; composer and relationship-editor effects remain
+  current-intent-only. Notes and relationships continue to arrive through the
+  selected-party detail owner rather than redundant reads, and `updated_at`
+  remains browser-intent freshness evidence only. Purge, selected-party group
+  membership and Groups Manager, merge/dedupe/rollback, Data Tools for facts,
+  consent, teams, custom fields, and external identities, import/file/bulk/export,
+  saved views, the current-detail `403`/`404` list-reconciliation residual, and
   the other audited module owners remain phased Delivery 6 work. Adopted paths
   use independent named request lanes, guard every post-await side effect, and
   epoch-stamp reusable committed state. Abort signals are cooperative only;
@@ -183,7 +195,12 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - ADR-0027: `docs/architecture/ADR-0027-contacts-system-of-record-governance-and-interoperability.md`
 - ADR-0028: `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
 - ADR-0029: `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
-- ADR-0030: `docs/architecture/ADR-0030-request-authoritative-frontend-async-boundary.md`
+- ADR-0030: `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md`
+- ADR-0031: `docs/architecture/ADR-0031-http-response-and-public-surface-security.md`
+- ADR-0032: `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md`
+- ADR-0033: `docs/architecture/ADR-0033-legacy-credential-retirement-and-auth-rate-limits.md`
+- ADR-0034: `docs/architecture/ADR-0034-python-alpine-runtime-base.md`
+- ADR-0035: `docs/architecture/ADR-0035-request-authoritative-frontend-async-boundary.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -191,6 +208,11 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - Windows Podman sign-in recovery: `docs/operations/UOK_WINDOWS_PODMAN_AUTOSTART.md`
 - Contacts Core operations: `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md`
 - Database connection-pooling operations: `docs/operations/UOK_DATABASE_CONNECTION_POOLING.md`
+- PostgreSQL database-security operations: `docs/operations/UOK_DATABASE_SECURITY.md`
+- CI quality and evidence gates: `docs/operations/UOK_CI_QUALITY_GATES.md`
+- Reliability and recovery operations: `docs/operations/UOK_RELIABILITY_AND_RECOVERY.md`
+- Immutable prerelease operations: `docs/operations/UOK_IMMUTABLE_PRERELEASES.md`
+- Engineering maturity gap-closure plan: `docs/governance/UOK_LEVEL4_ENGINEERING_MATURITY_PLAN.md`
 - ASUH test events: `docs/operations/UOK_ASUH_TEST_EVENTS.md`
 - GitHub engineering guardrails: `docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md`
 - AI operations kernel architecture: `docs/architecture/UOK_AI_OPERATIONS_KERNEL_ARCHITECTURE.md`
@@ -263,6 +285,7 @@ Before publishing a candidate, run:
 
 ```powershell
 python -m compileall -q src modules tests conftest.py
+python scripts/verify_database_security.py
 python -m pytest -q -p no:cacheprovider tests/test_planning_data_boundary.py tests/test_module_public_api_boundaries.py tests/test_kernel_host_backend_boundaries.py tests/test_kernel_host_shell_boundaries.py tests/test_module_runtime_port.py
 python scripts/validate_container_module_assets.py
 python scripts/run_python_tests.py

@@ -114,8 +114,10 @@ def test_planning_degrades_when_calendar_recurrence_data_is_invalid(
 
     import uok_calendar_core.public_api as calendar_public_api
 
+    internal_detail = r"recurrence data failed at C:\uok\private\calendar.json"
+
     def invalid_recurrence(*_args: object, **_kwargs: object) -> list[dict[str, object]]:
-        raise ValueError("recurrence_rule contains invalid legacy data")
+        raise ValueError(internal_detail)
 
     monkeypatch.setattr(calendar_public_api, "freebusy_rows_for_participants", invalid_recurrence)
     schedule = client.get(
@@ -127,10 +129,11 @@ def test_planning_degrades_when_calendar_recurrence_data_is_invalid(
     assert availability["status"] == "unavailable"
     assert availability["busy"] == []
     assert availability["events"] == []
-    assert availability["reason"] == "recurrence_rule contains invalid legacy data"
+    assert availability["reason"] == "Calendar availability data could not be read."
     assert availability["warnings"] == [
-        "Calendar availability unavailable: recurrence_rule contains invalid legacy data",
+        "Calendar availability unavailable: Calendar availability data could not be read.",
     ]
+    assert internal_detail not in schedule.text
 
 
 def test_planning_calendar_event_links_follow_parent_visibility_and_lifecycle(client: TestClient) -> None:

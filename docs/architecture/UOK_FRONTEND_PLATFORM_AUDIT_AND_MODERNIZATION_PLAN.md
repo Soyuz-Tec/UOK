@@ -41,9 +41,9 @@ The target is not a new framework or a generic schema-driven UI. UOK should pres
 | Production `ResizableDataTable` consumers | 8 |
 | CSS media declarations | 77 `@media` blocks, 23 exact forms; 60 width-bearing blocks using 16 distinct widths |
 | CSS cascade layers | 0 |
-| Current JavaScript bundle | 1 file, 939.46 KiB raw, 247.45 KiB gzip |
-| Current CSS bundle | 1 file, 198.47 KiB raw, 26.43 KiB gzip |
-| Unit proof at Delivery 4 | 145 files, 543 tests |
+| Current JavaScript bundle | 23 files, 991.67 KiB cumulative raw and 280.89 KiB cumulative gzip; initial entry 226.06 KiB raw and 70.09 KiB gzip; largest deferred chunk 225.14 KiB raw and 61.04 KiB gzip |
+| Current CSS bundle | 1 file, 198.30 KiB raw, 26.33 KiB gzip |
+| Current unit proof | 186 files, 751 tests |
 | Browser proof at Delivery 4 | 24 passed, 1 intentional live-only skip |
 | Candidate proof at Delivery 4 | Two immutable-image passes; 12 module verifiers per pass; zero retained disposable resources |
 
@@ -111,7 +111,9 @@ UOK needs an ABA-safe request-authority generation, a generation-bound unauthori
 - URL and UI state can diverge.
 - Async session safety is inconsistent.
 - API transport and response validation are fragmented.
-- The initial bundle contains every module.
+- The initial entry retains only shell and synchronous surface metadata; each
+  compile-time-known module workspace loads on first activation and then stays
+  mounted under the retained-surface lifecycle.
 - Form, selection, pagination, and saved-view contracts are incomplete.
 - Master workspace orchestration and CSS are substantially duplicated.
 - Theme bootstrap, cascade ownership, z-index, motion, and breakpoint policy are incomplete.
@@ -120,7 +122,7 @@ UOK needs an ABA-safe request-authority generation, a generation-bound unauthori
 
 ### Performance And Dependency Findings
 
-- The production build emits one 939.46 KiB JavaScript asset and one 198.47 KiB CSS asset. Literal imports in `web/src/generated/moduleSurfaceCatalog.ts` make all eleven module surfaces part of the initial authentication/shell graph; there are no dynamic module imports.
+- The production build emits 23 JavaScript assets and one 198.30 KiB CSS asset. The generated catalog keeps eleven small literal module entries in the initial graph; each entry owns one literal local lazy workspace import. The exact HTML entry is 226.06 KiB raw and 70.09 KiB gzip, and the largest deferred Planning chunk is 225.14 KiB raw and 61.04 KiB gzip.
 - The static host sends the full JavaScript asset without negotiated compression and does not apply an explicit immutable policy to hashed assets, so the gzip budget currently measures potential size rather than delivered wire size.
 - `web/src/shared/localization/UokLocalization.tsx` creates a new provider value on every parent render and constructs new `Intl.DateTimeFormat` or `Intl.NumberFormat` instances on every format call. Seventy-three localization consumers make this a shared invalidation and allocation boundary.
 - `web/src/app/useWorkbench.ts` recreates `moduleHost` on every hook render. Because the registry retains visited module roots, shell-only state changes can propagate into hidden workspaces without a stable host/render boundary.
@@ -148,7 +150,7 @@ The performance target is measurable: gzip-enabled wire delivery, an initial-ent
 | HTTP transport | Nineteen production owners implement transport differently | `rg -l "fetch\\(" web/src modules -g "*.ts" -g "*.tsx" -g "!**/*.test.ts" -g "!**/*.test.tsx" -g "!**/tests/**"` | Normalize mechanics without centralizing endpoints | Planned shared HTTP package | P0 | High | Consistent auth, errors, decoding, cancellation |
 | Auth session | Local-only logout leaves the bearer token replayable until its default eight-hour expiry | `web/src/app/useAuthState.ts`; `src/uok/host/security.py` | Server-authoritative identity and revocation | Identity bootstrap, token identifier/rotation, and server logout | P0 | High | Bound logout, theft, and shared-device exposure |
 | Static delivery | Hashed assets lack compression/cache policy and browser security headers | `src/uok/host/application.py` | Share one host delivery policy | Static response middleware and exact-candidate response-header tests | P0 | Medium | Lower wire size, safe repeat loads, browser defense in depth |
-| Module loading | Eleven generated imports are eager | `web/src/generated/moduleSurfaceCatalog.ts`; `web/src/features/modules/moduleSurfaceRegistry.tsx` | Compile-time-known lazy factories | Generated lazy surface registration | P0 | High | Smaller authentication and shell entry |
+| Module loading | Eleven synchronous surface descriptors plus eleven compile-time-known lazy workspace chunks | `web/src/generated/moduleSurfaceCatalog.ts`; module-local `moduleSurface.tsx`; `web/src/features/modules/moduleSurfaceRegistry.tsx` | Preserve literal owner-local lazy boundaries and retained state | Protected entry/chunk budgets and async loading proof | P0 | High | Completed locally; exact-head hosted CI pending |
 | Forms | Field/error/focus rules repeat across editors | `web/src/shared/forms/FieldMessage.tsx`; `modules/contacts.core/web/src/ContactForm.tsx`; `modules/product.master/web/src/ProductEditor.tsx`; `modules/locations.core/web/src/LocationEditor.tsx` | Dependency-free accessible field contract | `FormField`, invalid-focus helper, form summary | P1 | Medium | Consistent validation and keyboard submit |
 | Tables | Eight consumers repeat row keyboard selection | `web/src/shared/tables/ResizableDataTable.tsx`; `rg -l "ResizableDataTable" web/src modules -g "*.tsx"` | One selection and roving-focus contract | `useDataGridSelection` in shared tables | P1 | Medium | Correct one-tab-stop table interaction |
 | Remote collections | Contacts and Planning repeat pagination/request state | `modules/contacts.core/web/src/app/useContactData.ts`; `modules/planning.core/web/src/PlanningWorkspace.tsx`; `modules/planning.core/web/src/PlanningModuleState.tsx` | Typed request/page controller | `useRemoteCollection` | P1 | Medium | Fewer stale reads and page-reset defects |
@@ -163,156 +165,7 @@ The performance target is measurable: gzip-enabled wire delivery, an initial-ent
 | Cascade | No layer contract; specificity rule is disabled | `web/stylelint.config.mjs`; `rg --files web/src modules -g "*.css"` | Explicit ownership order | CSS layer contract | P2 | High | Remove import-order coupling |
 | Responsiveness | Sixty width-bearing media blocks use 16 distinct widths | `rg -n "@media" web/src modules -g "*.css"` | Shell breakpoints plus component containers | Container-query migration | P2 | High | Reusable panels in split/dashboard contexts |
 | Localization | Shared provider retains mixed shell/business ownership | `web/src/shared/localization/UokLocalization.tsx`; `modules/planning.core/web/src/PlanningWorkspace.tsx` | Compile-time module-owned catalogs | Typed module catalog contract | P2 | High | Scalable language ownership |
-| Render stability | Localization values/formatters and `moduleHost` are recreated while visited roots stay mounted | `web/src/shared/localization/UokLocalization.tsx`; `web/src/app/useWorkbench.ts`; `web/src/features/modules/moduleSurfaceRegistry.tsx` | Memoized shared boundaries and deterministic render counters | Stable localization/host values and hidden-render gate | P1 | Medium | Reduce broad rerenders and repeated formatter allocation |
-| Production performance proof | The 500-row test uses the development server and is not protected by CI | `web/e2e/planning-scale.spec.ts`; `web/playwright.config.ts`; `.github/workflows/uok-ci.yml` | Run budgets against production output and delivery headers | Production Playwright performance command/evidence | P1 | Medium | Detect eager assets, transfer, interaction, and long-task regressions |
-| CI efficiency | One serialized workflow and duplicate push/PR runs lengthen feedback | `.github/workflows/uok-ci.yml` | Separate independent validation and cancel superseded work | Trigger policy, concurrency group, backend/frontend DAG metrics | P2 | Medium | Shorter median feedback with visible runner cost |
-| Regression proof | No shared component catalog or baseline screenshots | `web/e2e`; `web/src/shared`; `web/scripts/check-bundle-budget.mjs` | Executable state inventory | Test/dev catalog and production Playwright matrix | P2 | High | Safer broad reuse and measurable performance |
-
-## 4. Component Inventory
-
-| Category | Artifact or pattern | Status | Disposition |
-|---|---|---|---|
-| Foundations | `web/src/design-tokens.css` | Existing reusable | Keep; extend theme, motion, z-index, state, and density tokens |
-| Foundations | Localization provider and logical direction | Existing reusable | Keep; move business catalogs toward module ownership |
-| Foundations | Focus, reflow, coarse-pointer CSS | Existing reusable | Keep as protected accessibility foundation |
-| Primitives | `CommandButton` | Existing, needs a narrow refactor | Keep; forward safe native button props and events while preserving loading/icon behavior |
-| Primitives | `IconButton` | Existing reusable | Keep as the labelled icon-only action contract |
-| Primitives | `ToggleButton` | Existing reusable | Keep for independent pressed state; do not use as a Tabs substitute |
-| Primitives | `SegmentedControl` | Existing reusable | Keep for mutually exclusive display choices; complete keyboard proof before broader adoption |
-| Navigation | Shell sidebar/account controls | Needs refactor | Add real same-origin links and reactive history |
-| Navigation | Neutral module surface host | Existing reusable | Keep; extend only through ADR-reviewed location/lifecycle fields |
-| Navigation | `WorkspacePageHeader` | Missing | Add one signed-in page/title/focus contract |
-| Forms | `SearchWorkspace`, filter and saved-view controls | Existing reusable | Keep; inject store and versioned codec |
-| Forms | `FieldMessage` | Existing reusable | Keep as message primitive |
-| Forms | Label/error/invalid-focus contract | Missing | Add `FormField` and invalid-focus helper |
-| Forms | Contact/Product/Location/Route/Shipment editors | Duplicate/needs refactor | Migrate incrementally; keep validation module-owned |
-| Forms | Async entity lookup | Duplicate | Add typed async combobox after behavior characterization |
-| Data display | `ResizableDataTable` and column utilities | Existing reusable | Keep; complete selection and composed-grid contracts |
-| Data display | `PaginationControls` | Existing reusable | Keep; pair with remote collection controller |
-| Data display | Record tag/list and module card patterns | Fragmented | Keep small record-list primitives; do not create a universal card until two consumers prove the same semantics |
-| Data display | Master list/detail layouts | Duplicate/needs refactor | Migrate Product/Location first to neutral frame |
-| Data display | Planning Gantt virtualization | Existing reusable in owner | Keep Planning-owned; extract only neutral windowing after proof |
-| Feedback | `EmptyState`, `AsyncState`, `ModuleErrorBoundary` | Existing reusable | Keep; standardize full-page versus inline remote states |
-| Feedback | `ConfirmationDialog`, `ConfirmCommandButton` | Existing reusable | Keep; retire feature-local confirmation implementations |
-| Overlays | `WorkspacePopup`, `WorkspaceEditorPopup` | Existing reusable | Keep; add initial-focus and route-deactivation behavior |
-| Overlays | Shared Tabs | Missing | Add; migrate Auth and Planning Inspector |
-| Overlays | Shared keyboard menu | Missing | Add; migrate account and context menus |
-| Overlays | Generic drawer | Missing, not currently justified | Defer; current popup/editor contracts cover evidenced workflows |
-| Workflows | Generic wizard/stepper | Missing, not currently justified | Defer until two multi-step workflows demonstrate a shared state and navigation contract |
-| Dashboard | `MetricGrid` | Needs refactor | Accept structured labelled metrics rather than raw record keys |
-| Dashboard | Planning portfolio metrics/table | Needs refactor | Split query, metrics, table, and date presentation |
-| Visualization | Generic chart/container | Missing, intentionally deferred | Keep Calendar and Planning visualization semantics owner-local; extract only a neutral frame after repeated proof |
-| Domain widgets | Planning Gantt/Flow/analysis | Module-owned | Keep domain-specific; decompose owner-local responsibilities |
-| Domain widgets | Contacts quality, relationships, profiles | Module-owned | Keep domain-specific; narrow view models and shared input behavior |
-| Domain widgets | Calendar date/time grids | Module-owned | Keep; do not force into generic table or tabs |
-
-## 5. Styling And Design System Audit
-
-### Current State
-
-The UI can be standardized with the current CSS-token approach. A Tailwind, CSS-in-JS, CSS Modules, or third-party design-system migration is not justified.
-
-Deliveries 1 through 4 already closed:
-
-- token-based narrow detail foundations and 320 CSS-pixel reflow;
-- shared touch-target, focus, overlay, and accessibility behavior;
-- configured physical left/right property and text-alignment migration with representative RTL proof;
-- non-token CSS hex enforcement;
-- general `!important` removal except four reviewed reduced-motion declarations;
-- Stylelint enforcement for the configured logical left/right properties, hexadecimal-color policy, and standard selector hygiene/no-ID policy, with specificity retirement still open.
-
-Remaining baseline evidence:
-
-- 94 CSS files and 10,722 lines;
-- 62 distinct root `--uok-*` token definitions;
-- 41 raw `z-index` declarations;
-- 19 transition/animation declarations, including two `transition: none` rules and three reduced-motion resets; 14 are active non-reset motion declarations;
-- 22 raw `border-radius: 999px` declarations despite a pill token;
-- 17 raw font sizes, which require density and component review rather than blind token replacement;
-- 131 `color-mix()` uses producing 92 distinct declaration recipes;
-- 24 repeated 3-pixel focus recipes;
-- 77 `@media` blocks using 23 exact forms; 60 are width-bearing and use 16 distinct widths;
-- zero `@layer` declarations;
-- one repository-wide `no-descending-specificity` exception that currently suppresses 55 findings across 24 files.
-
-### Inconsistency Register
-
-- Spacing: 24 simple literal `margin`, `padding`, or `gap` declarations use 11 value patterns outside tokens and calculated layout geometry. Two pixels occurs eight times, 3 pixels four times, and 4 pixels twice despite `--uok-space-1`; 6-pixel and mixed unit recipes also remain. Repeated micro-spacing is a token candidate, while Calendar/Planning geometry offsets such as 28, 44, and 58 pixels remain component-owned unless another consumer proves the same role.
-- Typography: 17 raw font-size declarations use 11 values. Ninety-eight literal weight declarations use ten values from 400 through 900, including non-standard intermediate weights such as 650, 680, 740, 750, and 760 even though the stack does not guarantee a variable font. Ten line-height declarations use `1.2`, `1.25`, `1.45`, or the control-height token. Standardize regular/semibold/bold/strong weight roles and body/heading/dense line-height roles; retain justified Calendar and Planning annotation density locally.
-- Color: hexadecimal colors outside the token file are closed, but 131 `color-mix()` uses produce 92 recipes. The same selected-row mix appears seven times, danger surfaces compete between `--uok-danger` at 8 percent and `--uok-status-danger` at 10 percent, and accent surfaces use several nearby percentages. Promote repeated selection and status recipes; keep visualization-specific mixes module-owned.
-- Radius: 22 pill literals remain despite `--uok-radius-pill`. Three additional one-offs remain: the account menu uses 14 pixels and two Planning rules use 4 pixels or `4px 4px 0 0`. The 4-pixel rules can use `--uok-radius-1`; the popover must use the existing 16-pixel role or document a component-specific reason.
-- Shadow: 48 `box-shadow` declarations exist. Excluding `none`, token-only elevations, and the canonical row separator leaves 15 bespoke recipes across auth surfaces, selected-row inset indicators, focus/state rings, and pinned-column edges. Keep `--uok-shadow-1/2` for elevation, promote repeated focus/selection inset recipes to interaction contracts, and keep geometry- or direction-specific shadows owner-local.
-- Breakpoints: 680 pixels dominates 22 width-bearing blocks; 520 and 760 occur nine times each; 900 and 980 occur three times each; 820, 860, and 1180 occur twice each; 420, 460, 480, 700, 1260, 1360, and 1480 are one-offs. This supports a small shell/shared allowlist plus owner-local content thresholds and container migration.
-
-### Target Token Model
-
-```text
-foundation
-  color primitives, spacing, sizes, radii, shadows, typography
-semantic
-  canvas, surface, text, border, accent, status, selection, hover
-typography
-  regular, semibold, bold, strong; body, heading, dense
-interaction
-  focus width/offset, target size, disabled, pressed, drag
-motion
-  fast/standard/shell durations, easing, reduced-motion behavior
-stacking/z-order
-  local/sticky, dropdown/popover, modal, context menu, focus mode, skip link
-density and data visualization
-  dense label sizes, row heights, chart/Gantt annotations
-```
-
-Keep `appearance=system|light|dark` as the preference and expose a separate resolved `data-theme=light|dark`. Apply the validated preference before first paint, react to system changes, and keep one dark semantic override rather than duplicated explicit/system blocks. Today `web/src/design-tokens.css` repeats 19 identical dark-token overrides under explicit dark and system-dark selectors, while its high-contrast white focus-ring rule applies to explicit dark but not resolved system-dark.
-
-### Target Cascade
-
-The intended order is:
-
-```text
-reset -> tokens -> base -> shell -> shared components -> modules
-      -> accessibility overrides
-```
-
-Adopt layers in reviewed slices with screenshot and interaction proof. Keep viewport and container adaptations inside their owning shell, shared-component, or module layer, with each owner ordering base, variant, state, and responsive rules internally. A global late responsive layer would recreate precedence coupling. Do not mechanically replace content-driven Calendar or Planning breakpoints. Shell-only behavior may use a small viewport allowlist; reusable panels should respond to their own inline size with container queries. Retire the disabled specificity rule incrementally; enabling it now reports 55 findings across 24 files.
-
-## 6. Standardization Plan
-
-### Target Frontend Structure
-
-```text
-web/src/
-  app/                 shell state, authentication, location, title/focus
-  contracts/           neutral host, navigation, lifecycle contracts
-  generated/           API types and literal compile-time surface factories
-  shared/
-    actions/
-    collections/
-    exporting/
-    feedback/
-    forms/
-    http/
-    layout/
-    localization/
-    navigation/
-    overlays/
-    primitives/
-    tables/
-  styles/              layered shell/shared implementation
-
-modules/<owner>/web/src/
-  api/ or *Api.ts       endpoint definitions and runtime DTO decoders
-  hooks/                owner request, mutation, and presentation state
-  components/           pure or narrowly stateful domain UI
-  styles/               module layer and domain visuals
-  moduleSurface.tsx     compile-time entry
-```
-
-### Component Layering
-
-1. Foundations: tokens, localization, focus, direction, and media preferences.
-2. Primitives: buttons, inputs, labels, status, icons, and low-level interaction.
-3. Composites: command bars, search, fields, tables, pagination, tabs, menus, and overlays.
+| Render stability | Localization values/formatters and `moduleHost` are recreated while visited roots stay mounted | `web/src/shared/localization/UokLocalization.tsx`; `web/src/app/useWorkbench.ts`; `web/src/features/modules/moduleSurfaceRegistry.tsx` | Memoized shared bounda…7 tokens truncated…s, tables, pagination, tabs, menus, and overlays.
 4. Workspace frames: page, master/detail, async boundary, activation, and metric composition.
 5. Module features: domain DTOs, validation, permissions, commands, workflows, and specialized visualization.
 
@@ -371,7 +224,7 @@ Expected outcome: one measured baseline, responsive and accessible shared behavi
 
 | Delivery | Scope | Status | ADR |
 |---|---|---|---|
-| 6 | Request-authoritative async boundary and generation-bound unauthorized handling across session, capability, operational, criteria, activation, and lifetime changes | In progress: 6a establishes the shell/foundation; 6b adopts Compliance reads; 6c adopts Compliance command authority and reconciliation; 6d adopts Contacts primary list/group/detail reads; 6e adopts Contacts create, update, archive, and restore commands plus primary list/groups/detail reconciliation and an owner-wide command gate; remaining Contacts async owners and other module-owner paths remain phased | ADR-0030 |
+| 6 | Request-authoritative async boundary and generation-bound unauthorized handling across session, capability, operational, criteria, activation, and lifetime changes | In progress: 6a establishes the shell/foundation; 6b adopts Compliance reads; 6c adopts Compliance command authority and reconciliation; 6d adopts Contacts primary list/group/detail reads; 6e adopts Contacts create/update/archive/restore commands plus primary reconciliation and an owner-wide gate; 6f implements and locally qualifies Contacts activity and relationship-options reads plus note/relationship commands under that gate and reconciliation; exact-head hosted CI and the remaining Contacts and other module-owner paths remain phased | ADR-0035 |
 | 7 | Shared HTTP transport and runtime response decoding in bounded owner slices | Planned | Yes for the transport/error contract |
 | 8 | Server-authoritative identity bootstrap, revocable logout, token rotation, and replay proof | Planned | Yes; dedicated auth-session ADR |
 | 9 | Canonical browser navigation and exact entity deep links | Planned | Yes; neutral surface contract changes |
@@ -379,7 +232,7 @@ Expected outcome: one measured baseline, responsive and accessible shared behavi
 | 11 | CSV formula neutralization and export proof | Planned | No |
 | 12 | Bounded Contacts file ingestion before browser reads | Planned | No |
 | 13 | Static compression/cache policy and browser security headers | Planned | Yes; static-delivery and browser-security ADR |
-| 14 | Compile-time module code splitting, retained lifecycle, and entry/chunk budgets | Planned | Yes; amend ADR-0023 and ADR-0028 |
+| 14 | Compile-time module code splitting, retained lifecycle, and entry/chunk budgets | Implemented and locally qualified on 2026-08-03; ADR-0023/ADR-0028 amended, 23-asset build and entry/deferred/cumulative budgets pass; exact-head hosted CI pending | ADR-0023 and ADR-0028 amended |
 | 15 | Shared form foundation and Product/Contacts pilot | Planned | No without a new dependency |
 | 16 | Table selection, remote collection, and versioned saved-view contracts | Planned | Conditional on server query protocol |
 
@@ -400,16 +253,25 @@ and selected detail. A shared synchronous owner gate prevents the excluded
 legacy commands from racing that reconciliation, while token/generation
 replacement clears tenant-owned draft and filter state. Selected-row
 `updated_at` is browser-intent freshness evidence only; it is not an ETag or
-lost-update guard. Purge, notes and
-activity, membership and Groups Manager, relationship commands and options,
-merge and dedupe, Data Tools, import/export, saved views, and the other audited
-module owners remain open. A current Contacts detail `403` or `404` clears richer
-detail state but retains the separately authorized list projection; immediate
-mid-session party-visibility revocation remains a list-reconciliation
-follow-up. Subsequent sub-slices migrate those owner paths in bounded groups.
-Delivery 6 and Top-20 Issue 1 remain open until every identified owner path
-guards success, error, loading/finally, host refresh, and unauthorized dispatch
-and masks epoch-stale committed state.
+lost-update guard. Sub-slice 6f implements independent request-authoritative
+activity and relationship-options owners plus `AddContactNote`,
+`LinkContactRelationship`, `UpdateContactRelationship`, and
+`RemoveContactRelationship` under the existing command gate and current-primary
+reconciliation; local qualification completed on 2026-08-03 and exact-head
+hosted CI remains required. Authenticated activity and
+relationship-options responses are private, no-store, and authorization-varying.
+Composer/editor effects are current-intent-only, while notes and relationships
+remain part of the selected-detail projection rather than redundant reads.
+Purge, membership and Groups Manager, merge/dedupe/rollback, Data Tools for
+facts, consent, teams, custom fields, and external identities,
+import/file/bulk/export, saved views, and the other audited module owners remain
+open. A current Contacts detail `403` or `404` clears richer detail state but
+retains the separately authorized list projection; immediate mid-session
+party-visibility revocation remains a list-reconciliation follow-up. Subsequent
+sub-slices migrate those owner paths in bounded groups. Delivery 6 and Top-20
+Issue 1 remain open until every identified owner path guards success, error,
+loading/finally, host refresh, and unauthorized dispatch and masks epoch-stale
+committed state.
 
 ### Phase 3 - Feature Refactors
 
@@ -450,11 +312,11 @@ Every delivery must merge and qualify before the next begins. Runtime-affecting 
 
 | Rank | Issue | Severity | Evidence | Shared solution | Status |
 |---|---|---|---|---|---|
-| 1 | Old-session responses can overwrite new-session state or an old `401` can trigger logout | High | Shell, Contacts, Compliance, Product, Location, Route, and Shipment request paths | ABA-safe request boundary plus generation-bound unauthorized callback | In progress: shell and all Compliance read/mutation paths plus Contacts primary list/group/detail reads and the bounded 6e create/update/archive/restore commands are current; purge, notes/activity, membership/Groups Manager, relationships/options, merge/dedupe, Data Tools, import/export, saved views, Product, Location, Route, Shipment, and other inventoried owner paths remain open |
+| 1 | Old-session responses can overwrite new-session state or an old `401` can trigger logout | High | Shell, Contacts, Compliance, Product, Location, Route, and Shipment request paths | ABA-safe request boundary plus generation-bound unauthorized callback | In progress: shell and all Compliance paths plus Contacts primary reads and bounded 6e commands are current; 6f activity/relationship-productivity adoption is implemented and locally qualified, with exact-head hosted CI pending; purge, membership/Groups Manager, merge/dedupe/rollback, Data Tools/facts/consent/teams/custom fields/external identities, import/file/bulk/export, saved views, the detail `403`/`404` residual, Product, Location, Route, Shipment, and other inventoried owner paths remain open |
 | 2 | Logout leaves the bearer token replayable until its default eight-hour expiry | High | `useAuthState.ts`; `src/uok/host/security.py` | Token identity/revocation, rotation, server logout, and replay tests | Open |
 | 3 | Nineteen clients implement transport and response handling separately | High | Direct `fetch` inventory | Shared HTTP mechanics plus module decoders | Open |
 | 4 | Client identity outlives token storage and is weakly decoded | Medium | `web/src/shared/session.ts` | Strict server-rehydrated session identity | Open |
-| 5 | Authentication and shell download every module workspace | High | Generated eager catalog; one 939.46 KiB JS asset | Compile-time-known lazy surfaces | Open |
+| 5 | Authentication and shell download every module workspace | High | Former one-file entry replaced by 23 static assets; entry 226.06 KiB raw/70.09 KiB gzip | Compile-time-known lazy surfaces | Completed locally; exact-head hosted CI pending |
 | 6 | URL and active workspace diverge; Back/Forward and copy/reload are incomplete | Medium | `web/src/app/useWorkbench.ts` | Typed reactive location/history contract | Open |
 | 7 | Planning-to-Contacts `party_id` link does not select the requested Party | Medium | Planning participant links and Contacts selection initialization | Exact module-owned entity route decoding | Open |
 | 8 | Static delivery lacks compression, explicit cache policy, and tested browser security headers | Medium | FastAPI static runtime response and host tests | Static delivery/security middleware and proof | Open |
@@ -596,7 +458,8 @@ The shared control should forward safe native button props and events instead of
 - Repeated Enter/Space row-selection helpers after the shared table contract.
 - Global unscoped saved-view storage.
 - Unvalidated internal path rendering.
-- Eager module imports after an ADR-approved lazy generator is proven.
+- Eager module-workspace imports; synchronous surface metadata remains required
+  for navigation and closed-catalog validation.
 
 ### Rebuild From Scratch
 

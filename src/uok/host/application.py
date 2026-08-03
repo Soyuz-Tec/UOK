@@ -76,6 +76,11 @@ from ..config import env_flag
 from ..kernel.persistence import Base
 from ..seed import seed
 from .database import SessionLocal, database_pool_telemetry, engine
+from .http_security import (
+    build_http_security_settings,
+    fastapi_docs_urls,
+    install_http_security,
+)
 from .module_routers import mount_module_routers
 
 APP_TITLE = "UOK"
@@ -102,7 +107,14 @@ async def lifespan(_: FastAPI):
         engine.dispose()
 
 
-app = FastAPI(title=APP_TITLE, version=APP_VERSION, lifespan=lifespan)
+http_security_settings = build_http_security_settings()
+app = FastAPI(
+    title=APP_TITLE,
+    version=APP_VERSION,
+    lifespan=lifespan,
+    **fastapi_docs_urls(http_security_settings),
+)
+install_http_security(app, http_security_settings)
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 

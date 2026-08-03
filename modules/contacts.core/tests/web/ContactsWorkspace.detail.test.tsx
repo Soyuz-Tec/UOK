@@ -127,6 +127,24 @@ describe("ContactsWorkspace detail and editor surfaces", () => {
     expect(within(timeline).queryByText("Server activity 1")).not.toBeInTheDocument();
   });
 
+  it("keeps the note composer inert for a read-only role", () => {
+    const onAddNote = vi.fn();
+    renderContactsWorkspace("split", [contact], {
+      canManage: false,
+      currentUserRole: "viewer",
+      noteText: "A note that must not be submitted",
+      onAddNote,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /Example Contact/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Activity" }));
+    const inspector = screen.getByLabelText("Contact inspector");
+    expect(within(inspector).queryByLabelText("Internal note")).not.toBeInTheDocument();
+    expect(within(inspector).queryByRole("button", { name: "Add" }))
+      .not.toBeInTheDocument();
+    expect(onAddNote).not.toHaveBeenCalled();
+  });
+
   it("opens contact detail in the same popup primitive from cards view", () => {
     renderContactsWorkspace("cards");
 

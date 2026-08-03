@@ -75,18 +75,24 @@ export function ContactDetailPanel(props: ContactsWorkspaceProps) {
           )}
           {props.detailPane === "activity" && (
             <div className="detail-section pane-section">
-              <p className="eyebrow">Notes</p>
-              <div className="note-composer">
-                <label className="field note-field">
-                  <span>Internal note</span>
-                  <input value={props.noteText} onChange={(event) => props.onNoteTextChange(event.target.value)} disabled={!contact} />
-                </label>
-                <CommandButton icon={FileCheck2} onClick={props.onAddNote} disabled={!contact || !props.noteText.trim() || Boolean(props.busyAction)}>Add</CommandButton>
-              </div>
+              {props.canManage ? (
+                <>
+                  <p className="eyebrow">Notes</p>
+                  <div className="note-composer">
+                    <label className="field note-field">
+                      <span>Internal note</span>
+                      <input value={props.noteText} onChange={(event) => props.onNoteTextChange(event.target.value)} disabled={!contact || Boolean(props.busyAction)} />
+                    </label>
+                    <CommandButton icon={FileCheck2} onClick={props.onAddNote} disabled={!contact || !props.noteText.trim() || Boolean(props.busyAction)}>Add</CommandButton>
+                  </div>
+                </>
+              ) : null}
               <ContactActivityTimeline
-                token={props.token}
+                boundary={props.contactReadBoundary}
+                onUnauthorized={props.onUnauthorized}
                 contactId={contact.id}
-                refreshKey={`${contact.updated_at || ""}:${contact.notes?.length || 0}`}
+                contactRevision={contact.updated_at || ""}
+                refreshGeneration={props.activityRefreshGeneration}
               />
             </div>
           )}

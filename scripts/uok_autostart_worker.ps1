@@ -2,19 +2,16 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$ConfigPath
 )
-
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $script:UokAutoStartLogPath = $null
 $script:UokAutoStartRunId = $null
-
 function Protect-UokAutoStartText {
     param([string]$Text)
     if (-not $Text) { return "" }
     $safe = $Text -replace '(?i)(password|secret|token|database_url)(\s*[:=]\s*)\S+', '$1$2[redacted]'
     return $safe -replace '(?i)([a-z][a-z0-9+.-]*://[^:\s/]+:)[^@\s]+@', '$1[redacted]@'
 }
-
 function Write-UokAutoStartLog {
     param(
         [string]$Event,
@@ -33,7 +30,6 @@ function Write-UokAutoStartLog {
     Add-Content -LiteralPath $script:UokAutoStartLogPath -Value $line -Encoding UTF8
     Write-Host $line
 }
-
 function ConvertTo-UokNativeArgument {
     param([string]$Value)
     if ($Value.Contains('"')) { throw "Native arguments must not contain quotation marks." }
@@ -41,7 +37,6 @@ function ConvertTo-UokNativeArgument {
     $escaped = $Value -replace '(\\+)$', '$1$1'
     return '"' + $escaped + '"'
 }
-
 function Invoke-UokAutoStartNative {
     param(
         [string]$FilePath,
@@ -102,7 +97,6 @@ function Invoke-UokAutoStartNative {
     }
     return $result
 }
-
 function Test-UokPodmanReady {
     param($Config, [string]$PodmanPath)
     $result = Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @(
@@ -110,7 +104,6 @@ function Test-UokPodmanReady {
     ) -TimeoutSeconds 10 -AllowFailure
     return $result.ExitCode -eq 0
 }
-
 function Wait-UokPodmanReady {
     param($Config, [string]$PodmanPath)
     $deadline = (Get-Date).AddSeconds(120)
@@ -133,7 +126,6 @@ function Get-UokContainerId {
     if ($ids.Count -eq 1) { return $ids[0] }
     return $null
 }
-
 function Get-UokInspectValue {
     param($Config, [string]$PodmanPath, [string]$ObjectId, [string]$Format)
     $result = Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @(
@@ -142,10 +134,16 @@ function Get-UokInspectValue {
     return $result.StdOut.Trim()
 }
 
-function Assert-UokContainerImage {
-    param($Config, [string]$PodmanPath, [string]$ContainerId, [string]$ExpectedImageId, [string]$Service)
-    $actual = Get-UokInspectValue -Config $Config -PodmanPath $PodmanPath -ObjectId $ContainerId -Format "{{.Image}}"
+function Assert-UokContainerContract {
+    param($Config, [string]$PodmanPath, [string]$ContainerId, [string]$ExpectedImageId, [string]$Service, [string]$Destination, [string]$ExpectedVolume)
+    $result = Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @(
+        "--connection", $Config.connection_name, "inspect", $ContainerId
+    ) -TimeoutSeconds 15
+    $inspection = @($result.StdOut | ConvertFrom-Json -ErrorAction Stop)[0]
+    $actual = "$($inspection.Image)"
     if ($actual -ne $ExpectedImageId) { throw "$Service container image does not match the installed auto-start contract." }
+    $mounts = @($inspection.Mounts | Where-Object { $_.Destination -eq $Destination -and $_.Type -eq "volume" })
+    if ($mounts.Count -ne 1 -or "$($mounts[0].Name)" -ne $ExpectedVolume) { throw "$Service container volume does not match the installed auto-start contract." }
 }
 
 function Wait-UokDatabaseHealthy {
@@ -190,7 +188,6 @@ function Assert-UokPayloadIntegrity {
         if ($actual -ne [string]$item.Value) { throw "Installed auto-start payload hash drifted: $($item.Name)" }
     }
 }
-
 function Assert-UokImageReference {
     param($Config, [string]$PodmanPath, [string]$Image, [string]$ExpectedImageId)
     $result = Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @(
@@ -198,7 +195,23 @@ function Assert-UokImageReference {
     ) -TimeoutSeconds 15
     if ($result.StdOut.Trim() -ne $ExpectedImageId) { throw "Image reference drifted from the installed auto-start contract: $Image" }
 }
-
+function Start-UokApiContainer {
+    param($Config, [string]$PodmanPath, [string]$ContainerId)
+    $state = Get-UokInspectValue -Config $Config -PodmanPath $PodmanPath -ObjectId $ContainerId -Format "{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}"
+    $action = if ($state -eq "unhealthy") { "restart" } else { "start" }
+    Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @("--connection", $Config.connection_name, $action, $ContainerId) -TimeoutSeconds 30 | Out-Null
+    Write-UokAutoStartLog -Event "api_container_$action" -Message "API state was '$state'; bounded $action requested."
+}
+function Assert-UokVolumeReference {
+    param($Config, [string]$PodmanPath, [string]$Name, [string]$Expected)
+    $result = Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @(
+        "--connection", $Config.connection_name, "volume", "inspect", $Name
+    ) -TimeoutSeconds 15 -AllowFailure
+    if ($result.ExitCode -ne 0) { throw "Required UOK volume is absent or its identity changed: $Name" }
+    $inspection = @($result.StdOut | ConvertFrom-Json -ErrorAction Stop)[0]
+    $actual = "$($inspection.Name)|$($inspection.Driver)|$($inspection.CreatedAt)"
+    if ($actual -ne $Expected) { throw "Required UOK volume is absent or its identity changed: $Name" }
+}
 $resolvedConfigPath = [System.IO.Path]::GetFullPath($ConfigPath)
 $releaseRoot = Split-Path -Parent $resolvedConfigPath
 $releasesRoot = Split-Path -Parent $releaseRoot
@@ -244,17 +257,20 @@ try {
         }
     }
     Wait-UokPodmanReady -Config $config -PodmanPath $podmanPath
-
+    Assert-UokVolumeReference -Config $config -PodmanPath $podmanPath -Name $config.db_volume -Expected $config.db_volume_fingerprint
+    Assert-UokVolumeReference -Config $config -PodmanPath $podmanPath -Name $config.files_volume -Expected $config.files_volume_fingerprint
     $dbId = Get-UokContainerId -Config $config -PodmanPath $podmanPath -Service "db"
     $apiId = Get-UokContainerId -Config $config -PodmanPath $podmanPath -Service "api"
     if ($dbId -and $apiId) {
-        Assert-UokContainerImage -Config $config -PodmanPath $podmanPath -ContainerId $dbId -ExpectedImageId $config.db_image_id -Service "Database"
-        Assert-UokContainerImage -Config $config -PodmanPath $podmanPath -ContainerId $apiId -ExpectedImageId $config.api_image_id -Service "API"
+        Assert-UokContainerContract -Config $config -PodmanPath $podmanPath -ContainerId $dbId -ExpectedImageId $config.db_image_id -Service "Database" -Destination "/var/lib/postgresql" -ExpectedVolume $config.db_volume
+        Assert-UokContainerContract -Config $config -PodmanPath $podmanPath -ContainerId $apiId -ExpectedImageId $config.api_image_id -Service "API" -Destination "/data" -ExpectedVolume $config.files_volume
         Invoke-UokAutoStartNative -FilePath $podmanPath -Arguments @("--connection", $config.connection_name, "start", $dbId) -TimeoutSeconds 30 | Out-Null
         Wait-UokDatabaseHealthy -Config $config -PodmanPath $podmanPath -ContainerId $dbId
-        Invoke-UokAutoStartNative -FilePath $podmanPath -Arguments @("--connection", $config.connection_name, "start", $apiId) -TimeoutSeconds 30 | Out-Null
+        Start-UokApiContainer -Config $config -PodmanPath $podmanPath -ContainerId $apiId
         Write-UokAutoStartLog -Event "existing_containers_started" -Message "Recovered the installed UOK database and API containers."
     } else {
+        if ($dbId) { Assert-UokContainerContract -Config $config -PodmanPath $podmanPath -ContainerId $dbId -ExpectedImageId $config.db_image_id -Service "Database" -Destination "/var/lib/postgresql" -ExpectedVolume $config.db_volume }
+        if ($apiId) { Assert-UokContainerContract -Config $config -PodmanPath $podmanPath -ContainerId $apiId -ExpectedImageId $config.api_image_id -Service "API" -Destination "/data" -ExpectedVolume $config.files_volume }
         Assert-UokImageReference -Config $config -PodmanPath $podmanPath -Image $config.db_image -ExpectedImageId $config.db_image_id
         Assert-UokImageReference -Config $config -PodmanPath $podmanPath -Image $config.api_image -ExpectedImageId $config.api_image_id
         if (-not (Test-Path -LiteralPath $config.compose_provider_path)) { throw "Installed Compose provider is unavailable." }
@@ -266,8 +282,8 @@ try {
         $dbId = Get-UokContainerId -Config $config -PodmanPath $podmanPath -Service "db"
         $apiId = Get-UokContainerId -Config $config -PodmanPath $podmanPath -Service "api"
         if (-not $dbId -or -not $apiId) { throw "Compose recovery did not produce the expected UOK service labels." }
-        Assert-UokContainerImage -Config $config -PodmanPath $podmanPath -ContainerId $dbId -ExpectedImageId $config.db_image_id -Service "Database"
-        Assert-UokContainerImage -Config $config -PodmanPath $podmanPath -ContainerId $apiId -ExpectedImageId $config.api_image_id -Service "API"
+        Assert-UokContainerContract -Config $config -PodmanPath $podmanPath -ContainerId $dbId -ExpectedImageId $config.db_image_id -Service "Database" -Destination "/var/lib/postgresql" -ExpectedVolume $config.db_volume
+        Assert-UokContainerContract -Config $config -PodmanPath $podmanPath -ContainerId $apiId -ExpectedImageId $config.api_image_id -Service "API" -Destination "/data" -ExpectedVolume $config.files_volume
         Wait-UokDatabaseHealthy -Config $config -PodmanPath $podmanPath -ContainerId $dbId
         Write-UokAutoStartLog -Event "compose_recovered" -Message "Recovered the UOK project from the frozen no-build payload."
     }

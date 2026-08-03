@@ -1,9 +1,13 @@
 import type { HostModuleStatus } from "@uok/contracts/moduleSurface";
+import type { ContactReadBoundary } from "./app/contactReadAuthority";
 import type { ContactDetailPane, ContactDraft, ContactGroupBy, ContactGroupRecord, ContactMergeFieldChoices, ContactQualityFilter, ContactRecord, ContactSortBy, ContactSortDir, ContactSourceFilter, ContactsView } from "./contracts";
 
 export type ContactsWorkspaceProps = {
   token: string;
+  contactReadBoundary: ContactReadBoundary;
+  onUnauthorized: () => void;
   currentUserRole: string;
+  canManage: boolean;
   operational: boolean;
   module?: HostModuleStatus;
   contacts: ContactRecord[];
@@ -31,6 +35,7 @@ export type ContactsWorkspaceProps = {
   noteText: string;
   relationshipTarget: string;
   relationshipType: string;
+  activityRefreshGeneration: number;
   busyAction: string;
   onActivate: () => void;
   onRefreshContacts: () => Promise<void> | void;
@@ -67,7 +72,20 @@ export type ContactsWorkspaceProps = {
   onRelationshipTargetChange: (value: string) => void;
   onRelationshipTypeChange: (value: string) => void;
   onLinkRelationship: () => void;
-  onUpdateRelationship: (relationshipId: string, fromPartyId: string, toPartyId: string, relationshipType: string) => Promise<boolean>;
+  onUpdateRelationship: (
+    relationshipId: string,
+    fromPartyId: string,
+    toPartyId: string,
+    relationshipType: string,
+    editorIntent: ContactRelationshipEditorIntent,
+  ) => Promise<boolean>;
   onRemoveRelationship: (relationshipId: string) => Promise<boolean>;
   onMergeDuplicate: (primaryContactId: string, duplicateContactId: string, fieldChoices?: ContactMergeFieldChoices) => Promise<boolean>;
 };
+
+export type ContactRelationshipEditorIntent = Readonly<{
+  generation: number;
+  isCurrent: (generation: number) => boolean;
+}>;
+
+export type ContactRelationship = NonNullable<ContactRecord["relationships"]>[number];

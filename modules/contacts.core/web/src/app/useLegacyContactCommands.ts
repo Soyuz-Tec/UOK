@@ -1,5 +1,3 @@
-import type { Dispatch, SetStateAction } from "react";
-
 import type { ModuleSurfaceRenderContext } from "@uok/contracts/moduleSurface";
 
 import { contactCommandResultId } from "./contactCommandApi";
@@ -14,21 +12,11 @@ import type { ContactMergeFieldChoices, ContactCommandResponse } from "../contra
 export function useLegacyContactCommands({
   data,
   host,
-  noteText,
   operationGate,
-  relationshipTarget,
-  relationshipType,
-  setNoteText,
-  setRelationshipTarget,
 }: {
   data: ContactData;
   host: ModuleSurfaceRenderContext;
-  noteText: string;
   operationGate: ContactCommandOperationGate;
-  relationshipTarget: string;
-  relationshipType: string;
-  setNoteText: Dispatch<SetStateAction<string>>;
-  setRelationshipTarget: Dispatch<SetStateAction<string>>;
 }) {
   async function command(
     commandType: string,
@@ -68,21 +56,6 @@ export function useLegacyContactCommands({
     }
   }
 
-  async function addNote() {
-    if (!data.selectedContactId || !noteText.trim()) return false;
-    return runLegacyOperation(async () => {
-      const result = await command(
-        "AddContactNote",
-        { party_id: data.selectedContactId, body: noteText },
-        "contact-note",
-      );
-      if (!result) return false;
-      setNoteText("");
-      await data.loadContactDetail(data.selectedContactId);
-      return true;
-    });
-  }
-
   async function addSelectedContactToGroup(groupId: string) {
     if (!data.selectedContactId || !groupId) return false;
     return runLegacyOperation(async () => {
@@ -103,57 +76,6 @@ export function useLegacyContactCommands({
         group_id: groupId,
         party_id: data.selectedContactId,
       }, "contact-group-remove");
-      if (!result) return false;
-      await data.loadContactDetail(data.selectedContactId);
-      return true;
-    });
-  }
-
-  async function linkRelationship() {
-    if (!data.selectedContactId || !relationshipTarget) return false;
-    return runLegacyOperation(async () => {
-      const result = await command("LinkContactRelationship", {
-        from_party_id: data.selectedContactId,
-        to_party_id: relationshipTarget,
-        relationship_type: relationshipType,
-      }, "contact-relationship");
-      if (!result) return false;
-      setRelationshipTarget("");
-      await data.loadContactDetail(data.selectedContactId);
-      return true;
-    });
-  }
-
-  async function updateRelationship(
-    relationshipId: string,
-    fromPartyId: string,
-    toPartyId: string,
-    nextRelationshipType: string,
-  ) {
-    if (!data.selectedContactId || !relationshipId || !fromPartyId || !toPartyId) {
-      return false;
-    }
-    return runLegacyOperation(async () => {
-      const result = await command("UpdateContactRelationship", {
-        relationship_id: relationshipId,
-        from_party_id: fromPartyId,
-        to_party_id: toPartyId,
-        relationship_type: nextRelationshipType,
-      }, "contact-relationship-update");
-      if (!result) return false;
-      await data.loadContactDetail(data.selectedContactId);
-      return true;
-    });
-  }
-
-  async function removeRelationship(relationshipId: string) {
-    if (!data.selectedContactId || !relationshipId) return false;
-    return runLegacyOperation(async () => {
-      const result = await command(
-        "RemoveContactRelationship",
-        { relationship_id: relationshipId },
-        "contact-relationship-remove",
-      );
       if (!result) return false;
       await data.loadContactDetail(data.selectedContactId);
       return true;
@@ -196,13 +118,9 @@ export function useLegacyContactCommands({
   }
 
   return {
-    addNote,
     addSelectedContactToGroup,
-    linkRelationship,
     mergeDuplicate,
     purgeSelected,
-    removeRelationship,
     removeSelectedContactFromGroup,
-    updateRelationship,
   };
 }

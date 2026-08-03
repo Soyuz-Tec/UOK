@@ -50,6 +50,13 @@ function Get-UokAutoStartStatus {
         Disabled = Test-Path -LiteralPath $paths.Disabled
         SourceCommit = if ($config) { $config.source_commit } else { $null }
         SourceTreeState = if ($config -and $config.psobject.Properties["source_tree_state"]) { $config.source_tree_state } else { "legacy-unknown" }
+        VolumeIdentityConfigured = [bool](
+            $config -and
+            $config.psobject.Properties["db_volume_fingerprint"] -and
+            $config.psobject.Properties["files_volume_fingerprint"]
+        )
+        DatabaseVolume = if ($config -and $config.psobject.Properties["db_volume"]) { $config.db_volume } else { $null }
+        FilesVolume = if ($config -and $config.psobject.Properties["files_volume"]) { $config.files_volume } else { $null }
         CheckIntervalMinutes = $checkInterval
         ConfigPath = $configPath
     }
@@ -115,8 +122,8 @@ function Install-UokAutoStart {
 function Test-UokAutoStart {
     $status = Get-UokAutoStartStatus
     if ($status.Disabled) { throw "UOK auto-start verification is unavailable while maintenance disable is active." }
-    if (-not $status.Installed -or -not $status.PayloadIntegrity -or -not $status.TaskDefinitionValid) {
-        throw "UOK auto-start is not installed with an intact payload and exact managed task definition."
+    if (-not $status.Installed -or -not $status.PayloadIntegrity -or -not $status.TaskDefinitionValid -or -not $status.VolumeIdentityConfigured) {
+        throw "UOK auto-start is not installed with exact image/volume pins, an intact payload, and an exact managed task definition."
     }
     $before = (Get-ScheduledTaskInfo -TaskName $TaskName -TaskPath $TaskPath).LastRunTime
     Start-ScheduledTask -TaskName $TaskName -TaskPath $TaskPath

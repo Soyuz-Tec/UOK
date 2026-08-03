@@ -1,0 +1,71 @@
+name: Bug report
+description: Report a reproducible UOK defect without sensitive data.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not report vulnerabilities or include secrets here. Follow SECURITY.md for private security reports.
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version
+      description: Exact commit SHA, tag, or displayed UOK version.
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - Backend/API
+        - Frontend/workbench
+        - Database/migration
+        - Build/CI/release
+        - Local operations/recovery
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, browser, Python, Node, PostgreSQL, and container runtime versions as relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal numbered steps using sanitized data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence
+      description: Logs, screenshots, or correlation IDs with secrets and personal data removed.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I removed secrets, credentials, personal data, and private database content.
+          required: true
+        - label: This is not a vulnerability report.
+          required: true

@@ -18,6 +18,10 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
+      args:
+        UOK_VERSION: ${UOK_BUILD_VERSION:-development}
+        UOK_REVISION: ${UOK_BUILD_REVISION:-unknown}
+        UOK_SOURCE_URL: ${UOK_BUILD_SOURCE_URL:-https://github.com/Soyuz-Tec/UOK}
     restart: unless-stopped
     env_file:
       - ./database-capacity.env

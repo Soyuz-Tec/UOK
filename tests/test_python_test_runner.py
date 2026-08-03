@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -12,6 +13,28 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 import run_python_tests  # noqa: E402
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_ruff_per_file_ignores_never_suppress_undefined_names() -> None:
+    configuration = tomllib.loads(
+        (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    )
+    per_file_ignores = configuration["tool"]["ruff"]["lint"]["per-file-ignores"]
+    forbidden_rule = "F821"
+    offenders = {
+        path: [
+            rule
+            for rule in rules
+            if rule == "ALL" or forbidden_rule.startswith(rule)
+        ]
+        for path, rules in per_file_ignores.items()
+    }
+    offenders = {path: rules for path, rules in offenders.items() if rules}
+
+    assert not offenders, f"Per-file ignores may not suppress {forbidden_rule}: {offenders}"
 
 
 def _create_repository_layout(repo_root: Path, modules: tuple[str, ...] = ("alpha.core",)) -> None:
@@ -124,3 +147,100 @@ def test_runner_invokes_each_file_in_its_own_sequential_subprocess(
         ([sys.executable, "-m", "pytest", "-q", "modules/alpha.core/tests/test_module.py"], tmp_path),
         ([sys.executable, "-m", "pytest", "-q", "tests/test_root.py"], tmp_path),
     ]
+
+
+def test_coverage_mode_preserves_subprocess_isolation_and_combines_reports(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _create_repository_layout(tmp_path)
+    root_test = _write(tmp_path / "tests" / "test_root.py")
+    module_test = _write(tmp_path / "modules" / "alpha.core" / "tests" / "test_module.py")
+    calls: list[tuple[list[str], Path, dict[str, str]]] = []
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append((command, kwargs["cwd"], kwargs["env"]))
+        return subprocess.CompletedProcess(command, 0)
+
+    monkeypatch.setattr(run_python_tests.subprocess, "run", fake_run)
+
+    result = run_python_tests.run_test_files(
+        tmp_path,
+        [module_test, root_test],
+        collect_coverage=True,
+    )
+
+    coverage_directory = tmp_path / "var" / "evidence" / "coverage" / "python"
+    assert result == 0
+    assert [command for command, _, _ in calls] == [
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "run",
+            "--parallel-mode",
+            "-m",
+            "pytest",
+            "-q",
+            "modules/alpha.core/tests/test_module.py",
+        ],
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "run",
+            "--parallel-mode",
+            "-m",
+            "pytest",
+            "-q",
+            "tests/test_root.py",
+        ],
+        [sys.executable, "-m", "coverage", "combine", str(coverage_directory)],
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "xml",
+            "-o",
+            str(coverage_directory / "coverage.xml"),
+        ],
+        [
+            sys.executable,
+            "-m",
+            "coverage",
+            "json",
+            "--pretty-print",
+            "-o",
+            str(coverage_directory / "coverage.json"),
+        ],
+        [sys.executable, "-m", "coverage", "report"],
+    ]
+    assert all(cwd == tmp_path for _, cwd, _ in calls)
+    assert all(
+        environment["COVERAGE_FILE"] == str((coverage_directory / ".coverage").resolve())
+        for _, _, environment in calls
+    )
+
+
+def test_coverage_mode_does_not_publish_partial_reports_after_a_test_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _create_repository_layout(tmp_path)
+    root_test = _write(tmp_path / "tests" / "test_root.py")
+    module_test = _write(tmp_path / "modules" / "alpha.core" / "tests" / "test_module.py")
+    calls: list[list[str]] = []
+
+    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 1 if len(calls) == 2 else 0)
+
+    monkeypatch.setattr(run_python_tests.subprocess, "run", fake_run)
+
+    result = run_python_tests.run_test_files(
+        tmp_path,
+        [module_test, root_test],
+        collect_coverage=True,
+    )
+
+    assert result == 1
+    assert len(calls) == 2
+    assert all(command[2:5] == ["coverage", "run", "--parallel-mode"] for command in calls)

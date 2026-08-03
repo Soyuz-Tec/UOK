@@ -133,9 +133,12 @@ describe("Contacts bounded primary commands", () => {
     expect(props.setCreating).not.toHaveBeenCalled();
     expect(props.setEditing).not.toHaveBeenCalled();
     expect(props.setDraft).not.toHaveBeenCalled();
-    expect(props.data.setOut).toHaveBeenLastCalledWith(expect.objectContaining({
-      status: 503,
+    const retainedError = vi.mocked(props.data.setOut).mock.calls.at(-1)?.[0];
+    expect(retainedError).toEqual(expect.objectContaining({
+      message: "late gateway failure",
     }));
+    expect(retainedError).not.toHaveProperty("body");
+    expect(retainedError).not.toHaveProperty("status");
   });
 });
 

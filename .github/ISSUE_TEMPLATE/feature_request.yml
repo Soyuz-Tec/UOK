@@ -1,0 +1,36 @@
+name: Feature request
+description: Propose one bounded UOK improvement with ownership and evidence.
+title: "feat: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the operator or engineering problem, not only a preferred implementation.
+    validations:
+      required: true
+  - type: input
+    id: owner
+    attributes:
+      label: Likely owning module or platform boundary
+      placeholder: planning.core, contacts.core, shared frontend, Host, unknown
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Bounded outcome
+      description: State the smallest useful behavior and explicit non-goals.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Acceptance evidence
+      description: Tests, runtime proof, performance budget, or operator evidence that would show completion.
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Architecture, security, data, or rollback considerations
