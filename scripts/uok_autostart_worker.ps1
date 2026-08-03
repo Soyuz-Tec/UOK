@@ -97,7 +97,6 @@ function Invoke-UokAutoStartNative {
     }
     return $result
 }
-
 function Test-UokPodmanReady {
     param($Config, [string]$PodmanPath)
     $result = Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @(
@@ -105,7 +104,6 @@ function Test-UokPodmanReady {
     ) -TimeoutSeconds 10 -AllowFailure
     return $result.ExitCode -eq 0
 }
-
 function Wait-UokPodmanReady {
     param($Config, [string]$PodmanPath)
     $deadline = (Get-Date).AddSeconds(120)
@@ -207,10 +205,12 @@ function Start-UokApiContainer {
 function Assert-UokVolumeReference {
     param($Config, [string]$PodmanPath, [string]$Name, [string]$Expected)
     $result = Invoke-UokAutoStartNative -FilePath $PodmanPath -Arguments @(
-        "--connection", $Config.connection_name, "volume", "inspect", $Name,
-        "--format", "{{.Name}}|{{.Driver}}|{{.CreatedAt}}"
+        "--connection", $Config.connection_name, "volume", "inspect", $Name
     ) -TimeoutSeconds 15 -AllowFailure
-    if ($result.ExitCode -ne 0 -or $result.StdOut.Trim() -ne $Expected) { throw "Required UOK volume is absent or its identity changed: $Name" }
+    if ($result.ExitCode -ne 0) { throw "Required UOK volume is absent or its identity changed: $Name" }
+    $inspection = @($result.StdOut | ConvertFrom-Json -ErrorAction Stop)[0]
+    $actual = "$($inspection.Name)|$($inspection.Driver)|$($inspection.CreatedAt)"
+    if ($actual -ne $Expected) { throw "Required UOK volume is absent or its identity changed: $Name" }
 }
 $resolvedConfigPath = [System.IO.Path]::GetFullPath($ConfigPath)
 $releaseRoot = Split-Path -Parent $resolvedConfigPath

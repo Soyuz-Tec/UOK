@@ -49,6 +49,7 @@ def test_worker_is_bounded_pinned_and_non_destructive() -> None:
     assert "Start-UokApiContainer" in worker
     assert 'if ($state -eq "unhealthy") { "restart" }' in worker
     assert "Assert-UokVolumeReference" in worker
+    assert "{{.Name}}|{{.Driver}}|{{.CreatedAt}}" not in worker
     assert "Assert-UokContainerContract" in worker
     assert worker.count("Assert-UokContainerContract -Config") == 6
     assert "ConvertFrom-Json -ErrorAction Stop" in worker
