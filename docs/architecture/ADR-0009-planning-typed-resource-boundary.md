@@ -6,6 +6,9 @@
 
 **Approved:** 2026-07-10
 
+**Amended by:** `ADR-0010-planning-resource-capacity-calendars.md` and
+`ADR-0012-planning-explainable-resource-leveling.md`
+
 ## Context
 
 Planning currently identifies a resource only by name and role, assumes every

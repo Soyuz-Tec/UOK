@@ -1,6 +1,12 @@
 # ADR-0027: Contacts System Of Record, Governance, And Interoperability
 
-Status: accepted
+**Status:** Accepted
+
+**Date:** 2026-07-24
+
+**Lifecycle note:** This is a historical umbrella decision. New material
+changes to its independent privacy, authorization, data, or integration
+concerns require focused ADRs.
 
 ## Context
 

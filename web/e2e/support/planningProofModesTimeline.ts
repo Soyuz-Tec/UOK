@@ -88,7 +88,6 @@ export async function verifyPlanningModes({ page, viewport, batchPayloads }: Pla
 }
 
 export async function verifyPlanningTimelineAndInspector({ page, viewport, taskPayloads }: PlanningProofContext) {
-  const planningControls = page.getByRole("dialog", { name: "Planning controls", exact: true });
   await page.getByRole("button", { name: "New task", exact: true }).focus();
   await expect(page.getByRole("button", { name: "New task", exact: true })).toBeFocused();
   await expect.poll(() => page.locator(".planning-gantt-shell").getByText("Build integrated Gantt with dependency validation").count()).toBeGreaterThan(0);

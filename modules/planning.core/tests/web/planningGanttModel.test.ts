@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { buildTimeline, finishDrag, planningScheduleHorizon, taskStatusIndicator, type DragState } from "../../web/src/planningGanttModel";
 import type { PlanningSchedule, PlanningTask } from "../../web/src/types";
@@ -130,11 +130,18 @@ describe("planning Gantt scales", () => {
 
 describe("planning Gantt status indicators", () => {
   it("returns non-color status codes for task state", () => {
-    expect(taskStatusIndicator({ ...task, progress: 0 }).code).toBe("OPEN");
-    expect(taskStatusIndicator(task).code).toBe("WORK");
-    expect(taskStatusIndicator({ ...task, progress: 100 }).code).toBe("DONE");
-    expect(taskStatusIndicator({ ...task, status: "blocked", progress: 0 }).code).toBe("HOLD");
-    expect(taskStatusIndicator({ ...task, critical: true }, true).code).toBe("CRIT");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-08-01T12:00:00Z"));
+    try {
+      expect(taskStatusIndicator({ ...task, progress: 0 }).code).toBe("OPEN");
+      expect(taskStatusIndicator(task).code).toBe("WORK");
+      expect(taskStatusIndicator({ ...task, progress: 100 }).code).toBe("DONE");
+      expect(taskStatusIndicator({ ...task, status: "blocked", progress: 0 }).code).toBe("HOLD");
+      expect(taskStatusIndicator({ ...task, critical: true }, true).code).toBe("CRIT");
+      expect(taskStatusIndicator({ ...task, progress: 0, end: "2000-01-01" }).code).toBe("LATE");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

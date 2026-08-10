@@ -1,6 +1,10 @@
-# ADR-0034: Python Alpine Runtime Base
+# ADR-0035: Python Alpine Runtime Base
 
 **Status:** Accepted
+
+**Implementation status:** Implemented
+
+**Date:** 2026-07-25
 
 ## Context
 

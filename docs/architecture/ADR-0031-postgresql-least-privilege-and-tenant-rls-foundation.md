@@ -1,6 +1,8 @@
-# ADR-0030: PostgreSQL Least Privilege and Tenant RLS Foundation
+# ADR-0031: PostgreSQL Least Privilege and Tenant RLS Foundation
 
 **Status:** Accepted foundation; activation deferred
+
+**Implementation status:** Inactive; foundation and offline verification exist, but RLS is not enabled
 
 **Date:** 2026-07-24
 

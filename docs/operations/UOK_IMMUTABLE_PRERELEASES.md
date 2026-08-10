@@ -11,7 +11,7 @@ rollback handoff.
 ## Purpose
 
 This guide operates the decision in
-`docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md`. The release
+`docs/architecture/ADR-0033-immutable-prerelease-supply-chain.md`. The release
 workflow publishes evidence for an approved UOK prerelease; it does not deploy
 the image or assert production readiness.
 
@@ -33,7 +33,7 @@ matched an independently calculated SHA-256 of the bytes returned by
 The Python Alpine pin replaced the Debian slim pin after the exact hosted
 candidate reported 23 release-blocking Debian OS-package findings with no
 fixed versions. The same Trivy 0.70 database found zero `HIGH` or `CRITICAL`
-findings in the reviewed Alpine input. ADR-0034 records the alternatives,
+findings in the reviewed Alpine input. ADR-0035 records the alternatives,
 compatibility gates, and rollback boundary.
 
 Refresh a pin only in a reviewed source change. Retain the readable tag,

@@ -3,8 +3,8 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ModuleStatus } from "@uok/shared/types";
-
 import { CalendarWorkspace } from "../../web/src/CalendarWorkspace";
+import { visibleEventEnd, visibleEventStart } from "./calendarWorkspaceTestTime";
 
 const installedCalendar: ModuleStatus = {
   name: "calendar.core",
@@ -40,7 +40,7 @@ describe("CalendarWorkspace", () => {
             { id: "calendar-2", name: "Engineering", color: "invalid", status: "active", timezone: "America/New_York" },
           ]
         : path.includes("/api/calendar/freebusy")
-          ? { busy: [{ start: "2026-07-09T11:00:00Z", end: "2026-07-09T12:00:00Z" }] }
+          ? { busy: [{ start: visibleEventStart, end: visibleEventEnd }] }
           : path.includes("/api/calendar/events/event-1")
             ? {
                 id: "event-1",
@@ -49,8 +49,8 @@ describe("CalendarWorkspace", () => {
                 description: "Daily schedule check",
                 location: "Control room",
                 status: "confirmed",
-                occurrence_start: "2026-07-09T11:00:00Z",
-                occurrence_end: "2026-07-09T12:00:00Z",
+                occurrence_start: visibleEventStart,
+                occurrence_end: visibleEventEnd,
                 timezone: "UTC",
                 transparency: "busy",
                 reminders: [{ id: "reminder-1", reminder_type: "in_app", trigger_minutes_before: 30 }],
@@ -61,8 +61,8 @@ describe("CalendarWorkspace", () => {
                 calendar_id: "calendar-1",
                 title: "Dispatch review",
                 status: "confirmed",
-                occurrence_start: "2026-07-09T11:00:00Z",
-                occurrence_end: "2026-07-09T12:00:00Z",
+                occurrence_start: visibleEventStart,
+                occurrence_end: visibleEventEnd,
                 timezone: "UTC",
                 transparency: "busy",
               }];

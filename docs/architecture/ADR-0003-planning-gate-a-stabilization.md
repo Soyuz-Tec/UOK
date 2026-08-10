@@ -2,7 +2,9 @@
 
 **Status:** Accepted
 
-**Implementation:** Gate A local/runtime closure verified 2026-07-10; stacked draft PR CI, review, and merge remain pending.
+**Implementation:** Implemented. Current evidence is maintained in the Planning
+traceability artifact and repository verification gates; historical branch and
+test-count snapshots are not lifecycle authority.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -177,14 +179,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\uok_ops.ps1 -Actio
 
 ## Verification outcome
 
-Gate A exited its local/runtime implementation gate on 2026-07-10. The full
-repository verification passed Python compilation/tests, dependency audits,
-module and source-boundary contracts, naming and source-size checks, 146
-frontend tests, the static production build, five Chromium candidate scenarios,
-and the live PostgreSQL candidate verifier. The evidence map records the exact
-requirement-level proof.
+Gate A exited its local/runtime implementation gate on 2026-07-10. The Planning
+traceability artifact and current repository gates record the exact
+requirement-level proof without relying on a stale fixed test count.
 
-This outcome authorizes Gate B implementation. It does not mark the alpha as
-`production_ready`: the stacked draft PRs still require hosted CI, review, and
-merge, and later security, performance, recovery, observability, and release
-profiles remain separate gates.
+This outcome authorized Gate B implementation. It does not mark the alpha as
+`production_ready`; security, performance, recovery, observability, deployment,
+and release qualification remain separate gates.

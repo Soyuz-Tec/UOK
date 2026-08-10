@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+import adr_policy
 import community_health_policy
 import database_capacity_audit
 import dependency_policy
@@ -88,6 +89,11 @@ def check_documentation_references() -> CheckResult:
         not problems,
         "; ".join(problems) or "resolved",
     )
+
+
+def check_adr_governance() -> CheckResult:
+    problems = adr_policy.adr_policy_problems(REPO_ROOT)
+    return CheckResult("adr_governance", not problems, "; ".join(problems) or "governed")
 
 
 def check_source_size() -> CheckResult:
@@ -244,6 +250,7 @@ def run_checks() -> list[CheckResult]:
         check_frontend_stack(),
         check_runtime_stack(),
         check_module_shape(),
+        check_adr_governance(),
         check_documentation_references(),
         check_source_size(),
         check_operations_hygiene(),

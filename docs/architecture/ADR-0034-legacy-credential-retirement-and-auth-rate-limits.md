@@ -1,6 +1,8 @@
-# ADR-0033: Legacy Credential Retirement And Authentication Rate Limits
+# ADR-0034: Legacy Credential Retirement And Authentication Rate Limits
 
 **Status:** Accepted
+
+**Implementation status:** Implemented for the single-process/local profile
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 

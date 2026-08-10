@@ -420,7 +420,7 @@ This command must classify every mapped table and validate every direct
 
 Least-privileged role provisioning, live foundation verification, active RLS
 qualification, guessed-ID proof, secret handling, and rollback are governed by
-`docs/operations/UOK_DATABASE_SECURITY.md` and ADR-0030. The shared local
+`docs/operations/UOK_DATABASE_SECURITY.md` and ADR-0031. The shared local
 candidate is not a provisioning target. Do not enable RLS table-by-table or
 infer production tenant isolation from application tests alone.
 

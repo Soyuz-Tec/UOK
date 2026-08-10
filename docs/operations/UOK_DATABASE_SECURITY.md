@@ -46,7 +46,7 @@ Prerequisites:
 4. Production automatic schema creation, local seed, demo password reset, and
    self-registration disabled.
 5. Review of the exact source commit and this ADR:
-   `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md`.
+   `docs/architecture/ADR-0031-postgresql-least-privilege-and-tenant-rls-foundation.md`.
 
 Apply with `psql` so `ON_ERROR_STOP` is honored:
 
@@ -112,7 +112,7 @@ It does not require active RLS and therefore cannot return
 ## Active Qualification
 
 There is intentionally no activation SQL in this candidate. Complete every
-activation gate in ADR-0030 in one reviewable change before enabling RLS.
+activation gate in ADR-0031 in one reviewable change before enabling RLS.
 After that change, qualify with:
 
 ```powershell

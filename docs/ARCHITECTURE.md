@@ -155,6 +155,9 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - AI worker development model: `docs/architecture/UOK_AI_WORKER_DEVELOPMENT_MODEL.md`
 - Code quality and technology audit standard: `docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md`
 - Frontend platform audit and modernization plan: `docs/architecture/UOK_FRONTEND_PLATFORM_AUDIT_AND_MODERNIZATION_PLAN.md`
+- ADR lifecycle registry: `docs/architecture/ADR_INDEX.md`
+- ADR authoring template: `docs/architecture/ADR_TEMPLATE.md`
+- ADR re-evaluation evidence: `docs/architecture/ADR_AUDIT_2026-08-09.md`
 - ADR-0001: `docs/architecture/ADR-0001-module-extension-runtime-boundaries.md`
 - ADR-0002: `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md`
 - ADR-0003: `docs/architecture/ADR-0003-planning-gate-a-stabilization.md`
@@ -185,11 +188,19 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - ADR-0028: `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
 - ADR-0029: `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
 - ADR-0030: `docs/architecture/ADR-0030-request-authoritative-frontend-async-boundary.md`
-- ADR-0030: `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md`
-- ADR-0031: `docs/architecture/ADR-0031-http-response-and-public-surface-security.md`
-- ADR-0032: `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md`
-- ADR-0033: `docs/architecture/ADR-0033-legacy-credential-retirement-and-auth-rate-limits.md`
-- ADR-0034: `docs/architecture/ADR-0034-python-alpine-runtime-base.md`
+- ADR-0031: `docs/architecture/ADR-0031-postgresql-least-privilege-and-tenant-rls-foundation.md`
+- ADR-0032: `docs/architecture/ADR-0032-http-response-and-public-surface-security.md`
+- ADR-0033: `docs/architecture/ADR-0033-immutable-prerelease-supply-chain.md`
+- ADR-0034: `docs/architecture/ADR-0034-legacy-credential-retirement-and-auth-rate-limits.md`
+- ADR-0035: `docs/architecture/ADR-0035-python-alpine-runtime-base.md`
+- ADR-0036: `docs/architecture/ADR-0036-fault-containment-availability-and-health-boundaries.md`
+- ADR-0037: `docs/architecture/ADR-0037-server-authoritative-session-and-distributed-auth-controls.md`
+- ADR-0038: `docs/architecture/ADR-0038-data-retention-erasure-legal-hold-and-reference-integrity.md`
+- ADR-0039: `docs/architecture/ADR-0039-observability-slos-and-diagnostic-telemetry.md`
+- ADR-0040: `docs/architecture/ADR-0040-production-deployment-migration-and-disaster-recovery.md`
+- ADR-0041: `docs/architecture/ADR-0041-frontend-chunk-loading-and-style-isolation.md`
+- ADR-0042: `docs/architecture/ADR-0042-event-dispatch-delivery-and-reconciliation-semantics.md`
+- ADR-0043: `docs/architecture/ADR-0043-external-integration-adapter-and-webhook-boundary.md`
 - Module extension contract: `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`
 - Programming stack policy: `docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md`
 - UI policy: `docs/design/UOK_UI_DESIGN_POLICY.md`
@@ -240,6 +251,7 @@ Planning, or Shipment fixtures after both successful and failed runs.
 - Planning Gate B typed links resolve through module-owned adapters; K Connect threads resolve through `communications.core` and Shipment targets resolve through `shipments.core`, while absent Operation Graph providers remain explicit `unavailable` states rather than simulated source objects.
 - Planning reads Contacts, Calendar, Communications, Reports, and Shipment reference data only through immutable DTO query contracts in each owner's `public_api.py`; `tests/test_planning_data_boundary.py` rejects foreign ORM, schema, repository, infrastructure, broad-facade, and compatibility-registry imports from Planning production code.
 - Planning schedule writes append one immutable revision-ledger row and one internal transactional outbox envelope in the same project transaction. This is durable commit evidence only; no dispatcher or external-delivery claim exists.
+- UOK is a modular monolith, not a micro-frontend or microservice deployment. A module-local React error boundary contains an already-loaded surface render failure, while liveness/readiness probes support instance routing and restart; the shared browser realm, API process, worker, connection pool, and PostgreSQL dependency remain shared failure domains under ADR-0036.
 - Planning projects use a reasoned controlled lifecycle with recoverable read-only archive semantics and hidden internal purge. Exact target commitment and persisted CPM-v2 calculated finish are separate from the compatible `end` horizon; legacy calculated backfill mismatches fail visible and block immutable capture until a scheduler write repairs them.
 - Python module service first, with React UI receiving validated schedule read models.
 - Planning Gate B execution dates use scheduler-owned planned dates plus separate forecast, reason-audited actual, and deadline facts. Project-local calendar dates are stored as UTC instants through an immutable creation-time IANA timezone; subday Gantt scales remain visual-only.

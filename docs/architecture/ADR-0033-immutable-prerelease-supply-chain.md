@@ -1,6 +1,10 @@
-# ADR-0032: Immutable Prerelease Supply Chain
+# ADR-0033: Immutable Prerelease Supply Chain
 
 **Status:** Accepted
+
+**Implementation status:** Partial; workflow and validators exist, but protected prerelease execution remains an external gate
+
+**Date:** 2026-07-25
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -51,7 +55,7 @@ digests are pinned.
    for both Python stages and
    `node:26-alpine@sha256:e88a35be04478413b7c71c455cd9865de9b9360e1f43456be5951032d7ac1a66`
    for the frontend stage. Registry manifest-digest output and an SHA-256 of
-   the raw registry index agreed for each pin. ADR-0034 records the security
+   the raw registry index agreed for each pin. ADR-0035 records the security
    evidence and compatibility decision for the Python base change.
 6. Buildx is sourced from the exact reviewed v0.35.0 commit
    `a319e5b15052cf6557ceb666eb8ff6e32380b782`. Its BuildKit daemon is

@@ -13,7 +13,7 @@ its activation conditions are recorded in
 `docs/architecture/ADR-0024-database-connection-pooling.md`.
 
 The local profile still uses its bootstrap database role. The production role
-and tenant-policy foundation is defined separately by ADR-0030 and
+and tenant-policy foundation is defined separately by ADR-0031 and
 `docs/operations/UOK_DATABASE_SECURITY.md`. That foundation is not active in
 the shared local stack and does not change this pooling topology.
 

@@ -1,6 +1,8 @@
-# ADR-0031: HTTP Response And Public Surface Security
+# ADR-0032: HTTP Response And Public Surface Security
 
 **Status:** Accepted
+
+**Implementation status:** Implemented
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 

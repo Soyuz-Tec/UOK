@@ -60,6 +60,9 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md` | Calendar Core deployment scope, controls, deferred adapters, and local verification boundary | Calendar deployment scope, security controls, adapter status, or verification changes |
 | `docs/operations/UOK_CONTACTS_CORE_OPERATIONS.md` | Contacts verifier-group dry run, exact empty/legacy membership evidence, recoverable membership removal and archive, backup, verification, and rollback | Contacts verifier cleanup criteria, execution controls, backup, archive, evidence, or rollback changes |
 | `docs/architecture/ADR-*` | Material architecture decisions | Boundary, runtime, data model, auth, deployment, framework, or major policy decisions change |
+| `docs/architecture/ADR_INDEX.md` | Authoritative ADR lifecycle registry, ownership, relationships, evidence, and revisit triggers | An ADR is added, superseded, accepted, implemented, activated, or reclassified |
+| `docs/architecture/ADR_TEMPLATE.md` | Required structure and lifecycle metadata for new ADRs | ADR governance fields or required sections change |
+| `docs/architecture/ADR_AUDIT_2026-08-09.md` | Whole-ADR re-evaluation, corrected gaps, current isolation verdict, and remaining gates | A correction is needed to the dated audit evidence or conclusions |
 | `docs/architecture/ADR-0002-planning-gantt-and-ui-proof-dependencies.md` | Planning Gantt and UI proof dependency decision | Planning UI library, scheduling authority, or UI proof automation changes |
 | `docs/architecture/ADR-0003-planning-gate-a-stabilization.md` | Planning Gate A scheduling-correctness, write-safety, and evidence-maturity decision | Gate A scope, sequencing, evidence states, or closure requirements change |
 | `docs/architecture/ADR-0004-planning-typed-link-resolver.md` | Planning Gate B cross-module target identity, resolver state, authorization, lifecycle, and privacy boundary | Link target kind/provider, resolver behavior, disclosure policy, or ownership changes |
@@ -89,11 +92,19 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md` | Host-owned backend composition, minimal shared kernel ports, exact request-DI exception, neutral frontend surface contract, and shell/module cycle enforcement | Host/kernel ownership, ORM/bootstrap composition, module runtime port, shell/module surface contract, or dependency enforcement changes |
 | `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md` | K Connect retained Delete/Restore, prior-state persistence, row locking, strong ETags, stale repair, and no-cascade boundary | Thread archive/restore, lifecycle validators, capability projection, archived discovery, or Planning-link behavior changes |
 | `docs/architecture/ADR-0030-request-authoritative-frontend-async-boundary.md` | Atomic frontend session authority, per-surface activation, owner-local request epochs and lanes, guarded unauthorized handling, and epoch-stamped state | Frontend session projection, module surface activation, async commit authority, unauthorized freshness, request lanes, or adoption sequencing changes |
-| `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md` | Closed all-table tenant inventory, least-privileged PostgreSQL roles, dormant fail-closed policies, and evidence-gated RLS activation | PostgreSQL ownership, role/grant topology, tenant classification, RLS policy, activation gate, or live proof changes |
-| `docs/architecture/ADR-0031-http-response-and-public-surface-security.md` | Fail-closed API docs exposure, trusted hosts, HTTPS-derived HSTS, and response-security headers | Public HTTP surface, proxy trust, host validation, HSTS, CSP, or security-header behavior changes |
-| `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md` | Exact-tag build-once prereleases, immutable image digest, vulnerability gate, SBOMs, attestations, and rollback evidence | Release identity, OCI publication, scan severity, SBOM, provenance, attestation, or prerelease policy changes |
-| `docs/architecture/ADR-0033-legacy-credential-retirement-and-auth-rate-limits.md` | Argon2id-only credential retirement and fail-closed bounded authentication rate limits | Password hashing, credential retirement, login response, rate-limit, or production ingress controls change |
-| `docs/architecture/ADR-0034-python-alpine-runtime-base.md` | Reviewed Python Alpine base-image decision, vulnerability evidence, compatibility gates, and rollback boundary | Python container base, libc compatibility, image vulnerability posture, or container user creation changes |
+| `docs/architecture/ADR-0031-postgresql-least-privilege-and-tenant-rls-foundation.md` | Closed all-table tenant inventory, least-privileged PostgreSQL roles, dormant fail-closed policies, and evidence-gated RLS activation | PostgreSQL ownership, role/grant topology, tenant classification, RLS policy, activation gate, or live proof changes |
+| `docs/architecture/ADR-0032-http-response-and-public-surface-security.md` | Fail-closed API docs exposure, trusted hosts, HTTPS-derived HSTS, and response-security headers | Public HTTP surface, proxy trust, host validation, HSTS, CSP, or security-header behavior changes |
+| `docs/architecture/ADR-0033-immutable-prerelease-supply-chain.md` | Exact-tag build-once prereleases, immutable image digest, vulnerability gate, SBOMs, attestations, and rollback evidence | Release identity, OCI publication, scan severity, SBOM, provenance, attestation, or prerelease policy changes |
+| `docs/architecture/ADR-0034-legacy-credential-retirement-and-auth-rate-limits.md` | Argon2id-only credential retirement and fail-closed bounded authentication rate limits | Password hashing, credential retirement, login response, rate-limit, or production ingress controls change |
+| `docs/architecture/ADR-0035-python-alpine-runtime-base.md` | Reviewed Python Alpine base-image decision, vulnerability evidence, compatibility gates, and rollback boundary | Python container base, libc compatibility, image vulnerability posture, or container user creation changes |
+| `docs/architecture/ADR-0036-fault-containment-availability-and-health-boundaries.md` | Truthful frontend render containment, liveness/readiness behavior, and unisolated shared failure classes | Fault boundary, worker/process topology, health contract, or availability claim changes |
+| `docs/architecture/ADR-0037-server-authoritative-session-and-distributed-auth-controls.md` | Proposed revocable session authority, key rotation, and shared authentication limiting | Session, IAM, revocation, replica, signing-key, or auth-limiter design changes |
+| `docs/architecture/ADR-0038-data-retention-erasure-legal-hold-and-reference-integrity.md` | Proposed platform retention, erasure, legal-hold, backup, and cross-module reference contract | Personal-data class, retention, hold, purge, backup, export, or tombstone behavior changes |
+| `docs/architecture/ADR-0039-observability-slos-and-diagnostic-telemetry.md` | Proposed neutral telemetry, SLI/SLO, redaction, cardinality, tracing, and alert boundary | Logging, metrics, traces, SLOs, alerts, telemetry privacy, or incident ownership changes |
+| `docs/architecture/ADR-0040-production-deployment-migration-and-disaster-recovery.md` | Proposed production topology, migration rollout, immutable promotion, backup, RPO/RTO, and recovery contract | Platform, replica, deployment, migration, secret, backup, region, RPO, or RTO changes |
+| `docs/architecture/ADR-0041-frontend-chunk-loading-and-style-isolation.md` | Proposed manifest-generated lazy module chunks, load recovery, budgets, and scoped styles | Frontend loading, catalog generation, bundle, cache, CSS, or independent-deployment boundary changes |
+| `docs/architecture/ADR-0042-event-dispatch-delivery-and-reconciliation-semantics.md` | Proposed at-least-once dispatch, idempotency, leasing, dead-letter, and reconciliation semantics | An event leaves its transaction, or broker, dispatcher, consumer, delivery, or replay rules change |
+| `docs/architecture/ADR-0043-external-integration-adapter-and-webhook-boundary.md` | Proposed adapter credentials, consent, webhook, rate-limit, conflict, reconciliation, and disconnect contract | Live provider, credential, scope, webhook, cursor, deletion, or synchronization behavior changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/planning-data-boundary-inventory-2026-07-15.md` | Pre-refactor evidence of Planning reads across capability-module data boundaries | A correction is needed to the dated leak inventory or its audit method |
@@ -223,11 +234,22 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
 - `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
 - `docs/architecture/ADR-0030-request-authoritative-frontend-async-boundary.md`
-- `docs/architecture/ADR-0030-postgresql-least-privilege-and-tenant-rls-foundation.md`
-- `docs/architecture/ADR-0031-http-response-and-public-surface-security.md`
-- `docs/architecture/ADR-0032-immutable-prerelease-supply-chain.md`
-- `docs/architecture/ADR-0033-legacy-credential-retirement-and-auth-rate-limits.md`
-- `docs/architecture/ADR-0034-python-alpine-runtime-base.md`
+- `docs/architecture/ADR-0031-postgresql-least-privilege-and-tenant-rls-foundation.md`
+- `docs/architecture/ADR-0032-http-response-and-public-surface-security.md`
+- `docs/architecture/ADR-0033-immutable-prerelease-supply-chain.md`
+- `docs/architecture/ADR-0034-legacy-credential-retirement-and-auth-rate-limits.md`
+- `docs/architecture/ADR-0035-python-alpine-runtime-base.md`
+- `docs/architecture/ADR-0036-fault-containment-availability-and-health-boundaries.md`
+- `docs/architecture/ADR-0037-server-authoritative-session-and-distributed-auth-controls.md`
+- `docs/architecture/ADR-0038-data-retention-erasure-legal-hold-and-reference-integrity.md`
+- `docs/architecture/ADR-0039-observability-slos-and-diagnostic-telemetry.md`
+- `docs/architecture/ADR-0040-production-deployment-migration-and-disaster-recovery.md`
+- `docs/architecture/ADR-0041-frontend-chunk-loading-and-style-isolation.md`
+- `docs/architecture/ADR-0042-event-dispatch-delivery-and-reconciliation-semantics.md`
+- `docs/architecture/ADR-0043-external-integration-adapter-and-webhook-boundary.md`
+- `docs/architecture/ADR_INDEX.md`
+- `docs/architecture/ADR_TEMPLATE.md`
+- `docs/architecture/ADR_AUDIT_2026-08-09.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/planning-data-boundary-inventory-2026-07-15.md`
 - `docs/architecture/planning-data-boundary-fix-2026-07-15.md`

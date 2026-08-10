@@ -537,7 +537,7 @@ performed.
 
 ## Remaining production hardening
 
-- `ACC-SEC-002`: ADR-0030 now provides a closed all-table tenant inventory,
+- `ACC-SEC-002`: ADR-0031 now provides a closed all-table tenant inventory,
   least-privileged role plan, dormant fail-closed policies, and an executable
   live guessed-ID gate. Trusted request context, pool cleanup, RLS
   enable/force, and a passing two-organization PostgreSQL probe remain

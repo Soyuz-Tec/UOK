@@ -6,6 +6,10 @@
       "max_lines": 294
     },
     {
+      "identity": "file:modules/apps.manager/web/src/AppsManagerPanel.tsx",
+      "max_lines": 202
+    },
+    {
       "identity": "file:modules/calendar.core/backend/uok_calendar_core/api.py",
       "max_lines": 283
     },
@@ -31,7 +35,7 @@
     },
     {
       "identity": "file:modules/calendar.core/tests/web/CalendarWorkspaceIntegrity.test.tsx",
-      "max_lines": 240
+      "max_lines": 241
     },
     {
       "identity": "file:modules/calendar.core/web/src/CalendarSelector.tsx",
@@ -52,6 +56,22 @@
     {
       "identity": "file:modules/communications.core/web/src/CommunicationsWorkspace.tsx",
       "max_lines": 241
+    },
+    {
+      "identity": "file:modules/compliance.core/web/src/complianceApi.ts",
+      "max_lines": 246
+    },
+    {
+      "identity": "file:modules/compliance.core/web/src/useComplianceDocumentTypeMutationCoordinator.ts",
+      "max_lines": 245
+    },
+    {
+      "identity": "file:modules/compliance.core/web/src/useComplianceDocumentTypeMutations.ts",
+      "max_lines": 203
+    },
+    {
+      "identity": "file:modules/compliance.core/web/src/useComplianceDocumentTypeReads.ts",
+      "max_lines": 246
     },
     {
       "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_system.py",
@@ -111,11 +131,11 @@
     },
     {
       "identity": "file:modules/contacts.core/tests/web/ContactDataToolsManager.test.tsx",
-      "max_lines": 234
+      "max_lines": 235
     },
     {
       "identity": "file:modules/contacts.core/tests/web/ContactsWorkspace.detail.test.tsx",
-      "max_lines": 217
+      "max_lines": 257
     },
     {
       "identity": "file:modules/contacts.core/tests/web/ContactsWorkspace.groupManager.test.tsx",
@@ -127,7 +147,27 @@
     },
     {
       "identity": "file:modules/contacts.core/web/src/ContactGroupsManagerDetail.tsx",
-      "max_lines": 217
+      "max_lines": 221
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useContactCommandCoordinator.ts",
+      "max_lines": 257
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useContactCommands.ts",
+      "max_lines": 236
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useContactPrimaryReads.ts",
+      "max_lines": 299
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useContactWorkspaceState.ts",
+      "max_lines": 252
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useLegacyContactCommands.ts",
+      "max_lines": 208
     },
     {
       "identity": "file:modules/contacts.core/web/src/contactDataToolsApi.ts",
@@ -143,7 +183,7 @@
     },
     {
       "identity": "file:modules/contacts.core/web/src/useContactGroupsManager.ts",
-      "max_lines": 252
+      "max_lines": 268
     },
     {
       "identity": "file:modules/intelligence.core/tests/intelligence_test_support.py",
@@ -155,11 +195,11 @@
     },
     {
       "identity": "file:modules/intelligence.core/tests/web/ShipmentReadinessWorkspace.read.test.tsx",
-      "max_lines": 265
+      "max_lines": 267
     },
     {
       "identity": "file:modules/intelligence.core/tests/web/ShipmentReadinessWorkspace.session.test.tsx",
-      "max_lines": 253
+      "max_lines": 255
     },
     {
       "identity": "file:modules/intelligence.core/web/src/ShipmentReadinessDetail.tsx",
@@ -171,11 +211,11 @@
     },
     {
       "identity": "file:modules/locations.core/tests/web/LocationMasterWorkspace.test.tsx",
-      "max_lines": 205
+      "max_lines": 210
     },
     {
       "identity": "file:modules/locations.core/web/src/LocationMasterWorkspace.tsx",
-      "max_lines": 285
+      "max_lines": 287
     },
     {
       "identity": "file:modules/planning.core/backend/uok_planning_core/_internal/analysis/what_if.py",
@@ -243,7 +283,7 @@
     },
     {
       "identity": "file:modules/planning.core/tests/web/PlanningGanttShapes.test.tsx",
-      "max_lines": 273
+      "max_lines": 274
     },
     {
       "identity": "file:modules/planning.core/tests/web/planningApi.test.ts",
@@ -287,7 +327,7 @@
     },
     {
       "identity": "file:modules/planning.core/web/src/PlanningGanttShapes.tsx",
-      "max_lines": 213
+      "max_lines": 217
     },
     {
       "identity": "file:modules/planning.core/web/src/PlanningInspector.tsx",
@@ -299,7 +339,7 @@
     },
     {
       "identity": "file:modules/planning.core/web/src/PlanningTimeline.tsx",
-      "max_lines": 276
+      "max_lines": 282
     },
     {
       "identity": "file:modules/planning.core/web/src/PlanningTimelineUtilities.tsx",
@@ -331,15 +371,11 @@
     },
     {
       "identity": "file:modules/planning.core/web/src/styles/gantt.css",
-      "max_lines": 278
+      "max_lines": 286
     },
     {
       "identity": "file:modules/planning.core/web/src/styles/owned-gantt.css",
-      "max_lines": 294
-    },
-    {
-      "identity": "file:modules/planning.core/web/src/styles/workspace.css",
-      "max_lines": 251
+      "max_lines": 295
     },
     {
       "identity": "file:modules/planning.core/web/src/types.ts",
@@ -347,7 +383,7 @@
     },
     {
       "identity": "file:modules/planning.core/web/src/usePlanningProjectOperations.ts",
-      "max_lines": 285
+      "max_lines": 288
     },
     {
       "identity": "file:modules/planning.core/web/src/usePlanningWorkspaceMutations.ts",
@@ -355,7 +391,7 @@
     },
     {
       "identity": "file:modules/product.master/web/src/ProductMasterWorkspace.tsx",
-      "max_lines": 285
+      "max_lines": 287
     },
     {
       "identity": "file:modules/routes.core/backend/uok_routes_core/public_api.py",
@@ -363,7 +399,7 @@
     },
     {
       "identity": "file:modules/routes.core/tests/web/RouteMasterWorkspace.test.tsx",
-      "max_lines": 232
+      "max_lines": 234
     },
     {
       "identity": "file:modules/routes.core/web/src/RouteMasterWorkspace.tsx",
@@ -411,7 +447,7 @@
     },
     {
       "identity": "file:modules/shipments.core/tests/web/ShipmentSupportWorkspace.test.tsx",
-      "max_lines": 279
+      "max_lines": 285
     },
     {
       "identity": "file:modules/shipments.core/verify/UokCandidateShipmentRequirements.ps1",
@@ -419,7 +455,7 @@
     },
     {
       "identity": "file:modules/shipments.core/web/src/ShipmentEditor.tsx",
-      "max_lines": 229
+      "max_lines": 231
     },
     {
       "identity": "file:modules/shipments.core/web/src/ShipmentSupportWorkspace.tsx",
@@ -443,7 +479,7 @@
     },
     {
       "identity": "file:scripts/quality_audit.py",
-      "max_lines": 267
+      "max_lines": 274
     },
     {
       "identity": "file:scripts/run_python_tests.py",
@@ -594,12 +630,16 @@
       "max_lines": 235
     },
     {
+      "identity": "file:web/src/app/useWorkbenchData.ts",
+      "max_lines": 241
+    },
+    {
       "identity": "file:web/src/shared/localization/UokLocalization.tsx",
       "max_lines": 282
     },
     {
       "identity": "file:web/src/shared/overlays/WorkspacePopup.tsx",
-      "max_lines": 201
+      "max_lines": 203
     },
     {
       "identity": "file:web/src/shared/overlays/useWorkspacePopupDrag.ts",

@@ -15,6 +15,7 @@
     "check:contracts": "python ../scripts/check_generated_contracts.py",
     "check:dependencies": "node scripts/check-dependency-policy.mjs",
     "check:bundle-budget": "node scripts/check-bundle-budget.mjs",
+    "format:check": "cd .. && node web/node_modules/@biomejs/biome/bin/biome format --config-path . biome.json web/package.json web/vitest.coverage.config.ts",
     "lint": "node scripts/run-eslint.mjs",
     "lint:styles": "stylelint \"src/**/*.css\" \"../modules/*/web/src/**/*.css\"",
     "test": "vitest run",
@@ -33,6 +34,7 @@
     "react-dom": "19.2.7"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.5",
     "@axe-core/playwright": "4.12.1",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.61.1",

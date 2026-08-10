@@ -91,7 +91,7 @@ mutually consistent local artifacts. The authoritative shared execution
 record is the required GitHub Actions run for the exact commit SHA and its
 retained artifacts, subject to workflow review, branch rules, and repository
 protections. Release authenticity uses the separately governed GitHub
-artifact attestations described in ADR-0032.
+artifact attestations described in ADR-0033.
 
 ## Consumer Migration
 

@@ -41,6 +41,9 @@ jobs:
       - name: Validate repository policy before dependency installation
         run: python scripts/quality_audit.py
 
+      - name: Validate architecture decision governance
+        run: python scripts/adr_policy.py
+
       - name: Install Python dependencies
         run: python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt
 
