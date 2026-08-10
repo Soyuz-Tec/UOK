@@ -136,7 +136,10 @@ All durable UI work must use:
   module-specific DTOs, routes, preferences, state, or commands.
 - Reports owns its report transport client below
   `modules/reports.core/web/src` even though it has no workbench surface.
-  `agents.core` remains planned and inert, so it has no executable surface.
+- `agents.core` has an integration-tested backend foundation but deliberately
+  declares no executable surface yet. Its future workbench must remain
+  module-owned and use the neutral module surface contract plus shared UOK
+  primitives for runbooks, approvals, policy badges, decisions, and evidence.
 - Vite and TypeScript compile module production roots, Vitest discovers module
   tests, and the Docker frontend stage copies module source before the static
   build. Final-image validation keeps module frontend tests out of production.

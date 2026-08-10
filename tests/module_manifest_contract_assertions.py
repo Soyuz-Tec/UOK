@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from tests.agents_manifest_contract_assertions import assert_agents_manifest
 from tests.intelligence_manifest_contract_assertions import (
     assert_intelligence_manifest,
 )
@@ -31,15 +32,7 @@ def assert_file_backed_module_manifests(baseline_modules: Sequence[str]) -> None
         == "modules/apps.manager/verify/UokCandidateAppsManager.ps1"
     )
     agents = manifests["agents.core"]
-    assert agents["required"] is False
-    assert agents["maturity"] == "planned"
-    assert agents["installable"] is False
-    assert agents["lifecycle"] == ["planned"]
-    assert agents["backend_path"] == "modules/agents.core/backend"
-    assert agents["commands"] == []
-    assert agents["events"] == []
-    assert agents["permissions"] == []
-    assert agents["extension_points"] == []
+    assert_agents_manifest(agents)
 
     calendar = manifests["calendar.core"]
     assert calendar["required"] is False

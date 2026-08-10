@@ -33,6 +33,7 @@ LEGACY_COMPOSITION_MODULES = {
     "uok.security",
 }
 MODULE_HTTP_ADAPTERS = {
+    "modules/agents.core/backend/uok_agents_core/_internal/delivery/api.py",
     "modules/apps.manager/backend/uok_apps_manager/api.py",
     "modules/calendar.core/backend/uok_calendar_core/api.py",
     "modules/communications.core/backend/uok_communications_core/api.py",

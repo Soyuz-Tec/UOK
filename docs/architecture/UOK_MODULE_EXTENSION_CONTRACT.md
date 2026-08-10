@@ -139,9 +139,9 @@ New extension points require an architecture update and a failing validation tes
   implementations. Lifecycle mutations are restricted to the Apps Manager
   adapter; other capabilities receive read-only runtime operations.
 - Module → Host production exceptions are path-and-symbol exact:
-  `uok.host.database.get_db` and `uok.host.security.current_actor` in the 19
+  `uok.host.database.get_db` and `uok.host.security.current_actor` in the 20
   documented HTTP adapters, plus `uok.host.commands.execute_command` in the
-  Calendar, Communications, Contacts, and Planning command adapters, for 42 exact allowed
+  Calendar, Communications, Contacts, and Planning command adapters, for 44 exact allowed
   imports in total. Engine, `SessionLocal`, pool, application, host registries,
   and every unlisted host import are forbidden.
 - Product, cargo, CRM, accounting, inventory, document, and industry-specific logic must not be embedded in the kernel.
@@ -153,15 +153,15 @@ New extension points require an architecture update and a failing validation tes
 ## Current Baseline Status
 
 - `apps.manager` is the required `runtime_proven` control module and its API router is mounted only from its manifest.
-- `agents.core` is an inert `planned` capability scaffold: it is not installable, updatable, maintainable, permission-bearing, or runtime-proven.
+- `agents.core` is an optional `integration_tested` capability module with manifest-declared API, command, permission, role-grant, and model hooks. It is installable, disableable, updatable, maintainable, and uninstallable, but it has no candidate verifier or executable frontend surface and therefore does not claim `runtime_proven` maturity.
 - `calendar.core`, `communications.core`, `compliance.core`, `contacts.core`, `intelligence.core`, `locations.core`, `planning.core`, `product.master`, `reports.core`, and `routes.core` are optional `runtime_proven` capability modules, and `shipments.core` is an optional `runtime_proven` business module. All have manifest-declared backend hooks and module-owned verifiers.
 - Their capability ORM mappings live in the owning backend packages and
-  register as 55 feature mappings beside nine product-neutral kernel mappings
-  (64 total) on one SQLAlchemy metadata graph. The former global ORM
+  register as 59 feature mappings beside nine product-neutral kernel mappings
+  (68 total) on one SQLAlchemy metadata graph. The former global ORM
   compatibility imports are retired.
-- Current manifests declare 108 commands, 118 events, 12 candidate verifiers,
-  and 11 workbench surfaces. Host adapter scope remains 19 documented HTTP
-  adapters and 42 exact allowed imports.
+- Current manifests declare 124 commands, 134 events, 12 candidate verifiers,
+  and 11 workbench surfaces. Host adapter scope is 20 documented HTTP
+  adapters and 44 exact allowed imports.
 - Shipment requirement and document-instance metadata stays owned by
   `shipments.core`; the instance schema contains no blob, binary, file,
   storage-key, upload, or preview contract.
@@ -180,7 +180,7 @@ New extension points require an architecture update and a failing validation tes
   commands. The shell passes only the neutral host port, and architecture tests
   reject every cross-owner shell/module source cycle.
 - Reports owns its typed report client under `modules/reports.core/web/src` but has no workbench surface. Planning may consume that typed client without transferring Reports transport ownership into the shell.
-- `agents.core` remains an inert planned scaffold and declares no executable web surface.
+- `agents.core` owns four private mappings plus governed runbook/run commands and read APIs, while deliberately declaring no executable web surface in this backend foundation increment.
 - The Docker frontend stage copies the module tree before Vite compilation. Vitest discovers `modules/*/tests/web`, and container validation rejects frontend tests below production `web_path` while the final image excludes canonical module test directories.
 
 ## Required Scans Before GitHub Push

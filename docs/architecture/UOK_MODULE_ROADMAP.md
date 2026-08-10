@@ -21,7 +21,7 @@ Architecture documents only track UOK-level governance, release targets, and mod
 | Module | Type | Manifest maturity | Status | Current target | Plan |
 |---|---|---|---|---|---|
 | `apps.manager` | control module | `runtime_proven` | required manifest-mounted control module | `UOK-3.1.0-alpha.3` | UOK bootstrap control module |
-| `agents.core` | capability module | `planned` | inert scaffold for governed agent operations | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
+| `agents.core` | capability module | `integration_tested` | governed backend runbooks, generated plan DAGs, approval/recovery lifecycle, and evidence; executor/UI deferred | `UOK-3.1.0-alpha.3` | `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md` |
 | `calendar.core` | capability module | `runtime_proven` | global calendar API and workspace capability | `UOK-3.1.0-alpha.3` | `docs/modules/calendar.core/CALENDAR_CORE_MODULE_PLAN.md` |
 | `communications.core` | capability module | `runtime_proven` | K Connect thread provider and Planning deep-link adapter | `UOK-3.1.0-alpha.3` | `docs/modules/communications.core/COMMUNICATIONS_CORE_MODULE_PLAN.md` |
 | `compliance.core` | capability module | `runtime_proven` | tenant-scoped Compliance Document Type registry with lifecycle and name history | `UOK-3.1.0-alpha.3` | `docs/modules/compliance.core/COMPLIANCE_DOCUMENT_TYPE_MODULE_PLAN.md` |
@@ -53,15 +53,15 @@ Architecture documents only track UOK-level governance, release targets, and mod
 - module-owned operational index and contact group migrations under `modules/contacts.core/migrations`
 - module-owned Contacts React/CSS source and tests composed from its validated manifest through the generated frontend catalog
 
-It also introduces the `agents.core` scaffold as a strategic planned capability
-boundary for AI-powered business operations. It is not the selected next
-increment:
+It now includes the first `agents.core` governance increment for AI-powered
+business operations while deliberately deferring live execution:
 
-- governed agent runbooks
-- Codex and future tool bindings under UOK approval and audit control
-- human approval gates for high-impact actions
-- compliance evidence for agent runs
-- future Contacts pilot for enrichment and duplicate-cleanup recommendations
+- tenant-scoped governed agent runbooks and version-snapshotted runs
+- bounded generated initial, revision, and recovery plan DAGs
+- declared `codex` binding identity without an LLM/tool executor
+- deterministic human approval gates for risk, protected impact, and command proposals
+- separate override permission and hash-addressed compliance evidence
+- future module-owned workbench, candidate verifier, executor ADR, and domain pilot
 
 It also introduces `planning.core` as the integrated planning and Gantt capability:
 

@@ -37,14 +37,14 @@ describe("AppsManagerPanel", () => {
     const rows = [
       moduleStatus({ name: "contacts.core", status: "available", maturity: "runtime_proven" }),
       moduleStatus({ name: "calendar.core", status: "installed", maturity: "integration_tested" }),
-      moduleStatus({ name: "agents.core", status: "planned", maturity: "planned", installable: false }),
+      moduleStatus({ name: "agents.core", status: "available", maturity: "integration_tested" }),
     ];
     const { container } = render(<AppsManagerPanel modules={rows} busyAction="" onAction={vi.fn()} />);
 
     expect(screen.getByLabelText("Apps Manager controls")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Search options: All modules" }));
     fireEvent.change(screen.getByRole("textbox", { name: "Search modules" }), { target: { value: "agents" } });
-    expect(screen.getByRole("listitem", { name: /agents\.core planned/i })).toBeInTheDocument();
+    expect(screen.getByRole("listitem", { name: /agents\.core available/i })).toBeInTheDocument();
     expect(screen.queryByRole("listitem", { name: /contacts\.core/i })).not.toBeInTheDocument();
 
     fireEvent.change(screen.getByRole("textbox", { name: "Search modules" }), { target: { value: "" } });
@@ -74,7 +74,7 @@ describe("AppsManagerPanel", () => {
     const onAction = vi.fn();
     render(<AppsManagerPanel
       modules={[moduleStatus({
-        name: "agents.core",
+        name: "future.core",
         status: "planned",
         recorded_status: "upgraded",
         reconciliation_required: true,
@@ -89,13 +89,13 @@ describe("AppsManagerPanel", () => {
       onAction={onAction}
     />);
 
-    const row = screen.getByRole("listitem", { name: /agents\.core planned, maturity planned/i });
+    const row = screen.getByRole("listitem", { name: /future\.core planned, maturity planned/i });
     expect(within(row).getByText(/Maturity: planned/)).toBeInTheDocument();
     expect(within(row).getByText(/maintenance unavailable/)).toBeInTheDocument();
     expect(within(row).getByText(/Recorded status: upgraded/)).toBeInTheDocument();
     expect(within(row).getByText("reconciliation required")).toBeInTheDocument();
     fireEvent.click(within(row).getByRole("button", { name: "Reconcile" }));
-    expect(onAction).toHaveBeenCalledWith("agents.core", "reconcile");
+    expect(onAction).toHaveBeenCalledWith("future.core", "reconcile");
     expect(within(row).queryByRole("button", { name: "Install" })).not.toBeInTheDocument();
     expect(within(row).queryByRole("button", { name: "Upgrade" })).not.toBeInTheDocument();
   });

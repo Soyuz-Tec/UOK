@@ -1,11 +1,11 @@
 # agents.core
 
-**Status:** Planned inert capability scaffold.
+**Status:** Installable `integration_tested` backend governance foundation.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
-`agents.core` is the planned UOK capability module for programmable AI agent governance, human approvals, and compliance evidence.
+`agents.core` owns UOK's domain-neutral runbooks, generated plan DAGs, deterministic approval policy, human decisions, recovery proposals, and hash-addressed evidence.
 
-Codex is expected to be one of the primary governed tools used through this module. The module must treat Codex as an auditable tool binding, not as an uncontrolled authority.
+The module recognizes `codex` as a governed tool-binding identifier but does not call Codex, another external tool, or a target-module command in this increment. Business records and command authority remain with the target module.
 
-This scaffold declares the module boundary only. Backend APIs, migrations, UI, and candidate verifier scenarios must be added in focused increments under this module.
+See `docs/architecture/ADR-0031-governed-agent-runbooks-plans-and-evidence.md` and `docs/modules/agents.core/AGENTS_CORE_MODULE_PLAN.md`.

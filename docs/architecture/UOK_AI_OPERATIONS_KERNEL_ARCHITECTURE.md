@@ -1,6 +1,6 @@
 # UOK AI Operations Kernel Architecture
 
-**Status:** Active target architecture for AI-operated business workflows.
+**Status:** Active architecture; first backend governance increment is `integration_tested`.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -25,7 +25,7 @@ Agents may prepare, classify, enrich, draft, reconcile, validate, route, summari
 | Agent tools | Governed external or local tools | Codex and future tools may assist with analysis, drafting, code-aware operations, evidence preparation, and workflow execution only through UOK-approved runbooks and permissions |
 | Business modules | `modules/<module-name>` | Domain-specific tools, records, policies, permissions, and approval requirements used by agents |
 | Frontend shell | `web/src` | Shared workspace primitives for agent setup, task queues, approval trays, evidence views, and human override UX |
-| Database | module-owned migrations | Durable agent definitions, runs, approvals, tool calls, and evidence once implementation begins |
+| Database | `agents.core` mappings and migration | Durable runbooks, version-snapshotted runs, approvals, generated plans, and hash-addressed evidence |
 
 ## Agent Operating Model
 
@@ -38,9 +38,10 @@ Agents may prepare, classify, enrich, draft, reconcile, validate, route, summari
    - The system blocks undeclared tools, hidden data access, and module-boundary violations.
    - Codex tool use must be declared as a governed tool binding with an allowed task scope, evidence retention rule, and human approval policy.
 
-3. Agent executes within a controlled work unit.
+3. Agent operates within a controlled work unit.
    - Every action has an actor, run id, module scope, input evidence, output evidence, and decision state.
    - The agent can propose commands but cannot bypass command permissions or approval gates.
+   - The current backend foundation validates and records plans but does not execute Codex, another tool, or a target-module command.
 
 4. Human decision gates control high-impact steps.
    - Approval gates are mandatory for regulated decisions, external submissions, destructive actions, financial commitments, compliance acceptance, record purges, and policy exceptions.
@@ -75,18 +76,30 @@ Agents may prepare, classify, enrich, draft, reconcile, validate, route, summari
 
 ## Initial Implementation Sequence
 
-1. Catalog scaffold for `agents.core`.
-2. Architecture and module plan for agent governance.
-3. Durable data model for agent runbooks, runs, approvals, and tool calls.
-4. Backend API and command handlers for runbook lifecycle.
-5. Shared frontend primitives for approval trays, evidence timelines, and policy badges.
-6. Codex tool binding for supervised operational analysis, drafting, and evidence preparation.
-7. Contacts pilot: an agent runbook that proposes contact enrichment and duplicate cleanup while requiring human approval.
-8. Candidate verifier scenario proving that unauthorized autonomous actions are blocked.
+1. Completed: catalog scaffold and architecture/module ownership.
+2. Completed: four-table durable model for runbooks, runs, approvals, and evidence.
+3. Completed: manifest-declared API, commands, permissions, role grants, migration, and integration tests.
+4. Completed: generated plan DAG validation, deterministic approval policy, separate override permission, recovery-plan re-entry, and SHA-256 evidence.
+5. Next: module-owned workbench for runbooks, approval tray, evidence timeline, and policy badges.
+6. Next: candidate verifier and PostgreSQL runtime proof before `runtime_proven` maturity.
+7. Deferred behind a new execution decision: authenticated Codex adapter, actual tool-call receipts, timeout/retry/egress controls, and target-command dispatch.
+8. Later pilot: a domain-owned runbook such as Contacts enrichment/duplicate proposals with approval and exact command receipts.
+
+## Current Implemented Boundary
+
+- `agents.core` is installable and lifecycle-managed at `integration_tested` maturity.
+- Runbooks reference one installed target module and only its declared commands and permissions.
+- The only recognized tool-binding identifier is `codex`; recognition is not execution.
+- Plans are bounded `initial`, `revision`, or `recovery` DAGs with typed step kinds, impacts, dependencies, target, tool/command, and data scopes.
+- Medium/high/critical risk, `always` policy, protected impacts, and every business-command proposal require human approval.
+- Only low-risk informational plans under `risk_based` policy can become policy-approved without a human decision.
+- `agents.override` is separate from `agents.approve` and is not granted to non-administrator roles.
+- Inputs, plans, decisions, overrides, failures, and outcomes are retained as tenant-scoped canonical JSON with SHA-256 evidence digests.
+- No background scheduler, LLM call, external tool invocation, or target-module command executor exists in this increment.
 
 ## Acceptance Criteria
 
-The AI operations kernel is not ready for business use until:
+The broader AI operations capability is not ready for unsupervised business use until:
 
 - all agent capabilities are module-declared;
 - every run has durable evidence;
@@ -95,3 +108,5 @@ The AI operations kernel is not ready for business use until:
 - approvals, rejections, overrides, and escalations are audited;
 - AI failures degrade to a human-managed workflow;
 - tests prove agents cannot bypass module lifecycle, permissions, or approval gates.
+- a later executor correlates actual tool calls and UOK command receipts to the approved plan;
+- candidate and PostgreSQL runtime evidence advance the module beyond `integration_tested`.

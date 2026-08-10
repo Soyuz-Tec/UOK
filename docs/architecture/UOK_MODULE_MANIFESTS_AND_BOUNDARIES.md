@@ -31,7 +31,7 @@ runtime.
 - `model_exports`
 - `candidate_verifier_script`
 
-`agents.core` currently declares a scaffold boundary only. Its maturity is `planned`; its lifecycle is only `planned`; and its install, update, uninstall, maintenance, permission, API, command, event, model, and extension claims are intentionally empty until the first behavior increment is implemented.
+`agents.core` now declares the first executable governance increment at `integration_tested` maturity. Its closed manifest owns `/api/agents`, nine commands and events, six permissions, four private mappings, command/event audit scopes, and the normal install/disable/update/uninstall lifecycle. It intentionally declares no candidate verifier and no frontend surface; Codex is only an allowed runbook binding identifier and has no executor in this increment.
 
 ## Loader checks
 
@@ -100,9 +100,9 @@ The source-boundary scan must remain a strict candidate gate before any product 
 ## Current Bridge Status
 
 The ORM ownership and compatibility bridges are closed: capability mappings are
-physically owned by Calendar, Communications, Compliance, Contacts, Location Master, Planning, Product Master, Reports, Route/Corridor Master, and Shipment Support
-backends. The current graph has 55 feature mappings plus nine product-neutral
-mappings in `uok.kernel_models` (64 total).
+physically owned by Agents, Calendar, Communications, Compliance, Contacts, Location Master, Planning, Product Master, Reports, Route/Corridor Master, and Shipment Support
+backends. The current graph has 59 feature mappings plus nine product-neutral
+mappings in `uok.kernel_models` (68 total).
 `intelligence.core` is intentionally absent from this mapping list because it
 derives request-time values and declares no ORM provider.
 `uok.host.model_registry` alone resolves manifest model providers, and the
@@ -124,7 +124,7 @@ state, HTTP reads, preferences, storage keys, DTOs, options, and commands.
 Architecture tests reject shell/module cycles, kernel feature imports, direct
 or transitive feature-to-host dependencies, and host imports outside the exact
 path-and-symbol adapter allowlist for `get_db`, `current_actor`, and
-`execute_command`. The current allowlist covers 18 HTTP adapters and 39 exact
+`execute_command`. The current allowlist covers 20 HTTP adapters and 44 exact
 imports. Module-owned ORM definitions where data is owned, explicit empty
 migration declarations for stateless capabilities, production UI,
 behavior tests, and verifier assets remain active baseline requirements.

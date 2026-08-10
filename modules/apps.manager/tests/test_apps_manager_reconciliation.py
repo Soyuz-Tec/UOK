@@ -35,7 +35,7 @@ def test_missing_required_record_projects_declared_status_with_reconciliation_ev
     assert status["lifecycle_state_declared"] is True
 
 
-def test_legacy_planned_module_record_is_inert_and_reconciles_once(
+def test_active_agents_status_does_not_force_optional_snapshot_reconciliation(
     client: TestClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -66,13 +66,12 @@ def test_legacy_planned_module_record_is_inert_and_reconciles_once(
 
     status = client.get("/api/modules/agents.core/status", headers=admin)
     assert status.status_code == 200, status.text
-    assert status.json()["status"] == "planned"
+    assert status.json()["status"] == "upgraded"
     assert status.json()["recorded_status"] == "upgraded"
-    assert status.json()["reconciliation_required"] is True
+    assert status.json()["reconciliation_required"] is False
 
     with SessionLocal() as db:
-        with pytest.raises(ValueError, match="not installed or enabled"):
-            ensure_module_operational(db, organization_id, "agents.core")
+        ensure_module_operational(db, organization_id, "agents.core")
         catalog = module_catalog()
         monkeypatch.setattr(module_dependencies, "module_catalog", lambda: {
             **catalog,
@@ -82,8 +81,7 @@ def test_legacy_planned_module_record_is_inert_and_reconciles_once(
                 "dependencies": ["agents.core"],
             },
         })
-        with pytest.raises(ValueError, match="agents.core"):
-            ensure_dependencies_operational(db, organization_id, "test.consumer")
+        ensure_dependencies_operational(db, organization_id, "test.consumer")
         event_filter = (
             EventRecord.organization_id == organization_id,
             EventRecord.event_type == "ModuleLifecycleReconciled",
@@ -102,19 +100,16 @@ def test_legacy_planned_module_record_is_inert_and_reconciles_once(
     second = second_response.json()
     with SessionLocal() as db:
         after = db.scalar(select(func.count(EventRecord.id)).where(*event_filter)) or 0
-        event = db.scalar(select(EventRecord).where(*event_filter).order_by(EventRecord.sequence.desc()))
 
-    assert first["reconciled"] is True
-    assert first["module"]["status"] == "planned"
-    assert first["module"]["recorded_status"] == "planned"
+    assert first["reconciled"] is False
+    assert first["module"]["status"] == "upgraded"
+    assert first["module"]["recorded_status"] == "upgraded"
     assert first["module"]["reconciliation_required"] is False
     assert second["reconciled"] is False
-    assert after == before + 1
-    assert event is not None
-    assert loads(event.payload_json)["recorded_status"] == "upgraded"
+    assert after == before
 
 
-def test_planned_record_with_current_status_but_stale_snapshot_requires_reconciliation(
+def test_legacy_agents_planned_status_reconciles_to_active_default(
     client: TestClient,
 ) -> None:
     admin = auth(client, "admin", "admin")
@@ -137,6 +132,13 @@ def test_planned_record_with_current_status_but_stale_snapshot_requires_reconcil
     assert status.json()["status"] == "planned"
     assert status.json()["recorded_status"] == "planned"
     assert status.json()["reconciliation_required"] is True
+
+    reconciled = client.post("/api/modules/agents.core/reconcile", headers=admin)
+
+    assert reconciled.status_code == 200, reconciled.text
+    assert reconciled.json()["reconciled"] is True
+    assert reconciled.json()["module"]["status"] == "available"
+    assert reconciled.json()["module"]["recorded_status"] == "available"
 
 
 def test_reconcile_recreates_missing_required_module_record(client: TestClient) -> None:

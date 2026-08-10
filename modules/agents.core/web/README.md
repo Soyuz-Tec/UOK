@@ -1,13 +1,5 @@
 # agents.core web
 
-`agents.core` is an inert `planned` scaffold. Its manifest declares no
-`web_surface`, `web_entry`, or `web_section`; no executable Agents code is
-included in the generated frontend catalog or current workbench.
+The current `integration_tested` increment is intentionally headless. Its manifest declares no `web_surface`, `web_entry`, or `web_section`, and this directory contains no executable React source.
 
-Future Agents UI notes belong here. Once backend capability, permissions,
-tests, approval evidence, and maturity justify activation, production React and
-local CSS must follow `modules/<module_name>/web/src`, frontend tests must follow
-`modules/<module_name>/tests/web`, and the canonical surface must be declared in
-the closed manifest. Reusable module-neutral workspace controls remain in
-`web/src/shared`. The browser must never load this YAML manifest or a dynamic
-module path.
+The next frontend increment must follow the canonical production-source and frontend-test locations defined by `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md`. It must provide a module-owned runbook catalog, approval tray, evidence timeline, policy badges, and decision panel through the neutral module surface contract.

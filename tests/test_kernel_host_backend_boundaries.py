@@ -75,9 +75,9 @@ def test_feature_backends_have_no_transitive_host_dependency() -> None:
 
 
 def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
-    assert len(MODULE_HTTP_ADAPTERS) == 19
+    assert len(MODULE_HTTP_ADAPTERS) == 20
     assert len(MODULE_COMMAND_ADAPTERS) == 4
-    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 42
+    assert len(MODULE_HOST_IMPORT_ALLOWLIST) == 44
     allowed = python_imports(
         "from uok.host.database import get_db",
         "feature.api",
@@ -100,6 +100,7 @@ def test_host_import_allowlist_is_path_and_symbol_exact() -> None:
     )
 
     read_only_adapter_paths = (
+        "modules/agents.core/backend/uok_agents_core/_internal/delivery/api.py",
         "modules/compliance.core/backend/uok_compliance_core/_internal/delivery/api.py",
         "modules/intelligence.core/backend/uok_intelligence_core/_internal/delivery/api.py",
         "modules/product.master/backend/uok_product_master/_internal/delivery/api.py",
