@@ -28,7 +28,7 @@ Production React source and CSS for a declared workbench surface live under `mod
 | Module | Role |
 |---|---|
 | `apps.manager` | Required control module for module discovery and lifecycle operations. |
-| `agents.core` | Planned inert boundary for governed agent operations. |
+| `agents.core` | Optional integration-tested backend governance for runbooks, generated plans, approvals, recovery proposals, and evidence; no executor or UI yet. |
 | `calendar.core` | Optional calendar, availability, free-busy, recurrence, and workspace capability. |
 | `communications.core` | Optional K Connect thread provider and exact authorized deep-link capability. |
 | `compliance.core` | Optional tenant-scoped Compliance Document Type registry with lifecycle, immutable references, and name history. |

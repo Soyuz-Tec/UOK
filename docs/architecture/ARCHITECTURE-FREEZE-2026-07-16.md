@@ -110,13 +110,29 @@ architecture:
   verifier remain module-owned;
 - the Kernel, Host responsibilities, neutral shell contract, Planning and
   Contacts facades, and 64-mapping graph remain unchanged; and
-- the bounded request adapter and surface additions bring the current totals
+- the bounded request adapter and surface additions brought that slice's totals
   to 18 HTTP adapters / 39 exact Host imports, 12 candidate verifiers, and 11
   workbench surfaces; commands and events remain 108 and 118.
 
+The post-freeze `agents.core` backend foundation is also accepted under the
+existing module rules and ADR-0031 without unfreezing the architecture:
+
+- all agent mappings, migration, schemas, plan policy, services, commands,
+  permissions, tests, and APIs remain module-owned;
+- generated plans reference only closed manifest commands/permissions and do
+  not import another module's implementation or data;
+- no Kernel contract, manifest extension point, frontend shell port, external
+  framework, tool executor, or target-command bypass is introduced;
+- the four new private mappings bring the graph to 59 feature mappings plus
+  nine Kernel mappings (68 total); and
+- the exact read-adapter addition brings the current Host allowlist to 44
+  imports across 20 HTTP adapters, with 12 candidate verifiers and 11
+  workbench surfaces unchanged.
+
 ## Accepted Residuals During The Freeze
 
-- The 39 exact in-process Host request/command adapter imports, including the
+- The 44 exact in-process Host request/command adapter imports, including the
+  Agents governance read adapter and the
   Product Master, Location Master, Route/Corridor Master, Shipment Support, and
   Compliance Document Type and Shipment Readiness HTTP adapters' `get_db` and
   `current_actor` seams.

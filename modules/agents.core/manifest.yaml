@@ -2,24 +2,70 @@ manifest_schema: uok.module.v1
 name: agents.core
 kind: capability_module
 version: APP_VERSION
-description: "Optional AI agent governance capability for programmable runbooks, human approval gates, compliance evidence, and controlled business-operation automation."
-maturity: planned
-installable: false
-uninstallable: false
-updatable: false
-maintainable: false
+description: "Optional governed agent orchestration capability for programmable runbooks, generated plans, human approval gates, and compliance evidence."
+maturity: integration_tested
+installable: true
+uninstallable: true
+updatable: true
+maintainable: true
 required: false
 lifecycle:
-  - planned
-commands: []
-events: []
+  - available
+  - installed
+  - disabled
+  - upgraded
+  - uninstalled
+commands:
+  - CreateAgentRunbook
+  - UpdateAgentRunbook
+  - ArchiveAgentRunbook
+  - StartAgentRun
+  - SubmitAgentPlan
+  - DecideAgentRun
+  - OverrideAgentRun
+  - CompleteAgentRun
+  - FailAgentRun
+events:
+  - AgentRunbookCreated
+  - AgentRunbookUpdated
+  - AgentRunbookArchived
+  - AgentRunStarted
+  - AgentPlanSubmitted
+  - AgentRunDecisionRecorded
+  - AgentRunOverridden
+  - AgentRunCompleted
+  - AgentRunFailed
 dependencies: []
 backend_path: modules/agents.core/backend
 web_path: modules/agents.core/web
 migrations_path: modules/agents.core/migrations
 tests_path: modules/agents.core/tests
-api_prefixes: []
-permissions: []
-owned_tables: []
-extension_points: []
-data_retention_policy: "Agent runbooks, runs, approvals, and evidence will be retained for compliance review; future purge or anonymization workflows must require explicit admin approval and audit evidence."
+api_prefixes:
+  - /api/agents
+api_router: uok_agents_core.public_api:api_router
+command_handlers: uok_agents_core.public_api:command_handlers
+command_permissions: uok_agents_core.public_api:command_permissions
+role_grants: uok_agents_core.public_api:role_grants
+model_exports: uok_agents_core._internal.persistence.models:owned_models
+permissions:
+  - agents.read
+  - agents.run
+  - agents.manage
+  - agents.approve
+  - agents.audit
+  - agents.override
+owned_tables:
+  - AgentRunbook
+  - AgentRun
+  - AgentApproval
+  - AgentEvidence
+  - CommandLog:agents.core
+  - EventRecord:AgentRunbook
+  - EventRecord:AgentRun
+extension_points:
+  - api_router
+  - command_handlers
+  - command_permissions
+  - role_grants
+  - model_exports
+data_retention_policy: "Runbooks may be archived and module uninstall disables access, but run, approval, and hash-addressed evidence records are retained. Purge or anonymization requires a future explicit admin policy, audit evidence, and migration."

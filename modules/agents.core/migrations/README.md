@@ -1,3 +1,3 @@
 # agents.core migrations
 
-Module-owned migrations for agent runbooks, runs, approvals, tool calls, and evidence belong here once the data model is implemented.
+`001_agents_core.sql` owns tenant-scoped runbooks, runs, approvals, and hash-addressed evidence. Disable or uninstall retains these governance records; a future purge/anonymization capability requires explicit policy, authorization, audit, and migration coverage.

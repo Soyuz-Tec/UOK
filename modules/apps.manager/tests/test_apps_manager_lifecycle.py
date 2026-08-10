@@ -20,12 +20,12 @@ def test_catalog_exposes_runtime_status_and_manifest_maturity(client: TestClient
     assert modules["apps.manager"]["lifecycle_state_declared"] is True
     assert modules["agents.core"] == {
         **modules["agents.core"],
-        "status": "planned",
-        "maturity": "planned",
-        "installable": False,
-        "updatable": False,
-        "maintainable": False,
-        "lifecycle": ["planned"],
+        "status": "available",
+        "maturity": "integration_tested",
+        "installable": True,
+        "updatable": True,
+        "maintainable": True,
+        "lifecycle": ["available", "installed", "disabled", "upgraded", "uninstalled"],
         "lifecycle_state_declared": True,
     }
 
@@ -56,7 +56,7 @@ def test_generic_lifecycle_report_has_no_module_specific_checks(client: TestClie
     assert report["module_checks"]["agents.core"]["planned_modules_inert"] is True
 
 
-def test_planned_module_lifecycle_actions_fail_closed(client: TestClient) -> None:
+def test_agents_module_lifecycle_actions_require_authority_and_work_when_installed(client: TestClient) -> None:
     admin = auth(client, "admin", "admin")
     viewer = auth(client, "viewer", "viewer123")
 
@@ -64,16 +64,16 @@ def test_planned_module_lifecycle_actions_fail_closed(client: TestClient) -> Non
     assert denied.status_code == 403, denied.text
 
     install = client.post("/api/modules/agents.core/install", headers=admin)
-    assert install.status_code == 400, install.text
-    assert "planned module cannot be installed" in install.text
+    assert install.status_code == 200, install.text
+    assert install.json()["status"] == "installed"
 
     upgrade = client.post("/api/modules/agents.core/upgrade", headers=admin)
-    assert upgrade.status_code == 400, upgrade.text
-    assert "planned module cannot be upgraded" in upgrade.text
+    assert upgrade.status_code == 200, upgrade.text
+    assert upgrade.json()["status"] == "upgraded"
 
     maintenance = client.get("/api/modules/agents.core/maintenance", headers=admin)
-    assert maintenance.status_code == 400, maintenance.text
-    assert "module is not maintainable" in maintenance.text
+    assert maintenance.status_code == 200, maintenance.text
+    assert maintenance.json()["ok"] is True
 
 
 def test_maintenance_negative_invariant_does_not_make_report_fail(client: TestClient) -> None:

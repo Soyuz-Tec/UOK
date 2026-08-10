@@ -78,6 +78,7 @@ Tests, live runtime behavior, Git state, and module manifests remain stronger th
 | `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md` | Host-owned backend composition, minimal shared kernel ports, exact request-DI exception, neutral frontend surface contract, and shell/module cycle enforcement | Host/kernel ownership, ORM/bootstrap composition, module runtime port, shell/module surface contract, or dependency enforcement changes |
 | `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md` | K Connect retained Delete/Restore, prior-state persistence, row locking, strong ETags, stale repair, and no-cascade boundary | Thread archive/restore, lifecycle validators, capability projection, archived discovery, or Planning-link behavior changes |
 | `docs/architecture/ADR-0030-request-authoritative-frontend-async-boundary.md` | Atomic frontend session authority, per-surface activation, owner-local request epochs and lanes, guarded unauthorized handling, and epoch-stamped state | Frontend session projection, module surface activation, async commit authority, unauthorized freshness, request lanes, or adoption sequencing changes |
+| `docs/architecture/ADR-0031-governed-agent-runbooks-plans-and-evidence.md` | Agents Core runbook scope, generated plan DAG, deterministic approval, recovery, tenant isolation, evidence hashing, and deferred executor boundary | Agent runbook, generated plan, approval policy, override, recovery, evidence, Codex binding, or executor boundary changes |
 | `docs/architecture/UOK_MODULE_EXTENSION_CONTRACT.md` | Module shape, manifest contract, extension points, module acceptance | Module extension surfaces, manifest fields, or lifecycle rules change |
 | `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md` | Manifest validation and source-boundary scan expectations | Module loader, boundary checks, or source-boundary rules change |
 | `docs/architecture/planning-data-boundary-inventory-2026-07-15.md` | Pre-refactor evidence of Planning reads across capability-module data boundaries | A correction is needed to the dated leak inventory or its audit method |
@@ -202,6 +203,7 @@ Architecture records describe current boundaries, module mechanics, and decision
 - `docs/architecture/ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
 - `docs/architecture/ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
 - `docs/architecture/ADR-0030-request-authoritative-frontend-async-boundary.md`
+- `docs/architecture/ADR-0031-governed-agent-runbooks-plans-and-evidence.md`
 - `docs/architecture/UOK_MODULE_MANIFESTS_AND_BOUNDARIES.md`
 - `docs/architecture/planning-data-boundary-inventory-2026-07-15.md`
 - `docs/architecture/planning-data-boundary-fix-2026-07-15.md`

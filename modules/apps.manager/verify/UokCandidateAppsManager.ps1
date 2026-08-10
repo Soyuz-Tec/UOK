@@ -32,7 +32,9 @@ function Invoke-UokAppsManagerCandidateScenario {
     $reconciliation = Invoke-UokJson -Method "POST" -Path "/api/modules/agents.core/reconcile" -Headers $Headers
     if (
         -not $reconciliation.module `
-        -or $reconciliation.module.status -ne "planned" `
+        -or $reconciliation.module.status -ne "available" `
+        -or $reconciliation.module.maturity -ne "integration_tested" `
+        -or $reconciliation.module.installable -ne $true `
         -or $reconciliation.module.reconciliation_required -ne $false
     ) {
         throw "Apps Manager reconciliation contract is invalid: $($reconciliation | ConvertTo-Json -Depth 20)"

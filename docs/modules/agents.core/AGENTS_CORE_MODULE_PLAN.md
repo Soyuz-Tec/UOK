@@ -1,6 +1,6 @@
 # Agents Core Module Plan
 
-**Status:** Planned installable capability module scaffold.
+**Status:** Integration-tested backend governance foundation; runtime proof, UI, and executors remain.
 
 **Current candidate:** `UOK-3.1.0-alpha.3`
 
@@ -8,78 +8,69 @@
 
 ## Purpose
 
-`agents.core` will provide UOK's reusable agent governance capability. It will let authorized users define controlled agent runbooks, execute low-risk automation, route high-impact steps to humans, and retain audit evidence for compliance review.
+`agents.core` provides UOK's reusable, domain-neutral governance envelope for agent runbooks, generated process plans, approval gates, recovery proposals, decisions, and compliance evidence.
 
-This module must stay domain-neutral. Contacts, cargo, accounting, document, product, and industry-specific agent skills belong in their owning modules and are exposed to `agents.core` only through declared commands, permissions, APIs, and policies.
+Business modules continue to own domain records, commands, permissions, and approval meaning. Codex is recognized as a governed tool-binding identifier, not as an uncontrolled authority. The current increment does not call Codex or dispatch a generated business command.
 
-Codex is a primary governed agent tool for UOK. `agents.core` must treat Codex as a tool binding that can help analyze records, draft actions, prepare evidence, and support code-aware operations, but Codex must not bypass UOK permissions, module lifecycle, human approval gates, or audit evidence.
+## Implemented Backend Foundation
 
-## Initial Scope
+- installable `integration_tested` module lifecycle;
+- tenant-scoped runbook catalog and versioning;
+- one installed target-module scope per runbook;
+- validation against target manifest commands and permissions;
+- bounded `codex` tool-binding declaration;
+- low/medium/high/critical risk classification;
+- `always` and `risk_based` approval policies;
+- run input snapshots and immutable runbook-scope snapshots;
+- bounded initial, revision, and recovery plan DAGs;
+- analysis, tool, command, and human plan steps;
+- dependency-cycle, module, tool, command, data-scope, impact, and size validation;
+- deterministic approval reasons;
+- approve, reject, request-revision, escalate, and separate override decisions;
+- approved completion and explicit failure/recovery lifecycle;
+- tenant-scoped input, plan, decision, override, outcome, and failure evidence;
+- canonical JSON SHA-256 evidence and plan digests;
+- UOK command-log and module-event correlation;
+- read API for runbooks, runs, approval queue, decisions, and evidence.
 
-The first implementation should support:
+## Permissions
 
-- agent runbook catalog;
-- runbook versioning;
-- module and permission scope declarations;
-- allowed tool and command declarations;
-- governed Codex tool binding declarations;
-- risk level classification;
-- human approval requirements;
-- run execution records;
-- evidence timeline;
-- approval queue;
-- reject, revise, approve, override, and escalate decisions;
-- Contacts pilot runbook for enrichment and duplicate cleanup suggestions.
+| Permission | Purpose |
+|---|---|
+| `agents.read` | Read runbooks and run state. |
+| `agents.run` | Start runs, submit plans, record completion, and record failure. |
+| `agents.manage` | Create, update, and archive runbooks. |
+| `agents.approve` | Approve, reject, request revision, or escalate gated plans. |
+| `agents.audit` | Read decision history and evidence content. |
+| `agents.override` | Override a gated/rejected policy outcome with an accountable reason; only wildcard administrators currently receive it. |
 
-## Out Of Scope For The First Implementation
+## Deliberate Safety Boundary
 
-- autonomous financial commitments;
-- autonomous record purge;
-- autonomous external submission;
-- autonomous legal or compliance acceptance;
-- hidden direct database writes outside UOK commands;
-- unmanaged Codex execution outside UOK runbooks;
-- product-specific agent behavior inside `agents.core`;
-- custom language runtimes or non-approved frontend stacks.
+- No autonomous financial commitment, purge, external submission, legal acceptance, or policy exception.
+- No direct database writes to business-module tables.
+- No unmanaged Codex or external-tool execution.
+- No target-module command dispatch from a generated plan.
+- No product-specific agent behavior inside `agents.core`.
+- No background scheduler or hidden retry loop.
+- No executable Agents frontend surface yet.
 
-## Workflow Model
+Low-risk informational plans may become policy-approved when a runbook uses `risk_based` approval. Every business-command proposal and every protected impact still requires a human decision. A recovery plan re-enters the same validation and approval path.
 
-1. Admin creates or imports a runbook.
-2. UOK validates module availability, permissions, and declared tools.
-3. User starts a run against a record set.
-4. Agent produces a recommendation, draft, or command proposal.
-5. Low-risk actions can be completed if policy allows.
-6. High-risk actions enter the human approval queue.
-7. Human approves, rejects, requests revision, escalates, or overrides.
-8. UOK records evidence and final command outcomes.
+## Next Increments
 
-## Required Backend Capabilities
+1. Add a module-owned Agents workbench with runbook catalog, approval tray, evidence timeline, policy badges, and decision panel using shared UOK primitives.
+2. Add a module-owned candidate verifier and PostgreSQL runtime proof for lifecycle, permissions, tenant isolation, approval, override, disabled-module behavior, and evidence hashes.
+3. Define a separate executor ADR for Codex authentication, secret storage, egress, data minimization, prompt/output retention, output validation, timeouts, retries, rate limits, cancellation, tool receipts, and deterministic fallback.
+4. Correlate an approved plan step to an actual idempotent UOK target-module command receipt without bypassing the target actor's permission.
+5. Pilot a domain-owned runbook, initially analysis/proposal only, before allowing any low-risk executor path.
 
-- Pydantic schemas for runbooks, runs, approvals, and evidence.
-- Tool-binding schemas for Codex and future governed tools.
-- SQLAlchemy models owned by `agents.core`.
-- Command handlers for runbook and run lifecycle.
-- API routes under `/api/agents`.
-- Role grants for agent read, manage, approve, and audit permissions.
-- Candidate verifier proving lifecycle, permission, and approval-gate behavior.
+## Acceptance Criteria For Runtime-Proven Maturity
 
-## Required UI Capabilities
-
-- Agent runbook list.
-- Runbook editor.
-- Codex tool policy panel.
-- Approval tray.
-- Run evidence timeline.
-- Policy badges for risk and required approval.
-- Human decision panel.
-- Shared workspace primitives reused from `web/src/shared`.
-
-## Acceptance Criteria
-
-- `agents.core` remains an inert `planned` scaffold and exposes no install, disable, update, maintenance, permission, API, or verifier action until an implemented increment advances its manifest maturity with evidence.
-- No agent action bypasses UOK command permissions.
-- Codex tool use is scoped, audited, and tied to a runbook.
-- High-impact actions require a human decision.
-- Every run stores evidence readable by a human reviewer.
-- Contacts pilot proves the module can use another installed module without owning its records.
-- Tests cover allowed action, blocked action, approval required, approval accepted, approval rejected, and disabled module behavior.
+- Backend behavior passes module, architecture, security, tenant, and lifecycle tests.
+- PostgreSQL migration and runtime smoke pass against the packaged candidate.
+- Candidate verifier proves unauthorized, undeclared, cross-tenant, unapproved, and disabled-module actions fail closed.
+- Workbench approval and evidence paths pass TypeScript, accessibility, build, browser, and console-clean proof.
+- Every future tool call stores identity, scope, request/output evidence, status, timing, and correlation.
+- Every future target command uses the existing UOK command bus, target permission, idempotency, and module-operational gates.
+- AI unavailability degrades to a human-managed workflow.
+- No readiness statement implies unsupervised or production-ready autonomy.

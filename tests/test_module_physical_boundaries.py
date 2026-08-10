@@ -76,7 +76,7 @@ def test_module_extension_contract_is_enforced() -> None:
     assert extension_contract["checks"]["owned_table_claims_valid"] is True
     assert extension_contract["checks"]["owned_tables_resolve_to_models"] is True
     assert contracts["model_registry"]["ok"] is True
-    assert contracts["model_registry"]["model_count"] == 64
+    assert contracts["model_registry"]["model_count"] == 68
     assert extension_contract["violations"] == []
 
 
@@ -86,9 +86,7 @@ def test_kernel_does_not_statically_import_module_backends() -> None:
         for child in sorted(backend_dir.iterdir()):
             if child.is_dir() and (child / "__init__.py").is_file():
                 package_names.add(child.name)
-    expected_packages = {
-        f"uok_{name.replace('.', '_')}" for name in BASELINE_MODULES if name != "agents.core"
-    }
+    expected_packages = {f"uok_{name.replace('.', '_')}" for name in BASELINE_MODULES}
     assert expected_packages.issubset(package_names)
 
     import_pattern = re.compile(rf"^\s*(?:from|import)\s+(?:{'|'.join(sorted(package_names))})\b", re.MULTILINE)
@@ -123,6 +121,11 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "CreateCalendarEvent" in handlers
     assert "CreateCommunicationThread" in handlers
     assert {
+        "CreateAgentRunbook", "UpdateAgentRunbook", "ArchiveAgentRunbook",
+        "StartAgentRun", "SubmitAgentPlan", "DecideAgentRun", "OverrideAgentRun",
+        "CompleteAgentRun", "FailAgentRun",
+    }.issubset(handlers)
+    assert {
         "CreateComplianceDocumentType",
         "UpdateComplianceDocumentType",
         "DeactivateComplianceDocumentType",
@@ -152,6 +155,10 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert permissions["CreateContact"] == "contacts.manage"
     assert permissions["CreateCalendarEvent"] == "calendar.event.create"
     assert permissions["CreateCommunicationThread"] == "communications.edit"
+    assert permissions["CreateAgentRunbook"] == "agents.manage"
+    assert permissions["StartAgentRun"] == "agents.run"
+    assert permissions["DecideAgentRun"] == "agents.approve"
+    assert permissions["OverrideAgentRun"] == "agents.override"
     for command_name in (
         "CreateComplianceDocumentType",
         "UpdateComplianceDocumentType",
@@ -186,6 +193,10 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
     assert "planning.analyze" in grants["ops_manager"]
     assert "planning.analysis.approve" in grants["ops_manager"]
     assert "communications.edit" in grants["ops_manager"]
+    assert grants["ops_manager"] >= {
+        "agents.read", "agents.run", "agents.manage", "agents.approve", "agents.audit"
+    }
+    assert "agents.override" not in grants["ops_manager"]
     assert "compliance.manage" in grants["ops_manager"]
     assert "compliance.read" in grants["viewer"]
     assert grants["trader"] >= {"planning.read", "planning.edit"}
@@ -222,6 +233,10 @@ def test_module_commands_permissions_roles_and_tables_load_from_manifests() -> N
         "product_definitions",
         "product_name_history",
         "report_artifacts",
+        "agent_runbooks",
+        "agent_runs",
+        "agent_approvals",
+        "agent_evidence",
         "shipments",
         "shipment_document_instances",
         "shipment_document_instance_history",
@@ -275,6 +290,8 @@ def test_app_composes_module_routes_without_kernel_module_references() -> None:
     )
     assert "/api/intelligence/shipment-readiness" in app_paths
     assert "/api/reports/formats" in app_paths
+    assert "/api/agents/runbooks" in app_paths
+    assert "/api/agents/approval-queue" in app_paths
 
     main_source = (repo_root() / "src" / "uok" / "host" / "application.py").read_text(encoding="utf-8")
     assert "contacts" not in main_source.lower()

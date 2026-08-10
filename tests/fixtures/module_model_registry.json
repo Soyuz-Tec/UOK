@@ -10,6 +10,12 @@
     "User": "users",
     "WorkflowInstance": "workflow_instances"
   },
+  "agents.core": {
+    "AgentApproval": "agent_approvals",
+    "AgentEvidence": "agent_evidence",
+    "AgentRun": "agent_runs",
+    "AgentRunbook": "agent_runbooks"
+  },
   "calendar.core": {
     "Calendar": "calendars",
     "CalendarEvent": "calendar_events",

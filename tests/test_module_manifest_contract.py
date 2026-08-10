@@ -100,8 +100,10 @@ def test_repository_manifests_use_exact_maturity_and_extension_taxonomies() -> N
         "role_grants", "dashboard_provider", "evidence_provider", "model_exports", "candidate_verifier",
         "web_surface",
     }
-    assert manifests["agents.core"]["maturity"] == "planned"
-    assert manifests["agents.core"]["extension_points"] == []
+    assert manifests["agents.core"]["maturity"] == "integration_tested"
+    assert set(manifests["agents.core"]["extension_points"]) == {
+        "api_router", "command_handlers", "command_permissions", "role_grants", "model_exports"
+    }
     assert all(manifest["manifest_schema"] == "uok.module.v1" for manifest in manifests.values())
 
 

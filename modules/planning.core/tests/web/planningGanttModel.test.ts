@@ -130,11 +130,12 @@ describe("planning Gantt scales", () => {
 
 describe("planning Gantt status indicators", () => {
   it("returns non-color status codes for task state", () => {
-    expect(taskStatusIndicator({ ...task, progress: 0 }).code).toBe("OPEN");
-    expect(taskStatusIndicator(task).code).toBe("WORK");
-    expect(taskStatusIndicator({ ...task, progress: 100 }).code).toBe("DONE");
-    expect(taskStatusIndicator({ ...task, status: "blocked", progress: 0 }).code).toBe("HOLD");
-    expect(taskStatusIndicator({ ...task, critical: true }, true).code).toBe("CRIT");
+    const currentTask = { ...task, start: "2099-08-03", end: "2099-08-05" };
+    expect(taskStatusIndicator({ ...currentTask, progress: 0 }).code).toBe("OPEN");
+    expect(taskStatusIndicator(currentTask).code).toBe("WORK");
+    expect(taskStatusIndicator({ ...currentTask, progress: 100 }).code).toBe("DONE");
+    expect(taskStatusIndicator({ ...currentTask, status: "blocked", progress: 0 }).code).toBe("HOLD");
+    expect(taskStatusIndicator({ ...currentTask, critical: true }, true).code).toBe("CRIT");
   });
 });
 

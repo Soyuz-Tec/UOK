@@ -26,6 +26,7 @@ from uok.module_manifest_loader import load_module_manifests
 FIXTURE = Path(__file__).parent / "fixtures" / "module_model_registry.json"
 METADATA_FIXTURE = Path(__file__).parent / "fixtures" / "module_model_metadata.json"
 EXPECTED_PROVIDER_ORDER = (
+    "agents.core",
     "calendar.core",
     "communications.core",
     "compliance.core",
@@ -37,7 +38,7 @@ EXPECTED_PROVIDER_ORDER = (
     "routes.core",
     "shipments.core",
 )
-EXPECTED_MODEL_COUNT = 64
+EXPECTED_MODEL_COUNT = 68
 
 
 def _expected_registry() -> dict[str, dict[str, str]]:
@@ -162,6 +163,10 @@ def test_schema_identifiers_fit_postgresql_limit() -> None:
         (
             "from uok.host.module_paths import ensure_module_backend_paths; "
             "ensure_module_backend_paths(); import uok_calendar_core.models"
+        ),
+        (
+            "from uok.host.module_paths import ensure_module_backend_paths; "
+            "ensure_module_backend_paths(); import uok_agents_core.public_api"
         ),
         (
             "from uok.host.module_paths import ensure_module_backend_paths; "
