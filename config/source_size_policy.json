@@ -1,0 +1,762 @@
+{
+  "schema": "uok.source_size_policy.v1",
+  "baseline": [
+    {
+      "identity": "file:deploy/postgres/database-security-foundation.sql",
+      "max_lines": 294
+    },
+    {
+      "identity": "file:modules/apps.manager/web/src/AppsManagerPanel.tsx",
+      "max_lines": 202
+    },
+    {
+      "identity": "file:modules/calendar.core/backend/uok_calendar_core/api.py",
+      "max_lines": 283
+    },
+    {
+      "identity": "file:modules/calendar.core/backend/uok_calendar_core/commands.py",
+      "max_lines": 281
+    },
+    {
+      "identity": "file:modules/calendar.core/tests/test_calendar_event_editing.py",
+      "max_lines": 247
+    },
+    {
+      "identity": "file:modules/calendar.core/tests/test_calendar_event_guards.py",
+      "max_lines": 255
+    },
+    {
+      "identity": "file:modules/calendar.core/tests/test_calendar_lifecycle.py",
+      "max_lines": 255
+    },
+    {
+      "identity": "file:modules/calendar.core/tests/web/CalendarWorkspace.test.tsx",
+      "max_lines": 218
+    },
+    {
+      "identity": "file:modules/calendar.core/tests/web/CalendarWorkspaceIntegrity.test.tsx",
+      "max_lines": 241
+    },
+    {
+      "identity": "file:modules/calendar.core/web/src/CalendarSelector.tsx",
+      "max_lines": 237
+    },
+    {
+      "identity": "file:modules/calendar.core/web/src/CalendarWorkspace.tsx",
+      "max_lines": 245
+    },
+    {
+      "identity": "file:modules/calendar.core/web/src/styles/calendar.css",
+      "max_lines": 295
+    },
+    {
+      "identity": "file:modules/communications.core/tests/web/CommunicationsWorkspace.test.tsx",
+      "max_lines": 220
+    },
+    {
+      "identity": "file:modules/communications.core/web/src/CommunicationsWorkspace.tsx",
+      "max_lines": 241
+    },
+    {
+      "identity": "file:modules/compliance.core/web/src/complianceApi.ts",
+      "max_lines": 246
+    },
+    {
+      "identity": "file:modules/compliance.core/web/src/useComplianceDocumentTypeMutationCoordinator.ts",
+      "max_lines": 245
+    },
+    {
+      "identity": "file:modules/compliance.core/web/src/useComplianceDocumentTypeMutations.ts",
+      "max_lines": 203
+    },
+    {
+      "identity": "file:modules/compliance.core/web/src/useComplianceDocumentTypeReads.ts",
+      "max_lines": 246
+    },
+    {
+      "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/delivery/api_system.py",
+      "max_lines": 259
+    },
+    {
+      "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/delivery/commands.py",
+      "max_lines": 279
+    },
+    {
+      "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/exchange_quality/contact_exchange.py",
+      "max_lines": 256
+    },
+    {
+      "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/exchange_quality/duplicate_merge_support.py",
+      "max_lines": 256
+    },
+    {
+      "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/exchange_quality/guided_import.py",
+      "max_lines": 280
+    },
+    {
+      "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/governance/governance_commands.py",
+      "max_lines": 244
+    },
+    {
+      "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/governance/privacy_commands.py",
+      "max_lines": 214
+    },
+    {
+      "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/registry/fact_commands.py",
+      "max_lines": 211
+    },
+    {
+      "identity": "file:modules/contacts.core/backend/uok_contacts_core/_internal/registry/read_model_search.py",
+      "max_lines": 281
+    },
+    {
+      "identity": "file:modules/contacts.core/tests/test_contacts_groups.py",
+      "max_lines": 294
+    },
+    {
+      "identity": "file:modules/contacts.core/tests/test_contacts_release_regressions.py",
+      "max_lines": 211
+    },
+    {
+      "identity": "file:modules/contacts.core/tests/test_contacts_smart_groups.py",
+      "max_lines": 231
+    },
+    {
+      "identity": "file:modules/contacts.core/tests/test_contacts_system_of_record.py",
+      "max_lines": 270
+    },
+    {
+      "identity": "file:modules/contacts.core/tests/test_module_catalog_baseline.py",
+      "max_lines": 238
+    },
+    {
+      "identity": "file:modules/contacts.core/tests/web/ContactDataToolsManager.test.tsx",
+      "max_lines": 235
+    },
+    {
+      "identity": "file:modules/contacts.core/tests/web/ContactsWorkspace.detail.test.tsx",
+      "max_lines": 257
+    },
+    {
+      "identity": "file:modules/contacts.core/tests/web/ContactsWorkspace.groupManager.test.tsx",
+      "max_lines": 276
+    },
+    {
+      "identity": "file:modules/contacts.core/tests/web/ContactsWorkspace.search.test.tsx",
+      "max_lines": 221
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/ContactGroupsManagerDetail.tsx",
+      "max_lines": 221
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useContactCommandCoordinator.ts",
+      "max_lines": 257
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useContactCommands.ts",
+      "max_lines": 236
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useContactPrimaryReads.ts",
+      "max_lines": 299
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useContactWorkspaceState.ts",
+      "max_lines": 252
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/app/useLegacyContactCommands.ts",
+      "max_lines": 208
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/contactDataToolsApi.ts",
+      "max_lines": 272
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/styles/data-tools.css",
+      "max_lines": 257
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/styles/quality.css",
+      "max_lines": 278
+    },
+    {
+      "identity": "file:modules/contacts.core/web/src/useContactGroupsManager.ts",
+      "max_lines": 268
+    },
+    {
+      "identity": "file:modules/intelligence.core/tests/intelligence_test_support.py",
+      "max_lines": 211
+    },
+    {
+      "identity": "file:modules/intelligence.core/tests/test_shipment_readiness_integration.py",
+      "max_lines": 221
+    },
+    {
+      "identity": "file:modules/intelligence.core/tests/web/ShipmentReadinessWorkspace.read.test.tsx",
+      "max_lines": 267
+    },
+    {
+      "identity": "file:modules/intelligence.core/tests/web/ShipmentReadinessWorkspace.session.test.tsx",
+      "max_lines": 255
+    },
+    {
+      "identity": "file:modules/intelligence.core/web/src/ShipmentReadinessDetail.tsx",
+      "max_lines": 234
+    },
+    {
+      "identity": "file:modules/intelligence.core/web/src/ShipmentReadinessWorkspace.tsx",
+      "max_lines": 277
+    },
+    {
+      "identity": "file:modules/locations.core/tests/web/LocationMasterWorkspace.test.tsx",
+      "max_lines": 210
+    },
+    {
+      "identity": "file:modules/locations.core/web/src/LocationMasterWorkspace.tsx",
+      "max_lines": 287
+    },
+    {
+      "identity": "file:modules/planning.core/backend/uok_planning_core/_internal/analysis/what_if.py",
+      "max_lines": 270
+    },
+    {
+      "identity": "file:modules/planning.core/backend/uok_planning_core/_internal/delivery/api.py",
+      "max_lines": 278
+    },
+    {
+      "identity": "file:modules/planning.core/backend/uok_planning_core/_internal/delivery/commands.py",
+      "max_lines": 300
+    },
+    {
+      "identity": "file:modules/planning.core/backend/uok_planning_core/_internal/persistence/planning_models.py",
+      "max_lines": 273
+    },
+    {
+      "identity": "file:modules/planning.core/backend/uok_planning_core/_internal/scheduling/baselines.py",
+      "max_lines": 300
+    },
+    {
+      "identity": "file:modules/planning.core/backend/uok_planning_core/_internal/scheduling/concurrency.py",
+      "max_lines": 279
+    },
+    {
+      "identity": "file:modules/planning.core/backend/uok_planning_core/_internal/scheduling/read_model.py",
+      "max_lines": 290
+    },
+    {
+      "identity": "file:modules/planning.core/backend/uok_planning_core/_internal/scheduling/scheduler.py",
+      "max_lines": 271
+    },
+    {
+      "identity": "file:modules/planning.core/tests/test_planning_atomic_batch.py",
+      "max_lines": 220
+    },
+    {
+      "identity": "file:modules/planning.core/tests/test_planning_atomic_batch_registry.py",
+      "max_lines": 281
+    },
+    {
+      "identity": "file:modules/planning.core/tests/test_planning_complete_baselines.py",
+      "max_lines": 227
+    },
+    {
+      "identity": "file:modules/planning.core/tests/test_planning_core.py",
+      "max_lines": 297
+    },
+    {
+      "identity": "file:modules/planning.core/tests/test_planning_date_semantics.py",
+      "max_lines": 206
+    },
+    {
+      "identity": "file:modules/planning.core/tests/test_planning_idempotency_contract.py",
+      "max_lines": 300
+    },
+    {
+      "identity": "file:modules/planning.core/tests/test_planning_optimistic_concurrency.py",
+      "max_lines": 273
+    },
+    {
+      "identity": "file:modules/planning.core/tests/test_planning_requirement_guards.py",
+      "max_lines": 257
+    },
+    {
+      "identity": "file:modules/planning.core/tests/web/PlanningGanttShapes.test.tsx",
+      "max_lines": 274
+    },
+    {
+      "identity": "file:modules/planning.core/tests/web/planningApi.test.ts",
+      "max_lines": 269
+    },
+    {
+      "identity": "file:modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx",
+      "max_lines": 290
+    },
+    {
+      "identity": "file:modules/planning.core/tests/web/usePlanningWorkspaceProjectCreation.test.tsx",
+      "max_lines": 216
+    },
+    {
+      "identity": "file:modules/planning.core/tests/web/usePlanningWorkspaceProjectLifecycle.test.tsx",
+      "max_lines": 247
+    },
+    {
+      "identity": "file:modules/planning.core/verify/UokCandidatePlanning.ps1",
+      "max_lines": 294
+    },
+    {
+      "identity": "file:modules/planning.core/verify/runtime/verify_planning_replay_purge_concurrency.py",
+      "max_lines": 273
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningAnalysisPanel.tsx",
+      "max_lines": 205
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningCommandSurface.tsx",
+      "max_lines": 277
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningFlowBoard.tsx",
+      "max_lines": 269
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningGantt.tsx",
+      "max_lines": 293
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningGanttShapes.tsx",
+      "max_lines": 217
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningInspector.tsx",
+      "max_lines": 248
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningPortfolioView.tsx",
+      "max_lines": 264
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningTimeline.tsx",
+      "max_lines": 282
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningTimelineUtilities.tsx",
+      "max_lines": 242
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/PlanningWorkspace.tsx",
+      "max_lines": 293
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/planningApi.ts",
+      "max_lines": 264
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/planningDependencyGeometry.ts",
+      "max_lines": 286
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/planningExportModel.ts",
+      "max_lines": 263
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/planningGanttModel.ts",
+      "max_lines": 289
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/styles/flow-board.css",
+      "max_lines": 299
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/styles/gantt.css",
+      "max_lines": 286
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/styles/owned-gantt.css",
+      "max_lines": 295
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/types.ts",
+      "max_lines": 297
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/usePlanningProjectOperations.ts",
+      "max_lines": 288
+    },
+    {
+      "identity": "file:modules/planning.core/web/src/usePlanningWorkspaceMutations.ts",
+      "max_lines": 279
+    },
+    {
+      "identity": "file:modules/product.master/web/src/ProductMasterWorkspace.tsx",
+      "max_lines": 287
+    },
+    {
+      "identity": "file:modules/routes.core/backend/uok_routes_core/public_api.py",
+      "max_lines": 209
+    },
+    {
+      "identity": "file:modules/routes.core/tests/web/RouteMasterWorkspace.test.tsx",
+      "max_lines": 234
+    },
+    {
+      "identity": "file:modules/routes.core/web/src/RouteMasterWorkspace.tsx",
+      "max_lines": 293
+    },
+    {
+      "identity": "file:modules/shipments.core/backend/uok_shipments_core/_internal/delivery/api.py",
+      "max_lines": 243
+    },
+    {
+      "identity": "file:modules/shipments.core/backend/uok_shipments_core/_internal/delivery/document_instance_write_service.py",
+      "max_lines": 264
+    },
+    {
+      "identity": "file:modules/shipments.core/backend/uok_shipments_core/_internal/delivery/readiness_snapshot_read_service.py",
+      "max_lines": 276
+    },
+    {
+      "identity": "file:modules/shipments.core/tests/shipment_test_support.py",
+      "max_lines": 287
+    },
+    {
+      "identity": "file:modules/shipments.core/tests/test_shipment_document_instance_integration.py",
+      "max_lines": 283
+    },
+    {
+      "identity": "file:modules/shipments.core/tests/test_shipment_document_instance_tenant_isolation.py",
+      "max_lines": 201
+    },
+    {
+      "identity": "file:modules/shipments.core/tests/test_shipment_document_requirement_integration.py",
+      "max_lines": 285
+    },
+    {
+      "identity": "file:modules/shipments.core/tests/test_shipment_readiness_snapshot_api.py",
+      "max_lines": 290
+    },
+    {
+      "identity": "file:modules/shipments.core/tests/test_shipment_support_domain.py",
+      "max_lines": 240
+    },
+    {
+      "identity": "file:modules/shipments.core/tests/test_shipment_support_integration.py",
+      "max_lines": 264
+    },
+    {
+      "identity": "file:modules/shipments.core/tests/web/ShipmentSupportWorkspace.test.tsx",
+      "max_lines": 285
+    },
+    {
+      "identity": "file:modules/shipments.core/verify/UokCandidateShipmentRequirements.ps1",
+      "max_lines": 281
+    },
+    {
+      "identity": "file:modules/shipments.core/web/src/ShipmentEditor.tsx",
+      "max_lines": 231
+    },
+    {
+      "identity": "file:modules/shipments.core/web/src/ShipmentSupportWorkspace.tsx",
+      "max_lines": 298
+    },
+    {
+      "identity": "file:scripts/coverage_provenance.py",
+      "max_lines": 288
+    },
+    {
+      "identity": "file:scripts/database_capacity_live.py",
+      "max_lines": 261
+    },
+    {
+      "identity": "file:scripts/database_security_live.py",
+      "max_lines": 269
+    },
+    {
+      "identity": "file:scripts/package_uok_candidate.py",
+      "max_lines": 298
+    },
+    {
+      "identity": "file:scripts/quality_audit.py",
+      "max_lines": 274
+    },
+    {
+      "identity": "file:scripts/run_python_tests.py",
+      "max_lines": 291
+    },
+    {
+      "identity": "file:scripts/uok_autostart_support.ps1",
+      "max_lines": 285
+    },
+    {
+      "identity": "file:scripts/uok_autostart_worker.ps1",
+      "max_lines": 299
+    },
+    {
+      "identity": "file:scripts/uok_ops.ps1",
+      "max_lines": 279
+    },
+    {
+      "identity": "file:scripts/uok_release_workflow_yaml.py",
+      "max_lines": 283
+    },
+    {
+      "identity": "file:scripts/validate_uok_release.py",
+      "max_lines": 252
+    },
+    {
+      "identity": "file:scripts/verify_database_capacity.py",
+      "max_lines": 287
+    },
+    {
+      "identity": "file:scripts/verify_uok_candidate_isolated.ps1",
+      "max_lines": 270
+    },
+    {
+      "identity": "file:src/uok/candidate_verifier_preflight.py",
+      "max_lines": 298
+    },
+    {
+      "identity": "file:src/uok/host/model_registry.py",
+      "max_lines": 286
+    },
+    {
+      "identity": "file:src/uok/module_contract_rules.py",
+      "max_lines": 286
+    },
+    {
+      "identity": "file:tests/engineering_measurement_test_support.py",
+      "max_lines": 244
+    },
+    {
+      "identity": "file:tests/intelligence_shipment_data_boundary_support.py",
+      "max_lines": 294
+    },
+    {
+      "identity": "file:tests/kernel_host_backend_boundary_support.py",
+      "max_lines": 228
+    },
+    {
+      "identity": "file:tests/kernel_host_shell_boundary_support.py",
+      "max_lines": 290
+    },
+    {
+      "identity": "file:tests/module_manifest_contract_assertions.py",
+      "max_lines": 292
+    },
+    {
+      "identity": "file:tests/module_public_api_contract.py",
+      "max_lines": 202
+    },
+    {
+      "identity": "file:tests/shipment_foreign_data_boundary_support.py",
+      "max_lines": 276
+    },
+    {
+      "identity": "file:tests/test_candidate_verifier_ast_safety.py",
+      "max_lines": 290
+    },
+    {
+      "identity": "file:tests/test_candidate_verifier_catalog.py",
+      "max_lines": 259
+    },
+    {
+      "identity": "file:tests/test_candidate_verifier_paths.py",
+      "max_lines": 244
+    },
+    {
+      "identity": "file:tests/test_coverage_provenance.py",
+      "max_lines": 293
+    },
+    {
+      "identity": "file:tests/test_database_capacity_live.py",
+      "max_lines": 217
+    },
+    {
+      "identity": "file:tests/test_database_pool_hardening.py",
+      "max_lines": 229
+    },
+    {
+      "identity": "file:tests/test_documentation_reference_policy.py",
+      "max_lines": 208
+    },
+    {
+      "identity": "file:tests/test_engineering_measurement_artifacts.py",
+      "max_lines": 299
+    },
+    {
+      "identity": "file:tests/test_migration_discipline.py",
+      "max_lines": 287
+    },
+    {
+      "identity": "file:tests/test_module_manifest_contract.py",
+      "max_lines": 260
+    },
+    {
+      "identity": "file:tests/test_module_model_registry.py",
+      "max_lines": 292
+    },
+    {
+      "identity": "file:tests/test_module_physical_boundaries.py",
+      "max_lines": 280
+    },
+    {
+      "identity": "file:tests/test_module_public_api_boundaries.py",
+      "max_lines": 281
+    },
+    {
+      "identity": "file:tests/test_module_startup_boundaries.py",
+      "max_lines": 220
+    },
+    {
+      "identity": "file:tests/test_python_test_runner.py",
+      "max_lines": 246
+    },
+    {
+      "identity": "file:tests/test_route_location_data_boundary.py",
+      "max_lines": 207
+    },
+    {
+      "identity": "file:tests/test_shipment_foreign_data_boundary.py",
+      "max_lines": 288
+    },
+    {
+      "identity": "file:web/e2e/support/planningProofModesTimeline.ts",
+      "max_lines": 223
+    },
+    {
+      "identity": "file:web/e2e/uok-proof-projects-links.spec.ts",
+      "max_lines": 235
+    },
+    {
+      "identity": "file:web/src/app/useWorkbenchData.ts",
+      "max_lines": 241
+    },
+    {
+      "identity": "file:web/src/shared/localization/UokLocalization.tsx",
+      "max_lines": 282
+    },
+    {
+      "identity": "file:web/src/shared/overlays/WorkspacePopup.tsx",
+      "max_lines": 203
+    },
+    {
+      "identity": "file:web/src/shared/overlays/useWorkspacePopupDrag.ts",
+      "max_lines": 214
+    },
+    {
+      "identity": "file:web/src/shared/workflow-ui.test.tsx",
+      "max_lines": 286
+    },
+    {
+      "identity": "file:web/src/styles/shared/overlays.css",
+      "max_lines": 254
+    },
+    {
+      "identity": "file:web/src/styles/shared/record-detail.css",
+      "max_lines": 263
+    },
+    {
+      "identity": "function:modules/calendar.core/backend/uok_calendar_core/commands.py::cmd_update_calendar_event",
+      "max_lines": 62
+    },
+    {
+      "identity": "function:modules/contacts.core/backend/uok_contacts_core/_internal/exchange_quality/contact_exchange.py::parse_vcards",
+      "max_lines": 66
+    },
+    {
+      "identity": "function:modules/contacts.core/backend/uok_contacts_core/_internal/groups_relationships/group_domain_commands.py::cmd_group_contacts_by_business_email_domain",
+      "max_lines": 86
+    },
+    {
+      "identity": "function:modules/contacts.core/backend/uok_contacts_core/_internal/groups_relationships/group_smart_commands.py::cmd_group_contacts_by_smart_rule",
+      "max_lines": 88
+    },
+    {
+      "identity": "function:modules/contacts.core/backend/uok_contacts_core/_internal/registry/fact_commands.py::cmd_upsert_contact_fact",
+      "max_lines": 67
+    },
+    {
+      "identity": "function:modules/intelligence.core/backend/uok_intelligence_core/_internal/delivery/shipment_gateway.py::_validate_aggregate_invariants",
+      "max_lines": 101
+    },
+    {
+      "identity": "function:modules/planning.core/backend/uok_planning_core/_internal/scheduling/cpm.py::calculate_cpm",
+      "max_lines": 70
+    },
+    {
+      "identity": "function:modules/planning.core/backend/uok_planning_core/_internal/scheduling/read_model.py::schedule_read_model",
+      "max_lines": 62
+    },
+    {
+      "identity": "function:modules/shipments.core/backend/uok_shipments_core/_internal/delivery/document_instance_write_service.py::update_document_instance",
+      "max_lines": 62
+    },
+    {
+      "identity": "function:modules/shipments.core/backend/uok_shipments_core/_internal/delivery/readiness_snapshot_read_service.py::_instance_counts",
+      "max_lines": 82
+    },
+    {
+      "identity": "function:modules/shipments.core/backend/uok_shipments_core/_internal/delivery/write_service.py::update_shipment",
+      "max_lines": 68
+    },
+    {
+      "identity": "function:scripts/coverage_provenance_validation.py::load_coverage_provenance",
+      "max_lines": 84
+    },
+    {
+      "identity": "function:scripts/database_security_live.py::inspect_live_database_security",
+      "max_lines": 90
+    },
+    {
+      "identity": "function:scripts/engineering_coverage.py::_language_metrics",
+      "max_lines": 87
+    },
+    {
+      "identity": "function:scripts/generate_frontend_module_catalog.py::render_frontend_module_catalog",
+      "max_lines": 64
+    },
+    {
+      "identity": "function:scripts/quality_audit.py::check_operations_hygiene",
+      "max_lines": 61
+    },
+    {
+      "identity": "function:scripts/uok_release_workflow_policy.py::_validate_workflow",
+      "max_lines": 82
+    },
+    {
+      "identity": "function:scripts/validate_container_module_assets.py::validate_container_module_assets",
+      "max_lines": 62
+    },
+    {
+      "identity": "function:scripts/validate_uok_release.py::validate_release_identity",
+      "max_lines": 77
+    },
+    {
+      "identity": "function:scripts/windows_autostart_policy.py::windows_autostart_policy_problems",
+      "max_lines": 65
+    },
+    {
+      "identity": "function:src/uok/candidate_verifier_catalog.py::candidate_verifier_catalog",
+      "max_lines": 86
+    },
+    {
+      "identity": "function:src/uok/database_security.py::inventory_metadata",
+      "max_lines": 66
+    },
+    {
+      "identity": "function:src/uok/host/model_registry.py::_compose_registry",
+      "max_lines": 72
+    },
+    {
+      "identity": "function:src/uok/module_lifecycle.py::reconcile_module_record",
+      "max_lines": 72
+    },
+    {
+      "identity": "function:src/uok/module_model_claims.py::validate_owned_table_claims",
+      "max_lines": 81
+    }
+  ],
+  "exceptions": []
+}

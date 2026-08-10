@@ -2,6 +2,8 @@
 
 **Status:** Accepted
 
+**Implementation status:** Partial; adoption is intentionally phased by async owner
+
 **Date:** 2026-07-30
 
 **Current candidate:** `UOK-3.1.0-alpha.3`

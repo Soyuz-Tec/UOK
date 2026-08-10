@@ -90,7 +90,8 @@ is required for this implementation slice.
 - Live PostgreSQL exact-replay/purge two-order project-lock verifier: `modules/planning.core/verify/runtime/verify_planning_replay_purge_concurrency.py`
 - Typed frontend stale-write recovery and fail-closed multi-write proof: `modules/planning.core/tests/web/planningApi.test.ts` and `modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx`
 - Candidate PostgreSQL proof: two simultaneous writes returned exactly one `200` and one `412`; repeated concurrent reads never observed a mixed revision/schedule snapshot.
-- Candidate/UI gates: `scripts/verify_uok_candidate_isolated.ps1` (which invokes the ephemeral-target module verifier) and `web/e2e/uok-proof.spec.ts` pass with atomic bulk controls enabled only through the batch endpoint.
+- Candidate/UI gates: `scripts/verify_uok_candidate_isolated.ps1` (which invokes the ephemeral-target module verifier), `web/e2e/uok-proof.spec.ts`, `web/e2e/uok-proof-gantt-candidate.spec.ts`, `web/e2e/uok-proof-board.spec.ts`, `web/e2e/uok-proof-access-lifecycle.spec.ts`, `web/e2e/uok-proof-projects-links.spec.ts`, and `web/e2e/uok-proof-mutations.spec.ts` pass with atomic bulk controls enabled only through the batch endpoint.
+- Shared browser-proof fixtures and interaction helpers: `web/e2e/support/planningProofFixtures.ts`, `web/e2e/support/planningProofApi.ts`, `web/e2e/support/planningProofViewport.ts`, `web/e2e/support/planningProofGanttInteractions.ts`, and `web/e2e/support/planningProofModesTimeline.ts`.
 - Canonical CPM and hand-worked oracle cases: `modules/planning.core/tests/test_canonical_cpm.py`
 - Independent result validation with injected dependency, calendar, constraint, and manual-date faults: `modules/planning.core/tests/test_cpm_validation.py`
 - Independent resource-capacity calculation/validation with valid overload and injected load/flag/coverage faults: `modules/planning.core/tests/test_resource_capacity_validation.py`
@@ -100,10 +101,10 @@ is required for this implementation slice.
 - Typed bulk and bounded multi-task history client proof: `modules/planning.core/tests/web/planningApi.test.ts`, `modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx`, and `modules/planning.core/tests/web/planningHistoryExecution.test.ts`
 - Complete v2 baseline capture, checksum, compare, legacy, immutability, and tamper proof: `modules/planning.core/tests/test_planning_complete_baselines.py`
 - Additive v2 baseline metadata/append-only migration: `modules/planning.core/migrations/003_planning_complete_baselines.sql`
-- Typed baseline detail/compare reads and legacy UI warning proof: `modules/planning.core/tests/web/planningApi.test.ts` and `web/e2e/uok-proof.spec.ts`
+- Typed baseline detail/compare reads and legacy UI warning proof: `modules/planning.core/tests/web/planningApi.test.ts` and `web/e2e/uok-proof-gantt-candidate.spec.ts`
 - Candidate PostgreSQL proof: 12 existing snapshots classified as v1 `partial`; v2 columns/checks/index/trigger read back; trigger rejected mutation; v2 snapshot checksum/detail/correlation passed the live candidate verifier.
 - Server capability mapping and adversarial direct-call denials: `modules/planning.core/tests/test_planning_capabilities.py`
-- Typed fail-closed capability client and review-only UI proof: `modules/planning.core/tests/web/usePlanningCapabilities.test.tsx` and `web/e2e/uok-proof.spec.ts`
+- Typed fail-closed capability client and review-only UI proof: `modules/planning.core/tests/web/usePlanningCapabilities.test.tsx` and `web/e2e/uok-proof-access-lifecycle.spec.ts`
 - Candidate runtime proof: operations receives edit/baseline/level/admin, viewer receives read-only, viewer direct project creation remains denied, and module verification passes after rebuild.
 - Database constraint/duplicate rejection and additive migration proof: `modules/planning.core/tests/test_planning_database_invariants.py` and `modules/planning.core/migrations/004_planning_database_invariants.sql`
 - End-to-end command/response/module-event/schedule-event correlation proof: `modules/planning.core/tests/test_planning_audit_correlation.py`
@@ -116,9 +117,9 @@ is required for this implementation slice.
 - Structured idempotency conflict proof: `modules/planning.core/tests/test_planning_command_idempotency.py` and `modules/planning.core/tests/test_planning_rest_idempotency.py`
 - Typed request propagation, typed domain/precondition mapping, repair-status propagation, and accessible alert proof: `modules/planning.core/tests/web/planningApi.test.ts`, `modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx`, and `modules/planning.core/tests/web/PlanningErrorNotice.test.tsx`
 - Controlled status registry, ordered flow read model, request-shape validation, transition enforcement, audit correlation, and no-mutation rejection proof: `modules/planning.core/tests/test_planning_status_policy.py` and `modules/planning.core/tests/test_planning_idempotency_contract.py`
-- Governed Board/List model, direct drag/open/inline-title interactions, compact non-drag move fallback, explicit mutation-outcome, component, and candidate browser proof: `modules/planning.core/tests/web/planningFlowBoardModel.test.ts`, `modules/planning.core/tests/web/PlanningFlowBoard.test.tsx`, `modules/planning.core/tests/web/PlanningFlowBoardInteractions.test.tsx`, `modules/planning.core/tests/web/PlanningScheduleList.test.tsx`, `modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx`, `web/src/shared/forms/InlineTextEdit.test.tsx`, and `web/e2e/uok-proof.spec.ts`
-- Revision-aware source-command history and stale inverse proof: `modules/planning.core/tests/test_planning_atomic_batch.py`, `modules/planning.core/tests/web/planningHistoryExecution.test.ts`, `modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx`, and `web/e2e/uok-proof.spec.ts`
-- Keyboard-only mutation and shared focus-restoration proof: `web/src/shared/forms/InlineTextEdit.test.tsx` and `web/e2e/uok-proof.spec.ts`
+- Governed Board/List model, direct drag/open/inline-title interactions, compact non-drag move fallback, explicit mutation-outcome, component, and candidate browser proof: `modules/planning.core/tests/web/planningFlowBoardModel.test.ts`, `modules/planning.core/tests/web/PlanningFlowBoard.test.tsx`, `modules/planning.core/tests/web/PlanningFlowBoardInteractions.test.tsx`, `modules/planning.core/tests/web/PlanningScheduleList.test.tsx`, `modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx`, `web/src/shared/forms/InlineTextEdit.test.tsx`, `web/e2e/uok-proof-board.spec.ts`, and `web/e2e/uok-proof-mutations.spec.ts`
+- Revision-aware source-command history and stale inverse proof: `modules/planning.core/tests/test_planning_atomic_batch.py`, `modules/planning.core/tests/web/planningHistoryExecution.test.ts`, `modules/planning.core/tests/web/usePlanningWorkspaceMutations.test.tsx`, and `web/e2e/uok-proof-mutations.spec.ts`
+- Keyboard-only mutation and shared focus-restoration proof: `web/src/shared/forms/InlineTextEdit.test.tsx` and `web/e2e/uok-proof-mutations.spec.ts`
 - Candidate runtime proof: the module verifier inspected structured `403`, `400`, and `428` bodies and correlations; Chromium focused and announced the repair/field/revision/audit alert after a rejected mutation.
 - Candidate PostgreSQL proof: all 13 invariant constraints and four indexes read back; direct invalid date/progress/scheduling-mode and duplicate calendar/assignment rows were rejected; seven candidate schedule events and seven module events all linked to succeeded commands, with all seven stored responses carrying the same correlation.
 - Generated REST contract: `web/src/generated/openapi.json` and `web/src/generated/openapi.d.ts`
@@ -177,7 +178,7 @@ Current Gate B communication-thread evidence:
 - Provider migration/model/manifest: `modules/communications.core/migrations/001_communications_core.sql`, `modules/communications.core/backend/uok_communications_core/models.py`, and `modules/communications.core/manifest.yaml`
 - Command, policy, API, lifecycle, and audit proof: `modules/communications.core/tests/test_communications_core.py`
 - Planning ready/denied/missing/disabled-provider resolver proof: `modules/planning.core/tests/test_planning_communication_links.py`
-- Exact workspace/thread navigation proof: `web/src/app/workbenchNavigation.test.ts`, `modules/communications.core/tests/web/CommunicationsWorkspace.test.tsx`, `modules/planning.core/tests/web/PlanningOperationLinksPanel.test.tsx`, and `web/e2e/uok-proof.spec.ts`
+- Exact workspace/thread navigation proof: `web/src/app/workbenchNavigation.test.ts`, `modules/communications.core/tests/web/CommunicationsWorkspace.test.tsx`, `modules/planning.core/tests/web/PlanningOperationLinksPanel.test.tsx`, and `web/e2e/uok-proof-projects-links.spec.ts`
 - Candidate lifecycle scenario: `modules/planning.core/verify/UokCandidatePlanningLinks.ps1` and `modules/communications.core/verify/UokCandidateCommunications.ps1`
 - Persistent PostgreSQL proof: 11 columns, one controlled lifecycle check, two foreign keys, and both organization-first indexes read back after backup and additive migration; the rebuilt candidate passed provider install/disable/enable, permission denial, and exact link resolution, while all six Chromium scenarios passed.
 
@@ -304,7 +305,7 @@ Current Gate E portfolio and release evidence:
 
 - Decision and operations: `docs/architecture/ADR-0018-planning-portfolio-and-release-readiness.md` and `docs/operations/UOK_PLANNING_RELEASE_READINESS.md`
 - Bounded actor-scoped aggregate/API: `portfolio.py`, `portfolio_api.py`, and `test_planning_portfolio.py`
-- Typed UI and focused proof: `modules/planning.core/web/src/PlanningPortfolioView.tsx`, `modules/planning.core/tests/web/PlanningPortfolioView.test.tsx`, and `web/e2e/uok-proof.spec.ts`
+- Typed UI and focused proof: `modules/planning.core/web/src/PlanningPortfolioView.tsx`, `modules/planning.core/tests/web/PlanningPortfolioView.test.tsx`, and `web/e2e/uok-proof-access-lifecycle.spec.ts`
 - Runtime candidate contract: `modules/planning.core/verify/UokCandidatePlanningPortfolio.ps1`
 - Production-like composition/live proof: `scripts/uok_ops.ps1` action `PlanningReleaseReadiness` and `web/e2e/planning-live.spec.ts`
 
@@ -536,9 +537,12 @@ performed.
 
 ## Remaining production hardening
 
-- `ACC-SEC-002`: database row-level security plus cross-organization guessed-ID
-  probes remain required for defense in depth; current application-layer
-  organization checks do not substitute for RLS.
+- `ACC-SEC-002`: ADR-0031 now provides a closed all-table tenant inventory,
+  least-privileged role plan, dormant fail-closed policies, and an executable
+  live guessed-ID gate. Trusted request context, pool cleanup, RLS
+  enable/force, and a passing two-organization PostgreSQL probe remain
+  required; current application-layer checks and the dormant foundation do not
+  substitute for active RLS.
 - `ACC-OBS-001`: correlated metrics, logs, traces, conflict/batch rollback
   visibility, and analysis outcome dashboards without sensitive payload leakage
   remain required.

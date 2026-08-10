@@ -6,8 +6,11 @@ from pathlib import Path
 
 from uok.host.module_paths import repo_root
 from tests.module_public_api_contract import (
+    FRONTEND_ALLOWED_IMPORTS,
+    FRONTEND_MODULES,
     FRONTEND_SPECIFIER_PATTERN,
     MODULES,
+    PRIVILEGED_PYTHON_IMPORT_PATHS,
 )
 
 
@@ -22,6 +25,11 @@ def _owner(relative_path: Path) -> str | None:
 def python_violations(source: str, relative_path: Path) -> list[str]:
     tree = ast.parse(source, filename=relative_path.as_posix())
     owner = _owner(relative_path)
+    privileged = relative_path in PRIVILEGED_PYTHON_IMPORT_PATHS
+    test_source = (
+        relative_path.parts[0] == "tests"
+        or "tests" in relative_path.parts[:3]
+    )
     violations: list[str] = []
 
     def validate_kernel_model_access(
@@ -50,15 +58,17 @@ def python_violations(source: str, relative_path: Path) -> list[str]:
             package = str(contract["package"])
             if target != package and not target.startswith(package + "."):
                 continue
-            if owner == module_owner:
+            if owner == module_owner or privileged:
                 return
-            public_module = package + ".public_api"
-            if target != public_module:
+            public_module = contract["public_module"]
+            if public_module is None or target != public_module:
                 violations.append(
                     f"{relative_path.as_posix()}:{line} imports private {target}"
                 )
                 return
             if names is None:
+                if test_source:
+                    return
                 violations.append(
                     f"{relative_path.as_posix()}:{line} imports facade module "
                     f"object {public_module}; use named supported symbols"
@@ -119,7 +129,7 @@ def frontend_violations(source: str, relative_path: Path) -> list[str]:
     violations = []
     root = repo_root()
     module_folders = "|".join(
-        re.escape(str(contract["folder"])) for contract in MODULES.values()
+        re.escape(str(contract["folder"])) for contract in FRONTEND_MODULES.values()
     )
     for match in FRONTEND_SPECIFIER_PATTERN.finditer(source):
         target = match.group(1)
@@ -133,12 +143,12 @@ def frontend_violations(source: str, relative_path: Path) -> list[str]:
             module_folder, suffix = alias_match.groups()
             module_owner = next(
                 candidate_owner
-                for candidate_owner, contract in MODULES.items()
+                for candidate_owner, contract in FRONTEND_MODULES.items()
                 if contract["folder"] == module_folder
             )
         elif target.startswith("."):
             resolved = (root / relative_path.parent / target).resolve()
-            for candidate_owner, contract in MODULES.items():
+            for candidate_owner, contract in FRONTEND_MODULES.items():
                 module_source = (
                     root / "modules" / str(contract["folder"]) / "web" / "src"
                 ).resolve()
@@ -148,7 +158,7 @@ def frontend_violations(source: str, relative_path: Path) -> list[str]:
                     break
         if module_owner is None or owner == module_owner:
             continue
-        if suffix not in {"moduleSurface", "moduleSurface.tsx"}:
+        if suffix not in FRONTEND_ALLOWED_IMPORTS[module_owner]:
             line = source.count("\n", 0, match.start()) + 1
             violations.append(
                 f"{relative_path.as_posix()}:{line} imports private {target}"

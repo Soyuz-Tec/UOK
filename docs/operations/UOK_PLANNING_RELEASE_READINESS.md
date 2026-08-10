@@ -33,7 +33,8 @@ candidate.
 6. Live Chromium login, Planning/portfolio render, named-button audit,
    diagnostic visibility, page-error check, and console-error check against the
    rebuilt static candidate.
-7. Engineering evidence and quality scorecard generation.
+7. Engineering evidence plus repository-conformance scorecard, evidence
+   completeness, and unavailable-category reporting.
 
 ## Evidence Boundary
 

@@ -4,10 +4,14 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+import adr_policy
+import community_health_policy
 import database_capacity_audit
 import dependency_policy
 import documentation_reference_policy
 import frontend_quality_policy
+import github_actions_policy
+from quality_audit_artifacts import REQUIRED_ARTIFACTS
 import source_size_policy
 import windows_autostart_policy
 
@@ -25,54 +29,7 @@ def read_text(path: str) -> str:
 
 
 def check_required_artifacts() -> CheckResult:
-    required = [
-        "README.md",
-        "AGENTS.md",
-        "modules/README.md",
-        "web/README.md",
-        "docs/ARCHITECTURE.md",
-        "docs/DOCUMENTATION_INDEX.md",
-        "docs/architecture/UOK_CODE_QUALITY_AND_TECHNOLOGY_AUDIT_STANDARD.md",
-        "docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md",
-        "docs/architecture/UOK_INTERNAL_ENGINEERING_SYSTEM.md",
-        "docs/architecture/UOK_PROGRAMMING_LANGUAGE_STACK_POLICY.md",
-        "docs/architecture/ADR-0021-module-manifest-runtime-and-release-truth.md",
-        "docs/architecture/ADR-0023-module-local-frontend-composition.md",
-        "docs/architecture/ADR-0024-database-connection-pooling.md",
-        "docs/design/UOK_UI_DESIGN_POLICY.md",
-        "docs/operations/UOK_STANDARD_OPERATIONS.md",
-        "docs/operations/UOK_ASUH_TEST_EVENTS.md",
-        "docs/operations/UOK_CALENDAR_CORE_DEPLOYMENT.md",
-        "docs/operations/UOK_GITHUB_ENGINEERING_GUARDRAILS.md",
-        "docs/operations/UOK_DATABASE_CONNECTION_POOLING.md",
-        "deploy/database-capacity.env",
-        "scripts/engineering_evidence.py",
-        "scripts/check_generated_contracts.py",
-        "scripts/generate_frontend_module_catalog.py",
-        "scripts/frontend_quality_policy.py",
-        "scripts/frontend_source_policy.py",
-        "scripts/candidate_verifier_catalog.py",
-        "scripts/dependency_policy.py",
-        "scripts/documentation_reference_policy.py",
-        "scripts/quality_scorecard.py",
-        "scripts/run_python_tests.py",
-        "scripts/source_size_policy.py",
-        "scripts/validate_container_module_assets.py",
-        "scripts/verify_database_capacity.py",
-        "scripts/database_capacity_live.py",
-        "scripts/database_capacity_audit.py",
-        "scripts/uok_github_ops.ps1",
-        "src/uok/module_release_contract.py",
-        "src/uok/host/db_pool.py",
-        "requirements-dev.txt",
-        ".github/CODEOWNERS",
-        ".github/copilot-instructions.md",
-        ".github/dependabot.yml",
-        ".github/workflows/uok-ci.yml",
-        ".github/workflows/uok-openssf-scorecard.yml",
-        ".github/pull_request_template.md",
-    ]
-    missing = [path for path in required if not (REPO_ROOT / path).exists()]
+    missing = [path for path in REQUIRED_ARTIFACTS if not (REPO_ROOT / path).exists()]
     return CheckResult("required_artifacts", not missing, ", ".join(missing) or "present")
 
 
@@ -93,7 +50,7 @@ def check_runtime_stack() -> CheckResult:
     ci = read_text(".github/workflows/uok-ci.yml")
     problems: list[str] = []
     expected = {
-        "Dockerfile Python 3.14": "python:3.14-slim" in dockerfile,
+        "Dockerfile Python 3.14": "python:3.14-alpine" in dockerfile,
         "Dockerfile Node 26": "node:26-alpine" in dockerfile,
         "Compose PostgreSQL 18": "postgres:18-alpine" in compose,
         "CI PostgreSQL 18": "postgres:18-alpine" in ci,
@@ -105,6 +62,7 @@ def check_runtime_stack() -> CheckResult:
         "Docker validates manifest-declared module assets": dockerfile.count(
             "python scripts/validate_container_module_assets.py --require-tests-excluded"
         ) == 2,
+        "Docker API readiness healthcheck": "/health/ready" in dockerfile and "HEALTHCHECK" in dockerfile,
         "Docker explicit single API worker": '"--workers", "1"' in dockerfile,
     }
     problems.extend(name for name, ok in expected.items() if not ok)
@@ -133,6 +91,11 @@ def check_documentation_references() -> CheckResult:
     )
 
 
+def check_adr_governance() -> CheckResult:
+    problems = adr_policy.adr_policy_problems(REPO_ROOT)
+    return CheckResult("adr_governance", not problems, "; ".join(problems) or "governed")
+
+
 def check_source_size() -> CheckResult:
     report = source_size_policy.run_source_size_policy(REPO_ROOT)
     details = source_size_policy.summarize_source_size_policy(report)
@@ -144,6 +107,7 @@ def check_operations_hygiene() -> CheckResult:
     runbook = read_text("docs/operations/UOK_STANDARD_OPERATIONS.md")
     continuity = read_text("docs/architecture/UOK_DEVELOPMENT_CONTINUITY_SYSTEM.md")
     operations_script = read_text("scripts/uok_ops.ps1")
+    ci_quality_script = read_text("scripts/uok_ci_quality_ops.ps1")
     ci = read_text(".github/workflows/uok-ci.yml")
     problems: list[str] = []
     if "var/" not in gitignore:
@@ -166,8 +130,17 @@ def check_operations_hygiene() -> CheckResult:
     test_runner_command = "python scripts/run_python_tests.py"
     if test_runner_command not in ci:
         problems.append("CI must use the repository Python test runner")
-    if '"scripts/run_python_tests.py"' not in operations_script:
-        problems.append("local Audit must use the repository Python test runner")
+    local_quality_contract = (
+        "Invoke-UokCiQuality" in operations_script
+        and '"scripts/run_python_tests.py", "--coverage"' in ci_quality_script
+        and '"ruff", "check"' in ci_quality_script
+        and '"mypy"' in ci_quality_script
+        and '"scripts/verify_database_security.py"' in ci_quality_script
+        and '"scripts/validate_release_workflow.py"' in ci_quality_script
+        and '"test:coverage"' in ci_quality_script
+    )
+    if not local_quality_contract:
+        problems.append("local Audit must run the direct CI-quality gates")
     if '"--environment-file"' not in operations_script or '"deploy/database-capacity.env"' not in operations_script:
         problems.append("standard operations must use the canonical database capacity environment")
     release_validator = "validate_module_release_contracts"
@@ -199,28 +172,14 @@ def check_internal_engineering_system() -> CheckResult:
     pr_template = read_text(".github/pull_request_template.md")
     problems: list[str] = []
     required_names = [
-        "Microsoft SDL",
-        "Google Engineering Practices",
-        "SLSA",
-        "OpenSSF Scorecard",
-        "ISO/IEC/IEEE 12207",
-        "ISO/IEC/IEEE 15288",
-        "ISO/IEC/IEEE 42010",
-        "ISO/IEC 25010",
-        "ISO/IEC 5055",
-        "ISO/IEC/IEEE 29119",
-        "NIST SP 800-218 SSDF",
-        "OWASP ASVS",
-        "OWASP SAMM",
+        "Microsoft SDL", "Google Engineering Practices", "SLSA", "OpenSSF Scorecard",
+        "ISO/IEC/IEEE 12207", "ISO/IEC/IEEE 15288", "ISO/IEC/IEEE 42010",
+        "ISO/IEC 25010", "ISO/IEC 5055", "ISO/IEC/IEEE 29119",
+        "NIST SP 800-218 SSDF", "OWASP ASVS", "OWASP SAMM",
     ]
     required_layers = [
-        "Policies",
-        "Checklists",
-        "CI gates",
-        "Code review rules",
-        "Release gates",
-        "Dashboards",
-        "Audit evidence",
+        "Policies", "Checklists", "CI gates", "Code review rules",
+        "Release gates", "Dashboards", "Audit evidence",
     ]
     for name in required_names:
         if name not in document:
@@ -257,6 +216,7 @@ def check_github_guardrails() -> CheckResult:
         problems.append("CI must generate engineering evidence")
     if "quality_scorecard" not in read_text("scripts/engineering_evidence.py"):
         problems.append("engineering evidence must include quality scorecard")
+    problems.extend(github_actions_policy.github_actions_pin_problems(REPO_ROOT))
     for phrase in (
         "branch protection",
         "Require CODEOWNERS review",
@@ -270,6 +230,19 @@ def check_github_guardrails() -> CheckResult:
     return CheckResult("github_guardrails", not problems, "; ".join(problems) or "ready")
 
 
+def check_community_governance() -> CheckResult:
+    report = community_health_policy.community_health_report(REPO_ROOT)
+    details = list(report["problems"])
+    if not report["license"]["present"]:
+        details.append("external: repository license requires owner legal decision")
+    details.append("external: independent reviewer requires GitHub collaborator configuration")
+    return CheckResult(
+        "community_governance",
+        bool(report["ok"]),
+        "; ".join(details) if details else "documented",
+    )
+
+
 def run_checks() -> list[CheckResult]:
     return [
         check_required_artifacts(),
@@ -277,11 +250,13 @@ def run_checks() -> list[CheckResult]:
         check_frontend_stack(),
         check_runtime_stack(),
         check_module_shape(),
+        check_adr_governance(),
         check_documentation_references(),
         check_source_size(),
         check_operations_hygiene(),
         check_internal_engineering_system(),
         check_github_guardrails(),
+        check_community_governance(),
     ]
 
 

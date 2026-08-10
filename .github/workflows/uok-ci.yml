@@ -4,12 +4,20 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: uok-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   candidate-checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 150
     services:
       postgres:
-        image: postgres:18-alpine
+        image: postgres:18-alpine@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15
         env:
           POSTGRES_DB: uok
           POSTGRES_USER: uok
@@ -23,15 +31,18 @@ jobs:
           --health-retries 20
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.14"
           cache: pip
 
       - name: Validate repository policy before dependency installation
         run: python scripts/quality_audit.py
+
+      - name: Validate architecture decision governance
+        run: python scripts/adr_policy.py
 
       - name: Install Python dependencies
         run: python -m pip install --upgrade pip && python -m pip install -r requirements-dev.txt
@@ -44,6 +55,18 @@ jobs:
 
       - name: Compile Python
         run: python -m compileall -q src modules tests conftest.py
+
+      - name: Lint Python
+        run: python -m ruff check src modules tests scripts conftest.py
+
+      - name: Type-check Python trusted surfaces
+        run: python -m mypy
+
+      - name: Verify offline database security policy
+        run: python scripts/verify_database_security.py
+
+      - name: Validate immutable release workflow
+        run: python scripts/validate_release_workflow.py
 
       - name: Generate engineering evidence
         run: python scripts/engineering_evidence.py --stdout
@@ -60,32 +83,13 @@ jobs:
           PY
 
       - name: Check source-size guardrail
-        run: |
-          python - <<'PY'
-          from pathlib import Path
+        run: python scripts/source_size_policy.py
 
-          roots = [Path("src"), Path("modules"), Path("web/src"), Path("tests"), Path("scripts"), Path("migrations")]
-          excluded_parts = {"node_modules", "static", "generated", "__pycache__", ".pytest_cache"}
-          checked_suffixes = {".py", ".ts", ".tsx", ".css", ".ps1", ".sql"}
-          violations = []
-          for root in roots:
-              if not root.exists():
-                  continue
-              for path in root.rglob("*"):
-                  if not path.is_file() or path.suffix not in checked_suffixes:
-                      continue
-                  if excluded_parts.intersection(path.parts):
-                      continue
-                  line_count = len(path.read_text(encoding="utf-8", errors="ignore").splitlines())
-                  if line_count > 300:
-                      violations.append(f"{path.as_posix()}: {line_count} lines")
-          assert not violations, "\n".join(violations)
-          PY
-
-      - name: Run Python tests with repository runner
+      - name: Run Python tests with sequential branch coverage
+        timeout-minutes: 90
         env:
           PYTHONPATH: src
-        run: python scripts/run_python_tests.py
+        run: python scripts/run_python_tests.py --coverage
 
       - name: Verify database connection-capacity policy
         run: python scripts/verify_database_capacity.py --environment-file deploy/database-capacity.env
@@ -119,7 +123,7 @@ jobs:
           assert source["ok"], source
           PY
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: "26"
           cache: npm
@@ -152,11 +156,58 @@ jobs:
         working-directory: web
         run: npm run lint:styles
 
+      - name: Type-check frontend
+        working-directory: web
+        run: npm run typecheck
+
       - name: Run frontend tests
+        timeout-minutes: 15
         working-directory: web
         run: npm run test
 
-      - name: Install Chromium for accessibility proof
+      - name: Measure frontend coverage
+        timeout-minutes: 20
+        working-directory: web
+        run: npm run test:coverage
+
+      - name: Prove coverage generation left a clean source tree
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+          git diff --cached --exit-code
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+
+      - name: Build verified coverage measurement
+        run: python scripts/build_engineering_measurements.py
+
+      - name: Generate measured engineering evidence
+        run: >-
+          python scripts/engineering_evidence.py
+          --measurements var/evidence/engineering/uok_engineering_measurements_v2.json
+          --output var/evidence/engineering/uok_engineering_ci.json
+
+      - name: Require complete measured evidence set
+        run: |
+          set -euo pipefail
+          expected=(
+            var/evidence/coverage/python/coverage.xml
+            var/evidence/coverage/python/coverage.json
+            var/evidence/coverage/python/provenance.json
+            var/evidence/coverage/frontend/cobertura-coverage.xml
+            var/evidence/coverage/frontend/coverage-summary.json
+            var/evidence/coverage/frontend/lcov.info
+            var/evidence/coverage/frontend/provenance.json
+            var/evidence/engineering/uok_engineering_measurements_v2.json
+            var/evidence/engineering/uok_engineering_ci.json
+          )
+          for path in "${expected[@]}"; do
+            if [[ ! -s "$path" ]]; then
+              echo "Required measured evidence is missing or empty: $path" >&2
+              exit 1
+            fi
+          done
+
+      - name: Install Chromium for hosted UI proof
         working-directory: web
         run: npx playwright install --with-deps chromium
 
@@ -174,5 +225,147 @@ jobs:
         working-directory: web
         run: npm run check:bundle-budget
 
+      - name: Start disposable API candidate
+        timeout-minutes: 5
+        env:
+          PYTHONPATH: src
+          DATABASE_URL: postgresql+psycopg://uok:uok_local_password@127.0.0.1:5432/uok
+          UOK_SECRET: ci-uok-secret
+          UOK_ALLOW_INSECURE_LOCAL_DEFAULTS: "1"
+          UOK_AUTO_CREATE_SCHEMA: "1"
+          UOK_SEED_LOCAL_DATA: "1"
+          UOK_RESET_DEMO_PASSWORDS: "1"
+          UOK_SELF_REGISTRATION: "1"
+          UOK_CANDIDATE_STATE: ephemeral
+          DATA_DIR: ./data
+        run: |
+          set -euo pipefail
+          mkdir -p var/evidence/ci
+          python -m uvicorn uok.host.application:app \
+            --host 127.0.0.1 \
+            --port 18088 \
+            > var/evidence/ci/uok-api.log 2>&1 &
+          api_pid=$!
+          echo "$api_pid" > var/evidence/ci/uok-api.pid
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:18088/health/ready \
+              > var/evidence/ci/health-ready.json; then
+              exit 0
+            fi
+            if ! kill -0 "$api_pid" 2>/dev/null; then
+              cat var/evidence/ci/uok-api.log
+              exit 1
+            fi
+            sleep 2
+          done
+          cat var/evidence/ci/uok-api.log
+          exit 1
+
+      - name: Verify disposable API candidate
+        timeout-minutes: 20
+        run: >-
+          pwsh -NoProfile -File scripts/verify_uok_candidate.ps1
+          -BaseUrl http://127.0.0.1:18088
+          -EphemeralTarget
+
+      - name: Stop disposable API candidate
+        if: always()
+        run: |
+          set -euo pipefail
+          pid_file=var/evidence/ci/uok-api.pid
+          if [[ ! -f "$pid_file" ]]; then
+            exit 0
+          fi
+          api_pid=$(cat "$pid_file")
+          if ! kill -0 "$api_pid" 2>/dev/null; then
+            exit 0
+          fi
+          kill "$api_pid" 2>/dev/null || true
+          for attempt in $(seq 1 20); do
+            if ! kill -0 "$api_pid" 2>/dev/null; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          kill -KILL "$api_pid" 2>/dev/null || true
+          for attempt in $(seq 1 10); do
+            if ! kill -0 "$api_pid" 2>/dev/null; then
+              exit 0
+            fi
+            sleep 0.2
+          done
+          echo "Disposable API process $api_pid could not be terminated." >&2
+          exit 1
+
+      - name: Preserve failed disposable API log
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: uok-api-candidate-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: var/evidence/ci/uok-api.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Run hosted Chromium UI proof
+        timeout-minutes: 20
+        working-directory: web
+        env:
+          PLAYWRIGHT_HTML_OPEN: never
+        run: npm run test:ui-proof -- --reporter=list,html
+
+      - name: Preserve coverage evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: uok-coverage-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            var/evidence/coverage/python/coverage.xml
+            var/evidence/coverage/python/coverage.json
+            var/evidence/coverage/python/provenance.json
+            var/evidence/coverage/frontend/cobertura-coverage.xml
+            var/evidence/coverage/frontend/coverage-summary.json
+            var/evidence/coverage/frontend/lcov.info
+            var/evidence/coverage/frontend/provenance.json
+            var/evidence/engineering/uok_engineering_measurements_v2.json
+            var/evidence/engineering/uok_engineering_ci.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Preserve failed hosted UI proof
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: uok-playwright-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            web/playwright-report
+            web/test-results
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Build OCI image without publishing
+        timeout-minutes: 15
         run: docker build --tag "uok-ci:${GITHUB_SHA}" .
+
+      - name: Prepare image-security evidence directory
+        run: mkdir -p var/evidence/security
+
+      - name: Scan exact CI image for high and critical vulnerabilities
+        timeout-minutes: 15
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0, Trivy v0.72.0
+        with:
+          image-ref: uok-ci:${{ github.sha }}
+          format: json
+          output: var/evidence/security/trivy-ci-image.json
+          exit-code: "1"
+          ignore-unfixed: "false"
+          scanners: vuln
+          severity: HIGH,CRITICAL
+
+      - name: Preserve exact-image vulnerability report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: uok-ci-image-security-${{ github.run_id }}-${{ github.run_attempt }}
+          path: var/evidence/security/trivy-ci-image.json
+          if-no-files-found: ignore
+          retention-days: 14

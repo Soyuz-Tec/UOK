@@ -6,6 +6,8 @@
 
 **Approved:** 2026-07-10
 
+**Amended by:** `ADR-0029-communications-thread-recoverable-delete-and-concurrency.md`
+
 ## Context
 
 Planning Gate B requires an operation or task to open the exact related K

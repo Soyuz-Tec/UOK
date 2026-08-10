@@ -1,6 +1,8 @@
 # ADR-0001: Manifest-declared module runtime boundaries
 
-**Status:** Superseded in part by `ADR-0021-module-manifest-runtime-and-release-truth.md` and `ADR-0022-module-owned-orm-registration.md`
+**Status:** Superseded by `ADR-0021-module-manifest-runtime-and-release-truth.md`, `ADR-0022-module-owned-orm-registration.md`, and `ADR-0028-host-composition-and-neutral-module-surface-contracts.md`
+
+**Date:** 2026-07-06
 
 **Baseline:** `UOK-3.1.0-alpha.2-module-extension-baseline`
 
