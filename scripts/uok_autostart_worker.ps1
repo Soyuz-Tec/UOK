@@ -141,13 +141,13 @@ function Get-UokInspectValue {
 
 function Assert-UokContainerContract {
     param($Config, [string]$PodmanPath, [string]$ContainerId, [string]$ExpectedImageId, [string]$Service, [string]$Destination, [string]$ExpectedVolume)
-    $actual = Get-UokInspectValue -Config $Config -PodmanPath $PodmanPath -ObjectId $ContainerId -Format "{{.Image}}"
+    $inspectionJson = Get-UokInspectValue -Config $Config -PodmanPath $PodmanPath -ObjectId $ContainerId -Format "json"
+    $inspection = @($inspectionJson | ConvertFrom-Json)[0]
+    $actual = "$($inspection.Image)".Trim()
     if ($actual -ne $ExpectedImageId) { throw "$Service container image does not match the installed auto-start contract." }
-    $format = '{{range .Mounts}}{{if eq .Destination "' + $Destination + '"}}{{.Type}}|{{.Name}}{{end}}{{end}}'
-    $mount = Get-UokInspectValue -Config $Config -PodmanPath $PodmanPath -ObjectId $ContainerId -Format $format
-    if ($mount -ne "volume|$ExpectedVolume") { throw "$Service container volume does not match the installed auto-start contract." }
+    $mount = @($inspection.Mounts) | Where-Object { $_.Destination -eq $Destination } | Select-Object -First 1
+    if ("$($mount.Type)|$($mount.Name)" -ne "volume|$ExpectedVolume") { throw "$Service container volume does not match the installed auto-start contract." }
 }
-
 function Wait-UokDatabaseHealthy {
     param($Config, [string]$PodmanPath, [string]$ContainerId)
     $deadline = (Get-Date).AddSeconds(120)

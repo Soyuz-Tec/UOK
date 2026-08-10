@@ -51,7 +51,9 @@ def test_worker_is_bounded_pinned_and_non_destructive() -> None:
     assert "Assert-UokVolumeReference" in worker
     assert "Assert-UokContainerContract" in worker
     assert worker.count("Assert-UokContainerContract -Config") == 6
-    assert "{{.Type}}|{{.Name}}" in worker
+    assert 'Get-UokInspectValue -Config $Config' in worker
+    assert 'Format "json"' in worker
+    assert "ConvertFrom-Json" in worker
     assert '-Destination "/var/lib/postgresql"' in worker
     assert '-Destination "/data"' in worker
     assert "container volume does not match" in worker
@@ -140,6 +142,11 @@ def test_task_installation_is_user_scoped_owned_and_reversible() -> None:
     assert "api_image_version" in contract
     assert "api_image_revision" in contract
     assert "Get-UokMountedVolumeIdentity" in contract
+    assert "Get-UokPodmanInspection" in support
+    assert "ConvertFrom-Json" in support
+    assert "{{.Name}}|{{.Driver}}|{{.CreatedAt}}" in support
+    assert "{{range .Mounts}}" not in support
+    assert "index .Labels" not in support
     assert "db_volume_fingerprint" in contract
     assert "files_volume_fingerprint" in contract
     assert "Remove-ItemProperty" not in contract

@@ -39,6 +39,8 @@ def test_standard_operations_routes_the_full_lifecycle() -> None:
     assert '"{{.Id}}"' in common
     assert "org.opencontainers.image.version" in common
     assert "org.opencontainers.image.revision" in common
+    assert "ConvertFrom-Json" in common
+    assert "image inspect $imageId" in common
     assert (
         'arguments += @("-CheckIntervalMinutes", "$CheckIntervalMinutes")' in operations
     )
