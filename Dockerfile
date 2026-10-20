@@ -1,4 +1,4 @@
-FROM python:3.14-slim AS openapi-generate
+FROM python:3.15-slim AS openapi-generate
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -31,7 +31,7 @@ COPY modules /app/modules
 COPY --from=openapi-generate /app/web/src/generated ./src/generated
 RUN npm run generate:client && npm run build:client -- --outDir /app/web-dist
 
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
